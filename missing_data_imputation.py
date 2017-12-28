@@ -13,12 +13,12 @@ class MeanMedianImputer(BaseEstimator, TransformerMixin):
     """ Transforms features by replacing missing data in each feature
     for a given mean or median value.
     
-    This calss works only with numerical variables!!!
+    THIS CLASS WORKS ONLY WITH NUMERICAL VARIABLES
     
-    This estimator first calculates the mean / median values for the
+    The estimator first calculates the mean / median values for the
     desired features.
     
-    The transformer fills the missing data
+    The transformer fills the missing data with the estimated value
     
     Parameters
     ----------
@@ -42,17 +42,18 @@ class MeanMedianImputer(BaseEstimator, TransformerMixin):
         self.imputation_method = imputation_method
 
     def fit(self, X, y=None, variables = None):
-        """ Learns the mean or medians that should be use to replace
+        """ Learns the mean or medians that should be used to replace
         mising data in each variable.
         
         Parameters
         ----------
-        X : array-like or sparse matrix of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
+            Should be the entire dataframe, not just seleted variables
         y : None
-            There is no need of a target in a transformer, yet the pipeline API
-            requires this parameter.
-        variables: list of columns that should be transformed
+            y is not needed in this transformer, yet the sklearn pipeline API
+            requires this parameter for checking.
+        variables : list of variables (column names) that should be transformed
         
         Returns
         -------
@@ -69,7 +70,6 @@ class MeanMedianImputer(BaseEstimator, TransformerMixin):
             self.variables_ = variables
             # ADD AM ERROR HANDLER FOR NON NUMERICAL VARIABLES
             
-            
         if self.imputation_method == 'mean':
             self.imputer_dict_ = X[self.variables_].mean().to_dict()
         elif self.imputation_method == 'median':
@@ -82,12 +82,12 @@ class MeanMedianImputer(BaseEstimator, TransformerMixin):
         
         Parameters
         ----------
-        X : array-like of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
         Returns
         -------
-        X_transformed : array of int of shape = [n_samples, n_features]
-            The dataframe containing no missing values for the selected
+        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+            The dataframe containing NO missing values for the selected
             variables
         """
         # Check is fit had been called
@@ -103,7 +103,10 @@ class RandomSampleImputer(BaseEstimator, TransformerMixin):
     """ Transforms features by replacing missing data in each feature
     with a random extracted sample from the training set.
     
-    This class works for both numerical and categorical variables
+    THIS CLASS WORKS FOR BOTH NUMERICAL AND CATEGORICAL VARIABLES
+    
+    THIS CLASS SHOULD BE USED AT THE END OF EACH FEATURE ENGINEERING PIPELINE
+    TO TACKLE COMING MISSING VALUES NOT SEEN DURING TRAINING
     
     This estimator stores a copy of the training set
     
@@ -130,12 +133,11 @@ class RandomSampleImputer(BaseEstimator, TransformerMixin):
         
         Parameters
         ----------
-        X : array-like or sparse matrix of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
         y : None
-            There is no need of a target in a transformer, yet the pipeline API
-            requires this parameter.
-        variables: list of columns that should be transformed
+            y is not needed in this transformer, yet the sklearn pipeline API
+            requires this parameter for checking.
         
         Returns
         -------
@@ -150,13 +152,12 @@ class RandomSampleImputer(BaseEstimator, TransformerMixin):
         
         Parameters
         ----------
-        X : array-like of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
         Returns
         -------
-        X_transformed : array of int of shape = [n_samples, n_features]
-            The dataframe containing no missing values for the selected
-            variables
+        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+            The dataframe containing NO missing values for all variables
         """
         # Check is fit had been called
         check_is_fitted(self, ['X_'])
@@ -177,9 +178,9 @@ class EndTailImputer(BaseEstimator, TransformerMixin):
     """ Transforms features by replacing missing data in each feature
     for a given value at the tail of the distribution
     
-    This class works only with numerical variables
+    THIS CLASS WORKS ONLY WITH NUMERICAL VARIABLES
     
-    This estimator first calculates the values at the end of the distriution
+    The estimator first calculates the values at the end of the distriution
     for the desired features.
     
     The transformer fills the missing data
@@ -201,7 +202,7 @@ class EndTailImputer(BaseEstimator, TransformerMixin):
         
     Attributes
     ----------
-    variables : list
+    variables_ : list
         The list of variables that want to be imputed
         passed to the method:`fit`
         
@@ -222,11 +223,11 @@ class EndTailImputer(BaseEstimator, TransformerMixin):
         
         Parameters
         ----------
-        X : array-like or sparse matrix of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
         y : None
-            There is no need of a target in a transformer, yet the pipeline API
-            requires this parameter.
+            y is not needed in this transformer, yet the sklearn pipeline API
+            requires this parameter for checking.
         variables: list of columns that should be transformed
         
         Returns
@@ -257,8 +258,7 @@ class EndTailImputer(BaseEstimator, TransformerMixin):
             elif self.distribution == 'skewed':
                 IQR = X[self.variables_].quantile(0.75) - X[self.variables_].quantile(0.25)
                 self.imputer_dict_ = (X[self.variables_].quantile(0.25) - (IQR * self.fold)).to_dict()        
-                
-            
+                        
         return self
 
     def transform(self, X):
@@ -266,12 +266,12 @@ class EndTailImputer(BaseEstimator, TransformerMixin):
         
         Parameters
         ----------
-        X : array-like of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
         Returns
         -------
-        X_transformed : array of int of shape = [n_samples, n_features]
-            The dataframe containing no missing values for the selected
+        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+            The dataframe containing NO missing values for the selected
             variables
         """
         # Check is fit had been called
@@ -284,15 +284,15 @@ class EndTailImputer(BaseEstimator, TransformerMixin):
 
 
 class na_capturer(BaseEstimator, TransformerMixin):
-    """ Transforms features by replacing missing data in each feature
-    for a given value at the tail of the distribution
+    """ Adds an additional column to capture missing information for the
+    selected variables
     
-    This class works for both numerical and categorical variables
+    THIS CLASS WORKS FOR BOTH NUMERICAL AND CATEGORICAL VARIABLES
     
-    This estimator first calculates the values at the end of the distriution
-    for the desired features.
+    The estimator first identifies those variables for which to add the 
+    binary variable to capture NA
     
-    The transformer fills the missing data
+    The transformer adds the additional variables to the dataframe
     
     Parameters
     ----------
@@ -315,11 +315,11 @@ class na_capturer(BaseEstimator, TransformerMixin):
         
         Parameters
         ----------
-        X : array-like or sparse matrix of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
         y : None
-            There is no need of a target in a transformer, yet the pipeline API
-            requires this parameter.
+            y is not needed in this transformer, yet the sklearn pipeline API
+            requires this parameter for checking.
         
         Returns
         -------
@@ -330,17 +330,17 @@ class na_capturer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        """ Replaces missing data with the calculated parameters
+        """ Adds additional binary variables to indicate NA to the
+        dataframe
         
         Parameters
         ----------
-        X : array-like of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
         Returns
         -------
-        X_transformed : array of int of shape = [n_samples, n_features]
-            The dataframe containing no missing values for the selected
-            variables
+        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+            The dataframe containing the additional binary variables
         """
         # Check is fit had been called
         check_is_fitted(self, ['variables_'])
@@ -351,48 +351,77 @@ class na_capturer(BaseEstimator, TransformerMixin):
 
 
 class CategoricalImputer(BaseEstimator, TransformerMixin):
-    """ Transforms features by replacing missing data in each feature
-    for a given value at the tail of the distribution
+    """ Replaces missing data in categorical variables by either adding the 
+    label 'Missing' or the most frequent category.
+    It determines which method should be used automatically.
     
-    This estimator first calculates the values at the end of the distriution
-    for the desired features.
+    The estimator first determines the percentage of null values, and labels
+    and then determines which label will be used to fill NA
     
     The transformer fills the missing data
     
     Parameters
     ----------
     tol : float, default=0.05 
-        Percentage of missing data needed to add an additional variable
+        Percentage of missing data needed to add an additional label 'Missing'
         Can vary between 0 and 1
         
     Attributes
     ----------
     variables_ : list
-        The list of variables that will be added        
+        The list of variables that will be transformed
+        
+    imputer_dict_: dictionary
+        The dictionary mapping each variable to the label that will be used
+        to fill NA    
     """
     
     def __init__(self, tol=0.05):
         self.tol = tol
 
-    def fit(self, X, y=None):
-        """ Learns the variables for which the additional variable 
-        should be created
+    def fit(self, X, y=None, variables = None):
+        """ Learns whether NA should be filled with 'Missing' or the
+        most frequent category
         
         Parameters
         ----------
-        X : array-like or sparse matrix of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
         y : None
-            There is no need of a target in a transformer, yet the pipeline API
-            requires this parameter.
+            y is not needed in this transformer, yet the sklearn pipeline API
+            requires this parameter for checking.
         
         Returns
         -------
         self : object
             Returns self.
         """
-        self.variables_ = [var for var in X.columns if X[var].dtypes == 'O']
-        self.imputer_dict_ = {var:('Missing' if X[var].isnull().mean()>self.tol else X[var].mode()[0]) for var in self.variables_}
+        if not variables:
+            # select all categorical variables
+            self.variables_ = [var for var in X.columns if X[var].dtypes=='O']
+            
+        else:
+            # variables indicated by user
+            self.variables_ = variables
+            # ADD AM ERROR HANDLER FOR NON NUMERICAL VARIABLES
+            
+        #self.imputer_dict_ = {var:('Missing' if X[var].isnull().mean()>self.tol else X[var].mode()[0]) for var in self.variables_}
+        self.imputer_dict_ = {}
+        
+        for var in self.variables_:
+            if X[var].isnull().mean() > self.tol:
+                self.imputer_dict_[var] = 'Missing'
+    
+            elif len(X[var].unique()) > 10:
+                    self.imputer_dict_[var] = 'Missing'
+            
+            else:
+                temp = X.groupby(var)[var].count() / np.float(len(X))
+                if len(temp[temp<self.tol].index) > 1:
+                    self.imputer_dict_[var] = 'Missing'
+                else:
+                    self.imputer_dict_[var] = X[var].mode()[0]
+            
         return self
 
     def transform(self, X):
@@ -400,11 +429,11 @@ class CategoricalImputer(BaseEstimator, TransformerMixin):
         
         Parameters
         ----------
-        X : array-like of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
         Returns
         -------
-        X_transformed : array of int of shape = [n_samples, n_features]
+        X_transformed : dataframe of shape = [n_samples, n_features]
             The dataframe containing no missing values for the selected
             variables
         """
@@ -416,21 +445,17 @@ class CategoricalImputer(BaseEstimator, TransformerMixin):
             X[feature].fillna(self.imputer_dict_[feature], inplace=True)
         return X
     
+    
 class ArbitraryImputer(BaseEstimator, TransformerMixin):
     """ Transforms features by replacing missing data in each feature
     for a given value determined by the user.
     
-    This class works with both numerical and categorical variables
-    
-    This estimator first calculates the mean / median values for the
-    desired features.
-    
-    The transformer fills the missing data
-    
+    THIS CLASS WORKS WITH BOTH NUMERICAL AND CATEGORICAL VARIABLES
+       
     Parameters
     ----------
     imputation_dictionary : dict, default=None
-        Dictionary mappting each variable to the number with which the
+        dictionary mappting each variable to the number with which the
         missing values should be replaced
         
     Attributes
@@ -454,11 +479,11 @@ class ArbitraryImputer(BaseEstimator, TransformerMixin):
         
         Parameters
         ----------
-        X : array-like or sparse matrix of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
         y : None
-            There is no need of a target in a transformer, yet the pipeline API
-            requires this parameter.
+            y is not needed in this transformer, yet the sklearn pipeline API
+            requires this parameter for checking.
         variables: list of columns that should be transformed
         
         Returns
@@ -480,11 +505,11 @@ class ArbitraryImputer(BaseEstimator, TransformerMixin):
         
         Parameters
         ----------
-        X : array-like of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
         Returns
         -------
-        X_transformed : array of int of shape = [n_samples, n_features]
+        X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe containing no missing values for the selected
             variables
         """
