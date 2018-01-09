@@ -5,17 +5,19 @@
 import pandas as pd
 import numpy as np
 
+import warnings
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 
 class CategoricalEncoder(BaseEstimator, TransformerMixin):
     """ Transforms categories into numbers by multiple methods.
-    See below.
     
-    Encoder can take both objects and numerical variables
-    Please note that if no variables are passed, it will only encode 
-    categorical variables
+    The Encoder can take both categorical and numerical variables if passed
+    as an argument.
+    If no variables are passed as argument, it will only encode 
+    categorical variables (object type)
     
     The estimator first maps the labels to the numbers for each feature
     
@@ -49,12 +51,10 @@ class CategoricalEncoder(BaseEstimator, TransformerMixin):
     """
     
     def __init__(self, encoding_method='count', tol = 0.0001):
-        self.encoding_method = encoding_method
         
-        if encoding_method in ['ratio', 'woe']:
-            self.tol = tol
-        else:
-            self.tol = 'N/A'
+        self.encoding_method = encoding_method
+        self.tol = tol
+           
 
     def fit(self, X, y=None, variables = None):
         """ Learns the numbers that should be used to replace
@@ -81,12 +81,15 @@ class CategoricalEncoder(BaseEstimator, TransformerMixin):
         else:
             # variables indicated by user
             self.variables_ = variables
-            # ADD AM ERROR HANDLER FOR NON NUMERICAL VARIABLES
+            
+            numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+            if len(X[self.variables_].select_dtypes(include=numerics).columns) != 0:
+                warnings.warn("Some of the selected variables are of dtype numeric; they will be handled as categorical")
             
         if y is not None:
             temp = pd.concat([X, y], axis=1)
             temp.columns = list(X.columns)+['target']
-            
+                        
         self.encoder_dict_ = {}
         
         for var in self.variables_:
@@ -105,7 +108,6 @@ class CategoricalEncoder(BaseEstimator, TransformerMixin):
                 self.encoder_dict_[var] = temp.groupby(var)['target'].mean().to_dict()
                 
             elif self.encoding_method == 'ratio':
-                # add to handle error if y is not categorical
                 t = temp.groupby(var)['target'].mean()
                 t = pd.concat([t, 1-t], axis=1)
                 t.columns = ['p1', 'p0']
@@ -113,13 +115,14 @@ class CategoricalEncoder(BaseEstimator, TransformerMixin):
                 self.encoder_dict_[var] = (t.p1/t.p0).to_dict()
                 
             elif self.encoding_method == 'woe':
-                # add to handle error if y is not categorical
                 t = temp.groupby(var)['target'].mean()
                 t = pd.concat([t, 1-t], axis=1)
                 t.columns = ['p1', 'p0']
                 t.loc[t['p0'] == 0, 'p0'] = self.tol
                 t.loc[t['p1'] == 0, 'p1'] = self.tol
                 self.encoder_dict_[var] = (np.log(t.p1/t.p0)).to_dict()
+                
+        self.input_shape_ = X.shape
                    
         return self
 
@@ -139,21 +142,29 @@ class CategoricalEncoder(BaseEstimator, TransformerMixin):
         # Check is fit had been called
         check_is_fitted(self, ['encoder_dict_', 'variables_'])
         
+        # Check that the input is of the same shape as the one passed
+        # during fit.
+        if X.shape[1] != self.input_shape_[1]:
+            raise ValueError('Number of columns in dataset is different from training set '
+                             ' used to fit the encoder')
+             
         X = X.copy()
         for feature in self.variables_:
             X[feature] = X[feature].map(self.encoder_dict_[feature])
+        
         return X
     
     
 class RareLabelEncoder(BaseEstimator, TransformerMixin):
     """ Transforms features by grouping rare labels in each feature
-    under a separate category
+    under the separate category "Rare"
     
-    Encoder can take both objects and numerical variables
-    Please note that if no variables are passed, it will only encode 
-    categorical variables
+    The Encoder can take both categorical and numerical variables if passed
+    as an argument.
+    If no variables are passed as argument, it will only encode 
+    categorical variables (object type)
     
-    This estimator first determines the frequent labels the features.
+    This estimator first determines the frequent labels for each feature.
     
     The transformer replaces the unusual labels by the selected method
     
@@ -181,6 +192,7 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
     def __init__(self, tol = 0.05, n_categories = 10):
         self.tol = tol
         self.n_categories = n_categories
+        
 
     def fit(self, X, y=None, variables = None):
         """ Learns the frequent labels
@@ -206,16 +218,26 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
         else:
             # variables indicated by user
             self.variables_ = variables
-            # ADD AM ERROR HANDLER FOR NON NUMERICAL VARIABLES
+
+            numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+            if len(X[self.variables_].select_dtypes(include=numerics).columns) != 0:
+               warnings.warn("Some of the selected variables are of dtype numeric; they will be handled as categorical")
                         
         self.encoder_dict_ = {}
         
         for var in self.variables_:
             if len(X[var].unique()) > self.n_categories:
                 t = pd.Series(X[var].value_counts() / np.float(len(X)))
-                self.encoder_dict_[var] = t[t>=self.tol].index # non-rare labels
-                
+                # non-rare labels:
+                self.encoder_dict_[var] = t[t>=self.tol].index
+        
+        self.input_shape_ = X.shape
+        
+        if len(self.encoder_dict_)==0:
+            warnings.warn("No rare labels were identified. Please change the encoder parameters")
+            
         return self
+    
 
     def transform(self, X):
         """ Groups rare labels under separate group.
@@ -231,6 +253,16 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
         """
         # Check is fit had been called
         check_is_fitted(self, ['encoder_dict_', 'variables_'])
+        
+        # check that there is an encoder dictionary
+        if len(self.encoder_dict_)==0:
+            raise ValueError('No rare labels were identified during training. Please change the encoder parameters and re-train')
+        
+        # Check that the input is of the same shape as the one passed
+        # during fit.
+        if X.shape[1] != self.input_shape_[1]:
+            raise ValueError('Number of columns in dataset is different from training set '
+                             ' used to fit the encoder')
         
         X = X.copy()
         for feature in self.variables_:
