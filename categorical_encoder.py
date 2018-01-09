@@ -1,5 +1,9 @@
-# Authors: Soledad Galli <solegalli1@gmail.com>
+"""
+Methods to encode categorical variables into numbers and to 
+handle rare categories
+"""
 
+# Authors: Soledad Galli <solegalli1@gmail.com>
 # License: BSD 3 clause
 
 import pandas as pd
@@ -15,13 +19,12 @@ class CategoricalEncoder(BaseEstimator, TransformerMixin):
     """ Transforms categories into numbers by multiple methods.
     
     The Encoder can take both categorical and numerical variables if passed
-    as an argument.
-    If no variables are passed as argument, it will only encode 
-    categorical variables (object type)
+    as an argument. If no variables are passed as argument, it will only encode 
+    categorical variables (object type).
     
-    The estimator first maps the labels to the numbers for each feature
+    The estimator first maps the labels to the numbers for each feature.
     
-    The transformer replaces the labels by numbers
+    The transformer replaces the labels by numbers.
     
     Parameters
     ----------
@@ -51,7 +54,6 @@ class CategoricalEncoder(BaseEstimator, TransformerMixin):
     """
     
     def __init__(self, encoding_method='count', tol = 0.0001):
-        
         self.encoding_method = encoding_method
         self.tol = tol
            
@@ -64,6 +66,7 @@ class CategoricalEncoder(BaseEstimator, TransformerMixin):
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
+            Should be the entire dataframe, not just seleted variables
         y : None
             y is not needed in this transformer, yet the sklearn pipeline API
             requires this parameter for checking.
@@ -86,12 +89,12 @@ class CategoricalEncoder(BaseEstimator, TransformerMixin):
             if len(X[self.variables_].select_dtypes(include=numerics).columns) != 0:
                 warnings.warn("Some of the selected variables are of dtype numeric; they will be handled as categorical")
             
+        # for methods that encode labels using dependent variable (target) information
         if y is not None:
             temp = pd.concat([X, y], axis=1)
             temp.columns = list(X.columns)+['target']
                         
-        self.encoder_dict_ = {}
-        
+        self.encoder_dict_ = {}  
         for var in self.variables_:
             if self.encoding_method == 'count':
                 self.encoder_dict_[var] = X[var].value_counts().to_dict()
@@ -122,12 +125,15 @@ class CategoricalEncoder(BaseEstimator, TransformerMixin):
                 t.loc[t['p1'] == 0, 'p1'] = self.tol
                 self.encoder_dict_[var] = (np.log(t.p1/t.p0)).to_dict()
                 
+        if len(self.encoder_dict_)==0:
+            raise ValueError('Encoder could not be fitted. Check that correct parameters and dataframe were passed during training')
+            
         self.input_shape_ = X.shape
                    
         return self
 
     def transform(self, X):
-        """ Replaces labels with the numbers
+        """ Replaces labels with the numbers.
         
         Parameters
         ----------
@@ -160,9 +166,8 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
     under the separate category "Rare"
     
     The Encoder can take both categorical and numerical variables if passed
-    as an argument.
-    If no variables are passed as argument, it will only encode 
-    categorical variables (object type)
+    as an argument. If no variables are passed as argument, it will only encode 
+    categorical variables (object type).
     
     This estimator first determines the frequent labels for each feature.
     
@@ -195,12 +200,13 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
         
 
     def fit(self, X, y=None, variables = None):
-        """ Learns the frequent labels
+        """ Learns the frequent labels.
         
         Parameters
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
+            Should be the entire dataframe, not just seleted variables
         y : None
             There is no need of a target in a transformer, yet the pipeline API
             requires this parameter.
