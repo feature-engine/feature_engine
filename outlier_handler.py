@@ -2,7 +2,6 @@
 
 # License: BSD 3 clause
 
-import pandas as pd
 import numpy as np
 
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -35,7 +34,7 @@ class Windsorizer(BaseEstimator, TransformerMixin):
         1.5 or 3 for skewed.
         
     user_input : Boolean, default=False
-        indicates if user will pass the capping values in dictionary
+        indicates if user will pass the capping values in a dictionary
         
     Attributes
     ----------
@@ -50,19 +49,31 @@ class Windsorizer(BaseEstimator, TransformerMixin):
     """
     
     def __init__(self, distribution='gaussian', end='right', fold=3, user_input=False):
+        
+        if distribution not in ['gaussian', 'skewed']:
+            raise ValueError("distribution takes only values 'gaussian' or 'skewed'")
+            
+        if end not in ['right', 'left', 'both']:
+            raise ValueError("end takes only values 'right', 'left' or 'both'")
+            
+        if fold <=0 :
+            raise ValueError("fold takes only positive numbers")
+            
         self.distribution = distribution
         self.end = end
         self.fold = fold
         self.user_input = user_input
 
     def fit(self, X, y=None, variables = None, capping_max=None, capping_min=None):
-        """ Learns the values that should be use to replace
-        mising data in each variable.
+        """ Learns the values that should be used to replace
+        outliers in each variable.
         
         Parameters
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
+            Can contain all the variables, not necessarily only those to remove
+            outliers
         y : None
             y is not needed in this transformer, yet the sklearn pipeline API
             requires this parameter for checking.
@@ -85,7 +96,6 @@ class Windsorizer(BaseEstimator, TransformerMixin):
                 raise AssertionError('Please provide the capping dictionary')
             elif self.end in ['left', 'both'] and capping_min is None:
                 raise AssertionError('Please provide the capping dictionary')
-
             else:
                 if self.end in ['right', 'both']:
                     self.capping_max_ = capping_max
@@ -93,7 +103,7 @@ class Windsorizer(BaseEstimator, TransformerMixin):
                     self.capping_min_ = capping_min
             
         else:
-            # First learn the variables to be capped
+            # Learn the variables to be capped
             numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
             if not variables:
                 # select all numerical variables
@@ -113,6 +123,7 @@ class Windsorizer(BaseEstimator, TransformerMixin):
                     IQR = X[variables].quantile(0.75) - X[variables].quantile(0.25)
                     self.capping_min_ = (X[variables].quantile(0.25) - (IQR * self.fold)).to_dict()        
         
+        self.input_shape_ = X.shape 
         return self
 
     def transform(self, X):
@@ -130,6 +141,10 @@ class Windsorizer(BaseEstimator, TransformerMixin):
         """
         # Check is fit had been called
         check_is_fitted(self, ['capping_max_', 'capping_min_'])
+        
+        if X.shape[1] != self.input_shape_[1]:
+            raise ValueError('Number of columns in dataset is different from training set '
+                             ' used to fit the encoder')
 
         X = X.copy()
         for feature in self.capping_max_.keys():

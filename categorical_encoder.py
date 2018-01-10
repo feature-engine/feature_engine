@@ -54,6 +54,8 @@ class CategoricalEncoder(BaseEstimator, TransformerMixin):
     """
     
     def __init__(self, encoding_method='count', tol = 0.0001):
+        if encoding_method not in ['count', 'frequency','ordinal','mean','ratio','woe']:
+            raise ValueError("encoding_method takes only values 'count', 'frequency','ordinal','mean','ratio','woe'")
         self.encoding_method = encoding_method
         self.tol = tol
            
@@ -195,6 +197,12 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
     """
     
     def __init__(self, tol = 0.05, n_categories = 10):
+        if tol <0 or tol >1 :
+            raise ValueError("tol takes values between 0 and 1")
+            
+        if n_categories < 0 :
+            raise ValueError("n_categories takes only positive numbers")
+        
         self.tol = tol
         self.n_categories = n_categories
         
