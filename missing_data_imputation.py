@@ -43,6 +43,10 @@ class MeanMedianImputer(BaseEstimator, TransformerMixin):
     """
     
     def __init__(self, imputation_method='median'):
+        
+        if imputation_method not in ['median', 'mean']:
+            raise ValueError("Imputation method takes only values 'median' or 'mean'")
+            
         self.imputation_method = imputation_method
 
     def fit(self, X, y=None, variables = None):
@@ -249,6 +253,16 @@ class EndTailImputer(BaseEstimator, TransformerMixin):
     """
     
     def __init__(self, distribution='gaussian', tail='right', fold=3):
+        
+        if distribution not in ['gaussian', 'skewed']:
+            raise ValueError("distribution takes only values 'gaussian' or 'skewed'")
+            
+        if tail not in ['right', 'left']:
+            raise ValueError("tail takes only values 'right' or 'left'")
+            
+        if fold <=0 :
+            raise ValueError("fold takes only positive numbers")
+            
         self.distribution = distribution
         self.tail = tail
         self.fold = fold
@@ -352,6 +366,8 @@ class na_capturer(BaseEstimator, TransformerMixin):
     """
     
     def __init__(self, tol=0.05):
+        if tol <0 or tol >1 :
+            raise ValueError("tol takes values between 0 and 1")
         self.tol = tol
 
     def fit(self, X, y=None):
@@ -434,6 +450,8 @@ class CategoricalImputer(BaseEstimator, TransformerMixin):
     """
     
     def __init__(self, tol=0.05):
+        if tol <0 or tol >1 :
+            raise ValueError("tol takes values between 0 and 1")
         self.tol = tol
 
     def fit(self, X, y=None, variables = None):
@@ -559,13 +577,9 @@ class ArbitraryImputer(BaseEstimator, TransformerMixin):
             Returns self.
         """
         if not imputation_dictionary:
-            # select all numerical variables
             raise ValueError('Dictionary with the values to replace NA for each variable should be provided')
             
-        else:
-            # variables indicated by user
-            self.imputer_dict_ = imputation_dictionary           
-        
+        self.imputer_dict_ = imputation_dictionary           
         self.input_shape_ = X.shape 
         return self
 

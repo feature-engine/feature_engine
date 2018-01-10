@@ -12,7 +12,7 @@ from sklearn.utils.validation import check_is_fitted
 class Windsorizer(BaseEstimator, TransformerMixin):
     """ Caps the maximum or minimum values of a variable
     
-    THIS CLASS WORKS ONLY WITH NUMERICAL VARIABLES
+    This class works only with numerical variables
     
     The estimator first calculates the capping values
     for the desired features.
