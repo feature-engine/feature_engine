@@ -36,9 +36,9 @@ Documentation: http://feature-engine.readthedocs.io
 
 ### Installing
 
-'''
+```
 git clone https://gitlab.com/datascientistcoach/feature_engine.git
-'''
+```
 
 ### Usage
 
