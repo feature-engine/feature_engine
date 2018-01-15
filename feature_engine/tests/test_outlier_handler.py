@@ -7,7 +7,9 @@ import pytest
 
 from outlier_handler import Windsorizer
 
-df_test = pd.read_csv('titanic_test.csv')
+import os
+filename = os.path.dirname(os.path.abspath(__file__)) + os.sep + 'titanic_test.csv'
+df_test = pd.read_csv(filename)
 
     
 def test_Windsorizer():

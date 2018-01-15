@@ -5,6 +5,9 @@ import pandas as pd
 import numpy as np
 import pytest
 
+import os
+filename = os.path.dirname(os.path.abspath(__file__)) + os.sep + 'titanic_test.csv'
+
 from missing_data_imputation import MeanMedianImputer
 from missing_data_imputation import RandomSampleImputer
 from missing_data_imputation import EndTailImputer
@@ -12,7 +15,7 @@ from missing_data_imputation import na_capturer
 from missing_data_imputation import CategoricalImputer
 from missing_data_imputation import ArbitraryImputer
 
-df_test = pd.read_csv('titanic_test.csv')
+df_test = pd.read_csv(filename)
 
 def test_MeanMedianImputer():
     imputer = MeanMedianImputer(imputation_method='median')
