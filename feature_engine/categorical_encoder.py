@@ -227,16 +227,34 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
         """
         if not variables:
             # select all categorical variables
-            self.variables_ = [var for var in X.columns if X[var].dtypes=='O']
+            self.variables_ = [var for var in X.columns if X[var].dtypes=='O' and
+                               len(X[var].unique()) > self.n_categories]
+            
+            low_cardinal_vars = [var for var in X.columns if X[var].dtypes=='O' and
+                                 var not in self.variables_]
+            
+            if len(low_cardinal_vars)>0:
+                warnings.warn("The following variables contain less than the specified number of categories and will not be evaluated")
+                print(low_cardinal_vars)
             
         else:
             # variables indicated by user
-            self.variables_ = variables
-
+            self.variables_ = [var for var in variables if len(X[var].unique()) > self.n_categories]
+            
+            low_cardinal_vars = [var for var in variables if var not in self.variables_]
+            
+            if len(low_cardinal_vars)>0:
+                warnings.warn("The following variables contain less than the specified number of categories and will not be evaluated")
+                print(low_cardinal_vars)
+            
             numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
             if len(X[self.variables_].select_dtypes(include=numerics).columns) != 0:
                warnings.warn("Some of the selected variables are of dtype numeric; they will be handled as categorical")
                         
+        if len(self.variables_)==0:
+            raise ValueError("No variables to evaluate, check the cardinality of the variables and change the n_categories argument accordingly")
+            
+            
         self.encoder_dict_ = {}
         
         for var in self.variables_:
