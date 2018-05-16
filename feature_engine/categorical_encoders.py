@@ -21,8 +21,7 @@ class BaseCategoricalEncoder(BaseEstimator, TransformerMixin):
             # variables indicated by user
             for var in self.variables:
                 if X[var].dtypes != 'O':
-                    raise ValueError("variable {} is not of type object, check \
-                                     that all indicated variables are of type object".format(var))
+                    raise TypeError("variable {} is not of type object, check that all indicated variables are of type object".format(var))
             self.variables = self.variables
         
         return self.variables
@@ -47,18 +46,15 @@ class BaseCategoricalEncoder(BaseEstimator, TransformerMixin):
         # Check that the input is of the same shape as the training set passed
         # during fit.
         if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set \
-                              used to fit the encoder')
+            raise ValueError('Number of columns in dataset is different from train set used to fit the encoder')
+        
         # encode labels     
         X = X.copy()
         for feature in self.variables:
             X[feature] = X[feature].map(self.encoder_dict_[feature])
             
             if X[feature].isnull().sum() > 0:
-                warnings.warn("NaN values were introduced by the encoder due to labels \
-                              in variable {} not present in the training set. This can be \
-                              resolved by using the RareLabelCategoricalEncoder as a \
-                              previous step to this encoder.".format(feature) )       
+                warnings.warn("NaN values were introduced by the encoder due to labels in variable {} not present in the training set. Try using the RareLabelCategoricalEncoder.".format(feature) )       
         return X
 
 
@@ -134,8 +130,7 @@ class CountFrequencyCategoricalEncoder(BaseCategoricalEncoder):
                 self.encoder_dict_[var] = (X[var].value_counts() / n_obs).to_dict()   
         
         if len(self.encoder_dict_)==0:
-            raise ValueError('Encoder could not be fitted. Check that correct \
-                             parameters and dataframe were passed during training')
+            raise ValueError('Encoder could not be fitted. Check that correct parameters and dataframe were passed during training')
             
         self.input_shape_ = X.shape
         
@@ -228,8 +223,7 @@ class OrdinalCategoricalEncoder(BaseCategoricalEncoder):
             self.encoder_dict_[var] = {k:i for i, k in enumerate(t, 0)}
             
         if len(self.encoder_dict_)==0:
-            raise ValueError('Encoder could not be fitted. Check that correct \
-                             parameters and dataframe were passed during training')
+            raise ValueError('Encoder could not be fitted. Check that correct parameters and dataframe were passed during training')
             
         self.input_shape_ = X.shape
         
@@ -294,8 +288,7 @@ class MeanCategoricalEncoder(BaseCategoricalEncoder):
             self.encoder_dict_[var] = temp.groupby(var)['target'].mean().to_dict()
 
         if len(self.encoder_dict_)==0:
-            raise ValueError('Encoder could not be fitted. Check that correct \
-                             parameters and dataframe were passed during training')
+            raise ValueError('Encoder could not be fitted. Check that correct parameters and dataframe were passed during training')
             
         self.input_shape_ = X.shape
             
@@ -388,21 +381,18 @@ class WoERatioCategoricalEncoder(BaseCategoricalEncoder):
             
             if self.encoding_method == 'woe':
                 if not t.loc[t['p0'] == 0, :].empty or not t.loc[t['p1'] == 0, :].empty:
-                    raise ValueError("p(0) or p(1) for a category in variable {} \
-                                     is zero, log of zero is not defined".format(var))
+                    raise ValueError("p(0) or p(1) for a category in variable {} is zero, log of zero is not defined".format(var))
                 else:
                     self.encoder_dict_[var] = (np.log(t.p1/t.p0)).to_dict()
                 
             elif self.encoding_method == 'ratio':
                 if not t.loc[t['p0'] == 0, :].empty:
-                    raise ValueError("p(0) or p(1) for a category in variable {} \
-                                     is zero, division by is not defined".format(var))
+                    raise ValueError("p(0) or p(1) for a category in variable {} is zero, division by is not defined".format(var))
                 else:
                     self.encoder_dict_[var] = (t.p1/t.p0).to_dict()  
 
         if len(self.encoder_dict_)==0:
-            raise ValueError('Encoder could not be fitted. Check that correct \
-                             parameters and dataframe were passed during training')
+            raise ValueError('Encoder could not be fitted. Check that correct parameters and dataframe were passed during training')
             
         self.input_shape_ = X.shape
                
@@ -466,8 +456,7 @@ class OneHotCategoricalEncoder(BaseCategoricalEncoder):
 
         if top_categories:
             if not isinstance(top_categories, int):
-                raise ValueError("top_categories takes only integer numbers, \
-                                 1, 2, 3, etc.")            
+                raise ValueError("top_categories takes only integer numbers, 1, 2, 3, etc.")            
         self.top_categories = top_categories
         
         if drop_last not in [True, False]:
@@ -508,8 +497,7 @@ class OneHotCategoricalEncoder(BaseCategoricalEncoder):
                 self.encoder_dict_[var] = [x for x in X[var].value_counts().sort_values(ascending=False).head(self.top_categories).index]
 
         if len(self.encoder_dict_)==0:
-            raise ValueError('Encoder could not be fitted. Check that correct \
-                             parameters and dataframe were passed during training')
+            raise ValueError('Encoder could not be fitted. Check that correct parameters and dataframe were passed during training')
             
         self.input_shape_ = X.shape
                
@@ -534,8 +522,7 @@ class OneHotCategoricalEncoder(BaseCategoricalEncoder):
         # Check that the input is of the same shape as the one passed
         # during fit.
         if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set '
-                             ' used to fit the encoder')
+            raise ValueError('Number of columns in dataset is different from training set used to fit the encoder')
         
         X = X.copy()
         for feature in self.variables:
@@ -656,8 +643,7 @@ class RareLabelCategoricalEncoder(BaseCategoricalEncoder):
         # Check that the input is of the same shape as the one passed
         # during fit.
         if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set '
-                             ' used to fit the encoder')
+            raise ValueError('Number of columns in dataset is different from training set used to fit the encoder')
         
         X = X.copy()
         for feature in self.variables:
