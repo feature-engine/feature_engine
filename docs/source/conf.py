@@ -23,17 +23,6 @@ sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(1,os.path.dirname(os.path.abspath('../'))+ os.sep + 'feature_engine')
 
-#from unittest.mock import MagicMock
-
-# class Mock(MagicMock):
-    # @classmethod
-    # def __getattr__(cls, name):
-        # return MagicMock()
-
-# MOCK_MODULES = ['numpy', 'pandas']
-# sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-
-autodoc_mock_imports = ["numpy", "pandas"]
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
