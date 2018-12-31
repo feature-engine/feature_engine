@@ -87,5 +87,5 @@ BSD 3-Clause
 
 Most of the engineering and encoding functionality is inspired by this [series of articles from the 2009 KDD competition](http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf)
 
-To learn more about the rationale, functionality, pros and cos of each imputer, encoder and transformer, refer to the Feature Engineering Online Course](https://www.udemy.com/feature-engineering-for-machine-learning)
+To learn more about the rationale, functionality, pros and cos of each imputer, encoder and transformer, refer to the [Feature Engineering Online Course](https://www.udemy.com/feature-engineering-for-machine-learning)
  
