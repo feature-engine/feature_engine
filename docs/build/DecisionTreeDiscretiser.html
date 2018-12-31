@@ -1,0 +1,328 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>DecisionTreeDiscretiser &mdash; feature_engine 0.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="LogTransformer" href="LogTransformer.html" />
+    <link rel="prev" title="EqualWidthDiscretiser" href="EqualWidthDiscretiser.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> feature_engine
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="MeanMedianImputer.html">MeanMedianImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RandomSampleImputer.html">RandomSampleImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EndTailImputer.html">EndTailImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AddNaNBinaryImputer.html">AddNaNBinaryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CategoricalVariableImputer.html">CategoricalVariableImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FrequentCategoryImputer.html">FrequentCategoryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CountFrequencyCategoricalEncoder.html">CountFrequencyCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="OrdinalCategoricalEncoder.html">OrdinalCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MeanCategoricalEncoder.html">MeanCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WoERatioCategoricalEncoder.html">WoERatioCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="OneHotCategoricalEncoder.html">OneHotCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RareLabelCategoricalEncoder.html">RareLabelCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Windsorizer.html">Windsorizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ArbitraryOutlierCapper.html">ArbitraryOutlierCapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EqualFrequencyDiscretiser.html">EqualFrequencyDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EqualWidthDiscretiser.html">EqualWidthDiscretiser</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">DecisionTreeDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LogTransformer.html">LogTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ReciprocalTransformer.html">ReciprocalTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ExponentialTransformer.html">ExponentialTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BoxCoxTransformer.html">BoxCoxTransformer</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">feature_engine</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>DecisionTreeDiscretiser</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/DecisionTreeDiscretiser.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="decisiontreediscretiser">
+<h1>DecisionTreeDiscretiser<a class="headerlink" href="#decisiontreediscretiser" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="discretisers.DecisionTreeDiscretiser">
+<em class="property">class </em><code class="descclassname">discretisers.</code><code class="descname">DecisionTreeDiscretiser</code><span class="sig-paren">(</span><em>cv=3</em>, <em>scoring='neg_mean_squared_error'</em>, <em>variables=None</em>, <em>regression=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/discretisers.html#DecisionTreeDiscretiser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#discretisers.DecisionTreeDiscretiser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Divides the numerical variable into groups estimated by a decision tree.
+The methods is inspired by the following article from the winners of the KDD
+2009 competition:</p>
+<blockquote>
+<div><a class="reference external" href="http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf">http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf</a></div></blockquote>
+<p>The buckets are estimated by a decision tree.</p>
+<p>At the moment, the discretiser only works for binary classification or
+regression. Multiclass classification is not supported.</p>
+<p>The Discretiser will work only with numerical variables. A list of variables
+can be passed as an argument. If no variables are indicated,
+the discretiser will only binnarise numerical variables and ignore the rest.</p>
+<p>If categorical variables are first encoded into numbers, then this transformer
+can be also applied. It may give an edge in performance if used un linear
+models.</p>
+<p>The discretiser first finds the boundaries for the buckets for each variable
+(fit).</p>
+<p>The transformer sorts the values into the buckets (transform).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cv</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>, </em><em>default=3</em>) &#8211; Desired number of cross-validation fold to be used to fit the decission
+tree for each variable.</li>
+<li><strong>scoring</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>default = neg_mean_squared_error</em>) &#8211; Desired metric to optimise the performance for the tree. Comes from
+sklearn metrics. See DecisionTreeRegressor or DecisionTreeClassifier
+model evaluation documentation  for more options.</li>
+<li><strong>variables</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; The list of numerical variables that will be discretised. If none, it
+defaults to all numerical type variables.</li>
+<li><strong>regression</strong> (<em>boolean</em><em>, </em><em>default=True</em>) &#8211; Indicates whether the problem is a regression or a classification.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="DecisionTreeDiscretiser.binner_dict_">
+<code class="descname">binner_dict_</code><a class="headerlink" href="#DecisionTreeDiscretiser.binner_dict_" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dictionary</em> &#8211; The dictionary containing the fitted tree: variable pairs, used
+to transform the variable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="discretisers.DecisionTreeDiscretiser.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/discretisers.html#DecisionTreeDiscretiser.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#discretisers.DecisionTreeDiscretiser.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits the decision tree.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>X</strong> (<em>pandas dataframe of shape =</em><em> [</em><em>n_samples</em><em>, </em><em>n_features</em><em>]</em>) &#8211; The training input samples.
+Should be the entire dataframe, not just seleted variables.</li>
+<li><strong>y</strong> (<em>target variable. Required for this transformer.</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="discretisers.DecisionTreeDiscretiser.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/discretisers.html#DecisionTreeDiscretiser.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#discretisers.DecisionTreeDiscretiser.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Discretises the variables using the trained tree.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>pandas dataframe of shape =</em><em> [</em><em>n_samples</em><em>, </em><em>n_features</em><em>]</em>) &#8211; The input samples.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>X_transformed</strong> &#8211; The dataframe with transformed variables</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">pandas dataframe of shape = [n_samples, n_features]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="LogTransformer.html" class="btn btn-neutral float-right" title="LogTransformer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="EqualWidthDiscretiser.html" class="btn btn-neutral" title="EqualWidthDiscretiser" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Soledad Galli
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'0.1.1',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

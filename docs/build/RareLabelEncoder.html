@@ -1,0 +1,233 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>RareLabelEncoder &mdash; feature_engine 0.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> feature_engine
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MeanMedianImputer.html">MeanMedianImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RandomSampleImputer.html">RandomSampleImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EndTailImputer.html">EndTailImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AddNaNBinaryImputer.html">AddNaNBinaryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CategoricalVariableImputer.html">CategoricalVariableImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FrequentCategoryImputer.html">FrequentCategoryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CountFrequencyCategoricalEncoder.html">CountFrequencyCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="OrdinalCategoricalEncoder.html">OrdinalCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MeanCategoricalEncoder.html">MeanCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WoERatioCategoricalEncoder.html">WoERatioCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="OneHotCategoricalEncoder.html">OneHotCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RareLabelCategoricalEncoder.html">RareLabelCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Windsorizer.html">Windsorizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ArbitraryOutlierCapper.html">ArbitraryOutlierCapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EqualFrequencyDiscretiser.html">EqualFrequencyDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EqualWidthDiscretiser.html">EqualWidthDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DecisionTreeDiscretiser.html">DecisionTreeDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LogTransformer.html">LogTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ReciprocalTransformer.html">ReciprocalTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ExponentialTransformer.html">ExponentialTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BoxCoxTransformer.html">BoxCoxTransformer</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">feature_engine</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>RareLabelEncoder</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/RareLabelEncoder.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="rarelabelencoder">
+<h1>RareLabelEncoder<a class="headerlink" href="#rarelabelencoder" title="Permalink to this headline">¶</a></h1>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Soledad Galli
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'0.1.1',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

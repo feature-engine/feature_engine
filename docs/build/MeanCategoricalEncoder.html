@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MeanCategoricalEncoder &mdash; feature_engine 0.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="WoERatioCategoricalEncoder" href="WoERatioCategoricalEncoder.html" />
+    <link rel="prev" title="OrdinalCategoricalEncoder" href="OrdinalCategoricalEncoder.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> feature_engine
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="MeanMedianImputer.html">MeanMedianImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RandomSampleImputer.html">RandomSampleImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EndTailImputer.html">EndTailImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AddNaNBinaryImputer.html">AddNaNBinaryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CategoricalVariableImputer.html">CategoricalVariableImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FrequentCategoryImputer.html">FrequentCategoryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CountFrequencyCategoricalEncoder.html">CountFrequencyCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="OrdinalCategoricalEncoder.html">OrdinalCategoricalEncoder</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MeanCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WoERatioCategoricalEncoder.html">WoERatioCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="OneHotCategoricalEncoder.html">OneHotCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RareLabelCategoricalEncoder.html">RareLabelCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Windsorizer.html">Windsorizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ArbitraryOutlierCapper.html">ArbitraryOutlierCapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EqualFrequencyDiscretiser.html">EqualFrequencyDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EqualWidthDiscretiser.html">EqualWidthDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DecisionTreeDiscretiser.html">DecisionTreeDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LogTransformer.html">LogTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ReciprocalTransformer.html">ReciprocalTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ExponentialTransformer.html">ExponentialTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BoxCoxTransformer.html">BoxCoxTransformer</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">feature_engine</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>MeanCategoricalEncoder</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/MeanCategoricalEncoder.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="meancategoricalencoder">
+<h1>MeanCategoricalEncoder<a class="headerlink" href="#meancategoricalencoder" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="categorical_encoders.MeanCategoricalEncoder">
+<em class="property">class </em><code class="descclassname">categorical_encoders.</code><code class="descname">MeanCategoricalEncoder</code><span class="sig-paren">(</span><em>variables=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/categorical_encoders.html#MeanCategoricalEncoder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#categorical_encoders.MeanCategoricalEncoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replaces categories by the mean of the target.</p>
+<p>For example in the variable colour, if the mean of the target for blue, red
+and grey is 0.5, 0.8 and 0.1 respectively, blue is replaced by 0.5, red by 0.8
+and grey by 0.1.</p>
+<p>The Encoder will encode only categorical variables (type &#8216;object&#8217;). A list
+of variables can be passed as an argument. If no variables are passed as
+argument, the encoder will only encode categorical variables (object type)
+and ignore the rest.</p>
+<p>The encoder first maps the categories to the numbers for each variable (fit).
+The transformer replaces the categories by numbers (transform).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>variables</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; The list of categorical variables that will be encoded. If none, it
+defaults to all object type variables.</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="MeanCategoricalEncoder.encoder_dict_">
+<code class="descname">encoder_dict_</code><a class="headerlink" href="#MeanCategoricalEncoder.encoder_dict_" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dictionary</em> &#8211; The dictionary containing the ordinal number: category pairs used
+to replace categories for every variable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="categorical_encoders.MeanCategoricalEncoder.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/categorical_encoders.html#MeanCategoricalEncoder.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#categorical_encoders.MeanCategoricalEncoder.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Learns the numbers that should be used to replace
+the labels in each variable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>X</strong> (<em>pandas dataframe of shape =</em><em> [</em><em>n_samples</em><em>, </em><em>n_features</em><em>]</em>) &#8211; The training input samples.
+Should be the entire dataframe, not just seleted variables.</li>
+<li><strong>y</strong> (<em>Target</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="WoERatioCategoricalEncoder.html" class="btn btn-neutral float-right" title="WoERatioCategoricalEncoder" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="OrdinalCategoricalEncoder.html" class="btn btn-neutral" title="OrdinalCategoricalEncoder" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Soledad Galli
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'0.1.1',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,425 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>outlier_removers &mdash; feature_engine 0.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> feature_engine
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../MeanMedianImputer.html">MeanMedianImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../RandomSampleImputer.html">RandomSampleImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EndTailImputer.html">EndTailImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../AddNaNBinaryImputer.html">AddNaNBinaryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../CategoricalVariableImputer.html">CategoricalVariableImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FrequentCategoryImputer.html">FrequentCategoryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../CountFrequencyCategoricalEncoder.html">CountFrequencyCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../OrdinalCategoricalEncoder.html">OrdinalCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../MeanCategoricalEncoder.html">MeanCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../WoERatioCategoricalEncoder.html">WoERatioCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../OneHotCategoricalEncoder.html">OneHotCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../RareLabelCategoricalEncoder.html">RareLabelCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Windsorizer.html">Windsorizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ArbitraryOutlierCapper.html">ArbitraryOutlierCapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EqualFrequencyDiscretiser.html">EqualFrequencyDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EqualWidthDiscretiser.html">EqualWidthDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DecisionTreeDiscretiser.html">DecisionTreeDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../LogTransformer.html">LogTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ReciprocalTransformer.html">ReciprocalTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExponentialTransformer.html">ExponentialTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../BoxCoxTransformer.html">BoxCoxTransformer</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">feature_engine</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>outlier_removers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for outlier_removers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Authors: Soledad Galli &lt;solegalli1@gmail.com&gt;</span>
+<span class="c1"># License: BSD 3 clause</span>
+
+<span class="c1">#import numpy as np</span>
+
+<span class="c1">#from sklearn.utils.validation import check_is_fitted</span>
+<span class="kn">from</span> <span class="nn">feature_engine.base_transformers</span> <span class="k">import</span> <span class="n">BaseOutlierRemover</span><span class="p">,</span> <span class="n">_define_variables</span>
+            
+
+<div class="viewcode-block" id="Windsorizer"><a class="viewcode-back" href="../Windsorizer.html#outlier_removers.Windsorizer">[docs]</a><span class="k">class</span> <span class="nc">Windsorizer</span><span class="p">(</span><span class="n">BaseOutlierRemover</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Caps the maximum or minimum values of a variable by finding the values</span>
+<span class="sd">    according to the variable distribution.</span>
+<span class="sd">    </span>
+<span class="sd">    This class works only with numerical variables.</span>
+<span class="sd">    </span>
+<span class="sd">    The estimator first calculates the capping values at the end of the</span>
+<span class="sd">    distribution for the indicated features. The values at the end of the</span>
+<span class="sd">    distribution can be given by the Gaussian limits or the quantile limits.</span>
+<span class="sd">    </span>
+<span class="sd">    Gaussian limits:</span>
+<span class="sd">        right tail: mean + 3* std</span>
+<span class="sd">        left tail: mean - 3* std</span>
+<span class="sd">        </span>
+<span class="sd">    Quantile limits:</span>
+<span class="sd">        right tail: 75th Quantile + 3* IQR</span>
+<span class="sd">        left tail:  25th quantile - 3* IQR</span>
+<span class="sd">        </span>
+<span class="sd">        where IQR is the inter-quantal range.</span>
+<span class="sd">        </span>
+<span class="sd">    You can select to tune how far out you place your missing values by tuning</span>
+<span class="sd">    the number by which you multiply the std or the IQR, using the parameter</span>
+<span class="sd">    fold.</span>
+<span class="sd">    </span>
+<span class="sd">    The transformer caps the variables.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    distribution : str, default=gaussian </span>
+<span class="sd">        Desired distribution. </span>
+<span class="sd">        Can take &#39;gaussian&#39; or &#39;skewed&#39;.</span>
+<span class="sd">        </span>
+<span class="sd">    end : str, default=right</span>
+<span class="sd">        Whether to cap outliers on the right, left or both tails.</span>
+<span class="sd">        Can take &#39;left&#39;, &#39;right&#39; or &#39;both&#39;</span>
+<span class="sd">        </span>
+<span class="sd">    fold: int, default=3</span>
+<span class="sd">        How far out to to place the capping value. </span>
+<span class="sd">        Recommended values, 2 or 3 for Gaussian, 1.5 or 3 for skewed.</span>
+<span class="sd">        </span>
+<span class="sd">    variables : list</span>
+<span class="sd">        The list of variables for which the outliers will be capped.</span>
+<span class="sd">             </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------       </span>
+<span class="sd">    outlier_capper_dict_: dictionary</span>
+<span class="sd">        The dictionary containg the values at the end of tails to use</span>
+<span class="sd">        for each variable to capp the outliers.</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="n">tail</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">fold</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="n">distribution</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="s1">&#39;skewed&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;distribution takes only values &#39;gaussian&#39; or &#39;skewed&#39;&quot;</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="n">tail</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;both&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;end takes only values &#39;right&#39;, &#39;left&#39; or &#39;both&#39;&quot;</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="n">fold</span> <span class="o">&lt;=</span><span class="mi">0</span> <span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;fold takes only positive numbers&quot;</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">=</span> <span class="n">distribution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="n">tail</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fold</span> <span class="o">=</span> <span class="n">fold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">_define_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+
+    
+<div class="viewcode-block" id="Windsorizer.fit"><a class="viewcode-back" href="../Windsorizer.html#outlier_removers.Windsorizer.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Learns the values that should be used to replace</span>
+<span class="sd">        outliers in each variable.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The training input samples.</span>
+<span class="sd">            Can contain all the variables, not necessarily only those to remove</span>
+<span class="sd">            outliers</span>
+<span class="sd">        y : None</span>
+<span class="sd">            y is not needed in this transformer, yet the sklearn pipeline API</span>
+<span class="sd">            requires this parameter for checking.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">right_tail_caps_</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_tail_caps_</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># estimate the end values</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tail</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="s1">&#39;both&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">right_tail_caps_</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">fold</span><span class="o">*</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+                
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s1">&#39;skewed&#39;</span><span class="p">:</span>
+                <span class="n">IQR</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span> <span class="o">-</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">right_tail_caps_</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">IQR</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fold</span><span class="p">))</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tail</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;both&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">left_tail_caps_</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">fold</span><span class="o">*</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+                
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s1">&#39;skewed&#39;</span><span class="p">:</span>
+                <span class="n">IQR</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span> <span class="o">-</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">left_tail_caps_</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">IQR</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fold</span><span class="p">))</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>        
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>  
+              
+        <span class="k">return</span> <span class="bp">self</span></div></div>
+
+
+
+<div class="viewcode-block" id="ArbitraryOutlierCapper"><a class="viewcode-back" href="../ArbitraryOutlierCapper.html#outlier_removers.ArbitraryOutlierCapper">[docs]</a><span class="k">class</span> <span class="nc">ArbitraryOutlierCapper</span><span class="p">(</span><span class="n">BaseOutlierRemover</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Caps the maximum or minimum values of a variable by an arbitrary value</span>
+<span class="sd">    entered by the user.</span>
+<span class="sd">    </span>
+<span class="sd">    This class works only with numerical variables.</span>
+<span class="sd">    </span>
+<span class="sd">    The user needs to provide the maximum or minimum values that will be used</span>
+<span class="sd">    to cap the variable in a dictionary {feature:capping value}</span>
+<span class="sd">       </span>
+<span class="sd">    The transformer caps the variables.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variables: list, default=None</span>
+<span class="sd">        list of columns that should be transformed</span>
+<span class="sd">    capping_max : dictionary, default=None</span>
+<span class="sd">        user specified capping values on right side</span>
+<span class="sd">    capping_min : dictionary, default=None</span>
+<span class="sd">        user specified capping values on left side</span>
+<span class="sd">             </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------       </span>
+<span class="sd">    outlier_capper_dict_: dictionary</span>
+<span class="sd">        The dictionary containg the values at the end of tails to use</span>
+<span class="sd">        for each variable to capp the outliers.</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_capping_dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">min_capping_dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_capping_dict</span> <span class="o">=</span> <span class="n">max_capping_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_capping_dict</span> <span class="o">=</span> <span class="n">min_capping_dict</span>
+        
+        <span class="k">if</span> <span class="ow">not</span>  <span class="n">max_capping_dict</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">min_capping_dict</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please provide at least 1 dictionary with the capping values per variable&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">max_capping_dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">right_tail_caps_</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">max_capping_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">right_tail_caps_</span> <span class="o">=</span> <span class="n">max_capping_dict</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;max_capping_dict should be a dictionary&quot;</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">min_capping_dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">left_tail_caps_</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_capping_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">left_tail_caps_</span> <span class="o">=</span> <span class="n">min_capping_dict</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;min_capping_dict should be a dictionary&quot;</span><span class="p">)</span>    
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">right_tail_caps_</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_tail_caps_</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+        
+        
+<div class="viewcode-block" id="ArbitraryOutlierCapper.fit"><a class="viewcode-back" href="../ArbitraryOutlierCapper.html#outlier_removers.ArbitraryOutlierCapper.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Learns the numerical variables form the dataframe.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The training input samples.</span>
+<span class="sd">            Can contain all the variables, not necessarily only those to remove</span>
+<span class="sd">            outliers</span>
+<span class="sd">        y : None</span>
+<span class="sd">            y is not needed in this transformer, yet the sklearn pipeline API</span>
+<span class="sd">            requires this parameter for checking.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>   
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>  
+              
+        <span class="k">return</span> <span class="bp">self</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Soledad Galli
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../',
+              VERSION:'0.1.1',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

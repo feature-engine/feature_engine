@@ -1,0 +1,825 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>missing_data_imputers &mdash; feature_engine 0.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> feature_engine
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../MeanMedianImputer.html">MeanMedianImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../RandomSampleImputer.html">RandomSampleImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EndTailImputer.html">EndTailImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../AddNaNBinaryImputer.html">AddNaNBinaryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../CategoricalVariableImputer.html">CategoricalVariableImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FrequentCategoryImputer.html">FrequentCategoryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../CountFrequencyCategoricalEncoder.html">CountFrequencyCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../OrdinalCategoricalEncoder.html">OrdinalCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../MeanCategoricalEncoder.html">MeanCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../WoERatioCategoricalEncoder.html">WoERatioCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../OneHotCategoricalEncoder.html">OneHotCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../RareLabelCategoricalEncoder.html">RareLabelCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Windsorizer.html">Windsorizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ArbitraryOutlierCapper.html">ArbitraryOutlierCapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EqualFrequencyDiscretiser.html">EqualFrequencyDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EqualWidthDiscretiser.html">EqualWidthDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DecisionTreeDiscretiser.html">DecisionTreeDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../LogTransformer.html">LogTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ReciprocalTransformer.html">ReciprocalTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExponentialTransformer.html">ExponentialTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../BoxCoxTransformer.html">BoxCoxTransformer</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">feature_engine</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>missing_data_imputers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for missing_data_imputers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Authors: Soledad Galli &lt;solegalli1@gmail.com&gt;</span>
+<span class="c1"># License: BSD 3 clause</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="c1">#import warnings</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_is_fitted</span>
+
+<span class="kn">from</span> <span class="nn">feature_engine.base_transformers</span> <span class="k">import</span> <span class="n">BaseNumericalImputer</span><span class="p">,</span> <span class="n">BaseNumericalTransformer</span>
+<span class="kn">from</span> <span class="nn">feature_engine.base_transformers</span> <span class="k">import</span> <span class="n">BaseCategoricalTransformer</span><span class="p">,</span> <span class="n">_define_variables</span>
+
+
+
+<span class="c1"># Numerical imputers</span>
+<div class="viewcode-block" id="MeanMedianImputer"><a class="viewcode-back" href="../MeanMedianImputer.html#missing_data_imputers.MeanMedianImputer">[docs]</a><span class="k">class</span> <span class="nc">MeanMedianImputer</span><span class="p">(</span><span class="n">BaseNumericalImputer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Transforms features by replacing missing data in each variable by the</span>
+<span class="sd">    mean or median value of that variable.</span>
+<span class="sd">    </span>
+<span class="sd">    This Imputer works only with numerical variables.</span>
+<span class="sd">    </span>
+<span class="sd">    The estimator first calculates the mean / median values for the</span>
+<span class="sd">    indicated variables.</span>
+<span class="sd">    </span>
+<span class="sd">    The transformer fills the missing data with the estimated mean / median.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    imputation_method : str, default=median </span>
+<span class="sd">        Desired method of imputation.</span>
+<span class="sd">        Can take &#39;mean&#39; or &#39;median&#39;.</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variables : list</span>
+<span class="sd">        The list of variables to be imputed. If none, it defaults to all numerical</span>
+<span class="sd">        type variables.</span>
+<span class="sd">       </span>
+<span class="sd">    imputer_dict_: dictionary</span>
+<span class="sd">        The dictionary containing the mean / median values to use</span>
+<span class="sd">        for each variable to replace missing data. It is calculated when fitting</span>
+<span class="sd">        the imputer.</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imputation_method</span><span class="o">=</span><span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="n">imputation_method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Imputation method takes only values &#39;median&#39; or &#39;mean&#39;&quot;</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">imputation_method</span> <span class="o">=</span> <span class="n">imputation_method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">_define_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        
+
+<div class="viewcode-block" id="MeanMedianImputer.fit"><a class="viewcode-back" href="../MeanMedianImputer.html#missing_data_imputers.MeanMedianImputer.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Learns the mean or median that should be used to replace</span>
+<span class="sd">        mising data in each variable.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The training input samples.</span>
+<span class="sd">            Should be the entire dataframe, not just seleted variables.</span>
+<span class="sd">        y : None</span>
+<span class="sd">            y is not needed in this transformer, yet the sklearn pipeline API</span>
+<span class="sd">            requires this parameter for checking. You can pass None or y.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># brings the variables from the BaseImputer</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">imputation_method</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">imputer_dict_</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+            
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">imputation_method</span> <span class="o">==</span> <span class="s1">&#39;median&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">imputer_dict_</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">median</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>    
+        
+        <span class="k">return</span> <span class="bp">self</span></div></div>
+
+
+
+<div class="viewcode-block" id="EndTailImputer"><a class="viewcode-back" href="../EndTailImputer.html#missing_data_imputers.EndTailImputer">[docs]</a><span class="k">class</span> <span class="nc">EndTailImputer</span><span class="p">(</span><span class="n">BaseNumericalImputer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Transforms features by replacing missing data in each feature</span>
+<span class="sd">    for a given value at the tail of the distribution.</span>
+<span class="sd">    </span>
+<span class="sd">    This Imputer works only with numerical variables.</span>
+<span class="sd">    </span>
+<span class="sd">    The estimator first calculates the values at the end of the distribution</span>
+<span class="sd">    for the indicated features. The values at the end of the distribution can </span>
+<span class="sd">    be given by the Gaussian limits or the quantile limits.</span>
+<span class="sd">    </span>
+<span class="sd">    Gaussian limits:</span>
+<span class="sd">        right tail: mean + 3* std</span>
+<span class="sd">        left tail: mean - 3* std</span>
+<span class="sd">        </span>
+<span class="sd">    Quantile limits:</span>
+<span class="sd">        right tail: 75th Quantile + 3* IQR</span>
+<span class="sd">        left tail:  25th quantile - 3* IQR</span>
+<span class="sd">        </span>
+<span class="sd">        where IQR is the inter-quantal range.</span>
+<span class="sd">        </span>
+<span class="sd">    You can select to tune how far out you place your missing values by tuning</span>
+<span class="sd">    the number by which you multiply the std or the IQR, using the parameter</span>
+<span class="sd">    &#39;fold&#39;.</span>
+<span class="sd">    </span>
+<span class="sd">    The transformer fills the missing data with the estimated values.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    distribution : str, default=gaussian </span>
+<span class="sd">        Desired distribution. </span>
+<span class="sd">        Can take &#39;gaussian&#39; or &#39;skewed&#39;.</span>
+<span class="sd">        </span>
+<span class="sd">    tail : str, default=right</span>
+<span class="sd">        Whether the missing values will be placed at the right or left tail.</span>
+<span class="sd">        Can take &#39;left&#39; or &#39;right&#39;</span>
+<span class="sd">        </span>
+<span class="sd">    fold: int, default=3</span>
+<span class="sd">        How far out to place the missing data. Fold will multiply the std or the</span>
+<span class="sd">        IQR. Recommended values, 2 or 3 for Gaussian, 1.5 or 3 for skewed.</span>
+<span class="sd">    </span>
+<span class="sd">    variables : list</span>
+<span class="sd">        The list of variables to be imputed. If none, it defaults to all numerical</span>
+<span class="sd">        type variables.</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    imputer_dict_: dictionary</span>
+<span class="sd">        The dictionary containing the values at end of tails to use to replace</span>
+<span class="sd">        missing data for each variable. It is calculated when fitting the transformer.</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="n">tail</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">fold</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="n">distribution</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="s1">&#39;skewed&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;distribution takes only values &#39;gaussian&#39; or &#39;skewed&#39;&quot;</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="n">tail</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="s1">&#39;left&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;tail takes only values &#39;right&#39; or &#39;left&#39;&quot;</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="n">fold</span> <span class="o">&lt;=</span><span class="mi">0</span> <span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;fold takes only positive numbers&quot;</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">=</span> <span class="n">distribution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="n">tail</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fold</span> <span class="o">=</span> <span class="n">fold</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">_define_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="EndTailImputer.fit"><a class="viewcode-back" href="../EndTailImputer.html#missing_data_imputers.EndTailImputer.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Learns the values that should be used to replace</span>
+<span class="sd">        mising data in each variable.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The training input samples.</span>
+<span class="sd">            Must be the entire dataframe, not just selected variables.</span>
+<span class="sd">        y : None</span>
+<span class="sd">            y is not needed in this transformer, yet the sklearn pipeline API</span>
+<span class="sd">            requires this parameter for checking.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># brings the variables from the BaseImputer</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="c1"># estimate the end values</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tail</span> <span class="o">==</span> <span class="s1">&#39;right&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">imputer_dict_</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">fold</span><span class="o">*</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+                
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s1">&#39;skewed&#39;</span><span class="p">:</span>
+                <span class="n">IQR</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span> <span class="o">-</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">imputer_dict_</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">IQR</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fold</span><span class="p">))</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tail</span> <span class="o">==</span> <span class="s1">&#39;left&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">imputer_dict_</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">fold</span><span class="o">*</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">())</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+                
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">==</span> <span class="s1">&#39;skewed&#39;</span><span class="p">:</span>
+                <span class="n">IQR</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span> <span class="o">-</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">imputer_dict_</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">IQR</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fold</span><span class="p">))</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>        
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>  
+              
+        <span class="k">return</span> <span class="bp">self</span></div></div>
+
+
+
+<div class="viewcode-block" id="CategoricalVariableImputer"><a class="viewcode-back" href="../CategoricalVariableImputer.html#missing_data_imputers.CategoricalVariableImputer">[docs]</a><span class="k">class</span> <span class="nc">CategoricalVariableImputer</span><span class="p">(</span><span class="n">BaseCategoricalTransformer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Replaces missing data in categorical variables by adding the label</span>
+<span class="sd">    &#39;Missing&#39;.</span>
+<span class="sd">    </span>
+<span class="sd">    This Imputer works only with categorical variables.</span>
+<span class="sd">       </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variables : list</span>
+<span class="sd">        The list of variables to be imputed. If none, it defaults to all object</span>
+<span class="sd">        type variables.</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">.  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">_define_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+            
+
+<div class="viewcode-block" id="CategoricalVariableImputer.fit"><a class="viewcode-back" href="../CategoricalVariableImputer.html#missing_data_imputers.CategoricalVariableImputer.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Checks that the selected variables are categorical.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The training input samples.</span>
+<span class="sd">        y : None</span>
+<span class="sd">            y is not needed in this transformer, yet the sklearn pipeline API</span>
+<span class="sd">            requires this parameter for checking.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>  
+        
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="CategoricalVariableImputer.transform"><a class="viewcode-back" href="../CategoricalVariableImputer.html#missing_data_imputers.CategoricalVariableImputer.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Replaces missing values with the new Label &#39;Missing&#39;.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The input samples.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X_transformed : dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The dataframe containing no missing values for the selected</span>
+<span class="sd">            variables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Check is fit had been called</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;input_shape_&#39;</span><span class="p">])</span>
+        
+        <span class="c1"># Check that the input is of the same shape as the one passed</span>
+        <span class="c1"># during fit.</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of columns in dataset is different from training set used to fit the imputer&#39;</span><span class="p">)</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;Missing&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">X</span></div></div>
+    
+
+<div class="viewcode-block" id="FrequentCategoryImputer"><a class="viewcode-back" href="../FrequentCategoryImputer.html#missing_data_imputers.FrequentCategoryImputer">[docs]</a><span class="k">class</span> <span class="nc">FrequentCategoryImputer</span><span class="p">(</span><span class="n">BaseCategoricalTransformer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Replaces missing data in categorical variables by the most frequent</span>
+<span class="sd">    category.</span>
+<span class="sd">    </span>
+<span class="sd">    This Imputer works only with categorical variables.</span>
+<span class="sd">    </span>
+<span class="sd">    The transformer fills the missing data with the mode.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variables : list</span>
+<span class="sd">        The list of variables to be imputed. If none, it defaults to all object</span>
+<span class="sd">        type variables.</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------       </span>
+<span class="sd">    imputer_dict_: dictionary</span>
+<span class="sd">        The dictionary mapping each variable to the most frequent category which</span>
+<span class="sd">        will be used to fill NA. It is calculated when fitting the transformer.   </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">_define_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FrequentCategoryImputer.fit"><a class="viewcode-back" href="../FrequentCategoryImputer.html#missing_data_imputers.FrequentCategoryImputer.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Learns the most frequent category for each variable.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The training input samples.</span>
+<span class="sd">        y : None</span>
+<span class="sd">            y is not needed in this transformer, yet the sklearn pipeline API</span>
+<span class="sd">            requires this parameter for checking.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">imputer_dict_</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">imputer_dict_</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">mode</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                    
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>   
+        
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FrequentCategoryImputer.transform"><a class="viewcode-back" href="../FrequentCategoryImputer.html#missing_data_imputers.FrequentCategoryImputer.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Replaces missing data with the calculated parameters</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The input samples.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X_transformed : dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The dataframe containing no missing values for the selected</span>
+<span class="sd">            variables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Check is fit had been called</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;imputer_dict_&#39;</span><span class="p">])</span>
+        
+        <span class="c1"># Check that the input is of the same shape as the one passed</span>
+        <span class="c1"># during fit.</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of columns in dataset is different from training set used to fit the imputer&#39;</span><span class="p">)</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">imputer_dict_</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">X</span></div></div>
+
+
+
+<div class="viewcode-block" id="RandomSampleImputer"><a class="viewcode-back" href="../RandomSampleImputer.html#missing_data_imputers.RandomSampleImputer">[docs]</a><span class="k">class</span> <span class="nc">RandomSampleImputer</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Replaces missing data in each feature with a random sample extracted</span>
+<span class="sd">    from the training set.</span>
+<span class="sd">    </span>
+<span class="sd">    This class works for both numerical and categorical variables.</span>
+<span class="sd">    </span>
+<span class="sd">    This class could be used at the end of each feature engineering pipeline</span>
+<span class="sd">    to tackle coming missing values not seen during training during model</span>
+<span class="sd">    deployment.</span>
+<span class="sd">    </span>
+<span class="sd">    Note: random samples will vary from execution to execution. This may affect</span>
+<span class="sd">    the results of your work. Remember to set a seed before running the</span>
+<span class="sd">    RandomSampleImputer.transform() method.</span>
+<span class="sd">    </span>
+<span class="sd">    This estimator stores a copy of the training set. Therefore, it can become</span>
+<span class="sd">    quite heavy. Also, it may not be GDPR compliant if you store Personal</span>
+<span class="sd">    Information in your training set.</span>
+<span class="sd">    </span>
+<span class="sd">    The transformer fills the missing data with a random sample from</span>
+<span class="sd">    the training set.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">        The training input samples.</span>
+<span class="sd">        Should be the entire dataframe, not just seleted variables.</span>
+<span class="sd">    y : None</span>
+<span class="sd">        y is not needed in this transformer, yet the sklearn pipeline API</span>
+<span class="sd">        requires this parameter for checking.</span>
+<span class="sd">        </span>
+<span class="sd">    variables : list</span>
+<span class="sd">        The list of variables to be imputed. If none, it defaults to all</span>
+<span class="sd">        variables.</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : dataframe.</span>
+<span class="sd">        Copy of the training dataframe from which to extract the random samples.</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">_define_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>            
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+
+
+<div class="viewcode-block" id="RandomSampleImputer.fit"><a class="viewcode-back" href="../RandomSampleImputer.html#missing_data_imputers.RandomSampleImputer.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Makes a copy of the desired variables of the dataframe, from</span>
+<span class="sd">        which it will randomly extract the values during transform.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The training input samples.</span>
+<span class="sd">            Should be the entire dataframe, not just seleted variables.    </span>
+<span class="sd">        y : None</span>
+<span class="sd">            y is not needed in this transformer, yet the sklearn pipeline API</span>
+<span class="sd">            requires this parameter for checking.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+           
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>         
+        
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="RandomSampleImputer.transform"><a class="viewcode-back" href="../RandomSampleImputer.html#missing_data_imputers.RandomSampleImputer.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Replaces missing data with random values taken from the train set.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The input samples.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X_transformed : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The dataframe containing NO missing values for all indicated variables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check is fit had been called</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">])</span>
+        
+        <span class="c1"># Check that the input is of the same shape as the one passed</span>
+        <span class="c1"># during fit.</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of columns in dataset is different from training set used to fit the imputer&#39;</span><span class="p">)</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                
+                <span class="n">random_sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span>
+                                                                <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+                                                                <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span>
+                                                                <span class="p">)</span>
+                
+                <span class="n">random_sample</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()]</span><span class="o">.</span><span class="n">index</span>
+                <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">(),</span> <span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">random_sample</span>
+                
+        <span class="k">return</span> <span class="n">X</span></div></div>
+    
+       
+
+<div class="viewcode-block" id="AddNaNBinaryImputer"><a class="viewcode-back" href="../AddNaNBinaryImputer.html#missing_data_imputers.AddNaNBinaryImputer">[docs]</a><span class="k">class</span> <span class="nc">AddNaNBinaryImputer</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Adds an additional column / binary variable to capture missing</span>
+<span class="sd">    information for the selected variables.</span>
+<span class="sd">    </span>
+<span class="sd">    This class works for both numerical and categorical variables.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variables : list</span>
+<span class="sd">        The list of variables to be imputed. If none, it defaults to all</span>
+<span class="sd">        variables.</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">     </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">_define_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+            
+
+<div class="viewcode-block" id="AddNaNBinaryImputer.fit"><a class="viewcode-back" href="../AddNaNBinaryImputer.html#missing_data_imputers.AddNaNBinaryImputer.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Learns the variables for which the additional variable </span>
+<span class="sd">        should be created.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The training input samples.</span>
+<span class="sd">        y : None</span>
+<span class="sd">            y is not needed in this transformer, yet the sklearn pipeline API</span>
+<span class="sd">            requires this parameter for checking.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+        
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="AddNaNBinaryImputer.transform"><a class="viewcode-back" href="../AddNaNBinaryImputer.html#missing_data_imputers.AddNaNBinaryImputer.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Adds the additional binary variables indicating the presence of </span>
+<span class="sd">        NA per observation.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The input samples.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X_transformed : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The dataframe containing the additional binary variables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check is fit had been called</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;variables&#39;</span><span class="p">])</span>
+        
+        <span class="c1"># Check that the input is of the same shape as the one passed</span>
+        <span class="c1"># during fit.</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of columns in dataset is different from training set used to fit the imputer&#39;</span><span class="p">)</span>
+            
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="n">X</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_na&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">(),</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">X</span></div></div>
+    
+ 
+<div class="viewcode-block" id="ArbitraryNumberImputer"><a class="viewcode-back" href="../ArbitraryImputer.html#missing_data_imputers.ArbitraryNumberImputer">[docs]</a><span class="k">class</span> <span class="nc">ArbitraryNumberImputer</span><span class="p">(</span><span class="n">BaseNumericalTransformer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Transforms features by replacing missing data in each feature</span>
+<span class="sd">    for a given value determined by the user.</span>
+<span class="sd">       </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arbitrary_number : int or float</span>
+<span class="sd">        the number to be used to replace missing data.</span>
+<span class="sd">    variables : list</span>
+<span class="sd">        The list of variables to be imputed. If none, it defaults to all numerical</span>
+<span class="sd">        type variables.</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arbitrary_number</span> <span class="o">=</span> <span class="o">-</span><span class="mi">999</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arbitrary_number</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arbitrary_number</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">arbitrary_number</span> <span class="o">=</span> <span class="n">arbitrary_number</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Arbitrary number must be numeric of type int or float&#39;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">arbitrary_number</span> <span class="o">=</span> <span class="n">arbitrary_number</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">_define_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        
+
+<div class="viewcode-block" id="ArbitraryNumberImputer.fit"><a class="viewcode-back" href="../ArbitraryImputer.html#missing_data_imputers.ArbitraryNumberImputer.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Checks that the variables are categorical.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The training input samples.</span>
+<span class="sd">        y : None</span>
+<span class="sd">            y is not needed in this transformer, yet the sklearn pipeline API</span>
+<span class="sd">            requires this parameter for checking.</span>
+<span class="sd">        variables: list of columns that should be transformed</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+                  
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+        
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="ArbitraryNumberImputer.transform"><a class="viewcode-back" href="../ArbitraryImputer.html#missing_data_imputers.ArbitraryNumberImputer.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Replaces missing data with the arbitrary values.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The input samples.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X_transformed : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The dataframe containing no missing values for the selected</span>
+<span class="sd">            variables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check is fit had been called</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;input_shape_&#39;</span><span class="p">])</span>
+        
+        <span class="c1"># Check that the input is of the same shape as the one passed</span>
+        <span class="c1"># during fit.</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of columns in dataset is different from training set used to fit the imputer&#39;</span><span class="p">)</span>
+        
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arbitrary_number</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">X</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Soledad Galli
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../',
+              VERSION:'0.1.1',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
