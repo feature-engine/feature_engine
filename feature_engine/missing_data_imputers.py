@@ -7,68 +7,9 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine.base_transformers import BaseNumericalImputer, BaseNumericalTransformer
+from feature_engine.base_transformers import BaseCategoricalTransformer, _define_variables
 
-
-class BaseNumericalImputer(BaseEstimator, TransformerMixin):
-    
-    def fit(self, X, y = None):
-        
-        numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-        if not self.variables:
-            # select all numerical variables
-            self.variables = list(X.select_dtypes(include=numerics).columns)            
-        else:
-            # variables indicated by user
-            if len(X[self.variables].select_dtypes(exclude=numerics).columns) != 0:
-               raise ValueError("Some of the selected variables are NOT numerical. Please cast them as numerical before fitting the imputer")
-            
-            self.variables = self.variables
-
-
-    def transform(self, X):
-        """ Replaces missing data with the calculated parameters
-        
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
-            The input samples.
-        Returns
-        -------
-        X_transformed : pandas dataframe of shape = [n_samples, n_features]
-            The dataframe containing NO missing values for the selected
-            variables
-        """
-        # Check is fit had been called
-        check_is_fitted(self, ['imputer_dict_'])
-        
-        # Check that the input is of the same shape as the one passed
-        # during fit.
-        if X.shape[1] != self.input_shape_[1]:
-            raise TypeError('Number of columns in dataset is different from training set used to fit the encoder')
-        
-        X = X.copy()
-        for feature in self.variables:
-            X[feature].fillna(self.imputer_dict_[feature], inplace=True)
-        
-        return X
-
-
-
-class BaseCategoricalImputer(BaseEstimator, TransformerMixin):
-    
-    def fit(self, X, y = None):
-        
-        if not self.variables:
-            # select all categorical variables
-            self.variables = [var for var in X.columns if X[var].dtypes=='O']
-        else:
-            # variables indicated by user
-            for var in self.variables:
-                if X[var].dtypes != 'O':
-                    raise TypeError("variable {} is not of type object, check that all indicated variables are of type object".format(var))
-            self.variables = self.variables
-        
-        return self.variables
 
 
 # Numerical imputers
@@ -96,8 +37,9 @@ class MeanMedianImputer(BaseNumericalImputer):
         type variables.
        
     imputer_dict_: dictionary
-        The dictionary containg the mean / median values to use
-        for each variable to replace missing data
+        The dictionary containing the mean / median values to use
+        for each variable to replace missing data. It is calculated when fitting
+        the imputer.
         
     """
     
@@ -107,7 +49,7 @@ class MeanMedianImputer(BaseNumericalImputer):
             raise ValueError("Imputation method takes only values 'median' or 'mean'")
             
         self.imputation_method = imputation_method
-        self.variables = variables
+        self.variables = _define_variables(variables)
         
 
     def fit(self, X, y=None):
@@ -118,7 +60,7 @@ class MeanMedianImputer(BaseNumericalImputer):
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Should be the entire dataframe, not just seleted variables
+            Should be the entire dataframe, not just seleted variables.
         y : None
             y is not needed in this transformer, yet the sklearn pipeline API
             requires this parameter for checking. You can pass None or y.
@@ -161,7 +103,7 @@ class EndTailImputer(BaseNumericalImputer):
         
     You can select to tune how far out you place your missing values by tuning
     the number by which you multiply the std or the IQR, using the parameter
-    fold.
+    'fold'.
     
     The transformer fills the missing data with the estimated values.
     
@@ -186,8 +128,8 @@ class EndTailImputer(BaseNumericalImputer):
     Attributes
     ----------
     imputer_dict_: dictionary
-        The dictionary containg the values at end of tails to use to replace
-        missing data for each variable.
+        The dictionary containing the values at end of tails to use to replace
+        missing data for each variable. It is calculated when fitting the transformer.
         
     """
     
@@ -205,7 +147,8 @@ class EndTailImputer(BaseNumericalImputer):
         self.distribution = distribution
         self.tail = tail
         self.fold = fold
-        self.variables = variables
+        
+        self.variables = _define_variables(variables)
 
 
     def fit(self, X, y=None, ):
@@ -248,11 +191,11 @@ class EndTailImputer(BaseNumericalImputer):
 
 
 
-class AddMissingLabelCategoricalImputer(BaseCategoricalImputer):
+class CategoricalVariableImputer(BaseCategoricalTransformer):
     """ Replaces missing data in categorical variables by adding the label
     'Missing'.
     
-    This Imputer works only with caterical variables.
+    This Imputer works only with categorical variables.
        
     Parameters
     ----------
@@ -266,7 +209,9 @@ class AddMissingLabelCategoricalImputer(BaseCategoricalImputer):
     """
     
     def __init__(self, variables=None):
-        self.variables = variables
+        
+        self.variables = _define_variables(variables)
+            
 
     def fit(self, X, y=None):
         """ Checks that the selected variables are categorical.
@@ -281,29 +226,13 @@ class AddMissingLabelCategoricalImputer(BaseCategoricalImputer):
 
         """
         super().fit(X,y)
-            
-#        self.imputer_dict_ = {}
-        
-#        for var in self.variables:
-#            if X[var].isnull().mean() >= self.tol:
-#                self.imputer_dict_[var] = 'Missing'
-#    
-#            elif len(X[var].unique()) > 10:
-#                    self.imputer_dict_[var] = 'Missing'
-#            
-#            else:
-#                temp = X.groupby(var)[var].count() / np.float(len(X))
-#                if len(temp[temp<self.tol].index) > 1:
-#                    self.imputer_dict_[var] = 'Missing'
-#                else:
-#                    self.imputer_dict_[var] = X[var].mode()[0]
-                    
+
         self.input_shape_ = X.shape  
         
         return self
 
     def transform(self, X):
-        """ Replaces NAN with the new Label 'Missing'.
+        """ Replaces missing values with the new Label 'Missing'.
         
         Parameters
         ----------
@@ -316,27 +245,28 @@ class AddMissingLabelCategoricalImputer(BaseCategoricalImputer):
             The dataframe containing no missing values for the selected
             variables
         """
+        
         # Check is fit had been called
         check_is_fitted(self, ['input_shape_'])
         
         # Check that the input is of the same shape as the one passed
         # during fit.
         if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the encoder')
+            raise ValueError('Number of columns in dataset is different from training set used to fit the imputer')
 
         X = X.copy()
-        X = X[self.variables].fillna('Missing')
+        X.loc[:, self.variables] = X[self.variables].fillna('Missing')
         
         return X
     
 
-class FrequentCategoryImputer(BaseCategoricalImputer):
+class FrequentCategoryImputer(BaseCategoricalTransformer):
     """ Replaces missing data in categorical variables by the most frequent
     category.
     
-    This Imputer works only with caterical variables.
+    This Imputer works only with categorical variables.
     
-    The transformer fills the missing data.
+    The transformer fills the missing data with the mode.
     
     Parameters
     ----------
@@ -348,11 +278,12 @@ class FrequentCategoryImputer(BaseCategoricalImputer):
     ----------       
     imputer_dict_: dictionary
         The dictionary mapping each variable to the most frequent category which
-        will be used to fill NA.    
+        will be used to fill NA. It is calculated when fitting the transformer.   
     """
     
     def __init__(self, variables=None):
-        self.variables = variables
+        
+        self.variables = _define_variables(variables)
 
     def fit(self, X, y=None):
         """ Learns the most frequent category for each variable.
@@ -384,19 +315,21 @@ class FrequentCategoryImputer(BaseCategoricalImputer):
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
+            
         Returns
         -------
         X_transformed : dataframe of shape = [n_samples, n_features]
             The dataframe containing no missing values for the selected
             variables
         """
+        
         # Check is fit had been called
         check_is_fitted(self, ['imputer_dict_'])
         
         # Check that the input is of the same shape as the one passed
         # during fit.
         if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the encoder')
+            raise ValueError('Number of columns in dataset is different from training set used to fit the imputer')
 
         X = X.copy()
         
@@ -418,12 +351,12 @@ class RandomSampleImputer(BaseEstimator, TransformerMixin):
     deployment.
     
     Note: random samples will vary from execution to execution. This may affect
-    the results of your work. Try and remember to set a seed before running the
+    the results of your work. Remember to set a seed before running the
     RandomSampleImputer.transform() method.
     
     This estimator stores a copy of the training set. Therefore, it can become
     quite heavy. Also, it may not be GDPR compliant if you store Personal
-    information in your training set.
+    Information in your training set.
     
     The transformer fills the missing data with a random sample from
     the training set.
@@ -448,9 +381,10 @@ class RandomSampleImputer(BaseEstimator, TransformerMixin):
         
     """
     
-    def __init__(self, variables = None):
+    def __init__(self, variables = None, random_state=0):
         
-        self.variables = variables
+        self.variables = _define_variables(variables)            
+        self.random_state = random_state
 
 
     def fit(self, X, y=None):
@@ -469,9 +403,10 @@ class RandomSampleImputer(BaseEstimator, TransformerMixin):
         """
            
         if not self.variables:
-            self.X = X            
+            self.X = X.copy()
+            self.variables = [x for x in X.columns]
         else:
-            self.X = X[self.variables]
+            self.X = X[self.variables].copy()
             
         self.input_shape_ = X.shape         
         
@@ -489,14 +424,14 @@ class RandomSampleImputer(BaseEstimator, TransformerMixin):
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe containing NO missing values for all indicated variables
         """
-        #global random_state
+
         # Check is fit had been called
         check_is_fitted(self, ['X'])
         
         # Check that the input is of the same shape as the one passed
         # during fit.
         if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the encoder')
+            raise ValueError('Number of columns in dataset is different from training set used to fit the imputer')
 
         X = X.copy()
         for feature in self.variables:
@@ -505,7 +440,7 @@ class RandomSampleImputer(BaseEstimator, TransformerMixin):
                 
                 random_sample = self.X[feature].dropna().sample(n_samples,
                                                                 replace=True, 
-                                                                #random_state=random_state
+                                                                random_state=self.random_state
                                                                 )
                 
                 random_sample.index = X[X[feature].isnull()].index
@@ -534,7 +469,8 @@ class AddNaNBinaryImputer(BaseEstimator, TransformerMixin):
     
     def __init__(self, variables=None):
 
-        self.variables = variables
+        self.variables = _define_variables(variables)
+            
 
     def fit(self, X, y=None):
         """ Learns the variables for which the additional variable 
@@ -575,7 +511,7 @@ class AddNaNBinaryImputer(BaseEstimator, TransformerMixin):
         # Check that the input is of the same shape as the one passed
         # during fit.
         if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the encoder')
+            raise ValueError('Number of columns in dataset is different from training set used to fit the imputer')
             
         X = X.copy()
         for feature in self.variables:
@@ -584,7 +520,7 @@ class AddNaNBinaryImputer(BaseEstimator, TransformerMixin):
         return X
     
  
-class ArbitraryNumberImputer(BaseNumericalImputer):
+class ArbitraryNumberImputer(BaseNumericalTransformer):
     """ Transforms features by replacing missing data in each feature
     for a given value determined by the user.
        
@@ -609,7 +545,8 @@ class ArbitraryNumberImputer(BaseNumericalImputer):
             raise ValueError('Arbitrary number must be numeric of type int or float')
         
         self.arbitrary_number = arbitrary_number
-        self.variables = variables
+
+        self.variables = _define_variables(variables)
         
 
     def fit(self, X, y=None):
@@ -632,7 +569,7 @@ class ArbitraryNumberImputer(BaseNumericalImputer):
         return self
 
     def transform(self, X):
-        """ Replaces missing data with the calculated parameters
+        """ Replaces missing data with the arbitrary values.
         
         Parameters
         ----------
@@ -650,10 +587,10 @@ class ArbitraryNumberImputer(BaseNumericalImputer):
         # Check that the input is of the same shape as the one passed
         # during fit.
         if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the encoder')
+            raise ValueError('Number of columns in dataset is different from training set used to fit the imputer')
         
         X = X.copy()
         for feature in self.variables:
-            X[feature].fillna(self.arbitrary_number, inplace=True)
+            X[feature] = X[feature].fillna(self.arbitrary_number)
         
         return X

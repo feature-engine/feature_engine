@@ -1,6 +1,6 @@
 numpy>=1.9.0
 scipy>=0.9
-pandas>=0.16.0
+pandas>=0.23.0
 scikit-learn>=0.15.0
 statsmodels>=0.6.0
 numpydoc>=0.6.0

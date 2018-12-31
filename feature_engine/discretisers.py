@@ -5,55 +5,11 @@ import numpy as np
 import pandas as pd
 #import warnings
 
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.model_selection import cross_val_score
 
-
-
-class BaseDiscretiser(BaseEstimator, TransformerMixin):
-    
-    def fit(self, X, y = None):
-        
-        numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-        if not self.variables:
-            # select all numerical variables
-            self.variables = list(X.select_dtypes(include=numerics).columns)            
-        else:
-            # variables indicated by user
-            if len(X[self.variables].select_dtypes(exclude=numerics).columns) != 0:
-               raise ValueError("Some of the selected variables are NOT numerical. Please cast them as numerical before fitting the imputer")
-            
-            self.variables = self.variables
-
-
-    def transform(self, X):
-        """ Discretises the variables in the selected bins.
-        
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
-            The input samples.
-
-        Returns
-        -------
-        X_transformed : pandas dataframe of shape = [n_samples, n_features]
-            The dataframe with discrete /  binned variables 
-        """
-        
-        # Check is fit had been called
-        check_is_fitted(self, ['binner_dict'])
-        
-        if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the encoder')
-
-        X = X.copy()
-        for feature in self.variables:
-            X[feature] = pd.cut(X[feature], self.binner_dict[feature], labels=False)
-            
-        return X
-    
+from feature_engine.base_transformers import BaseDiscretiser, _define_variables
 
 
 class EqualFrequencyDiscretiser(BaseDiscretiser):
@@ -64,8 +20,8 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
     quantiles, in which the variable should be divided must be indicated by the
     user.
     
-    The Discretiser will binnarise only numerical variables (type 'object'). A 
-    list of variables can be passed as an argument. If no variables are indicated,
+    The Discretiser will binnarise only numerical variables. A list of variables
+    can be passed as an argument. If no variables are indicated,
     the discretiser will only binnarise numerical variables and ignore the rest.
     
     The discretiser first finds the boundaries for the buckets for each variable
@@ -95,7 +51,7 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
             raise ValueError('q must be an integer')
             
         self.q = q
-        self.variables = variables
+        self.variables = _define_variables(variables)
     
     
     def fit(self, X, y=None):
@@ -141,8 +97,8 @@ class EqualWidthDiscretiser(BaseDiscretiser):
     in which the variable should be divided must be indicated by the
     user.
     
-    The Discretiser will binnarise only numerical variables (type 'object'). A 
-    list of variables can be passed as an argument. If no variables are indicated,
+    The Discretiser will binnarise only numerical variables. A list of variables
+    can be passed as an argument. If no variables are indicated,
     the discretiser will only binnarise numerical variables and ignore the rest.
     
     The discretiser first finds the boundaries for the buckets for each variable
@@ -172,7 +128,7 @@ class EqualWidthDiscretiser(BaseDiscretiser):
             raise ValueError('q must be an integer')
             
         self.bins = bins
-        self.variables = variables
+        self.variables = _define_variables(variables)
     
     
     def fit(self, X, y=None):
@@ -210,17 +166,24 @@ class EqualWidthDiscretiser(BaseDiscretiser):
 
 
 class DecisionTreeDiscretiser(BaseDiscretiser):
-    """ Divides the numerical variable values into equal width buckets.
-    Equal width buckets are equi-distant buckets / intervals. All intervals are
-    of the same size. Number of observations per bucket may vary.
+    """ Divides the numerical variable into groups estimated by a decision tree.
+    The methods is inspired by the following article from the winners of the KDD
+    2009 competition:
     
-    The buckets are estimated using pandas.cut. The number of buckets / bins
-    in which the variable should be divided must be indicated by the
-    user.
+        http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf
     
-    The Discretiser will binnarise only numerical variables (type 'object'). A 
-    list of variables can be passed as an argument. If no variables are indicated,
+    The buckets are estimated by a decision tree.
+    
+    At the moment, the discretiser only works for binary classification or
+    regression. Multiclass classification is not supported.
+    
+    The Discretiser will work only with numerical variables. A list of variables
+    can be passed as an argument. If no variables are indicated,
     the discretiser will only binnarise numerical variables and ignore the rest.
+    
+    If categorical variables are first encoded into numbers, then this transformer
+    can be also applied. It may give an edge in performance if used un linear 
+    models.
     
     The discretiser first finds the boundaries for the buckets for each variable
     (fit).
@@ -229,40 +192,52 @@ class DecisionTreeDiscretiser(BaseDiscretiser):
     
     Parameters
     ----------
-    bins : int, default=10
-        Desired number of equal widht buckets / bins.
+    cv : int, default=3
+        Desired number of cross-validation fold to be used to fit the decission
+        tree for each variable.
+        
+    scoring: str, default = neg_mean_squared_error
+        Desired metric to optimise the performance for the tree. Comes from
+        sklearn metrics. See DecisionTreeRegressor or DecisionTreeClassifier
+        model evaluation documentation  for more options.
     
     variables : list
         The list of numerical variables that will be discretised. If none, it 
         defaults to all numerical type variables.
         
+    regression: boolean, default=True
+        Indicates whether the problem is a regression or a classification.
+        
     Attributes
     ----------
     binner_dict_: dictionary
-        The dictionary containing the bucket boundaries: variable pairs used
-        to binnarise / discretise variable    
+        The dictionary containing the fitted tree: variable pairs, used
+        to transform the variable    
     """
     
-    def __init__(self, cv = 3, scoring='neg_mean_squared_error', variables = None):
+    def __init__(self, cv = 3, scoring='neg_mean_squared_error', variables = None, regression=True):
         
+        if not isinstance(cv, int) or cv < 0:
+            raise ValueError('cv can only take only positive integers')
+            
+        if not isinstance(regression, bool):
+            raise ValueError('regression can only True or False')
+            
         self.cv = cv
         self.scoring = scoring
-        self.variables = variables
+        self.regression = regression
+        self.variables = _define_variables(variables)
     
     
     def fit(self, X, y):
-        """ Learns the boundaries of the equal widht buckets / bins for each
-        variable.
+        """ Fits the decision tree.
         
         Parameters
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Should be the entire dataframe, not just seleted variables.
-        y : None
-            y is not needed in this encoder, yet the sklearn pipeline API
-            requires this parameter for checking. You can either leave it as None
-            or pass y.
+        y : target variable. Required for this transformer.
         """
 
         if y is None:
@@ -277,7 +252,7 @@ class DecisionTreeDiscretiser(BaseDiscretiser):
             score_ls = [] 
             for tree_depth in [1,2,3,4]:
                 # call the model
-                if len(y)==2:
+                if not self.regression:
                     tree_model = DecisionTreeClassifier(max_depth=tree_depth)
                 else:
                     tree_model = DecisionTreeRegressor(max_depth=tree_depth)
@@ -287,12 +262,16 @@ class DecisionTreeDiscretiser(BaseDiscretiser):
                                          cv=self.cv, scoring=self.scoring)
                 
                 score_ls.append(np.mean(scores))
-        
-            # find depth with smallest mse
-            depth = [1,2,3,4][np.argmax(score_ls)]
+            
+            if self.regression:
+                # find depth with smallest mse, rmse, etc
+                depth = [1,2,3,4][np.argmin(score_ls)]
+            else:
+                # find max roc_auc, accuracy, etc
+                depth = [1,2,3,4][np.argmax(score_ls)]
         
             # transform the variable using the tree
-            if len(y) == 2:
+            if not self.regression:
                 tree_model = DecisionTreeClassifier(max_depth=depth)
             else:
                 tree_model = DecisionTreeRegressor(max_depth=depth)
@@ -301,18 +280,13 @@ class DecisionTreeDiscretiser(BaseDiscretiser):
             
             self.binner_dict[var] = tree_model
 
-           
-        self.input_shape_ = X.shape
-        if len(y) == 2:
-            self.task = 'Classification'
-        else:
-            self.task = 'Regression'
-           
+        self.input_shape_ = X.shape          
+        
         return self
     
     
     def transform(self, X):
-        """ Discretises the variables in the selected bins.
+        """ Discretises the variables using the trained tree.
         
         Parameters
         ----------
@@ -322,7 +296,7 @@ class DecisionTreeDiscretiser(BaseDiscretiser):
         Returns
         -------
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
-            The dataframe with discrete /  binned variables 
+            The dataframe with transformed variables 
         """
         
         # Check is fit had been called
@@ -333,7 +307,7 @@ class DecisionTreeDiscretiser(BaseDiscretiser):
 
         X = X.copy()
         for feature in self.variables:
-            if self.task == 'Classification':
+            if not self.regression:
                 tmp = self.binner_dict[feature].predict_proba(X[feature].to_frame())
                 X[feature] = tmp[:,1]
             else:

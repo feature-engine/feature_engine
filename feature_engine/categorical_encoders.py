@@ -3,59 +3,11 @@
 
 import pandas as pd
 import numpy as np
-import warnings
+#import warnings
 
-from sklearn.base import BaseEstimator, TransformerMixin
+#from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
-
-
-
-class BaseCategoricalEncoder(BaseEstimator, TransformerMixin):
-    
-    def fit(self, X, y = None):
-        
-        if not self.variables:
-            # select all categorical variables
-            self.variables = [var for var in X.columns if X[var].dtypes=='O']
-        else:
-            # variables indicated by user
-            for var in self.variables:
-                if X[var].dtypes != 'O':
-                    raise TypeError("variable {} is not of type object, check that all indicated variables are of type object".format(var))
-            self.variables = self.variables
-        
-        return self.variables
-    
-
-    def transform(self, X):
-        """ Replaces categories with the estimated numbers.
-        
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
-            The input samples.
-        
-        Returns
-        -------
-        X_transformed : pandas dataframe of shape = [n_samples, n_features].
-            The dataframe containing categories replaced by numbers.
-       """
-        # Check that the method fit has been called
-        check_is_fitted(self, ['encoder_dict_'])
-        
-        # Check that the input is of the same shape as the training set passed
-        # during fit.
-        if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from train set used to fit the encoder')
-        
-        # encode labels     
-        X = X.copy()
-        for feature in self.variables:
-            X[feature] = X[feature].map(self.encoder_dict_[feature])
-            
-            if X[feature].isnull().sum() > 0:
-                warnings.warn("NaN values were introduced by the encoder due to labels in variable {} not present in the training set. Try using the RareLabelCategoricalEncoder.".format(feature) )       
-        return X
+from feature_engine.base_transformers import BaseCategoricalEncoder, _define_variables
 
 
 
@@ -99,7 +51,7 @@ class CountFrequencyCategoricalEncoder(BaseCategoricalEncoder):
             raise ValueError("encoding_method takes only values 'count' and 'frequency'")
             
         self.encoding_method = encoding_method       
-        self.variables = variables
+        self.variables = _define_variables(variables)
            
 
     def fit(self, X, y = None):
@@ -183,11 +135,10 @@ class OrdinalCategoricalEncoder(BaseCategoricalEncoder):
             raise ValueError("encoding_method takes only values 'ordered' and 'arbitrary'")
             
         self.encoding_method = encoding_method
-            
-        self.variables = variables
+        self.variables = _define_variables(variables)
            
 
-    def fit(self, X, y):
+    def fit(self, X, y=None):
         """ Learns the numbers that should be used to replace the labels in each
         variable.
         
@@ -261,7 +212,7 @@ class MeanCategoricalEncoder(BaseCategoricalEncoder):
     """    
     def __init__(self, variables = None):
         
-        self.variables = variables
+        self.variables = _define_variables(variables)
            
 
     def fit(self, X, y):
@@ -278,7 +229,10 @@ class MeanCategoricalEncoder(BaseCategoricalEncoder):
         """
         # brings the variables from the BaseEncoder
         super().fit(X, y)
-        
+
+        if y is None:
+            raise ValueError('Please provide a target (y) for this encoding method')
+            
         temp = pd.concat([X, y], axis=1)
         temp.columns = list(X.columns)+['target']
         
@@ -346,8 +300,7 @@ class WoERatioCategoricalEncoder(BaseCategoricalEncoder):
             raise ValueError("encoding_method takes only values 'woe' and 'ratio'")
             
         self.encoding_method = encoding_method
-        
-        self.variables = variables
+        self.variables = _define_variables(variables)
            
 
     def fit(self, X, y):
@@ -365,6 +318,9 @@ class WoERatioCategoricalEncoder(BaseCategoricalEncoder):
         
         # brings the variables from the BaseEncoder
         super().fit(X, y)
+
+        if y is None:
+            raise ValueError('Please provide a target (y) for this encoding method')
         
         # check that y is binary
         if len( [x for x in y.unique() if x not in [0,1] ] ) > 0:
@@ -463,8 +419,7 @@ class OneHotCategoricalEncoder(BaseCategoricalEncoder):
             raise ValueError("drop_last takes only True or False")
             
         self.drop_last = drop_last
-                    
-        self.variables = variables
+        self.variables = _define_variables(variables)
 
     
     def fit(self, X, y=None):
@@ -483,7 +438,7 @@ class OneHotCategoricalEncoder(BaseCategoricalEncoder):
         # brings the variables from the BaseEncoder
         super().fit(X, y)
         
-        self.encoder_dict_ = {}  
+        self.encoder_dict_ = {}
         
         for var in self.variables:
             if not self.top_categories:
@@ -516,6 +471,7 @@ class OneHotCategoricalEncoder(BaseCategoricalEncoder):
         X_transformed : pandas dataframe. The shape of the dataframe will
         be different from the original as it includes the dummy variables.
         """
+        
         # Check is fit had been called
         check_is_fitted(self, ['encoder_dict_'])
             
@@ -575,7 +531,7 @@ class RareLabelCategoricalEncoder(BaseCategoricalEncoder):
         by 'Rare'. 
         
     """
-    
+  
     def __init__(self, tol = 0.05, n_categories = 10, variables = None):
         
         if tol <0 or tol >1 :
@@ -586,9 +542,8 @@ class RareLabelCategoricalEncoder(BaseCategoricalEncoder):
             
         self.tol = tol
         self.n_categories = n_categories
-            
-        self.variables = variables
-               
+        self.variables = _define_variables(variables)
+        
 
     def fit(self, X, y = None):
         """ Learns the frequent categories for each variable.
@@ -637,6 +592,7 @@ class RareLabelCategoricalEncoder(BaseCategoricalEncoder):
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe where rare categories have been grouped.
         """
+        
         # Check is fit had been called
         check_is_fitted(self, ['encoder_dict_'])
             
