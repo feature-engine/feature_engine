@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(1,os.path.dirname(os.path.abspath('../'))+ os.sep + 'feature_engine')
 
-from unittest.mock import MagicMock
+#from unittest.mock import MagicMock
 
 # class Mock(MagicMock):
     # @classmethod
