@@ -2,7 +2,7 @@
 
 Feature Engine is a python library that contains several transformers to engineer features for use in machine learning models.
 The transformers follow scikit-learn like functionality. They first learn the imputing or encoding methods from the training set, and subsequently transform the dataset.
-Currently the trasformers include functionality for:
+Currently the transformers include functionality for:
 
 * Missing value imputation
 * Categorical variable encoding

@@ -1,5 +1,5 @@
 RandomSampleImputer
 ====================
 
-.. autoclass:: missing_data_imputation.RandomSampleImputer
+.. autoclass:: missing_data_imputers.RandomSampleImputer
     :members:

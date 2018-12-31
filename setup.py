@@ -12,10 +12,11 @@ setup(name='feature_engine',
       author='Soledad Galli',
       author_email='solegalli1@gmail.com',
       packages=['feature_engine'],
-      packages=setuptools.find_packages(),
+      license= 'BSD 3 clause',
+      #packages=setuptools.find_packages(),
       classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: 'BSD 3 clause'",
+        #"License :: OSI Approved :: 'BSD 3 clause'",
         "Operating System :: OS Independent",
         ],
       zip_safe=False)

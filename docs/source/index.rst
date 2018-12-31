@@ -12,30 +12,46 @@ in machine learning models.
 The transformers work with scikit-learn like functionality. The first learn the imputing or encoding
 methods from the training sets, and subsequently transform the dataset.
 
-Currently there trasformers include:
+Currently the transformers include functionality for:
 
 - Missing value imputation
-
 - Categorical variable encoding
-
 - Outlier removal
+- Discretisation
+- Numerical Variable Transformation
 
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Table of Contents
-   
+      
    MeanMedianImputer
    RandomSampleImputer
    EndTailImputer
-   na_capturer
-   CategoricalImputer
-   ArbitraryImputer
-   CategoricalEncoder
-   RareLabelEncoder
-   Windsorizer
+   AddNaNBinaryImputer
+   CategoricalVariableImputer
+   FrequentCategoryImputer
+   ArbitraryNumberImputer
+   
+   CountFrequencyCategoricalEncoder
+   OrdinalCategoricalEncoder 
+   MeanCategoricalEncoder
+   WoERatioCategoricalEncoder
+   OneHotCategoricalEncoder
+   RareLabelCategoricalEncoder
 
+   Windsorizer
+   ArbitraryOutlierCapper
+   
+   EqualFrequencyDiscretiser
+   EqualWidthDiscretiser
+   DecisionTreeDiscretiser
+   
+   LogTransformer
+   ReciprocalTransformer
+   ExponentialTransformer
+   BoxCoxTransformer
 
 
 

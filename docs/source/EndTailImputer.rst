@@ -1,5 +1,5 @@
 EndTailImputer
 ====================
 
-.. autoclass:: missing_data_imputation.EndTailImputer
+.. autoclass:: missing_data_imputers.EndTailImputer
     :members:

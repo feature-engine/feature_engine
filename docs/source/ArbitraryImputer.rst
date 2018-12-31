@@ -1,5 +1,5 @@
-ArbitraryImputer
+ArbitraryNumberImputer
 ===================
 
-.. autoclass:: missing_data_imputation.ArbitraryImputer
+.. autoclass:: missing_data_imputers.ArbitraryNumberImputer
     :members:

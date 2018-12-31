@@ -1,5 +1,5 @@
 MeanMedianImputer
 =================
 
-.. autoclass:: missing_data_imputation.MeanMedianImputer
+.. autoclass:: missing_data_imputers.MeanMedianImputer
     :members:

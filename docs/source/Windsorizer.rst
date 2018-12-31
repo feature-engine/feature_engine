@@ -1,5 +1,5 @@
 Windsorizer
-===================
+=================
 
-.. autoclass:: outlier_handler.Windsorizer
+.. autoclass:: outlier_removers.Windsorizer
     :members:
