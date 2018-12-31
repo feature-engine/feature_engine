@@ -55,7 +55,7 @@ pip install feature_engine
 or
 
 ```
-git clone https://gitlab.com/datascientistcoach/feature_engine.git
+git clone https://github.com/solegalli/feature_engine.git
 ```
 
 ### Usage
