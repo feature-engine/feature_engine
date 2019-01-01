@@ -9,7 +9,7 @@ def list_reqs(fname='requirements.txt'):
         return fd.read().splitlines()
         
 setup(name='feature_engine',
-      version='0.1.1',
+      version='0.2',
       description='Feature engineering package that follows sklearn functionality',
       long_description=long_description,
       long_description_content_type="text/markdown",
