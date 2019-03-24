@@ -1,0 +1,338 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>OneHotCategoricalEncoder &mdash; feature_engine 0.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="RareLabelCategoricalEncoder" href="RareLabelCategoricalEncoder.html" />
+    <link rel="prev" title="WoERatioCategoricalEncoder" href="WoERatioCategoricalEncoder.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> feature_engine
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="MeanMedianImputer.html">MeanMedianImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RandomSampleImputer.html">RandomSampleImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EndTailImputer.html">EndTailImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AddNaNBinaryImputer.html">AddNaNBinaryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CategoricalVariableImputer.html">CategoricalVariableImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FrequentCategoryImputer.html">FrequentCategoryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CountFrequencyCategoricalEncoder.html">CountFrequencyCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="OrdinalCategoricalEncoder.html">OrdinalCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MeanCategoricalEncoder.html">MeanCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WoERatioCategoricalEncoder.html">WoERatioCategoricalEncoder</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">OneHotCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RareLabelCategoricalEncoder.html">RareLabelCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Windsorizer.html">Windsorizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ArbitraryOutlierCapper.html">ArbitraryOutlierCapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EqualFrequencyDiscretiser.html">EqualFrequencyDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EqualWidthDiscretiser.html">EqualWidthDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DecisionTreeDiscretiser.html">DecisionTreeDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LogTransformer.html">LogTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ReciprocalTransformer.html">ReciprocalTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ExponentialTransformer.html">ExponentialTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BoxCoxTransformer.html">BoxCoxTransformer</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">feature_engine</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>OneHotCategoricalEncoder</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/OneHotCategoricalEncoder.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="onehotcategoricalencoder">
+<h1>OneHotCategoricalEncoder<a class="headerlink" href="#onehotcategoricalencoder" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="categorical_encoders.OneHotCategoricalEncoder">
+<em class="property">class </em><code class="descclassname">categorical_encoders.</code><code class="descname">OneHotCategoricalEncoder</code><span class="sig-paren">(</span><em>top_categories=None</em>, <em>variables=None</em>, <em>drop_last=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/categorical_encoders.html#OneHotCategoricalEncoder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#categorical_encoders.OneHotCategoricalEncoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>One hot encoding consists of replacing the categorical variable by a
+combination of boolean variables which take value 0 or 1, to indicate if
+a certain category is present for that observation.</p>
+<p>Each one of the boolean variables are also known as dummy variables or binary
+variables. For example, from the categorical variable &#8220;Gender&#8221; with categories
+&#8216;female&#8217; and &#8216;male&#8217;, we can generate the boolean variable &#8220;female&#8221;, which
+takes 1 if the person is female or 0 otherwise. We can also generate the
+variable male, which takes 1 if the person is &#8220;male&#8221; and 0 otherwise.</p>
+<p>The encoder has the option to generate one dummy variable per category present
+in a variable, or to create dummy variables only for the top n categories
+that are present in the majority of the observations.</p>
+<p>If dummy variables are created for all the categories of a variable, you have
+the option to drop one category not to create information redundancy.</p>
+<p>The Encoder will encode only categorical variables (type &#8216;object&#8217;). A list
+of variables can be passed as an argument. If no variables are passed as
+argument, the encoder will only encode categorical variables (object type)
+and ignore the rest.</p>
+<p>The encoder first finds the categories to be encoded for each variable (fit).
+The transformer creates one dummy variable per category for each variable
+(transform).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>top_categories</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>, </em><em>default = None</em>) &#8211; If None is selected, a dummy variable will be created for each category
+per variable. Alternatively, the encoder will find the most frequent
+categories: top_categories indicates the number of most frequent labels
+to encode. Dummy variables will be created only for those categories and
+the rest will be ignored. Note that this is equivalent to grouping all the
+remaining categories in one group.</li>
+<li><strong>variables</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) &#8211; The list of categorical variables that will be encoded. If none, it
+defaults to all object type variables.</li>
+<li><strong>drop_last</strong> (<em>boolean</em><em>, </em><em>default = False</em>) &#8211; Only used if top_categories = None. It indicates whether to create dummy
+variables for all the available categories, or if set to true, it will
+ignore the last variable of the list.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="OneHotCategoricalEncoder.encoder_dict_">
+<code class="descname">encoder_dict_</code><a class="headerlink" href="#OneHotCategoricalEncoder.encoder_dict_" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dictionary</em> &#8211; The dictionary containg the frequent categories (that will be kept)
+for each variable. Categories not present in this list will be replaced
+by &#8216;Rare&#8217;.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="categorical_encoders.OneHotCategoricalEncoder.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/categorical_encoders.html#OneHotCategoricalEncoder.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#categorical_encoders.OneHotCategoricalEncoder.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Learns the numbers that should be used to replace the labels in each
+variable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>X</strong> (<em>pandas dataframe of shape =</em><em> [</em><em>n_samples</em><em>, </em><em>n_features</em><em>]</em>) &#8211; The training input samples.
+Should be the entire dataframe, not just seleted variables.</li>
+<li><strong>y</strong> (<em>Target</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="categorical_encoders.OneHotCategoricalEncoder.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/categorical_encoders.html#OneHotCategoricalEncoder.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#categorical_encoders.OneHotCategoricalEncoder.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the dummy / boolean variables.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>pandas dataframe of shape =</em><em> [</em><em>n_samples</em><em>, </em><em>n_features</em><em>]</em>) &#8211; The input samples.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>X_transformed</strong> (<em>pandas dataframe. The shape of the dataframe will</em>)</li>
+<li><em>be different from the original as it includes the dummy variables.</em></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="RareLabelCategoricalEncoder.html" class="btn btn-neutral float-right" title="RareLabelCategoricalEncoder" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="WoERatioCategoricalEncoder.html" class="btn btn-neutral" title="WoERatioCategoricalEncoder" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Soledad Galli
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'./',
+              VERSION:'0.1.1',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

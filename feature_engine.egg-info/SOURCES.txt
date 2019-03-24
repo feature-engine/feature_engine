@@ -1,0 +1,15 @@
+README.md
+setup.py
+feature_engine/__init__.py
+feature_engine/base_transformers.py
+feature_engine/categorical_encoders.py
+feature_engine/discretisers.py
+feature_engine/missing_data_imputers.py
+feature_engine/outlier_removers.py
+feature_engine/variable_transformers.py
+feature_engine.egg-info/PKG-INFO
+feature_engine.egg-info/SOURCES.txt
+feature_engine.egg-info/dependency_links.txt
+feature_engine.egg-info/not-zip-safe
+feature_engine.egg-info/requires.txt
+feature_engine.egg-info/top_level.txt

@@ -1,0 +1,545 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>discretisers &mdash; feature_engine 0.1.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> feature_engine
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../MeanMedianImputer.html">MeanMedianImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../RandomSampleImputer.html">RandomSampleImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EndTailImputer.html">EndTailImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../AddNaNBinaryImputer.html">AddNaNBinaryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../CategoricalVariableImputer.html">CategoricalVariableImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FrequentCategoryImputer.html">FrequentCategoryImputer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../CountFrequencyCategoricalEncoder.html">CountFrequencyCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../OrdinalCategoricalEncoder.html">OrdinalCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../MeanCategoricalEncoder.html">MeanCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../WoERatioCategoricalEncoder.html">WoERatioCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../OneHotCategoricalEncoder.html">OneHotCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../RareLabelCategoricalEncoder.html">RareLabelCategoricalEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Windsorizer.html">Windsorizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ArbitraryOutlierCapper.html">ArbitraryOutlierCapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EqualFrequencyDiscretiser.html">EqualFrequencyDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../EqualWidthDiscretiser.html">EqualWidthDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DecisionTreeDiscretiser.html">DecisionTreeDiscretiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../LogTransformer.html">LogTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ReciprocalTransformer.html">ReciprocalTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExponentialTransformer.html">ExponentialTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../BoxCoxTransformer.html">BoxCoxTransformer</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">feature_engine</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>discretisers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for discretisers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Authors: Soledad Galli &lt;solegalli1@gmail.com&gt;</span>
+<span class="c1"># License: BSD 3 clause</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="c1">#import warnings</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_is_fitted</span>
+<span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="k">import</span> <span class="n">DecisionTreeRegressor</span><span class="p">,</span> <span class="n">DecisionTreeClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">cross_val_score</span>
+
+<span class="kn">from</span> <span class="nn">feature_engine.base_transformers</span> <span class="k">import</span> <span class="n">BaseDiscretiser</span><span class="p">,</span> <span class="n">_define_variables</span>
+
+
+<div class="viewcode-block" id="EqualFrequencyDiscretiser"><a class="viewcode-back" href="../EqualFrequencyDiscretiser.html#discretisers.EqualFrequencyDiscretiser">[docs]</a><span class="k">class</span> <span class="nc">EqualFrequencyDiscretiser</span><span class="p">(</span><span class="n">BaseDiscretiser</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Divides the numerical variable values into equal frequency buckets.</span>
+<span class="sd">    Equal frequency buckets will contains roughly the same amount of observations.</span>
+<span class="sd">    </span>
+<span class="sd">    The buckets are estimated using pandas.qcut. The number of buckets, i.e., </span>
+<span class="sd">    quantiles, in which the variable should be divided must be indicated by the</span>
+<span class="sd">    user.</span>
+<span class="sd">    </span>
+<span class="sd">    The Discretiser will binnarise only numerical variables. A list of variables</span>
+<span class="sd">    can be passed as an argument. If no variables are indicated,</span>
+<span class="sd">    the discretiser will only binnarise numerical variables and ignore the rest.</span>
+<span class="sd">    </span>
+<span class="sd">    The discretiser first finds the boundaries for the buckets for each variable</span>
+<span class="sd">    (fit).</span>
+<span class="sd">    </span>
+<span class="sd">    The transformer sorts the values into the buckets (transform).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    q : int, default=10</span>
+<span class="sd">        Desired number of equal frequency buckets / bins.</span>
+<span class="sd">    </span>
+<span class="sd">    variables : list</span>
+<span class="sd">        The list of numerical variables that will be discretised. If none, it </span>
+<span class="sd">        defaults to all numerical type variables.</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    binner_dict_: dictionary</span>
+<span class="sd">        The dictionary containing the bucket boundaries: variable pairs used</span>
+<span class="sd">        to binnarise / discretise variable    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;q must be an integer&#39;</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">q</span> <span class="o">=</span> <span class="n">q</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">_define_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+    
+    
+<div class="viewcode-block" id="EqualFrequencyDiscretiser.fit"><a class="viewcode-back" href="../EqualFrequencyDiscretiser.html#discretisers.EqualFrequencyDiscretiser.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Learns the boundaries of the equal frequency buckets / bins for each</span>
+<span class="sd">        variable.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The training input samples.</span>
+<span class="sd">            Should be the entire dataframe, not just seleted variables.</span>
+<span class="sd">        y : None</span>
+<span class="sd">            y is not needed in this encoder, yet the sklearn pipeline API</span>
+<span class="sd">            requires this parameter for checking. You can either leave it as None</span>
+<span class="sd">            or pass y.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">binner_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="n">tmp</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">qcut</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">X</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="n">retbins</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">duplicates</span><span class="o">=</span><span class="s1">&#39;drop&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># Prepend/Append infinities to accomodate outliers</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+            <span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)</span>
+            <span class="n">bins</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">binner_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">bins</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>  
+           
+        <span class="k">return</span> <span class="bp">self</span></div></div>
+    
+
+
+<div class="viewcode-block" id="EqualWidthDiscretiser"><a class="viewcode-back" href="../EqualWidthDiscretiser.html#discretisers.EqualWidthDiscretiser">[docs]</a><span class="k">class</span> <span class="nc">EqualWidthDiscretiser</span><span class="p">(</span><span class="n">BaseDiscretiser</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Divides the numerical variable values into equal width buckets.</span>
+<span class="sd">    Equal width buckets are equi-distant buckets / intervals. All intervals are</span>
+<span class="sd">    of the same size. Number of observations per bucket may vary.</span>
+<span class="sd">    </span>
+<span class="sd">    The buckets are estimated using pandas.cut. The number of buckets / bins</span>
+<span class="sd">    in which the variable should be divided must be indicated by the</span>
+<span class="sd">    user.</span>
+<span class="sd">    </span>
+<span class="sd">    The Discretiser will binnarise only numerical variables. A list of variables</span>
+<span class="sd">    can be passed as an argument. If no variables are indicated,</span>
+<span class="sd">    the discretiser will only binnarise numerical variables and ignore the rest.</span>
+<span class="sd">    </span>
+<span class="sd">    The discretiser first finds the boundaries for the buckets for each variable</span>
+<span class="sd">    (fit).</span>
+<span class="sd">    </span>
+<span class="sd">    The transformer sorts the values into the buckets (transform).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bins : int, default=10</span>
+<span class="sd">        Desired number of equal widht buckets / bins.</span>
+<span class="sd">    </span>
+<span class="sd">    variables : list</span>
+<span class="sd">        The list of numerical variables that will be discretised. If none, it </span>
+<span class="sd">        defaults to all numerical type variables.</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    binner_dict_: dictionary</span>
+<span class="sd">        The dictionary containing the bucket boundaries: variable pairs used</span>
+<span class="sd">        to binnarise / discretise variable    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;q must be an integer&#39;</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">_define_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+    
+    
+<div class="viewcode-block" id="EqualWidthDiscretiser.fit"><a class="viewcode-back" href="../EqualWidthDiscretiser.html#discretisers.EqualWidthDiscretiser.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Learns the boundaries of the equal widht buckets / bins for each</span>
+<span class="sd">        variable.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The training input samples.</span>
+<span class="sd">            Should be the entire dataframe, not just seleted variables.</span>
+<span class="sd">        y : None</span>
+<span class="sd">            y is not needed in this encoder, yet the sklearn pipeline API</span>
+<span class="sd">            requires this parameter for checking. You can either leave it as None</span>
+<span class="sd">            or pass y.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">binner_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="n">tmp</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">X</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">,</span> <span class="n">retbins</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">duplicates</span><span class="o">=</span><span class="s1">&#39;drop&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># Prepend/Append infinities</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+            <span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)</span>
+            <span class="n">bins</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">binner_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">bins</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>  
+           
+        <span class="k">return</span> <span class="bp">self</span>       </div></div>
+
+
+
+<div class="viewcode-block" id="DecisionTreeDiscretiser"><a class="viewcode-back" href="../DecisionTreeDiscretiser.html#discretisers.DecisionTreeDiscretiser">[docs]</a><span class="k">class</span> <span class="nc">DecisionTreeDiscretiser</span><span class="p">(</span><span class="n">BaseDiscretiser</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Divides the numerical variable into groups estimated by a decision tree.</span>
+<span class="sd">    The methods is inspired by the following article from the winners of the KDD</span>
+<span class="sd">    2009 competition:</span>
+<span class="sd">    </span>
+<span class="sd">        http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf</span>
+<span class="sd">    </span>
+<span class="sd">    The buckets are estimated by a decision tree.</span>
+<span class="sd">    </span>
+<span class="sd">    At the moment, the discretiser only works for binary classification or</span>
+<span class="sd">    regression. Multiclass classification is not supported.</span>
+<span class="sd">    </span>
+<span class="sd">    The Discretiser will work only with numerical variables. A list of variables</span>
+<span class="sd">    can be passed as an argument. If no variables are indicated,</span>
+<span class="sd">    the discretiser will only binnarise numerical variables and ignore the rest.</span>
+<span class="sd">    </span>
+<span class="sd">    If categorical variables are first encoded into numbers, then this transformer</span>
+<span class="sd">    can be also applied. It may give an edge in performance if used un linear </span>
+<span class="sd">    models.</span>
+<span class="sd">    </span>
+<span class="sd">    The discretiser first finds the boundaries for the buckets for each variable</span>
+<span class="sd">    (fit).</span>
+<span class="sd">    </span>
+<span class="sd">    The transformer sorts the values into the buckets (transform).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cv : int, default=3</span>
+<span class="sd">        Desired number of cross-validation fold to be used to fit the decission</span>
+<span class="sd">        tree for each variable.</span>
+<span class="sd">        </span>
+<span class="sd">    scoring: str, default = neg_mean_squared_error</span>
+<span class="sd">        Desired metric to optimise the performance for the tree. Comes from</span>
+<span class="sd">        sklearn metrics. See DecisionTreeRegressor or DecisionTreeClassifier</span>
+<span class="sd">        model evaluation documentation  for more options.</span>
+<span class="sd">    </span>
+<span class="sd">    variables : list</span>
+<span class="sd">        The list of numerical variables that will be discretised. If none, it </span>
+<span class="sd">        defaults to all numerical type variables.</span>
+<span class="sd">        </span>
+<span class="sd">    regression: boolean, default=True</span>
+<span class="sd">        Indicates whether the problem is a regression or a classification.</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    binner_dict_: dictionary</span>
+<span class="sd">        The dictionary containing the fitted tree: variable pairs, used</span>
+<span class="sd">        to transform the variable    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cv</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;neg_mean_squared_error&#39;</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">regression</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">cv</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cv can only take only positive integers&#39;</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">regression</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;regression can only True or False&#39;</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="o">=</span> <span class="n">cv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scoring</span> <span class="o">=</span> <span class="n">scoring</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regression</span> <span class="o">=</span> <span class="n">regression</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">_define_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+    
+    
+<div class="viewcode-block" id="DecisionTreeDiscretiser.fit"><a class="viewcode-back" href="../DecisionTreeDiscretiser.html#discretisers.DecisionTreeDiscretiser.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Fits the decision tree.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The training input samples.</span>
+<span class="sd">            Should be the entire dataframe, not just seleted variables.</span>
+<span class="sd">        y : target variable. Required for this transformer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Please provide a target (y) for this encoding method&#39;</span><span class="p">)</span>
+            
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">binner_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            
+            <span class="n">score_ls</span> <span class="o">=</span> <span class="p">[]</span> 
+            <span class="k">for</span> <span class="n">tree_depth</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]:</span>
+                <span class="c1"># call the model</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">regression</span><span class="p">:</span>
+                    <span class="n">tree_model</span> <span class="o">=</span> <span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="n">tree_depth</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">tree_model</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="n">tree_depth</span><span class="p">)</span>
+        
+                <span class="c1"># train the model using 3 fold cross validation</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">tree_model</span><span class="p">,</span> <span class="n">X</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(),</span> <span class="n">y</span><span class="p">,</span>
+                                         <span class="n">cv</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scoring</span><span class="p">)</span>
+                
+                <span class="n">score_ls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">))</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">regression</span><span class="p">:</span>
+                <span class="c1"># find depth with smallest mse, rmse, etc</span>
+                <span class="n">depth</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">score_ls</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># find max roc_auc, accuracy, etc</span>
+                <span class="n">depth</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">score_ls</span><span class="p">)]</span>
+        
+            <span class="c1"># transform the variable using the tree</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">regression</span><span class="p">:</span>
+                <span class="n">tree_model</span> <span class="o">=</span> <span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="n">depth</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tree_model</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="n">depth</span><span class="p">)</span>
+                
+            <span class="n">tree_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(),</span> <span class="n">y</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">binner_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">tree_model</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>          
+        
+        <span class="k">return</span> <span class="bp">self</span></div>
+    
+    
+<div class="viewcode-block" id="DecisionTreeDiscretiser.transform"><a class="viewcode-back" href="../DecisionTreeDiscretiser.html#discretisers.DecisionTreeDiscretiser.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Discretises the variables using the trained tree.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The input samples.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X_transformed : pandas dataframe of shape = [n_samples, n_features]</span>
+<span class="sd">            The dataframe with transformed variables </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Check is fit had been called</span>
+        <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;binner_dict&#39;</span><span class="p">])</span>
+        
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shape_</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of columns in dataset is different from training set used to fit the encoder&#39;</span><span class="p">)</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">regression</span><span class="p">:</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binner_dict</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">to_frame</span><span class="p">())</span>
+                <span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binner_dict</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">to_frame</span><span class="p">())</span>
+                
+        <span class="k">return</span> <span class="n">X</span>    </div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Soledad Galli
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../',
+              VERSION:'0.1.1',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
