@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 import os
-filename = os.path.dirname(os.path.abspath(__file__)) + os.sep + 'titanic_test.csv'
+filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'titanic_test.csv')
 
 from missing_data_imputation import MeanMedianImputer
 from missing_data_imputation import RandomSampleImputer
