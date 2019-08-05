@@ -11,8 +11,8 @@ Current Feature-engine's transformers include functionality for:
 
 ## Important Links
 
-Documentation: http://feature-engine.readthedocs.io
-Home page: https://www.trainindata.com/feature-engine
+* Documentation: http://feature-engine.readthedocs.io
+* Home page: https://www.trainindata.com/feature-engine
 
 ### Imputing Methods
 
