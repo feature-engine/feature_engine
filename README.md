@@ -1,10 +1,9 @@
 # Feature Engine
 
-Feature Engine is a python library that contains several transformers to engineer features for use in machine learning models.
-The transformers follow scikit-learn like functionality. They first learn the imputing or encoding methods from the training set, and subsequently transform the dataset.
-Currently the transformers include functionality for:
+Feature-engine is a Python library that contains several transformers to engineer features for use in machine learning models. Feature-engine's transformers follow Scikit-learn like functionality with fit() and transform() methods to first learn the transforming paramenters from data and then transform the data.
+Current Feature-engine's transformers include functionality for:
 
-* Missing value imputation
+* Missing data imputation
 * Categorical variable encoding
 * Outlier removal
 * Discretisation
@@ -13,6 +12,7 @@ Currently the transformers include functionality for:
 ## Important Links
 
 Documentation: http://feature-engine.readthedocs.io
+Home page: https://www.trainindata.com/feature-engine
 
 ### Imputing Methods
 
@@ -33,7 +33,7 @@ Documentation: http://feature-engine.readthedocs.io
 * RareLabelCategoricalEncoder
 
 ### Outlier Handling methods
-* Windsorizer
+* Winsorizer
 * ArbitraryOutlierCapper
 
 ### Discretisation methods
@@ -44,8 +44,9 @@ Documentation: http://feature-engine.readthedocs.io
 ### Variable Transformation methods
 * LogTransformer
 * ReciprocalTransformer
-* ExponentialTransformer
+* PowerTransformer
 * BoxCoxTransformer
+* YeoJohnsonTransformer
 
 ### Installing
 
@@ -68,11 +69,7 @@ rare_encoder.fit(data, variables = ['Cabin', 'Age'])
 data_encoded = rare_encoder.transform(data)
 ```
 
-See more usage examples in the jupyter notebooks in the example section
-
-### Examples
-
-You can find jupyter notebooks in the examples folder, with directions on how to use this package and its multiple transformers.
+See more usage examples in the jupyter notebooks in the example folder of this repository, or in the documentation: http://feature-engine.readthedocs.io
 
 ### License
 
@@ -80,13 +77,15 @@ BSD 3-Clause
 
 ### Authors
 
-* **Soledad Galli** - *Initial work* - [Feature Engineering Online Course](https://www.udemy.com/feature-engineering-for-machine-learning)
+* **Soledad Galli** - *Initial work* - [Feature Engineering Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO).
 
 
 ### References
 
-Most of the engineering and encoding functionality is inspired by this [series of articles from the 2009 KDD competition](http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf)
+Many of the engineering and encoding functionality is inspired by this [series of articles from the 2009 KDD competition](http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf).
 
-To learn more about the rationale, functionality, pros and cos of each imputer, encoder and transformer, refer to the [Feature Engineering Online Course](https://www.udemy.com/feature-engineering-for-machine-learning)
+To learn more about the rationale, functionality, pros and cos of each imputer, encoder and transformer, refer to the [Feature Engineering Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO)
 
-For a summary of the methods check this [presentation](https://speakerdeck.com/solegalli/engineering-and-selecting-features-for-machine-learning)
+For a summary of the methods check this [presentation](https://speakerdeck.com/solegalli/engineering-and-selecting-features-for-machine-learning) and this [article](https://www.trainindata.com/post/feature-engineering-comprehensive-overview)
+
+To stay alert of latest releases, sign up at [trainindata](https://www.trainindata.com)
