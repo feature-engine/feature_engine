@@ -1,7 +1,6 @@
 # Authors: Soledad Galli <solegalli1@gmail.com>
 # License: BSD 3 clause
 
-
 import numpy as np
 import pandas as pd
 import warnings
@@ -11,6 +10,9 @@ from sklearn.utils.validation import check_is_fitted
 
 
 def _define_variables(variables):
+    '''
+    checks that variable names are passed in a list
+    '''
     
     if not variables or isinstance(variables, list):
        variables = variables
@@ -20,10 +22,14 @@ def _define_variables(variables):
 
             
 class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
+    '''
+    Finds numerical variables in the train set, or checks that variables indicated
+    by the user are numerical.
+    '''
     
     def fit(self, X, y = None):
         
-        #numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+        # numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
         if not self.variables:
             # select all numerical variables
             #self.variables = list(X.select_dtypes(include=numerics).columns)  
@@ -32,7 +38,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
             # variables indicated by user
             #if len(X[self.variables].select_dtypes(exclude=numerics).columns) != 0:
             if len(X[self.variables].select_dtypes(exclude='number').columns) != 0:
-               raise ValueError("Some of the selected variables are NOT numerical. Please cast them as numerical before fitting the imputer")
+               raise ValueError("Some of the selected variables are not numerical. Please cast them as numerical before calling the imputer")
             
             self.variables = self.variables
 
@@ -41,15 +47,18 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
 class BaseNumericalImputer(BaseNumericalTransformer):
     
     def transform(self, X):
-        """ Replaces missing data with the calculated parameters
+        """ 
+        Replaces missing data with the calculated parameters.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
         
         Returns
         -------
+        
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe containing NO missing values for the selected
             variables
@@ -74,28 +83,35 @@ class BaseNumericalImputer(BaseNumericalTransformer):
 class BaseDiscretiser(BaseNumericalTransformer):
     
     def transform(self, X):
-        """ Discretises the variables in the selected bins.
+        """
+        Discretises the variables, that is, sorts the variable values into
+        the learned intervals.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
         -------
+        
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with discrete / binned variables 
         """
         
         # Check is fit had been called
-        check_is_fitted(self, ['binner_dict'])
+        check_is_fitted(self, ['binner_dict_'])
         
         if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the encoder')
+            raise ValueError('Number of columns in the dataset is different from training set used to fit the discretiser')
 
         X = X.copy()
         for feature in self.variables:
-            X[feature] = pd.cut(X[feature], self.binner_dict[feature], labels=False)
+            X[feature] = pd.cut(X[feature], self.binner_dict_[feature], labels=False)
+            
+        if self.return_object:
+            X[self.variables] = X[self.variables].astype('O')
             
         return X
 
@@ -104,15 +120,18 @@ class BaseDiscretiser(BaseNumericalTransformer):
 class BaseOutlierRemover(BaseNumericalTransformer):          
     
     def transform(self, X):
-        """ Caps variables with the calculated parameters
+        """
+        Caps variables at the calculated or given parameters.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
         -------
+        
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with capped values for the selected
             variables
@@ -122,7 +141,7 @@ class BaseOutlierRemover(BaseNumericalTransformer):
         check_is_fitted(self, ['left_tail_caps_', 'right_tail_caps_'])
         
         if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the encoder')
+            raise ValueError('Number of columns in dataset is different from training set used to fit the transformer')
 
         X = X.copy()
         for feature in self.right_tail_caps_.keys():
@@ -136,6 +155,10 @@ class BaseOutlierRemover(BaseNumericalTransformer):
 
 
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
+    '''
+    Finds categorical variables in the train set, or checks that variables indicated
+    by the user are categorical.
+    '''
     
     def fit(self, X, y = None):
         
@@ -147,7 +170,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
             if len(X[self.variables].select_dtypes(exclude='O').columns) != 0:
 #            for var in self.variables:
 #                if X[var].dtypes != 'O':
-                raise TypeError("variable {} is not of type object, check that all indicated variables are of type object")
+                raise TypeError("variable {} is not of type object, check that all indicated variables are of type object before calling the transformer")
             self.variables = self.variables
         
         return self.variables
@@ -161,11 +184,13 @@ class BaseCategoricalEncoder(BaseCategoricalTransformer):
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features].
             The input samples.
         
         Returns
         -------
+        
         X_transformed : pandas dataframe of shape = [n_samples, n_features].
             The dataframe containing categories replaced by numbers.
        """

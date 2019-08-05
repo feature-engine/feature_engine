@@ -2,6 +2,7 @@
 # License: BSD 3 clause
 
 import numpy as np
+import pandas as pd
 #import warnings
 
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -14,33 +15,38 @@ from feature_engine.base_transformers import BaseCategoricalTransformer, _define
 
 # Numerical imputers
 class MeanMedianImputer(BaseNumericalImputer):
-    """ Transforms features by replacing missing data in each variable by the
-    mean or median value of that variable.
+    """ 
+    The MeanMedianImputer() transforms features by replacing missing data in each
+    variable by the mean or median value of the variable.
     
-    This Imputer works only with numerical variables.
+    The MeanMedianImputer() works only with numerical variables.
+    
+    A list of variables to impute can be indicated in a list. If no variable list
+    is passed the MeanMedianImputer() will automatically find and select all
+    variables of type numeric.
     
     The estimator first calculates the mean / median values for the
-    indicated variables.
+    indicated variables (fit).
     
-    The transformer fills the missing data with the estimated mean / median.
+    The estimator then fills the missing data with the estimated mean / median 
+    (transform).
     
     Parameters
     ----------
+    
     imputation_method : str, default=median 
-        Desired method of imputation.
-        Can take 'mean' or 'median'.
+        Desired method of imputation. Can take 'mean' or 'median'.
         
     Attributes
     ----------
-    variables : list
-        The list of variables to be imputed. If none, it defaults to all numerical
-        type variables.
+    
+    variables : list, default=None
+        The list of variables to be imputed. If None, the imputer will find and 
+        select all numerical type variables.
        
     imputer_dict_: dictionary
-        The dictionary containing the mean / median values to use
-        for each variable to replace missing data. It is calculated when fitting
-        the imputer.
-        
+        The dictionary containing the mean / median values to use for each variable
+        to replace missing data. It is calculated when fitting the imputer.
     """
     
     def __init__(self, imputation_method='median', variables = None):
@@ -53,18 +59,19 @@ class MeanMedianImputer(BaseNumericalImputer):
         
 
     def fit(self, X, y=None):
-        """ Learns the mean or median that should be used to replace
-        mising data in each variable.
+        """ 
+        Learns the mean or median values that should be used to replace mising
+        data in each variable.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Should be the entire dataframe, not just seleted variables.
+            Can be the entire dataframe, not just seleted variables.
         y : None
             y is not needed in this transformer, yet the sklearn pipeline API
             requires this parameter for checking. You can pass None or y.
-        
         """
         # brings the variables from the BaseImputer
         super().fit(X, y)
@@ -82,54 +89,63 @@ class MeanMedianImputer(BaseNumericalImputer):
 
 
 class EndTailImputer(BaseNumericalImputer):
-    """ Transforms features by replacing missing data in each feature
-    for a given value at the tail of the distribution.
+    """ 
+    The EndTailImputer() transforms features by replacing missing data in each
+    feature for a given value at the tail of the distribution.
     
-    This Imputer works only with numerical variables.
+    The EndTailImputer() works only with numerical variables. A list of variables
+    to impute can be indicated in a list. If no variable list is passed the
+    EndTailImputer() will automatically find and select all variables of type numeric.
     
     The estimator first calculates the values at the end of the distribution
     for the indicated features. The values at the end of the distribution can 
-    be given by the Gaussian limits or the quantile limits.
+    be given by the Gaussian limits or the IQR proximity rule limits.
     
     Gaussian limits:
         right tail: mean + 3* std
         left tail: mean - 3* std
         
-    Quantile limits:
+    IQR limits:
         right tail: 75th Quantile + 3* IQR
         left tail:  25th quantile - 3* IQR
         
-        where IQR is the inter-quantal range.
+    where IQR is the inter-quantal range = 75th Quantile - 25th quantile
         
-    You can select to tune how far out you place your missing values by tuning
+    You can select how far out you want to place your missing values by tuning
     the number by which you multiply the std or the IQR, using the parameter
     'fold'.
     
-    The transformer fills the missing data with the estimated values.
+    The encoder then fills the missing data with the estimated values.
     
     Parameters
     ----------
+    
     distribution : str, default=gaussian 
-        Desired distribution. 
-        Can take 'gaussian' or 'skewed'.
+        Desired distribution. Can take 'gaussian' or 'skewed'.
+        gaussian: the encoder will use the Qaussian limits  to find the values
+        to replace missing data.
+        skewed: the encoder will use the IQR limits to find the values to replace
+        missing data.
         
     tail : str, default=right
-        Whether the missing values will be placed at the right or left tail.
-        Can take 'left' or 'right'
+        Whether the missing values will be placed at the right or left tail of 
+        the variable distribution. Can take 'left' or 'right'.
         
     fold: int, default=3
         How far out to place the missing data. Fold will multiply the std or the
         IQR. Recommended values, 2 or 3 for Gaussian, 1.5 or 3 for skewed.
     
-    variables : list
-        The list of variables to be imputed. If none, it defaults to all numerical
-        type variables.
+    variables : list, default=None
+        The list of variables to be imputed. If None, the imputer will find and
+        select all numerical type variables.
         
     Attributes
     ----------
+    
     imputer_dict_: dictionary
-        The dictionary containing the values at end of tails to use to replace
-        missing data for each variable. It is calculated when fitting the transformer.
+        The dictionary containing the values at end of the distribution to use
+        to replace missing data for each variable. The values are calculated
+        when fitting the imputer.
         
     """
     
@@ -152,18 +168,19 @@ class EndTailImputer(BaseNumericalImputer):
 
 
     def fit(self, X, y=None, ):
-        """ Learns the values that should be used to replace
-        mising data in each variable.
+        """
+        Learns the values that should be used to replace mising data in each 
+        variable.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Must be the entire dataframe, not just selected variables.
+            Can be the entire dataframe, not just selected variables.
         y : None
             y is not needed in this transformer, yet the sklearn pipeline API
             requires this parameter for checking.
-
         """
         # brings the variables from the BaseImputer
         super().fit(X, y)
@@ -192,20 +209,22 @@ class EndTailImputer(BaseNumericalImputer):
 
 
 class CategoricalVariableImputer(BaseCategoricalTransformer):
-    """ Replaces missing data in categorical variables by adding the label
-    'Missing'.
+    """
+    The CategoricalVariableImputer() replaces missing data in categorical variables
+    by the string 'Missing'.
     
-    This Imputer works only with categorical variables.
+    The CategoricalVariableImputer() works only with categorical variables.
+    
+    A list of variables to impute can be indicated. If no variable list is passed
+    the CategoricalVariableImputer() will automatically find and select all
+    variables of type object.
        
     Parameters
     ----------
-    variables : list
-        The list of variables to be imputed. If none, it defaults to all object
-        type variables.
-        
-    Attributes
-    ----------
-.  
+    
+    variables : list, default=None
+        The list of variables to be imputed. If None, the imputer will find and
+        select all object type variables.
     """
     
     def __init__(self, variables=None):
@@ -214,12 +233,15 @@ class CategoricalVariableImputer(BaseCategoricalTransformer):
             
 
     def fit(self, X, y=None):
-        """ Checks that the selected variables are categorical.
+        """ 
+        Checks that the selected variables are categorical.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
+            Can be the entire dataframe, not just seleted variables
         y : None
             y is not needed in this transformer, yet the sklearn pipeline API
             requires this parameter for checking.
@@ -232,10 +254,12 @@ class CategoricalVariableImputer(BaseCategoricalTransformer):
         return self
 
     def transform(self, X):
-        """ Replaces missing values with the new Label 'Missing'.
+        """
+        Replaces missing values with the new Label 'Missing'.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
         
@@ -261,24 +285,35 @@ class CategoricalVariableImputer(BaseCategoricalTransformer):
     
 
 class FrequentCategoryImputer(BaseCategoricalTransformer):
-    """ Replaces missing data in categorical variables by the most frequent
-    category.
+    """
+    The FrequentCategoryImputer() replaces missing data in categorical variables
+    by the most frequent category.
     
-    This Imputer works only with categorical variables.
+    The FrequentCategoryImputer() works only with categorical variables.
     
-    The transformer fills the missing data with the mode.
+    A list of variables to impute can be indicated. If no variable list is passed
+    the FrequentCategoryImputer() will automatically find and select all
+    variables of type object.
+    
+    The encoder first finds the most frequent category per variable (fit).
+    
+    The encoder then fills the missing data with the most frequent category 
+    (transform).
     
     Parameters
     ----------
-    variables : list
-        The list of variables to be imputed. If none, it defaults to all object
-        type variables.
+    
+    variables : list, default=None
+        The list of variables to be imputed. If None, the transformer will find
+        and select all object type variables.
         
     Attributes
-    ----------       
+    ----------   
+    
     imputer_dict_: dictionary
         The dictionary mapping each variable to the most frequent category which
-        will be used to fill NA. It is calculated when fitting the transformer.   
+        will be used to fill missing data. These are calculated when fitting the
+        transformer.   
     """
     
     def __init__(self, variables=None):
@@ -286,12 +321,15 @@ class FrequentCategoryImputer(BaseCategoricalTransformer):
         self.variables = _define_variables(variables)
 
     def fit(self, X, y=None):
-        """ Learns the most frequent category for each variable.
+        """
+        Learns the most frequent category for each variable.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
+            Can be the entire dataframe, not just seleted variables
         y : None
             y is not needed in this transformer, yet the sklearn pipeline API
             requires this parameter for checking.
@@ -309,15 +347,18 @@ class FrequentCategoryImputer(BaseCategoricalTransformer):
         return self
 
     def transform(self, X):
-        """ Replaces missing data with the calculated parameters
+        """ 
+        Replaces missing data with the most frequent category of the variable.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
             
         Returns
         -------
+        
         X_transformed : dataframe of shape = [n_samples, n_features]
             The dataframe containing no missing values for the selected
             variables
@@ -341,65 +382,109 @@ class FrequentCategoryImputer(BaseCategoricalTransformer):
 
 
 class RandomSampleImputer(BaseEstimator, TransformerMixin):
-    """ Replaces missing data in each feature with a random sample extracted
-    from the training set.
+    """ 
+    The RandomSampleImputer() replaces missing data in each feature with a random
+    sample extracted from the variables in the training set.
     
-    This class works for both numerical and categorical variables.
-    
-    This class could be used at the end of each feature engineering pipeline
-    to tackle coming missing values not seen during training during model
-    deployment.
+    The RandomSampleImputer() works with both numerical and categorical variables.
     
     Note: random samples will vary from execution to execution. This may affect
     the results of your work. Remember to set a seed before running the
-    RandomSampleImputer.transform() method.
+    RandomSampleImputer().
     
-    This estimator stores a copy of the training set. Therefore, it can become
-    quite heavy. Also, it may not be GDPR compliant if you store Personal
-    Information in your training set.
+    There are 2 ways in which the seed can be set with the RandomSampleImputer():
+    If the seed = 'general' then the random_state can be either None or an integer.
+    The seed will be initialised to the random_state and all observations will be
+    imputed in one go.
+    If the seed = 'observation', then the random_state should be a variable name
+    or a list of variable names. The seed will be calculated, observation per 
+    observation, either adding or multiplying the variable values indicated in the
+    list passed to the random_state.
+    
+    For more details on why this functionality is important refer to the course 
+    Feature Engineering for Machine Learning in Udemy:
+    https://www.udemy.com/feature-engineering-for-machine-learning/
+    
+    Note, if the variables indicated in the random_state list are not numerical
+    the imputer will return an error.
+    
+    This estimator stores a copy of the training set when the fit() method is 
+    called. Therefore, the object can become quite heavy. Also, it may not be GDPR
+    compliant if your training dataset contains Personal Information.
     
     The transformer fills the missing data with a random sample from
     the training set.
     
     Parameters
     ----------
-    X : pandas dataframe of shape = [n_samples, n_features]
-        The training input samples.
-        Should be the entire dataframe, not just seleted variables.
-    y : None
-        y is not needed in this transformer, yet the sklearn pipeline API
-        requires this parameter for checking.
+    
+    random_state : int, str or list, default=None
+        The random_state can take an integer to set the seed when extracting the
+        random samples. Alternatively, it can take a variable name or a list of
+        variables, which values will be used to set the seed, observation per 
+        observation.
         
-    variables : list
-        The list of variables to be imputed. If none, it defaults to all
-        variables.
+    seed: str, default='general'
+        Indicates wheter the seed should be set for each observation to impute
+        or one seed should be used for a batch of imputations.
+        general: one seed will be used to impute the entire dataframe. This is 
+        the equivalent of setting the seed in pandas.sample(random_state)
+        observation: the seed will be set per each observation using the values
+        of the variables indicated in the random_state.
+        
+    seeding_method : str, default='add'
+        If more than one variable are indicated to seed the randoms sampling per
+        observation, you can choose to combine those values as an addition or a 
+        multiplication. Can take the values 'add' or 'multiply'.
+        
+    variables : list, default=None
+        The list of variables to be imputed. If None, the imputer will select 
+        all present in the train set.
         
     Attributes
     ----------
+    
     X : dataframe.
         Copy of the training dataframe from which to extract the random samples.
         
     """
     
-    def __init__(self, variables = None, random_state=0):
+    def __init__(self, variables = None, random_state = None, seed = 'general',
+                 seeding_method = 'add'):
         
-        self.variables = _define_variables(variables)            
+        if seed not in ['general', 'observation']:
+            raise ValueError("seed takes only values 'general' or 'observation'")
+            
+        if seeding_method not in ['add', 'multiply']:
+            raise ValueError("seeding_method takes only values 'add' or 'multiply'")
+            
+        if seed == 'general' and random_state:
+            if not isinstance(random_state, int):
+                raise ValueError("if the seed == 'general' the random state must take an integer")
+            
+        if isinstance(random_state, str):
+            random_state = list(random_state)
+        
+        self.variables = _define_variables(variables)
         self.random_state = random_state
+        self.seed = seed
+        self.seeding_method = seeding_method
 
 
     def fit(self, X, y=None):
-        """ Makes a copy of the desired variables of the dataframe, from
+        """ 
+        Makes a copy of the indicated variables in the training dataframe, from
         which it will randomly extract the values during transform.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Should be the entire dataframe, not just seleted variables.    
+            Can be the entire dataframe, not just seleted variables.    
         y : None
             y is not needed in this transformer, yet the sklearn pipeline API
             requires this parameter for checking.
-
         """
            
         if not self.variables:
@@ -411,16 +496,21 @@ class RandomSampleImputer(BaseEstimator, TransformerMixin):
         self.input_shape_ = X.shape         
         
         return self
+    
 
     def transform(self, X):
-        """ Replaces missing data with random values taken from the train set.
+        """
+        Replaces missing data with random values taken from the train set.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
+            
         Returns
         -------
+        
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe containing NO missing values for all indicated variables
         """
@@ -434,50 +524,77 @@ class RandomSampleImputer(BaseEstimator, TransformerMixin):
             raise ValueError('Number of columns in dataset is different from training set used to fit the imputer')
 
         X = X.copy()
-        for feature in self.variables:
-            if X[feature].isnull().sum()>0:
-                n_samples = X[feature].isnull().sum()
-                
-                random_sample = self.X[feature].dropna().sample(n_samples,
-                                                                replace=True, 
-                                                                random_state=self.random_state
-                                                                )
-                
-                random_sample.index = X[X[feature].isnull()].index
-                X.loc[X[feature].isnull(), feature] = random_sample
-                
+        
+        # random sampling with a general seed
+        if self.seed=='general':
+            for feature in self.variables:
+                if X[feature].isnull().sum()>0:
+                    n_samples = X[feature].isnull().sum()
+                    
+                    random_sample = self.X[feature].dropna().sample(n_samples,
+                                                                    replace=True, 
+                                                                    random_state=self.random_state
+                                                                    )
+                    
+                    random_sample.index = X[X[feature].isnull()].index
+                    X.loc[X[feature].isnull(), feature] = random_sample
+                    
+        # random sampling observation per observation
+        elif self.seed=='observation':
+            for feature in self.variables:
+                if X[feature].isnull().sum()>0:
+                    df_ls = []
+                    for index, row in X[X[feature].isnull()].iterrows():
+
+                        if self.seeding_method=='add':
+                            random_state = int(row[self.random_state].sum())
+                        elif self.seeding_method == 'multiply':
+                            random_state = int(row[self.random_state].multiply())
+                            
+                        random_sample = self.X[feature].dropna().sample(1,
+                                                                    replace=True,
+                                                                    random_state=random_state
+                                                                    )
+                    
+                        random_sample.index = [row.name]
+                        df_ls.append(random_sample)
+                        
+                    random_sample = pd.concat(df_ls, axis=0)    
+                    X.loc[X[feature].isnull(), feature] = random_sample                
         return X
     
        
 
 class AddNaNBinaryImputer(BaseEstimator, TransformerMixin):
-    """ Adds an additional column / binary variable to capture missing
-    information for the selected variables.
+    """
+    The AddNaNBinaryImputer() adds an additional column or binary variable to
+    indicating if data is missing for the selected variables. AddNaNBinaryImputer()
+    will add as many missing indicators as variables are selected.
     
-    This class works for both numerical and categorical variables.
-    
+    The AddNaNBinaryImputer() works with both numerical and categorical variables.
+    A list of variables can be indicated. If None, the imputer will select and 
+    add missing indicators to all variables present in the training set.
+        
     Parameters
     ----------
-    variables : list
-        The list of variables to be imputed. If none, it defaults to all
-        variables.
-        
-    Attributes
-    ----------
-     
+    
+    variables : list, default=None
+        The list of variables to be imputed. If None, the imputer will find and
+        select all variables.     
     """
     
     def __init__(self, variables=None):
-
         self.variables = _define_variables(variables)
             
 
     def fit(self, X, y=None):
-        """ Learns the variables for which the additional variable 
-        should be created.
+        """ 
+        Learns the variables for which the additionalmissing indicator will be
+        created.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
         y : None
@@ -493,20 +610,24 @@ class AddNaNBinaryImputer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        """ Adds the additional binary variables indicating the presence of 
-        NA per observation.
+        """ 
+        Adds the additional binary missing indicator variables indicating the
+        presence of missing data per observation.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
+            
         Returns
         -------
+        
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe containing the additional binary variables
         """
         # Check is fit had been called
-        check_is_fitted(self, ['variables'])
+        check_is_fitted(self, ['input_shape_'])
         
         # Check that the input is of the same shape as the one passed
         # during fit.
@@ -521,20 +642,19 @@ class AddNaNBinaryImputer(BaseEstimator, TransformerMixin):
     
  
 class ArbitraryNumberImputer(BaseNumericalTransformer):
-    """ Transforms features by replacing missing data in each feature
-    for a given value determined by the user.
+    """
+    The ArbitraryNumberImputer() transforms features by replacing missing data
+    in each feature for a given arbitrary value determined by the user.
        
     Parameters
     ----------
-    arbitrary_number : int or float
+    
+    arbitrary_number : int or float, default=-999
         the number to be used to replace missing data.
-    variables : list
-        The list of variables to be imputed. If none, it defaults to all numerical
-        type variables.
         
-    Attributes
-    ----------
-        
+    variables : list, default=None
+        The list of variables to be imputed. If None, the imputer will find and 
+        select all numerical type variables.        
     """
     
     def __init__(self, arbitrary_number = -999, variables = None):
@@ -544,23 +664,22 @@ class ArbitraryNumberImputer(BaseNumericalTransformer):
         else:
             raise ValueError('Arbitrary number must be numeric of type int or float')
         
-        self.arbitrary_number = arbitrary_number
-
         self.variables = _define_variables(variables)
         
 
     def fit(self, X, y=None):
-        """ Checks that the variables are categorical.
+        """
+        Checks that the variables are numerical.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
+            Can be the entire dataframe, not just the variables to impute.
         y : None
             y is not needed in this transformer, yet the sklearn pipeline API
             requires this parameter for checking.
-        variables: list of columns that should be transformed
-
         """
         super().fit(X,y)
                   
@@ -569,14 +688,18 @@ class ArbitraryNumberImputer(BaseNumericalTransformer):
         return self
 
     def transform(self, X):
-        """ Replaces missing data with the arbitrary values.
+        """
+        Replaces missing data with the arbitrary values.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
+            
         Returns
         -------
+        
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe containing no missing values for the selected
             variables

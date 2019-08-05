@@ -11,18 +11,23 @@ from feature_engine.base_transformers import BaseNumericalTransformer, _define_v
 
 
 class LogTransformer(BaseNumericalTransformer):
-    """ Applies the logarithmic transformation to the numerical variables.
+    """
+    The LogTransformer() applies the logarithmic transformation to numerical
+    variables.
     
-    The transformer only works with numerical non-negative values.
+    The LogTransformer() only works with numerical non-negative values.
+    
+    The LogTransformer() will transform only numerical variables. 
+    A list of variables can be passed as an argument. But, if no variables are 
+    indicated, the transformer will automatically select and transform numerical 
+    variables and ignore the rest.
         
     Parameters
     ----------
-    variables : list
-        The list of numerical variables that will be transformed. If none, it 
-        defaults to all numerical type variables.
-        
-    Attributes
-    ----------   
+    
+    variables : list, default=None
+        The list of numerical variables to be transformed. If None, the transformer 
+        will find and select all numerical type variables.
     """
     
     def __init__(self, variables = None):
@@ -31,14 +36,16 @@ class LogTransformer(BaseNumericalTransformer):
     
     
     def fit(self, X, y=None):
-        """ Selects the numerical variables. Determines whether logarithm can
-        be applied on selected variables.
+        """
+        Selects the numerical variables and determines whether the logarithm
+        can be applied on selected variables (it checks if the variables are 
+        all positive).
         
         Parameters
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Should be the entire dataframe, not just seleted variables.
+            Can be the entire dataframe, not just seleted variables.
         y : None
             y is not needed in this transformer, yet the sklearn pipeline API
             requires this parameter for checking. You can either leave it as None
@@ -55,15 +62,18 @@ class LogTransformer(BaseNumericalTransformer):
 
 
     def transform(self, X):
-        """ Transforms the variables using logarithm.
+        """
+        Transforms the variables using logarithm.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
         -------
+        
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The log transformed dataframe. 
         """
@@ -81,18 +91,24 @@ class LogTransformer(BaseNumericalTransformer):
     
     
 class ReciprocalTransformer(BaseNumericalTransformer):
-    """ Applies the reciprocal transformation 1 / x to the numerical variables.
+    """
+    The ReciprocalTransformer() applies the reciprocal transformation 1 / x
+    to the numerical variables.
     
-    The trasnformer only works ith numerical variables, with non-zero values.
+    The ReciprocalTransformer() only works with numerical variables with non-zero
+    values.
+    
+    The ReciprocalTransformer() will transform only numerical variables. 
+    A list of variables can be passed as an argument. But, if no variables are 
+    indicated, the transformer will automatically select and transform numerical 
+    variables and ignore the rest.
     
     Parameters
     ----------   
-    variables : list
-        The list of numerical variables that will be discretised. If none, it 
-        defaults to all numerical type variables.
-        
-    Attributes
-    ---------- 
+    
+    variables : list, default=None
+        The list of numerical variables that will be transformed. If None, the 
+        transformer will automaticalle find and select all numerical type variables.
     """
     
     def __init__(self, variables = None):
@@ -104,9 +120,10 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         """        
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Should be the entire dataframe, not just seleted variables.
+            Can be the entire dataframe, not just seleted variables.
         y : None
             y is not needed in this encoder, yet the sklearn pipeline API
             requires this parameter for checking. You can either leave it as None
@@ -123,15 +140,18 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
 
     def transform(self, X):
-        """ Applies the reciprocal 1 / x transformation.
+        """
+        Applies the reciprocal 1 / x transformation.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
         -------
+        
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with reciprocally transformed variables 
         """
@@ -143,24 +163,32 @@ class ReciprocalTransformer(BaseNumericalTransformer):
             raise ValueError('Number of columns in dataset is different from training set used to fit the transformer')
 
         X = X.copy()
-        X.loc[:, self.variables] = 1 / (X.loc[:, self.variables])
+        X.loc[:, self.variables] = np.reciprocal(X.loc[:, self.variables])
             
         return X
     
     
-class ExponentialTransformer(BaseNumericalTransformer):
-    """ Applies the exponential transformation to numerical variables.
+class PowerTransformer(BaseNumericalTransformer):
+    """
+    The PowerTransformer() applies power or exponential transformations to
+    numerical variables.
     
-    The transformer works only with numerical variables.
+    The PowerTransformer() works only with numerical variables.
+    
+    The PowerTransformer() will transform only numerical variables. 
+    A list of variables can be passed as an argument. But, if no variables are 
+    indicated, the transformer will automatically select and transform numerical 
+    variables and ignore the rest.
     
     Parameters
     ----------
-    variables : list
-        The list of numerical variables that will be discretised. If none, it 
-        defaults to all numerical type variables.
+    
+    variables : list, default=None
+        The list of numerical variables that will be transformed. If None, the 
+        transformer will automatically find and select all numerical type variables.
         
-    Attributes
-    ----------  
+    exp : float, default=0.5
+        The power (or exponent).
     """
     
     def __init__(self, exp = 0.5, variables = None):
@@ -173,13 +201,15 @@ class ExponentialTransformer(BaseNumericalTransformer):
     
     
     def fit(self, X, y=None):
-        """ Learns the numerical variables.
+        """
+        Learns the numerical variables that should be transformed
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Should be the entire dataframe, not just seleted variables.
+            Can be the entire dataframe, not just seleted variables.
         y : None
             y is not needed in this transformer, yet the sklearn pipeline API
             requires this parameter for checking. You can either leave it as None
@@ -193,17 +223,20 @@ class ExponentialTransformer(BaseNumericalTransformer):
 
 
     def transform(self, X):
-        """ Applies the exponential transformation to the variables.
+        """
+        Applies the power transformation to the variables.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
         -------
+        
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
-            The dataframe with exponentially transformed variables.
+            The dataframe with power transformed variables.
         """
         
         # Check is fit had been called
@@ -213,24 +246,41 @@ class ExponentialTransformer(BaseNumericalTransformer):
             raise ValueError('Number of columns in dataset is different from training set used to fit the transformer')
 
         X = X.copy()
-        X.loc[:, self.variables] = X.loc[:, self.variables]**self.exp
+        X.loc[:, self.variables] = np.power(X.loc[:, self.variables], self.exp)
             
         return X
     
     
 class BoxCoxTransformer(BaseNumericalTransformer):
-    """ Applies the BoxCox transformation to the numerical variables.
+    """
+    The BoxCoxTransformer() applies the BoxCox transformation to the numerical
+    variables.
     
-    Transformer works only with numerical variables.
+    The BoxCox transformation implemented by this transformer is that of
+    SciPy.stats:
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.boxcox.html
+    
+    The BoxCoxTransformer() works only with numerical positive variables (>=0, 
+    the transformer also works for zero values).
+
+    The BoxCoxTransformer() will transform only numerical variables. 
+    A list of variables can be passed as an argument. But, if no variables are 
+    indicated, the transformer will automatically select and transform numerical 
+    variables and ignore the rest.
     
     Parameters
     ----------    
-    variables : list
-        The list of numerical variables that will be discretised. If none, it 
-        defaults to all numerical type variables.
+    
+    variables : list, default=None
+        The list of numerical variables that will be transformed. If None, the 
+        transformer will automaticalle find and select all numerical type variables.
         
     Attributes
-    ----------  
+    ----------
+    
+    lamda_dict_ : dictionary
+        The dictionary containing the {variable: best exponent for the BoxCox
+        transfomration} pairs.
     """
     
     def __init__(self, variables = None):
@@ -239,16 +289,15 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     
     
     def fit(self, X, y=None):
-        """ Learns the numerical variables. Captures the optimal lambda for
-        the transformation.
-        
-        More detail on the functionality of BoxCox to come...
+        """
+        Learns the numerical variables. Captures the optimal lambda for
+        the BoxCox transformation.
         
         Parameters
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Should be the entire dataframe, not just seleted variables.
+            Can be the entire dataframe, not just seleted variables.
         y : None
             y is not needed in this transformer, yet the sklearn pipeline API
             requires this parameter for checking. You can either leave it as None
@@ -257,10 +306,13 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         super().fit(X, y)
         
-        self.lambda_dict = {}
+        if (X[self.variables]<0).all().all():
+            raise ValueError("Some variables contain negative values, try Yeo-Johnson transformation instead")
+        
+        self.lambda_dict_ = {}
         
         for var in self.variables:
-            x, self.lambda_dict[var] = stats.boxcox(X[var]) 
+            _, self.lambda_dict_[var] = stats.boxcox(X[var]) 
             
         self.input_shape_ = X.shape
         
@@ -268,27 +320,126 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
 
     def transform(self, X):
-        """ Applies the BoxCox trasformation.
+        """
+        Applies the BoxCox transformation.
         
         Parameters
         ----------
+        
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
         -------
+        
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with the transformed variables.
         """
         
         # Check is fit had been called
-        check_is_fitted(self, ['input_shape_', 'lambda_dict'])
+        check_is_fitted(self, ['input_shape_', 'lambda_dict_'])
         
         if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the transformed')
+            raise ValueError('Number of columns in dataset is different from training set used to fit the transformer')
 
         X = X.copy()
         for feature in self.variables:
-            X[feature] = stats.boxcox(X[feature], lmbda=self.lambda_dict[feature]) 
+            X[feature] = stats.boxcox(X[feature], lmbda=self.lambda_dict_[feature]) 
+            
+        return X
+
+
+class YeoJohnsonTransformer(BaseNumericalTransformer):
+    """
+    The YeoJohnsonTransformer() applies the Yeo-Johnson transformation to the
+    numerical variables.
+    
+    The Yeo-Johnson transformation implemented by this transformer is that of
+    SciPy.stats:
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.yeojohnson.html
+    
+    The YeoJohnsonTransformer() works only with numerical variables.
+
+    The YeoJohnsonTransformer() will transform only numerical variables.
+    A list of variables can be passed as an argument. But, if no variables are 
+    indicated, the transformer will automatically select and transform numerical 
+    variables and ignore the rest.
+    
+    Parameters
+    ----------
+    
+    variables : list, default=None
+        The list of numerical variables that will be trasnformed. If None, the 
+        transformer will automatically find and select all numerical type variables.
+        
+    Attributes
+    ----------
+    
+    lamda_dict_ : dictionary
+        The dictionary containing the {variable: best lambda for the Yeo-Johnson
+        transfomration} pairs.
+    """
+    
+    def __init__(self, variables = None):
+        
+        self.variables = _define_variables(variables)
+    
+    
+    def fit(self, X, y=None):
+        """
+        Learns the numerical variables. Captures the optimal lambda for
+        the transformation.
+        
+        Parameters
+        ----------
+        
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The training input samples.
+            Can be the entire dataframe, not just seleted variables.
+        y : None
+            y is not needed in this transformer, yet the sklearn pipeline API
+            requires this parameter for checking. You can either leave it as None
+            or pass y.
+        """
+
+        super().fit(X, y)
+        
+        self.lambda_dict_ = {}
+        
+        for var in self.variables:
+        	X[var] = X[var].astype('float') # to avoid NumPy error
+        	_, self.lambda_dict_[var] = stats.yeojohnson(X[var])
+            
+        self.input_shape_ = X.shape
+        
+        return self
+
+
+    def transform(self, X):
+        """
+        Applies the BoxCox trasformation.
+        
+        Parameters
+        ----------
+        
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The input samples.
+
+        Returns
+        -------
+        
+        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+            The dataframe with the transformed variables.
+        """
+        
+        # Check is fit had been called
+        check_is_fitted(self, ['input_shape_', 'lambda_dict_'])
+        
+        if X.shape[1] != self.input_shape_[1]:
+            raise ValueError('Number of columns in dataset is different from training set used to fit the transformer')
+
+        X = X.copy()
+        for feature in self.variables:
+            X[feature] = stats.yeojohnson(X[feature], lmbda=self.lambda_dict_[feature]) 
             
         return X
