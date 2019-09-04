@@ -149,7 +149,7 @@ Feature-engine's transformers can be assembled within a Scikit-learn pipeline. T
 	print('Lasso Linear Model train rmse: {}'.format(sqrt(mean_squared_error(y_train, np.exp(pred_train)))))
 	print()
 	print('Lasso Linear Model test mse: {}'.format(mean_squared_error(y_test, np.exp(pred_test))))
-	print('Lasso Linear Model train rmse: {}'.format(sqrt(mean_squared_error(y_test, np.exp(pred_test)))))
+	print('Lasso Linear Model test rmse: {}'.format(sqrt(mean_squared_error(y_test, np.exp(pred_test)))))
 
 
 .. code:: python
