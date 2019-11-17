@@ -196,7 +196,7 @@ class EndTailImputer(BaseNumericalImputer):
         
         elif self.tail == 'left':
             if self.distribution == 'gaussian':
-                self.imputer_dict_ = (X[self.variables].mean()-self.fold*X[self.variable_].std()).to_dict()
+                self.imputer_dict_ = (X[self.variables].mean()-self.fold*X[self.variables].std()).to_dict()
                 
             elif self.distribution == 'skewed':
                 IQR = X[self.variables].quantile(0.75) - X[self.variables].quantile(0.25)

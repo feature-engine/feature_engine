@@ -3,13 +3,18 @@ from setuptools import find_packages, setup
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-# What packages are required for this module to be executed?
+# Packages required for this module to be executed
 def list_reqs(fname='requirements.txt'):
     with open(fname) as fd:
         return fd.read().splitlines()
+
+def list_test_reqs(fname='test_requirements.txt'):
+    with open(fname) as fd:
+        return fd.read().splitlines()
+
         
 setup(name='feature_engine',
-      version='0.3.0',
+      version='0.3.1',
       description='Feature engineering package that follows sklearn functionality',
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -19,7 +24,7 @@ setup(name='feature_engine',
       packages=['feature_engine'],
       license= 'BSD 3 clause',
       install_requires=list_reqs(),
-      #packages=find_packages(exclude=('tests',)),
+      tests_require=list_test_reqs(),
       classifiers=[
         "Programming Language :: Python :: 3",
         #"License :: OSI Approved :: 'BSD 3 clause'",
