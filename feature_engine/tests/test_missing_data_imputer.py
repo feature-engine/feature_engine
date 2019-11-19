@@ -12,9 +12,13 @@ from feature_engine.missing_data_imputers import MeanMedianImputer
 from feature_engine.missing_data_imputers import RandomSampleImputer
 from feature_engine.missing_data_imputers import EndTailImputer
 from feature_engine.missing_data_imputers import CategoricalVariableImputer
+from feature_engine.missing_data_imputers import ArbitraryNumberImputer
+from feature_engine.missing_data_imputers import FrequentCategoryImputer
+from feature_engine.missing_data_imputers import AddNaNBinaryImputer
 
 
 df_test = pd.read_csv(filename)
+
 
 def test_MeanMedianImputer():
     imputer = MeanMedianImputer(imputation_method='median', variables=['Age'])
@@ -23,6 +27,7 @@ def test_MeanMedianImputer():
     df_transf = df_test.copy()
     df_transf['Age'] = df_test['Age'].fillna(31.5)
     pd.testing.assert_frame_equal(X, df_transf)
+    assert imputer.variables == ['Age']
     assert imputer.input_shape_ == (100,3)
     assert imputer.imputer_dict_ == {'Age':31.5}
     assert X['Age'].isnull().sum() == 0
@@ -33,6 +38,7 @@ def test_MeanMedianImputer():
     df_transf = df_test.copy()
     df_transf['Age'] = df_test['Age'].fillna(29.946315789473687)
     pd.testing.assert_frame_equal(X, df_transf)
+    assert imputer.variables == ['Age']
     assert imputer.input_shape_ == (100,3)
     assert imputer.imputer_dict_ == {'Age':29.946315789473687}
     assert X['Age'].isnull().sum() == 0
@@ -43,6 +49,7 @@ def test_RandomSampleImputer():
     imputer.fit(df_test)
     X = imputer.transform(df_test)
     pd.testing.assert_frame_equal(imputer.X, df_test)
+    assert imputer.variables == ['Age', 'Cabin', 'Embarked']
     assert imputer.input_shape_ == (100,3)
     assert np.sum(X.isnull().sum()) == 0
     
@@ -54,6 +61,7 @@ def test_EndTailImputer():
     df_transf = df_test.copy()
     df_transf['Age'] = df_test['Age'].fillna(73.98313089014289)
     pd.testing.assert_frame_equal(X, df_transf)
+    assert imputer.variables == ['Age']
     assert imputer.input_shape_ == (100,3)
     assert imputer.imputer_dict_ == {'Age':73.98313089014289}
     assert X['Age'].isnull().sum() == 0
@@ -99,7 +107,7 @@ def test_EndTailImputer():
     assert X['Age'].isnull().sum() == 0
     
     
-def test_CategoricalImputer():
+def test_CategoricalVariableImputer():
     imputer = CategoricalVariableImputer(variables=['Cabin', 'Embarked'])
     imputer.fit(df_test)
     X = imputer.transform(df_test)
@@ -109,3 +117,35 @@ def test_CategoricalImputer():
     pd.testing.assert_frame_equal(X, df_transf)
     assert imputer.input_shape_ == (100,3)
     assert np.sum(X[['Cabin', 'Embarked']].isnull().sum()) == 0
+
+
+def test_ArbitraryNumberImputer():
+    imputer = ArbitraryNumberImputer()
+    imputer.fit(df_test)
+    X = imputer.transform(df_test)
+    df_transf = df_test.copy()
+    df_transf['Age'] = df_test['Age'].fillna(-999)
+    pd.testing.assert_frame_equal(X, df_transf)
+
+    assert imputer.input_shape_ == (100,3)
+    assert imputer.arbitrary_number == -999
+#    assert imputer.imputer_dict_ == {'Age':100,'Cabin':'Missing','Embarked':'Unknown'}
+    assert np.sum(X['Age'].isnull().sum()) == 0
+    assert np.sum(X[imputer.variables].isnull().sum().sum()) == 0
+
+# def test_FrequentCategoryImputer():
+#     pass
+
+
+def test_AddNaNBinaryImputer():
+    imputer = AddNaNBinaryImputer(variables=['Age', 'Cabin'])
+    imputer.fit(df_test)
+    X = imputer.transform(df_test)
+    df_transf = df_test.copy()
+    df_transf['Age_na'] = np.where(df_test['Age'].isnull(),1,0)
+    df_transf['Cabin_na'] = np.where(df_test['Cabin'].isnull(),1,0)
+    pd.testing.assert_frame_equal(X, df_transf) 
+    assert imputer.variables == ['Age', 'Cabin']
+    assert imputer.input_shape_ == (100,3)
+    assert X.shape == (100,5)
+    
