@@ -1,9 +1,6 @@
 # Authors: Soledad Galli <solegalli1@gmail.com>
 # License: BSD 3 clause
 
-#import numpy as np
-
-#from sklearn.utils.validation import check_is_fitted
 from feature_engine.base_transformers import BaseOutlierRemover, _define_variables
             
 
