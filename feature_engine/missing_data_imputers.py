@@ -122,7 +122,7 @@ class EndTailImputer(BaseNumericalImputer):
     
     distribution : str, default=gaussian 
         Desired distribution. Can take 'gaussian' or 'skewed'.
-        gaussian: the encoder will use the Qaussian limits  to find the values
+        gaussian: the encoder will use the Gaussian limits  to find the values
         to replace missing data.
         skewed: the encoder will use the IQR limits to find the values to replace
         missing data.
