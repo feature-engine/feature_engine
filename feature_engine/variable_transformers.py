@@ -1,19 +1,19 @@
-# Authors: Soledad Galli <solegalli1@gmail.com>
+# Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
 import numpy as np
-#import pandas as pd
-#import warnings
-import scipy.stats as stats 
+import scipy.stats as stats
 
-from sklearn.utils.validation import check_is_fitted
-from feature_engine.base_transformers import BaseNumericalTransformer, _define_variables
+from feature_engine.utils import _define_variables
+from feature_engine.base_transformers import BaseNumericalTransformer
 
 
 class LogTransformer(BaseNumericalTransformer):
     """
-    The LogTransformer() applies the logarithmic transformation to numerical
-    variables.
+    The LogTransformer() applies the natural logarithmic transformation to numerical
+    variables. The natural logarithm is logarithm in base e.
+
+    Add option to log base 10
     
     The LogTransformer() only works with numerical non-negative values.
     
@@ -29,12 +29,15 @@ class LogTransformer(BaseNumericalTransformer):
         The list of numerical variables to be transformed. If None, the transformer 
         will find and select all numerical type variables.
     """
-    
-    def __init__(self, variables = None):
-        
+
+    def __init__(self, base='e', variables=None):
+
+        if base not in ['e', '10']:
+            raise ValueError("base can take only 10 or 'e as values")
+
         self.variables = _define_variables(variables)
-    
-    
+        self.base = base
+
     def fit(self, X, y=None):
         """
         Selects the numerical variables and determines whether the logarithm
@@ -51,15 +54,16 @@ class LogTransformer(BaseNumericalTransformer):
             requires this parameter for checking. You can either leave it as None
             or pass y.
         """
+        # check input dataframe
+        X = super().fit(X)
 
-        super().fit(X, y)
-        
-        if (X[self.variables]<=0).all().all():
+        # check contains zero or negative values
+        if (X[self.variables] <= 0).any().any():
             raise ValueError("Some variables contain zero or negative values, can't apply log")
 
-        self.input_shape_ = X.shape             
-        return self
+        self.input_shape_ = X.shape
 
+        return self
 
     def transform(self, X):
         """
@@ -77,19 +81,22 @@ class LogTransformer(BaseNumericalTransformer):
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The log transformed dataframe. 
         """
-        
-        # Check is fit had been called
-        check_is_fitted(self, ['input_shape_'])
-        
-        if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the transformer')
+        # check input dataframe and if class was fitted
+        X = super().transform(X)
 
-        X = X.copy()
-        X.loc[:, self.variables] = np.log(X.loc[:, self.variables])
-            
+        # check contains zero or negative values
+        if (X[self.variables] <= 0).any().any():
+            raise ValueError("Some variables contain zero or negative values, can't apply log")
+
+        # transform
+        if self.base == 'e':
+            X.loc[:, self.variables] = np.log(X.loc[:, self.variables])
+        elif self.base == '10':
+            X.loc[:, self.variables] = np.log10(X.loc[:, self.variables])
+
         return X
-    
-    
+
+
 class ReciprocalTransformer(BaseNumericalTransformer):
     """
     The ReciprocalTransformer() applies the reciprocal transformation 1 / x
@@ -110,12 +117,11 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         The list of numerical variables that will be transformed. If None, the 
         transformer will automaticalle find and select all numerical type variables.
     """
-    
-    def __init__(self, variables = None):
-        
+
+    def __init__(self, variables=None):
+
         self.variables = _define_variables(variables)
-    
-    
+
     def fit(self, X, y=None):
         """        
         Parameters
@@ -129,15 +135,15 @@ class ReciprocalTransformer(BaseNumericalTransformer):
             requires this parameter for checking. You can either leave it as None
             or pass y.
         """
+        # check input dataframe
+        X = super().fit(X)
 
-        super().fit(X, y)
-        
-        if (X[self.variables]==0).all().all():
+        # check if the variables contain the value 0
+        if (X[self.variables] == 0).any().any():
             raise ValueError("Some variables contain the value zero, can't apply reciprocal transformation")
 
-        self.input_shape_ = X.shape             
+        self.input_shape_ = X.shape
         return self
-
 
     def transform(self, X):
         """
@@ -155,19 +161,19 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with reciprocally transformed variables 
         """
-        
-        # Check is fit had been called
-        check_is_fitted(self, ['input_shape_'])
-        
-        if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the transformer')
+        # check input dataframe and if class was fitted
+        X = super().transform(X)
 
-        X = X.copy()
+        # check if the variables contain the value 0
+        if (X[self.variables] == 0).any().any():
+            raise ValueError("Some variables contain the value zero, can't apply reciprocal transformation")
+
+        # transform
         X.loc[:, self.variables] = np.reciprocal(X.loc[:, self.variables])
-            
+
         return X
-    
-    
+
+
 class PowerTransformer(BaseNumericalTransformer):
     """
     The PowerTransformer() applies power or exponential transformations to
@@ -190,16 +196,15 @@ class PowerTransformer(BaseNumericalTransformer):
     exp : float, default=0.5
         The power (or exponent).
     """
-    
-    def __init__(self, exp = 0.5, variables = None):
-        
+
+    def __init__(self, exp=0.5, variables=None):
+
         if not isinstance(exp, float) and not isinstance(exp, int):
             raise ValueError('exp must be a float or an int')
-            
+
         self.exp = exp
         self.variables = _define_variables(variables)
-    
-    
+
     def fit(self, X, y=None):
         """
         Learns the numerical variables that should be transformed
@@ -215,12 +220,11 @@ class PowerTransformer(BaseNumericalTransformer):
             requires this parameter for checking. You can either leave it as None
             or pass y.
         """
+        # check input dataframe
+        X = super().fit(X)
 
-        super().fit(X, y)
-        
-        self.input_shape_ = X.shape             
+        self.input_shape_ = X.shape
         return self
-
 
     def transform(self, X):
         """
@@ -238,19 +242,15 @@ class PowerTransformer(BaseNumericalTransformer):
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with power transformed variables.
         """
-        
-        # Check is fit had been called
-        check_is_fitted(self, ['input_shape_'])
-        
-        if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the transformer')
+        # check input dataframe and if class was fitted
+        X = super().transform(X)
 
-        X = X.copy()
+        # transform
         X.loc[:, self.variables] = np.power(X.loc[:, self.variables], self.exp)
-            
+
         return X
-    
-    
+
+
 class BoxCoxTransformer(BaseNumericalTransformer):
     """
     The BoxCoxTransformer() applies the BoxCox transformation to the numerical
@@ -282,12 +282,11 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         The dictionary containing the {variable: best exponent for the BoxCox
         transfomration} pairs.
     """
-    
-    def __init__(self, variables = None):
-        
+
+    def __init__(self, variables=None):
+
         self.variables = _define_variables(variables)
-    
-    
+
     def fit(self, X, y=None):
         """
         Learns the numerical variables. Captures the optimal lambda for
@@ -303,21 +302,20 @@ class BoxCoxTransformer(BaseNumericalTransformer):
             requires this parameter for checking. You can either leave it as None
             or pass y.
         """
+        # check input dataframe
+        X = super().fit(X)
 
-        super().fit(X, y)
-        
-        if (X[self.variables]<0).all().all():
+        if (X[self.variables] < 0).any().any():
             raise ValueError("Some variables contain negative values, try Yeo-Johnson transformation instead")
-        
-        self.lambda_dict_ = {}
-        
-        for var in self.variables:
-            _, self.lambda_dict_[var] = stats.boxcox(X[var]) 
-            
-        self.input_shape_ = X.shape
-        
-        return self
 
+        self.lambda_dict_ = {}
+
+        for var in self.variables:
+            _, self.lambda_dict_[var] = stats.boxcox(X[var])
+
+        self.input_shape_ = X.shape
+
+        return self
 
     def transform(self, X):
         """
@@ -335,17 +333,17 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with the transformed variables.
         """
-        
-        # Check is fit had been called
-        check_is_fitted(self, ['input_shape_', 'lambda_dict_'])
-        
-        if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the transformer')
+        # check input dataframe and if class was fitted
+        X = super().transform(X)
 
-        X = X.copy()
+        # check if variable contains negative numbers
+        if (X[self.variables] < 0).any().any():
+            raise ValueError("Some variables contain negative values, try Yeo-Johnson transformation instead")
+
+        # transform
         for feature in self.variables:
-            X[feature] = stats.boxcox(X[feature], lmbda=self.lambda_dict_[feature]) 
-            
+            X[feature] = stats.boxcox(X[feature], lmbda=self.lambda_dict_[feature])
+
         return X
 
 
@@ -379,12 +377,11 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         The dictionary containing the {variable: best lambda for the Yeo-Johnson
         transfomration} pairs.
     """
-    
-    def __init__(self, variables = None):
-        
+
+    def __init__(self, variables=None):
+
         self.variables = _define_variables(variables)
-    
-    
+
     def fit(self, X, y=None):
         """
         Learns the numerical variables. Captures the optimal lambda for
@@ -401,19 +398,20 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
             requires this parameter for checking. You can either leave it as None
             or pass y.
         """
+        # check input dataframe
+        X = super().fit(X)
 
-        super().fit(X, y)
-        
         self.lambda_dict_ = {}
-        
-        for var in self.variables:
-        	X[var] = X[var].astype('float') # to avoid NumPy error
-        	_, self.lambda_dict_[var] = stats.yeojohnson(X[var])
-            
-        self.input_shape_ = X.shape
-        
-        return self
 
+        # to avoid NumPy error
+        X[self.variables] = X[self.variables].astype('float')
+
+        for var in self.variables:
+            _, self.lambda_dict_[var] = stats.yeojohnson(X[var])
+
+        self.input_shape_ = X.shape
+
+        return self
 
     def transform(self, X):
         """
@@ -431,15 +429,10 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with the transformed variables.
         """
-        
-        # Check is fit had been called
-        check_is_fitted(self, ['input_shape_', 'lambda_dict_'])
-        
-        if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the transformer')
+        # check input dataframe and if class was fitted
 
-        X = X.copy()
+        X = super().transform(X)
         for feature in self.variables:
-            X[feature] = stats.yeojohnson(X[feature], lmbda=self.lambda_dict_[feature]) 
-            
+            X[feature] = stats.yeojohnson(X[feature], lmbda=self.lambda_dict_[feature])
+
         return X

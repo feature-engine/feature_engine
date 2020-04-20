@@ -1,17 +1,26 @@
-# Authors: Soledad Galli <solegalli1@gmail.com>
+# Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import pandas as pd
 import numpy as np
-#import warnings
+import pandas as pd
+import warnings
 
-#from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
-from feature_engine.base_transformers import BaseCategoricalEncoder, _define_variables
+from feature_engine.utils import _is_dataframe, _check_input_matches_training_df, _check_contains_na
+from feature_engine.utils import _find_categorical_variables, _define_variables
+from feature_engine.base_transformers import BaseCategoricalTransformer
 
 
+def _check_encoding_dictionary(dictionary):
+    # check that there is a dictionary with category to number pairs
+    if len(dictionary) == 0:
+        raise ValueError('Encoder could not be fitted. Check the parameters and the variables '
+                         'in your dataframe.')
+    return dictionary
 
-class CountFrequencyCategoricalEncoder(BaseCategoricalEncoder):
+
+class CountFrequencyCategoricalEncoder(BaseCategoricalTransformer):
     """ 
     The CountFrequencyCategoricalEncoder() replaces categories by the count of
     observations per category or by the percentage of observations per category.
@@ -21,11 +30,13 @@ class CountFrequencyCategoricalEncoder(BaseCategoricalEncoder):
     will be replaced by 0.1.
     
     The CountFrequencyCategoricalEncoder() will encode only categorical variables
-    (type 'object'). A list of variables can be passed as an argument. If no 
-    variables are passed as argument, the encoder will only encode categorical
-    variables (object type) and ignore the rest.
+    (type 'object'). A list of variables to be encoded can be passed as argument.
+    Alternatively, the encoder will find and encode all categorical variables
+    (object type).
     
-    The encoder first maps the categories to the numbers for each variable (fit).
+    The encoder first maps the categories to the numbers (counts or frequencies)
+    for each variable (fit).
+
     The encoder then transforms the categories to those mapped numbers (transform).
     
     Parameters
@@ -34,30 +45,22 @@ class CountFrequencyCategoricalEncoder(BaseCategoricalEncoder):
     encoding_method : str, default='count'
         Desired method of encoding.
         'count': number of observations per category
-        'frequency' : percentage of observations per category
+        'frequency': percentage of observations per category
     
     variables : list
         The list of categorical variables that will be encoded. If None, the 
         encoder will find and transform all object type variables.
-        
-    Attributes
-    ----------
-    
-    encoder_dict_: dictionary
-        The dictionary containing the {count / frequency: category} pairs used
-        to replace categories for every variable.    
     """
-    
-    def __init__(self, encoding_method = 'count', variables = None):
-        
+
+    def __init__(self, encoding_method='count', variables=None):
+
         if encoding_method not in ['count', 'frequency']:
             raise ValueError("encoding_method takes only values 'count' and 'frequency'")
-            
-        self.encoding_method = encoding_method       
-        self.variables = _define_variables(variables)
-           
 
-    def fit(self, X, y = None):
+        self.encoding_method = encoding_method
+        self.variables = _define_variables(variables)
+
+    def fit(self, X, y=None):
         """
         Learns the numbers that should be used to replace the categories in
         each variable.
@@ -67,53 +70,68 @@ class CountFrequencyCategoricalEncoder(BaseCategoricalEncoder):
         
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Can be the entire dataframe, not just seleted variables.
+            The user can pass the entire dataframe.
         y : None
             y is not needed in this encoder, yet the sklearn pipeline API
-            requires this parameter for checking. You can either leave it as None
+            requires this parameter. You can either leave it as None
             or pass y.
+
+        Attributes
+        ----------
+
+        encoder_dict_: dictionary
+            The dictionary containing the {count / frequency: category} pairs used
+            to replace categories for every variable.
         """
-        # brings the variables from the BaseEncoder
-        super().fit(X, y)
-        
+
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # find categorical variables or check that those entered by the user
+        # are of type object
+        self.variables = _find_categorical_variables(X, self.variables)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables)
+
         self.encoder_dict_ = {}
-        
+
+        # learn encoding maps
         for var in self.variables:
             if self.encoding_method == 'count':
                 self.encoder_dict_[var] = X[var].value_counts().to_dict()
-                
+
             elif self.encoding_method == 'frequency':
                 n_obs = np.float(len(X))
-                self.encoder_dict_[var] = (X[var].value_counts() / n_obs).to_dict()   
-        
-        if len(self.encoder_dict_)==0:
-            raise ValueError('Encoder could not be fitted. Check that correct parameters and dataframe were passed during training')
-            
+                self.encoder_dict_[var] = (X[var].value_counts() / n_obs).to_dict()
+
+        self.encoder_dict_ = _check_encoding_dictionary(self.encoder_dict_)
+
         self.input_shape_ = X.shape
-        
+
         return self
 
 
-
-class OrdinalCategoricalEncoder(BaseCategoricalEncoder):
+class OrdinalCategoricalEncoder(BaseCategoricalTransformer):
     """ 
     The OrdinalCategoricalEncoder() replaces categories by ordinal numbers 
     (0, 1, 2, 3, etc). The numbers can be ordered based on the mean of the target
     per category, or assigned arbitrarily.
     
-    For the ordered ordinal encoding for example in the variable colour, if the
-    mean of the target for blue, red and grey is 0.5, 0.8 and 0.1 respectively,
-    blue is replaced by 1, red by 2 and grey by 0.
+    Ordered ordinal encoding:  for the variable colour, if the mean of the target
+    for blue, red and grey is 0.5, 0.8 and 0.1 respectively, blue is replaced by 1,
+    red by 2 and grey by 0.
     
-    For the arbitrary ordinal encoding the numbers will be assigned arbitrarily
-    to the categories, on a first seen first served basis.
+    Arbitrary ordinal encoding: the numbers will be assigned arbitrarily to the
+    categories, on a first seen first served basis.
     
-    The Encoder will encode only categorical variables (type 'object'). A list 
+    The encoder will encode only categorical variables (type 'object'). A list
     of variables can be passed as an argument. If no variables are passed as 
-    argument, the encoder will only encode categorical variables (object type)
-    and ignore the rest.
+    argument, the encoder will find and encode all categorical variables
+    (object type).
     
     The encoder first maps the categories to the numbers for each variable (fit).
+
     The encoder then transforms the categories to the mapped numbers (transform).
     
     Parameters
@@ -122,7 +140,7 @@ class OrdinalCategoricalEncoder(BaseCategoricalEncoder):
     encoding_method : str, default='ordered' 
         Desired method of encoding.
         'ordered': the categories are numbered in ascending order according to
-        the target mean per category.
+        the target mean value per category.
         'arbitrary' : categories are numbered arbitrarily.
         
     variables : list, default=None
@@ -135,16 +153,15 @@ class OrdinalCategoricalEncoder(BaseCategoricalEncoder):
     encoder_dict_: dictionary
         The dictionary containing the {ordinal number: category} pairs used
         to replace categories for every variable.
-        
-    """    
-    def __init__(self, encoding_method  = 'ordered', variables = None):
-        
+    """
+
+    def __init__(self, encoding_method='ordered', variables=None):
+
         if encoding_method not in ['ordered', 'arbitrary']:
             raise ValueError("encoding_method takes only values 'ordered' and 'arbitrary'")
-            
+
         self.encoding_method = encoding_method
         self.variables = _define_variables(variables)
-           
 
     def fit(self, X, y=None):
         """ Learns the numbers that should be used to replace the labels in each
@@ -155,57 +172,67 @@ class OrdinalCategoricalEncoder(BaseCategoricalEncoder):
         
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Can be the entire dataframe, not just seleted variables.
+            Can be the entire dataframe, not just the variables to be
+             encoded.
+
         y : Target. Can be None if selecting encoding_method = 'arbitrary'. 
         Otherwise, needs to be passed when fitting the transformer.
        
         """
-        # brings the variables from the BaseEncoder
-        super().fit(X, y)
-        
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # find categorical variables or check that those entered by the user
+        # are of type object
+        self.variables = _find_categorical_variables(X, self.variables)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables)
+
+        # join target to predictor variables
         if self.encoding_method == 'ordered':
             if y is None:
-                raise ValueError('Please provide a target (y) for this encoding method')
-                            
-            temp = pd.concat([X, y], axis=1)
-            temp.columns = list(X.columns)+['target']
+                raise ValueError('Please provide a target y for this encoding method')
 
-        
+            temp = pd.concat([X, y], axis=1)
+            temp.columns = list(X.columns) + ['target']
+
+        # find mappings
         self.encoder_dict_ = {}
-        
+
         for var in self.variables:
-            
+
             if self.encoding_method == 'ordered':
                 t = temp.groupby([var])['target'].mean().sort_values(ascending=True).index
-                
+
             elif self.encoding_method == 'arbitrary':
                 t = X[var].unique()
-                
-            self.encoder_dict_[var] = {k:i for i, k in enumerate(t, 0)}
-            
-        if len(self.encoder_dict_)==0:
-            raise ValueError('Encoder could not be fitted. Check that correct parameters and dataframe were passed during training')
-            
+
+            self.encoder_dict_[var] = {k: i for i, k in enumerate(t, 0)}
+
+        self.encoder_dict_ = _check_encoding_dictionary(self.encoder_dict_)
+
         self.input_shape_ = X.shape
-        
+
         return self
 
 
-
-class MeanCategoricalEncoder(BaseCategoricalEncoder):
+class MeanCategoricalEncoder(BaseCategoricalTransformer):
     """ 
-    The MeanCategoricalEncoder() replaces categories by the mean of the target. 
+    The MeanCategoricalEncoder() replaces categories by the mean value of the
+    target at each category.
     
     For example in the variable colour, if the mean of the target for blue, red
     and grey is 0.5, 0.8 and 0.1 respectively, blue is replaced by 0.5, red by 0.8
     and grey by 0.1.
     
-    The Encoder will encode only categorical variables (type 'object'). A list 
+    The encoder will encode only categorical variables (type 'object'). A list
     of variables can be passed as an argument. If no variables are passed as 
-    argument, the encoder will only encode categorical variables (object type)
-    and ignore the rest.
+    argument, the encoder will find and encode all categorical variables
+    (object type).
     
     The encoder first maps the categories to the numbers for each variable (fit).
+
     The encoder then transforms the categories to the mapped numbers (transform).
     
     Parameters
@@ -214,57 +241,61 @@ class MeanCategoricalEncoder(BaseCategoricalEncoder):
     variables : list, default=None
         The list of categorical variables that will be encoded. If None, the 
         encoder will find and select all object type variables.
-        
-    Attributes
-    ----------
-    
-    encoder_dict_: dictionary
-        The dictionary containing the {target mean: category} pairs used
-        to replace categories for every variable
-        
-    """    
-    def __init__(self, variables = None):
-        
+    """
+
+    def __init__(self, variables=None):
         self.variables = _define_variables(variables)
-           
 
     def fit(self, X, y):
         """
         Learns the numbers that should be used to replace the labels in each variable.
+        That is, the mean value of the target for each category of the variable.
         
         Parameters
         ----------
         
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Can be the entire dataframe, not just seleted variables.
+            Can be the entire dataframe, not just the variables to be encoded.
         y : Target
-       
+
+
+        Attributes
+        ----------
+
+        encoder_dict_: dictionary
+            The dictionary containing the {target mean: category} pairs used
+            to replace categories for every variable
         """
-        # brings the variables from the BaseEncoder
-        super().fit(X, y)
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # find categorical variables or check that those entered by the user
+        # are of type object
+        self.variables = _find_categorical_variables(X, self.variables)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables)
 
         if y is None:
-            raise ValueError('Please provide a target (y) for this encoding method')
-            
+            raise ValueError('Please provide a target y for this encoding method')
+
         temp = pd.concat([X, y], axis=1)
-        temp.columns = list(X.columns)+['target']
-        
+        temp.columns = list(X.columns) + ['target']
+
         self.encoder_dict_ = {}
-        
+
         for var in self.variables:
             self.encoder_dict_[var] = temp.groupby(var)['target'].mean().to_dict()
 
-        if len(self.encoder_dict_)==0:
-            raise ValueError('Encoder could not be fitted. Check that correct parameters and dataframe were passed during training')
-            
-        self.input_shape_ = X.shape
-            
-        return self
-    
+        self.encoder_dict_ = _check_encoding_dictionary(self.encoder_dict_)
 
-    
-class WoERatioCategoricalEncoder(BaseCategoricalEncoder):
+        self.input_shape_ = X.shape
+
+        return self
+
+
+class WoERatioCategoricalEncoder(BaseCategoricalTransformer):
     """ 
     The WoERatioCategoricalEncoder() replaces categories by the weight of evidence
     or by the ratio between the probability of the target = 1 and the probability
@@ -285,12 +316,13 @@ class WoERatioCategoricalEncoder(BaseCategoricalEncoder):
     Thus, if p(0) = 0 for the ratio encoder, or either p(0) = 0 or p(1) = 0 for
     woe, in any of the variables, the encoder will return an error.
        
-    The Encoder will encode only categorical variables (type 'object'). A list 
+    The encoder will encode only categorical variables (type 'object'). A list
     of variables can be passed as an argument. If no variables are passed as 
-    argument, the encoder will only encode categorical variables (object type)
-    and ignore the rest.
+    argument, the encoder will find and encode all categorical variables
+    (object type).
     
     The encoder first maps the categories to the numbers for each variable (fit).
+
     The encoder then transforms the categories into the mapped numbers (transform).
     
     Parameters
@@ -304,28 +336,20 @@ class WoERatioCategoricalEncoder(BaseCategoricalEncoder):
     variables : list, default=None
         The list of categorical variables that will be encoded. If None, the 
         encoder will find and select all object type variables.
-        
-    Attributes
-    ----------
-    
-    encoder_dict_: dictionary
-        The dictionary containing the {woe: category} pairs or the {prob ratio:
-        category} pairs used to replace the categories in each variable.
-        
-    """    
-    def __init__(self, encoding_method = 'woe', variables = None):
+    """
+
+    def __init__(self, encoding_method='woe', variables=None):
 
         if encoding_method not in ['woe', 'ratio']:
             raise ValueError("encoding_method takes only values 'woe' and 'ratio'")
-            
+
         self.encoding_method = encoding_method
         self.variables = _define_variables(variables)
-           
 
     def fit(self, X, y):
         """
         Learns the numbers that should be used to replace the categories in each
-        variable.
+        variable. That is the WoE or ratio of probability.
         
         Parameters
         ----------
@@ -334,76 +358,89 @@ class WoERatioCategoricalEncoder(BaseCategoricalEncoder):
             The training input samples.
             Can be the entire dataframe, not just seleted variables.
         y : Target, must be binary [0,1].
-       
+
+        Attributes
+        ----------
+
+        encoder_dict_: dictionary
+            The dictionary containing the {woe: category} pairs or the {prob ratio:
+            category} pairs used to replace the categories in each variable.
         """
-        
-        # brings the variables from the BaseEncoder
-        super().fit(X, y)
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # find categorical variables or check that those entered by the user
+        # are of type object
+        self.variables = _find_categorical_variables(X, self.variables)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables)
 
         if y is None:
-            raise ValueError('Please provide a target (y) for this encoding method')
-        
+            raise ValueError('Please provide a target y for this encoding method')
+
         # check that y is binary
-        if len( [x for x in y.unique() if x not in [0,1] ] ) > 0:
+        if len([x for x in y.unique() if x not in [0, 1]]) > 0:
             raise ValueError("This encoder is only designed for binary classification, values of y can be only 0 or 1")
-        
+
         temp = pd.concat([X, y], axis=1)
-        temp.columns = list(X.columns)+['target']
-        
-        self.encoder_dict_ = {}  
+        temp.columns = list(X.columns) + ['target']
+
+        self.encoder_dict_ = {}
+
         for var in self.variables:
             t = temp.groupby(var)['target'].mean()
-            t = pd.concat([t, 1-t], axis=1)
+            t = pd.concat([t, 1 - t], axis=1)
             t.columns = ['p1', 'p0']
-            
+
             if self.encoding_method == 'woe':
                 if not t.loc[t['p0'] == 0, :].empty or not t.loc[t['p1'] == 0, :].empty:
-                    raise ValueError("p(0) or p(1) for a category in variable {} is zero, log of zero is not defined".format(var))
+                    raise ValueError(
+                        "p(0) or p(1) for a category in variable {} is zero, log of zero is not defined".format(var))
                 else:
-                    self.encoder_dict_[var] = (np.log(t.p1/t.p0)).to_dict()
-                
+                    self.encoder_dict_[var] = (np.log(t.p1 / t.p0)).to_dict()
+
             elif self.encoding_method == 'ratio':
                 if not t.loc[t['p0'] == 0, :].empty:
-                    raise ValueError("p(0) for a category in variable {} is zero, division by is not defined".format(var))
+                    raise ValueError(
+                        "p(0) for a category in variable {} is zero, division by is not defined".format(var))
                 else:
-                    self.encoder_dict_[var] = (t.p1/t.p0).to_dict()  
+                    self.encoder_dict_[var] = (t.p1 / t.p0).to_dict()
 
-        if len(self.encoder_dict_)==0:
-            raise ValueError('Encoder could not be fitted. Check that correct parameters and dataframe were passed during training')
-            
+        self.encoder_dict_ = _check_encoding_dictionary(self.encoder_dict_)
+
         self.input_shape_ = X.shape
-               
+
         return self
 
 
-
-class OneHotCategoricalEncoder(BaseCategoricalEncoder):
+class OneHotCategoricalEncoder(BaseEstimator, TransformerMixin):
     """ 
     One hot encoding consists in replacing the categorical variable by a
-    combination of boolean variables which take value 0 or 1, to indicate if
+    combination of binary variables which take value 0 or 1, to indicate if
     a certain category is present for an observation.
     
-    Each one of the boolean variables are also known as dummy variables or binary
-    variables. For example, from the categorical variable "Gender" with categories
-    'female' and 'male', we can generate the boolean variable "female", which 
-    takes 1 if the person is female or 0 otherwise. We can also generate the 
-    variable male, which takes 1 if the person is "male" and 0 otherwise.
+    Each one of the binary variables are also known as dummy variables. For
+    example, from the categorical variable "Gender" with categories 'female'
+    and 'male', we can generate the boolean variable "female", which takes 1
+    if the person is female or 0 otherwise. We can also generate the variable
+    male, which takes 1 if the person is "male" and 0 otherwise.
     
     The encoder has the option to generate one dummy variable per category present
     in a variable, or to create dummy variables only for the top n most popular
-    categories, that is, the categories that are present in the majority of the
+    categories, that is, the categories that are shown by the majority of the
     observations.
     
     If dummy variables are created for all the categories of a variable, you have
     the option to drop one category not to create information redundancy (encoding
     into k-1 variables, where k is the number if unique categories).
     
-    The Encoder will encode only categorical variables (type 'object'). A list 
+    The encoder will encode only categorical variables (type 'object'). A list
     of variables can be passed as an argument. If no variables are passed as 
-    argument, the encoder will only encode categorical variables (object type)
-    and ignore the rest.
+    argument, the encoder will find and encode categorical variables (object type).
     
     The encoder first finds the categories to be encoded for each variable (fit).
+
     The encoder then creates one dummy variable per category for each variable
     (transform).
     
@@ -412,7 +449,7 @@ class OneHotCategoricalEncoder(BaseCategoricalEncoder):
     
     top_categories: int, default=None
         If None is selected, a dummy variable will be created for each category
-        per variable.If set to True, the encoder will find the most frequent
+        of the variable. If set to True, the encoder will find the most frequent
         categories. top_categories indicates the number of most frequent categories
         to encode. Dummy variables will be created only for those popular categories
         and the rest will be dropped. Note that this is equivalent to grouping all the
@@ -426,29 +463,21 @@ class OneHotCategoricalEncoder(BaseCategoricalEncoder):
         Only used if top_categories = None. It indicates whether to create dummy
         variables for all the available categories, or if set to True, it will
         ignore the last variable of the list.
-        
-    Attributes
-    ----------
-    
-    encoder_dict_: dictionary
-        The dictionary containg the frequent categories (that will be kept)
-        for each variable. 
-        
-    """  
-    def __init__(self, top_categories = None, variables = None, drop_last = False):
+    """
+
+    def __init__(self, top_categories=None, variables=None, drop_last=False):
 
         if top_categories:
             if not isinstance(top_categories, int):
-                raise ValueError("top_categories takes only integer numbers, 1, 2, 3, etc.")            
-        self.top_categories = top_categories
-        
+                raise ValueError("top_categories takes only integer numbers, 1, 2, 3, etc.")
+
         if drop_last not in [True, False]:
             raise ValueError("drop_last takes only True or False")
-            
+
+        self.top_categories = top_categories
         self.drop_last = drop_last
         self.variables = _define_variables(variables)
 
-    
     def fit(self, X, y=None):
         """
         Learns the unique categories per variable. If top_categories is indicated
@@ -462,36 +491,48 @@ class OneHotCategoricalEncoder(BaseCategoricalEncoder):
             The training input samples.
             Can be the entire dataframe, not just seleted variables.
         y : Target
-       
+
+
+        Attributes
+        ----------
+
+        encoder_dict_: dictionary
+            The dictionary containing the categories for which a dummy variable
+            will be created.
         """
-        
-        # brings the variables from the BaseEncoder
-        super().fit(X, y)
-        
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # find categorical variables or check that those entered by the user
+        # are of type object
+        self.variables = _find_categorical_variables(X, self.variables)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables)
+
         self.encoder_dict_ = {}
-        
+
         for var in self.variables:
             if not self.top_categories:
                 if self.drop_last:
-                    category_ls = [x for x in X[var].unique() ]
+                    category_ls = [x for x in X[var].unique()]
                     self.encoder_dict_[var] = category_ls[:-1]
                 else:
                     self.encoder_dict_[var] = X[var].unique()
-                
+
             else:
-                self.encoder_dict_[var] = [x for x in X[var].value_counts().sort_values(ascending=False).head(self.top_categories).index]
+                self.encoder_dict_[var] = [x for x in X[var].value_counts().sort_values(ascending=False).head(
+                    self.top_categories).index]
 
-        if len(self.encoder_dict_)==0:
-            raise ValueError('Encoder could not be fitted. Check that correct parameters and dataframe were passed during training')
-            
+        self.encoder_dict_ = _check_encoding_dictionary(self.encoder_dict_)
+
         self.input_shape_ = X.shape
-               
-        return self
 
+        return self
 
     def transform(self, X):
         """
-        Creates the dummy / boolean variables.
+        Creates the dummy / binary variables.
         
         Parameters
         ----------
@@ -505,42 +546,45 @@ class OneHotCategoricalEncoder(BaseCategoricalEncoder):
         X_transformed : pandas dataframe. The shape of the dataframe will
         be different from the original as it includes the dummy variables.
         """
-        
-        # Check is fit had been called
-        check_is_fitted(self, ['encoder_dict_'])
-            
-        # Check that the input is of the same shape as the one passed
-        # during fit.
-        if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the encoder')
-        
-        X = X.copy()
+        # Check method fit has been called
+        check_is_fitted(self)
+
+        # check that input is a dataframe
+        X = _is_dataframe(X)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables)
+
+        # Check that the dataframe contains the same number of columns than the dataframe
+        # used to fit the imputer.
+        _check_input_matches_training_df(X, self.input_shape_[1])
+
         for feature in self.variables:
             for category in self.encoder_dict_[feature]:
                 X[str(feature) + '_' + str(category)] = np.where(X[feature] == category, 1, 0)
-            
+
         # drop the original non-encoded variables.
         X.drop(labels=self.variables, axis=1, inplace=True)
-        
-        return X
-    
-    
 
-class RareLabelCategoricalEncoder(BaseCategoricalEncoder):
+        return X
+
+
+class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
     """
     The RareLabelCategoricalEncoder() groups rare / infrequent categories in
-    a new category called "Rare".
+    a new category called "Rare", or any other name entered by the user.
     
     For example in the variable colour, if the percentage of observations
     for the categories magenta, cyan and burgundy are < 5 %, all those
     categories will be replaced by the new label "Rare".
        
-    The Encoder will encode only categorical variables (type 'object'). A list 
+    The encoder will encode only categorical variables (type 'object'). A list
     of variables can be passed as an argument. If no variables are passed as 
-    argument, the encoder will only encode categorical variables (object type)
-    and ignore the rest.
+    argument, the encoder will find and encode all categorical variables
+    (object type).
     
     The encoder first finds the frequent labels for each variable (fit).
+
     The encoder then groups the infrequent labels under the new label 'Rare'
     (transform).
     
@@ -557,30 +601,22 @@ class RareLabelCategoricalEncoder(BaseCategoricalEncoder):
     variables : list, default=None
         The list of categorical variables that will be encoded. If None, the 
         encoder will find and select all object type variables.
-        
-    Attributes
-    ----------
-    
-    encoder_dict_: dictionary
-        The dictionary containg the frequent categories (that will be kept)
-        for each variable. Categories not present in this list will be replaced
-        by 'Rare'.
     """
-  
-    def __init__(self, tol = 0.05, n_categories = 10, variables = None):
-        
-        if tol <0 or tol >1 :
+
+    def __init__(self, tol=0.05, n_categories=10, variables=None, replace_with='Rare'):
+
+        if tol < 0 or tol > 1:
             raise ValueError("tol takes values between 0 and 1")
-            
+
         if n_categories < 0 or not isinstance(n_categories, int):
             raise ValueError("n_categories takes only positive integer numbers")
-            
+
         self.tol = tol
         self.n_categories = n_categories
         self.variables = _define_variables(variables)
-        
+        self.replace_with = replace_with
 
-    def fit(self, X, y = None):
+    def fit(self, X, y=None):
         """
         Learns the frequent categories for each variable.
         
@@ -594,32 +630,54 @@ class RareLabelCategoricalEncoder(BaseCategoricalEncoder):
             There is no need of a target in a transformer, yet the pipeline API
             requires this parameter. You can leave y as None, or pass it as an
             argument.
+
+        Attributes
+        ----------
+
+        encoder_dict_: dictionary
+            The dictionary containing the frequent categories (that will be kept)
+            for each variable. Categories not present in this list will be replaced
+            by 'Rare'.
         """
-        # brings the variables from the BaseEncoder
-        super().fit(X, y)
-        
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # find categorical variables or check that those entered by the user
+        # are of type object
+        self.variables = _find_categorical_variables(X, self.variables)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables)
+
         self.encoder_dict_ = {}
-        
+
         for var in self.variables:
             if len(X[var].unique()) > self.n_categories:
+
                 # if the variable has more than the indicated number of categories
                 # the encoder will learn the most frequent categories
                 t = pd.Series(X[var].value_counts() / np.float(len(X)))
+
                 # non-rare labels:
-                self.encoder_dict_[var] = t[t>=self.tol].index
+                self.encoder_dict_[var] = t[t >= self.tol].index
+
             else:
                 # if the total number of categories is smaller than the indicated
                 # the encoder will consider all categories as frequent.
-                self.encoder_dict_[var]=  X[var].unique()
-        
+                warnings.warn("The number of unique categories for variable {} is less than that indicated in "
+                              "n_categories. Thus, all categories will be considered frequent".format(var))
+                self.encoder_dict_[var] = X[var].unique()
+
+        self.encoder_dict_ = _check_encoding_dictionary(self.encoder_dict_)
+
         self.input_shape_ = X.shape
-                   
+
         return self
-    
 
     def transform(self, X):
         """
-        Groups rare labels under separate group 'Rare'.
+        Groups rare labels under separate group 'Rare' or any other name provided
+        by the user.
         
         Parameters
         ----------
@@ -633,17 +691,20 @@ class RareLabelCategoricalEncoder(BaseCategoricalEncoder):
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe where rare categories have been grouped.
         """
-        
-        # Check is fit had been called
-        check_is_fitted(self, ['encoder_dict_'])
-            
-        # Check that the input is of the same shape as the one passed
-        # during fit.
-        if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the encoder')
-        
-        X = X.copy()
+        # Check method fit has been called
+        check_is_fitted(self)
+
+        # check that input is a dataframe
+        X = _is_dataframe(X)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables)
+
+        # Check that the dataframe contains the same number of columns than the dataframe
+        # used to fit the imputer.
+        _check_input_matches_training_df(X, self.input_shape_[1])
+
         for feature in self.variables:
-            X[feature] = np.where(X[feature].isin(self.encoder_dict_[feature]), X[feature], 'Rare')
-            
+            X[feature] = np.where(X[feature].isin(self.encoder_dict_[feature]), X[feature], self.replace_with)
+
         return X
