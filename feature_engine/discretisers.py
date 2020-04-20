@@ -1,19 +1,16 @@
-# Authors: Soledad Galli <solegalli1@gmail.com>
+# Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import numpy as np
 import pandas as pd
-#import warnings
 
-from sklearn.utils.validation import check_is_fitted
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
-from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import GridSearchCV
 
-from feature_engine.base_transformers import BaseDiscretiser, _define_variables
+from feature_engine.utils import _define_variables
+from feature_engine.base_transformers import BaseNumericalTransformer
 
 
-class EqualFrequencyDiscretiser(BaseDiscretiser):
+class EqualFrequencyDiscretiser(BaseNumericalTransformer):
     """
     The EqualFrequencyDiscretiser() divides the numerical variable values 
     into contiguous equal frequency intervals, that is, intervals that contain
@@ -60,17 +57,19 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         The dictionary containing the {interval limits: variable} pairs used
         to binnarise / discretise variable.
     """
-    
-    def __init__(self, q = 10, variables = None, return_object=False):
-        
+
+    def __init__(self, q=10, variables=None, return_object=False):
+
         if not isinstance(q, int):
             raise ValueError('q must be an integer')
-            
+
+        if not isinstance(return_object, bool):
+            raise ValueError('return_object must be True or False')
+
         self.q = q
         self.variables = _define_variables(variables)
         self.return_object = return_object
-    
-    
+
     def fit(self, X, y=None):
         """
         Learns the limits of the equal frequency intervals, that is the 
@@ -87,27 +86,45 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
             requires this parameter for checking. You can either leave it as None
             or pass y.
         """
+        # check input dataframe
+        X = super().fit(X, y)
 
-        super().fit(X, y)
-        
         self.binner_dict_ = {}
-        
+
         for var in self.variables:
             tmp, bins = pd.qcut(x=X[var], q=self.q, retbins=True, duplicates='drop')
-            
-            # Prepend/Append infinities to accomodate outliers
+
+            # Prepend/Append infinities to accommodate outliers
             bins = list(bins)
-            bins[0]= float("-inf")
-            bins[len(bins)-1] = float("inf")
+            bins[0] = float("-inf")
+            bins[len(bins) - 1] = float("inf")
             self.binner_dict_[var] = bins
-            
-        self.input_shape_ = X.shape  
-           
+
+        self.input_shape_ = X.shape
+
         return self
-    
+
+    def transform(self, X):
+        '''
+
+        :param X:
+        :return:
+        '''
+        # check input dataframe and if class was fitted
+        X = super().transform(X)
+
+        # transform variables
+        for feature in self.variables:
+            X[feature] = pd.cut(X[feature], self.binner_dict_[feature], labels=False)
+
+        # return object
+        if self.return_object:
+            X[self.variables] = X[self.variables].astype('O')
+
+        return X
 
 
-class EqualWidthDiscretiser(BaseDiscretiser):
+class EqualWidthDiscretiser(BaseNumericalTransformer):
     """
     The EqualWidthDiscretiser() divides the numerical variable values into 
     intervals of the same width, that is equi-distant intervals. Note that the 
@@ -151,17 +168,19 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         The dictionary containing the {interval boundaries: variable} pairs used
         to binnarise / discretise each variable.
     """
-    
-    def __init__(self, bins = 10, variables = None, return_object=False):
-        
+
+    def __init__(self, bins=10, variables=None, return_object=False):
+
         if not isinstance(bins, int):
             raise ValueError('q must be an integer')
-            
+
+        if not isinstance(return_object, bool):
+            raise ValueError('return_object must be True or False')
+
         self.bins = bins
         self.variables = _define_variables(variables)
         self.return_object = return_object
-    
-    
+
     def fit(self, X, y=None):
         """
         Learns the boundaries of the equal width intervals / bins for each
@@ -178,27 +197,46 @@ class EqualWidthDiscretiser(BaseDiscretiser):
             requires this parameter for checking. You can either leave it as None
             or pass y.
         """
+        # check input dataframe
+        X = super().fit(X, y)
 
-        super().fit(X, y)
-        
+        # fit
         self.binner_dict_ = {}
-        
+
         for var in self.variables:
             tmp, bins = pd.cut(x=X[var], bins=self.bins, retbins=True, duplicates='drop')
-            
+
             # Prepend/Append infinities
             bins = list(bins)
-            bins[0]= float("-inf")
-            bins[len(bins)-1] = float("inf")
+            bins[0] = float("-inf")
+            bins[len(bins) - 1] = float("inf")
             self.binner_dict_[var] = bins
-            
-        self.input_shape_ = X.shape  
-           
-        return self       
+
+        self.input_shape_ = X.shape
+
+        return self
+
+    def transform(self, X):
+        '''
+
+        :param X:
+        :return:
+        '''
+        # check input dataframe and if class was fitted
+        X = super().transform(X)
+
+        # transform variables
+        for feature in self.variables:
+            X[feature] = pd.cut(X[feature], self.binner_dict_[feature], labels=False)
+
+        # return object
+        if self.return_object:
+            X[self.variables] = X[self.variables].astype('O')
+
+        return X
 
 
-
-class DecisionTreeDiscretiser(BaseDiscretiser):
+class DecisionTreeDiscretiser(BaseNumericalTransformer):
     """
     The DecisionTreeDiscretiser() divides the numerical variable into groups
     estimated by a decision tree. In other words, the intervals are the predictions
@@ -269,25 +307,24 @@ class DecisionTreeDiscretiser(BaseDiscretiser):
         Provided in case the user wishes to understand the performance of the 
         decision tree.
     """
-    
-    def __init__(self, cv = 3, scoring='neg_mean_squared_error',
-                 variables = None, param_grid = {'max_depth': [1,2,3,4]},
+
+    def __init__(self, cv=3, scoring='neg_mean_squared_error',
+                 variables=None, param_grid={'max_depth': [1, 2, 3, 4]},
                  regression=True, random_state=None):
-        
+
         if not isinstance(cv, int) or cv < 0:
             raise ValueError('cv can only take only positive integers')
-            
+
         if not isinstance(regression, bool):
             raise ValueError('regression can only take True or False')
-            
+
         self.cv = cv
         self.scoring = scoring
         self.regression = regression
         self.variables = _define_variables(variables)
         self.param_grid = param_grid
         self.random_state = random_state
-    
-    
+
     def fit(self, X, y):
         """
         Fits the decision tree.
@@ -302,59 +339,37 @@ class DecisionTreeDiscretiser(BaseDiscretiser):
             tree.
         """
 
-        if y is None:
-            raise ValueError('Please provide a target (y) for this discretiser')
-            
-        super().fit(X, y)
-        
+        # if y is None:
+        #     raise ValueError('Please provide a target (y) for this discretiser')
+
+        # check input dataframe
+        X = super().fit(X, y)
+
         self.binner_dict_ = {}
         self.scores_dict_ = {}
-        
+
         for var in self.variables:
-            
-#            score_ls = [] 
-#            for tree_depth in [1,2,3,4]:
-                # call the model
+            # call the model
             if not self.regression:
                 tree_model = GridSearchCV(DecisionTreeClassifier(random_state=self.random_state),
-                                          cv = self.cv, 
-                                          scoring = self.scoring,
-                                          param_grid = self.param_grid)
+                                          cv=self.cv,
+                                          scoring=self.scoring,
+                                          param_grid=self.param_grid)
             else:
                 tree_model = GridSearchCV(DecisionTreeRegressor(random_state=self.random_state),
-                                          cv = self.cv, 
-                                          scoring = self.scoring,
-                                          param_grid = self.param_grid)
-    
-#            # train the model using 3 fold cross validation
-#            scores = cross_val_score(tree_model, X[var].to_frame(), y,
-#                                     cv=self.cv, scoring=self.scoring)
-#            
-#            score_ls.append(np.mean(scores))
-#        
-#            if self.regression:
-#                # find depth with smallest mse, rmse, etc
-#                depth = [1,2,3,4][np.argmin(score_ls)]
-#            else:
-#                # find max roc_auc, accuracy, etc
-#                depth = [1,2,3,4][np.argmax(score_ls)]
-#        
-#            # transform the variable using the tree
-#            if not self.regression:
-#                tree_model = DecisionTreeClassifier(max_depth=depth)
-#            else:
-#                tree_model = DecisionTreeRegressor(max_depth=depth)
-                
+                                          cv=self.cv,
+                                          scoring=self.scoring,
+                                          param_grid=self.param_grid)
+            # fit the model to the variable
             tree_model.fit(X[var].to_frame(), y)
-            
+
             self.binner_dict_[var] = tree_model
             self.scores_dict_[var] = tree_model.score(X[var].to_frame(), y)
 
-        self.input_shape_ = X.shape          
-        
+        self.input_shape_ = X.shape
+
         return self
-    
-    
+
     def transform(self, X):
         """
         Discretises the variables using the trained tree. That is, returns 
@@ -372,20 +387,15 @@ class DecisionTreeDiscretiser(BaseDiscretiser):
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with transformed variables.
         """
-        
-        # Check is fit had been called
-        check_is_fitted(self, ['binner_dict_'])
-        
-        if X.shape[1] != self.input_shape_[1]:
-            raise ValueError('Number of columns in dataset is different from training set used to fit the discretiser')
 
-        X = X.copy()
-        
+        # check input dataframe and if class was fitted
+        X = super().transform(X)
+
         for feature in self.variables:
             if not self.regression:
                 tmp = self.binner_dict_[feature].predict_proba(X[feature].to_frame())
-                X[feature] = tmp[:,1]
+                X[feature] = tmp[:, 1]
             else:
                 X[feature] = self.binner_dict_[feature].predict(X[feature].to_frame())
-                
+
         return X

@@ -1,10 +1,14 @@
 # Authors: Soledad Galli <solegalli1@gmail.com>
 # License: BSD 3 clause
 
-from feature_engine.base_transformers import BaseOutlierRemover, _define_variables
-            
+import numpy as np
+from sklearn.utils.validation import check_is_fitted
+from feature_engine.utils import _is_dataframe, _define_variables
+from feature_engine.utils import _check_input_matches_training_df, _check_contains_na
+from feature_engine.base_transformers import BaseNumericalTransformer
 
-class Winsorizer(BaseOutlierRemover):
+
+class Winsorizer(BaseNumericalTransformer):
     """
     The Winsorizer() caps maximum and / or minimum values of a variable.
     
@@ -66,24 +70,23 @@ class Winsorizer(BaseOutlierRemover):
         The dictionary containg the values at the end of the distributions to 
         use to cap each variable.
     """
-    
-    def __init__(self, distribution='gaussian', tail='right', fold=3, variables = None):
-        
+
+    def __init__(self, distribution='gaussian', tail='right', fold=3, variables=None):
+
         if distribution not in ['gaussian', 'skewed', 'quantiles']:
             raise ValueError("distribution takes only values 'gaussian', 'skewed' or 'quantiles'")
-            
+
         if tail not in ['right', 'left', 'both']:
             raise ValueError("tail takes only values 'right', 'left' or 'both'")
-            
-        if fold <=0 :
+
+        if fold <= 0:
             raise ValueError("fold takes only positive numbers")
-            
+
         self.distribution = distribution
         self.tail = tail
         self.fold = fold
         self.variables = _define_variables(variables)
 
-    
     def fit(self, X, y=None):
         """ 
         Learns the values that should be used to replace outliers in each variable.
@@ -99,41 +102,60 @@ class Winsorizer(BaseOutlierRemover):
             requires this parameter for checking.
 
         """
-        super().fit(X, y)
-        
+        # check input dataframe
+        X = super().fit(X, y)
+
         self.right_tail_caps_ = {}
         self.left_tail_caps_ = {}
-        
+
         # estimate the end values
         if self.tail in ['right', 'both']:
             if self.distribution == 'gaussian':
-                self.right_tail_caps_ = (X[self.variables].mean()+self.fold*X[self.variables].std()).to_dict()
-                
+                self.right_tail_caps_ = (X[self.variables].mean() + self.fold * X[self.variables].std()).to_dict()
+
             elif self.distribution == 'skewed':
                 IQR = X[self.variables].quantile(0.75) - X[self.variables].quantile(0.25)
                 self.right_tail_caps_ = (X[self.variables].quantile(0.75) + (IQR * self.fold)).to_dict()
-                
+
             elif self.distribution == 'quantiles':
-                self.right_tail_caps_ = X[self.variables].quantile(0.95).to_dict()
-        
+                self.right_tail_caps_ = X[self.variables].quantile(1-self.fold).to_dict()
+
         if self.tail in ['left', 'both']:
             if self.distribution == 'gaussian':
-                self.left_tail_caps_ = (X[self.variables].mean()-self.fold*X[self.variables].std()).to_dict()
-                
+                self.left_tail_caps_ = (X[self.variables].mean() - self.fold * X[self.variables].std()).to_dict()
+
             elif self.distribution == 'skewed':
                 IQR = X[self.variables].quantile(0.75) - X[self.variables].quantile(0.25)
                 self.left_tail_caps_ = (X[self.variables].quantile(0.25) - (IQR * self.fold)).to_dict()
-                
+
             elif self.distribution == 'quantiles':
-                self.left_tail_caps_ = X[self.variables].quantile(0.05).to_dict()
-        
-        self.input_shape_ = X.shape  
-              
+                self.left_tail_caps_ = X[self.variables].quantile(self.fold).to_dict()
+
+        self.input_shape_ = X.shape
+
         return self
 
+    def transform(self, X):
+        '''
+
+        :param X:
+        :return:
+        '''
+
+        # check input dataframe an if class was fitted
+        X  = super().transform(X)
+
+        for feature in self.right_tail_caps_.keys():
+            X[feature] = np.where(X[feature] > self.right_tail_caps_[feature], self.right_tail_caps_[feature],
+                                  X[feature])
+
+        for feature in self.left_tail_caps_.keys():
+            X[feature] = np.where(X[feature] < self.left_tail_caps_[feature], self.left_tail_caps_[feature], X[feature])
+
+        return X
 
 
-class ArbitraryOutlierCapper(BaseOutlierRemover):
+class ArbitraryOutlierCapper(BaseNumericalTransformer):
     """ 
     The ArbitraryOutlierCapper() caps the maximum or minimum values of a variable
     by an arbitrary value indicated by the user.
@@ -155,32 +177,30 @@ class ArbitraryOutlierCapper(BaseOutlierRemover):
         
     """
 
+    def __init__(self, max_capping_dict=None, min_capping_dict=None):
 
-    def __init__(self, max_capping_dict = None, min_capping_dict = None):
-               
-        if not  max_capping_dict and not min_capping_dict:
+        if not max_capping_dict and not min_capping_dict:
             raise ValueError("Please provide at least 1 dictionary with the capping values per variable")
-        
-        if not max_capping_dict:
-            self.right_tail_caps_ = {}
+
+        if max_capping_dict is None or isinstance(max_capping_dict, dict):
+            self.max_capping_dict = max_capping_dict
         else:
-            if isinstance(max_capping_dict, dict):
-                self.right_tail_caps_ = max_capping_dict
-            else:
-                raise ValueError("max_capping_dict should be a dictionary")
-            
-        if not min_capping_dict:
-            self.left_tail_caps_ = {}
+            raise ValueError("max_capping_dict should be a dictionary")
+
+        if min_capping_dict is None or isinstance(min_capping_dict, dict):
+            self.min_capping_dict = min_capping_dict
         else:
-            if isinstance(min_capping_dict, dict):
-                self.left_tail_caps_ = min_capping_dict
-            else:
-                raise ValueError("min_capping_dict should be a dictionary")    
-        
-        self.variables = [x for x in self.right_tail_caps_.keys()]
-        self.variables = self.variables + [x for x in self.left_tail_caps_.keys()]
-        
-        
+            raise ValueError("min_capping_dict should be a dictionary")
+
+        if min_capping_dict is None:
+            self.variables = [x for x in max_capping_dict.keys()]
+        elif max_capping_dict is None:
+            self.variables = [x for x in min_capping_dict.keys()]
+        else:
+            tmp = min_capping_dict.copy()
+            tmp.update(max_capping_dict)
+            self.variables = [x for x in tmp.keys()]
+
     def fit(self, X, y=None):
         """
         
@@ -195,8 +215,72 @@ class ArbitraryOutlierCapper(BaseOutlierRemover):
             requires this parameter for checking.
 
         """
-        super().fit(X, y)   
+        super().fit(X, y)
 
-        self.input_shape_ = X.shape  
-              
+        if self.max_capping_dict is not None:
+            self.right_tail_caps_ = self.max_capping_dict
+        else:
+            self.right_tail_caps_ = {}
+
+        if self.min_capping_dict is not None:
+            self.left_tail_caps_ = self.min_capping_dict
+        else:
+            self.left_tail_caps_ = {}
+
+        self.input_shape_ = X.shape
+
         return self
+
+    def transform(self, X):
+        '''
+
+        :param X:
+        :return:
+        '''
+
+        # check input dataframe an if class was fitted
+        X  = super().transform(X)
+
+        for feature in self.right_tail_caps_.keys():
+            X[feature] = np.where(X[feature] > self.right_tail_caps_[feature], self.right_tail_caps_[feature],
+                                  X[feature])
+
+        for feature in self.left_tail_caps_.keys():
+            X[feature] = np.where(X[feature] < self.left_tail_caps_[feature], self.left_tail_caps_[feature], X[feature])
+
+        return X
+
+
+class OutlierTrimmer(Winsorizer):
+    '''
+
+    '''
+
+    def transform(self, X):
+        '''
+
+        :param X:
+        :return:
+        '''
+        # Check method fit has been called
+        check_is_fitted(self)
+
+        # check that input is a dataframe
+        X = _is_dataframe(X)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables)
+
+        # Check that the dataframe contains the same number of columns than the dataframe
+        # used to fit the imputer.
+        _check_input_matches_training_df(X, self.input_shape_[1])
+
+        for feature in self.right_tail_caps_.keys():
+            outliers = np.where(X[feature] > self.right_tail_caps_[feature], True, False)
+            X = X.loc[~outliers]
+
+        for feature in self.left_tail_caps_.keys():
+            outliers = np.where(X[feature] < self.left_tail_caps_[feature], True, False)
+            X = X.loc[~outliers]
+
+        return X

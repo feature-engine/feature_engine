@@ -72,3 +72,12 @@ def dataframe_enc_big_na():
     df = pd.DataFrame(df)
     df.loc[0, 'var_A'] = np.nan
     return df
+
+@pytest.fixture(scope="module")
+def dataframe_normal_dist():
+    np.random.seed(0)
+    mu, sigma = 0, 0.1  # mean and standard deviation
+    s = np.random.normal(mu, sigma, 100)
+    df = pd.DataFrame(s)
+    df.columns = ['var']
+    return df
