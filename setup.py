@@ -2,6 +2,14 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
+# Package meta-data.
+NAME = "feature_engine"
+DESCRIPTION = "Feature engineering package with Scikit-learn's fit transform functionality"
+URL = "http://github.com/solegalli/feature_engine"
+EMAIL = "solegalli@protonmail.com"
+AUTHOR = "Soledad Galli"
+REQUIRES_PYTHON = ">=3.6.0"
+
 # description
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -26,18 +34,21 @@ with open(PACKAGE_DIR / "VERSION") as f:
     _version = f.read().strip()
     about["__version__"] = _version
 
-setup(name='feature_engine',
+setup(name=NAME,
       version=about["__version__"],
-      description="Feature engineering package with Scikit-klearn's fit transform functionality",
+      description=DESCRIPTION,
       long_description=long_description,
       long_description_content_type="text/markdown",
-      url='http://github.com/solegalli/feature_engine',
-      author='Soledad Galli',
-      author_email='solegalli@protonmail.com',
-      packages=['feature_engine'],
+      url=URL,
+      author=AUTHOR,
+      author_email=EMAIL,
+      python_requires=REQUIRES_PYTHON,
+      packages=find_packages(exclude=("tests",)),
+      package_data={"feature_engine": ["VERSION"]},
       license='BSD 3 clause',
       install_requires=list_reqs(),
       tests_require=list_test_reqs(),
+      include_package_data=True,
       classifiers=[
           # Trove classifiers
           # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
