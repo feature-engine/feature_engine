@@ -71,6 +71,16 @@ data_encoded = rare_encoder.transform(data)
 
 See more usage examples in the jupyter notebooks in the example folder of this repository, or in the documentation: http://feature-engine.readthedocs.io
 
+### Contributing
+
+#### Local Setup Steps
+- Clone the repo and cd into it
+- Run `pip install tox`
+- Run `tox` if the tests pass, your local setup is complete
+
+#### Opening Pull Requests
+PR's are welcome! Please make sure the CI tests pass on your branch.
+
 ### License
 
 BSD 3-Clause
@@ -89,3 +99,14 @@ To learn more about the rationale, functionality, pros and cos of each imputer, 
 For a summary of the methods check this [presentation](https://speakerdeck.com/solegalli/engineering-and-selecting-features-for-machine-learning) and this [article](https://www.trainindata.com/post/feature-engineering-comprehensive-overview)
 
 To stay alert of latest releases, sign up at [trainindata](https://www.trainindata.com)
+
+
+### TODO
+- Add flake8, black, mypy
+- Add CI (use tox)
+- Add more tests
+- Break up test files (and possibly actual files)
+- Use fixture for test csv file
+- break up tests which test multiple things
+- Use VERSION correctly
+- Write explanation about each
