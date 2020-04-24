@@ -1,6 +1,10 @@
-name = "feature_engine"
+import pathlib
+import feature_engine
 
-VERSION_PATH = 'feature_engine/VERSION'
+PACKAGE_ROOT = pathlib.Path(feature_engine.__file__).resolve().parent
+VERSION_PATH = PACKAGE_ROOT / 'VERSION'
+
+name = "feature_engine"
 
 with open(VERSION_PATH, 'r') as version_file:
     __version__ = version_file.read().strip()
