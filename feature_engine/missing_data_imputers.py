@@ -370,8 +370,8 @@ class CategoricalVariableImputer(BaseImputer):
 
 
 @deprecated("Class 'FrequentCategoryImputer' was integrated into the "
-            "class 'CategoricalVariableImputer' in version 0.3 and "
-            " will be removed in version 0.4. "
+            "class 'CategoricalVariableImputer' in version 0.4 and "
+            " will be removed in version 0.5. "
             "To perform Frequent category imputation please use: "
             "CategoricalVariableImputer(imputation_method='frequent')")
 class FrequentCategoryImputer(CategoricalVariableImputer):
@@ -687,7 +687,7 @@ class AddMissingIndicator(BaseEstimator, TransformerMixin):
 
 
 @deprecated("Class 'AddNaNBinaryImputer' was renamed to AddMissingIndicator "
-            "in version 0.3 and will be removed in version 0.4. "
+            "in version 0.4 and will be removed in version 0.5. "
             "To add a missing indicator please use: AddMissingIndicator()")
 class AddNaNBinaryImputer(AddMissingIndicator):
     pass
