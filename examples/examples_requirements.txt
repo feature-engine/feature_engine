@@ -1,0 +1,5 @@
+feature_engine>=0.4.0
+jupyter>=1.0.0
+ipykernel>=5.2.1
+matplotlib>=3.2.1
+autopep8>=1.5.2
