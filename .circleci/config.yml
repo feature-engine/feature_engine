@@ -1,0 +1,23 @@
+version: 2
+jobs:
+  test_feature_engine:
+    working_directory: ~/project
+    docker:
+      - image: circleci/python:3.7.2
+    steps:
+      - checkout
+      - run:
+          name: Runnning tests
+          command: |
+            virtualenv venv
+            . venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install -r test_requirements.txt
+            py.test -vv feature_engine/tests
+
+workflows:
+  version: 2
+  test-all:
+    jobs:
+      - test_feature_engin
