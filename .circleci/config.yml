@@ -20,4 +20,4 @@ workflows:
   version: 2
   test-all:
     jobs:
-      - test_feature_engin
+      - test_feature_engine
