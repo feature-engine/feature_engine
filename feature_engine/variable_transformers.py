@@ -169,6 +169,8 @@ class ReciprocalTransformer(BaseNumericalTransformer):
             raise ValueError("Some variables contain the value zero, can't apply reciprocal transformation")
 
         # transform
+        # for some reason reciprocal does not work with integers
+        X.loc[:, self.variables] = X.loc[:, self.variables].astype('float')
         X.loc[:, self.variables] = np.reciprocal(X.loc[:, self.variables])
 
         return X
