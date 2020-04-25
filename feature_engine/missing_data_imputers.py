@@ -24,7 +24,7 @@ def _define_seed(X, index, seed_variables, how='add'):
 
 
 class MeanMedianImputer(BaseImputer):
-    """ 
+    """
     The MeanMedianImputer() transforms features by replacing missing data by the mean
     or median value of the variable.
 

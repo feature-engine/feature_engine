@@ -400,7 +400,7 @@ def test_OneHotCategoricalEncoder(dataframe_enc_big, dataframe_enc_big_na):
 
 
 def test_RareLabelEncoder(dataframe_enc_big, dataframe_enc_big_na):
-    # test case 1:
+    # test case 1: defo params, automatically select variables
     encoder = RareLabelCategoricalEncoder(tol=0.06, n_categories=5, variables=None, replace_with='Rare')
     X = encoder.fit_transform(dataframe_enc_big)
 
@@ -419,7 +419,7 @@ def test_RareLabelEncoder(dataframe_enc_big, dataframe_enc_big_na):
     # transform params
     pd.testing.assert_frame_equal(X, df)
 
-    # test case 2:
+    # test case 2: user provides alternative grouping value and variable list
     encoder = RareLabelCategoricalEncoder(tol=0.15, n_categories=5, variables=['var_A', 'var_B'], replace_with='Other')
     X = encoder.fit_transform(dataframe_enc_big)
 
@@ -445,7 +445,7 @@ def test_RareLabelEncoder(dataframe_enc_big, dataframe_enc_big_na):
         encoder = RareLabelCategoricalEncoder(n_categories=0.5)
 
     with pytest.raises(ValueError):
-        encoder = RareLabelCategoricalEncoder(n_categories=0.5)
+        encoder = RareLabelCategoricalEncoder(replace_with=0.5)
 
     # test case 3: when the variable has low cardinality
     with pytest.warns(UserWarning):
@@ -457,7 +457,7 @@ def test_RareLabelEncoder(dataframe_enc_big, dataframe_enc_big_na):
         encoder = RareLabelCategoricalEncoder(n_categories=4)
         encoder.fit(dataframe_enc_big_na)
 
-    # test case 4: when dataset contains na, transform method
+    # test case 5: when dataset contains na, transform method
     with pytest.raises(ValueError):
         encoder = RareLabelCategoricalEncoder(n_categories=4)
         encoder.fit(dataframe_enc_big)
