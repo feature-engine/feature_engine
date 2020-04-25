@@ -27,7 +27,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         -------
 
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
-            The dataframe without missing values in the selected variables
+            The dataframe without missing values in the selected variables.
         """
 
         # Check method fit has been called
@@ -86,7 +86,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
             warnings.warn(
                 "NaN values were introduced in the returned dataframe by the encoder.This means that some "
                 "of the categories in the input dataframe were not present in the training set used when  "
-                "the fit method was called. Thus mappings for those categories does not exist. "
+                "the fit method was called. Thus, mappings for those categories does not exist. "
                 "Try using the RareLabelCategoricalEncoder to remove infrequent categories before calling "
                 "this encoder.")
 
