@@ -1,4 +1,12 @@
 version: 2
+
+prepare_tox: &prepare_tox
+  run:
+    name: Install tox
+    command: |
+      sudo pip install --upgrade pip
+      pip install --user tox
+
 jobs:
   test_feature_engine_py36:
     docker:
@@ -7,11 +15,10 @@ jobs:
     steps:
       - checkout:
           path: ~/project
+      - *prepare_tox
       - run:
           name: Run tests with Python 3.6
           command: |
-            sudo pip install --upgrade pip
-            pip install --user tox
             tox -e py36
 
   test_feature_engine_py37:
@@ -21,11 +28,10 @@ jobs:
     steps:
       - checkout:
           path: ~/project
+      - *prepare_tox
       - run:
           name: Run tests with Python 3.7
           command: |
-            sudo pip install --upgrade pip
-            pip install --user tox
             tox -e py37
 
   test_feature_engine_py38:
@@ -35,12 +41,24 @@ jobs:
     steps:
       - checkout:
           path: ~/project
+      - *prepare_tox
       - run:
           name: Run tests with Python 3.8
           command: |
-            sudo pip install --upgrade pip
-            pip install --user tox
-            tox
+            tox -e py38
+
+  test_style:
+    docker:
+      - image: circleci/python:3.8.0
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run stylechecks
+          command: |
+            tox -e stylechecks
 
 workflows:
   version: 2
@@ -49,3 +67,4 @@ workflows:
       - test_feature_engine_py36
       - test_feature_engine_py37
       - test_feature_engine_py38
+      - test_style
