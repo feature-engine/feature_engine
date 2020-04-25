@@ -1,20 +1,51 @@
 version: 2
 jobs:
-  test_feature_engine:
-    working_directory: ~/project
+  test_feature_engine_py36:
     docker:
-      - image: circleci/python:3.7.2
+      - image: circleci/python:3.6.9
+    working_directory: ~/project
     steps:
-      - checkout
+      - checkout:
+          path: ~/project
       - run:
-          name: Runnning tests
+          name: Run tests with Python 3.6
           command: |
-            pip install --upgrade pip
-            pip install tox --user
+            sudo pip install --upgrade pip
+            pip install --user tox
+            tox -e py36
+
+  test_feature_engine_py37:
+    docker:
+      - image: circleci/python:3.7.6
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Run tests with Python 3.7
+          command: |
+            sudo pip install --upgrade pip
+            pip install --user tox
+            tox -e py37
+
+  test_feature_engine_py38:
+    docker:
+      - image: circleci/python:3.8.0
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Run tests with Python 3.8
+          command: |
+            sudo pip install --upgrade pip
+            pip install --user tox
             tox
 
 workflows:
   version: 2
   test-all:
     jobs:
-      - test_feature_engine
+      - test_feature_engine_py36
+      - test_feature_engine_py37
+      - test_feature_engine_py38
