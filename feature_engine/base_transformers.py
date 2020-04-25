@@ -1,14 +1,17 @@
-# Transformation methods are shared by most transformer groups. Each transformer can inherit
-# the transform method from these base classes.
+# Transformation methods are shared by most transformer groups.
+# Each transformer can inherit the transform method from these base classes.
 
-import numpy as np
-import pandas as pd
 import warnings
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
-from feature_engine.utils import _is_dataframe, _check_input_matches_training_df, _check_contains_na
-from feature_engine.utils import _find_numerical_variables
+
+from feature_engine.dataframe_checks import (
+    _is_dataframe,
+    _check_input_matches_training_df,
+    _check_contains_na,
+)
+from feature_engine.variable_manipulation import _find_numerical_variables
 
 
 class BaseImputer(BaseEstimator, TransformerMixin):
@@ -36,8 +39,8 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         # check that input is a dataframe
         X = _is_dataframe(X)
 
-        # Check that input data contains same number of columns than the dataframe
-        # used to fit the imputer.
+        # Check that input data contains same number of columns than
+        # the dataframe used to fit the imputer.
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         # replaces missing data with the learned parameters
@@ -73,7 +76,8 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables)
 
-        # Check that the dataframe contains the same number of columns than the dataframe
+        # Check that the dataframe contains the same number of columns
+        # than the dataframe
         # used to fit the imputer.
         _check_input_matches_training_df(X, self.input_shape_[1])
 
@@ -84,11 +88,13 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # check if NaN values were introduced by the encoding
         if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
             warnings.warn(
-                "NaN values were introduced in the returned dataframe by the encoder.This means that some "
-                "of the categories in the input dataframe were not present in the training set used when  "
-                "the fit method was called. Thus, mappings for those categories does not exist. "
-                "Try using the RareLabelCategoricalEncoder to remove infrequent categories before calling "
-                "this encoder.")
+                "NaN values were introduced in the returned dataframe by the encoder."
+                "This means that some of the categories in the input dataframe were "
+                "not present in the training set used when the fit method was called. "
+                "Thus, mappings for those categories does not exist. Try using the "
+                "RareLabelCategoricalEncoder to remove infrequent categories before "
+                "calling this encoder."
+            )
 
         return X
 
@@ -118,8 +124,8 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables)
 
-        # Check that the dataframe contains the same number of columns than the dataframe
-        # used to fit the imputer.
+        # Check that the dataframe contains the same number of columns
+        # than the dataframe used to fit the imputer.
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         return X

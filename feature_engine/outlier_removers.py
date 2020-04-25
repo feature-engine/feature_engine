@@ -3,8 +3,8 @@
 
 import numpy as np
 from sklearn.utils.validation import check_is_fitted
-from feature_engine.utils import _is_dataframe, _define_variables
-from feature_engine.utils import _check_input_matches_training_df, _check_contains_na
+from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df, _check_contains_na
+from feature_engine.variable_manipulation import _define_variables
 from feature_engine.base_transformers import BaseNumericalTransformer
 
 

@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
 
-from feature_engine.utils import _define_variables
+from feature_engine.variable_manipulation import _define_variables
 from feature_engine.base_transformers import BaseNumericalTransformer
 
 

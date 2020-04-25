@@ -4,7 +4,7 @@
 import numpy as np
 import scipy.stats as stats
 
-from feature_engine.utils import _define_variables
+from feature_engine.variable_manipulation import _define_variables
 from feature_engine.base_transformers import BaseNumericalTransformer
 
 

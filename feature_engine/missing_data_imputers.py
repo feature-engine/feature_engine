@@ -7,8 +7,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import deprecated
 
-from feature_engine.utils import _is_dataframe, _check_input_matches_training_df
-from feature_engine.utils import _find_categorical_variables, _define_variables, _find_numerical_variables
+from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df
+from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables, _find_numerical_variables
 from feature_engine.base_transformers import BaseImputer
 
 

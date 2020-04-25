@@ -1,8 +1,7 @@
 import pytest
-from pandas.testing import assert_frame_equal
 
-from feature_engine.utils import _define_variables, _find_numerical_variables, _find_categorical_variables
-from feature_engine.utils import _is_dataframe, _check_input_matches_training_df
+from feature_engine.variable_manipulation import _define_variables, _find_numerical_variables, \
+    _find_categorical_variables
 
 
 def test_define_variables():
@@ -34,12 +33,4 @@ def test_find_categorical_variables(dataframe_vartypes):
         assert _find_categorical_variables(dataframe_vartypes, vars_mix)
 
 
-def test_is_dataframe(dataframe_vartypes):
-    assert_frame_equal(_is_dataframe(dataframe_vartypes), dataframe_vartypes)
-    with pytest.raises(TypeError):
-        assert _is_dataframe([1, 2, 4])
 
-
-def test_check_input_matches_training_df(dataframe_vartypes):
-    with pytest.raises(ValueError):
-        assert _check_input_matches_training_df(dataframe_vartypes, 4)
