@@ -686,8 +686,41 @@ class AddMissingIndicator(BaseEstimator, TransformerMixin):
         return X
 
 
+<<<<<<< HEAD
 @deprecated("Class 'AddNaNBinaryImputer' was renamed to AddMissingIndicator "
             "in version 0.3 and will be removed in version 0.4. "
             "To add a missing indicator please use: AddMissingIndicator()")
 class AddNaNBinaryImputer(AddMissingIndicator):
     pass
+=======
+    def transform(self, X):
+        """
+        Replaces missing data with the arbitrary values.
+        
+        Parameters
+        ----------
+        
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The input samples.
+            
+        Returns
+        -------
+        
+        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+            The dataframe containing no missing values for the selected
+            variables
+        """
+        # Check is fit had been called
+        check_is_fitted(self, ['input_shape_'])
+        
+        # Check that the input is of the same shape as the one passed
+        # during fit.
+        if X.shape[1] != self.input_shape_[1]:
+            raise ValueError('Number of columns in dataset is different from training set used to fit the imputer')
+        
+        X = X.copy()
+        for feature in self.variables:
+            X[feature] = X[feature].fillna(self.arbitrary_number)
+        
+        return X
+>>>>>>> master
