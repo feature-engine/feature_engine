@@ -13,62 +13,66 @@ class Winsorizer(BaseNumericalTransformer):
     The Winsorizer() caps maximum and / or minimum values of a variable.
     
     The Winsorizer() works only with numerical variables. A list of variables can
-    be indicated. If no list of variable names is passed, the Winsorizer() will
-    find and select all numerical variables seen in the train set.
+    be indicated. Alternatively, the Winsorizer() will select all numerical
+    variables in the train set.
     
     The Winsorizer() first calculates the capping values at the end of the
-    distribution for the indicated features. The values at the end of the
-    distribution are calculated wither using a Gaussian approximation or the 
-    inter-quantile range proximity rule.
+    distribution. The values are determined using 1) a Gaussian approximation,
+    2) the inter-quantile range proximity rule or 3) percentiles.
     
     Gaussian limits:
         right tail: mean + 3* std
         left tail: mean - 3* std
         
     IQR limits:
-        right tail: 75th Quantile + 3* IQR
+        right tail: 75th quantile + 3* IQR
         left tail:  25th quantile - 3* IQR
-        
-    where IQR is the inter-quantal range: 75th Quantile - 25th Quantile.
-        
-    You can select to tune how far out to cap your maximum or minimum values by
-    tuning the number by which you multiply the std or the IQR, using the parameter
-    'fold'.
+
+    where IQR is the inter-quartile range: 75th quantile - 25th quantile.
+
+    percentiles or quantiles:
+        right tail: 95th percentile
+        left tail:  5th percentile
+
+    You can select how far out to cap the maximum or minimum values with the
+    parameter 'fold'.
+
+    If distribution='gaussian' fold gives the value to multiply the std.
+    If distribution='skewed' fold is the value to multiply the IQR.
+    If distribution='quantile', fold is the percentile on each tail that should
+    be censored. For example, if fold=0.05, the limits will be the 5th and 95th
+    percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
     
     The transformer first finds the values at one or both tails of the distributions
-    at which it will cap the variables (fit).
+    (fit).
     
     The transformer then caps the variables (transform).
     
     Parameters
     ----------
     
-    distribution : str, default=gaussian 
-        Desired distribution. Can take 'gaussian' or 'skewed'. If 'gaussian' the
-        transformer will find the maximum and / or minimum values to cap the
-        variables using the Gaussian approximation. If 'skewed' the transformer
-        will find the boundaries using the IQR proximity rule.
+    distribution : str, default=gaussian
+        Desired distribution. Can take 'gaussian', 'skewed' or 'quantiles'.
+        gaussian: the transformer will find the maximum and / or minimum values to
+        cap the variables using the Gaussian approximation.
+        skewed: the transformer will find the boundaries using the IQR proximity rule.
+        quantiles: the limits are given by the percentiles.
         
-    end : str, default=right
+    tail : str, default=right
         Whether to cap outliers on the right, left or both tails of the distribution.
         Can take 'left', 'right' or 'both'.
         
-    fold: int, default=3
-        How far out to to place the capping value. The number that will multiply
+    fold: int or float, default=3
+        How far out to to place the capping values. The number that will multiply
         the std or IQR to calculate the capping values. Recommended values, 2 
         or 3 for the gaussian approximation, or 1.5 or 3 for the IQR proximity 
         rule.
+        If distribution='quantile', then 'fold' indicates the percentile. So if
+        fold=0.05, the limits will be the 95th and 5th percentiles.
         
     variables : list, default=None
         The list of variables for which the outliers will be capped. If None, 
         the transformer will find and select all numerical variables.
-             
-    Attributes
-    ----------
-    
-    outlier_capper_dict_: dictionary
-        The dictionary containg the values at the end of the distributions to 
-        use to cap each variable.
     """
 
     def __init__(self, distribution='gaussian', tail='right', fold=3, variables=None):
@@ -89,18 +93,25 @@ class Winsorizer(BaseNumericalTransformer):
 
     def fit(self, X, y=None):
         """ 
-        Learns the values that should be used to replace outliers in each variable.
+        Learns the values that should be used to replace outliers.
         
         Parameters
         ----------
         
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Can contain all the variables
         y : None
-            y is not needed in this transformer, yet the sklearn pipeline API
-            requires this parameter for checking.
+            y is not needed in this transformer. You can pass y or None.
 
+        Attributes
+        ----------
+
+        right_tail_caps_: dictionary
+            The dictionary containing the maximum values at which variables
+            will be capped.
+        left_tail_caps_ : dictionary
+            The dictionary containing the minimum values at which variables
+            will be capped.
         """
         # check input dataframe
         X = super().fit(X, y)
@@ -136,14 +147,24 @@ class Winsorizer(BaseNumericalTransformer):
         return self
 
     def transform(self, X):
-        '''
+        """
+        Caps the variable values, that is, censors outliers.
 
-        :param X:
-        :return:
-        '''
+        Parameters
+        ----------
+
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The data to be transformed.
+
+        Returns
+        -------
+
+        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+            The dataframe with the capped variables.
+        """
 
         # check input dataframe an if class was fitted
-        X  = super().transform(X)
+        X = super().transform(X)
 
         for feature in self.right_tail_caps_.keys():
             X[feature] = np.where(X[feature] > self.right_tail_caps_[feature], self.right_tail_caps_[feature],
@@ -160,11 +181,9 @@ class ArbitraryOutlierCapper(BaseNumericalTransformer):
     The ArbitraryOutlierCapper() caps the maximum or minimum values of a variable
     by an arbitrary value indicated by the user.
        
-    The user needs to provide the maximum or minimum values that will be used
-    to cap each indicated variable in a dictionary {feature:capping value}
-       
-    The transformer caps the variables.
-    
+    The user must provide the maximum or minimum values that will be used
+    to cap each variable in a dictionary {feature:capping value}
+
     Parameters
     ----------
     
@@ -208,12 +227,18 @@ class ArbitraryOutlierCapper(BaseNumericalTransformer):
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Can contain all the variables, not necessarily only those to remove
-            outliers
         y : None
-            y is not needed in this transformer, yet the sklearn pipeline API
-            requires this parameter for checking.
+            y is not needed in this transformer. You can pass y or None.
 
+        Attributes
+        ----------
+
+        right_tail_caps_: dictionary
+            The dictionary containing the maximum values at which variables
+            will be capped.
+        left_tail_caps_ : dictionary
+            The dictionary containing the minimum values at which variables
+            will be capped.
         """
         super().fit(X, y)
 
@@ -232,11 +257,21 @@ class ArbitraryOutlierCapper(BaseNumericalTransformer):
         return self
 
     def transform(self, X):
-        '''
+        """
+        Caps the variable values, that is, censors outliers.
 
-        :param X:
-        :return:
-        '''
+        Parameters
+        ----------
+
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The data to be transformed.
+
+        Returns
+        -------
+
+        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+            The dataframe with the capped variables.
+        """
 
         # check input dataframe an if class was fitted
         X  = super().transform(X)
@@ -252,16 +287,89 @@ class ArbitraryOutlierCapper(BaseNumericalTransformer):
 
 
 class OutlierTrimmer(Winsorizer):
-    '''
+    """ The OutlierTrimmer() removes observations with outliers from the dataset.
 
-    '''
+    It works only with numerical variables. A list of variables can be indicated.
+    Alternatively, the OutlierTrimmer() will select all numerical variables.
+
+    The OutlierTrimmer() first calculates the maximum and /or minimum values
+    beyond which a value will be considered an outlier, and thus removed.
+
+    Limits are determined using 1) a Gaussian approximation, 2) the inter-quantile
+    range proximity rule or 3) percentiles.
+
+    Gaussian limits:
+        right tail: mean + 3* std
+        left tail: mean - 3* std
+
+    IQR limits:
+        right tail: 75th quantile + 3* IQR
+        left tail:  25th quantile - 3* IQR
+
+    where IQR is the inter-quartile range: 75th quantile - 25th quantile.
+
+    percentiles or quantiles:
+        right tail: 95th percentile
+        left tail:  5th percentile
+
+    You can select how far out to allow the maximum or minimum values with the
+    parameter 'fold'.
+
+    If distribution='gaussian' fold gives the value to multiply the std.
+    If distribution='skewed' fold is the value to multiply the IQR.
+    If distribution='quantile', fold is the percentile on each tail that should
+    be censored. For example, if fold=0.05, the limits will be the 5th and 95th
+    percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
+
+    The transformer first finds the values at one or both tails of the distributions
+    (fit).
+
+    The transformer then removes observations with outliers from the dataframe
+    (transform).
+
+    Parameters
+    ----------
+
+    distribution : str, default=gaussian
+        Desired distribution. Can take 'gaussian', 'skewed' or 'quantiles'.
+        gaussian: the transformer will find the maximum and / or minimum values to
+        cap the variables using the Gaussian approximation.
+        skewed: the transformer will find the boundaries using the IQR proximity rule.
+        quantiles: the limits are given by the percentiles.
+
+    tail : str, default=right
+        Whether to cap outliers on the right, left or both tails of the distribution.
+        Can take 'left', 'right' or 'both'.
+
+    fold: int or float, default=3
+        How far out to to place the capping values. The number that will multiply
+        the std or IQR to calculate the capping values. Recommended values, 2
+        or 3 for the gaussian approximation, or 1.5 or 3 for the IQR proximity
+        rule.
+        If distribution='quantile', then 'fold' indicates the percentile. So if
+        fold=0.05, the limits will be the 95th and 5th percentiles.
+
+    variables : list, default=None
+        The list of variables for which the outliers will be capped. If None,
+        the transformer will find and select all numerical variables.
+    """
 
     def transform(self, X):
-        '''
+        """
+        Removes observations with outliers from the dataframe.
 
-        :param X:
-        :return:
-        '''
+        Parameters
+        ----------
+
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The data to be transformed.
+
+        Returns
+        -------
+
+        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+            The dataframe without outlier observations.
+        """
         # Check method fit has been called
         check_is_fitted(self)
 
