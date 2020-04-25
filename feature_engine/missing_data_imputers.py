@@ -702,3 +702,4 @@ class AddMissingIndicator(BaseEstimator, TransformerMixin):
             "To add a missing indicator please use: AddMissingIndicator()")
 class AddNaNBinaryImputer(AddMissingIndicator):
     pass
+
