@@ -9,12 +9,9 @@ jobs:
       - run:
           name: Runnning tests
           command: |
-            virtualenv venv
-            . venv/bin/activate
             pip install --upgrade pip
-            pip install -r requirements.txt
-            pip install -r test_requirements.txt
-            py.test -vv feature_engine/tests
+            pip install tox --user
+            tox
 
 workflows:
   version: 2

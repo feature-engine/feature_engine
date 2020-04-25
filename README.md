@@ -103,7 +103,7 @@ To stay alert of latest releases, sign up at [trainindata](https://www.traininda
 
 ### TODO
 - Add flake8, mypy
-- Add CI (use tox)
+- Add CI (use tox) [DONE]
 - Add more tests
 - Break up test files (and possibly actual files)
 - Use fixture for test csv file
