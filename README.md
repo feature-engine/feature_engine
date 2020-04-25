@@ -102,7 +102,7 @@ To stay alert of latest releases, sign up at [trainindata](https://www.traininda
 
 
 ### TODO
-- Add flake8, black, mypy
+- Add flake8, mypy
 - Add CI (use tox)
 - Add more tests
 - Break up test files (and possibly actual files)
@@ -110,3 +110,4 @@ To stay alert of latest releases, sign up at [trainindata](https://www.traininda
 - break up tests which test multiple things
 - Use VERSION correctly
 - Write explanation about each
+- Add precommit with black and isort
