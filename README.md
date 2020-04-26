@@ -4,7 +4,7 @@
 ![Python 3.7](https://img.shields.io/badge/python-3.7-success.svg)
 ![Python 3.8](https://img.shields.io/badge/python-3.8-success.svg)
 ![License](https://img.shields.io/badge/license-BSD-success.svg)
-[CircleCI](https://img.shields.io/circleci/build/github/solegalli/feature_engine/master?token=5a1c2accc2c97450e52d2cb1b47c333ab495d2c2)
+[CircleCI](https://img.shields.io/circleci/build/github/solegalli/feature_engine/master.svg?token=5a1c2accc2c97450e52d2cb1b47c333ab495d2c2)
 
 
 Feature-engine is a Python library with multiple transformers to engineer features for use in machine learning models. Feature-engine's transformers follow Scikit-learn functionality with fit() and transform() methods to first learn the transforming paramenters from data and then transform the data.
