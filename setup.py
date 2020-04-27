@@ -21,11 +21,6 @@ def list_reqs(fname='requirements.txt'):
         return fd.read().splitlines()
 
 
-def list_test_reqs(fname='test_requirements.txt'):
-    with open(fname) as fd:
-        return fd.read().splitlines()
-
-
 # Load the package's VERSION file as a dictionary.
 about = {}
 ROOT_DIR = Path(__file__).resolve().parent
@@ -47,7 +42,6 @@ setup(name=NAME,
       package_data={"feature_engine": ["VERSION"]},
       license='BSD 3 clause',
       install_requires=list_reqs(),
-      tests_require=list_test_reqs(),
       include_package_data=True,
       classifiers=[
           # Trove classifiers
