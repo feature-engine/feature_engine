@@ -1,5 +1,18 @@
 version: 2
 
+defaults: &defaults
+  docker:
+    - image: circleci/python:3.7.2
+  working_directory: ~/project
+
+prepare_venv: &prepare_venv
+  run:
+    name: Create venv
+    command: |
+      python3 -m venv venv
+      source venv/bin/activate
+      pip install --upgrade pip
+
 prepare_tox: &prepare_tox
   run:
     name: Install tox
@@ -60,6 +73,37 @@ jobs:
           command: |
             tox -e stylechecks
 
+  package_and_upload_to_pypi:
+    <<: *defaults
+    steps:
+      - checkout
+      - *prepare_venv
+      - run:
+          name: Install requirements
+          command: |
+            . venv/bin/activate
+            pip install -r requirements.txt
+            pip install -e .
+            pip install wheel
+            pip install twine
+      - run:
+          name: init .pypirc
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = solegalli" >> ~/.pypirc
+            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+      - run:
+          name: create package
+          command: |
+            rm -rf dist/*
+            python setup.py sdist
+            python setup.py bdist_wheel
+      - run:
+          name: upload to pypi
+          command: |
+            . venv/bin/activate
+            twine upload dist/*
+
 workflows:
   version: 2
   test-all:
@@ -68,3 +112,13 @@ workflows:
       - test_feature_engine_py37
       - test_feature_engine_py38
       - test_style
+      - package_and_upload_to_pypi:
+          requires:
+            - test_feature_engine_py36
+            - test_feature_engine_py37
+            - test_feature_engine_py38
+            - test_style
+          filters:
+            branches:
+              only:
+                - master
