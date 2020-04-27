@@ -44,7 +44,9 @@ class CountFrequencyCategoricalEncoder(BaseCategoricalTransformer):
     
     encoding_method : str, default='count'
         Desired method of encoding.
+
         'count': number of observations per category
+
         'frequency': percentage of observations per category
     
     variables : list
@@ -70,6 +72,7 @@ class CountFrequencyCategoricalEncoder(BaseCategoricalTransformer):
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             The user can pass the entire dataframe.
+
         y : None
             y is not needed in this encoder. You can pass y or None.
 
@@ -108,6 +111,13 @@ class CountFrequencyCategoricalEncoder(BaseCategoricalTransformer):
 
         return self
 
+    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    def transform(self, X):
+        X = super().transform(X)
+        return X
+
+    transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
+
 
 class OrdinalCategoricalEncoder(BaseCategoricalTransformer):
     """ 
@@ -135,8 +145,10 @@ class OrdinalCategoricalEncoder(BaseCategoricalTransformer):
     
     encoding_method : str, default='ordered' 
         Desired method of encoding.
+
         'ordered': the categories are numbered in ascending order according to
         the target mean value per category.
+
         'arbitrary' : categories are numbered arbitrarily.
         
     variables : list, default=None
@@ -213,6 +225,13 @@ class OrdinalCategoricalEncoder(BaseCategoricalTransformer):
 
         return self
 
+    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    def transform(self, X):
+        X = super().transform(X)
+        return X
+
+    transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
+
 
 class MeanCategoricalEncoder(BaseCategoricalTransformer):
     """ 
@@ -253,9 +272,9 @@ class MeanCategoricalEncoder(BaseCategoricalTransformer):
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to be encoded.
+
         y : pandas series
             The target.
-
 
         Attributes
         ----------
@@ -291,6 +310,13 @@ class MeanCategoricalEncoder(BaseCategoricalTransformer):
 
         return self
 
+    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    def transform(self, X):
+        X = super().transform(X)
+        return X
+
+    transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
+
 
 class WoERatioCategoricalEncoder(BaseCategoricalTransformer):
     """ 
@@ -302,7 +328,7 @@ class WoERatioCategoricalEncoder(BaseCategoricalTransformer):
     
     The target probability ratio is given by: p(1) / p(0)
     
-    Note: This categorical encodeding is exclusive for binary classification.
+    Note: This categorical encoding is exclusive for binary classification.
     
     For example in the variable colour, if the mean of the target = 1 for blue
     is 0.8 and the mean of the target = 0  is 0.2, blue will be replaced by:
@@ -327,7 +353,9 @@ class WoERatioCategoricalEncoder(BaseCategoricalTransformer):
     
     encoding_method : str, default=woe
         Desired method of encoding.
+
         'woe': weight of evidence
+
         'ratio' : probability ratio
         
     variables : list, default=None
@@ -354,6 +382,7 @@ class WoERatioCategoricalEncoder(BaseCategoricalTransformer):
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the categorical variables.
+
         y : pandas series.
             Target, must be binary [0,1].
 
@@ -409,6 +438,13 @@ class WoERatioCategoricalEncoder(BaseCategoricalTransformer):
         self.input_shape_ = X.shape
 
         return self
+
+    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    def transform(self, X):
+        X = super().transform(X)
+        return X
+
+    transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
 
 
 class OneHotCategoricalEncoder(BaseEstimator, TransformerMixin):
@@ -488,10 +524,10 @@ class OneHotCategoricalEncoder(BaseEstimator, TransformerMixin):
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just seleted variables.
+
         y : pandas series, default=None
             Target. It is not needed in this encoded. You can pass y or
             None.
-
 
         Attributes
         ----------
@@ -543,8 +579,8 @@ class OneHotCategoricalEncoder(BaseEstimator, TransformerMixin):
         Returns
         -------
         
-        X_transformed : pandas dataframe. The shape of the dataframe will
-        be different from the original as it includes the dummy variables.
+        X_transformed : pandas dataframe.
+            The shape of the dataframe will be different from the original as it includes the dummy variables.
         """
         # Check method fit has been called
         check_is_fitted(self)
@@ -598,18 +634,24 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
     tol: float, default=0.05
         the minimum frequency a label should have to be considered frequent.
         Categories with frequencies lower than tol will be grouped.
+
     n_categories: int, default=10
         the minimum number of categories a variable should have for the encoder
         to find frequent labels. If the variable contains less categories, all
         of them will be considered frequent.
+
     variables : list, default=None
         The list of categorical variables that will be encoded. If None, the 
         encoder will find and select all object type variables.
+
     replace_with : string, default='Rare'
         The category name that will be used to replace infrequent categories.
+
+    return_object: bool, default=False
+        Whether the variables should be re-cast as object, in case they have numerical values.
     """
 
-    def __init__(self, tol=0.05, n_categories=10, variables=None, replace_with='Rare'):
+    def __init__(self, tol=0.05, n_categories=10, variables=None, replace_with='Rare', return_object=False):
 
         if tol < 0 or tol > 1:
             raise ValueError("tol takes values between 0 and 1")
@@ -624,6 +666,7 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
         self.n_categories = n_categories
         self.variables = _define_variables(variables)
         self.replace_with = replace_with
+        self.return_object = return_object
 
     def fit(self, X, y=None):
         """
@@ -635,6 +678,7 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just selected variables
+
         y : None
             y is not required. You can pass y or None.
 
@@ -713,5 +757,9 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
 
         for feature in self.variables:
             X[feature] = np.where(X[feature].isin(self.encoder_dict_[feature]), X[feature], self.replace_with)
+
+        # add additional step to return variables cast as object
+        if self.return_object:
+            X[self.variables] = X[self.variables].astype('O')
 
         return X

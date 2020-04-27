@@ -1,15 +1,7 @@
 ArbitraryOutlierCapper
 ======================
-
-API Reference
--------------
-
-.. autoclass:: feature_engine.outlier_removers.ArbitraryOutlierCapper
-    :members:
-
-
-Example Use
------------
+The ArbitraryOutlierCapper censors variable values at user pre-defined maximum and minimum values.
+For more details, read the API Reference below.
 
 .. code:: python
 
@@ -56,3 +48,21 @@ Example Use
 
 	{'age': 50, 'fare': 200}
 
+.. code:: python
+
+    train_t[['fare', 'age']].max()
+
+.. code:: python
+
+    fare    200
+    age      50
+    dtype: float64
+
+
+
+
+API Reference
+-------------
+
+.. autoclass:: feature_engine.outlier_removers.ArbitraryOutlierCapper
+    :members:

@@ -1,12 +1,15 @@
 OneHotCategoricalEncoder
 ========================
-The OneHotCategoricalEncoder() replaces original categorical variable, by a set of binary variables,
+The OneHotCategoricalEncoder() replaces categorical variables by a set of binary variables,
 one per unique category. The encoder has the option to create k or k-1 binary variables, where k is 
-the number of unique categories. The encoder can also create binary variables by the n most popular
-categories, n being determined by the user.
+the number of unique categories.
+
+The encoder can also create binary variables for the n most popular categories, n being determined by the user.
+This means, if we encode the 6 more popular categories, we will only create binary variables for those
+categories, and the rest will be dropped.
 
 The OneHotCategoricalEncoder() works only with categorical variables. A list of variables can
-be indiacated, or the imputer will automatically select all categorical variables in the train set.
+be indicated, or the encoder will automatically select all categorical variables in the train set.
 
 .. code:: python
 

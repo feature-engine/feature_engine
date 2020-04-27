@@ -1,7 +1,7 @@
 .. -*- mode: rst -*-
 
-Variable transformation: variable transformers
-==============================================
+Variable transformation
+=======================
 
 Feature-engine's variable transformers transform numerical variables with various mathematical
 transformations.

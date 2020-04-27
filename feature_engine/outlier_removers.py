@@ -21,24 +21,32 @@ class Winsorizer(BaseNumericalTransformer):
     2) the inter-quantile range proximity rule or 3) percentiles.
     
     Gaussian limits:
+
         right tail: mean + 3* std
+
         left tail: mean - 3* std
         
     IQR limits:
+
         right tail: 75th quantile + 3* IQR
+
         left tail:  25th quantile - 3* IQR
 
     where IQR is the inter-quartile range: 75th quantile - 25th quantile.
 
     percentiles or quantiles:
+
         right tail: 95th percentile
+
         left tail:  5th percentile
 
     You can select how far out to cap the maximum or minimum values with the
     parameter 'fold'.
 
     If distribution='gaussian' fold gives the value to multiply the std.
+
     If distribution='skewed' fold is the value to multiply the IQR.
+
     If distribution='quantile', fold is the percentile on each tail that should
     be censored. For example, if fold=0.05, the limits will be the 5th and 95th
     percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
@@ -53,9 +61,12 @@ class Winsorizer(BaseNumericalTransformer):
     
     distribution : str, default=gaussian
         Desired distribution. Can take 'gaussian', 'skewed' or 'quantiles'.
+
         gaussian: the transformer will find the maximum and / or minimum values to
         cap the variables using the Gaussian approximation.
+
         skewed: the transformer will find the boundaries using the IQR proximity rule.
+
         quantiles: the limits are given by the percentiles.
         
     tail : str, default=right
@@ -67,6 +78,7 @@ class Winsorizer(BaseNumericalTransformer):
         the std or IQR to calculate the capping values. Recommended values, 2 
         or 3 for the gaussian approximation, or 1.5 or 3 for the IQR proximity 
         rule.
+
         If distribution='quantile', then 'fold' indicates the percentile. So if
         fold=0.05, the limits will be the 95th and 5th percentiles.
         
@@ -100,6 +112,7 @@ class Winsorizer(BaseNumericalTransformer):
         
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
+
         y : None
             y is not needed in this transformer. You can pass y or None.
 
@@ -109,6 +122,7 @@ class Winsorizer(BaseNumericalTransformer):
         right_tail_caps_: dictionary
             The dictionary containing the maximum values at which variables
             will be capped.
+
         left_tail_caps_ : dictionary
             The dictionary containing the minimum values at which variables
             will be capped.
@@ -190,6 +204,7 @@ class ArbitraryOutlierCapper(BaseNumericalTransformer):
     capping_max : dictionary, default=None
         user specified capping values on right tail of the distribution (maximum
         values).
+
     capping_min : dictionary, default=None
         user specified capping values on left tail of the distribution (minimum
         values).
@@ -227,6 +242,7 @@ class ArbitraryOutlierCapper(BaseNumericalTransformer):
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
+
         y : None
             y is not needed in this transformer. You can pass y or None.
 
@@ -236,6 +252,7 @@ class ArbitraryOutlierCapper(BaseNumericalTransformer):
         right_tail_caps_: dictionary
             The dictionary containing the maximum values at which variables
             will be capped.
+
         left_tail_caps_ : dictionary
             The dictionary containing the minimum values at which variables
             will be capped.
@@ -299,24 +316,32 @@ class OutlierTrimmer(Winsorizer):
     range proximity rule or 3) percentiles.
 
     Gaussian limits:
+
         right tail: mean + 3* std
+
         left tail: mean - 3* std
 
     IQR limits:
+
         right tail: 75th quantile + 3* IQR
+
         left tail:  25th quantile - 3* IQR
 
     where IQR is the inter-quartile range: 75th quantile - 25th quantile.
 
     percentiles or quantiles:
+
         right tail: 95th percentile
+
         left tail:  5th percentile
 
     You can select how far out to allow the maximum or minimum values with the
     parameter 'fold'.
 
     If distribution='gaussian' fold gives the value to multiply the std.
+
     If distribution='skewed' fold is the value to multiply the IQR.
+
     If distribution='quantile', fold is the percentile on each tail that should
     be censored. For example, if fold=0.05, the limits will be the 5th and 95th
     percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
@@ -332,9 +357,12 @@ class OutlierTrimmer(Winsorizer):
 
     distribution : str, default=gaussian
         Desired distribution. Can take 'gaussian', 'skewed' or 'quantiles'.
+
         gaussian: the transformer will find the maximum and / or minimum values to
         cap the variables using the Gaussian approximation.
+
         skewed: the transformer will find the boundaries using the IQR proximity rule.
+
         quantiles: the limits are given by the percentiles.
 
     tail : str, default=right
@@ -346,6 +374,7 @@ class OutlierTrimmer(Winsorizer):
         the std or IQR to calculate the capping values. Recommended values, 2
         or 3 for the gaussian approximation, or 1.5 or 3 for the IQR proximity
         rule.
+
         If distribution='quantile', then 'fold' indicates the percentile. So if
         fold=0.05, the limits will be the 95th and 5th percentiles.
 

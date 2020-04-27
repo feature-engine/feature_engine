@@ -25,6 +25,7 @@ class LogTransformer(BaseNumericalTransformer):
     base: string, default='e'
         Indicates if the natural or base 10 logarithm should be applied. Can take values
         'e' or '10'.
+
     variables : list, default=None
         The list of numerical variables to be transformed. If None, the transformer 
         will find and select all numerical variables.
@@ -49,6 +50,7 @@ class LogTransformer(BaseNumericalTransformer):
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to transform.
+
         y : None
             y is not needed in this transformer. You can pass y or None.
         """
@@ -127,6 +129,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to transform.
+
         y : None
             y is not needed in this encoder. You can pass y or None.
         """
@@ -209,6 +212,7 @@ class PowerTransformer(BaseNumericalTransformer):
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to transform.
+
         y : None
             y is not needed in this transformer. You can pass y or None.
         """
@@ -284,9 +288,11 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         
         Parameters
         ----------
+
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to transform.
+
         y : None
             y is not needed in this transformer. You can pass y or None.
         """

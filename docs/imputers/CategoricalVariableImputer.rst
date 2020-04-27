@@ -1,7 +1,9 @@
 CategoricalVariableImputer
 ==========================
-The CategoricalVariableImputer() replaces missing data in categorical variables with the string 'Missing'.
-It works only with categorial variables. A list of variables can be indiacated, or the imputer will
+The CategoricalVariableImputer() replaces missing data in categorical variables with the string 'Missing' or
+by the most frequent category.
+
+It works only with categorical variables. A list of variables can be indicated, or the imputer will
 automatically select all categorical variables in the train set.
 
 .. code:: python

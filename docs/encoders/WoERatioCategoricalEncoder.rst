@@ -9,7 +9,7 @@ The weight of evidence is given by: np.log( p(1) / p(0) )
 The target probability ratio is given by: p(1) / p(0)
 
 The CountFrequencyCategoricalEncoder() works only with categorical variables. A list of variables can
-be indiacated, or the imputer will automatically select all categorical variables in the train set.
+be indicated, or the encoder will automatically select all categorical variables in the train set.
 
 .. code:: python
 
@@ -37,7 +37,7 @@ be indiacated, or the imputer will automatically select all categorical variable
 			data['survived'], test_size=0.3, random_state=0)
 
 	# set up a rare label encoder
-	rare_encoder = ce.RareLabelCategoricalEncoder(tol=0.03, n_categories=5,
+	rare_encoder = ce.RareLabelCategoricalEncoder(tol=0.03, n_categories=2,
     					variables=['cabin', 'pclass', 'embarked'])
 
 	# fit and transform data
@@ -45,33 +45,33 @@ be indiacated, or the imputer will automatically select all categorical variable
 	test_t = rare_encoder.transform(X_train)
 
 	# set up a weight of evidence encoder
-	encoder = ce.WoERatioCategoricalEncoder(
+	woe_encoder = ce.WoERatioCategoricalEncoder(
     	encoding_method='woe', variables=['cabin', 'pclass', 'embarked'])
 
 	# fit the encoder
-	encoder.fit(train_t, y_train)
+	woe_encoder.fit(train_t, y_train)
 
 	# transform
-	train_t = rare_encoder.transform(train_t)
-	test_t = rare_encoder.transform(test_t)
+	train_t = woe_encoder.transform(train_t)
+	test_t = woe_encoder.transform(test_t)
 
 	encoder.encoder_dict_
 
 
 .. code:: python
 
-	{'cabin': {'B': 1.1631508098056806,
-	  'C': 0.2548922496287902,
-	  'D': 0.9382696385929302,
-	  'E': 0.9382696385929302,
-	  'Rare': 0.2719337154836416,
-	  'n': -0.8243393908312957},
-	 'pclass': {1: 0.4784902431230542,
-	  2: -0.25671984684781396,
-	  3: -1.0509842396788551},
-	 'embarked': {'C': 0.23309388216737797,
-	  'Q': -0.5172565140962812,
-	  'S': -0.6679453885859952}}
+    {'cabin': {'B': 1.1631508098056806,
+      'C': 0.2548922496287902,
+      'D': 0.9382696385929302,
+      'E': 0.9382696385929302,
+      'Rare': 0.2719337154836416,
+      'n': -0.8243393908312957},
+     'pclass': {1: 0.4784902431230542,
+      2: -0.25671984684781396,
+      3: -1.0509842396788551},
+     'embarked': {'C': 0.23309388216737797,
+      'Q': -0.5172565140962812,
+      'S': -0.6679453885859952}}
 
 API Reference
 -------------

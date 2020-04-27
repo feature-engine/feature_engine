@@ -1,10 +1,14 @@
 EndTailImputer
 ==============
 The EndTailImputer() replaces missing data with a value at the end of the distribution. The value can be 
-determined using the mean plus or minus a number of times the standard deviation, or using the inter-quantile
-range proximity rule. The user decides whether the missing data should be placed at the right or left tail of 
+determined using the mean plus or minus a number of times the standard deviation, or using the inter-quartile
+range proximity rule. The value can also be determined as a factor of the maximum value. See the API Reference
+below for more details.
+
+The user decides whether the missing data should be placed at the right or left tail of
 the variable distribution.
-It works only with numerical variables. A list of variables can be indiacated, or the imputer will automatically
+
+It works only with numerical variables. A list of variables can be indicated, or the imputer will automatically
 select all numerical variables in the train set.
 
 .. code:: python
