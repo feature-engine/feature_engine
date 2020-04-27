@@ -11,7 +11,7 @@ learn transformer.
 Installation
 ------------
 
-Feature-engine is a Python 3 package and works well with 3.5 or later. Earlier versions have not been tested.
+Feature-engine is a Python 3 package and works well with 3.6 or later. Earlier versions have not been tested.
 The simplest way to install Feature-engine is from PyPI with pip, Python's preferred package installer.
 
 .. code-block:: bash
@@ -70,7 +70,8 @@ This is an example of how to use Feature-engine's transformers to perform missin
 .. image:: images/medianimputation.png
 
 
-More examples can be found in the documentation for each transformer and in a dedicated section of `Jupyter notebooks <https://github.com/solegalli/feature_engine/tree/master/examples>`_.
+More examples can be found in the documentation for each transformer and in a dedicated section in the
+repository with `Jupyter notebooks <https://github.com/solegalli/feature_engine/tree/master/examples>`_.
 
 
 Feature-engine with Scikit-learn's pipeline
@@ -101,8 +102,24 @@ Feature-engine's transformers can be assembled within a Scikit-learn pipeline. T
 	# drop some variables
 	data.drop(labels=['YearBuilt', 'YearRemodAdd', 'GarageYrBlt', 'Id'], axis=1, inplace=True)
 
+    # make a list of categorical variables
+    categorical = [var for var in data.columns if data[var].dtype == 'O']
+
+    # make a list of numerical variables
+    numerical = [var for var in data.columns if data[var].dtype != 'O']
+
+    # make a list of discrete variables
+    discrete = [ var for var in numerical if len(data[var].unique()) < 20]
+
 	# categorical encoders work only with object type variables
+    # to treat numerical variables as categorical, we need to re-cast them
 	data[discrete]= data[discrete].astype('O')
+
+    # continuous variables
+    numerical = [
+        var for var in numerical if var not in discrete
+        and var not in ['Id', 'SalePrice']
+        ]
 
 	# separate into train and test sets
 	X_train, X_test, y_train, y_test = train_test_split(data.drop(labels=['SalePrice'], axis=1),
@@ -113,19 +130,22 @@ Feature-engine's transformers can be assembled within a Scikit-learn pipeline. T
 	# set up the pipeline
 	price_pipe = pipe([
 	    # add a binary variable to indicate missing information for the 2 variables below
-	    ('continuous_var_imputer', mdi.AddNaNBinaryImputer(variables = ['LotFrontage'])),
+	    ('continuous_var_imputer', mdi.AddMissingIndicator(variables = ['LotFrontage'])),
 	     
 	    # replace NA by the median in the 2 variables below, they are numerical
-	    ('continuous_var_median_imputer', mdi.MeanMedianImputer(imputation_method='median', variables = ['LotFrontage', 'MasVnrArea'])),
+	    ('continuous_var_median_imputer', mdi.MeanMedianImputer(
+                                imputation_method='median', variables = ['LotFrontage', 'MasVnrArea'])),
 	     
 	    # replace NA by adding the label "Missing" in categorical variables
 	    ('categorical_imputer', mdi.CategoricalVariableImputer(variables = categorical)),
 	     
-	    # disretise numerical variables using trees
-	    ('numerical_tree_discretiser', dsc.DecisionTreeDiscretiser(cv = 3, scoring='neg_mean_squared_error', variables = numerical, regression=True)),
+	    # disretise continuous variables using trees
+	    ('numerical_tree_discretiser', dsc.DecisionTreeDiscretiser(
+                    cv = 3, scoring='neg_mean_squared_error', variables = numerical, regression=True)),
 	     
 	    # remove rare labels in categorical and discrete variables
-	    ('rare_label_encoder', ce.RareLabelCategoricalEncoder(tol = 0.03, n_categories=1, variables = categorical+discrete)),
+	    ('rare_label_encoder', ce.RareLabelCategoricalEncoder(
+                                        tol = 0.03, n_categories=1, variables = categorical+discrete)),
 	     
 	    # encode categorical and discrete variables using the target mean 
 	    ('categorical_encoder', ce.MeanCategoricalEncoder(variables = categorical+discrete)),
@@ -175,7 +195,7 @@ More examples can be found in the documentation for each transformer and in a de
 Dataset attribution
 -------------------
 
-The user guide and examples included in Feature-engine's documetation are based on these 2 datasets:
+The user guide and examples included in Feature-engine's documentation are based on these 3 datasets:
 
 **Titanic dataset**
 
@@ -189,8 +209,44 @@ We use the data set created by Professor Dean De Cock:
 
 The examples are based on a copy of the dataset available on `Kaggle <https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data>`_.
 
-However, original data and documentation can be found here:
+The original data and documentation can be found here:
 
 * `Documentation <http://jse.amstat.org/v19n3/decock/DataDocumentation.txt>`_
 
 * `Data <http://jse.amstat.org/v19n3/decock/AmesHousing.xls>`_
+
+**Credit Approval dataset**
+
+We use the Credit Approval dataset from the UCI Machine Learning Repository:
+
+Dua, D. and Graff, C. (2019). `UCI Machine Learning Repository <http://archive.ics.uci.edu/ml>`_. Irvine, CA: University of California, School of Information and Computer Science.
+
+To download the dataset visit this `website <http://archive.ics.uci.edu/ml/machine-learning-databases/credit-screening/>`_ and click on "crx.data" to download the data set.
+
+To prepare the data for the examples:
+
+.. code:: python
+
+    import random
+    import pandas as pd
+    import numpy as np
+
+    # load data
+    data = pd.read_csv('crx.data', header=None)
+
+    # create variable names according to UCI Machine Learning information
+    varnames = ['A'+str(s) for s in range(1,17)]
+    data.columns = varnames
+
+    # replace ? by np.nan
+    data = data.replace('?', np.nan)
+
+    # re-cast some variables to the correct types
+    data['A2'] = data['A2'].astype('float')
+    data['A14'] = data['A14'].astype('float')
+
+    # encode target to binary
+    data['A16'] = data['A16'].map({'+':1, '-':0})
+
+    # save the data
+    data.to_csv('creditApprovalUCI.csv', index=False)

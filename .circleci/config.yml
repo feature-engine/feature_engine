@@ -1,23 +1,70 @@
 version: 2
+
+prepare_tox: &prepare_tox
+  run:
+    name: Install tox
+    command: |
+      sudo pip install --upgrade pip
+      pip install --user tox
+
 jobs:
-  test_feature_engine:
-    working_directory: ~/project
+  test_feature_engine_py36:
     docker:
-      - image: circleci/python:3.7.2
+      - image: circleci/python:3.6.9
+    working_directory: ~/project
     steps:
-      - checkout
+      - checkout:
+          path: ~/project
+      - *prepare_tox
       - run:
-          name: Runnning tests
+          name: Run tests with Python 3.6
           command: |
-            virtualenv venv
-            . venv/bin/activate
-            pip install --upgrade pip
-            pip install -r requirements.txt
-            pip install -r test_requirements.txt
-            py.test -vv feature_engine/tests
+            tox -e py36
+
+  test_feature_engine_py37:
+    docker:
+      - image: circleci/python:3.7.6
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run tests with Python 3.7
+          command: |
+            tox -e py37
+
+  test_feature_engine_py38:
+    docker:
+      - image: circleci/python:3.8.0
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run tests with Python 3.8
+          command: |
+            tox -e py38
+
+  test_style:
+    docker:
+      - image: circleci/python:3.8.0
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run stylechecks
+          command: |
+            tox -e stylechecks
 
 workflows:
   version: 2
   test-all:
     jobs:
-      - test_feature_engine
+      - test_feature_engine_py36
+      - test_feature_engine_py37
+      - test_feature_engine_py38
+      - test_style

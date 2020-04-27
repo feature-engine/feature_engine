@@ -6,7 +6,7 @@ section at the end of this page. A grid with parameters can be passed to find th
 determining the scoring metric and cross-validation fold.
 
 The DecisionTreeDiscretiser() works only with numerical variables. A list of variables can
-be indiacated, or the imputer will automatically select all numerical variables in the train set.
+be indicated, or the imputer will automatically select all numerical variables in the train set.
 
 .. code:: python
 
@@ -77,7 +77,7 @@ be indiacated, or the imputer will automatically select all numerical variables 
 
 	# with tree discretisation, each bin does not necessarily contain
 	# the same number of observations.
-	train_t.groupby('GrLivArea_binned')['GrLivArea'].count().plot.bar()
+	train_t.groupby('GrLivArea')['GrLivArea'].count().plot.bar()
 	plt.ylabel('Number of houses')
 
 

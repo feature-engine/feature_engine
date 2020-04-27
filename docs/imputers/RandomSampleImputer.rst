@@ -1,14 +1,14 @@
 RandomSampleImputer
 ===================
 The RandomSampleImputer() replaces missing data with a random sample extracted from the variable.
-It works with both numerical and categorical variables. A list of variables can be indiacated, or
+It works with both numerical and categorical variables. A list of variables can be indicated, or
 the imputer will automatically select all variables in the train set.
 
-A seed can be set to a fix number, and all observations will be replaced in batch. Alternatively, 
-a seed can be set using the values of 1 or more numerical variables, and the observations will be
+A seed can be set to a pre-defined number and all observations will be replaced in batch. Alternatively,
+a seed can be set using the values of 1 or more numerical variables. In this case, the observations will be
 imputed individually, one at a time, using the values of the variables as a seed.
 
-For example, if the observvation shows variables color: np.nan, height: 152, weight:52, and we set
+For example, if the observation shows variables color: np.nan, height: 152, weight:52, and we set
 the imputer as:
 
 .. code:: python

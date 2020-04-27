@@ -1,9 +1,9 @@
 .. -*- mode: rst -*-
 
-Categorical variable encoding: encoders
-=======================================
+Categorical variable encoding
+=============================
 
-Feature-engine's categorical encoderrs replace variable strings by estimated or arbitrary numbers.
+Feature-engine's categorical encoders replace variable strings by estimated or arbitrary numbers.
 
 .. toctree::
    :maxdepth: 2

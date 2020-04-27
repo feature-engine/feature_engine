@@ -1,7 +1,7 @@
 EqualFrequencyDiscretiser
 =========================
 The EqualFrequencyDiscretiser() sorts the variable values into contiguous intervals of equal proportion
-of observations. The limits of the intervald are calculated according to the quantiles. The number of
+of observations. The limits of the intervals are calculated according to the quantiles. The number of
 intervals or quantiles should be determined by the user. The transformer can return the variable as
 numeric or object (default = numeric).
 
@@ -68,7 +68,7 @@ be indiacated, or the imputer will automatically select all numerical variables 
 
 	# with equal frequency discretisation, each bin contains approximately
 	# the same number of observations.
-	train_t.groupby('GrLivArea_binned')['GrLivArea'].count().plot.bar()
+	train_t.groupby('GrLivArea')['GrLivArea'].count().plot.bar()
 	plt.ylabel('Number of houses')
 
 

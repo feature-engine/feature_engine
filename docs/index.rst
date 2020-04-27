@@ -10,7 +10,7 @@ Feature-engine: A Feature Engineering for Machine Learning library
 
    Feature-engine rocks!
 
-Feature-engine is a Python library that contains several transformers to engineer features for use
+Feature-engine is a Python library with multiple transformers to engineer features for use
 in machine learning models. Feature-engine preserves Scikit-learn functionality with fit() and 
 transform() methods to learn parameters from and then transform data.
 
@@ -22,7 +22,8 @@ Feature-engine includes transformers for:
 - Discretisation
 - Numerical variable transformation
 
-Feature-engine allows to select which variables to engineer within each transformer.
+Feature-engine allows you to select the variables to engineer within each transformer. This way,
+different engineering procedures can be easily applied to different feature subsets.
 
 Feature-engine's transformers can be assembled within the Scikit-learn pipeline, therefore making it
 possible to save and deploy one single object (.pkl) with the entire machine learning pipeline.
@@ -31,7 +32,7 @@ possible to save and deploy one single object (.pkl) with the entire machine lea
 Installation
 ------------
 
-Feature-engine is a Python 3 package and works well with 3.5 or later. Earlier versions have not been tested.
+Feature-engine is a Python 3 package and works well with 3.6 or later. Earlier versions have not been tested.
 The simplest way to install Feature-engine is from PyPI with pip, Python's preferred package installer.
 
 .. code-block:: bash
@@ -47,8 +48,8 @@ project and it would be great to have you onboard. We follow the `Python Softwar
 
 Regardless of your skill level you can help us. We appreciate bug reports, user testing, feature requests, bug fixes, addition of tests, product enhancements, and documentation improvements.
 
-More details on how to contribute will come soon! Meanwhile, feel free to fork the Github repo and make pull requests,
-create an issue, or send feedback. More details on how to reach us in the **Getting help** section below.
+For more details on how to contribute check the contributing page. Click on the "Contributing" link in the
+"Table of Contents" on the left of this page.
 
 Thank you for your contributions!
 
@@ -57,51 +58,50 @@ Feature-engine's Transformers
 Missing Data Imputation: Imputers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`imputers/MeanMedianImputer`: replaces missing data in numerical variables by mean or median 
+- :doc:`imputers/MeanMedianImputer`: replaces missing data in numerical variables by the mean or median
 - :doc:`imputers/ArbitraryValueImputer`: replaces missing data in numerical variables by an arbitrary value
 - :doc:`imputers/EndTailImputer`: replaces missing data in numerical variables by numbers at the distribution tails
-- :doc:`imputers/CategoricalVariableImputer`: replaces missing data in categorical variables with the string 'Missing'
-- :doc:`imputers/FrequentCategoryImputer`: replaces missing data in categorical variables by the mode
+- :doc:`imputers/CategoricalVariableImputer`: replaces missing data in categorical variables with the string 'Missing' or by the most frequent category
 - :doc:`imputers/RandomSampleImputer`: replaces missing data with random samples of the variable
-- :doc:`imputers/AddNaNBinaryImputer`: adds a binary missing indicator to flag observations with missing data
+- :doc:`imputers/AddMissingIndicator`: adds a binary missing indicator to flag observations with missing data
 
 Categorical Variable Encoders: Encoders
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - :doc:`encoders/OneHotCategoricalEncoder`: performs one hot encoding, optional: of popular categories
-- :doc:`encoders/CountFrequencyCategoricalEncoder`: replaces categories by observation number or percentage
+- :doc:`encoders/CountFrequencyCategoricalEncoder`: replaces categories by observation count or percentage
 - :doc:`encoders/OrdinalCategoricalEncoder`: replaces categories by numbers arbitrarily or ordered by target
 - :doc:`encoders/MeanCategoricalEncoder`: replaces categories by the target mean
 - :doc:`encoders/WoERatioCategoricalEncoder`: replaces categories by the weight of evidence
-- :doc:`encoders/RareLabelCategoricalEncoder`: groups infrequent categories in one group
+- :doc:`encoders/RareLabelCategoricalEncoder`: groups infrequent categories
 
 Numerical Variable Transformation: Transformers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`vartransformers/LogTransformer`: perform logarithmic transformation of numerical variables
-- :doc:`vartransformers/ReciprocalTransformer`: perform reciprocal transformation of numerical variables
-- :doc:`vartransformers/PowerTransformer`: perform power transformation of numerical variables
+- :doc:`vartransformers/LogTransformer`: performs logarithmic transformation of numerical variables
+- :doc:`vartransformers/ReciprocalTransformer`: performs reciprocal transformation of numerical variables
+- :doc:`vartransformers/PowerTransformer`: performs power transformation of numerical variables
 - :doc:`vartransformers/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables
 - :doc:`vartransformers/YeoJohnsonTransformer`: performs Yeo-Johnson transformation of numerical variables
 
 Variable Discretisation: Discretisers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`discretisers/EqualFrequencyDiscretiser`: sorts variable into equal percentage of obs intervals
+- :doc:`discretisers/EqualFrequencyDiscretiser`: sorts variable into equal frequency intervals
 - :doc:`discretisers/EqualWidthDiscretiser`: sorts variable into equal size contiguous intervals
 - :doc:`discretisers/DecisionTreeDiscretiser`: uses decision trees to create finite variables
 
 Outlier Capping: Cappers
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
--  :doc:`outliercappers/Winsorizer`: caps maximum or minimum values using Gaussian approx or IQR rule
--  :doc:`outliercappers/ArbitraryOutlierCapper`: caps maximum and minimum values arbitrarily
-
+-  :doc:`outliercappers/Winsorizer`: caps maximum or minimum values using statistical parameters
+-  :doc:`outliercappers/ArbitraryOutlierCapper`: caps maximum and minimum values at user defined values
+-  :doc:`outliercappers/OutlierTrimmer`: removes outliers from the dataset
 
 Getting Help
 ------------
 
-Can't get someting to work? Here are places you can find help.
+Can't get something to work? Here are places you can find help.
 
 1. The docs (you're here!).
 2. `Stack Overflow <https://stackoverflow.com/questions/tagged/feature-engine>`_. If you ask a question, please tag it with "feature-engine".
@@ -126,9 +126,11 @@ Feature-engine is hosted on `GitHub <https://github.com/solegalli/feature_engine
    :caption: Table of Contents
    
    quickstart
+   datasets
    imputers/index
    encoders/index
    vartransformers/index
    discretisers/index
    outliercappers/index
+   contributing
    changelog
