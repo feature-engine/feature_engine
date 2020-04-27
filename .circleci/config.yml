@@ -91,7 +91,7 @@ jobs:
           command: |
             echo -e "[pypi]" >> ~/.pypirc
             echo -e "username = solegalli" >> ~/.pypirc
-            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+            echo -e "password = $pypi_password" >> ~/.pypirc
       - run:
           name: create package
           command: |
