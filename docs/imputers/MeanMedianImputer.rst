@@ -1,8 +1,8 @@
 MeanMedianImputer
 =================
 The MeanMedianImputer() replaces missing data with the mean or median of the variable. It works only
-with numerical variables. A list of variables can be indiacated, or the imputer will automatically select
-all numerical variables in the train set.
+with numerical variables. A list of variables to impute can be indicated, or the imputer will automatically
+select all numerical variables in the train set. For more details, check the API Reference below.
 
 .. code:: python
 

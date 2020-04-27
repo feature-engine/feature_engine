@@ -46,7 +46,7 @@ Example Use
 .. code:: python
 
 	# transformed variable
-	train_t['GrLivArea'].hist(bins=50)
+	train_t['LotArea'].hist(bins=50)
 
 
 .. image:: ../images/lotareapower.png

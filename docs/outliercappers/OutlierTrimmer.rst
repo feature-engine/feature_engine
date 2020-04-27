@@ -1,8 +1,8 @@
-Winsorizer
-==========
+OutlierTrimmer
+==============
 
-Censors variables at predefined minimum and maximum values. The minimum and maximum values can be calculated
-in 1 of 3 different ways:
+Removes values beyond predefined minimum and maximum values from the data set.
+The minimum and maximum values can be calculated in 1 of 3 different ways:
 
 Gaussian limits:
     right tail: mean + 3* std
@@ -44,7 +44,7 @@ See the API Reference for more details.
         data['age'] = data['age'].astype('float')
         data['age'].fillna(data['age'].median(), inplace=True)
         return data
-	
+
 	data = load_titanic()
 
 	# Separate into train and test sets
@@ -53,8 +53,8 @@ See the API Reference for more details.
 			data['survived'], test_size=0.3, random_state=0)
 
 	# set up the capper
-	capper = outr.Winsorizer(
-		distribution='gaussian', tail='right', fold=3, variables=['age', 'fare'])
+	capper = outr.OutlierTrimmer(
+            distribution='skewed', tail='right', fold=1.5, variables=['age', 'fare'])
 
 	# fit the capper
 	capper.fit(X_train)
@@ -68,7 +68,7 @@ See the API Reference for more details.
 
 .. code:: python
 
-	{'age': 72.03416424092518, 'fare': 174.78162171790427}
+	{'age': 53.0, 'fare': 66.34379999999999}
 
 .. code:: python
 
@@ -76,14 +76,13 @@ See the API Reference for more details.
 
 .. code:: python
 
-    fare    174.781622
-    age      67.490484
+    fare    65.0
+    age     53.0
     dtype: float64
 
 
 API Reference
 -------------
 
-.. autoclass:: feature_engine.outlier_removers.Winsorizer
+.. autoclass:: feature_engine.outlier_removers.OutlierTrimmer
     :members:
-

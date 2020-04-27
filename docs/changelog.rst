@@ -3,6 +3,29 @@
 Changelog
 =========
 
+Version 0.4.0
+-------------
+* Deployed: Monday, April 04, 2020
+* Contributors: Soledad Galli, Christopher Samiullah
+
+Major Changes:
+    - **Deprecated**: the ``FrequentCategoryImputer`` was integrated into the class ``CategoricalVariableImputer``. To perform frequent category imputation now use: ``CategoricalVariableImputer(imputation_method='frequent')``
+    - **Renamed**: the ``AddNaNBinaryImputer`` is now called ``AddMissingIndicator``.
+    - **New**: the ``OutlierTrimmer`` was introduced into the package and allows you to remove outliers from the dataset
+
+Minor Changes:
+    - **Improved**: the ``EndTailImputer`` now has the additional option to place outliers at a factor of the maximum value.
+    - **Improved**: the ``FrequentCategoryImputer`` has now the functionality to return numerical variables cast as object, in case you want to operate with them as if they were categorical. Set ``return_object=True``.
+    - **Improved**: the ``RareLabelEncoder`` now allows the user to define the name for the label that will replace rare categories.
+    - **Improved**: All feature engine transformers (except missing data imputers) check that the data sets do not contain missing values.
+    - **Improved**: the ``LogTransformer`` will raise an error if a variable has zero or negative values.
+    - **Improved**: the ``ReciprocalTransformer`` now works with variables of type integer.
+    - **Improved**: the ``ReciprocalTransformer`` will raise an error if the variable contains the value zero.
+    - **Improved**: the ``BoxCoxTransformer`` will raise an error if the variable contains negative values.
+    - **Improved**: the ``OutlierCapper`` now finds and removes outliers based of percentiles.
+    - **Improved**: Feature-engine is now compatible with latest releases of Pandas and Scikit-learn.
+
+
 Version 0.3.0
 -------------
 * Deployed: Monday, August 05, 2019

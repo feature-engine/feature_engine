@@ -1,9 +1,9 @@
 .. -*- mode: rst -*-
 
-Variable discretisation: discretisers
-=====================================
+Variable discretisation
+=======================
 
-Feature-engine's variable discretisation transformers transform numerical variables into discrete variables
+Feature-engine's variable discretisation transformers transform continuous numerical variables into discrete variables
 of contiguous intervals.
 
 .. toctree::

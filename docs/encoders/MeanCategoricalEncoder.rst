@@ -2,11 +2,11 @@ MeanCategoricalEncoder
 ======================
 The MeanCategoricalEncoder() replaces categories with the mean of the target per category. For example, 
 if we are trying to predict default rate, and our data has the variable city, with categories, London,
-Manchester and Bristol, and default rate 0.1, 0.5, and 0.3, respectively, the encoder will replace London
-by 0.1, Manchester by 0.5 and Bristol by 0.3.
+Manchester and Bristol, and the default rate per city is 0.1, 0.5, and 0.3, respectively, the encoder will
+replace London by 0.1, Manchester by 0.5 and Bristol by 0.3.
 
 The MeanCategoricalEncoder() works only with categorical variables. A list of variables can
-be indiacated, or the imputer will automatically select all categorical variables in the train set.
+be indicated, or the encoder will automatically select all categorical variables in the train set.
 
 .. code:: python
 

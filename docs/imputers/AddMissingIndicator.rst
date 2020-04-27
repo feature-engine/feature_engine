@@ -1,8 +1,11 @@
-AddNaNBinaryImputer
+AddMissingIndicator
 ===================
-The AddNaNBinaryImputer() adds a binary variable indicating if observations are missing (missing indicator).
+The AddMissingIndicator() adds a binary variable indicating if observations are missing (missing indicator).
 It adds a missing indicator for both categorical and numerical variables. A list of variables for which to
 add a missing indicator can be passed, or the imputer will automatically select all variables.
+
+The imputer has the option to select if binary variables should be added to all variables, or only to those
+that show missing data in the train set, by setting the option how='missing_only'.
 
 .. code:: python
 
@@ -22,7 +25,7 @@ add a missing indicator can be passed, or the imputer will automatically select 
     	data.drop(['Id', 'SalePrice'], axis=1), data['SalePrice'], test_size=0.3, random_state=0)
 
 	# set up the imputer
-	addBinary_imputer = mdi.AddNaNBinaryImputer(
+	addBinary_imputer = mdi.AddMissingIndicator(
 	    variables=['Alley', 'MasVnrType', 'LotFrontage', 'MasVnrArea'])
 
 	# fit the imputer
@@ -39,5 +42,5 @@ add a missing indicator can be passed, or the imputer will automatically select 
 API Reference
 -------------
 
-.. autoclass:: feature_engine.missing_data_imputers.AddNaNBinaryImputer
+.. autoclass:: feature_engine.missing_data_imputers.AddMissingIndicator
     :members:
