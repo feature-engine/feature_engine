@@ -83,7 +83,6 @@ jobs:
           command: |
             . venv/bin/activate
             pip install -r requirements.txt
-            pip install -e .
             pip install wheel
             pip install twine
       - run:
@@ -91,7 +90,7 @@ jobs:
           command: |
             echo -e "[pypi]" >> ~/.pypirc
             echo -e "username = solegalli" >> ~/.pypirc
-            echo -e "password = $pypi_password" >> ~/.pypirc
+            echo -e "password = ${pypi_password}" >> ~/.pypirc
       - run:
           name: create package
           command: |
