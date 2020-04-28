@@ -101,7 +101,7 @@ jobs:
           name: upload to pypi
           command: |
             . venv/bin/activate
-            twine upload dist/*
+            twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 
 workflows:
   version: 2
