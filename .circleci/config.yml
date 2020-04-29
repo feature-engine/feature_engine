@@ -86,12 +86,6 @@ jobs:
             pip install wheel
             pip install twine
       - run:
-          name: init .pypirc
-          command: |
-            echo -e "[pypi]" >> ~/.pypirc
-            echo -e "username = solegalli" >> ~/.pypirc
-            echo -e "password = ${pypi_password}" >> ~/.pypirc
-      - run:
           name: create package
           command: |
             rm -rf dist/*
@@ -101,7 +95,7 @@ jobs:
           name: upload to pypi
           command: |
             . venv/bin/activate
-            twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
+            twine upload --repository PROJECT_NAME  --config-file .pypirc dist/*
 
 workflows:
   version: 2
