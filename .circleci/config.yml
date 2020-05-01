@@ -82,7 +82,7 @@ jobs:
       - run:
           name: upload to pypi
           command: |
-            pip install -U pip
+            pip install --user --upgrade pip
             pip install wheel
             pip install twine
             rm -rf dist/*
