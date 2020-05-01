@@ -5,20 +5,21 @@ defaults: &defaults
     - image: circleci/python:3.7.2
   working_directory: ~/project
 
-prepare_venv: &prepare_venv
-  run:
-    name: Create venv
-    command: |
-      python3 -m venv venv
-      source venv/bin/activate
-      pip install --upgrade pip
-
 prepare_tox: &prepare_tox
   run:
     name: Install tox
     command: |
       sudo pip install --upgrade pip
       pip install --user tox
+
+init_pypirc: &init_pypirc
+  run:
+    name: init .pypirc
+    command: |
+      echo -e "[pypi]" >> ~/.pypirc
+      echo -e "repository = $FE_PYPI_URL" >> ~/.pypirc
+      echo -e "username = $FE_PYPI_USER" >> ~/.pypirc
+      echo -e "password = $FE_PYPI_API_KEY" >> ~/.pypirc
 
 jobs:
   test_feature_engine_py36:
@@ -77,25 +78,17 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - *prepare_venv
-      - run:
-          name: Install requirements
-          command: |
-            . venv/bin/activate
-            pip install -r requirements.txt
-            pip install wheel
-            pip install twine
-      - run:
-          name: create package
-          command: |
-            rm -rf dist/*
-            python setup.py sdist
-            python setup.py bdist_wheel
+      - *init_pypirc
       - run:
           name: upload to pypi
           command: |
-            . venv/bin/activate
-            twine upload --config-file .pypirc dist/*
+            pip install --upgrade pip
+            pip install wheel
+            pip install twine
+            rm -rf dist/*
+            python setup.py sdist bdist_wheel --universal
+            ls -l dist
+            twine upload dist/*
 
 workflows:
   version: 2
