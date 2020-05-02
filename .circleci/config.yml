@@ -105,4 +105,7 @@ workflows:
             - test_feature_engine_py37
             - test_feature_engine_py38
             - test_style
-
+            filters:
+              branches:
+                only:
+                  - master
