@@ -3,6 +3,17 @@
 Changelog
 =========
 
+Version 0.4.3
+-------------
+* Deployed: , 2020
+* Contributors: Soledad Galli
+
+Major Changes:
+
+
+Minor Changes:
+    - **Added functionality**: the `'EqualFrequencyDiscretiser`` and ``EqualWidthDiscretiser`` now have the ability to return interval boundaries as well as integers, to identify the bins. To return boundareis set the parameter ``return_boundaries=True``.
+
 Version 0.4.0
 -------------
 * Deployed: Monday, April 04, 2020
