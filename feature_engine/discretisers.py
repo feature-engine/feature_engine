@@ -47,9 +47,13 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
         numeric or as object. The decision is made by the user based on
         whether they would like to proceed the engineering of the variable as  
         if it was numerical or categorical.
+
+    return_boundaries: bool, default=False
+        whether the output should be the interval boundaries. If True, it returns
+        the interval boundaries. If False, it returns integers.
     """
 
-    def __init__(self, q=10, variables=None, return_object=False):
+    def __init__(self, q=10, variables=None, return_object=False, return_boundaries=False):
 
         if not isinstance(q, int):
             raise ValueError('q must be an integer')
@@ -60,6 +64,8 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
         self.q = q
         self.variables = _define_variables(variables)
         self.return_object = return_object
+        self.return_boundaries = return_boundaries
+
 
     def fit(self, X, y=None):
         """
@@ -119,12 +125,17 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
         X = super().transform(X)
 
         # transform variables
-        for feature in self.variables:
-            X[feature] = pd.cut(X[feature], self.binner_dict_[feature], labels=False)
+        if self.return_boundaries:
+            for feature in self.variables:
+                X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
 
-        # return object
-        if self.return_object:
-            X[self.variables] = X[self.variables].astype('O')
+        else:
+            for feature in self.variables:
+                X[feature] = pd.cut(X[feature], self.binner_dict_[feature], labels=False)
+
+            # return object
+            if self.return_object:
+                X[self.variables] = X[self.variables].astype('O')
 
         return X
 
@@ -163,9 +174,13 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
         numeric or as object. The decision should be made by the user based on 
         whether they would like to proceed the engineering of the variable as  
         if it was numerical or categorical.
+
+    return_boundaries: bool, default=False
+        whether the output should be the interval boundaries. If True, it returns
+        the interval boundaries. If False, it returns integers.
     """
 
-    def __init__(self, bins=10, variables=None, return_object=False):
+    def __init__(self, bins=10, variables=None, return_object=False, return_boundaries=False):
 
         if not isinstance(bins, int):
             raise ValueError('q must be an integer')
@@ -176,6 +191,8 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
         self.bins = bins
         self.variables = _define_variables(variables)
         self.return_object = return_object
+        self.return_boundaries = return_boundaries
+
 
     def fit(self, X, y=None):
         """
@@ -237,12 +254,17 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
         X = super().transform(X)
 
         # transform variables
-        for feature in self.variables:
-            X[feature] = pd.cut(X[feature], self.binner_dict_[feature], labels=False)
+        if self.return_boundaries:
+            for feature in self.variables:
+                X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
 
-        # return object
-        if self.return_object:
-            X[self.variables] = X[self.variables].astype('O')
+        else:
+            for feature in self.variables:
+                X[feature] = pd.cut(X[feature], self.binner_dict_[feature], labels=False)
+
+            # return object
+            if self.return_object:
+                X[self.variables] = X[self.variables].astype('O')
 
         return X
 
