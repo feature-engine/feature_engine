@@ -1,4 +1,0 @@
-Contributing
-============
-
-Coming soon.
