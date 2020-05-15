@@ -98,6 +98,11 @@ Outlier Capping: Cappers
 -  :doc:`outliercappers/ArbitraryOutlierCapper`: caps maximum and minimum values at user defined values
 -  :doc:`outliercappers/OutlierTrimmer`: removes outliers from the dataset
 
+Scikit-learn Wrapper:
+~~~~~~~~~~~~~~~~~~~~~
+
+-  :doc:`wrappers/Wrapper`: executes Scikit-learn various transformers only on the selected subset of features
+
 Getting Help
 ------------
 
@@ -132,5 +137,6 @@ Feature-engine is hosted on `GitHub <https://github.com/solegalli/feature_engine
    vartransformers/index
    discretisers/index
    outliercappers/index
-   contributing
+   wrappers/index
+   contributing/index
    changelog
