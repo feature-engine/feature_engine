@@ -3,6 +3,20 @@
 Changelog
 =========
 
+Version 0.4.3
+-------------
+
+* Deployed: Friday, May 15, 2020
+* Contributors: Soledad Galli, Christopher Samiullah
+
+Major Changes:
+	- **New Transformer**: the `'SklearnTransformerWrapper`` allows you to use most Scikit-learn transformers just on a subset of features. Works with the SimpleImputer, the OrdinalEncoder and most scalers.
+
+Minor Changes:
+    - **Added functionality**: the `'EqualFrequencyDiscretiser`` and ``EqualWidthDiscretiser`` now have the ability to return interval boundaries as well as integers, to identify the bins. To return boundareis set the parameter ``return_boundaries=True``.
+    - **Improved docs**: added contibuting section, where you can find information on how to participate in the development of Feature-engine's code base, and more.
+
+
 Version 0.4.0
 -------------
 * Deployed: Monday, April 04, 2020
