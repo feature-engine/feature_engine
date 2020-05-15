@@ -7,7 +7,7 @@ Version 0.4.3
 -------------
 
 * Deployed: Friday, May 15, 2020
-* Contributors: Soledad Galli
+* Contributors: Soledad Galli, Christopher Samiullah
 
 Major Changes:
 	- **New Transformer**: the `'SklearnTransformerWrapper`` allows you to use most Scikit-learn transformers just on a subset of features. Works with the SimpleImputer, the OrdinalEncoder and most scalers.
