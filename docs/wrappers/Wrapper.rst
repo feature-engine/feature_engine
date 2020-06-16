@@ -30,6 +30,7 @@ Implements Scikit-learn transformers like the SimpleImputer, the OrdinalEncoder 
     X_train = imputer.transform(X_train)
     X_test = imputer.transform(X_test)
 
+
 For more details, check more examples in the Jupyter notebooks in our repository,
 
 
