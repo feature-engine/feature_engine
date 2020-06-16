@@ -33,7 +33,7 @@ See the API Reference for more details.
 	from feature_engine import outlier_removers as outr
 
 	# Load dataset
-    def load_titanic():
+    	def load_titanic():
         data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
         data = data.replace('?', np.nan)
         data['cabin'] = data['cabin'].astype(str).str[0]
