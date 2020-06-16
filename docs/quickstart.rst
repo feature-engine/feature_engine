@@ -81,26 +81,26 @@ Feature-engine's transformers can be assembled within a Scikit-learn pipeline. T
 
 .. code:: python
 
-	from math import sqrt
-	import pandas as pd
-	import numpy as np
-	import matplotlib.pyplot as plt
+    from math import sqrt
+    import pandas as pd
+    import numpy as np
+    import matplotlib.pyplot as plt
 
-	from sklearn.linear_model import Lasso
-	from sklearn.metrics import mean_squared_error
-	from sklearn.model_selection import train_test_split
-	from sklearn.pipeline import Pipeline as pipe
-	from sklearn.preprocessing import MinMaxScaler
+    from sklearn.linear_model import Lasso
+    from sklearn.metrics import mean_squared_error
+    from sklearn.model_selection import train_test_split
+    from sklearn.pipeline import Pipeline as pipe
+    from sklearn.preprocessing import MinMaxScaler
+    
+    from feature_engine import categorical_encoders as ce
+    from feature_engine import discretisers as dsc
+    from feature_engine import missing_data_imputers as mdi
 
-	from feature_engine import categorical_encoders as ce
-	from feature_engine import discretisers as dsc
-	from feature_engine import missing_data_imputers as mdi
+    # load dataset
+    data = pd.read_csv('houseprice.csv')
 
-	# load dataset
-	data = pd.read_csv('houseprice.csv')
-
-	# drop some variables
-	data.drop(labels=['YearBuilt', 'YearRemodAdd', 'GarageYrBlt', 'Id'], axis=1, inplace=True)
+    # drop some variables
+    data.drop(labels=['YearBuilt', 'YearRemodAdd', 'GarageYrBlt', 'Id'], axis=1, inplace=True)
 
     # make a list of categorical variables
     categorical = [var for var in data.columns if data[var].dtype == 'O']
@@ -111,9 +111,9 @@ Feature-engine's transformers can be assembled within a Scikit-learn pipeline. T
     # make a list of discrete variables
     discrete = [ var for var in numerical if len(data[var].unique()) < 20]
 
-	# categorical encoders work only with object type variables
+    # categorical encoders work only with object type variables
     # to treat numerical variables as categorical, we need to re-cast them
-	data[discrete]= data[discrete].astype('O')
+    data[discrete]= data[discrete].astype('O')
 
     # continuous variables
     numerical = [
@@ -121,71 +121,71 @@ Feature-engine's transformers can be assembled within a Scikit-learn pipeline. T
         and var not in ['Id', 'SalePrice']
         ]
 
-	# separate into train and test sets
-	X_train, X_test, y_train, y_test = train_test_split(data.drop(labels=['SalePrice'], axis=1),
-	                                                    data.SalePrice,
-	                                                    test_size=0.1,
-	                                                    random_state=0)
+     # separate into train and test sets
+     X_train, X_test, y_train, y_test = train_test_split(data.drop(labels=['SalePrice'], axis=1),
+	                                                 data.SalePrice,
+	                                                 test_size=0.1,
+	                                                 random_state=0)
 
 	# set up the pipeline
-	price_pipe = pipe([
-	    # add a binary variable to indicate missing information for the 2 variables below
-	    ('continuous_var_imputer', mdi.AddMissingIndicator(variables = ['LotFrontage'])),
-	     
-	    # replace NA by the median in the 2 variables below, they are numerical
-	    ('continuous_var_median_imputer', mdi.MeanMedianImputer(
-                                imputation_method='median', variables = ['LotFrontage', 'MasVnrArea'])),
-	     
-	    # replace NA by adding the label "Missing" in categorical variables
-	    ('categorical_imputer', mdi.CategoricalVariableImputer(variables = categorical)),
-	     
-	    # disretise continuous variables using trees
-	    ('numerical_tree_discretiser', dsc.DecisionTreeDiscretiser(
-                    cv = 3, scoring='neg_mean_squared_error', variables = numerical, regression=True)),
-	     
-	    # remove rare labels in categorical and discrete variables
-	    ('rare_label_encoder', ce.RareLabelCategoricalEncoder(
-                                        tol = 0.03, n_categories=1, variables = categorical+discrete)),
-	     
-	    # encode categorical and discrete variables using the target mean 
-	    ('categorical_encoder', ce.MeanCategoricalEncoder(variables = categorical+discrete)),
-	    
-	    # scale features
-	    ('scaler', MinMaxScaler()),
-	    
-	    # Lasso
-	    ('lasso', Lasso(random_state=2909, alpha=0.005))
-	     ])
+     price_pipe = pipe([
+	 # add a binary variable to indicate missing information for the 2 variables below
+	 ('continuous_var_imputer', mdi.AddMissingIndicator(variables = ['LotFrontage'])),
 
-	# train feature engineering transformers and Lasso
-	price_pipe.fit(X_train, np.log(y_train))
+	 # replace NA by the median in the 2 variables below, they are numerical
+	 ('continuous_var_median_imputer', mdi.MeanMedianImputer(
+		imputation_method='median', variables = ['LotFrontage', 'MasVnrArea'])),
 
-	# predict
-	pred_train = price_pipe.predict(X_train)
-	pred_test = price_pipe.predict(X_test)
+	 # replace NA by adding the label "Missing" in categorical variables
+	 ('categorical_imputer', mdi.CategoricalVariableImputer(variables = categorical)),
 
-	# Evaluate
-	print('Lasso Linear Model train mse: {}'.format(mean_squared_error(y_train, np.exp(pred_train))))
-	print('Lasso Linear Model train rmse: {}'.format(sqrt(mean_squared_error(y_train, np.exp(pred_train)))))
-	print()
-	print('Lasso Linear Model test mse: {}'.format(mean_squared_error(y_test, np.exp(pred_test))))
-	print('Lasso Linear Model test rmse: {}'.format(sqrt(mean_squared_error(y_test, np.exp(pred_test)))))
+	 # disretise continuous variables using trees
+	 ('numerical_tree_discretiser', dsc.DecisionTreeDiscretiser(
+	    cv = 3, scoring='neg_mean_squared_error', variables = numerical, regression=True)),
 
+	 # remove rare labels in categorical and discrete variables
+	 ('rare_label_encoder', ce.RareLabelCategoricalEncoder(
+			tol = 0.03, n_categories=1, variables = categorical+discrete)),
 
-.. code:: python
+	 # encode categorical and discrete variables using the target mean 
+	 ('categorical_encoder', ce.MeanCategoricalEncoder(variables = categorical+discrete)),
 
-	Lasso Linear Model train mse: 949189263.8948538
-	Lasso Linear Model train rmse: 30808.9153313591
+	 # scale features
+	 ('scaler', MinMaxScaler()),
 
-	Lasso Linear Model test mse: 1344649485.0641894
-	Lasso Linear Model train rmse: 36669.46256852136
+	 # Lasso
+	 ('lasso', Lasso(random_state=2909, alpha=0.005))
+	 
+	 ])
+    # train feature engineering transformers and Lasso
+    price_pipe.fit(X_train, np.log(y_train))
+
+    # predict
+    pred_train = price_pipe.predict(X_train)
+    pred_test = price_pipe.predict(X_test)
+    
+    # Evaluate
+    print('Lasso Linear Model train mse: {}'.format(mean_squared_error(y_train, np.exp(pred_train))))
+    print('Lasso Linear Model train rmse: {}'.format(sqrt(mean_squared_error(y_train, np.exp(pred_train)))))
+    print()
+    print('Lasso Linear Model test mse: {}'.format(mean_squared_error(y_test, np.exp(pred_test))))
+    print('Lasso Linear Model test rmse: {}'.format(sqrt(mean_squared_error(y_test, np.exp(pred_test)))))
+
 
 .. code:: python
 
-	plt.scatter(y_test, np.exp(pred_test))
-	plt.xlabel('True Price')
-	plt.ylabel('Predicted Price')
-	plt.show()
+    Lasso Linear Model train mse: 949189263.8948538
+    Lasso Linear Model train rmse: 30808.9153313591
+
+    Lasso Linear Model test mse: 1344649485.0641894
+    Lasso Linear Model train rmse: 36669.46256852136
+
+.. code:: python
+
+    plt.scatter(y_test, np.exp(pred_test))
+    plt.xlabel('True Price')
+    plt.ylabel('Predicted Price')
+    plt.show()
 
 .. image:: images/pipelineprediction.png
 
