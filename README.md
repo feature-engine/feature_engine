@@ -80,12 +80,36 @@ git clone https://github.com/solegalli/feature_engine.git
 
 ### Usage
 
-```
-from feature_engine.categorical_encoders import RareLabelEncoder
+```python
+>>> from feature_engine.categorical_encoders import RareLabelCategoricalEncoder
+>>> import pandas as pd
 
-rare_encoder = RareLabelEncoder(tol = 0.05, n_categories=5)
-rare_encoder.fit(data, variables = ['Cabin', 'Age'])
-data_encoded = rare_encoder.transform(data)
+>>> data = {'var_A': ['A'] * 10 + ['B'] * 10 + ['C'] * 2 + ['D'] * 1}
+>>> data = pd.DataFrame(data)
+>>> data['var_A'].value_counts()
+```
+
+```
+Out[1]:
+A    10
+B    10
+C     2
+D     1
+Name: var_A, dtype: int64
+```
+    
+```python 
+>>> rare_encoder = RareLabelCategoricalEncoder(tol=0.10, n_categories=3)
+>>> data_encoded = rare_encoder.fit_transform(data)
+>>> data_encoded['var_A'].value_counts()
+```
+
+```
+Out[2]:
+A       10
+B       10
+Rare     3
+Name: var_A, dtype: int64
 ```
 
 See more usage examples in the jupyter notebooks in the **example** folder of this repository, or in the documentation: http://feature-engine.readthedocs.io
