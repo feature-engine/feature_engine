@@ -112,7 +112,8 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         -------
 
         X : pandas dataframe of shape = [n_samples, n_features].
-            The un-transformed dataframe, that is, containing the original values of the categorical variables.
+            The un-transformed dataframe, that is, containing the original values
+            of the categorical variables.
        """
         # Check method fit has been called
         check_is_fitted(self)
