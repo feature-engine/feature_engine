@@ -114,6 +114,26 @@ def test_Windsorizer(dataframe_normal_dist, dataframe_na, dataframe_vartypes):
     assert X['var'].max() <= 0.11823196128033647
     assert dataframe_normal_dist['var'].max() > 0.11823196128033647
 
+    # test case 7: dataset contains na and transformer is asked to ignore them
+    transformer = Winsorizer(distribution='gaussian', tail='right', fold=1,
+                             variables=['Age', 'Marks'],
+                             missing_values='ignore')
+    X = transformer.fit_transform(dataframe_na)
+
+    df_transf = dataframe_na.copy()
+    df_transf['Age'] = np.where(df_transf['Age'] > 38.79255087111844, 38.79255087111844, df_transf['Age'])
+    df_transf['Marks'] = np.where(df_transf['Marks'] > 0.8970309389976613, 0.8970309389976613, df_transf['Marks'])
+
+    # fit params
+    assert transformer.right_tail_caps_ == {'Age': 38.79255087111844, 'Marks': 0.8970309389976613}
+    assert transformer.left_tail_caps_ == {}
+    assert transformer.input_shape_ == (8, 6)
+    # transform params
+    pd.testing.assert_frame_equal(X, df_transf)
+    assert X['Age'].max() <= 38.79255087111844
+    assert dataframe_na['Age'].max() > 38.79255087111844
+
+    # test error raises
     with pytest.raises(ValueError):
         Winsorizer(distribution='other')
 
@@ -121,14 +141,20 @@ def test_Windsorizer(dataframe_normal_dist, dataframe_na, dataframe_vartypes):
         Winsorizer(tail='other')
 
     with pytest.raises(ValueError):
+        Winsorizer(missing_values='other')
+
+    with pytest.raises(ValueError):
         Winsorizer(fold=-1)
 
-    # test case 7: when dataset contains na, fit method
+    with pytest.raises(ValueError):
+        Winsorizer(distribution='quantiles', fold=0.3)
+
+    # test case 8: when dataset contains na, fit method
     with pytest.raises(ValueError):
         transformer = Winsorizer()
         transformer.fit(dataframe_na)
 
-    # test case 8: when dataset contains na, transform method
+    # test case 9: when dataset contains na, transform method
     with pytest.raises(ValueError):
         transformer = Winsorizer()
         transformer.fit(dataframe_vartypes)
@@ -197,6 +223,23 @@ def test_ArbitraryOutlierCapper(dataframe_normal_dist, dataframe_na, dataframe_v
     assert X['var'].min() >= -0.17486039103044
     assert dataframe_normal_dist['var'].min() < -0.17486039103044
 
+    # test case 4: dataset contains na and transformer is asked to ignore them
+    transformer = ArbitraryOutlierCapper(max_capping_dict=None, min_capping_dict={'Age': 20},
+                                         missing_values='ignore')
+    X = transformer.fit_transform(dataframe_na)
+
+    df_transf = dataframe_na.copy()
+    df_transf['Age'] = np.where(df_transf['Age'] < 20, 20, df_transf['Age'])
+
+    # fit params
+    assert transformer.max_capping_dict is None
+    assert transformer.min_capping_dict == {'Age': 20}
+    assert transformer.input_shape_ == (8, 6)
+    # transform params
+    pd.testing.assert_frame_equal(X, df_transf)
+    assert X['Age'].min() >= 20
+    assert dataframe_na['Age'].min() < 20
+
     with pytest.raises(ValueError):
         ArbitraryOutlierCapper(max_capping_dict='other')
 
@@ -206,15 +249,18 @@ def test_ArbitraryOutlierCapper(dataframe_normal_dist, dataframe_na, dataframe_v
     with pytest.raises(ValueError):
         ArbitraryOutlierCapper(min_capping_dict=None, max_capping_dict=None)
 
+    with pytest.raises(ValueError):
+        ArbitraryOutlierCapper(missing_values='other')
+
     df_na = dataframe_normal_dist.copy()
     df_na.loc[1, 'var'] = np.nan
 
-    # test case 4: when dataset contains na, fit method
+    # test case 5: when dataset contains na, fit method
     with pytest.raises(ValueError):
         transformer = ArbitraryOutlierCapper(min_capping_dict={'var': -0.17486039103044})
         transformer.fit(df_na)
 
-    # test case 8: when dataset contains na, transform method
+    # test case 6: when dataset contains na, transform method
     with pytest.raises(ValueError):
         transformer = ArbitraryOutlierCapper(min_capping_dict={'var': -0.17486039103044})
         transformer.fit(dataframe_normal_dist)
@@ -225,7 +271,7 @@ def test_ArbitraryOutlierCapper(dataframe_normal_dist, dataframe_na, dataframe_v
         transformer.transform(dataframe_vartypes)
 
 
-def test_OutlierTrimmer(dataframe_normal_dist):
+def test_OutlierTrimmer(dataframe_normal_dist, dataframe_na):
     # test case 1: mean and std, right tail
     transformer = OutlierTrimmer(distribution='gaussian', tail='right', fold=1)
     X = transformer.fit_transform(dataframe_normal_dist)
@@ -253,3 +299,15 @@ def test_OutlierTrimmer(dataframe_normal_dist):
 
     pd.testing.assert_frame_equal(X, df_transf)
     assert len(X) == 98
+
+    # test case 4: dataset contains na, and transformer is asked to ignore
+    transformer = OutlierTrimmer(distribution='gaussian', tail='right', fold=1,
+                                 variables=['Age'], missing_values='ignore')
+    X = transformer.fit_transform(dataframe_na)
+
+    df_transf = dataframe_na.copy()
+    outliers = np.where(df_transf['Age'] > 38.79255087111844, True, False)
+    df_transf = df_transf.loc[~outliers]
+
+    pd.testing.assert_frame_equal(X, df_transf)
+    assert len(X) == 6

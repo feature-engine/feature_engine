@@ -1,14 +1,23 @@
-# Authors: Soledad Galli <solegalli1@gmail.com>
+# Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
 import numpy as np
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
-from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df, _check_contains_na
-from feature_engine.variable_manipulation import _define_variables
-from feature_engine.base_transformers import BaseNumericalTransformer
+
+from feature_engine.variable_manipulation import (
+    _define_variables,
+    _find_numerical_variables
+)
+
+from feature_engine.dataframe_checks import (
+    _is_dataframe,
+    _check_input_matches_training_df,
+    _check_contains_na,
+)
 
 
-class Winsorizer(BaseNumericalTransformer):
+class Winsorizer(BaseEstimator, TransformerMixin):
     """
     The Winsorizer() caps maximum and / or minimum values of a variable.
     
@@ -81,13 +90,16 @@ class Winsorizer(BaseNumericalTransformer):
 
         If distribution='quantile', then 'fold' indicates the percentile. So if
         fold=0.05, the limits will be the 95th and 5th percentiles.
-        
+        Note: Outliers will be removed up to a maximum of the 20th percentiles on both
+        sides. Thus, when distribution='quantile', then 'fold' takes values between 0
+        and 0.20.
+
     variables : list, default=None
         The list of variables for which the outliers will be capped. If None, 
         the transformer will find and select all numerical variables.
     """
 
-    def __init__(self, distribution='gaussian', tail='right', fold=3, variables=None):
+    def __init__(self, distribution='gaussian', tail='right', fold=3, variables=None, missing_values='raise'):
 
         if distribution not in ['gaussian', 'skewed', 'quantiles']:
             raise ValueError("distribution takes only values 'gaussian', 'skewed' or 'quantiles'")
@@ -98,10 +110,17 @@ class Winsorizer(BaseNumericalTransformer):
         if fold <= 0:
             raise ValueError("fold takes only positive numbers")
 
+        if distribution == 'quantiles' and fold > 0.2:
+            raise ValueError("with distribution='quantiles', fold takes values between 0 and 0.20 only.")
+
+        if missing_values not in ['raise', 'ignore']:
+            raise ValueError("missing_values takes only values 'raise' or 'ignore'")
+
         self.distribution = distribution
         self.tail = tail
         self.fold = fold
         self.variables = _define_variables(variables)
+        self.missing_values = missing_values
 
     def fit(self, X, y=None):
         """ 
@@ -127,8 +146,16 @@ class Winsorizer(BaseNumericalTransformer):
             The dictionary containing the minimum values at which variables
             will be capped.
         """
+
         # check input dataframe
-        X = super().fit(X, y)
+        X = _is_dataframe(X)
+
+        # find or check for numerical variables
+        self.variables = _find_numerical_variables(X, self.variables)
+
+        if self.missing_values == 'raise':
+            # check if dataset contains na
+            _check_contains_na(X, self.variables)
 
         self.right_tail_caps_ = {}
         self.left_tail_caps_ = {}
@@ -143,7 +170,7 @@ class Winsorizer(BaseNumericalTransformer):
                 self.right_tail_caps_ = (X[self.variables].quantile(0.75) + (IQR * self.fold)).to_dict()
 
             elif self.distribution == 'quantiles':
-                self.right_tail_caps_ = X[self.variables].quantile(1-self.fold).to_dict()
+                self.right_tail_caps_ = X[self.variables].quantile(1 - self.fold).to_dict()
 
         if self.tail in ['left', 'both']:
             if self.distribution == 'gaussian':
@@ -178,7 +205,18 @@ class Winsorizer(BaseNumericalTransformer):
         """
 
         # check input dataframe an if class was fitted
-        X = super().transform(X)
+        check_is_fitted(self)
+
+        # check that input is a dataframe
+        X = _is_dataframe(X)
+
+        if self.missing_values == 'raise':
+            # check if dataset contains na
+            _check_contains_na(X, self.variables)
+
+        # Check that the dataframe contains the same number of columns
+        # than the dataframe used to fit the imputer.
+        _check_input_matches_training_df(X, self.input_shape_[1])
 
         for feature in self.right_tail_caps_.keys():
             X[feature] = np.where(X[feature] > self.right_tail_caps_[feature], self.right_tail_caps_[feature],
@@ -190,7 +228,7 @@ class Winsorizer(BaseNumericalTransformer):
         return X
 
 
-class ArbitraryOutlierCapper(BaseNumericalTransformer):
+class ArbitraryOutlierCapper(BaseEstimator, TransformerMixin):
     """ 
     The ArbitraryOutlierCapper() caps the maximum or minimum values of a variable
     by an arbitrary value indicated by the user.
@@ -211,7 +249,7 @@ class ArbitraryOutlierCapper(BaseNumericalTransformer):
         
     """
 
-    def __init__(self, max_capping_dict=None, min_capping_dict=None):
+    def __init__(self, max_capping_dict=None, min_capping_dict=None, missing_values='raise'):
 
         if not max_capping_dict and not min_capping_dict:
             raise ValueError("Please provide at least 1 dictionary with the capping values per variable")
@@ -235,11 +273,16 @@ class ArbitraryOutlierCapper(BaseNumericalTransformer):
             tmp.update(max_capping_dict)
             self.variables = [x for x in tmp.keys()]
 
+        if missing_values not in ['raise', 'ignore']:
+            raise ValueError("missing_values takes only values 'raise' or 'ignore'")
+
+        self.missing_values = missing_values
+
     def fit(self, X, y=None):
         """
-        
         Parameters
         ----------
+
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
 
@@ -257,7 +300,14 @@ class ArbitraryOutlierCapper(BaseNumericalTransformer):
             The dictionary containing the minimum values at which variables
             will be capped.
         """
-        super().fit(X, y)
+        X = _is_dataframe(X)
+
+        if self.missing_values == 'raise':
+            # check if dataset contains na
+            _check_contains_na(X, self.variables)
+
+        # find or check for numerical variables
+        self.variables = _find_numerical_variables(X, self.variables)
 
         if self.max_capping_dict is not None:
             self.right_tail_caps_ = self.max_capping_dict
@@ -290,9 +340,21 @@ class ArbitraryOutlierCapper(BaseNumericalTransformer):
             The dataframe with the capped variables.
         """
 
-        # check input dataframe an if class was fitted
-        X  = super().transform(X)
+        # check if class was fitted
+        check_is_fitted(self)
 
+        # check that input is a dataframe
+        X = _is_dataframe(X)
+
+        if self.missing_values == 'raise':
+            # check if dataset contains na
+            _check_contains_na(X, self.variables)
+
+        # Check that the dataframe contains the same number of columns
+        # than the dataframe used to fit the imputer.
+        _check_input_matches_training_df(X, self.input_shape_[1])
+
+        # replace outliers
         for feature in self.right_tail_caps_.keys():
             X[feature] = np.where(X[feature] > self.right_tail_caps_[feature], self.right_tail_caps_[feature],
                                   X[feature])
@@ -377,6 +439,9 @@ class OutlierTrimmer(Winsorizer):
 
         If distribution='quantile', then 'fold' indicates the percentile. So if
         fold=0.05, the limits will be the 95th and 5th percentiles.
+        Note: Outliers will be removed up to a maximum of the 20th percentiles on both
+        sides. Thus, when distribution='quantile', then 'fold' takes values between 0
+        and 0.20.
 
     variables : list, default=None
         The list of variables for which the outliers will be capped. If None,
@@ -405,8 +470,9 @@ class OutlierTrimmer(Winsorizer):
         # check that input is a dataframe
         X = _is_dataframe(X)
 
-        # check if dataset contains na
-        _check_contains_na(X, self.variables)
+        if self.missing_values == 'raise':
+            # check if dataset contains na
+            _check_contains_na(X, self.variables)
 
         # Check that the dataframe contains the same number of columns than the dataframe
         # used to fit the imputer.

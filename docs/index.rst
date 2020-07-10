@@ -28,6 +28,9 @@ different engineering procedures can be easily applied to different feature subs
 Feature-engine's transformers can be assembled within the Scikit-learn pipeline, therefore making it
 possible to save and deploy one single object (.pkl) with the entire machine learning pipeline.
 
+More details into what is unique about Feature-engine can be found in this article:
+`Feature-engine: A new open source Python package for feature engineering <<https://www.trainindata.com/post/feature-engine-a-new-open-source-python-package-for-feature-engineering>`_.
+
 
 Installation
 ------------
@@ -90,6 +93,8 @@ Variable Discretisation: Discretisers
 - :doc:`discretisers/EqualFrequencyDiscretiser`: sorts variable into equal frequency intervals
 - :doc:`discretisers/EqualWidthDiscretiser`: sorts variable into equal size contiguous intervals
 - :doc:`discretisers/DecisionTreeDiscretiser`: uses decision trees to create finite variables
+- :doc:`discretisers/UserInputDiscretiser`: allows the user to arbitrarily define the intervals
+
 
 Outlier Capping: Cappers
 ~~~~~~~~~~~~~~~~~~~~~~~~

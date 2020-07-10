@@ -98,6 +98,44 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         return X
 
+    # restores encoded variables to their original values
+    def inverse_transform(self, X):
+        """ Convert the data back to the original representation.
+
+        Parameters
+        ----------
+
+        X_transformed : pandas dataframe of shape = [n_samples, n_features].
+            The transformed dataframe.
+
+        Returns
+        -------
+
+        X : pandas dataframe of shape = [n_samples, n_features].
+            The un-transformed dataframe, that is, containing the original values
+            of the categorical variables.
+       """
+        # Check method fit has been called
+        check_is_fitted(self)
+
+        # check that input is a dataframe
+        X = _is_dataframe(X)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables)
+
+        # Check that the dataframe contains the same number of columns
+        # than the dataframe
+        # used to fit the imputer.
+        _check_input_matches_training_df(X, self.input_shape_[1])
+
+        # replace encoded categories by the original values
+        for feature in self.encoder_dict_.keys():
+            inv_map = {v: k for k, v in self.encoder_dict_[feature].items()}
+            X[feature] = X[feature].map(inv_map)
+
+        return X
+
 
 class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
     # shared set-up procedures across numerical transformers, i.e.,
