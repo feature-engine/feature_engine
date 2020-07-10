@@ -3,6 +3,19 @@
 Changelog
 =========
 
+Version 0.5.0
+-------------
+
+* Deployed: Friday, July 10, 2020
+* Contributors: Soledad Galli
+
+Major Changes:
+    - **Bug fix**: fixed error in weight of evidence formula in the ``WoERatioCategoricalEncoder``. The old formula, that is np.log( p(1) / p(0) ) is preserved, and can be obtained by setting the ``encoding_method`` to 'log_ratio'. If ``encoding_method`` is set to 'woe', now the correct formula will operate.
+	- **Added functionality**: most categorical encoders have the option ``inverse_transform``, to obtain the original value of the variable from the transformed dataset.
+    - **Added functionality**: the `'Winsorizer``, ``OutlierTrimmer`` and ``ArbitraryOutlierCapper`` have now the option to ignore missing values, and obtain the parameters from the original variable distribution, or raise an error if the dataframe contains na, by setting the parameter ``missing_values`` to ``raise`` or ``ignore``.
+    - **New Transformer**: the ``UserInputDiscretiser`` allows users to discretise numerical variables into arbitrarily defined buckets.
+
+
 Version 0.4.3
 -------------
 

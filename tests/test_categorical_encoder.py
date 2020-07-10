@@ -337,34 +337,35 @@ def test_WoERatioCategoricalEncoder(dataframe_enc, dataframe_enc_rare, dataframe
         encoder = WoERatioCategoricalEncoder(encoding_method='log_ratio')
         encoder.fit(df[['var_A', 'var_B']], df['target'])
 
-    # test case 10: when the numerator probability is zero, woe
-    with pytest.raises(ValueError):
-        df = {'var_A': ['A'] * 6 + ['B'] * 10 + ['C'] * 4,
-              'var_B': ['A'] * 10 + ['B'] * 6 + ['C'] * 4,
-              'target': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0]}
-        df = pd.DataFrame(df)
-        encoder = WoERatioCategoricalEncoder(encoding_method='woe')
-        encoder.fit(df[['var_A', 'var_B']], df['target'])
+    # # test case 10: when the numerator probability is zero, woe
+    # with pytest.raises(ValueError):
+    #     df = {'var_A': ['A'] * 6 + ['B'] * 10 + ['C'] * 4,
+    #           'var_B': ['A'] * 10 + ['B'] * 6 + ['C'] * 4,
+    #           'target': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0]}
+    #     df = pd.DataFrame(df)
+    #     encoder = WoERatioCategoricalEncoder(encoding_method='woe')
+    #     encoder.fit(df[['var_A', 'var_B']], df['target'])
 
-    # test case 1: when the denominator probability is zero, woe
-    with pytest.raises(ValueError):
-        df = {'var_A': ['A'] * 6 + ['B'] * 10 + ['C'] * 4,
-              'var_B': ['A'] * 10 + ['B'] * 6 + ['C'] * 4,
-              'target': [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0]}
-        df = pd.DataFrame(df)
-        encoder = WoERatioCategoricalEncoder(encoding_method='woe')
-        encoder.fit(df[['var_A', 'var_B']], df['target'])
+    # # test case 11: when the denominator probability is zero, woe
+    # with pytest.raises(ValueError):
+    #     df = {'var_A': ['A'] * 6 + ['B'] * 10 + ['C'] * 4,
+    #           'var_B': ['A'] * 10 + ['B'] * 6 + ['C'] * 4,
+    #           'target': [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0]}
+    #     df = pd.DataFrame(df)
+    #     encoder = WoERatioCategoricalEncoder(encoding_method='woe')
+    #     encoder.fit(df[['var_A', 'var_B']], df['target'])
 
+    # test case 12: non fitted error
     with pytest.raises(NotFittedError):
         imputer = WoERatioCategoricalEncoder()
         imputer.transform(dataframe_enc)
 
-    # test case 10: when dataset contains na, fit method
+    # test case 13: when dataset contains na, fit method
     with pytest.raises(ValueError):
         encoder = WoERatioCategoricalEncoder(encoding_method='woe')
         encoder.fit(dataframe_enc_na[['var_A', 'var_B']], dataframe_enc_na['target'])
 
-    # test case 11: when dataset contains na, transform method
+    # test case 14: when dataset contains na, transform method
     with pytest.raises(ValueError):
         encoder = WoERatioCategoricalEncoder(encoding_method='woe')
         encoder.fit(dataframe_enc[['var_A', 'var_B']], dataframe_enc['target'])

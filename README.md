@@ -16,6 +16,10 @@ Feature-engine is a Python library with multiple transformers to engineer featur
 [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO).
 [Python Feature Engineering Cookbook](https://www.packtpub.com/data/python-feature-engineering-cookbook)
 
+## Blogs about Feature-engine:
+
+[Feature-engine: A new open source Python package for feature engineering](https://www.trainindata.com/post/feature-engine-a-new-open-source-python-package-for-feature-engineering)
+[Open Source Python libraries for Feature Engineering: Comparisons and Walkthroughs](https://www.trainindata.com/post/feature-engineering-python-libraries-comparisons)
 
 ## Documentation
 
@@ -58,6 +62,7 @@ Feature-engine is a Python library with multiple transformers to engineer featur
 * EqualFrequencyDiscretiser
 * EqualWidthDiscretiser
 * DecisionTreeDiscretiser
+* UserInputDiscreriser
 
 ### Variable Transformation methods
 * LogTransformer
@@ -65,6 +70,11 @@ Feature-engine is a Python library with multiple transformers to engineer featur
 * PowerTransformer
 * BoxCoxTransformer
 * YeoJohnsonTransformer
+
+
+### Scikit-learn Wrapper:
+
+ * SklearnTransformerWrapper
 
 
 ### Installing
