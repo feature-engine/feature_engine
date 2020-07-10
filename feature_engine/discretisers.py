@@ -376,6 +376,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         X = super().fit(X, y)
 
         self.binner_dict_ = {}
+        self.scores_dict_ = {}
 
         for var in self.variables:
             # call the model

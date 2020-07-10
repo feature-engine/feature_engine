@@ -118,6 +118,12 @@ class CountFrequencyCategoricalEncoder(BaseCategoricalTransformer):
 
     transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
 
+    def inverse_transform(self, X):
+        X = super().inverse_transform(X)
+        return X
+
+    inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
+
 
 class OrdinalCategoricalEncoder(BaseCategoricalTransformer):
     """ 
@@ -232,6 +238,12 @@ class OrdinalCategoricalEncoder(BaseCategoricalTransformer):
 
     transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
 
+    def inverse_transform(self, X):
+        X = super().inverse_transform(X)
+        return X
+
+    inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
+
 
 class MeanCategoricalEncoder(BaseCategoricalTransformer):
     """ 
@@ -316,6 +328,12 @@ class MeanCategoricalEncoder(BaseCategoricalTransformer):
         return X
 
     transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
+
+    def inverse_transform(self, X):
+        X = super().inverse_transform(X)
+        return X
+
+    inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
 
 
 class WoERatioCategoricalEncoder(BaseCategoricalTransformer):
@@ -470,6 +488,12 @@ class WoERatioCategoricalEncoder(BaseCategoricalTransformer):
         return X
 
     transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
+
+    def inverse_transform(self, X):
+        X = super().inverse_transform(X)
+        return X
+
+    inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
 
 
 class OneHotCategoricalEncoder(BaseEstimator, TransformerMixin):

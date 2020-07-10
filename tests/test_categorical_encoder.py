@@ -352,11 +352,11 @@ def test_WoERatioCategoricalEncoder(dataframe_enc, dataframe_enc_rare, dataframe
               'var_B': ['A'] * 10 + ['B'] * 6 + ['C'] * 4,
               'target': [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0]}
         df = pd.DataFrame(df)
-        encoder = WoERatioCategoricalEncoder(encoding_method='log_ratio')
+        encoder = WoERatioCategoricalEncoder(encoding_method='woe')
         encoder.fit(df[['var_A', 'var_B']], df['target'])
 
     with pytest.raises(NotFittedError):
-        imputer = OrdinalCategoricalEncoder()
+        imputer = WoERatioCategoricalEncoder()
         imputer.transform(dataframe_enc)
 
     # test case 10: when dataset contains na, fit method
