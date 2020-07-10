@@ -12,3 +12,4 @@ of contiguous intervals.
    EqualFrequencyDiscretiser
    EqualWidthDiscretiser
    DecisionTreeDiscretiser
+   UserInputDiscretiser

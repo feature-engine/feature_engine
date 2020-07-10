@@ -2,8 +2,14 @@ import pytest
 import numpy as np
 import pandas as pd
 from sklearn.exceptions import NotFittedError
+from sklearn.datasets import load_boston
 
-from feature_engine.discretisers import EqualFrequencyDiscretiser, EqualWidthDiscretiser, DecisionTreeDiscretiser
+from feature_engine.discretisers import (
+    EqualFrequencyDiscretiser,
+    EqualWidthDiscretiser,
+    DecisionTreeDiscretiser,
+    UserInputDiscretiser
+)
 
 
 def test_EqualFrequencyDiscretiser(dataframe_normal_dist, dataframe_vartypes, dataframe_na):
@@ -151,7 +157,7 @@ def test_DecisionTreeDiscretiser(dataframe_normal_dist, dataframe_vartypes, data
     assert transformer.input_shape_ == (100, 1)
     assert transformer.scores_dict_ == {'var': -4.4373314584616444e-05}
     # transform params
-    assert len([x for x in np.round(X['var'].unique(),2) if x not in X_t]) == 0
+    assert len([x for x in np.round(X['var'].unique(), 2) if x not in X_t]) == 0
 
     with pytest.raises(ValueError):
         DecisionTreeDiscretiser(cv='other')
@@ -167,3 +173,30 @@ def test_DecisionTreeDiscretiser(dataframe_normal_dist, dataframe_vartypes, data
     with pytest.raises(NotFittedError):
         transformer = EqualWidthDiscretiser()
         transformer.transform(dataframe_vartypes)
+
+
+def test_UserInputDiscretise():
+    boston_dataset = load_boston()
+    data = pd.DataFrame(boston_dataset.data, columns=boston_dataset.feature_names)
+    user_dict = {'LSTAT': [0, 10, 20, 30, np.Inf]}
+
+    data_t1 = data.copy()
+    data_t2 = data.copy()
+    data_t1['LSTAT'] = pd.cut(data['LSTAT'], bins=[0, 10, 20, 30, np.Inf])
+    data_t2['LSTAT'] = pd.cut(data['LSTAT'], bins=[0, 10, 20, 30, np.Inf], labels=False)
+
+    transformer = UserInputDiscretiser(binning_dict=user_dict, return_object=False, return_boundaries=False)
+    X = transformer.fit_transform(data)
+
+    # init params
+    assert transformer.variables == ['LSTAT']
+    assert transformer.return_object is False
+    assert transformer.return_boundaries is False
+    # fit params
+    assert transformer.binner_dict_ == user_dict
+    # transform params
+    pd.testing.assert_frame_equal(X, data_t2)
+
+    transformer = UserInputDiscretiser(binning_dict=user_dict, return_object=False, return_boundaries=True)
+    X = transformer.fit_transform(data)
+    pd.testing.assert_frame_equal(X, data_t1)
