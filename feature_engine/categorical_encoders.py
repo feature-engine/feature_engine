@@ -694,6 +694,10 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
         If None, all categories with frequency above the tolerance will be
         considered.
 
+        .. note::
+            The `tol` parameter is ignored if the number of frequent categories
+            is greater than `max_n_categories`
+
     variables : list, default=None
         The list of categorical variables that will be encoded. If None, the 
         encoder will find and select all object type variables.
@@ -712,6 +716,10 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
 
         if n_categories < 0 or not isinstance(n_categories, int):
             raise ValueError("n_categories takes only positive integer numbers")
+
+        if max_n_categories is not None:
+            if max_n_categories < 0 or not isinstance(max_n_categories, int):
+                raise ValueError("max_n_categories takes only positive integer numbers")
 
         if not isinstance(replace_with, str):
             raise ValueError("replace_with takes only strings as values.")
@@ -765,7 +773,6 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
                 t = pd.Series(X[var].value_counts() / np.float(len(X)))
 
                 # non-rare labels:
-                self.encoder_dict_[var] = t[t >= self.tol].index
                 freq_idx = t[t >= self.tol].index
 
                 if self.max_n_categories:
