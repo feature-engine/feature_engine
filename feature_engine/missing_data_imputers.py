@@ -255,10 +255,15 @@ class ArbitraryNumberImputer(BaseImputer):
 
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will find and
-        select all numerical type variables.
+        select all numerical type variables. Attribute is used only if imputer_dict
+        attribute is None.
+
+    imputer_dict: dict, default=None
+        The dictionary of variables and arbitrary numbers for each of variables.
+        If None, variables attribute is used for imputation.
     """
 
-    def __init__(self, arbitrary_number=999, variables=None):
+    def __init__(self, arbitrary_number=999, variables=None, imputer_dict=None):
 
         if isinstance(arbitrary_number, int) or isinstance(arbitrary_number, float):
             self.arbitrary_number = arbitrary_number
@@ -266,6 +271,11 @@ class ArbitraryNumberImputer(BaseImputer):
             raise ValueError('arbitrary_number must be numeric of type int or float')
 
         self.variables = _define_variables(variables)
+
+        if isinstance(imputer_dict, dict):
+            self.imputer_dict = imputer_dict
+        else:
+            self.imputer_dict = None
 
     def fit(self, X, y=None):
         """
@@ -285,10 +295,14 @@ class ArbitraryNumberImputer(BaseImputer):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables = _find_numerical_variables(X, self.variables)
+        if self.imputer_dict:
+            self.variables = _find_numerical_variables(X, self.imputer_dict.keys())
+        else:
+            self.variables = _find_numerical_variables(X, self.variables)
 
         # create the imputer dictionary
-        self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables}
+        self.imputer_dict_ = {var: self.imputer_dict[var] if self.imputer_dict else self.arbitrary_number
+                              for var in self.variables}
 
         self.input_shape_ = X.shape
 
