@@ -253,6 +253,27 @@ def test_CategoricalVariableImputer(dataframe_na):
                                          return_object=True)
     X_transformed = imputer.fit_transform(dataframe_na)
     assert X_transformed['Marks'].dtype == 'O'
+    
+    # test case 6: imputing custom user-defined string + automatically select variables
+    imputer = CategoricalVariableImputer(imputation_method='missing', fill_value='Unknown', variables=None)
+    X_transformed = imputer.fit_transform(dataframe_na)
+
+    ref_df = dataframe_na.copy()
+    ref_df['Name'] = ref_df['Name'].fillna('Unknown')
+    ref_df['City'] = ref_df['City'].fillna('Unknown')
+    ref_df['Studies'] = ref_df['Studies'].fillna('Unknown')
+
+    # init params
+    assert imputer.imputation_method == 'missing'
+    assert imputer.fill_value == 'Unknown'
+    assert imputer.variables == ['Name', 'City', 'Studies']
+    # fit params
+    assert imputer.input_shape_ == (8, 6)
+    assert imputer.imputer_dict_ == {'Name': 'Unknown', 'City': 'Unknown', 'Studies': 'Unknown'}
+    # transform output
+    assert X_transformed[['Name', 'City', 'Studies']].isnull().sum().sum() == 0
+    assert X_transformed[['Age', 'Marks']].isnull().sum().sum() > 0
+    pd.testing.assert_frame_equal(X_transformed, ref_df)
 
     with pytest.raises(ValueError):
         imputer = CategoricalVariableImputer(imputation_method='arbitrary')
