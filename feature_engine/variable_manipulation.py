@@ -13,6 +13,19 @@ def _define_variables(variables):
     return variables
 
 
+def _define_imputer_dict(imputer_dict):
+    # Check that imputer dict is passed as a dictionary
+    # Can take None as value
+    if not imputer_dict:
+        imputer_dict = imputer_dict
+    elif isinstance(imputer_dict, dict):
+        if not all([isinstance(x, float) or isinstance(x, int) for x in imputer_dict.values()]):
+            raise ValueError('All values in imputer_dict have to be integer or float type')
+    else:
+        raise TypeError('Imputer_dict parameters allow passing dictionaries only or none value')
+    return imputer_dict
+
+
 def _find_numerical_variables(X, variables=None):
     # Find numerical variables in a data set or check that
     # the variables entered by the user are numerical.

@@ -9,7 +9,7 @@ from sklearn.utils import deprecated
 
 from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df
 from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables, \
-    _find_numerical_variables
+    _find_numerical_variables, _define_imputer_dict
 from feature_engine.base_transformers import BaseImputer
 
 
@@ -255,12 +255,13 @@ class ArbitraryNumberImputer(BaseImputer):
 
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will find and
-        select all numerical type variables. Attribute is used only if imputer_dict
+        select all numerical type variables. Attribute is used only if `imputer_dict`
         attribute is None.
 
     imputer_dict: dict, default=None
-        The dictionary of variables and arbitrary numbers for each of variables.
-        If None, variables attribute is used for imputation.
+        The dictionary of variables and their arbitrary numbers. If imputer_dict is not None,
+        it has to be dictionary with all values of integer or float type.
+        If None, `variables` attribute is used for imputation.
     """
 
     def __init__(self, arbitrary_number=999, variables=None, imputer_dict=None):
@@ -272,10 +273,7 @@ class ArbitraryNumberImputer(BaseImputer):
 
         self.variables = _define_variables(variables)
 
-        if isinstance(imputer_dict, dict):
-            self.imputer_dict = imputer_dict
-        else:
-            self.imputer_dict = None
+        self.imputer_dict = _define_imputer_dict(imputer_dict)
 
     def fit(self, X, y=None):
         """
@@ -301,8 +299,10 @@ class ArbitraryNumberImputer(BaseImputer):
             self.variables = _find_numerical_variables(X, self.variables)
 
         # create the imputer dictionary
-        self.imputer_dict_ = {var: self.imputer_dict[var] if self.imputer_dict else self.arbitrary_number
-                              for var in self.variables}
+        if self.imputer_dict:
+            self.imputer_dict_ = {var: self.imputer_dict[var] for var in self.variables}
+        else:
+            self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables}
 
         self.input_shape_ = X.shape
 

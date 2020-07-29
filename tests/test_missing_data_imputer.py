@@ -184,6 +184,23 @@ def test_ArbitraryNumberImputer(dataframe_na):
         imputer = ArbitraryNumberImputer()
         imputer.transform(dataframe_na)
 
+    # test case 3: arbitrary numbers passed as dict
+    imputer = ArbitraryNumberImputer(imputer_dict={'Age': -42, 'Marks': -999})
+    X_transformed = imputer.fit_transform(dataframe_na)
+    ref_df = dataframe_na.copy()
+    ref_df['Age'] = ref_df['Age'].fillna(-42)
+    ref_df['Marks'] = ref_df['Marks'].fillna(-999)
+
+    # fit params
+    assert imputer.input_shape_ == (8, 6)
+    assert imputer.imputer_dict_ == {'Age': -42, 'Marks': -999}
+    # transform params
+    assert X_transformed[['Age', 'Marks']].isnull().sum().sum() == 0
+    assert X_transformed[['Name', 'City']].isnull().sum().sum() > 0
+    pd.testing.assert_frame_equal(X_transformed, ref_df)
+
+    with pytest.raises(ValueError):
+        ArbitraryNumberImputer(imputer_dict={'Age': 'arbitrary_number'})
 
 def test_CategoricalVariableImputer(dataframe_na):
 
