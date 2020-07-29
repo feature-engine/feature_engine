@@ -690,13 +690,9 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
         of them will be considered frequent.
 
     max_n_categories: int, default=None
-        the maximum no of categories that should be considered frequent.
-        If None, all categories with frequency above the tolerance will be
+        the maximum number of categories that should be considered frequent.
+        If None, all categories with frequency above the tolerance (tol) will be
         considered.
-
-        .. note::
-            The `tol` parameter is ignored if the number of frequent categories
-            is greater than `max_n_categories`
 
     variables : list, default=None
         The list of categorical variables that will be encoded. If None, the 
