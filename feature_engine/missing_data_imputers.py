@@ -320,8 +320,8 @@ class CategoricalVariableImputer(BaseImputer):
         Desired method of imputation. Can be 'frequent' or 'missing'.
         
     fill_value : str, default='Missing'
-        Only used when imputation_method='missing'. Can be used for setting 
-        user-defined categories to impute.
+        Only used when imputation_method='missing'. Can be used to set a 
+        user-defined value to replace the missing data.
 
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will find and
