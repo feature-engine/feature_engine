@@ -342,7 +342,7 @@ class CategoricalVariableImputer(BaseImputer):
         if imputation_method not in ['missing', 'frequent']:
             raise ValueError("imputation_method takes only values 'missing' or 'frequent'")
         
-        if ~isinstance(fill_value, str):
+        if not isinstance(fill_value, str):
             raise ValueError("parameter 'fill_value' should be string")
         
         self.imputation_method = imputation_method
