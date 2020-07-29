@@ -317,7 +317,11 @@ class CategoricalVariableImputer(BaseImputer):
     ----------
 
     imputation_method : str, default=missing
-        Desired method of imputation. Can be 'frequent' option (impute mode) or user-defined.
+        Desired method of imputation. Can be 'frequent' or 'missing'.
+        
+    fill_value : str, default='Missing'
+        Only used when imputation_method='missing'. Can be used for setting 
+        user-defined categories to impute.
 
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will find and
@@ -333,9 +337,16 @@ class CategoricalVariableImputer(BaseImputer):
         with feature-engine.
     """
 
-    def __init__(self, imputation_method='missing', variables=None, return_object=False):
-
+    def __init__(self, imputation_method='missing', fill_value='Missing', variables=None, return_object=False):
+        
+        if imputation_method not in ['missing', 'frequent']:
+            raise ValueError("imputation_method takes only values 'missing' or 'frequent'")
+        
+        if ~isinstance(fill_value, str):
+            raise ValueError("parameter 'fill_value' should be string")
+        
         self.imputation_method = imputation_method
+        self.fill_value = fill_value
         self.variables = _define_variables(variables)
         self.return_object = return_object
 
@@ -367,7 +378,10 @@ class CategoricalVariableImputer(BaseImputer):
         # find or check for categorical variables
         self.variables = _find_categorical_variables(X, self.variables)
         
-        if self.imputation_method == 'frequent':
+        if self.imputation_method == 'missing':
+            self.imputer_dict_ = {var: self.fill_value for var in self.variables}
+
+        elif self.imputation_method == 'frequent':
             self.imputer_dict_ = {}
 
             for var in self.variables:
@@ -378,9 +392,6 @@ class CategoricalVariableImputer(BaseImputer):
                     self.imputer_dict_[var] = mode_vals[0]
                 else:
                     raise ValueError('The variable {} contains multiple frequent categories.'.format(var))
-                    
-        else:
-            self.imputer_dict_ = {var: self.imputation_method for var in self.variables}
 
         self.input_shape_ = X.shape
 
