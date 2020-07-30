@@ -8,8 +8,12 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import deprecated
 
 from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df
-from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables, \
-    _find_numerical_variables, _define_imputer_dict
+from feature_engine.variable_manipulation import (
+    _find_categorical_variables,
+    _define_variables,
+    _find_numerical_variables,
+    _define_dict
+)
 from feature_engine.base_transformers import BaseImputer
 
 
@@ -273,7 +277,7 @@ class ArbitraryNumberImputer(BaseImputer):
 
         self.variables = _define_variables(variables)
 
-        self.imputer_dict = _define_imputer_dict(imputer_dict)
+        self.imputer_dict = _define_dict(imputer_dict)
 
     def fit(self, X, y=None):
         """
