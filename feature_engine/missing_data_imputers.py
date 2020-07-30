@@ -300,7 +300,7 @@ class ArbitraryNumberImputer(BaseImputer):
 
         # create the imputer dictionary
         if self.imputer_dict:
-            self.imputer_dict_ = {var: self.imputer_dict[var] for var in self.variables}
+            self.imputer_dict_ = self.imputer_dict
         else:
             self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables}
 
