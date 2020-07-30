@@ -689,6 +689,11 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
         to find frequent labels. If the variable contains less categories, all
         of them will be considered frequent.
 
+    max_n_categories: int, default=None
+        the maximum number of categories that should be considered frequent.
+        If None, all categories with frequency above the tolerance (tol) will be
+        considered.
+
     variables : list, default=None
         The list of categorical variables that will be encoded. If None, the 
         encoder will find and select all object type variables.
@@ -700,7 +705,7 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
         Whether the variables should be re-cast as object, in case they have numerical values.
     """
 
-    def __init__(self, tol=0.05, n_categories=10, variables=None, replace_with='Rare', return_object=False):
+    def __init__(self, tol=0.05, n_categories=10, max_n_categories=None, variables=None, replace_with='Rare', return_object=False):
 
         if tol < 0 or tol > 1:
             raise ValueError("tol takes values between 0 and 1")
@@ -708,11 +713,16 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
         if n_categories < 0 or not isinstance(n_categories, int):
             raise ValueError("n_categories takes only positive integer numbers")
 
+        if max_n_categories is not None:
+            if max_n_categories < 0 or not isinstance(max_n_categories, int):
+                raise ValueError("max_n_categories takes only positive integer numbers")
+
         if not isinstance(replace_with, str):
             raise ValueError("replace_with takes only strings as values.")
 
         self.tol = tol
         self.n_categories = n_categories
+        self.max_n_categories = max_n_categories
         self.variables = _define_variables(variables)
         self.replace_with = replace_with
         self.return_object = return_object
@@ -759,7 +769,12 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
                 t = pd.Series(X[var].value_counts() / np.float(len(X)))
 
                 # non-rare labels:
-                self.encoder_dict_[var] = t[t >= self.tol].index
+                freq_idx = t[t >= self.tol].index
+
+                if self.max_n_categories:
+                    self.encoder_dict_[var] = freq_idx[:self.max_n_categories]
+                else:
+                    self.encoder_dict_[var] = freq_idx
 
             else:
                 # if the total number of categories is smaller than the indicated

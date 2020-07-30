@@ -509,3 +509,14 @@ def test_RareLabelEncoder(dataframe_enc_big, dataframe_enc_big_na):
         encoder = RareLabelCategoricalEncoder(n_categories=4)
         encoder.fit(dataframe_enc_big)
         encoder.transform(dataframe_enc_big_na)
+
+    # test case 6: user provides the maximum number of categories they want
+    rare_encoder = RareLabelCategoricalEncoder(tol=0.10, max_n_categories=4,
+            n_categories=5)
+    X = rare_encoder.fit_transform(dataframe_enc_big)
+    df = {'var_A': ['A'] * 6 + ['B'] * 10 + ['Rare'] * 4 + ['D'] * 10 + ['Rare'] * 4 + ['G'] * 6,
+          'var_B': ['A'] * 10 + ['B'] * 6 + ['Rare'] * 4 + ['D'] * 10 + ['Rare'] * 4 + ['G'] * 6,
+          'var_C': ['Rare'] * 4 + ['B'] * 6 + ['C'] * 10 + ['D'] * 10 + ['Rare'] * 4 + ['G'] * 6, }
+    df = pd.DataFrame(df)
+    pd.testing.assert_frame_equal(X, df)
+
