@@ -35,14 +35,15 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         learn the required parameters from the training data set.
 
         Only numerical variables are transformed if transformer is StandardScaler, RobustScaler or MinMaxScaler.
-        In other cases, all variables are passed in variables parameter are transformed.
+        In other cases, all variables passed in variables parameter are transformed.
         If variables parameter is None, all variables existing in dataset are transformed.
         """
 
         # check input dataframe
         X = _is_dataframe(X)
 
-        if isinstance(self.transformer, (sklearn.preprocessing.StandardScaler, sklearn.preprocessing.RobustScaler, sklearn.preprocessing.MinMaxScaler)):
+        if isinstance(self.transformer, (sklearn.preprocessing.StandardScaler, sklearn.preprocessing.RobustScaler,
+                                         sklearn.preprocessing.MinMaxScaler)):
             self.variables = _find_numerical_variables(X, self.variables)
         else:
             self.variables = _find_all_variables(X, self.variables)
@@ -58,7 +59,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         Apply the transformation to the dataframe.
 
         If transformer is OneHotEncoder, dummy features are concatenated to source dataset.
-        In other cases transformer transforms feature in place.
+        In other cases features are transformed in-place.
         """
 
         # check that input is a dataframe
