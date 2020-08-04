@@ -36,3 +36,15 @@ def _find_categorical_variables(X, variables=None):
             raise TypeError("Some of the variables are not categorical. Please cast them as object "
                             "before calling this transformer")
     return variables
+
+
+def _find_all_variables(X, variables=None):
+    # Find all variables in a data set
+    if not variables:
+        variables = list(X.columns)
+    else:
+        # variables indicated by user
+        if len(set(variables).difference(X.columns)) != 0:
+            raise TypeError("Some of the variables doesn't exist in source dataset. Please use variables which"
+                            " exist in dataset")
+    return variables
