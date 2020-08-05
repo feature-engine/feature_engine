@@ -45,6 +45,6 @@ def _find_all_variables(X, variables=None):
     else:
         # variables indicated by user
         if len(set(variables).difference(X.columns)) != 0:
-            raise TypeError("Some of the variables doesn't exist in source dataset. Please use variables which"
-                            " exist in dataset")
+            raise TypeError("Some variables are not present in the dataset. Please check your variable"
+                            " list")
     return variables
