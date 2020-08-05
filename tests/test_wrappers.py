@@ -80,53 +80,53 @@ def test_sklearn_imputer_allfeatures_with_constant(dataframe_na):
 
 
 def test_sklearn_standardscaler_numeric(dataframe_vartypes):
-    variables_to_scaling = ['Age', 'Marks']
-    transformer = SklearnTransformerWrapper(transformer=StandardScaler(), variables=variables_to_scaling)
+    variables_to_scale = ['Age', 'Marks']
+    transformer = SklearnTransformerWrapper(transformer=StandardScaler(), variables=variables_to_scale)
 
     ref = dataframe_vartypes.copy()
-    ref[variables_to_scaling] = (ref[variables_to_scaling] - ref[variables_to_scaling].mean()) / ref[
-        variables_to_scaling].std(ddof=0)
+    ref[variables_to_scale] = (ref[variables_to_scale] - ref[variables_to_scale].mean()) / ref[
+        variables_to_scale].std(ddof=0)
 
     transformed_df = transformer.fit_transform(dataframe_vartypes)
 
     # init params
     assert isinstance(transformer.transformer, StandardScaler)
-    assert transformer.variables == variables_to_scaling
+    assert transformer.variables == variables_to_scale
     # fit params
     assert transformer.input_shape_ == (4, 5)
-    assert (transformer.transformer.mean_.round(6) == np.array([19.5, 0.75]).round(6)).all()
+    assert (transformer.transformer.mean_.round(6) == np.array([19.5, 0.75])).all()
     assert all(transformer.transformer.scale_.round(6) == [1.118034, 0.111803])
     pd.testing.assert_frame_equal(ref, transformed_df)
 
 
 def test_sklearn_standardscaler_object(dataframe_vartypes):
-    variables_to_scaling = ['Name']
-    transformer = SklearnTransformerWrapper(transformer=StandardScaler(), variables=variables_to_scaling)
+    variables_to_scale = ['Name']
+    transformer = SklearnTransformerWrapper(transformer=StandardScaler(), variables=variables_to_scale)
 
     with pytest.raises(TypeError):
         transformed_df = transformer.fit_transform(dataframe_vartypes)
 
     # init params
     assert isinstance(transformer.transformer, StandardScaler)
-    assert transformer.variables == variables_to_scaling
+    assert transformer.variables == variables_to_scale
 
 
 def test_sklearn_standardscaler_allfeatures(dataframe_vartypes):
     transformer = SklearnTransformerWrapper(transformer=StandardScaler())
 
     ref = dataframe_vartypes.copy()
-    variables_to_scaling = list(ref.select_dtypes(include='number').columns)
-    ref[variables_to_scaling] = (ref[variables_to_scaling] - ref[variables_to_scaling].mean()) / ref[
-        variables_to_scaling].std(ddof=0)
+    variables_to_scale = list(ref.select_dtypes(include='number').columns)
+    ref[variables_to_scale] = (ref[variables_to_scale] - ref[variables_to_scale].mean()) / ref[
+        variables_to_scale].std(ddof=0)
 
     transformed_df = transformer.fit_transform(dataframe_vartypes)
 
     # init params
     assert isinstance(transformer.transformer, StandardScaler)
-    assert transformer.variables == variables_to_scaling
+    assert transformer.variables == variables_to_scale
     # fit params
     assert transformer.input_shape_ == (4, 5)
-    assert (transformer.transformer.mean_.round(6) == np.array([19.5, 0.75]).round(6)).all()
+    assert (transformer.transformer.mean_.round(6) == np.array([19.5, 0.75])).all()
     assert all(transformer.transformer.scale_.round(6) == [1.118034, 0.111803])
     pd.testing.assert_frame_equal(ref, transformed_df)
 
