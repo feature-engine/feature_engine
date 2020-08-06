@@ -1,0 +1,14 @@
+include *.txt
+include *.md
+include *.pkl
+recursive-include ./feature_engine/*
+
+include feature_engine/VERSION
+
+include ./requirements.txt
+include ./LICENSE
+exclude *.log
+exclude *.cfg
+
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]

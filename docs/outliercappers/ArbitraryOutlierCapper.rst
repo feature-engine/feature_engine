@@ -20,7 +20,9 @@ For more details, read the API Reference below.
 		data['pclass'] = data['pclass'].astype('O')
 		data['embarked'].fillna('C', inplace=True)
 		data['fare'] = data['fare'].astype('float')
+		data['fare'].fillna(data['fare'].median(), inplace=True)
 		data['age'] = data['age'].astype('float')
+		data['age'].fillna(data['age'].median(), inplace=True)
 		return data
 	
 	data = load_titanic()

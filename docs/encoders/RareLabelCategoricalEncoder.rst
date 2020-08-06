@@ -54,6 +54,34 @@ be indicated, or the encoder will automatically select all categorical variables
 	 'pclass': array([2, 3, 1], dtype='int64'),
 	 'embarked': array(['S', 'C', 'Q'], dtype=object)}
 
+You can also specify the maximum number of categories that can be considered frequent using the `max_n_categories` parameter.
+
+.. code:: python
+
+    >>> from feature_engine.categorical_encoders import RareLabelCategoricalEncoder
+    >>> import pandas as pd
+    >>> data = {'var_A': ['A'] * 10 + ['B'] * 10 + ['C'] * 2 + ['D'] * 1}
+    >>> data = pd.DataFrame(data)
+    >>> data['var_A'].value_counts()
+    A    10
+    B    10
+    C     2
+    D     1
+    Name: var_A, dtype: int64
+    >>> rare_encoder = RareLabelCategoricalEncoder(tol=0.05, n_categories=3)
+    >>> rare_encoder.fit_transform(data)['var_A'].value_counts()
+    A       10
+    B       10
+    C        2
+    Rare     1
+    Name: var_A, dtype: int64
+    >>> rare_encoder = RareLabelCategoricalEncoder(tol=0.05, n_categories=3, max_n_categories=2)
+    >>> rare_encoder.fit_transform(data)['var_A'].value_counts()
+    A       10
+    B       10
+    Rare     3
+    Name: var_A, dtype: int64
+
 
 API Reference
 -------------

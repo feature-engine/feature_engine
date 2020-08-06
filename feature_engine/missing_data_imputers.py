@@ -8,8 +8,12 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import deprecated
 
 from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df
-from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables, \
-    _find_numerical_variables
+from feature_engine.variable_manipulation import (
+    _find_categorical_variables,
+    _define_variables,
+    _find_numerical_variables,
+    _define_numerical_dict
+)
 from feature_engine.base_transformers import BaseImputer
 
 
@@ -255,10 +259,16 @@ class ArbitraryNumberImputer(BaseImputer):
 
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will find and
-        select all numerical type variables.
+        select all numerical type variables. Attribute is used only if `imputer_dict`
+        attribute is None.
+
+    imputer_dict: dict, default=None
+        The dictionary of variables and their arbitrary numbers. If imputer_dict is not None,
+        it has to be dictionary with all values of integer or float type.
+        If None, `variables` attribute is used for imputation.
     """
 
-    def __init__(self, arbitrary_number=999, variables=None):
+    def __init__(self, arbitrary_number=999, variables=None, imputer_dict=None):
 
         if isinstance(arbitrary_number, int) or isinstance(arbitrary_number, float):
             self.arbitrary_number = arbitrary_number
@@ -266,6 +276,8 @@ class ArbitraryNumberImputer(BaseImputer):
             raise ValueError('arbitrary_number must be numeric of type int or float')
 
         self.variables = _define_variables(variables)
+
+        self.imputer_dict = _define_numerical_dict(imputer_dict)
 
     def fit(self, X, y=None):
         """
@@ -285,10 +297,16 @@ class ArbitraryNumberImputer(BaseImputer):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables = _find_numerical_variables(X, self.variables)
+        if self.imputer_dict:
+            self.variables = _find_numerical_variables(X, self.imputer_dict.keys())
+        else:
+            self.variables = _find_numerical_variables(X, self.variables)
 
         # create the imputer dictionary
-        self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables}
+        if self.imputer_dict:
+            self.imputer_dict_ = self.imputer_dict
+        else:
+            self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables}
 
         self.input_shape_ = X.shape
 
@@ -317,7 +335,11 @@ class CategoricalVariableImputer(BaseImputer):
     ----------
 
     imputation_method : str, default=missing
-        Desired method of imputation. Can take 'missing' or 'frequent'.
+        Desired method of imputation. Can be 'frequent' or 'missing'.
+        
+    fill_value : str, default='Missing'
+        Only used when imputation_method='missing'. Can be used to set a 
+        user-defined value to replace the missing data.
 
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will find and
@@ -333,12 +355,16 @@ class CategoricalVariableImputer(BaseImputer):
         with feature-engine.
     """
 
-    def __init__(self, imputation_method='missing', variables=None, return_object=False):
-
+    def __init__(self, imputation_method='missing', fill_value='Missing', variables=None, return_object=False):
+        
         if imputation_method not in ['missing', 'frequent']:
             raise ValueError("imputation_method takes only values 'missing' or 'frequent'")
-
+        
+        if not isinstance(fill_value, str):
+            raise ValueError("parameter 'fill_value' should be string")
+        
         self.imputation_method = imputation_method
+        self.fill_value = fill_value
         self.variables = _define_variables(variables)
         self.return_object = return_object
 
@@ -369,10 +395,9 @@ class CategoricalVariableImputer(BaseImputer):
 
         # find or check for categorical variables
         self.variables = _find_categorical_variables(X, self.variables)
-
-        # find imputation parameters
+        
         if self.imputation_method == 'missing':
-            self.imputer_dict_ = {var: 'Missing' for var in self.variables}
+            self.imputer_dict_ = {var: self.fill_value for var in self.variables}
 
         elif self.imputation_method == 'frequent':
             self.imputer_dict_ = {}
