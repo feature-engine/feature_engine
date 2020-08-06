@@ -94,9 +94,17 @@ class Winsorizer(BaseEstimator, TransformerMixin):
         sides. Thus, when distribution='quantile', then 'fold' takes values between 0
         and 0.20.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables for which the outliers will be capped. If None, 
         the transformer will find and select all numerical variables.
+
+    missing_values: string, default='raise'
+    	Indicates if missing values should be ignored or raised. Sometimes we want to remove
+    	outliers in the raw, original data, sometimes, we may want to remove outliers in the
+    	already pre-transformed data. If missing_values='ignore', the transformer will ignore
+    	outliers when learning the capping parameters or transforming the data. If 
+    	missing_values='raise' the transformer will return an error if the training or other
+    	datasets contain missing values.
     """
 
     def __init__(self, distribution='gaussian', tail='right', fold=3, variables=None, missing_values='raise'):
@@ -246,7 +254,11 @@ class ArbitraryOutlierCapper(BaseEstimator, TransformerMixin):
     capping_min : dictionary, default=None
         user specified capping values on left tail of the distribution (minimum
         values).
-        
+
+    missing_values : string, default='raise'
+    	Indicates if missing values should be ignored or raised. If 
+    	missing_values='raise' the transformer will return an error if the
+    	training or other datasets contain missing values.        
     """
 
     def __init__(self, max_capping_dict=None, min_capping_dict=None, missing_values='raise'):
@@ -446,6 +458,15 @@ class OutlierTrimmer(Winsorizer):
     variables : list, default=None
         The list of variables for which the outliers will be capped. If None,
         the transformer will find and select all numerical variables.
+
+    missing_values: string, default='raise'
+    	Indicates if missing values should be ignored or raised. Sometimes we want to remove
+    	outliers in the raw, original data, sometimes, we may want to remove outliers in the
+    	already pre-transformed data. If missing_values='ignore', the transformer will ignore
+    	outliers when learning the capping parameters or transforming the data. If 
+    	missing_values='raise' the transformer will return an error if the training or other
+    	datasets contain missing values.
+    	
     """
 
     def transform(self, X):
