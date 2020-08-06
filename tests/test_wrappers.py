@@ -1,10 +1,10 @@
-import pytest
-import pandas as pd
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import StandardScaler
-from feature_engine.wrappers import SklearnTransformerWrapper
 import numpy as np
+import pandas as pd
+import pytest
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from feature_engine.wrappers import SklearnTransformerWrapper
+
 
 
 def test_sklearn_imputer_numeric_with_constant(dataframe_na):
