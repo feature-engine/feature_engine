@@ -36,15 +36,18 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         """
-        The `fit` method allows scikit-learn transformers to
-        learn the required parameters from the training data set.
+        The `fit` method allows Scikit-learn transformers to learn the required parameters
+        from the training data set.
 
-        If transformer is OneHotEncoder, OrdinalEncoder or SimpleImputer, all variables passed in
-        variables parameter are transformed. In case when variables parameter is None,
-        all features existing in dataset are transformed.
+        If transformer is OneHotEncoder, OrdinalEncoder or SimpleImputer, all variables indicated
+        in the variables parameter will be transformed. When the variables parameter is None, the
+        SklearnWrapper will automatically select and transform all features in the dataset,
+        numerical or otherwise.
 
-        If transformer is other than OneHotEncoder, OrdinalEncoder and SimpleImputer, only numerical variables
-        are transformed.
+        For all other Scikit-learn transformers only numerical variables will be transformed.
+        The SklearnWrapper will check that the variables indicated in the variables parameter
+        are numerical, or alternatively, if variables is None, it will automatically select
+        the numerical variables in the data set.
         """
 
         # check input dataframe
@@ -63,10 +66,12 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """
-        Apply the transformation to the dataframe.
+        Apply the transformation to the dataframe. Only the selected features will be modified. 
 
-        If transformer is OneHotEncoder, dummy features are concatenated to source dataset.
-        In other cases features are transformed in-place.
+        If transformer is OneHotEncoder, dummy features are concatenated to the source dataset.
+        Note that the original categorical variables will not be removed from the dataset
+        after encoding. If this is the desired effect, please use Feature-engine's 
+        OneHotCategoricalEncoder instead.
         """
 
         # check that input is a dataframe
