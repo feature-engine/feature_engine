@@ -1,9 +1,10 @@
 from feature_engine.base_transformers import BaseNumericalTransformer
 
 
-class AdditionTransformer(BaseNumericalTransformer):
+class MathematicalVariableCombinator(BaseNumericalTransformer):
     """
-    The AdditionTransfomer() applies basic mathematical operations using aggregation of features.
+    The MathematicalVariableCombinator() applies basic mathematical operations across features,
+    returning one additional feature as a result.
 
     Parameters
     ----------
@@ -12,7 +13,7 @@ class AdditionTransformer(BaseNumericalTransformer):
         The list of numerical variables to be transformed. If None, the transformer
         will find and select all numerical variables.
 
-    math_operations: list, default=None
+    math_operations: list, default=['sum', 'prod', 'mean', 'std', 'max', 'min']
         The list of basic math operations to be used in transformation.
 
         Each operation should be a string and must be one of elements
@@ -20,25 +21,29 @@ class AdditionTransformer(BaseNumericalTransformer):
 
         Each operation will result in operation column in result dataset.
 
-        If None, the transformer will calculate each of permitted
-        operations: ['sum', 'prod', 'mean', 'std', 'max', 'min']
+    variables_set_alias: string, default=None
+        Alias for variables set, allow for replacing all columns name from result column with this string.
+
+        If math_operation list contain more than one element, operation will be added to variables_set_alias.
     """
 
-    def __init__(self, variables=None, math_operations=None):
+    def __init__(self, variables=None, math_operations=['sum', 'prod', 'mean', 'std', 'max', 'min'],
+                 variables_set_alias=None):
         self.variables = variables
-        self.math_operations = math_operations
-        self.math_operations_permitted = ['sum', 'prod', 'mean', 'std', 'max', 'min']
+        self.variables_set_alias = variables_set_alias
+        _math_operations_permitted = ['sum', 'prod', 'mean', 'std', 'max', 'min']
 
-        if self.math_operations is None:
-            self.operations_ = self.math_operations_permitted
-
-        elif isinstance(self.math_operations, list):
-            if any(elem_par not in self.math_operations_permitted for elem_par in self.math_operations):
+        if isinstance(math_operations, list):
+            if any(elem_par not in _math_operations_permitted for elem_par in math_operations):
                 raise KeyError("At least one of math_operations is not found in permitted operations set. "
                                "Choose one of ['sum', 'prod', 'mean', 'std', 'max', 'min']")
-            self.operations_ = self.math_operations
+            self.operations = math_operations
         else:
             raise KeyError("math_operations parameter must be a list or None")
+
+        if len(self.variables) <= 1:
+            raise KeyError(
+                "MathematicalVariableCombinator requires two or more features to make proper transformations.")
 
     def fit(self, X, y=None):
         """
@@ -53,9 +58,6 @@ class AdditionTransformer(BaseNumericalTransformer):
         """
         X = super().fit(X, y)
         self.input_shape_ = X.shape
-
-        if len(self.variables) <= 1:
-            raise KeyError("AdditionTransformer requires two or more features to make proper transformations.")
 
         return self
 
@@ -79,8 +81,14 @@ class AdditionTransformer(BaseNumericalTransformer):
         """
         X = super().transform(X)
 
-        for operation in self.operations_:
-            variables_set_name = f"{operation}({','.join(self.variables)})"
+        for operation in self.operations:
+            if self.variables_set_alias:
+                if len(self.operations) == 1:
+                    variables_set_name = self.variables_set_alias
+                else:
+                    variables_set_name = f"{operation}({self.variables_set_alias})"
+            else:
+                variables_set_name = f"{operation}({','.join(self.variables)})"
             X[variables_set_name] = X[self.variables].agg(operation, axis=1)
 
         return X
