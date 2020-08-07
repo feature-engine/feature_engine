@@ -41,7 +41,7 @@ class MathematicalVariableCombinator(BaseNumericalTransformer):
         else:
             raise KeyError("math_operations parameter must be a list or None")
 
-        if len(self.variables) <= 1:
+        if self.variables and len(self.variables) <= 1:
             raise KeyError(
                 "MathematicalVariableCombinator requires two or more features to make proper transformations.")
 

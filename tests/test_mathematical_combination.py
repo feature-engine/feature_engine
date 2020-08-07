@@ -27,8 +27,7 @@ def test_MathematicalVariableCombinator_all(dataframe_vartypes):
 
     # init params
     assert transformer.variables == ['Age', 'Marks']
-    assert transformer.math_operations is None
-    assert transformer.operations_ == ['sum', 'prod', 'mean', 'std', 'max', 'min']
+    assert transformer.operations == ['sum', 'prod', 'mean', 'std', 'max', 'min']
     # fit params
     assert transformer.input_shape_ == (4, 5)
     # transform params
@@ -58,8 +57,7 @@ def test_MathematicalVariableCombinator_SelectedVariables(dataframe_vartypes):
 
     # init params
     assert transformer.variables == ['Age', 'Marks']
-    assert transformer.math_operations is None
-    assert transformer.operations_ == ['sum', 'prod', 'mean', 'std', 'max', 'min']
+    assert transformer.operations == ['sum', 'prod', 'mean', 'std', 'max', 'min']
     # fit params
     assert transformer.input_shape_ == (4, 5)
     # transform params
@@ -67,9 +65,8 @@ def test_MathematicalVariableCombinator_SelectedVariables(dataframe_vartypes):
 
 
 def test_MathematicalVariableCombinator_SelectedVariables_OnlyOneFeature(dataframe_vartypes):
-    transformer = MathematicalVariableCombinator(variables=['Age'])
     with pytest.raises(KeyError):
-        X = transformer.fit_transform(dataframe_vartypes)
+        transformer = MathematicalVariableCombinator(variables=['Age'])
 
 
 def test_MathematicalVariableCombinator_SelectedVariables_NonNumeric(dataframe_vartypes):
@@ -79,7 +76,7 @@ def test_MathematicalVariableCombinator_SelectedVariables_NonNumeric(dataframe_v
 
 
 def test_MathematicalVariableCombinator_SelectedVariables_OutsideDataset(dataframe_vartypes):
-    transformer = MathematicalVariableCombinator(variables=['FeatOutsideDataset'])
+    transformer = MathematicalVariableCombinator(variables=['FeatOutsideDataset', 'Age'])
     with pytest.raises(KeyError):
         X = transformer.fit_transform(dataframe_vartypes)
 
@@ -103,15 +100,14 @@ def test_MathematicalVariableCombinator_SelectedOperations(dataframe_vartypes):
 
     # init params
     assert transformer.variables == ['Age', 'Marks']
-    assert transformer.math_operations == ['sum', 'mean']
-    assert transformer.operations_ == ['sum', 'mean']
+    assert transformer.operations == ['sum', 'mean']
     # fit params
     assert transformer.input_shape_ == (4, 5)
     # transform params
     pd.testing.assert_frame_equal(X, ref)
 
 
-def test_MathematicalVariableCombinator_SelectedOperations_OnlyOneOperation(dataframe_vartypes):
+def test_MathematicalVariableCombinator_SelectedoperationsOnlyOneOperation(dataframe_vartypes):
     # case 2: selected only one operation:
     transformer = MathematicalVariableCombinator(math_operations=['sum'])
 
@@ -130,19 +126,18 @@ def test_MathematicalVariableCombinator_SelectedOperations_OnlyOneOperation(data
 
     # init params
     assert transformer.variables == ['Age', 'Marks']
-    assert transformer.math_operations == ['sum']
-    assert transformer.operations_ == ['sum']
+    assert transformer.operations == ['sum']
     # fit params
     assert transformer.input_shape_ == (4, 5)
     # transform params
     pd.testing.assert_frame_equal(X, ref)
 
 
-def test_MathematicalVariableCombinator_SelectedOperations_OutsidePermittedList(dataframe_vartypes):
+def test_MathematicalVariableCombinator_SelectedoperationsOutsidePermittedList(dataframe_vartypes):
     with pytest.raises(KeyError):
         transformer = MathematicalVariableCombinator(math_operations=['OperationOutsidePermittedList'])
 
 
-def test_MathematicalVariableCombinator_SelectedOperations_WrongType(dataframe_vartypes):
+def test_MathematicalVariableCombinator_SelectedoperationsWrongType(dataframe_vartypes):
     with pytest.raises(KeyError):
         transformer = MathematicalVariableCombinator(math_operations=[sum])
