@@ -108,6 +108,13 @@ Scikit-learn Wrapper:
 
 -  :doc:`wrappers/Wrapper`: executes Scikit-learn various transformers only on the selected subset of features
 
+
+Feature Selection: Transformers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- :doc:`selection/FeatureEliminator`: drops a subset of variables from a dataframe
+
+
 Getting Help
 ------------
 
@@ -143,5 +150,6 @@ Feature-engine is hosted on `GitHub <https://github.com/solegalli/feature_engine
    discretisers/index
    outliercappers/index
    wrappers/index
+   selection/index
    contributing/index
    changelog
