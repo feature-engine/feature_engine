@@ -3,12 +3,12 @@
 import pytest
 import pandas as pd
 
-from feature_engine.feature_selection import FeatureEliminator
+from feature_engine.feature_selection import DropFeatures
 
 
-def test_FeatureEliminator(dataframe_vartypes, dataframe_na):
+def test_FeatureEliminator_initial(dataframe_vartypes, dataframe_na):
     # test case 1: with dataframe_vartypes
-    transformer = FeatureEliminator(features_to_drop=["City", "dob"])
+    transformer = DropFeatures(features_to_drop=["City", "dob"])
     X = transformer.fit_transform(dataframe_vartypes)
 
     # expected result
@@ -25,42 +25,63 @@ def test_FeatureEliminator(dataframe_vartypes, dataframe_na):
     assert type(X) == pd.DataFrame
     pd.testing.assert_frame_equal(X, df)
 
+
+def test_FeatureEliminator_non_existing_variables(dataframe_vartypes):
     # test case 2: passing variables that doesn't exist
     with pytest.raises(KeyError):
-        transformer = FeatureEliminator(features_to_drop="last_name")
+        transformer = DropFeatures(features_to_drop="last_name")
         X = transformer.fit_transform(dataframe_vartypes)
 
+
+def test_FeatureEliminator_non_existing_index(dataframe_vartypes):
     # test case 3: passing an index inside the list
     with pytest.raises(KeyError):
-        transformer = FeatureEliminator(features_to_drop=[10])
+        transformer = DropFeatures(features_to_drop=[10])
         X = transformer.fit_transform(dataframe_vartypes)
 
+
+def test_FeatureEliminator_integer_as_variable(dataframe_vartypes):
     # test case 4: with integer as feature_to_drop
-    with pytest.raises(ValueError):
-        transformer = FeatureEliminator(features_to_drop=99)
+    with pytest.raises(KeyError):
+        transformer = DropFeatures(features_to_drop=99)
         X = transformer.fit_transform(dataframe_vartypes)
 
+
+def test_FeatureEliminator_different_input():
     # test case 5: passing a different input than dataframe
     with pytest.raises(TypeError):
-        transformer = FeatureEliminator(features_to_drop=["Name"])
+        transformer = DropFeatures(features_to_drop=["Name"])
         X = transformer.fit_transform({"Name": ["Karthik"]})
 
+
+def test_FeatureEliminator_drop_all_columns(dataframe_vartypes):
     # test case 6: dropping all columns
-    transformer = FeatureEliminator(features_to_drop=list(dataframe_vartypes.columns))
+    transformer = DropFeatures(features_to_drop=list(dataframe_vartypes.columns))
     X = transformer.fit_transform(dataframe_vartypes)
 
     assert len(X) == len(dataframe_vartypes)
     assert X.shape == (4, 0)
 
-    # test case 7: passing an empty list
-    transformer = FeatureEliminator(features_to_drop=[])
+
+def test_FeatureEliminator_drop_all_columns_warn(dataframe_vartypes):
+    # test case 7: dropping all columns produces warning check
+    with pytest.warns(UserWarning):
+        transformer = DropFeatures(features_to_drop=list(dataframe_vartypes.columns))
+        X = transformer.fit_transform(dataframe_vartypes)
+
+
+def test_FeatureEliminator_empty_list(dataframe_vartypes):
+    # test case 8: passing an empty list
+    transformer = DropFeatures(features_to_drop=[])
     X = transformer.fit_transform(dataframe_vartypes)
 
     assert len(X) == len(dataframe_vartypes)
     assert X.shape == dataframe_vartypes.shape
 
-    # test case 8: passing a valid variable as string
-    transformer = FeatureEliminator(features_to_drop="dob")
+
+def test_FeatureEliminator_valid_string(dataframe_vartypes):
+    # test case 9: passing a valid variable as string
+    transformer = DropFeatures(features_to_drop="dob")
     X = transformer.fit_transform(dataframe_vartypes)
 
     df = pd.DataFrame(

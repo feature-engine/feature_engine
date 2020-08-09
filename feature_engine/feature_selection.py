@@ -1,16 +1,13 @@
-# Authors: Soledad Galli <solegalli@protonmail.com>
-# License: BSD 3 clause
 
-import numpy as np
-import pandas as pd
 import warnings
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from feature_engine.dataframe_checks import _is_dataframe
+from sklearn.utils.validation import check_is_fitted
+from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df
 from feature_engine.variable_manipulation import _define_variables
 
 
-class FeatureEliminator(BaseEstimator, TransformerMixin):
+class DropFeatures(BaseEstimator, TransformerMixin):
     """
     The FeatureEliminator() drops the list of variable(s) as provided by the user
     from the dataframe and returns the subset of original dataframe with remaining
@@ -25,10 +22,6 @@ class FeatureEliminator(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, features_to_drop=None):
-
-        if not any(isinstance(features_to_drop, t) for t in [str, list]):
-            raise ValueError("features_to_drop must be a string or list object")
-
         self.features = _define_variables(features_to_drop)
 
     def fit(self, X, y=None):
@@ -40,12 +33,17 @@ class FeatureEliminator(BaseEstimator, TransformerMixin):
 
         X: pandas dataframe of shape = [n_samples, n_features]
             The input dataframe on which the feature elimination has to be performed
+
         y: None
             y is not needed for this transformer
 
         """
         # check input dataframe
         X = _is_dataframe(X)
+
+        # add input shape
+        self.input_shape_ = X.shape
+
         return self
 
     def transform(self, X):
@@ -64,6 +62,24 @@ class FeatureEliminator(BaseEstimator, TransformerMixin):
             The transformed dataframe with subset of variables.
 
         """
-        return X.drop(columns=self.features).copy()
+        # check if fit is called prior
+        check_is_fitted(self)
+
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # check for input consistency
+        _check_input_matches_training_df(X, self.input_shape_[1])
+
+        X = X.copy()
+        X = X.drop(columns=self.features)
+
+        # check for a case where all columns are dropped
+        if X.shape[1] == 0:
+            warnings.warn(
+                "The resulting dataframe has no columns after dropping all existing variables"
+            )
+
+        return X
 
 

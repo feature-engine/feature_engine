@@ -1,6 +1,6 @@
-FeatureEliminator
+DropFeatures
 ========================
-The FeatureEliminator() drops a list of variables from an original dataframe. A single variable as string
+The DropFeatures() drops a list of variables from an original dataframe. A single variable as string
 or list of variables can be passed that will be dropped.
 
 .. code:: python
@@ -10,7 +10,7 @@ or list of variables can be passed that will be dropped.
     import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
 
-    from feature_engine.feature_selection import FeatureEliminator
+    from feature_engine.feature_selection import DropFeatures
 
 
     # Load dataset
@@ -31,7 +31,7 @@ or list of variables can be passed that will be dropped.
                 data['survived'], test_size=0.3, random_state=0)
 
     # set up the transformer
-    transformer = FeatureEliminator(
+    transformer = DropFeatures(
         features_to_drop=['survived', 'name', 'sibsp', 'parch',
                           'ticket', 'fare', 'body', 'home.dest']
     )
@@ -53,5 +53,5 @@ or list of variables can be passed that will be dropped.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.feature_selection.FeatureEliminator
+.. autoclass:: feature_engine.feature_selection.DropFeatures
     :members:

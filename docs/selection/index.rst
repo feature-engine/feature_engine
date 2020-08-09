@@ -8,4 +8,4 @@ Feature-engine's feature selection transformers are used to drop subset of varia
 .. toctree::
    :maxdepth: 2
 
-   FeatureEliminator
+   DropFeatures

@@ -112,7 +112,7 @@ Scikit-learn Wrapper:
 Feature Selection: Transformers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`selection/FeatureEliminator`: drops a subset of variables from a dataframe
+- :doc:`selection/DropFeatures`: drops a subset of variables from a dataframe
 
 
 Getting Help
