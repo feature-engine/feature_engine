@@ -10,6 +10,7 @@ from feature_engine.categorical_encoders import MeanCategoricalEncoder
 from feature_engine.categorical_encoders import WoERatioCategoricalEncoder
 from feature_engine.categorical_encoders import OneHotCategoricalEncoder
 from feature_engine.categorical_encoders import RareLabelCategoricalEncoder
+from feature_engine.categorical_encoders import DecisionTreeCategoricalEncoder
 
 
 def test_CountFrequencyCategoricalEncoder(dataframe_enc, dataframe_enc_rare, dataframe_enc_na):
@@ -519,4 +520,29 @@ def test_RareLabelEncoder(dataframe_enc_big, dataframe_enc_big_na):
           'var_C': ['Rare'] * 4 + ['B'] * 6 + ['C'] * 10 + ['D'] * 10 + ['Rare'] * 4 + ['G'] * 6, }
     df = pd.DataFrame(df)
     pd.testing.assert_frame_equal(X, df)
+
+
+def test_DecisionTreeCategoricalEncoder(dataframe_enc, dataframe_enc_rare, dataframe_enc_na):
+    # test case 1: user provides the categorical encoder
+    # defaults
+    encoder = DecisionTreeCategoricalEncoder()
+    assert encoder.encoder_[0].encoding_method == 'arbitrary'
+
+    # incorrect input
+    with pytest.raises(ValueError):
+        encoder = DecisionTreeCategoricalEncoder('incorrect')
+
+    # user provided encoder
+    encoder = DecisionTreeCategoricalEncoder('woe')
+    assert isinstance(encoder.encoder_[0], WoERatioCategoricalEncoder)
+
+    # test case 2: Encode categories with decision tree outputs
+    encoder = DecisionTreeCategoricalEncoder()
+    encoder.fit(dataframe_enc[['var_A', 'var_B']], dataframe_enc['target'])
+    X = encoder.transform(dataframe_enc[['var_A', 'var_B']])
+
+    transf_df = dataframe_enc.copy()
+    transf_df['var_A'] = [0.25] * 16 + [0.5] * 4  # Tree: var_A <= 1.5 -> 0.25 else 0.5
+    transf_df['var_B'] = [0.2] * 10 + [0.4] * 10  # Tree: var_B <= 0.5 -> 0.2 else 0.4
+    pd.testing.assert_frame_equal(X, transf_df[['var_A', 'var_B']])
 

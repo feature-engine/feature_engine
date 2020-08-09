@@ -10,6 +10,8 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df, _check_contains_na
 from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables
 from feature_engine.base_transformers import BaseCategoricalTransformer
+from feature_engine.discretisers import DecisionTreeDiscretiser
+from sklearn.pipeline import Pipeline
 
 
 def _check_encoding_dictionary(dictionary):
@@ -826,4 +828,145 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
         if self.return_object:
             X[self.variables] = X[self.variables].astype('O')
 
+        return X
+
+
+class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
+    """
+    The DecisionTreeCategoricalEncoder() encodes categorical variables with predictions of the decision tree model.
+
+    Parameters
+    ----------
+
+    variables : list, default=None
+        The list of categorical variables that will be encoded. If None, the
+        encoder will find and select all object type variables.
+
+    cat_encoding_method: str, default=None
+        The categorical encoder that will be used to encode the original
+        categories variables. By default arbitrary encoding will be used. You
+        can choose from one of the following methods:
+
+        +-------------+------------------------------------+
+        | 'ordinal'   |  OrdinalCategoricalEncoder         |
+        +-------------+------------------------------------+
+        | 'countfreq' |  CountFrequencyCategoricalEncoder  |
+        +-------------+------------------------------------+
+        | 'mean'      |  MeanCategoricalEncoder            |
+        +-------------+------------------------------------+
+        | 'woe'       |  WoERatioCategoricalEncoder        |
+        +-------------+------------------------------------+
+
+    cat_encoder_args: dict, default=None
+        Arguments for the categorical encoder which will be passed as keyword
+        arguments for initialization. Refer the encoder's doc for the
+        details of the parameters.
+
+    discretiser_args: dict, default=None
+        Arguments for initialization of the `DecisionTreeDiscretiser` class
+        which will be passed as keyword arguments. Refer the doc for the
+        details of the parameters.
+
+    Attributes
+    ----------
+
+    encoder_ : sklearn Pipeline
+        Encoder pipeline containing the categorical encoder and decision 
+        tree discretiser.
+    """
+
+    def __init__(self, cat_encoding_method=None, cat_encoder_args=None, discretiser_args=None, variables=None):
+        self.variables = _define_variables(variables)
+
+        cat_encoder_args = {} if cat_encoder_args is None else cat_encoder_args.copy()
+        discretiser_args = {} if discretiser_args is None else discretiser_args.copy()
+
+        # initialize categorical encoder
+        if cat_encoding_method == 'ordinal':
+            CatEncoder = OrdinalCategoricalEncoder
+        elif cat_encoding_method == 'countfreq':
+            CatEncoder = CountFrequencyCategoricalEncoder
+        elif cat_encoding_method == 'mean':
+            CatEncoder = MeanCategoricalEncoder
+        elif cat_encoding_method == 'woe':
+            CatEncoder = WoERatioCategoricalEncoder
+        elif cat_encoding_method is None:
+            cat_encoder_args['encoding_method'] = 'arbitrary'  # default
+            CatEncoder = OrdinalCategoricalEncoder
+        else:
+            raise ValueError("cat_encoding_method takes only values 'ordinal', 'countfreq', 'mean', 'woe' and None")
+
+        cat_encoder = CatEncoder(variables=variables, **cat_encoder_args)
+
+        # initialize decision tree discretiser
+        tree_discretiser = DecisionTreeDiscretiser(variables=variables, **discretiser_args)
+
+        # pipeline for the encoder
+        self.encoder_ = Pipeline([('categorical_encoder', cat_encoder),
+            ('tree_discretiser', tree_discretiser)])
+
+    def fit(self, X, y=None):
+        """
+        Learns the numbers that should be used to replace the categories in each
+        variable.
+
+        Parameters
+        ----------
+
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The training input samples.
+            Can be the entire dataframe, not just the categorical variables.
+
+        y : pandas series.
+            Target, value depends on the cat_to_num_encoder used, see docs of
+            the corresponding encoder.
+        """
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # find categorical variables or check that those entered by the user
+        # are of type object
+        self.variables = _find_categorical_variables(X, self.variables)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables)
+
+        self.input_shape_ = X.shape
+
+        self.encoder_.fit(X, y)
+
+        return self
+
+    def transform(self, X):
+        """
+        Returns the predictions of the tree, based of the category encoding of
+        the variable original value.
+        
+        Parameters
+        ----------
+        
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The input samples.
+        
+        Returns
+        -------
+        
+        X_transformed : pandas dataframe of shape = [n_samples, n_features].
+                        Dataframe with variables encoded with decision tree predictions.
+        """
+        # Check method fit has been called
+        check_is_fitted(self)
+
+        # check that input is a dataframe
+        X = _is_dataframe(X)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables)
+
+        # Check that the dataframe contains the same number of columns than the dataframe
+        # used to fit the imputer.
+        _check_input_matches_training_df(X, self.input_shape_[1])
+
+        X = self.encoder_.transform(X)
+        
         return X
