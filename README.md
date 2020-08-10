@@ -8,16 +8,16 @@
 ![Documentation Status](https://readthedocs.org/projects/feature-engine/badge/?version=latest)
 
 
-Feature-Engine is a Python library with multiple transformers to engineer features for use in machine learning models. Feature-engine's transformers follow scikit-learn's functionality with fit() and transform() methods to first learn the transforming parameters from data and then transform the data.
+Feature-engine is a Python library with multiple transformers to engineer features for use in machine learning models. Feature-engine's transformers follow scikit-learn's functionality with fit() and transform() methods to first learn the transforming parameters from data and then transform the data.
 
 
-## Feature-Engine features in the following resources:
+## Feature-engine features in the following resources:
 
 * [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO).
 
 * [Python Feature Engineering Cookbook](https://www.packtpub.com/data/python-feature-engineering-cookbook)
 
-## Blogs about Feature-Engine:
+## Blogs about Feature-engine:
 
 * [Feature-engine: A new open-source Python package for feature engineering](https://www.trainindata.com/post/feature-engine-a-new-open-source-python-package-for-feature-engineering)
 
@@ -29,7 +29,7 @@ Feature-Engine is a Python library with multiple transformers to engineer featur
 * Home page: https://www.trainindata.com/feature-engine
 
 
-## Current Feature-Engine's transformers include functionality for:
+## Current Feature-engine's transformers include functionality for:
 
 * Missing Data Imputation
 * Categorical Variable Encoding
@@ -147,9 +147,9 @@ BSD 3-Clause
 
 ### References
 
-Many of the engineering and encoding functionalities are inspired from this [series of articles from the 2009 KDD Competition](http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf).
+Many of the engineering and encoding functionalities are inspired by this [series of articles from the 2009 KDD Competition](http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf).
 
-To learn more about the rationale, functionality, pros, and cons of each imputer, encoder, and transformer, refer to the [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO)
+To learn more about the rationale, functionality, pros and cons of each imputer, encoder, and transformer, refer to the [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO)
 
 For a summary of the methods check this [presentation](https://speakerdeck.com/solegalli/engineering-and-selecting-features-for-machine-learning) and this [article](https://www.trainindata.com/post/feature-engineering-comprehensive-overview)
 
