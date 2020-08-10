@@ -9,15 +9,14 @@ from feature_engine.variable_manipulation import _define_variables
 
 class DropFeatures(BaseEstimator, TransformerMixin):
     """
-    The FeatureEliminator() drops the list of variable(s) as provided by the user
-    from the dataframe and returns the subset of original dataframe with remaining
-    variables.
+    DropFeatures() drops the list of variable(s) indicated by the user
+    from the original dataframe and returns the remaining variables.
 
     Parameters
     ----------
 
     features_to_drop : str or list, default=None
-        Desired variable/s to be dropped from the dataframe
+        Variable/s to be dropped from the dataframe
 
     """
 
@@ -26,13 +25,13 @@ class DropFeatures(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         """
-        Verifies that the passed input X if of the type pandas dataframe
+        Verifies that the input X is a pandas dataframe
 
         Parameters
         ----------
 
         X: pandas dataframe of shape = [n_samples, n_features]
-            The input dataframe on which the feature elimination has to be performed
+            The input dataframe
 
         y: None
             y is not needed for this transformer
@@ -40,6 +39,14 @@ class DropFeatures(BaseEstimator, TransformerMixin):
         """
         # check input dataframe
         X = _is_dataframe(X)
+
+        # check for non existent columns
+        non_existent = [x for x in self.features if x not in X.columns]
+        if non_existent:
+            raise KeyError(
+                f"Columns '{', '.join(non_existent)}' does not exist in the input dataframe, "
+                f"please check the columns and enter a new list of features to drop"
+            )
 
         # add input shape
         self.input_shape_ = X.shape
@@ -71,7 +78,6 @@ class DropFeatures(BaseEstimator, TransformerMixin):
         # check for input consistency
         _check_input_matches_training_df(X, self.input_shape_[1])
 
-        X = X.copy()
         X = X.drop(columns=self.features)
 
         # check for a case where all columns are dropped
