@@ -1,10 +1,35 @@
 from feature_engine.base_transformers import BaseNumericalTransformer
 
 
-class MathematicalVariableCombinator(BaseNumericalTransformer):
+class MathematicalCombinator(BaseNumericalTransformer):
     """
-    The MathematicalVariableCombinator() applies basic mathematical operations across features,
-    returning one additional feature as a result.
+    The MathematicalCombinator() applies basic mathematical operations across features,
+    returning 1 or more additional features as a result.
+
+    For example, if we have the variables number_payments_first_quarter, number_payments_second_quarter,
+    number_payments_third_quarter and number_payments_fourth_quarter, we can use the MathematicalCombinator
+    to calculate the total number of payments and mean number of payments as follows:
+
+    transformer = MathematicalCombinator(
+        variables=[
+            'number_payments_first_quarter',
+            'number_payments_second_quarter',
+            'number_payments_third_quarter',
+            'number_payments_fourth_quarter'
+        ],
+        math_operations=[
+            'sum',
+            'mean'
+        ],
+        new_variables_name=[
+            'total_number_payments',
+            'mean_number_payments'
+        ]
+    )
+    transformer.fit_transform(X)
+
+    The transformed X will contain the additional features total_number_payments and mean_number_payments,
+    plus the original set of variables.
 
     Parameters
     ----------
@@ -17,20 +42,35 @@ class MathematicalVariableCombinator(BaseNumericalTransformer):
         The list of basic math operations to be used in transformation.
 
         Each operation should be a string and must be one of elements
-        from list: ['sum', 'prod', 'mean', 'std', 'max', 'min']
+        from the list: ['sum', 'prod', 'mean', 'std', 'max', 'min']
 
-        Each operation will result in operation column in result dataset.
+        Each operation will result in a new variable that will be added to the transformed dataset.
 
-    variables_set_alias: string, default=None
-        Alias for variables set, allow for replacing all columns name from result column with this string.
+    new_variables_names: list, default=None
+        Names of the newly created variables. The user can enter a name or a list
+        of names for the newly created features (recommended). User must enter
+        one name for each mathematical transformation indicated in the math_operations
+        attribute. That is, if you want to perform mean and sum of features, you
+        should enter 2 new variable names. If you perform only mean of features,
+        enter 1 variable name. Alternatively, if you chose to perform all
+        mathematical transformations, please enter 6 new variable names.
 
-        If math_operation list contain more than one element, operation will be added to variables_set_alias.
+        The name of the variables indicated by the user should coincide with the order
+        in which the mathematical operations are initialised in the transformer.
+        That is, if you set math_operations = ['mean', 'prod'], the first new variable name
+        will be assigned to the mean of the variables and the second variable name
+        to the product of the variables.
+
+        If new_variable_names=None, the transformer will assign an arbitrary name
+        to the newly created features starting by the name of the mathematical operation,
+        followed by the variables combined separated by -.
+
     """
 
     def __init__(self, variables=None, math_operations=['sum', 'prod', 'mean', 'std', 'max', 'min'],
-                 variables_set_alias=None):
+                 new_variables_names=None):
         self.variables = variables
-        self.variables_set_alias = variables_set_alias
+        self.new_variables_names = new_variables_names
         _math_operations_permitted = ['sum', 'prod', 'mean', 'std', 'max', 'min']
 
         if isinstance(math_operations, list):
@@ -43,11 +83,17 @@ class MathematicalVariableCombinator(BaseNumericalTransformer):
 
         if self.variables and len(self.variables) <= 1:
             raise KeyError(
-                "MathematicalVariableCombinator requires two or more features to make proper transformations.")
+                "MathematicalCombinator requires two or more features to make proper transformations.")
+
+        if self.new_variables_names and len(self.new_variables_names) != len(self.operations):
+            raise KeyError(
+                "New_variables_names items number must be equal to math_operations items number"
+            )
 
     def fit(self, X, y=None):
         """
-        Fits source dataset, verifies if variables parameter contains more than one variable.
+        Performs dataframe checks. Selects variables to transform if None were indicated by the user.
+        Creates dictionary of column to transformation mappings
 
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
@@ -58,6 +104,15 @@ class MathematicalVariableCombinator(BaseNumericalTransformer):
         """
         X = super().fit(X, y)
         self.input_shape_ = X.shape
+
+        if self.new_variables_names:
+            self.combination_dict_ = dict(zip(self.new_variables_names, self.operations))
+        else:
+            self.combination_dict_ = {
+                f"{operation}({'-'.join(self.variables)})": operation
+                for operation
+                in self.operations
+            }
 
         return self
 
@@ -81,14 +136,7 @@ class MathematicalVariableCombinator(BaseNumericalTransformer):
         """
         X = super().transform(X)
 
-        for operation in self.operations:
-            if self.variables_set_alias:
-                if len(self.operations) == 1:
-                    variables_set_name = self.variables_set_alias
-                else:
-                    variables_set_name = f"{operation}({self.variables_set_alias})"
-            else:
-                variables_set_name = f"{operation}({','.join(self.variables)})"
-            X[variables_set_name] = X[self.variables].agg(operation, axis=1)
+        for new_variable_name, operation in self.combination_dict_.items():
+            X[new_variable_name] = X[self.variables].agg(operation, axis=1)
 
         return X
