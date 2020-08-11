@@ -29,7 +29,7 @@ Feature-engine's transformers can be assembled within the Scikit-learn pipeline,
 possible to save and deploy one single object (.pkl) with the entire machine learning pipeline.
 
 More details into what is unique about Feature-engine can be found in this article:
-`Feature-engine: A new open source Python package for feature engineering <<https://www.trainindata.com/post/feature-engine-a-new-open-source-python-package-for-feature-engineering>`_.
+`Feature-engine: A new open source Python package for feature engineering <https://www.trainindata.com/post/feature-engine-a-new-open-source-python-package-for-feature-engineering>`_.
 
 
 Installation
@@ -108,6 +108,13 @@ Scikit-learn Wrapper:
 
 -  :doc:`wrappers/Wrapper`: executes Scikit-learn various transformers only on the selected subset of features
 
+
+Feature Selection:
+~~~~~~~~~~~~~~~~~~
+
+- :doc:`selection/DropFeatures`: drops a subset of variables from a dataframe
+
+
 Getting Help
 ------------
 
@@ -143,5 +150,6 @@ Feature-engine is hosted on `GitHub <https://github.com/solegalli/feature_engine
    discretisers/index
    outliercappers/index
    wrappers/index
+   selection/index
    contributing/index
    changelog
