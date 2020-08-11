@@ -834,6 +834,8 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
 class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
     """
     The DecisionTreeCategoricalEncoder() encodes categorical variables with predictions of the decision tree model.
+    The categorical variable will be transformed with OrdinalCategoricalEncoder
+    and DecisionTreeDiscretiser will be applied to the resulting numerical column.
 
     Parameters
     ----------
@@ -842,68 +844,60 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
         The list of categorical variables that will be encoded. If None, the
         encoder will find and select all object type variables.
 
-    cat_encoding_method: str, default=None
-        The categorical encoder that will be used to encode the original
-        categories variables. By default arbitrary encoding will be used. You
-        can choose from one of the following methods:
+    encoding_method: str, default='arbitrary'
+        The categorical encoding method that will be used to encode the original
+        categories variables to numerical values. By default arbitrary encoding will be used.
 
-        +-------------+------------------------------------+
-        | 'ordinal'   |  OrdinalCategoricalEncoder         |
-        +-------------+------------------------------------+
-        | 'countfreq' |  CountFrequencyCategoricalEncoder  |
-        +-------------+------------------------------------+
-        | 'mean'      |  MeanCategoricalEncoder            |
-        +-------------+------------------------------------+
-        | 'woe'       |  WoERatioCategoricalEncoder        |
-        +-------------+------------------------------------+
+        'ordered': the categories are numbered in ascending order according to
+        the target mean value per category.
 
-    cat_encoder_args: dict, default=None
-        Arguments for the categorical encoder which will be passed as keyword
-        arguments for initialization. Refer the encoder's doc for the
-        details of the parameters.
+        'arbitrary' : categories are numbered arbitrarily.
 
-    discretiser_args: dict, default=None
-        Arguments for initialization of the `DecisionTreeDiscretiser` class
-        which will be passed as keyword arguments. Refer the doc for the
-        details of the parameters.
+    cv : int, default=3
+        Desired number of cross-validation fold to be used to fit the decision
+        tree.
+        
+    scoring: str, default='neg_mean_squared_error'
+        Desired metric to optimise the performance for the tree. Comes from
+        sklearn metrics. See DecisionTreeRegressor or DecisionTreeClassifier
+        model evaluation documentation for more options:
+        https://scikit-learn.org/stable/modules/model_evaluation.html
+    
+    regression : boolean, default=True
+        Indicates whether the discretiser should train a regression or a classification
+        decision tree.
+        
+    param_grid : dictionary, default={'max_depth': [1,2,3,4]}
+        The list of parameters over which the decision tree should be optimised
+        during the grid search. The param_grid can contain any of the permitted
+        parameters for Scikit-learn's DecisionTreeRegressor() or
+        DecisionTreeClassifier().
+        
+    random_state : int, default=None
+        The random_state to initialise the training of the decision tree. It is one
+        of the parameters of the Scikit-learn's DecisionTreeRegressor() or
+        DecisionTreeClassifier(). For reproducibility it is recommended to set
+        the random_state to an integer.
 
     Attributes
     ----------
 
     encoder_ : sklearn Pipeline
-        Encoder pipeline containing the categorical encoder and decision 
+        Encoder pipeline containing the ordinal encoder and decision 
         tree discretiser.
     """
 
-    def __init__(self, cat_encoding_method=None, cat_encoder_args=None, discretiser_args=None, variables=None):
+    def __init__(self, encoding_method='arbitrary', cv=3, scoring='neg_mean_squared_error',
+                 param_grid={'max_depth': [1, 2, 3, 4]}, regression=True,
+                 random_state=None, variables=None):
         self.variables = _define_variables(variables)
-
-        cat_encoder_args = {} if cat_encoder_args is None else cat_encoder_args.copy()
-        discretiser_args = {} if discretiser_args is None else discretiser_args.copy()
-
-        # initialize categorical encoder
-        if cat_encoding_method == 'ordinal':
-            CatEncoder = OrdinalCategoricalEncoder
-        elif cat_encoding_method == 'countfreq':
-            CatEncoder = CountFrequencyCategoricalEncoder
-        elif cat_encoding_method == 'mean':
-            CatEncoder = MeanCategoricalEncoder
-        elif cat_encoding_method == 'woe':
-            CatEncoder = WoERatioCategoricalEncoder
-        elif cat_encoding_method is None:
-            cat_encoder_args['encoding_method'] = 'arbitrary'  # default
-            CatEncoder = OrdinalCategoricalEncoder
-        else:
-            raise ValueError("cat_encoding_method takes only values 'ordinal', 'countfreq', 'mean', 'woe' and None")
-
-        cat_encoder = CatEncoder(variables=variables, **cat_encoder_args)
-
-        # initialize decision tree discretiser
-        tree_discretiser = DecisionTreeDiscretiser(variables=variables, **discretiser_args)
-
-        # pipeline for the encoder
-        self.encoder_ = Pipeline([('categorical_encoder', cat_encoder),
-            ('tree_discretiser', tree_discretiser)])
+        self.encoding_method = encoding_method
+        self.cv = cv
+        self.scoring = scoring
+        self.regression = regression
+        self.variables = _define_variables(variables)
+        self.param_grid = param_grid
+        self.random_state = random_state
 
     def fit(self, X, y=None):
         """
@@ -918,8 +912,8 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
             Can be the entire dataframe, not just the categorical variables.
 
         y : pandas series.
-            Target, value depends on the cat_to_num_encoder used, see docs of
-            the corresponding encoder.
+            The Target. Can be None if encoding_method = 'arbitrary'.
+            Otherwise, y needs to be passed when fitting the transformer.
         """
         # check input dataframe
         X = _is_dataframe(X)
@@ -931,9 +925,23 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables)
 
-        self.input_shape_ = X.shape
+        # initialize categorical encoder
+        cat_encoder = OrdinalCategoricalEncoder(encoding_method=self.encoding_method,
+                variables=self.variables)
+
+        # initialize decision tree discretiser
+        tree_discretiser = DecisionTreeDiscretiser(cv=self.cv, scoring=self.scoring,
+                 variables=self.variables, param_grid=self.param_grid,
+                 regression=self.regression, random_state=self.random_state)
+
+        # pipeline for the encoder
+        self.encoder_ = Pipeline([('categorical_encoder', cat_encoder),
+            ('tree_discretiser', tree_discretiser)])
+
 
         self.encoder_.fit(X, y)
+
+        self.input_shape_ = X.shape
 
         return self
 
