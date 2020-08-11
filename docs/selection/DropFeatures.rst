@@ -1,7 +1,7 @@
 DropFeatures
-========================
-The DropFeatures() drops a list of variables from an original dataframe. A single variable as string
-or list of variables can be passed that will be dropped.
+=============
+The DropFeatures() drops a list of variables from the original dataframe. The user can pass a single variable as
+a string or list of variables to be dropped.
 
 .. code:: python
 
@@ -11,7 +11,6 @@ or list of variables can be passed that will be dropped.
     from sklearn.model_selection import train_test_split
 
     from feature_engine.feature_selection import DropFeatures
-
 
     # Load dataset
     def load_titanic():
