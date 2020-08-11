@@ -10,23 +10,25 @@ class MathematicalCombinator(BaseNumericalTransformer):
     number_payments_third_quarter and number_payments_fourth_quarter, we can use the MathematicalCombinator
     to calculate the total number of payments and mean number of payments as follows:
 
-    transformer = MathematicalCombinator(
-        variables=[
-            'number_payments_first_quarter',
-            'number_payments_second_quarter',
-            'number_payments_third_quarter',
-            'number_payments_fourth_quarter'
-        ],
-        math_operations=[
-            'sum',
-            'mean'
-        ],
-        new_variables_name=[
-            'total_number_payments',
-            'mean_number_payments'
-        ]
-    )
-    transformer.fit_transform(X)
+    .. code-block:: python
+
+        transformer = MathematicalCombinator(
+            variables=[
+                'number_payments_first_quarter',
+                'number_payments_second_quarter',
+                'number_payments_third_quarter',
+                'number_payments_fourth_quarter'
+            ],
+            math_operations=[
+                'sum',
+                'mean'
+            ],
+            new_variables_name=[
+                'total_number_payments',
+                'mean_number_payments'
+            ]
+        )
+        transformer.fit_transform(X)
 
     The transformed X will contain the additional features total_number_payments and mean_number_payments,
     plus the original set of variables.

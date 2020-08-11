@@ -108,6 +108,11 @@ Scikit-learn Wrapper:
 
 -  :doc:`wrappers/Wrapper`: executes Scikit-learn various transformers only on the selected subset of features
 
+Mathematical Combination: Transformers:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+-  :doc:`mathematical_combination/MathematicalCombinator`: applies basic mathematical operations across features
+
 Getting Help
 ------------
 
@@ -143,5 +148,6 @@ Feature-engine is hosted on `GitHub <https://github.com/solegalli/feature_engine
    discretisers/index
    outliercappers/index
    wrappers/index
+   mathematical_combination/index
    contributing/index
    changelog
