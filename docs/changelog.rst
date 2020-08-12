@@ -18,7 +18,6 @@ Contributors:
 
 
 Major Changes:
-
     - **New Transformer**: the ``MathematicalCombinator`` allows you combine multiple features into new variables by performing mathematical operations like sum, product, mean, standard deviation, or finding the minimum and maximum values (by Michał Gromiec).
     - **New Transformer**: the ``DropFeatures`` allows you remove specified variables from a dataset (by Karthik Kothareddy).
     - **New Transformer**: the ``DecisionTreeCategoricalEncoder`` encodes categorical variables with a decision tree (by Surya Krishnamurthy).
