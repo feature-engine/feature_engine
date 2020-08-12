@@ -25,13 +25,13 @@ Major Changes:
     - **Bug fix**: the ``SklearnTransformerWrapper`` can now wrap Scikit-learn's OneHotEncoder and concatenate the binary features back to the original dataframe (by Michał Gromiec).
     - **Added functionality**: the ``ArbitraryNumberImputer`` can now take a dictionary of variable, arbitrary number pairs, to impute different variables with different numbers (by Michał Gromiec).
     - **Added functionality**: the ``CategoricalVariableImputer`` can now replace missing data in categorical variables by a string defined by the user (by Gleb Levitskiy).
-    - **Added functionality**: the ``RareLabelEnoder`` now allows the user to determine the maximum number of categories that the variable should have when grouping infrequent values (by Surya Krishnamurthy). 
+    - **Added functionality**: the ``RareLabelEnoder`` now allows the user to determine the maximum number of categories that the variable should have when grouping infrequent values (by Surya Krishnamurthy).
 
 
 Minor Changes:
     - **Improved docs**: fixed typos and tidy Readme.md (by Richard Cornelius Suwandi)
     - **Improved engineering practices**: added Manifest.in to include md and licenses in tar ball in pypi (by Chris Samiullah)
-    **Improved engineering practices**: updated circleci yaml and created release branch for orchestrated release of new versions with significant changes (by Soledad Galli and Chris Samiullah)
+    - **Improved engineering practices**: updated circleci yaml and created release branch for orchestrated release of new versions with significant changes (by Soledad Galli and Chris Samiullah)
     - **tests**: added test to check functionality of return_object in the RareLabelEncoder (by Karthik Kothareddy)
 
 
