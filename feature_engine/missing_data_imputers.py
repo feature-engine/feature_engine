@@ -78,10 +78,9 @@ class MeanMedianImputer(BaseImputer):
         Attributes
         ----------
 
-        imputer_dict_: dictionary
+        imputer_dict_ : dictionary
             The dictionary containing the mean / median values per variable. These
             values will be used by the imputer to replace missing data.
-            The imputer_dict_ is created when fitting the imputer.
         """
         # check input dataframe
         X = _is_dataframe(X)
@@ -292,6 +291,13 @@ class ArbitraryNumberImputer(BaseImputer):
 
         y : None
             y is not needed in this imputation. You can pass None or y.
+
+
+        Attributes
+        ----------
+
+        imputer_dict_: dictionary
+            The dictionary containing the values that will be used to replace each variable.
         """
         # check input dataframe
         X = _is_dataframe(X)
