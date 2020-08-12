@@ -5,8 +5,9 @@ Changelog
 
 Version 0.6.0
 -------------
-* Deployed: Friday, August 14, 2020
-* Contributors: 
+Deployed: Friday, August 14, 2020
+
+Contributors: 
     - Michał Gromiec
     - Surya Krishnamurthy
     - Gleb Levitskiy
