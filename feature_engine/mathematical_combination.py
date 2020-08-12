@@ -28,6 +28,7 @@ class MathematicalCombinator(BaseNumericalTransformer):
                 'mean_number_payments'
             ]
         )
+
         transformer.fit_transform(X)
 
     The transformed X will contain the additional features total_number_payments and mean_number_payments,
@@ -43,7 +44,7 @@ class MathematicalCombinator(BaseNumericalTransformer):
     math_operations: list, default=['sum', 'prod', 'mean', 'std', 'max', 'min']
         The list of basic math operations to be used in transformation.
 
-        Each operation should be a string and must be one of elements
+        Each operation should be a string and must be one of the elements
         from the list: ['sum', 'prod', 'mean', 'std', 'max', 'min']
 
         Each operation will result in a new variable that will be added to the transformed dataset.
