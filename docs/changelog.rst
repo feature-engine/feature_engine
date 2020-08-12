@@ -15,6 +15,7 @@ Version 0.6.0
     - Chris Samiullah
     - Soledad Galli
 
+
 Major Changes:
 
     - **New Transformer**: the ``MathematicalCombinator`` allows you combine multiple features into new variables by performing mathematical operations like sum, product, mean, standard deviation, or finding the minimum and maximum values (by Michał Gromiec).
