@@ -102,7 +102,7 @@ class Winsorizer(BaseEstimator, TransformerMixin):
     	Indicates if missing values should be ignored or raised. Sometimes we want to remove
     	outliers in the raw, original data, sometimes, we may want to remove outliers in the
     	already pre-transformed data. If missing_values='ignore', the transformer will ignore
-    	outliers when learning the capping parameters or transforming the data. If 
+    	missing data when learning the capping parameters or transforming the data. If 
     	missing_values='raise' the transformer will return an error if the training or other
     	datasets contain missing values.
     """
@@ -463,7 +463,7 @@ class OutlierTrimmer(Winsorizer):
     	Indicates if missing values should be ignored or raised. Sometimes we want to remove
     	outliers in the raw, original data, sometimes, we may want to remove outliers in the
     	already pre-transformed data. If missing_values='ignore', the transformer will ignore
-    	outliers when learning the capping parameters or transforming the data. If 
+    	missing data when learning the capping parameters or transforming the data. If 
     	missing_values='raise' the transformer will return an error if the training or other
     	datasets contain missing values.
     	
