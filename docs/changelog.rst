@@ -32,6 +32,7 @@ Minor Changes:
     - **Improved docs**: fixed typos and tidy Readme.md (by Richard Cornelius Suwandi)
     - **Improved engineering practices**: added Manifest.in to include md and licenses in tar ball in pypi (by Chris Samiullah)
     - **Improved engineering practices**: updated circleci yaml and created release branch for orchestrated release of new versions with significant changes (by Soledad Galli and Chris Samiullah)
+    - **Improved engineering practices**: added test for doc build in circleci yaml (by Soledad Galli and Chris Samiullah)
     - **tests**: added test to check functionality of return_object in the RareLabelEncoder (by Karthik Kothareddy)
 
 
