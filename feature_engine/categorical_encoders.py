@@ -840,10 +840,6 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
     Parameters
     ----------
 
-    variables : list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and select all object type variables.
-
     encoding_method: str, default='arbitrary'
         The categorical encoding method that will be used to encode the original
         categories variables to numerical values. By default arbitrary encoding will be used.
@@ -879,25 +875,28 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
 
+    variables : list, default=None
+        The list of categorical variables that will be encoded. If None, the
+        encoder will find and select all object type variables.
+
     Attributes
     ----------
 
     encoder_ : sklearn Pipeline
-        Encoder pipeline containing the ordinal encoder and decision 
+        Encoder pipeline containing the ordinal encoder and decision
         tree discretiser.
     """
 
     def __init__(self, encoding_method='arbitrary', cv=3, scoring='neg_mean_squared_error',
                  param_grid={'max_depth': [1, 2, 3, 4]}, regression=True,
                  random_state=None, variables=None):
-        self.variables = _define_variables(variables)
         self.encoding_method = encoding_method
         self.cv = cv
         self.scoring = scoring
         self.regression = regression
-        self.variables = _define_variables(variables)
         self.param_grid = param_grid
         self.random_state = random_state
+        self.variables = _define_variables(variables)
 
     def fit(self, X, y=None):
         """
@@ -912,8 +911,8 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
             Can be the entire dataframe, not just the categorical variables.
 
         y : pandas series.
-            The Target. Can be None if encoding_method = 'arbitrary'.
-            Otherwise, y needs to be passed when fitting the transformer.
+            The target variable. Required to train the decision tree and for
+            ordered ordinal encoding.
         """
         # check input dataframe
         X = _is_dataframe(X)
@@ -937,7 +936,6 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
         # pipeline for the encoder
         self.encoder_ = Pipeline([('categorical_encoder', cat_encoder),
             ('tree_discretiser', tree_discretiser)])
-
 
         self.encoder_.fit(X, y)
 
@@ -976,5 +974,6 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         X = self.encoder_.transform(X)
-        
+
         return X
+
