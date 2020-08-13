@@ -519,16 +519,3 @@ def test_RareLabelEncoder(dataframe_enc_big, dataframe_enc_big_na, dataframe_enc
           'var_C': ['Rare'] * 4 + ['B'] * 6 + ['C'] * 10 + ['D'] * 10 + ['Rare'] * 4 + ['G'] * 6, }
     df = pd.DataFrame(df)
     pd.testing.assert_frame_equal(X, df)
-
-    # test case 7: when return_object flag is True
-    rare_encoder = RareLabelCategoricalEncoder(n_categories=2, tol=0.1, return_object=True)
-    X = rare_encoder.fit_transform(dataframe_enc_rare)
-    df = {'var_A': ['B'] * 9 + ['A'] * 6 + ['C'] * 4 + ['Rare'] * 1,
-          'var_B': ['A'] * 10 + ['B'] * 6 + ['C'] * 4,
-          'target': [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0]}
-    df = pd.DataFrame(df)
-    pd.testing.assert_frame_equal(X, df)
-    # check for returned data types
-    assert all(X[col].dtype == "O" for col in rare_encoder.variables) == True
-    # additional check to make sure non object type is intact
-    assert X["target"].dtype == dataframe_enc_rare["target"].dtype
