@@ -10,7 +10,6 @@ from feature_engine.categorical_encoders import MeanCategoricalEncoder
 from feature_engine.categorical_encoders import WoERatioCategoricalEncoder
 from feature_engine.categorical_encoders import OneHotCategoricalEncoder
 from feature_engine.categorical_encoders import RareLabelCategoricalEncoder
-from feature_engine.categorical_encoders import DecisionTreeCategoricalEncoder
 
 
 def test_CountFrequencyCategoricalEncoder(dataframe_enc, dataframe_enc_rare, dataframe_enc_na):

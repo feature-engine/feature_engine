@@ -1,14 +1,20 @@
 DecisionTreeCategoricalEncoder
 ==============================
-The DecisionTreeCategoricalEncoder() replaces categories in the variable with
-the predictions of a decision tree. The transform converts categorical
-variables into numerical variables using ordinal encoding and performs
-discretisation using decision tree predictions. You can also set the parameters
-for the ordinal category encoder and decision tree discretiser.
+The DecisionTreeCategoricalEncoder() replaces categories in the variable with 
+the predictions of a decision tree. The transformer first encodes categorical
+variables into numerical variables using ordinal encoding. You have the option
+to have the integers assigned to the categories as they appear in the variable, 
+or ordered by the mean value of the target per category. After this, the transformer
+fits with this numerical variable a decision tree to predict the target variable.
+Finally, the original categorical variable is replaced by the predictions of
+the decision tree.
 
 The DecisionTreeCategoricalEncoder() works only with categorical variables. A
-list of variables can be indicated, or the imputer will automatically select
-all numerical variables in the train set.
+list of variables can be indicated, or alternatively, the imputer will automatically
+select all categorical variables in the train set.
+
+Note that a decision tree is fit per every single variable. With this transformer
+variables are not combined.
 
 .. code:: python
 
