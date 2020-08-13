@@ -8,7 +8,7 @@
 ![Documentation Status](https://readthedocs.org/projects/feature-engine/badge/?version=latest)
 
 
-Feature-engine is a Python library with multiple transformers to engineer features for use in machine learning models. Feature-engine's transformers follow Scikit-learn functionality with fit() and transform() methods to first learn the transforming paramenters from data and then transform the data.
+Feature-engine is a Python library with multiple transformers to engineer features for use in machine learning models. Feature-engine's transformers follow scikit-learn's functionality with fit() and transform() methods to first learn the transforming parameters from data and then transform the data.
 
 
 ## Feature-engine features in the following resources:
@@ -19,9 +19,9 @@ Feature-engine is a Python library with multiple transformers to engineer featur
 
 ## Blogs about Feature-engine:
 
-* [Feature-engine: A new open source Python package for feature engineering](https://www.trainindata.com/post/feature-engine-a-new-open-source-python-package-for-feature-engineering)
+* [Feature-engine: A new open-source Python package for feature engineering](https://www.trainindata.com/post/feature-engine-a-new-open-source-python-package-for-feature-engineering)
 
-* [Open Source Python libraries for Feature Engineering: Comparisons and Walkthroughs](https://www.trainindata.com/post/feature-engineering-python-libraries-comparisons)
+* [Open-Source Python libraries for Feature Engineering: Comparisons and Walkthroughs](https://www.trainindata.com/post/feature-engineering-python-libraries-comparisons)
 
 ## Documentation
 
@@ -31,9 +31,9 @@ Feature-engine is a Python library with multiple transformers to engineer featur
 
 ## Current Feature-engine's transformers include functionality for:
 
-* Missing data imputation
-* Categorical variable encoding
-* Outlier removal
+* Missing Data Imputation
+* Categorical Variable Encoding
+* Outlier Removal
 * Discretisation
 * Numerical Variable Transformation
 
@@ -124,7 +124,7 @@ Rare     3
 Name: var_A, dtype: int64
 ```
 
-See more usage examples in the jupyter notebooks in the **example** folder of this repository, or in the documentation: http://feature-engine.readthedocs.io
+See more usage examples in the Jupyter Notebooks in the **example** folder of this repository, or in the documentation: http://feature-engine.readthedocs.io
 
 ## Contributing
 
@@ -147,9 +147,9 @@ BSD 3-Clause
 
 ### References
 
-Many of the engineering and encoding functionality is inspired by this [series of articles from the 2009 KDD competition](http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf).
+Many of the engineering and encoding functionalities are inspired by this [series of articles from the 2009 KDD Competition](http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf).
 
-To learn more about the rationale, functionality, pros and cos of each imputer, encoder and transformer, refer to the [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO)
+To learn more about the rationale, functionality, pros and cons of each imputer, encoder, and transformer, refer to the [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO)
 
 For a summary of the methods check this [presentation](https://speakerdeck.com/solegalli/engineering-and-selecting-features-for-machine-learning) and this [article](https://www.trainindata.com/post/feature-engineering-comprehensive-overview)
 
