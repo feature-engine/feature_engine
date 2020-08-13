@@ -701,11 +701,9 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
     replace_with : string, default='Rare'
         The category name that will be used to replace infrequent categories.
 
-    return_object: bool, default=False
-        Whether the variables should be re-cast as object, in case they have numerical values.
     """
 
-    def __init__(self, tol=0.05, n_categories=10, max_n_categories=None, variables=None, replace_with='Rare', return_object=False):
+    def __init__(self, tol=0.05, n_categories=10, max_n_categories=None, variables=None, replace_with='Rare'):
 
         if tol < 0 or tol > 1:
             raise ValueError("tol takes values between 0 and 1")
@@ -725,7 +723,6 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
         self.max_n_categories = max_n_categories
         self.variables = _define_variables(variables)
         self.replace_with = replace_with
-        self.return_object = return_object
 
     def fit(self, X, y=None):
         """
@@ -821,9 +818,5 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
 
         for feature in self.variables:
             X[feature] = np.where(X[feature].isin(self.encoder_dict_[feature]), X[feature], self.replace_with)
-
-        # add additional step to return variables cast as object
-        if self.return_object:
-            X[self.variables] = X[self.variables].astype('O')
 
         return X

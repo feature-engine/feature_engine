@@ -36,7 +36,7 @@ be indicated, or the encoder will automatically select all categorical variables
     # set up the encoder
     encoder = ce.RareLabelCategoricalEncoder(tol=0.03, n_categories=2,
                                              variables=['cabin', 'pclass', 'embarked'],
-                                             replace_with='Rare', return_object=True)
+                                             replace_with='Rare')
 
     # fit the encoder
     encoder.fit(X_train)
