@@ -74,6 +74,19 @@ jobs:
           command: |
             tox -e stylechecks
 
+  test_docs:
+    docker:
+      - image: circleci/python:3.8.0
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run doc build
+          command: |
+            tox -e docs
+
   package_and_upload_to_pypi:
     <<: *defaults
     steps:
@@ -99,12 +112,14 @@ workflows:
       - test_feature_engine_py37
       - test_feature_engine_py38
       - test_style
+      - test_docs
       - package_and_upload_to_pypi:
           requires:
             - test_feature_engine_py36
             - test_feature_engine_py37
             - test_feature_engine_py38
             - test_style
+            - test_docs
           filters:
             branches:
               only:
