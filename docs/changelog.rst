@@ -33,7 +33,7 @@ Minor Changes:
     - **Improved engineering practices**: added Manifest.in to include md and licenses in tar ball in pypi (by Chris Samiullah)
     - **Improved engineering practices**: updated circleci yaml and created release branch for orchestrated release of new versions with significant changes (by Soledad Galli and Chris Samiullah)
     - **Improved engineering practices**: added test for doc build in circleci yaml (by Soledad Galli and Chris Samiullah)
-    - **tests**: added test to check functionality of return_object in the RareLabelEncoder (by Karthik Kothareddy)
+    - **Transformer fix**: removed parameter return_object from the RareLabelEncoder as it was not working as intended(by Karthik Kothareddy and Soledad Galli)
 
 
 Version 0.5.0
