@@ -31,6 +31,8 @@ def _find_numerical_variables(X, variables=None):
     # the variables entered by the user are numerical.
     if not variables:
         variables = list(X.select_dtypes(include='number').columns)
+        if len(variables) == 0:
+            raise ValueError('No numerical variables in this dataframe. Please check variable format with dtypes')
     else:
         if len(X[variables].select_dtypes(exclude='number').columns) != 0:
             raise TypeError("Some of the variables are not numerical. Please cast them as numerical "
@@ -43,6 +45,8 @@ def _find_categorical_variables(X, variables=None):
     # the variables entered by user are categorical.
     if not variables:
         variables = list(X.select_dtypes(include='O').columns)
+        if len(variables) == 0:
+            raise ValueError('No categorical variables in this dataframe. Please check variable format with dtypes')
     else:
         # variables indicated by user
         if len(X[variables].select_dtypes(exclude='O').columns) != 0:

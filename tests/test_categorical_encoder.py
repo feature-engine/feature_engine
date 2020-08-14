@@ -446,7 +446,7 @@ def test_OneHotCategoricalEncoder(dataframe_enc_big, dataframe_enc_big_na):
         encoder.transform(dataframe_enc_big_na)
 
 
-def test_RareLabelEncoder(dataframe_enc_big, dataframe_enc_big_na):
+def test_RareLabelEncoder(dataframe_enc_big, dataframe_enc_big_na, dataframe_enc_rare):
     # test case 1: defo params, automatically select variables
     encoder = RareLabelCategoricalEncoder(tol=0.06, n_categories=5, variables=None, replace_with='Rare')
     X = encoder.fit_transform(dataframe_enc_big)
@@ -519,4 +519,3 @@ def test_RareLabelEncoder(dataframe_enc_big, dataframe_enc_big_na):
           'var_C': ['Rare'] * 4 + ['B'] * 6 + ['C'] * 10 + ['D'] * 10 + ['Rare'] * 4 + ['G'] * 6, }
     df = pd.DataFrame(df)
     pd.testing.assert_frame_equal(X, df)
-

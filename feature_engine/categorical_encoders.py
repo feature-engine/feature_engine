@@ -6,12 +6,14 @@ import pandas as pd
 import warnings
 
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
+
 from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df, _check_contains_na
 from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables
 from feature_engine.base_transformers import BaseCategoricalTransformer
 from feature_engine.discretisers import DecisionTreeDiscretiser
-from sklearn.pipeline import Pipeline
+
 
 
 def _check_encoding_dictionary(dictionary):
@@ -704,12 +706,10 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
     replace_with : string, default='Rare'
         The category name that will be used to replace infrequent categories.
 
-    return_object: bool, default=False
-        Whether the variables should be re-cast as object, in case they have numerical values.
     """
 
-    def __init__(self, tol=0.05, n_categories=10, max_n_categories=None, variables=None, replace_with='Rare',
-                 return_object=False):
+
+    def __init__(self, tol=0.05, n_categories=10, max_n_categories=None, variables=None, replace_with='Rare'):
 
         if tol < 0 or tol > 1:
             raise ValueError("tol takes values between 0 and 1")
@@ -729,7 +729,6 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
         self.max_n_categories = max_n_categories
         self.variables = _define_variables(variables)
         self.replace_with = replace_with
-        self.return_object = return_object
 
     def fit(self, X, y=None):
         """
@@ -826,10 +825,6 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
         for feature in self.variables:
             X[feature] = np.where(X[feature].isin(self.encoder_dict_[feature]), X[feature], self.replace_with)
 
-        # add additional step to return variables cast as object
-        if self.return_object:
-            X[self.variables] = X[self.variables].astype('O')
-
         return X
 
 
@@ -897,6 +892,7 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
     def __init__(self, encoding_method='arbitrary', cv=3, scoring='neg_mean_squared_error',
                  param_grid={'max_depth': [1, 2, 3, 4]}, regression=True,
                  random_state=None, variables=None):
+      
         self.encoding_method = encoding_method
         self.cv = cv
         self.scoring = scoring
