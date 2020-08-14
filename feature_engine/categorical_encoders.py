@@ -467,7 +467,8 @@ class WoERatioCategoricalEncoder(BaseCategoricalTransformer):
                 if self.encoding_method == 'log_ratio':
                     if not t.loc[t['p0'] == 0, :].empty or not t.loc[t['p1'] == 0, :].empty:
                         raise ValueError(
-                            "p(0) or p(1) for a category in variable {} is zero, log of zero is not defined".format(var))
+                            "p(0) or p(1) for a category in variable {} is zero, log of zero is not defined".format(
+                                var))
                     else:
                         self.encoder_dict_[var] = (np.log(t.p1 / t.p0)).to_dict()
 
@@ -707,7 +708,8 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
         Whether the variables should be re-cast as object, in case they have numerical values.
     """
 
-    def __init__(self, tol=0.05, n_categories=10, max_n_categories=None, variables=None, replace_with='Rare', return_object=False):
+    def __init__(self, tol=0.05, n_categories=10, max_n_categories=None, variables=None, replace_with='Rare',
+                 return_object=False):
 
         if tol < 0 or tol > 1:
             raise ValueError("tol takes values between 0 and 1")
@@ -833,16 +835,21 @@ class RareLabelCategoricalEncoder(BaseEstimator, TransformerMixin):
 
 class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
     """
-    The DecisionTreeCategoricalEncoder() encodes categorical variables with predictions of the decision tree model.
-    The categorical variable will be transformed with OrdinalCategoricalEncoder
-    and DecisionTreeDiscretiser will be applied to the resulting numerical column.
+    The DecisionTreeCategoricalEncoder() encodes categorical variables with predictions of a decision tree model.
+
+    The categorical variable will be first encoded into integers with the OrdinalCategoricalEncoder(). The
+    integers can be assigned arbitrarily to the categories or following the mean value of the target in each category.
+
+    Then a decision tree will be fit using the resulting numerical variable to predict the target  variable.
+    Finally, the original categorical variable values will be replaced by the predictions of the decision
+    tree.
 
     Parameters
     ----------
 
     encoding_method: str, default='arbitrary'
         The categorical encoding method that will be used to encode the original
-        categories variables to numerical values. By default arbitrary encoding will be used.
+        categories to numerical values.
 
         'ordered': the categories are numbered in ascending order according to
         the target mean value per category.
@@ -855,12 +862,12 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
         
     scoring: str, default='neg_mean_squared_error'
         Desired metric to optimise the performance for the tree. Comes from
-        sklearn metrics. See DecisionTreeRegressor or DecisionTreeClassifier
+        sklearn metrics. See the DecisionTreeRegressor or DecisionTreeClassifier
         model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
     
     regression : boolean, default=True
-        Indicates whether the discretiser should train a regression or a classification
+        Indicates whether the encoder should train a regression or a classification
         decision tree.
         
     param_grid : dictionary, default={'max_depth': [1,2,3,4]}
@@ -926,16 +933,16 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
 
         # initialize categorical encoder
         cat_encoder = OrdinalCategoricalEncoder(encoding_method=self.encoding_method,
-                variables=self.variables)
+                                                variables=self.variables)
 
         # initialize decision tree discretiser
         tree_discretiser = DecisionTreeDiscretiser(cv=self.cv, scoring=self.scoring,
-                 variables=self.variables, param_grid=self.param_grid,
-                 regression=self.regression, random_state=self.random_state)
+                                                   variables=self.variables, param_grid=self.param_grid,
+                                                   regression=self.regression, random_state=self.random_state)
 
         # pipeline for the encoder
         self.encoder_ = Pipeline([('categorical_encoder', cat_encoder),
-            ('tree_discretiser', tree_discretiser)])
+                                  ('tree_discretiser', tree_discretiser)])
 
         self.encoder_.fit(X, y)
 
@@ -945,8 +952,7 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """
-        Returns the predictions of the tree, based of the category encoding of
-        the variable original value.
+        Returns the predictions of the decision tree based of the variable's original value.
         
         Parameters
         ----------
@@ -976,4 +982,3 @@ class DecisionTreeCategoricalEncoder(BaseEstimator, TransformerMixin):
         X = self.encoder_.transform(X)
 
         return X
-
