@@ -3,6 +3,39 @@
 Changelog
 =========
 
+Version 0.6.0
+-------------
+Deployed: Friday, August 14, 2020
+
+Contributors: 
+    - Michał Gromiec
+    - Surya Krishnamurthy
+    - Gleb Levitskiy
+    - Karthik Kothareddy
+    - Richard Cornelius Suwandi
+    - Chris Samiullah
+    - Soledad Galli
+
+
+Major Changes:
+    - **New Transformer**: the ``MathematicalCombinator`` allows you combine multiple features into new variables by performing mathematical operations like sum, product, mean, standard deviation, or finding the minimum and maximum values (by Michał Gromiec).
+    - **New Transformer**: the ``DropFeatures`` allows you remove specified variables from a dataset (by Karthik Kothareddy).
+    - **New Transformer**: the ``DecisionTreeCategoricalEncoder`` encodes categorical variables with a decision tree (by Surya Krishnamurthy).
+    - **Bug fix**: the ``SklearnTransformerWrapper`` can now automatically select numerical or numerical and categorical variables depending on the Scikit-learn transformer the user implements (by Michał Gromiec).
+    - **Bug fix**: the ``SklearnTransformerWrapper`` can now wrap Scikit-learn's OneHotEncoder and concatenate the binary features back to the original dataframe (by Michał Gromiec).
+    - **Added functionality**: the ``ArbitraryNumberImputer`` can now take a dictionary of variable, arbitrary number pairs, to impute different variables with different numbers (by Michał Gromiec).
+    - **Added functionality**: the ``CategoricalVariableImputer`` can now replace missing data in categorical variables by a string defined by the user (by Gleb Levitskiy).
+    - **Added functionality**: the ``RareLabelEnoder`` now allows the user to determine the maximum number of categories that the variable should have when grouping infrequent values (by Surya Krishnamurthy).
+
+
+Minor Changes:
+    - **Improved docs**: fixed typos and tidy Readme.md (by Richard Cornelius Suwandi)
+    - **Improved engineering practices**: added Manifest.in to include md and licenses in tar ball in pypi (by Chris Samiullah)
+    - **Improved engineering practices**: updated circleci yaml and created release branch for orchestrated release of new versions with significant changes (by Soledad Galli and Chris Samiullah)
+    - **Improved engineering practices**: added test for doc build in circleci yaml (by Soledad Galli and Chris Samiullah)
+    - **Transformer fix**: removed parameter return_object from the RareLabelEncoder as it was not working as intended(by Karthik Kothareddy and Soledad Galli)
+
+
 Version 0.5.0
 -------------
 
