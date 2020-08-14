@@ -5,7 +5,6 @@ import numpy as np
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
-from sklearn.utils import deprecated
 
 from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df
 from feature_engine.variable_manipulation import (
@@ -78,10 +77,9 @@ class MeanMedianImputer(BaseImputer):
         Attributes
         ----------
 
-        imputer_dict_: dictionary
+        imputer_dict_ : dictionary
             The dictionary containing the mean / median values per variable. These
             values will be used by the imputer to replace missing data.
-            The imputer_dict_ is created when fitting the imputer.
         """
         # check input dataframe
         X = _is_dataframe(X)
@@ -292,6 +290,13 @@ class ArbitraryNumberImputer(BaseImputer):
 
         y : None
             y is not needed in this imputation. You can pass None or y.
+
+
+        Attributes
+        ----------
+
+        imputer_dict_: dictionary
+            The dictionary containing the values that will be used to replace each variable.
         """
         # check input dataframe
         X = _is_dataframe(X)
@@ -426,17 +431,6 @@ class CategoricalVariableImputer(BaseImputer):
 
     # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
     transform.__doc__ = BaseImputer.transform.__doc__
-
-
-@deprecated("Class 'FrequentCategoryImputer' was integrated into the "
-            "class 'CategoricalVariableImputer' in version 0.4 and "
-            " will be removed in version 0.5. "
-            "To perform Frequent category imputation please use: "
-            "CategoricalVariableImputer(imputation_method='frequent')")
-class FrequentCategoryImputer(CategoricalVariableImputer):
-    def __init__(self, variables=None):
-        self.imputation_method = 'frequent'
-        self.variables = _define_variables(variables)
 
 
 class RandomSampleImputer(BaseEstimator, TransformerMixin):
@@ -755,9 +749,3 @@ class AddMissingIndicator(BaseEstimator, TransformerMixin):
 
         return X
 
-
-@deprecated("Class 'AddNaNBinaryImputer' was renamed to AddMissingIndicator "
-            "in version 0.4 and will be removed in version 0.5. "
-            "To add a missing indicator please use: AddMissingIndicator()")
-class AddNaNBinaryImputer(AddMissingIndicator):
-    pass
