@@ -81,3 +81,22 @@ def dataframe_normal_dist():
     df = pd.DataFrame(s)
     df.columns = ['var']
     return df
+
+@pytest.fixture(scope="module")
+def dataframe_datetime_normal():
+    df = pd.DataFrame({
+        "var_A": ["2009-1-5 15:05:02", "2010-08-09", "2001-11-18 11:15:00", ],
+        "var_B": ["John", "Jason", "Ethan"],
+        "var_C": [25, 28, 30]
+    })
+    return df
+
+@pytest.fixture(scope="module")
+def dataframe_datetime_multiple():
+    df = pd.DataFrame({
+        "var_A": ["2009-1-5 15:05:02", "2010-08-09", "2001-11-18 11:15:00", ],
+        "var_B": ["John", "Jason", "Ethan"],
+        "var_C": [25, 28, 30],
+        "var_D": ["2011-6-5 6:05:59", "2000-11-25 12:05:21", "2009-08-15 13:01:36", ],
+    })
+    return df
