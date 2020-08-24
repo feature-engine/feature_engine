@@ -181,3 +181,12 @@ def test_datetime_non_existent_features(dataframe_datetime_normal):
         X = transformer.fit_transform(dataframe_datetime_normal)
 
 
+def test_datetime_invalid_error(dataframe_datetime_invalid):
+    with pytest.raises(ValueError):
+        transformer = DateTimeTransformer(
+            variables=["var_A"],
+            features_to_add=["year", "month", "day"],
+        )
+        X = transformer.fit_transform(dataframe_datetime_invalid)
+
+
