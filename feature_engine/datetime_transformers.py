@@ -29,10 +29,9 @@ class DateTimeTransformer(BaseEstimator, TransformerMixin):
         "sec": "second",
     }
 
-    def __init__(self, variables: Union[str, list] = None, errors: str = "raise",
+    def __init__(self, variables: Union[str, list] = None,
                  features_to_add: Union[dict, list] = "default", keep_original: bool = False):
         self.variables = _define_variables(variables)
-        self.errors = errors
         self.keep_original = keep_original
         if len(self.variables) == 0:
             raise ValueError("Variables cannot be empty. Please pass at least one variable to transform")
@@ -74,7 +73,7 @@ class DateTimeTransformer(BaseEstimator, TransformerMixin):
             for col in self.variables:
                 self.features_to_add[col] = list(self.feature_map.keys())
         else:
-            raise ValueError("features_to_drop has to be of type list or dict")
+            raise ValueError("features_to_add has to be of type list, dict or 'default'")
 
     def fit(self, X, y=None):
         """
@@ -102,7 +101,7 @@ class DateTimeTransformer(BaseEstimator, TransformerMixin):
         for col in self.variables:
             try:
                 # explicit cast
-                X[col] = pd.to_datetime(X[col], errors=self.errors)
+                X[col] = pd.to_datetime(X[col], errors="raise")
             except (TypeError, ValueError):
                 raise ValueError(
                     f"Cannot cast variable {col} to datetime, given string not likely a valid datetime"
