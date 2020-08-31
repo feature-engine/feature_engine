@@ -22,5 +22,5 @@ def _check_input_matches_training_df(X, reference):
 
 def _check_contains_na(X, variables):
     if X[variables].isnull().values.any():
-        raise ValueError('Some of the variables to trasnform contain missing values. Check and remove those '
+        raise ValueError('Some of the variables to transform contain missing values. Check and remove those '
                          'before using this transformer.')
