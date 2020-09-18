@@ -1,7 +1,10 @@
 import pytest
 
-from feature_engine.variable_manipulation import _define_variables, _find_numerical_variables, \
+from feature_engine.variable_manipulation import (
+    _define_variables,
+    _find_numerical_variables,
     _find_categorical_variables
+)
 
 
 def test_define_variables():
@@ -21,6 +24,8 @@ def test_find_numerical_variables(dataframe_vartypes):
     assert _find_numerical_variables(dataframe_vartypes, vars_none) == vars_num
     with pytest.raises(TypeError):
         assert _find_numerical_variables(dataframe_vartypes, vars_mix)
+    with pytest.raises(ValueError):
+        assert _find_numerical_variables(dataframe_vartypes[['Name', 'City']], None)
 
 
 def test_find_categorical_variables(dataframe_vartypes):
@@ -31,6 +36,8 @@ def test_find_categorical_variables(dataframe_vartypes):
     assert _find_categorical_variables(dataframe_vartypes, vars_none) == vars_cat
     with pytest.raises(TypeError):
         assert _find_categorical_variables(dataframe_vartypes, vars_mix)
+    with pytest.raises(ValueError):
+        assert _find_categorical_variables(dataframe_vartypes[['Age', 'Marks']], None)
 
 
 

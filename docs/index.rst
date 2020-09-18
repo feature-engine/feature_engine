@@ -76,6 +76,7 @@ Categorical Variable Encoders: Encoders
 - :doc:`encoders/OrdinalCategoricalEncoder`: replaces categories by numbers arbitrarily or ordered by target
 - :doc:`encoders/MeanCategoricalEncoder`: replaces categories by the target mean
 - :doc:`encoders/WoERatioCategoricalEncoder`: replaces categories by the weight of evidence
+- :doc:`encoders/DecisionTreeCategoricalEncoder`: replaces categories by predictions of a decision tree
 - :doc:`encoders/RareLabelCategoricalEncoder`: groups infrequent categories
 
 Numerical Variable Transformation: Transformers
