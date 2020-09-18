@@ -3,6 +3,17 @@
 Changelog
 =========
 
+Version 0.6.1
+-------------
+Deployed: Friday, September 18, 2020
+
+Contributors: Soledad Galli
+
+Minor Changes:
+    - **Updated docs**: updated and expanded Contributing guidelines, added Governance, updated references to Feature-engine online.
+    - **Updated Readme**: updated and expanded readme.
+
+
 Version 0.6.0
 -------------
 Deployed: Friday, August 14, 2020
