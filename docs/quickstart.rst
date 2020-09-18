@@ -19,15 +19,26 @@ The simplest way to install Feature-engine is from PyPI with pip, Python's prefe
     $ pip install feature-engine
 
 
+Note, you can also install it with a _ as follows:
+
+.. code-block:: bash
+
+    $ pip install feature_engine
+
+
 Note that Feature-engine is an active project and routinely publishes new releases. In order to upgrade Feature-engine to the latest version, use ``pip`` as follows.
 
 .. code-block:: bash
 
     $ pip install -U feature-engine
 
-You can also use the ``-U`` flag to update Scikit-learn, pandas, NumPy, or any other libraries that work well with Feature-engine to their latest versions.
+If you’re using Anaconda, you can take advantage of the conda utility to install the `Anaconda Feature-engine package <https://anaconda.org/conda-forge/feature_engine>`_:
 
-Once installed, you should be able to import Feature-engine without an error, both in Python and inside of Jupyter notebooks.
+.. code-block:: bash
+
+    $ conda install -c conda-forge feature_engine
+
+Once installed, you should be able to import Feature-engine without an error, both in Python and in Jupyter notebooks.
 
 
 Example Use
@@ -74,8 +85,8 @@ More examples can be found in the documentation for each transformer and in a de
 repository with `Jupyter notebooks <https://github.com/solegalli/feature_engine/tree/master/examples>`_.
 
 
-Feature-engine with Scikit-learn's pipeline
--------------------------------------------
+Feature-engine with the Scikit-learn's pipeline
+-----------------------------------------------
 
 Feature-engine's transformers can be assembled within a Scikit-learn pipeline. This way, we can store our feature engineering pipeline in one object and save it in one pickle (.pkl). Here is an example on how to do it:
 
