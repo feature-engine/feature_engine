@@ -35,8 +35,10 @@ We prefer to handle most contributions through the github repository. You can al
 2. `Mailing list <https://groups.google.com/d/forum/feature-engine>`_.
 
 
+Contributing Guide
+------------------
+
 .. toctree::
-    :caption: Contributing Guide
     :maxdepth: 2
 
     github_quick_start

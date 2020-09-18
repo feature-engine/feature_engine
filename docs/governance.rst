@@ -12,14 +12,14 @@ Contributors
 ~~~~~~~~~~~~
 
 Contributors are community members who contribute in various ways to the project. Anyone can become a contributor, and
-contributions can be of various forms, not just code. To see how you can help check the `Contribing page <https://feature-engine.readthedocs.io/en/latest/contributing/index.html>`_.
+contributions can be of various forms, not just code. To see how you can help check the `Contributing page <https://feature-engine.readthedocs.io/en/latest/contributing/index.html>`_.
 
 
 Core Contributors
 ~~~~~~~~~~~~~~~~~
 
-Core contributors are community members who are dedicated to the continued development of the project through ongoing
-engagement with the community. Core contributors are expected to review code contributions, can merge approved pull
+Core Contributors are community members who are dedicated to the continued development of the project through ongoing
+engagement with the community. Core Contributors are expected to review code contributions, can merge approved pull
 requests, can decide on the fate of pull requests, and can be involved in deciding major changes to the Feature-engine API.
 
 Maintainers can determine who can join as a Core Contributor.

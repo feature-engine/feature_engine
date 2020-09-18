@@ -102,9 +102,11 @@ will tell you everything ;)
 
 If you prefer not to use tox, there are a few options. If you are using Pycharm:
 
-1. In your project directory (where you have all the files and scripts), click with the mouse left button
-in the folder "tests".
+1. In your project directory (where you have all the files and scripts), click with the mouse right button
+on the folder "tests".
+
 2. Select "Run pytest in tests".
+
 3. Done!!
 
 Sweet, isn't it?
@@ -118,7 +120,7 @@ You can also run the tests from your command line:
 
 These command will run all the test scripts within the test folder. Alternatively, you can run specific scripts as follows:
 
-1. change into the tests folder::
+1. Change into the tests folder::
 
     $ cd tests
 
@@ -136,11 +138,11 @@ If tests pass, your code is functional. If not, try and fix the issue following 
 Merging Pull Requests
 ---------------------
 
-Only core contributors have write access to the repository and can merge pull requests. If you are a core
+Only Core contributors have write access to the repository and can merge pull requests. If you are a core
 contributor, some preferences for commit messages when merging in pull requests:
 
 - Make sure to use the “Squash and Merge” option in order to create a Git history that is understandable.
-- Keep the title of the commit short and descriptive; be sure it includes the PR #.
+- Keep the title of the commit short and descriptive; be sure it includes the PR # and the issue #.
 
 
 After your PR is merged

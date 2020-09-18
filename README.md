@@ -97,7 +97,7 @@ More resources will be added as they appear online!
  * DropFeatures
 
 
-### Installing
+## Installing
 
 From PyPI using pip:
 
@@ -151,7 +151,7 @@ Rare     3
 Name: var_A, dtype: int64
 ```
 
-See more usage examples in the Jupyter Notebooks in the **example** folder of this repository, or in the documentation: http://feature-engine.readthedocs.io
+See more usage examples in the Jupyter Notebooks in the **example** folder of this repository, or in the [documentation](http://feature-engine.readthedocs.io).
 
 ## Contributing
 
@@ -171,7 +171,7 @@ In short:
 - Make sure the tests pass
 - Make a PR
 
-and we take it from there!!
+Thank you!!
 
 ### Opening Pull Requests
 PR's are welcome! Please make sure the CI tests pass on your branch.
@@ -203,6 +203,6 @@ Now you can build the docs: ``sphinx-build -b html docs build``
 BSD 3-Clause
 
 
-### References
+## References
 
 Many of the engineering and encoding functionalities are inspired by this [series of articles from the 2009 KDD Competition](http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf).
