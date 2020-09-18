@@ -1,5 +1,5 @@
-Governance and Decision Making
-==============================
+Governance
+==========
 
 The purpose of this document is to formalize the governance process used by the Feature-engine project and clarify how
 decisions are made and how the community works together. This is the first version of our governance policy and will be

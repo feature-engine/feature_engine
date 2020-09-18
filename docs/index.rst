@@ -209,5 +209,6 @@ Feature-engine is hosted on `GitHub <https://github.com/solegalli/feature_engine
    mathematical_combination/index
    selection/index
    contributing/index
+   code_of_conduct
    governance
    changelog
