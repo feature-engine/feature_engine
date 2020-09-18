@@ -13,29 +13,40 @@ Feature-engine is a Python library with multiple transformers to engineer featur
 
 ## Feature-engine features in the following resources:
 
-* [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO).
+* [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO)
 
 * [Python Feature Engineering Cookbook](https://www.packtpub.com/data/python-feature-engineering-cookbook)
 
 ## Blogs about Feature-engine:
 
-* [Feature-engine: A new open-source Python package for feature engineering](https://www.trainindata.com/post/feature-engine-a-new-open-source-python-package-for-feature-engineering)
+* [Feature-engine: A new open-source Python package for feature engineering](https://www.trainindatablog.com/feature-engine-a-new-open-source-python-package-for-feature-engineering)
 
-* [Open-Source Python libraries for Feature Engineering: Comparisons and Walkthroughs](https://www.trainindata.com/post/feature-engineering-python-libraries-comparisons)
+* [Practical Code Implementations of Feature Engineering for Machine Learning with Python](https://www.trainindatablog.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python)
 
 ## Documentation
 
-* Documentation: http://feature-engine.readthedocs.io
-* Home page: https://www.trainindata.com/feature-engine
+* [Documentation](http://feature-engine.readthedocs.io)
+* [Home page](https://www.trainindata.com/feature-engine)
+
+## En Español:
+
+* [Ingeniería de variables para machine learning, Curso Online](https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C)
+
+* [Ingeniería de variables, MachinLenin, charla online](https://www.youtube.com/watch?v=NhCxOOoFXds)
+
+More resources will be added as they appear online!
 
 
 ## Current Feature-engine's transformers include functionality for:
 
 * Missing Data Imputation
 * Categorical Variable Encoding
-* Outlier Removal
+* Outlier Capping or Removal
 * Discretisation
 * Numerical Variable Transformation
+* Scikit-learn Wrappers
+* Variables Combination
+* Variable Selection
 
 ### Imputing Methods
 
@@ -73,18 +84,34 @@ Feature-engine is a Python library with multiple transformers to engineer featur
 * BoxCoxTransformer
 * YeoJohnsonTransformer
 
-
 ### Scikit-learn Wrapper:
 
  * SklearnTransformerWrapper
 
+### Variable Combinations:
 
-### Installing
+ * MathematicalCombinator
+
+### Feature Selection:
+
+ * DropFeatures
+
+
+## Installing
+
+From PyPI using pip:
 
 ```
 pip install feature_engine
 ```
-or
+
+From Anaconda:
+
+```
+conda install -c conda-forge feature_engine
+
+```
+Or simply clone it:
 
 ```
 git clone https://github.com/solegalli/feature_engine.git
@@ -124,33 +151,58 @@ Rare     3
 Name: var_A, dtype: int64
 ```
 
-See more usage examples in the Jupyter Notebooks in the **example** folder of this repository, or in the documentation: http://feature-engine.readthedocs.io
+See more usage examples in the Jupyter Notebooks in the **example** folder of this repository, or in the [documentation](http://feature-engine.readthedocs.io).
 
 ## Contributing
 
+Details about how to contribute can be found in the [Contributing Page](https://feature-engine.readthedocs.io/en/latest/contributing/index.html)
+
+In short:
+
 ### Local Setup Steps
-- Clone the repo and cd into it
-- Run `pip install tox`
-- Run `tox` if the tests pass, your local setup is complete
+- Fork the repo
+- Clone your fork into your local computer: ``git clone https://github.com/<YOURUSERNAME>/feature_engine.git``
+- cd into the repo ``cd feature_engine``
+- Install as a developer: ``pip install -e .``
+- Create and activate a virtual environment with any tool of choice
+- Install the dependencies as explained in the [Contributing Page](https://feature-engine.readthedocs.io/en/latest/contributing/index.html)
+- Create a feature branch with a meaningful name for your feature: ``git checkout -b myfeaturebranch``
+- Develop your feature, tests and documentation
+- Make sure the tests pass
+- Make a PR
+
+Thank you!!
 
 ### Opening Pull Requests
 PR's are welcome! Please make sure the CI tests pass on your branch.
+
+### Tests
+
+We prefer tox. In your environment:
+
+- Run `pip install tox`
+- cd into the root directory of the repo: ``cd feature_engine``
+- Run `tox` 
+
+If the tests pass, the code is functional.
+
+You can also run the tests in your environment (without tox). For guidelines on how to do so, check the [Contributing Page](https://feature-engine.readthedocs.io/en/latest/contributing/index.html).
+
+
+### Documentation
+
+Feature-engine documentation is built using [Sphinx](https://www.sphinx-doc.org) and is hosted on [Read the Docs](https://readthedocs.org/).
+
+To build the documentation make sure you have the dependencies installed. From the root directory: ``pip install -r docs/requirements.txt``.
+
+Now you can build the docs: ``sphinx-build -b html docs build``
+
 
 ## License
 
 BSD 3-Clause
 
-## Authors
 
-* **Soledad Galli** - *Initial work* - [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO).
-
-
-### References
+## References
 
 Many of the engineering and encoding functionalities are inspired by this [series of articles from the 2009 KDD Competition](http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf).
-
-To learn more about the rationale, functionality, pros and cons of each imputer, encoder, and transformer, refer to the [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO)
-
-For a summary of the methods check this [presentation](https://speakerdeck.com/solegalli/engineering-and-selecting-features-for-machine-learning) and this [article](https://www.trainindata.com/post/feature-engineering-comprehensive-overview)
-
-To stay alert of latest releases, sign up at [trainindata](https://www.trainindata.com)
