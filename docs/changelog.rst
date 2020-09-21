@@ -14,6 +14,7 @@ Minor Changes:
     - **Updated Readme**: updated and expanded readme.
 
 
+
 Version 0.6.0
 -------------
 Deployed: Friday, August 14, 2020
