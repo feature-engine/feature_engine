@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
-
-from feature_engine.feature_selection import DropFeatures, SelectFeatures
+from sklearn.exceptions import NotFittedError
+from feature_engine.feature_selection import DropFeatures, DropConstantAndQuasiConstantFeatures
 
 
 def test_drop_features_drop_2_variables(dataframe_vartypes):
@@ -52,12 +52,11 @@ def test_drop_features_empty_list(dataframe_vartypes):
         transformer.fit_transform(dataframe_vartypes)
 
 
-# SelectFeatures transformer tests
-def test_select_features_drop_constant_features(dataframe_con_quasi_con):
+# DropConstantAndQuasiConstantFeatures transformer tests
+def test_drop_constant_and_quasi_constant_features(dataframe_constant_quasi_constant):
     # test case 1: only drop constant features
-    transformer = SelectFeatures(drop_quasi_constant_features=False, quasi_constant_threshold=None)
-
-    X = transformer.fit_transform(dataframe_con_quasi_con)
+    transformer = DropConstantAndQuasiConstantFeatures(tol=1, variables=None)
+    X = transformer.fit_transform(dataframe_constant_quasi_constant)
 
     # expected result
     df = pd.DataFrame(
@@ -71,19 +70,17 @@ def test_select_features_drop_constant_features(dataframe_con_quasi_con):
     )
 
     # init params
-    assert transformer.drop_quasi_constant_features is False
-    assert transformer.quasi_constant_threshold is None
+    assert transformer.tol == 1
+    assert transformer.variables == ['Name', 'City', 'Age', 'Marks', 'dob', 'const_feat_num',
+                                     'const_feat_cat', 'quasi_feat_num', 'quasi_feat_cat']
     # transform params
     assert X.shape == (4, 7)
     assert type(X) == pd.DataFrame
     pd.testing.assert_frame_equal(X, df)
 
-
-def test_select_features_drop_quasi_constant_features(dataframe_con_quasi_con):
-    # test case 2: drop quasi constant features (also by default drops constant features)
-    transformer = SelectFeatures(drop_quasi_constant_features=True, quasi_constant_threshold=0.7)
-
-    X = transformer.fit_transform(dataframe_con_quasi_con)
+    # test case 2: drop features showing threshold more than 0.7
+    transformer = DropConstantAndQuasiConstantFeatures(tol=0.7, variables=None)
+    X = transformer.fit_transform(dataframe_constant_quasi_constant)
 
     # expected result
     df = pd.DataFrame(
@@ -96,43 +93,60 @@ def test_select_features_drop_quasi_constant_features(dataframe_con_quasi_con):
     )
 
     # init params
-    assert transformer.drop_quasi_constant_features is True
-    assert transformer.quasi_constant_threshold == 0.7
+    assert transformer.tol == 0.7
+    assert transformer.variables == ['Name', 'City', 'Age', 'Marks', 'dob', 'const_feat_num',
+                                     'const_feat_cat', 'quasi_feat_num', 'quasi_feat_cat']
     # transform params
     assert X.shape == (4, 5)
     assert type(X) == pd.DataFrame
     pd.testing.assert_frame_equal(X, df)
 
+    # test case 3: drop features showing threshold more than 0.7 with variable list
+    transformer = DropConstantAndQuasiConstantFeatures(tol=0.7, variables=['Name', 'const_feat_num', 'quasi_feat_num'])
+    X = transformer.fit_transform(dataframe_constant_quasi_constant)
 
-def test_select_features_input_not_dataframe():
-    # test case 3: input is not a dataframe
+    # expected result
+    df = pd.DataFrame(
+        {'Name': ['tom', 'nick', 'krish', 'jack'],
+         'City': ['London', 'Manchester', 'Liverpool', 'Bristol'],
+         'Age': [20, 21, 19, 18],
+         'Marks': [0.9, 0.8, 0.7, 0.6],
+         'dob': pd.date_range('2020-02-24', periods=4, freq='T'),
+         'const_feat_cat': ['a', 'a', 'a', 'a'],
+         'quasi_feat_cat': ['a', 'a', 'a', 'b']
+         }
+    )
+
+    # init params
+    assert transformer.tol == 0.7
+    assert transformer.variables == ['Name', 'const_feat_num', 'quasi_feat_num']
+    # transform params
+    assert X.shape == (4, 7)
+    assert type(X) == pd.DataFrame
+    pd.testing.assert_frame_equal(X, df)
+
+    # test case 4: input is not a dataframe
     with pytest.raises(TypeError):
-        SelectFeatures().fit({"Name": ["Karthik"]})
+        DropConstantAndQuasiConstantFeatures().fit({"Name": ["Karthik"]})
 
-
-def test_select_features_threshold_out_of_range():
-    # test case 4: threshold more than 1 or less than 0
+    # test case 5: threshold not between 0 and 1
     with pytest.raises(ValueError):
-        SelectFeatures(drop_quasi_constant_features=True, quasi_constant_threshold=2)
+        transformer = DropConstantAndQuasiConstantFeatures(tol=2)
 
+    # test case 6: when input contains all constant features
     with pytest.raises(ValueError):
-        SelectFeatures(drop_quasi_constant_features=True, quasi_constant_threshold=-1)
+        DropConstantAndQuasiConstantFeatures().fit(pd.DataFrame({'col1': [1, 1, 1], 'col2': [1, 1, 1]}))
 
+    # test case 7: when input contains all constant and quasi constant features
     with pytest.raises(ValueError):
-        SelectFeatures(drop_quasi_constant_features=True, quasi_constant_threshold=1)
-
-
-def test_select_features_all_constant_features():
-    # test case 5: when input contains all constant features
-    with pytest.raises(ValueError):
-        SelectFeatures().fit(pd.DataFrame({'col1': [1, 1, 1], 'col2': [1, 1, 1]}))
-
-
-def test_select_features_all_constant_and_quasi_constant_features():
-    # test case 6: when input contains all constant and quasi constant features
-    with pytest.raises(ValueError):
-        transformer = SelectFeatures(drop_quasi_constant_features=True, quasi_constant_threshold=0.7)
+        transformer = DropConstantAndQuasiConstantFeatures(tol=0.7)
         transformer.fit_transform(pd.DataFrame({'col1': [1, 1, 1, 1], 'col2': [1, 1, 1, 1],
                                                 'col3': [1, 1, 1, 2], 'col4': [1, 1, 1, 2]
                                                 }))
+
+    # test case 8: when fit is not called prior to transform
+    with pytest.raises(NotFittedError):
+        transformer = DropConstantAndQuasiConstantFeatures()
+        transformer.transform(dataframe_constant_quasi_constant)
+
 
