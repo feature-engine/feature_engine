@@ -83,7 +83,7 @@ def dataframe_normal_dist():
     return df
 
 @pytest.fixture(scope='module')
-def dataframe_constant_quasi_constant():
+def dataframe_constant_features():
     data = {'Name': ['tom', 'nick', 'krish', 'jack'],
             'City': ['London', 'Manchester', 'Liverpool', 'Bristol'],
             'Age': [20, 21, 19, 18],

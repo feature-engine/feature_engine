@@ -89,31 +89,28 @@ class DropFeatures(BaseEstimator, TransformerMixin):
         return X
 
 
-class DropConstantAndQuasiConstantFeatures(TransformerMixin, BaseEstimator):
+class DropConstantFeatures(TransformerMixin, BaseEstimator):
     """
+    Drops constant and quasi-constant variables from a dataframe. Constant variables show the same value across all the
+    observations in the dataset. Quasi-constant variables show the same value in almost all the observations in the
+    dataset.
 
-    Drops constant and quasi constant variables from a dataframe.
-    Constant variables are those variables which show only one value for all the observations.
-    By default, all constant variables are dropped.
-    Quasi-constant variables are those variables which are almost constant. In other words, those features which have
-    the same value for a large subset of total observations.
-    This transformer works for both numerical and categorical variables.
+    By default, DropConstantFeatures drops only constant variables. This transformer works with both numerical and
+    categorical variables. The user can indicate a list of variables to examine. Alternatively, the transformer will
+    evaluate all the variables in the dataset.
+
+    The transformer will first identify and store the constant and quasi-constant variables. Next, the transformer
+    will drop these variables from a dataframe.
 
     Parameters
     ----------
 
     tol: float, default=1
-        Threshold to detect constant/quasi-constant features. Variables showing tol percentage of values will be dropped
+        Threshold to detect constant/quasi-constant features. Variables showing the same value in a percentage of
+        observations greater than tol will be considered constant / quasi-constant and dropped.
 
     variables: list, default=None
-        The list of variables to inspect. If None, the transformer will select all variables in the dataframe
-
-    Attributes
-    ----------
-
-    selected_features_: list
-        List of selected features which are non-constant and non-quasi constant
-
+        The list of variables to evaluate. If None, the transformer will evaluate all variables in the dataset.
     """
 
     def __init__(self, tol=1, variables=None):
@@ -127,17 +124,23 @@ class DropConstantAndQuasiConstantFeatures(TransformerMixin, BaseEstimator):
     def fit(self, X, y=None):
 
         """
-        Find constant and non-quasi constant features from a dataframe
+        Find constant and quasi-constant features.
 
         Parameters
         ----------
 
         X: pandas dataframe of shape = [n_samples, n_features]
-            The input dataframe
+            The input dataframe.
 
         y: None
             y is not needed for this transformer. You can pass y or None.
 
+
+        Attributes
+        ----------
+
+        constant_features_: list
+            The list of constant and quasi-constant features.
         """
 
         # check input dataframe
@@ -146,34 +149,19 @@ class DropConstantAndQuasiConstantFeatures(TransformerMixin, BaseEstimator):
         # find all variables or check those entered are present in the dataframe
         self.variables = _find_all_variables(X, self.variables)
 
-        if self.tol == 1:
+        # find constant and quasi-constant
+        self.constant_features_ = []
 
-            # constant features
-            constant_features = [feat for feat in self.variables if X[feat].nunique() == 1]
+        for feature in self.variables:
 
-            self.selected_features_ = [feat for feat in X.columns if feat not in constant_features]
+            predominant = (X[feature].value_counts() / np.float(len(X))).sort_values(ascending=False).values[0]
 
-            # if total constant features is equal to total features raise an error
-            if len(constant_features) == len(X.columns):
-                raise ValueError("The resulting dataframe will have no columns after dropping all constant features")
+            if predominant >= self.tol:
+                self.constant_features_.append(feature)
 
-        else:
-            constant_plus_quasi_constant_features = []
-            self.selected_features_ = []
-
-            for feat in self.variables:
-
-                predominant = (X[feat].value_counts() / np.float(len(X))).sort_values(ascending=False).values[0]
-
-                if predominant > self.tol:
-                    constant_plus_quasi_constant_features.append(feat)
-
-            # if total constant features is equal to total features raise an error
-            if len(constant_plus_quasi_constant_features) == len(X.columns):
-                raise ValueError("The resulting dataframe will have no columns after dropping "
-                                 "constant and quasi constant features")
-
-            self.selected_features_ = [feat for feat in X.columns if feat not in constant_plus_quasi_constant_features]
+        # if total constant features is equal to total features raise an error
+        if len(self.constant_features_) == len(X.columns):
+            raise ValueError("The resulting dataframe will have no columns after dropping all constant features.")
 
         self.input_shape_ = X.shape
 
@@ -181,13 +169,12 @@ class DropConstantAndQuasiConstantFeatures(TransformerMixin, BaseEstimator):
 
     def transform(self, X):
         """
-        Drops the constant and non-quasi constant features from a dataframe and returns the dataframe with
-        selected features.
+        Drops the constant and quasi-constant features from a dataframe.
 
         Parameters
         ----------
-        X: pandas dataframe
-            The input dataframe from which features will be dropped
+        X: ppandas dataframe of shape = [n_samples, n_features].
+            The input samples.
 
         Returns
         -------
@@ -206,6 +193,6 @@ class DropConstantAndQuasiConstantFeatures(TransformerMixin, BaseEstimator):
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         # returned selected features
-        X = X[self.selected_features_].copy()
+        X = X.drop(columns=self.constant_features_)
 
         return X
