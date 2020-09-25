@@ -1,11 +1,10 @@
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
-from feature_engine.feature_selection import DropFeatures, DropConstantAndQuasiConstantFeatures
+from feature_engine.feature_selection import DropFeatures, DropConstantFeatures
 
 
 def test_drop_features_drop_2_variables(dataframe_vartypes):
-
     transformer = DropFeatures(features_to_drop=["City", "dob"])
     X = transformer.fit_transform(dataframe_vartypes)
 
@@ -53,10 +52,9 @@ def test_drop_features_empty_list(dataframe_vartypes):
 
 
 # DropConstantAndQuasiConstantFeatures transformer tests
-def test_drop_constant_and_quasi_constant_features(dataframe_constant_quasi_constant):
-    # test case 1: only drop constant features
-    transformer = DropConstantAndQuasiConstantFeatures(tol=1, variables=None)
-    X = transformer.fit_transform(dataframe_constant_quasi_constant)
+def test_drop_constant_features(dataframe_constant_features):
+    transformer = DropConstantFeatures(tol=1, variables=None)
+    X = transformer.fit_transform(dataframe_constant_features)
 
     # expected result
     df = pd.DataFrame(
@@ -73,14 +71,17 @@ def test_drop_constant_and_quasi_constant_features(dataframe_constant_quasi_cons
     assert transformer.tol == 1
     assert transformer.variables == ['Name', 'City', 'Age', 'Marks', 'dob', 'const_feat_num',
                                      'const_feat_cat', 'quasi_feat_num', 'quasi_feat_cat']
-    # transform params
-    assert X.shape == (4, 7)
-    assert type(X) == pd.DataFrame
+    # fit attributes
+    assert transformer.constant_features_ == ['const_feat_num', 'const_feat_cat']
+    assert transformer.input_shape_ == (4, 9)
+
+    # transform output
     pd.testing.assert_frame_equal(X, df)
 
-    # test case 2: drop features showing threshold more than 0.7
-    transformer = DropConstantAndQuasiConstantFeatures(tol=0.7, variables=None)
-    X = transformer.fit_transform(dataframe_constant_quasi_constant)
+
+def test_drop_constant_and_quasiconstant_features(dataframe_constant_features):
+    transformer = DropConstantFeatures(tol=0.7, variables=None)
+    X = transformer.fit_transform(dataframe_constant_features)
 
     # expected result
     df = pd.DataFrame(
@@ -96,14 +97,17 @@ def test_drop_constant_and_quasi_constant_features(dataframe_constant_quasi_cons
     assert transformer.tol == 0.7
     assert transformer.variables == ['Name', 'City', 'Age', 'Marks', 'dob', 'const_feat_num',
                                      'const_feat_cat', 'quasi_feat_num', 'quasi_feat_cat']
+
+    # fit attr
+    assert transformer.constant_features_ == ['const_feat_num', 'const_feat_cat', 'quasi_feat_num', 'quasi_feat_cat']
+    assert transformer.input_shape_ == (4, 9)
+
     # transform params
-    assert X.shape == (4, 5)
-    assert type(X) == pd.DataFrame
     pd.testing.assert_frame_equal(X, df)
 
     # test case 3: drop features showing threshold more than 0.7 with variable list
-    transformer = DropConstantAndQuasiConstantFeatures(tol=0.7, variables=['Name', 'const_feat_num', 'quasi_feat_num'])
-    X = transformer.fit_transform(dataframe_constant_quasi_constant)
+    transformer = DropConstantFeatures(tol=0.7, variables=['Name', 'const_feat_num', 'quasi_feat_num'])
+    X = transformer.fit_transform(dataframe_constant_features)
 
     # expected result
     df = pd.DataFrame(
@@ -127,26 +131,24 @@ def test_drop_constant_and_quasi_constant_features(dataframe_constant_quasi_cons
 
     # test case 4: input is not a dataframe
     with pytest.raises(TypeError):
-        DropConstantAndQuasiConstantFeatures().fit({"Name": ["Karthik"]})
+        DropConstantFeatures().fit({"Name": ["Karthik"]})
 
     # test case 5: threshold not between 0 and 1
     with pytest.raises(ValueError):
-        transformer = DropConstantAndQuasiConstantFeatures(tol=2)
+        transformer = DropConstantFeatures(tol=2)
 
     # test case 6: when input contains all constant features
     with pytest.raises(ValueError):
-        DropConstantAndQuasiConstantFeatures().fit(pd.DataFrame({'col1': [1, 1, 1], 'col2': [1, 1, 1]}))
+        DropConstantFeatures().fit(pd.DataFrame({'col1': [1, 1, 1], 'col2': [1, 1, 1]}))
 
     # test case 7: when input contains all constant and quasi constant features
     with pytest.raises(ValueError):
-        transformer = DropConstantAndQuasiConstantFeatures(tol=0.7)
+        transformer = DropConstantFeatures(tol=0.7)
         transformer.fit_transform(pd.DataFrame({'col1': [1, 1, 1, 1], 'col2': [1, 1, 1, 1],
                                                 'col3': [1, 1, 1, 2], 'col4': [1, 1, 1, 2]
                                                 }))
 
     # test case 8: when fit is not called prior to transform
     with pytest.raises(NotFittedError):
-        transformer = DropConstantAndQuasiConstantFeatures()
-        transformer.transform(dataframe_constant_quasi_constant)
-
-
+        transformer = DropConstantFeatures()
+        transformer.transform(dataframe_constant_features)
