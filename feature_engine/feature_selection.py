@@ -173,7 +173,7 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X: ppandas dataframe of shape = [n_samples, n_features].
+        X: pandas dataframe of shape = [n_samples, n_features].
             The input samples.
 
         Returns
