@@ -7,6 +7,7 @@ Feature-engine's feature selection transformers are used to drop subsets of vari
 subsets of variables.
 
 .. toctree::
-   :maxdepth: 2
+   :max
 
    DropFeatures
+   DropConstantFeatures
