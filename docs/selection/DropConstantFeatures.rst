@@ -7,7 +7,7 @@ categorical variables.
 .. code:: python
 
     import numpy as np
-    import pandas as pds
+    import pandas as pd
     from sklearn.model_selection import train_test_split
 
     from feature_engine.feature_selection import DropConstantFeatures
@@ -43,6 +43,33 @@ categorical variables.
 .. code:: python
 
     ['parch', 'cabin', 'embarked']
+
+.. code:: python
+
+    X_train['embarked'].value_counts() / len(X_train)
+
+.. code:: python
+
+    S    0.711790
+    C    0.197598
+    Q    0.090611
+    Name: embarked, dtype: float64
+
+.. code:: python
+
+    X_train['parch'].value_counts() / len(X_train)
+
+.. code:: python
+
+    0    0.771834
+    1    0.125546
+    2    0.086245
+    3    0.005459
+    4    0.004367
+    5    0.003275
+    6    0.002183
+    9    0.001092
+    Name: parch, dtype: float64
 
 
 API Reference
