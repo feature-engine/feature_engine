@@ -10,3 +10,4 @@ subsets of variables.
    :maxdepth: 2
 
    DropFeatures
+   DropConstantFeatures
