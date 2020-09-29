@@ -75,5 +75,5 @@ categorical variables.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.feature_selection.DropConstantFeatures
+.. autoclass:: feature_engine.selection.DropConstantFeatures
     :members:
