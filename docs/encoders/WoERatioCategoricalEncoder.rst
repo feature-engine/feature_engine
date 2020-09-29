@@ -8,7 +8,7 @@ The weight of evidence is given by: np.log( p(1) / p(0) )
     
 The target probability ratio is given by: p(1) / p(0)
 
-The CountFrequencyCategoricalEncoder() works only with categorical variables. A list of variables can
+The WoERatioCategoricalEncoder() works only with categorical variables. A list of variables can
 be indicated, or the encoder will automatically select all categorical variables in the train set.
 
 .. code:: python
