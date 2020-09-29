@@ -67,5 +67,5 @@ entered by the user are present in the train set and cast as numerical.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.discretisers.UserInputDiscretiser
+.. autoclass:: feature_engine.discretisation.ArbitraryDiscretiser
     :members:

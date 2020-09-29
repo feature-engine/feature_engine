@@ -4,7 +4,7 @@ PowerTransformer
 API Reference
 -------------
 
-.. autoclass:: feature_engine.variable_transformers.PowerTransformer
+.. autoclass:: feature_engine.transformation.PowerTransformer
     :members:
 
 

@@ -6,13 +6,13 @@ import numpy as np
 import pandas as pd
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.missing_data_imputers import _define_seed
-from feature_engine.missing_data_imputers import MeanMedianImputer
-from feature_engine.missing_data_imputers import EndTailImputer
-from feature_engine.missing_data_imputers import ArbitraryNumberImputer
-from feature_engine.missing_data_imputers import CategoricalVariableImputer
-from feature_engine.missing_data_imputers import RandomSampleImputer
-from feature_engine.missing_data_imputers import AddMissingIndicator
+from feature_engine.imputation.random_sample import _define_seed
+from feature_engine.imputation import MeanMedianImputer
+from feature_engine.imputation import EndTailImputer
+from feature_engine.imputation import ArbitraryNumberImputer
+from feature_engine.imputation import CategoricalImputer
+from feature_engine.imputation import RandomSampleImputer
+from feature_engine.imputation import AddMissingIndicator
 
 
 def test_define_seed(dataframe_vartypes):
@@ -205,7 +205,7 @@ def test_ArbitraryNumberImputer(dataframe_na):
 def test_CategoricalVariableImputer(dataframe_na):
 
     # test case 1: imputation with missing + automatically select variables
-    imputer = CategoricalVariableImputer(imputation_method='missing', variables=None)
+    imputer = CategoricalImputer(imputation_method='missing', variables=None)
     X_transformed = imputer.fit_transform(dataframe_na)
 
     ref_df = dataframe_na.copy()
@@ -225,7 +225,7 @@ def test_CategoricalVariableImputer(dataframe_na):
     pd.testing.assert_frame_equal(X_transformed, ref_df)
     
     # test case 2: imputing custom user-defined string + automatically select variables
-    imputer = CategoricalVariableImputer(imputation_method='missing', fill_value='Unknown', variables=None)
+    imputer = CategoricalImputer(imputation_method='missing', fill_value='Unknown', variables=None)
     X_transformed = imputer.fit_transform(dataframe_na)
 
     ref_df = dataframe_na.copy()
@@ -246,7 +246,7 @@ def test_CategoricalVariableImputer(dataframe_na):
     pd.testing.assert_frame_equal(X_transformed, ref_df)
 
     # test case 3: mode imputation + user indicates 1 variable ONLY
-    imputer = CategoricalVariableImputer(imputation_method='frequent', variables='City')
+    imputer = CategoricalImputer(imputation_method='frequent', variables='City')
     X_transformed = imputer.fit_transform(dataframe_na)
 
     ref_df = dataframe_na.copy()
@@ -261,7 +261,7 @@ def test_CategoricalVariableImputer(dataframe_na):
     pd.testing.assert_frame_equal(X_transformed, ref_df)
 
     # test case 4: mode imputation + user indicates multiple variables
-    imputer = CategoricalVariableImputer(imputation_method='frequent', variables=['Studies', 'City'])
+    imputer = CategoricalImputer(imputation_method='frequent', variables=['Studies', 'City'])
     X_transformed = imputer.fit_transform(dataframe_na)
 
     ref_df = dataframe_na.copy()
@@ -273,7 +273,7 @@ def test_CategoricalVariableImputer(dataframe_na):
 
     # test case 5: imputing of numerical variables cast as object + return numeric
     dataframe_na['Marks'] = dataframe_na['Marks'].astype('O')
-    imputer = CategoricalVariableImputer(imputation_method='frequent', variables=['City', 'Studies', 'Marks'])
+    imputer = CategoricalImputer(imputation_method='frequent', variables=['City', 'Studies', 'Marks'])
     X_transformed = imputer.fit_transform(dataframe_na)
 
     ref_df = dataframe_na.copy()
@@ -287,20 +287,20 @@ def test_CategoricalVariableImputer(dataframe_na):
 
     # test case 6: imputing of numerical variables cast as object + return as object after imputation
     dataframe_na['Marks'] = dataframe_na['Marks'].astype('O')
-    imputer = CategoricalVariableImputer(imputation_method='frequent', variables=['City', 'Studies', 'Marks'],
-                                         return_object=True)
+    imputer = CategoricalImputer(imputation_method='frequent', variables=['City', 'Studies', 'Marks'],
+                                 return_object=True)
     X_transformed = imputer.fit_transform(dataframe_na)
     assert X_transformed['Marks'].dtype == 'O'
 
     with pytest.raises(ValueError):
-        imputer = CategoricalVariableImputer(imputation_method='arbitrary')
+        imputer = CategoricalImputer(imputation_method='arbitrary')
 
     with pytest.raises(ValueError):
-        imputer = CategoricalVariableImputer(imputation_method='frequent')
+        imputer = CategoricalImputer(imputation_method='frequent')
         imputer.fit(dataframe_na)
 
     with pytest.raises(NotFittedError):
-        imputer = CategoricalVariableImputer()
+        imputer = CategoricalImputer()
         imputer.transform(dataframe_na)
 
 

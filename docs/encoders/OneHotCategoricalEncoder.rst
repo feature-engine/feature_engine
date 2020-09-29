@@ -61,5 +61,5 @@ be indicated, or the encoder will automatically select all categorical variables
 API Reference
 -------------
 
-.. autoclass:: feature_engine.categorical_encoders.OneHotCategoricalEncoder
+.. autoclass:: feature_engine.encoding.OneHotEncoder
     :members:

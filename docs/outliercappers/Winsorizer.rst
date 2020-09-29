@@ -84,6 +84,6 @@ See the API Reference for more details.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.outlier_removers.Winsorizer
+.. autoclass:: feature_engine.outliers.Winsorizer
     :members:
 

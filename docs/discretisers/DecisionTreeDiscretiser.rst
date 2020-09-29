@@ -87,5 +87,5 @@ be indicated, or the imputer will automatically select all numerical variables i
 API Reference
 -------------
 
-.. autoclass:: feature_engine.discretisers.DecisionTreeDiscretiser
+.. autoclass:: feature_engine.discretisation.DecisionTreeDiscretiser
     :members:

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.outlier_removers import Winsorizer, ArbitraryOutlierCapper, OutlierTrimmer
+from feature_engine.outliers import Winsorizer, ArbitraryOutlierCapper, OutlierTrimmer
 
 
 def test_Windsorizer(dataframe_normal_dist, dataframe_na, dataframe_vartypes):

@@ -52,5 +52,5 @@ MathematicalCombinator
 API Reference
 -------------
 
-.. autoclass:: feature_engine.mathematical_combination.MathematicalCombinator
+.. autoclass:: feature_engine.creation.MathematicalCombination
     :members:

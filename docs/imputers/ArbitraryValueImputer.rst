@@ -44,5 +44,5 @@ A dictionary with variables and their arbitrary values can be indicated to use d
 API Reference
 -------------
 
-.. autoclass:: feature_engine.missing_data_imputers.ArbitraryNumberImputer
+.. autoclass:: feature_engine.imputation.ArbitraryNumberImputer
     :members:

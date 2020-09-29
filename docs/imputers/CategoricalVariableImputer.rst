@@ -39,5 +39,5 @@ automatically select all categorical variables in the train set.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.missing_data_imputers.CategoricalVariableImputer
+.. autoclass:: feature_engine.imputation.CategoricalImputer
     :members:

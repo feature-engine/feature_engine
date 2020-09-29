@@ -42,5 +42,5 @@ that show missing data in the train set, by setting the option how='missing_only
 API Reference
 -------------
 
-.. autoclass:: feature_engine.missing_data_imputers.AddMissingIndicator
+.. autoclass:: feature_engine.imputation.AddMissingIndicator
     :members:

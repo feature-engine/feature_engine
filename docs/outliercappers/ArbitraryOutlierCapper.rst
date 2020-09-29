@@ -66,5 +66,5 @@ For more details, read the API Reference below.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.outlier_removers.ArbitraryOutlierCapper
+.. autoclass:: feature_engine.outliers.ArbitraryOutlierCapper
     :members:

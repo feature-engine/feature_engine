@@ -81,5 +81,5 @@ be indicated, or the imputer will automatically select all numerical variables i
 API Reference
 -------------
 
-.. autoclass:: feature_engine.discretisers.EqualWidthDiscretiser
+.. autoclass:: feature_engine.discretisation.EqualWidthDiscretiser
     :members:

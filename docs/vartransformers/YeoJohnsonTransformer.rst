@@ -10,7 +10,7 @@ where Y is the response variable and λ is the transformation parameter.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.variable_transformers.YeoJohnsonTransformer
+.. autoclass:: feature_engine.transformation.YeoJohnsonTransformer
     :members:
 
 

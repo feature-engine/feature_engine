@@ -1,28 +1,28 @@
 import numpy as np
 import pandas as pd
 import pytest
-from feature_engine.categorical_encoders import DecisionTreeCategoricalEncoder
+from feature_engine.encoding import DecisionTreeEncoder
 
 
 def test_decisiontree_ordinal_encoding_method(dataframe_enc, dataframe_enc_na):
     # defaults
-    encoder = DecisionTreeCategoricalEncoder()
+    encoder = DecisionTreeEncoder()
     encoder.fit(dataframe_enc, dataframe_enc['target'])
     assert encoder.encoder_[0].encoding_method == 'arbitrary'
 
     # ordered encoding
-    encoder = DecisionTreeCategoricalEncoder(encoding_method='ordered')
+    encoder = DecisionTreeEncoder(encoding_method='ordered')
     encoder.fit(dataframe_enc[['var_A', 'var_B']], dataframe_enc['target'])
     assert encoder.encoder_[0].encoding_method == 'ordered'
 
     # incorrect input
     with pytest.raises(ValueError):
-        encoder = DecisionTreeCategoricalEncoder(encoding_method='other')
+        encoder = DecisionTreeEncoder(encoding_method='other')
         encoder.fit(dataframe_enc, dataframe_enc['target'])
 
 
 def test_decisiontree_classification(dataframe_enc, dataframe_enc_na):
-    encoder = DecisionTreeCategoricalEncoder(regression=False)
+    encoder = DecisionTreeEncoder(regression=False)
     encoder.fit(dataframe_enc[['var_A', 'var_B']], dataframe_enc['target'])
     X = encoder.transform(dataframe_enc[['var_A', 'var_B']])
 
@@ -35,7 +35,7 @@ def test_decisiontree_classification(dataframe_enc, dataframe_enc_na):
 def test_decisiontree_regression(dataframe_enc, dataframe_enc_na):
     random = np.random.RandomState(42)
     y = random.normal(0, 0.1, len(dataframe_enc))
-    encoder = DecisionTreeCategoricalEncoder(regression=True,
+    encoder = DecisionTreeEncoder(regression=True,
                                              random_state=random)
     encoder.fit(dataframe_enc[['var_A', 'var_B']], y)
     X = encoder.transform(dataframe_enc[['var_A', 'var_B']])

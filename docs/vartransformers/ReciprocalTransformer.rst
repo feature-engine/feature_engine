@@ -4,7 +4,7 @@ ReciprocalTransformer
 API Reference
 -------------
 
-.. autoclass:: feature_engine.variable_transformers.ReciprocalTransformer
+.. autoclass:: feature_engine.transformation.ReciprocalTransformer
     :members:
 
 
