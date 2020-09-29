@@ -52,5 +52,5 @@ a string or list of variables to be dropped.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.feature_selection.DropFeatures
+.. autoclass:: feature_engine.selection.DropFeatures
     :members:

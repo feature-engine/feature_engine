@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
-from feature_engine.feature_selection import DropFeatures, DropConstantFeatures
+from feature_engine.selection.drop_constant_features import DropConstantFeatures
+from feature_engine.selection.drop_features import DropFeatures
 
 
 def test_drop_features_drop_2_variables(dataframe_vartypes):
