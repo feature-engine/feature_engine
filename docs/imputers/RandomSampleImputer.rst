@@ -64,5 +64,5 @@ More details on how to use the RandomSampleImputer():
 API Reference
 -------------
 
-.. autoclass:: feature_engine.missing_data_imputers.RandomSampleImputer
+.. autoclass:: feature_engine.imputation.RandomSampleImputer
     :members:

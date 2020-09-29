@@ -86,5 +86,5 @@ You can also specify the maximum number of categories that can be considered fre
 API Reference
 -------------
 
-.. autoclass:: feature_engine.categorical_encoders.RareLabelCategoricalEncoder
+.. autoclass:: feature_engine.encoding.RareLabelEncoder
     :members:

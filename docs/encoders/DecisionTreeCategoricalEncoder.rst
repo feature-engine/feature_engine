@@ -90,5 +90,5 @@ variables are not combined.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.categorical_encoders.DecisionTreeCategoricalEncoder
+.. autoclass:: feature_engine.encoding.DecisionTreeEncoder
     :members:

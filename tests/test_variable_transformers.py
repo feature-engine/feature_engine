@@ -2,8 +2,8 @@ import pytest
 import pandas as pd
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.variable_transformers import LogTransformer, ReciprocalTransformer, PowerTransformer
-from feature_engine.variable_transformers import BoxCoxTransformer, YeoJohnsonTransformer
+from feature_engine.transformation import LogTransformer, ReciprocalTransformer, PowerTransformer
+from feature_engine.transformation import BoxCoxTransformer, YeoJohnsonTransformer
 
 
 def test_LogTransformer(dataframe_vartypes, dataframe_na):

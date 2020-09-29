@@ -4,7 +4,7 @@ LogTransformer
 API Reference
 -------------
 
-.. autoclass:: feature_engine.variable_transformers.LogTransformer
+.. autoclass:: feature_engine.transformation.LogTransformer
     :members:
 
 

@@ -4,11 +4,11 @@ import pandas as pd
 from sklearn.exceptions import NotFittedError
 from sklearn.datasets import load_boston
 
-from feature_engine.discretisers import (
+from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
     DecisionTreeDiscretiser,
-    UserInputDiscretiser
+    ArbitraryDiscretiser
 )
 
 
@@ -175,7 +175,7 @@ def test_DecisionTreeDiscretiser(dataframe_normal_dist, dataframe_vartypes, data
         transformer.transform(dataframe_vartypes)
 
 
-def test_UserInputDiscretise():
+def test_ArbitraryDiscretise():
     boston_dataset = load_boston()
     data = pd.DataFrame(boston_dataset.data, columns=boston_dataset.feature_names)
     user_dict = {'LSTAT': [0, 10, 20, 30, np.Inf]}
@@ -185,7 +185,7 @@ def test_UserInputDiscretise():
     data_t1['LSTAT'] = pd.cut(data['LSTAT'], bins=[0, 10, 20, 30, np.Inf])
     data_t2['LSTAT'] = pd.cut(data['LSTAT'], bins=[0, 10, 20, 30, np.Inf], labels=False)
 
-    transformer = UserInputDiscretiser(binning_dict=user_dict, return_object=False, return_boundaries=False)
+    transformer = ArbitraryDiscretiser(binning_dict=user_dict, return_object=False, return_boundaries=False)
     X = transformer.fit_transform(data)
 
     # init params
@@ -197,6 +197,6 @@ def test_UserInputDiscretise():
     # transform params
     pd.testing.assert_frame_equal(X, data_t2)
 
-    transformer = UserInputDiscretiser(binning_dict=user_dict, return_object=False, return_boundaries=True)
+    transformer = ArbitraryDiscretiser(binning_dict=user_dict, return_object=False, return_boundaries=True)
     X = transformer.fit_transform(data)
     pd.testing.assert_frame_equal(X, data_t1)

@@ -78,5 +78,5 @@ be indiacated, or the imputer will automatically select all numerical variables 
 API Reference
 -------------
 
-.. autoclass:: feature_engine.discretisers.EqualFrequencyDiscretiser
+.. autoclass:: feature_engine.discretisation.EqualFrequencyDiscretiser
     :members:

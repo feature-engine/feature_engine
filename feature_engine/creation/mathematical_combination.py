@@ -1,7 +1,7 @@
 from feature_engine.base_transformers import BaseNumericalTransformer
 
 
-class MathematicalCombinator(BaseNumericalTransformer):
+class MathematicalCombination(BaseNumericalTransformer):
     """
     The MathematicalCombinator() applies basic mathematical operations across features,
     returning 1 or more additional features as a result.

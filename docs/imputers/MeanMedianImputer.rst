@@ -42,5 +42,5 @@ select all numerical variables in the train set. For more details, check the API
 API Reference
 -------------
 
-.. autoclass:: feature_engine.missing_data_imputers.MeanMedianImputer
+.. autoclass:: feature_engine.imputation.MeanMedianImputer
     :members:

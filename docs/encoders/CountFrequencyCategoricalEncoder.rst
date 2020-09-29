@@ -69,5 +69,5 @@ be indicated, or the encoder will automatically select all categorical variables
 API Reference
 -------------
 
-.. autoclass:: feature_engine.categorical_encoders.CountFrequencyCategoricalEncoder
+.. autoclass:: feature_engine.encoding.CountFrequencyEncoder
     :members:

@@ -51,5 +51,5 @@ select all numerical variables in the train set.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.missing_data_imputers.EndTailImputer
+.. autoclass:: feature_engine.imputation.EndTailImputer
     :members:

@@ -84,5 +84,5 @@ See the API Reference for more details.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.outlier_removers.OutlierTrimmer
+.. autoclass:: feature_engine.outliers.OutlierTrimmer
     :members:

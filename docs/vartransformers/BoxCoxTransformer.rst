@@ -11,7 +11,7 @@ In the transformation, all values of λ are considered and the optimal value for
 API Reference
 -------------
 
-.. autoclass:: feature_engine.variable_transformers.BoxCoxTransformer
+.. autoclass:: feature_engine.transformation.BoxCoxTransformer
     :members:
 
 Example Use
