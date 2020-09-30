@@ -108,48 +108,48 @@ Feature-engine's Transformers
 Missing Data Imputation: Imputers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`imputers/MeanMedianImputer`: replaces missing data in numerical variables by the mean or median
-- :doc:`imputers/ArbitraryValueImputer`: replaces missing data in numerical variables by an arbitrary value
-- :doc:`imputers/EndTailImputer`: replaces missing data in numerical variables by numbers at the distribution tails
-- :doc:`imputers/CategoricalVariableImputer`: replaces missing data in categorical variables with the string 'Missing' or by the most frequent category
-- :doc:`imputers/RandomSampleImputer`: replaces missing data with random samples of the variable
-- :doc:`imputers/AddMissingIndicator`: adds a binary missing indicator to flag observations with missing data
+- :doc:`imputation/MeanMedianImputer`: replaces missing data in numerical variables by the mean or median
+- :doc:`imputation/ArbitraryNumberImputer`: replaces missing data in numerical variables by an arbitrary value
+- :doc:`imputation/EndTailImputer`: replaces missing data in numerical variables by numbers at the distribution tails
+- :doc:`imputation/CategoricalImputer`: replaces missing data in categorical variables with the string 'Missing' or by the most frequent category
+- :doc:`imputation/RandomSampleImputer`: replaces missing data with random samples of the variable
+- :doc:`imputation/AddMissingIndicator`: adds a binary missing indicator to flag observations with missing data
 
 Categorical Variable Encoders: Encoders
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`encoders/OneHotCategoricalEncoder`: performs one hot encoding, optional: of popular categories
-- :doc:`encoders/CountFrequencyCategoricalEncoder`: replaces categories by observation count or percentage
-- :doc:`encoders/OrdinalCategoricalEncoder`: replaces categories by numbers arbitrarily or ordered by target
-- :doc:`encoders/MeanCategoricalEncoder`: replaces categories by the target mean
-- :doc:`encoders/WoERatioCategoricalEncoder`: replaces categories by the weight of evidence
-- :doc:`encoders/DecisionTreeCategoricalEncoder`: replaces categories by predictions of a decision tree
-- :doc:`encoders/RareLabelCategoricalEncoder`: groups infrequent categories
+- :doc:`encoding/OneHotEncoder`: performs one hot encoding, optional: of popular categories
+- :doc:`encoding/CountFrequencyEncoder`: replaces categories by observation count or percentage
+- :doc:`encoding/OrdinalEncoder`: replaces categories by numbers arbitrarily or ordered by target
+- :doc:`encoding/MeanEncoder`: replaces categories by the target mean
+- :doc:`encoding/WoEEncoder`: replaces categories by the weight of evidence
+- :doc:`encoding/DecisionTreeEncoder`: replaces categories by predictions of a decision tree
+- :doc:`encoding/RareLabelEncoder`: groups infrequent categories
 
 Numerical Variable Transformation: Transformers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`vartransformers/LogTransformer`: performs logarithmic transformation of numerical variables
-- :doc:`vartransformers/ReciprocalTransformer`: performs reciprocal transformation of numerical variables
-- :doc:`vartransformers/PowerTransformer`: performs power transformation of numerical variables
-- :doc:`vartransformers/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables
-- :doc:`vartransformers/YeoJohnsonTransformer`: performs Yeo-Johnson transformation of numerical variables
+- :doc:`transformation/LogTransformer`: performs logarithmic transformation of numerical variables
+- :doc:`transformation/ReciprocalTransformer`: performs reciprocal transformation of numerical variables
+- :doc:`transformation/PowerTransformer`: performs power transformation of numerical variables
+- :doc:`transformation/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables
+- :doc:`transformation/YeoJohnsonTransformer`: performs Yeo-Johnson transformation of numerical variables
 
 Variable Discretisation: Discretisers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`discretisers/EqualFrequencyDiscretiser`: sorts variable into equal frequency intervals
-- :doc:`discretisers/EqualWidthDiscretiser`: sorts variable into equal size contiguous intervals
-- :doc:`discretisers/DecisionTreeDiscretiser`: uses decision trees to create finite variables
-- :doc:`discretisers/UserInputDiscretiser`: allows the user to arbitrarily define the intervals
+- :doc:`discretisation/EqualFrequencyDiscretiser`: sorts variable into equal frequency intervals
+- :doc:`discretisation/EqualWidthDiscretiser`: sorts variable into equal size contiguous intervals
+- :doc:`discretisation/DecisionTreeDiscretiser`: uses decision trees to create finite variables
+- :doc:`discretisation/ArbitraryDiscretiser`: allows the user to arbitrarily define the intervals
 
 
 Outlier Capping or Removal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  :doc:`outliercappers/Winsorizer`: caps maximum or minimum values using statistical parameters
--  :doc:`outliercappers/ArbitraryOutlierCapper`: caps maximum and minimum values at user defined values
--  :doc:`outliercappers/OutlierTrimmer`: removes outliers from the dataset
+-  :doc:`outliers/Winsorizer`: caps maximum or minimum values using statistical parameters
+-  :doc:`outliers/ArbitraryOutlierCapper`: caps maximum and minimum values at user defined values
+-  :doc:`outliers/OutlierTrimmer`: removes outliers from the dataset
 
 Scikit-learn Wrapper:
 ~~~~~~~~~~~~~~~~~~~~~
@@ -159,7 +159,7 @@ Scikit-learn Wrapper:
 Mathematical Combination:
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  :doc:`mathematical_combination/MathematicalCombinator`: applies basic mathematical operations across features
+-  :doc:`creation/MathematicalCombination`: applies basic mathematical operations across features
 
 Feature Selection:
 ~~~~~~~~~~~~~~~~~~
@@ -201,14 +201,14 @@ Feature-engine is hosted on `GitHub <https://github.com/solegalli/feature_engine
    
    quickstart
    datasets
-   imputers/index
-   encoders/index
-   vartransformers/index
-   discretisers/index
-   outliercappers/index
-   wrappers/index
-   mathematical_combination/index
+   imputation/index
+   encoding/index
+   transformation/index
+   discretisation/index
+   outliers/index
+   creation/index
    selection/index
+   wrappers/index
    contributing/index
    code_of_conduct
    governance

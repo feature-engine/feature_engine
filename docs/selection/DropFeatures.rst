@@ -10,7 +10,7 @@ a string or list of variables to be dropped.
     import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
 
-    from feature_engine.feature_selection import DropFeatures
+    from feature_engine.selection import DropFeatures
 
     # Load dataset
     def load_titanic():
