@@ -10,7 +10,7 @@ categorical variables.
     import pandas as pd
     from sklearn.model_selection import train_test_split
 
-    from feature_engine.feature_selection import DropConstantFeatures
+    from feature_engine.selection import DropConstantFeatures
 
     # Load dataset
     def load_titanic():
