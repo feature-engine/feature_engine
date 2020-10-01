@@ -54,7 +54,7 @@ class Winsorizer(BaseEstimator, TransformerMixin):
 
     If distribution='gaussian' fold gives the value to multiply the std.
 
-    If distribution='skewed' fold is the value to multiply the IQR.
+    If distribution='iqr' fold is the value to multiply the IQR.
 
     If distribution='quantile', fold is the percentile on each tail that should
     be censored. For example, if fold=0.05, the limits will be the 5th and 95th
@@ -68,13 +68,13 @@ class Winsorizer(BaseEstimator, TransformerMixin):
     Parameters
     ----------
     
-    distribution : str, default=gaussian
-        Desired distribution. Can take 'gaussian', 'skewed' or 'quantiles'.
+    capping_method : str, default=gaussian
+        Desired distribution. Can take 'gaussian', 'iqr' or 'quantiles'.
 
         gaussian: the transformer will find the maximum and / or minimum values to
         cap the variables using the Gaussian approximation.
 
-        skewed: the transformer will find the boundaries using the IQR proximity rule.
+        iqr: the transformer will find the boundaries using the IQR proximity rule.
 
         quantiles: the limits are given by the percentiles.
         
@@ -107,10 +107,10 @@ class Winsorizer(BaseEstimator, TransformerMixin):
     	datasets contain missing values.
     """
 
-    def __init__(self, distribution='gaussian', tail='right', fold=3, variables=None, missing_values='raise'):
+    def __init__(self, capping_method='gaussian', tail='right', fold=3, variables=None, missing_values='raise'):
 
-        if distribution not in ['gaussian', 'skewed', 'quantiles']:
-            raise ValueError("distribution takes only values 'gaussian', 'skewed' or 'quantiles'")
+        if capping_method not in ['gaussian', 'iqr', 'quantiles']:
+            raise ValueError("distribution takes only values 'gaussian', 'iqr' or 'quantiles'")
 
         if tail not in ['right', 'left', 'both']:
             raise ValueError("tail takes only values 'right', 'left' or 'both'")
@@ -118,13 +118,13 @@ class Winsorizer(BaseEstimator, TransformerMixin):
         if fold <= 0:
             raise ValueError("fold takes only positive numbers")
 
-        if distribution == 'quantiles' and fold > 0.2:
+        if capping_method == 'quantiles' and fold > 0.2:
             raise ValueError("with distribution='quantiles', fold takes values between 0 and 0.20 only.")
 
         if missing_values not in ['raise', 'ignore']:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'")
 
-        self.distribution = distribution
+        self.capping_method = capping_method
         self.tail = tail
         self.fold = fold
         self.variables = _define_variables(variables)
@@ -170,25 +170,25 @@ class Winsorizer(BaseEstimator, TransformerMixin):
 
         # estimate the end values
         if self.tail in ['right', 'both']:
-            if self.distribution == 'gaussian':
+            if self.capping_method == 'gaussian':
                 self.right_tail_caps_ = (X[self.variables].mean() + self.fold * X[self.variables].std()).to_dict()
 
-            elif self.distribution == 'skewed':
+            elif self.capping_method == 'iqr':
                 IQR = X[self.variables].quantile(0.75) - X[self.variables].quantile(0.25)
                 self.right_tail_caps_ = (X[self.variables].quantile(0.75) + (IQR * self.fold)).to_dict()
 
-            elif self.distribution == 'quantiles':
+            elif self.capping_method == 'quantiles':
                 self.right_tail_caps_ = X[self.variables].quantile(1 - self.fold).to_dict()
 
         if self.tail in ['left', 'both']:
-            if self.distribution == 'gaussian':
+            if self.capping_method == 'gaussian':
                 self.left_tail_caps_ = (X[self.variables].mean() - self.fold * X[self.variables].std()).to_dict()
 
-            elif self.distribution == 'skewed':
+            elif self.capping_method == 'iqr':
                 IQR = X[self.variables].quantile(0.75) - X[self.variables].quantile(0.25)
                 self.left_tail_caps_ = (X[self.variables].quantile(0.25) - (IQR * self.fold)).to_dict()
 
-            elif self.distribution == 'quantiles':
+            elif self.capping_method == 'quantiles':
                 self.left_tail_caps_ = X[self.variables].quantile(self.fold).to_dict()
 
         self.input_shape_ = X.shape

@@ -8,7 +8,7 @@ from feature_engine.imputation import EndTailImputer
 def test_EndTailImputer(dataframe_na):
 
     # test case 1: automatically find variables + gaussian limits + right tail
-    imputer = EndTailImputer(distribution='gaussian', tail='right', fold=3, variables=None)
+    imputer = EndTailImputer(imputation_method='gaussian', tail='right', fold=3, variables=None)
     X_transformed = imputer.fit_transform(dataframe_na)
 
     ref_df = dataframe_na.copy()
@@ -16,7 +16,7 @@ def test_EndTailImputer(dataframe_na):
     ref_df['Marks'] = ref_df['Marks'].fillna(1.3244261503263175)
 
     # init params
-    assert imputer.distribution == 'gaussian'
+    assert imputer.imputation_method == 'gaussian'
     assert imputer.tail == 'right'
     assert imputer.fold == 3
     assert imputer.variables == ['Age', 'Marks']
@@ -29,7 +29,7 @@ def test_EndTailImputer(dataframe_na):
     pd.testing.assert_frame_equal(X_transformed, ref_df)
 
     # test case 2: selected variables + IQR rule + right tail
-    imputer = EndTailImputer(distribution='skewed', tail='right', fold=1.5, variables=['Age', 'Marks'])
+    imputer = EndTailImputer(imputation_method='iqr', tail='right', fold=1.5, variables=['Age', 'Marks'])
     X_transformed = imputer.fit_transform(dataframe_na)
 
     ref_df = dataframe_na.copy()
@@ -41,22 +41,22 @@ def test_EndTailImputer(dataframe_na):
     pd.testing.assert_frame_equal(X_transformed, ref_df)
 
     # test case 3: selected variables + maximum value
-    imputer = EndTailImputer(distribution='max', tail='right', fold=2, variables=['Age', 'Marks'])
+    imputer = EndTailImputer(imputation_method='max', tail='right', fold=2, variables=['Age', 'Marks'])
     imputer.fit(dataframe_na)
     assert imputer.imputer_dict_ == {'Age': 82.0, 'Marks': 1.8}
 
     # test case 4: automatically select variables + gaussian limits + left tail
-    imputer = EndTailImputer(distribution='gaussian', tail='left', fold=3)
+    imputer = EndTailImputer(imputation_method='gaussian', tail='left', fold=3)
     imputer.fit(dataframe_na)
     assert imputer.imputer_dict_ == {'Age': -1.520509756212462, 'Marks': 0.04224051634034898}
 
     # test case 5: IQR + left tail
-    imputer = EndTailImputer(distribution='skewed', tail='left', fold=1.5, variables=['Age', 'Marks'])
+    imputer = EndTailImputer(imputation_method='iqr', tail='left', fold=1.5, variables=['Age', 'Marks'])
     imputer.fit(dataframe_na)
     assert imputer.imputer_dict_ == {'Age': -6.5, 'Marks': 0.36249999999999993}
 
     with pytest.raises(ValueError):
-        EndTailImputer(distribution='arbitrary')
+        EndTailImputer(imputation_method='arbitrary')
 
     with pytest.raises(ValueError):
         EndTailImputer(tail='arbitrary')

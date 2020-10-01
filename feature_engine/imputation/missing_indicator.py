@@ -32,14 +32,14 @@ class AddMissingIndicator(BaseEstimator, TransformerMixin):
     Parameters
     ----------
 
-    how : string, defatul='missing_only'
+    missing_only : bool, defatult=True
         Indicates if missing indicators should be added to variables with missing
         data or to all variables.
 
-        missing_only: indicators will be created only for those variables that showed
+        True: indicators will be created only for those variables that showed
         missing data during fit.
 
-        all: indicators will be created for all variables
+        False: indicators will be created for all variables
 
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will find and
@@ -49,13 +49,13 @@ class AddMissingIndicator(BaseEstimator, TransformerMixin):
         that show missing data in during fit.
     """
 
-    def __init__(self, how='missing_only', variables=None):
+    def __init__(self, missing_only=True, variables=None):
 
-        if how not in ['missing_only', 'all']:
-            raise ValueError("how takes only values 'missing_only' or 'all'")
+        if not isinstance(missing_only, bool):
+            raise ValueError("missing_only takes values True or False")
 
         self.variables = _define_variables(variables)
-        self.how = how
+        self.missing_only = missing_only
 
     def fit(self, X, y=None):
         """
@@ -81,13 +81,13 @@ class AddMissingIndicator(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # find variables for which indicator should be added
-        if self.how == 'missing_only':
+        if self.missing_only:
             if not self.variables:
                 self.variables_ = [var for var in X.columns if X[var].isnull().sum() > 0]
             else:
                 self.variables_ = [var for var in self.variables if X[var].isnull().sum() > 0]
 
-        elif self.how == 'all':
+        else:
             if not self.variables:
                 self.variables_ = [var for var in X.columns]
             else:

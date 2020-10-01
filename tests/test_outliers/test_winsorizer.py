@@ -8,14 +8,14 @@ from feature_engine.outliers import Winsorizer
 
 def test_Windsorizer(dataframe_normal_dist, dataframe_na, dataframe_vartypes):
     # test case 1: mean and std, right tail
-    transformer = Winsorizer(distribution='gaussian', tail='right', fold=1)
+    transformer = Winsorizer(capping_method='gaussian', tail='right', fold=1)
     X = transformer.fit_transform(dataframe_normal_dist)
 
     df_transf = dataframe_normal_dist.copy()
     df_transf['var'] = np.where(df_transf['var'] > 0.10727677848029868, 0.10727677848029868, df_transf['var'])
 
     # init params
-    assert transformer.distribution == 'gaussian'
+    assert transformer.capping_method == 'gaussian'
     assert transformer.tail == 'right'
     assert transformer.fold == 1
     # fit params
@@ -28,7 +28,7 @@ def test_Windsorizer(dataframe_normal_dist, dataframe_na, dataframe_vartypes):
     assert dataframe_normal_dist['var'].max() > 0.10727677848029868
 
     # test case 2: mean and std, both tails, different fold value
-    transformer = Winsorizer(distribution='gaussian', tail='both', fold=2)
+    transformer = Winsorizer(capping_method='gaussian', tail='both', fold=2)
     X = transformer.fit_transform(dataframe_normal_dist)
 
     df_transf = dataframe_normal_dist.copy()
@@ -46,7 +46,7 @@ def test_Windsorizer(dataframe_normal_dist, dataframe_na, dataframe_vartypes):
     assert dataframe_normal_dist['var'].min() < -0.19661115230025186
 
     # test case 3: IQR, both tails, fold 1
-    transformer = Winsorizer(distribution='skewed', tail='both', fold=1)
+    transformer = Winsorizer(capping_method='iqr', tail='both', fold=1)
     X = transformer.fit_transform(dataframe_normal_dist)
 
     df_transf = dataframe_normal_dist.copy()
@@ -64,7 +64,7 @@ def test_Windsorizer(dataframe_normal_dist, dataframe_na, dataframe_vartypes):
     assert dataframe_normal_dist['var'].min() < -0.20247907173293223
 
     # test case 4: IQR, left tail, fold 2
-    transformer = Winsorizer(distribution='skewed', tail='left', fold=0.8)
+    transformer = Winsorizer(capping_method='iqr', tail='left', fold=0.8)
     X = transformer.fit_transform(dataframe_normal_dist)
 
     df_transf = dataframe_normal_dist.copy()
@@ -79,7 +79,7 @@ def test_Windsorizer(dataframe_normal_dist, dataframe_na, dataframe_vartypes):
     assert dataframe_normal_dist['var'].min() < -0.17486039103044
 
     # test case 5: quantiles, both tails, fold 10%
-    transformer = Winsorizer(distribution='quantiles', tail='both', fold=0.1)
+    transformer = Winsorizer(capping_method='quantiles', tail='both', fold=0.1)
     X = transformer.fit_transform(dataframe_normal_dist)
 
     df_transf = dataframe_normal_dist.copy()
@@ -97,7 +97,7 @@ def test_Windsorizer(dataframe_normal_dist, dataframe_na, dataframe_vartypes):
     assert dataframe_normal_dist['var'].min() < -0.12366227743232801
 
     # test case 6: quantiles, right tail, fold 15%
-    transformer = Winsorizer(distribution='quantiles', tail='right', fold=0.15)
+    transformer = Winsorizer(capping_method='quantiles', tail='right', fold=0.15)
     X = transformer.fit_transform(dataframe_normal_dist)
 
     df_transf = dataframe_normal_dist.copy()
@@ -112,7 +112,7 @@ def test_Windsorizer(dataframe_normal_dist, dataframe_na, dataframe_vartypes):
     assert dataframe_normal_dist['var'].max() > 0.11823196128033647
 
     # test case 7: dataset contains na and transformer is asked to ignore them
-    transformer = Winsorizer(distribution='gaussian', tail='right', fold=1,
+    transformer = Winsorizer(capping_method='gaussian', tail='right', fold=1,
                              variables=['Age', 'Marks'],
                              missing_values='ignore')
     X = transformer.fit_transform(dataframe_na)
@@ -132,7 +132,7 @@ def test_Windsorizer(dataframe_normal_dist, dataframe_na, dataframe_vartypes):
 
     # test error raises
     with pytest.raises(ValueError):
-        Winsorizer(distribution='other')
+        Winsorizer(capping_method='other')
 
     with pytest.raises(ValueError):
         Winsorizer(tail='other')
@@ -144,7 +144,7 @@ def test_Windsorizer(dataframe_normal_dist, dataframe_na, dataframe_vartypes):
         Winsorizer(fold=-1)
 
     with pytest.raises(ValueError):
-        Winsorizer(distribution='quantiles', fold=0.3)
+        Winsorizer(capping_method='quantiles', fold=0.3)
 
     # test case 8: when dataset contains na, fit method
     with pytest.raises(ValueError):
