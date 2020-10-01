@@ -9,7 +9,7 @@ from feature_engine.outliers import OutlierTrimmer
 
 def test_OutlierTrimmer(dataframe_normal_dist, dataframe_na):
     # test case 1: mean and std, right tail
-    transformer = OutlierTrimmer(distribution='gaussian', tail='right', fold=1)
+    transformer = OutlierTrimmer(capping_method='gaussian', tail='right', fold=1)
     X = transformer.fit_transform(dataframe_normal_dist)
 
     df_transf = dataframe_normal_dist.copy()
@@ -21,12 +21,12 @@ def test_OutlierTrimmer(dataframe_normal_dist, dataframe_na):
     assert len(X) == 83
 
     # test case 2: mean and std, both tails, different fold value
-    transformer = OutlierTrimmer(distribution='gaussian', tail='both', fold=2)
+    transformer = OutlierTrimmer(capping_method='gaussian', tail='both', fold=2)
     X = transformer.fit_transform(dataframe_normal_dist)
     assert len(X) == 96
 
     # test case 3: IQR, left tail, fold 2
-    transformer = OutlierTrimmer(distribution='skewed', tail='left', fold=0.8)
+    transformer = OutlierTrimmer(capping_method='iqr', tail='left', fold=0.8)
     X = transformer.fit_transform(dataframe_normal_dist)
 
     df_transf = dataframe_normal_dist.copy()
@@ -37,7 +37,7 @@ def test_OutlierTrimmer(dataframe_normal_dist, dataframe_na):
     assert len(X) == 98
 
     # test case 4: dataset contains na, and transformer is asked to ignore
-    transformer = OutlierTrimmer(distribution='gaussian', tail='right', fold=1,
+    transformer = OutlierTrimmer(capping_method='gaussian', tail='right', fold=1,
                                  variables=['Age'], missing_values='ignore')
     X = transformer.fit_transform(dataframe_na)
 

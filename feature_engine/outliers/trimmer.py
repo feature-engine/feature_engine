@@ -56,7 +56,7 @@ class OutlierTrimmer(Winsorizer):
 
     If distribution='gaussian' fold gives the value to multiply the std.
 
-    If distribution='skewed' fold is the value to multiply the IQR.
+    If distribution='iqr' fold is the value to multiply the IQR.
 
     If distribution='quantile', fold is the percentile on each tail that should
     be censored. For example, if fold=0.05, the limits will be the 5th and 95th
@@ -72,12 +72,12 @@ class OutlierTrimmer(Winsorizer):
     ----------
 
     distribution : str, default=gaussian
-        Desired distribution. Can take 'gaussian', 'skewed' or 'quantiles'.
+        Desired distribution. Can take 'gaussian', 'iqr' or 'quantiles'.
 
         gaussian: the transformer will find the maximum and / or minimum values to
         cap the variables using the Gaussian approximation.
 
-        skewed: the transformer will find the boundaries using the IQR proximity rule.
+        iqr: the transformer will find the boundaries using the IQR proximity rule.
 
         quantiles: the limits are given by the percentiles.
 

@@ -55,14 +55,14 @@ class EndTailImputer(BaseImputer):
     Parameters
     ----------
 
-    distribution : str, default=gaussian
+    imputation_method : str, default=gaussian
         Method to be used to find the replacement values. Can take 'gaussian',
-        'skewed' or 'max'.
+        'iqr' or 'max'.
 
         gaussian: the imputer will use the Gaussian limits to find the values
         to replace missing data.
 
-        skewed: the imputer will use the IQR limits to find the values to replace
+        iqr: the imputer will use the IQR limits to find the values to replace
         missing data.
 
         max: the imputer will use the maximum values to replace missing data. Note
@@ -81,10 +81,10 @@ class EndTailImputer(BaseImputer):
         select all variables of type numeric.
     """
 
-    def __init__(self, distribution='gaussian', tail='right', fold=3, variables=None):
+    def __init__(self, imputation_method='gaussian', tail='right', fold=3, variables=None):
 
-        if distribution not in ['gaussian', 'skewed', 'max']:
-            raise ValueError("distribution takes only values 'gaussian', 'skewed' or 'max'")
+        if imputation_method not in ['gaussian', 'iqr', 'max']:
+            raise ValueError("distribution takes only values 'gaussian', 'iqr' or 'max'")
 
         if tail not in ['right', 'left']:
             raise ValueError("tail takes only values 'right' or 'left'")
@@ -92,7 +92,7 @@ class EndTailImputer(BaseImputer):
         if fold <= 0:
             raise ValueError("fold takes only positive numbers")
 
-        self.distribution = distribution
+        self.imputation_method = imputation_method
         self.tail = tail
         self.fold = fold
         self.variables = _define_variables(variables)
@@ -126,16 +126,16 @@ class EndTailImputer(BaseImputer):
         self.variables = _find_numerical_variables(X, self.variables)
 
         # estimate imputation values
-        if self.distribution == 'max':
+        if self.imputation_method == 'max':
             self.imputer_dict_ = (X[self.variables].max() * self.fold).to_dict()
 
-        elif self.distribution == 'gaussian':
+        elif self.imputation_method == 'gaussian':
             if self.tail == 'right':
                 self.imputer_dict_ = (X[self.variables].mean() + self.fold * X[self.variables].std()).to_dict()
             elif self.tail == 'left':
                 self.imputer_dict_ = (X[self.variables].mean() - self.fold * X[self.variables].std()).to_dict()
 
-        elif self.distribution == 'skewed':
+        elif self.imputation_method == 'iqr':
             IQR = X[self.variables].quantile(0.75) - X[self.variables].quantile(0.25)
             if self.tail == 'right':
                 self.imputer_dict_ = (X[self.variables].quantile(0.75) + (IQR * self.fold)).to_dict()
