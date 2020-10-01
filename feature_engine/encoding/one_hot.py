@@ -2,24 +2,13 @@
 # License: BSD 3 clause
 
 import numpy as np
-import pandas as pd
-import warnings
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df, _check_contains_na
 from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables
-from feature_engine.base_transformers import BaseCategoricalTransformer
-
-
-def _check_encoding_dictionary(dictionary):
-    # check that there is a dictionary with category to number pairs
-    if len(dictionary) == 0:
-        raise ValueError('Encoder could not be fitted. Check the parameters and the variables '
-                         'in your dataframe.')
-    return dictionary
+from feature_engine.encoding.base_encoder import _check_encoding_dictionary
 
 
 class OneHotEncoder(BaseEstimator, TransformerMixin):
@@ -114,8 +103,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # find categorical variables or check that those entered by the user
-        # are of type object
+        # find categorical variables or check that variables entered by user are of type object
         self.variables = _find_categorical_variables(X, self.variables)
 
         # check if dataset contains na
@@ -166,8 +154,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables)
 
-        # Check that the dataframe contains the same number of columns than the dataframe
-        # used to fit the imputer.
+        # Check that input data contains same number of columns as dataframe used to fit
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         for feature in self.variables:

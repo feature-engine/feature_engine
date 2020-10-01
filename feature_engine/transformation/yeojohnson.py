@@ -1,7 +1,6 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import numpy as np
 import scipy.stats as stats
 
 from feature_engine.variable_manipulation import _define_variables

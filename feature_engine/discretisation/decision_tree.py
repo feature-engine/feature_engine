@@ -1,8 +1,6 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import pandas as pd
-
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
 
