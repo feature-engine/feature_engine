@@ -2,13 +2,7 @@
 # License: BSD 3 clause
 
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
-
-from feature_engine.variable_manipulation import (
-    _define_variables,
-    _find_numerical_variables
-)
 
 from feature_engine.dataframe_checks import (
     _is_dataframe,

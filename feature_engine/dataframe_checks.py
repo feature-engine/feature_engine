@@ -3,6 +3,7 @@
 
 import pandas as pd
 
+
 def _is_dataframe(X):
     # checks if the input is a dataframe. Also creates a copy,
     # important not to transform the original dataset.
@@ -15,8 +16,8 @@ def _check_input_matches_training_df(X, reference):
     # check that dataframe to transform has the same number of columns
     # that the dataframe used during fit method
     if X.shape[1] != reference:
-        raise ValueError('The number of columns in this data set is different from that of the train set used during'
-                         'the fit method')
+        raise ValueError('The number of columns in this data set is different from the one used to fit this '
+                         'transformer (when using the fit method)')
     return None
 
 

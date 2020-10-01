@@ -1,19 +1,12 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import numpy as np
-
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
-
-from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.variable_manipulation import (
     _find_categorical_variables,
-    _define_variables,
-    _find_numerical_variables,
-    _define_numerical_dict
+    _define_variables
 )
-from feature_engine.base_transformers import BaseImputer
+from feature_engine.imputation.base_imputer import BaseImputer
 
 
 class CategoricalImputer(BaseImputer):
