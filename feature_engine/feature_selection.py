@@ -218,17 +218,17 @@ class DropCorrelated(BaseEstimator, TransformerMixin):
     """
     def __init__(self, cols=None, threshold=0.9):
         self.cols = cols
-        self.threshold=threshold
-        self.keeped_cols=[]
+        self.threshold = threshold
+        self.keeped_cols = []
 
     def fit(self, df, y=None, **fit_params):
         if self.cols is None:
             self.cols = list(df.select_dtypes(include=['int','float']).columns)
         c = df.loc[:, self.cols].corr().abs().unstack()
-        s= c[c>self.threshold]
-        so=s[s.index.get_level_values(0)!=s.index.get_level_values(1)]
-        self.cols=list(set(so.drop_duplicates().index.get_level_values(0)))
-        self.keeped_cols=list(set(df.columns).difference(self.cols))
+        s = c[c>self.threshold]
+        so = s[s.index.get_level_values(0)!=s.index.get_level_values(1)]
+        self.cols = list(set(so.drop_duplicates().index.get_level_values(0)))
+        self.keeped_cols = list(set(df.columns).difference(self.cols))
         return self
 
     def transform(self, df, **transform_params):
