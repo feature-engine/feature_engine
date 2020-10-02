@@ -2,6 +2,31 @@ import pytest
 import numpy as np
 import pandas as pd
 
+@pytest.fixture(scope="module")
+def dataframe_correlated():
+    data = {
+            'name': ["jean", "tony", "alfred", "martine"],
+            'var1': [20, 21, 19, 18],
+            'var2': [19, 20, 18, 16],
+            'var3': [1, 1, 1, 1],
+            'var4': [19, 20, 18, 16],
+            }
+
+    df = pd.DataFrame(data)
+    return df
+
+@pytest.fixture(scope="module")
+def dataframe_no_correlated():
+    data = {
+            'name': ["jean", "tony", "alfred", "martine"],
+            'var1': [20, 21, 19, 18],
+            'var2': [7, 20, 18, -5],
+            'var3': [1, 1, 1, 1],
+            'var4': [15, -8, 0, -32],
+            }
+
+    df = pd.DataFrame(data)
+    return df
 
 @pytest.fixture(scope="module")
 def dataframe_vartypes():

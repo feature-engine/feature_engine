@@ -196,3 +196,42 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
         X = X.drop(columns=self.constant_features_)
 
         return X
+
+class DropCorrelated(BaseEstimator, TransformerMixin):
+    """
+    When two columns are too correlated (Pearson correlation), drop one of them.
+
+    Only works on numeric columns.
+
+    Parameters
+    ----------
+    cols: list, default=None
+        List of all columns names to includes in correlation check. Only columns in "cols" list may be droped.
+    
+    threshold: float, default=0.9
+        Pearson correlation Threshold. If two features have pearson correlation above this thresold, one of them will be dropped.
+
+    tol: float, default=1
+        Threshold to detect constant/quasi-constant features. Variables showing the same value in a percentage of
+        observations greater than tol will be considered constant / quasi-constant and dropped.
+
+    """
+    def __init__(self, cols=None, threshold=0.9):
+        self.cols = cols
+        self.threshold=threshold
+        self.keeped_cols=[]
+
+    def fit(self, df, y=None, **fit_params):
+        if self.cols is None:
+            self.cols = list(df.select_dtypes(include=['int','float']).columns)
+        c = df.loc[:, self.cols].corr().abs().unstack()
+        s= c[c>self.threshold]
+        so=s[s.index.get_level_values(0)!=s.index.get_level_values(1)]
+        self.cols=list(set(so.drop_duplicates().index.get_level_values(0)))
+        self.keeped_cols=list(set(df.columns).difference(self.cols))
+        return self
+
+    def transform(self, df, **transform_params):
+        return df.drop(self.cols, axis=1)
+
+

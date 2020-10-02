@@ -1,8 +1,25 @@
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
-from feature_engine.feature_selection import DropFeatures, DropConstantFeatures
+from feature_engine.feature_selection import DropFeatures, DropConstantFeatures, DropCorrelated
 
+def test_drop_correlated_with_many_correlated(dataframe_correlated):
+
+    drop_correlated = DropCorrelated(cols=["var1", "var2", "var3", "var4"])
+    drop_correlated.fit(dataframe_correlated)
+
+    res = drop_correlated.transform(dataframe_correlated)
+    pd.testing.assert_frame_equal(res, dataframe_correlated.drop(["var1", "var2"], axis=1))
+
+    
+def test_drop_correlated_with_no_correlated(dataframe_no_correlated):
+
+    drop_correlated = DropCorrelated(cols=["var1", "var2", "var3", "var4"])
+    drop_correlated.fit(dataframe_no_correlated)
+
+    res = drop_correlated.transform(dataframe_no_correlated)
+    pd.testing.assert_frame_equal(res, dataframe_no_correlated)
+    
 
 def test_drop_features_drop_2_variables(dataframe_vartypes):
     transformer = DropFeatures(features_to_drop=["City", "dob"])
