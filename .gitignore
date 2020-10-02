@@ -106,6 +106,7 @@ venv.bak/
 .mypy_cache/
 
 # Miscelaneous
+.vscode
 .idea
 *.csv
 
