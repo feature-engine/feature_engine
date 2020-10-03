@@ -2,11 +2,11 @@
 # License: BSD 3 clause
 
 from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
     _define_variables,
     _find_numerical_variables,
 )
-from feature_engine.imputation.base_imputer import BaseImputer
 
 
 class MeanMedianImputer(BaseImputer):
@@ -86,4 +86,3 @@ class MeanMedianImputer(BaseImputer):
         return X
 
     transform.__doc__ = BaseImputer.transform.__doc__
-

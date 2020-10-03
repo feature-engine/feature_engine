@@ -3,10 +3,8 @@
 
 import numpy as np
 
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
-
-from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df
+from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import _define_variables
 
 
@@ -21,7 +19,7 @@ def _define_seed(X, index, seed_variables, how='add'):
     return internal_seed
 
 
-class RandomSampleImputer(BaseEstimator, TransformerMixin):
+class RandomSampleImputer(BaseImputer):
     """
     The RandomSampleImputer() replaces missing data in each feature with a random
     sample extracted from the variables in the training set.
@@ -171,14 +169,7 @@ class RandomSampleImputer(BaseEstimator, TransformerMixin):
             The dataframe without missing values in the transformed variables.
         """
 
-        # Check method fit has been called
-        check_is_fitted(self)
-
-        # check that input is a dataframe
-        X = _is_dataframe(X)
-
-        # Check that input data contains same number of columns as dataframe used to fit
-        _check_input_matches_training_df(X, self.input_shape_[1])
+        X = self._check_transform_input_and_state(X)
 
         # random sampling with a general seed
         if self.seed == 'general':

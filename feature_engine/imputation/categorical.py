@@ -2,11 +2,11 @@
 # License: BSD 3 clause
 
 from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
     _find_categorical_variables,
     _define_variables
 )
-from feature_engine.imputation.base_imputer import BaseImputer
 
 
 class CategoricalImputer(BaseImputer):
@@ -45,13 +45,13 @@ class CategoricalImputer(BaseImputer):
     """
 
     def __init__(self, imputation_method='missing', fill_value='Missing', variables=None, return_object=False):
-        
+
         if imputation_method not in ['missing', 'frequent']:
             raise ValueError("imputation_method takes only values 'missing' or 'frequent'")
-        
+
         if not isinstance(fill_value, str):
             raise ValueError("parameter 'fill_value' should be string")
-        
+
         self.imputation_method = imputation_method
         self.fill_value = fill_value
         self.variables = _define_variables(variables)
@@ -84,7 +84,7 @@ class CategoricalImputer(BaseImputer):
 
         # find or check for categorical variables
         self.variables = _find_categorical_variables(X, self.variables)
-        
+
         if self.imputation_method == 'missing':
             self.imputer_dict_ = {var: self.fill_value for var in self.variables}
 
@@ -115,5 +115,3 @@ class CategoricalImputer(BaseImputer):
 
     # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
     transform.__doc__ = BaseImputer.transform.__doc__
-
-

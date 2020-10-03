@@ -2,12 +2,12 @@
 # License: BSD 3 clause
 
 from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.imputation.base_imputer import BaseImputer
+from feature_engine.parameter_checks import _define_numerical_dict
 from feature_engine.variable_manipulation import (
     _define_variables,
     _find_numerical_variables
 )
-from feature_engine.parameter_checks import _define_numerical_dict
-from feature_engine.imputation.base_imputer import BaseImputer
 
 
 class ArbitraryNumberImputer(BaseImputer):
