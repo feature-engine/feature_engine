@@ -37,7 +37,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables)
 
-        # Check that input data contains same number of columns as dataframe used to fit the imputer.
+        # Check if input data contains same number of columns as dataframe used to fit.
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         return X
