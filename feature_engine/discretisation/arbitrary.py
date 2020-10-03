@@ -77,8 +77,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         X = super().fit(X, y)
 
         # check that all variables in the dictionary are present in the df
-        tmp = [x for x in self.variables if x not in X.columns]
-        if len(tmp) == 0:
+        if all(variable in X.columns for variable in self.variables):
             self.binner_dict_ = self.binning_dict
         else:
             raise ValueError('There are variables in the provided dictionary which are not present in the train set '
