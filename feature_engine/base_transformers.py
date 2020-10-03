@@ -14,7 +14,8 @@ from feature_engine.variable_manipulation import _find_numerical_variables
 
 class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
     # shared set-up procedures across numerical transformers, i.e.,
-    # variable transformers, discretisers, outlier handlers
+    # variable transformers, discretisers, math combination
+
     def fit(self, X, y=None):
         # check input dataframe
         X = _is_dataframe(X)

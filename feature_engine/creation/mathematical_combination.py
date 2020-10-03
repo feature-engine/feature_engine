@@ -114,6 +114,7 @@ class MathematicalCombination(BaseNumericalTransformer):
             y is not needed in this transformer. You can pass y or None.
         """
         X = super().fit(X, y)
+
         self.input_shape_ = X.shape
 
         if self.new_variables_names:
