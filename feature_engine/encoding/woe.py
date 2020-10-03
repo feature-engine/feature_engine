@@ -5,8 +5,7 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
-from feature_engine.dataframe_checks import _is_dataframe, _check_contains_na
-from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables
+from feature_engine.variable_manipulation import _define_variables
 
 
 class WoEEncoder(BaseCategoricalTransformer):
@@ -92,7 +91,7 @@ class WoEEncoder(BaseCategoricalTransformer):
         X = self._check_fit_input_and_variables(X)
 
         # check that y is binary
-        if len([x for x in y.unique() if x not in [0, 1]]) > 0:
+        if any(x for x in y.unique() if x not in [0, 1]):
             raise ValueError("This encoder is only designed for binary classification, values of y can be only 0 or 1")
 
         temp = pd.concat([X, y], axis=1)
