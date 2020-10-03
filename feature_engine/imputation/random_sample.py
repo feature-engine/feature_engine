@@ -145,7 +145,7 @@ class RandomSampleImputer(BaseImputer):
         # check the variables assigned to the random state
         if self.seed == 'observation':
             self.random_state = _define_variables(self.random_state)
-            if len([var for var in self.random_state if var not in X.columns]) > 0:
+            if any(var for var in self.random_state if var not in X.columns):
                 raise ValueError("There are variables assigned as random state which are not part of the training "
                                  "dataframe.")
         self.input_shape_ = X.shape
