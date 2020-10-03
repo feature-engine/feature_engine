@@ -27,7 +27,7 @@ def test_MathematicalCombination_default_parameters(dataframe_vartypes):
 
     # init params
     assert transformer.variables == ['Age', 'Marks']
-    assert transformer.operations == ['sum', 'prod', 'mean', 'std', 'max', 'min']
+    assert transformer.math_operations == ['sum', 'prod', 'mean', 'std', 'max', 'min']
     # fit params
     assert transformer.input_shape_ == (4, 5)
     assert transformer.combination_dict_ == {
@@ -65,7 +65,7 @@ def test_MathematicalCombination_select_variables(dataframe_vartypes):
 
     # init params
     assert transformer.variables == ['Age', 'Marks']
-    assert transformer.operations == ['sum', 'prod', 'mean', 'std', 'max', 'min']
+    assert transformer.math_operations == ['sum', 'prod', 'mean', 'std', 'max', 'min']
     # fit params
     assert transformer.input_shape_ == (4, 5)
     assert transformer.combination_dict_ == {
@@ -116,7 +116,7 @@ def test_MathematicalCombination_select_two_operations(dataframe_vartypes):
 
     # init params
     assert transformer.variables == ['Age', 'Marks']
-    assert transformer.operations == ['sum', 'mean']
+    assert transformer.math_operations == ['sum', 'mean']
     # fit params
     assert transformer.input_shape_ == (4, 5)
     assert transformer.combination_dict_ == {
@@ -149,7 +149,7 @@ def test_MathematicalCombination__user_gives_new_variable_names(dataframe_vartyp
 
     # init params
     assert transformer.variables == ['Age', 'Marks']
-    assert transformer.operations == ['sum', 'mean']
+    assert transformer.math_operations == ['sum', 'mean']
     assert transformer.new_variables_names == ['sum_of_two_vars', 'mean_of_two_vars']
     # fit params
     assert transformer.input_shape_ == (4, 5)
@@ -193,7 +193,7 @@ def test_MathematicalCombination_only_one_mathematical_operation(dataframe_varty
 
     # init params
     assert transformer.variables == ['Age', 'Marks']
-    assert transformer.operations == ['sum']
+    assert transformer.math_operations == ['sum']
     # fit params
     assert transformer.input_shape_ == (4, 5)
     assert transformer.combination_dict_ == {
