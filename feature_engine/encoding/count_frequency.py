@@ -2,9 +2,8 @@
 # License: BSD 3 clause
 
 import numpy as np
-from feature_engine.dataframe_checks import _is_dataframe, _check_contains_na
-from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer, _check_encoding_dictionary
+from feature_engine.variable_manipulation import _define_variables
+from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 
 
 class CountFrequencyEncoder(BaseCategoricalTransformer):
@@ -71,14 +70,7 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
             each variable.
         """
 
-        # check input dataframe
-        X = _is_dataframe(X)
-
-        # find categorical variables or check that variables entered by user are of type object
-        self.variables = _find_categorical_variables(X, self.variables)
-
-        # check if dataset contains na
-        _check_contains_na(X, self.variables)
+        X = self._check_fit_input_and_variables(X)
 
         self.encoder_dict_ = {}
 
@@ -91,7 +83,7 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
                 n_obs = np.float(len(X))
                 self.encoder_dict_[var] = (X[var].value_counts() / n_obs).to_dict()
 
-        self.encoder_dict_ = _check_encoding_dictionary(self.encoder_dict_)
+        self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
 

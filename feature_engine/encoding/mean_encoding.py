@@ -2,9 +2,8 @@
 # License: BSD 3 clause
 
 import pandas as pd
-from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df, _check_contains_na
-from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer, _check_encoding_dictionary
+from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
+from feature_engine.variable_manipulation import _define_variables
 
 
 class MeanEncoder(BaseCategoricalTransformer):
@@ -57,17 +56,8 @@ class MeanEncoder(BaseCategoricalTransformer):
             The dictionary containing the {category: target mean} pairs used
             to replace categories in every variable.
         """
-        # check input dataframe
-        X = _is_dataframe(X)
 
-        # find categorical variables or check that variables entered by user are of type object
-        self.variables = _find_categorical_variables(X, self.variables)
-
-        # check if dataset contains na
-        _check_contains_na(X, self.variables)
-
-        if y is None:
-            raise ValueError('Please provide a target y for this encoding method')
+        X = self._check_fit_input_and_variables(X)
 
         temp = pd.concat([X, y], axis=1)
         temp.columns = list(X.columns) + ['target']
@@ -77,7 +67,7 @@ class MeanEncoder(BaseCategoricalTransformer):
         for var in self.variables:
             self.encoder_dict_[var] = temp.groupby(var)['target'].mean().to_dict()
 
-        self.encoder_dict_ = _check_encoding_dictionary(self.encoder_dict_)
+        self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
 
@@ -95,5 +85,3 @@ class MeanEncoder(BaseCategoricalTransformer):
         return X
 
     inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
-
-

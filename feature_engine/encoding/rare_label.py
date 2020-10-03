@@ -5,15 +5,11 @@ import numpy as np
 import pandas as pd
 import warnings
 
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
-
-from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df, _check_contains_na
-from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables
-from feature_engine.encoding.base_encoder import _check_encoding_dictionary
+from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
+from feature_engine.variable_manipulation import _define_variables
 
 
-class RareLabelEncoder(BaseEstimator, TransformerMixin):
+class RareLabelEncoder(BaseCategoricalTransformer):
     """
     The RareLabelCategoricalEncoder() groups rare / infrequent categories in
     a new category called "Rare", or any other name entered by the user.
@@ -105,14 +101,8 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
             for each variable. Categories not present in this list will be replaced
             by 'Rare' or by the user defined value.
         """
-        # check input dataframe
-        X = _is_dataframe(X)
 
-        # find categorical variables or check that variables entered by user are of type object
-        self.variables = _find_categorical_variables(X, self.variables)
-
-        # check if dataset contains na
-        _check_contains_na(X, self.variables)
+        X = self._check_fit_input_and_variables(X)
 
         self.encoder_dict_ = {}
 
@@ -138,7 +128,7 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
                               "n_categories. Thus, all categories will be considered frequent".format(var))
                 self.encoder_dict_[var] = X[var].unique()
 
-        self.encoder_dict_ = _check_encoding_dictionary(self.encoder_dict_)
+        self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
 
@@ -161,17 +151,7 @@ class RareLabelEncoder(BaseEstimator, TransformerMixin):
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe where rare categories have been grouped.
         """
-        # Check method fit has been called
-        check_is_fitted(self)
-
-        # check that input is a dataframe
-        X = _is_dataframe(X)
-
-        # check if dataset contains na
-        _check_contains_na(X, self.variables)
-
-        # Check that input data contains same number of columns as dataframe used to fit
-        _check_input_matches_training_df(X, self.input_shape_[1])
+        X = self._check_transform_input_and_state(X)
 
         for feature in self.variables:
             X[feature] = np.where(X[feature].isin(self.encoder_dict_[feature]), X[feature], self.replace_with)

@@ -2,9 +2,8 @@
 # License: BSD 3 clause
 
 import pandas as pd
-from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df, _check_contains_na
-from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer, _check_encoding_dictionary
+from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
+from feature_engine.variable_manipulation import _define_variables
 
 
 class OrdinalEncoder(BaseCategoricalTransformer):
@@ -76,14 +75,8 @@ class OrdinalEncoder(BaseCategoricalTransformer):
             Otherwise, y needs to be passed when fitting the transformer.
        
         """
-        # check input dataframe
-        X = _is_dataframe(X)
 
-        # find categorical variables or check that variables entered by user are of type object
-        self.variables = _find_categorical_variables(X, self.variables)
-
-        # check if dataset contains na
-        _check_contains_na(X, self.variables)
+        X = self._check_fit_input_and_variables(X)
 
         # join target to predictor variables
         if self.encoding_method == 'ordered':
@@ -106,7 +99,7 @@ class OrdinalEncoder(BaseCategoricalTransformer):
 
             self.encoder_dict_[var] = {k: i for i, k in enumerate(t, 0)}
 
-        self.encoder_dict_ = _check_encoding_dictionary(self.encoder_dict_)
+        self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
 
@@ -124,5 +117,3 @@ class OrdinalEncoder(BaseCategoricalTransformer):
         return X
 
     inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
-
-

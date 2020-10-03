@@ -3,15 +3,11 @@
 
 import numpy as np
 
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
-
-from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df, _check_contains_na
-from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables
-from feature_engine.encoding.base_encoder import _check_encoding_dictionary
+from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
+from feature_engine.variable_manipulation import _define_variables
 
 
-class OneHotEncoder(BaseEstimator, TransformerMixin):
+class OneHotEncoder(BaseCategoricalTransformer):
     """ 
     One hot encoding consists in replacing the categorical variable by a
     combination of binary variables which take value 0 or 1, to indicate if
@@ -65,11 +61,10 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
     def __init__(self, top_categories=None, variables=None, drop_last=False):
 
-        if top_categories:
-            if not isinstance(top_categories, int):
-                raise ValueError("top_categories takes only integer numbers, 1, 2, 3, etc.")
+        if top_categories and not isinstance(top_categories, int):
+            raise ValueError("top_categories takes only integer numbers, 1, 2, 3, etc.")
 
-        if drop_last not in [True, False]:
+        if not isinstance(drop_last, bool):
             raise ValueError("drop_last takes only True or False")
 
         self.top_categories = top_categories
@@ -100,14 +95,8 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
             The dictionary containing the categories for which dummy variables
             will be created.
         """
-        # check input dataframe
-        X = _is_dataframe(X)
 
-        # find categorical variables or check that variables entered by user are of type object
-        self.variables = _find_categorical_variables(X, self.variables)
-
-        # check if dataset contains na
-        _check_contains_na(X, self.variables)
+        X = self._check_fit_input_and_variables(X)
 
         self.encoder_dict_ = {}
 
@@ -123,7 +112,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
                 self.encoder_dict_[var] = [x for x in X[var].value_counts().sort_values(ascending=False).head(
                     self.top_categories).index]
 
-        self.encoder_dict_ = _check_encoding_dictionary(self.encoder_dict_)
+        self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
 
@@ -145,17 +134,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         X_transformed : pandas dataframe.
             The shape of the dataframe will be different from the original as it includes the dummy variables.
         """
-        # Check method fit has been called
-        check_is_fitted(self)
-
-        # check that input is a dataframe
-        X = _is_dataframe(X)
-
-        # check if dataset contains na
-        _check_contains_na(X, self.variables)
-
-        # Check that input data contains same number of columns as dataframe used to fit
-        _check_input_matches_training_df(X, self.input_shape_[1])
+        X = self._check_transform_input_and_state(X)
 
         for feature in self.variables:
             for category in self.encoder_dict_[feature]:

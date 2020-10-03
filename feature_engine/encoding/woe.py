@@ -4,9 +4,9 @@
 import numpy as np
 import pandas as pd
 
+from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 from feature_engine.dataframe_checks import _is_dataframe, _check_contains_na
 from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer, _check_encoding_dictionary
 
 
 class WoEEncoder(BaseCategoricalTransformer):
@@ -88,17 +88,8 @@ class WoEEncoder(BaseCategoricalTransformer):
         encoder_dict_: dictionary
             The dictionary containing the {category: WoE / ratio} pairs per variable.
         """
-        # check input dataframe
-        X = _is_dataframe(X)
 
-        # find categorical variables or check that variables entered by user are of type object
-        self.variables = _find_categorical_variables(X, self.variables)
-
-        # check if dataset contains na
-        _check_contains_na(X, self.variables)
-
-        if y is None:
-            raise ValueError('Please provide a target y for this encoding method')
+        X = self._check_fit_input_and_variables(X)
 
         # check that y is binary
         if len([x for x in y.unique() if x not in [0, 1]]) > 0:
@@ -149,7 +140,7 @@ class WoEEncoder(BaseCategoricalTransformer):
                     else:
                         self.encoder_dict_[var] = (t.p1 / t.p0).to_dict()
 
-        self.encoder_dict_ = _check_encoding_dictionary(self.encoder_dict_)
+        self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
 
