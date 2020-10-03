@@ -52,11 +52,13 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         Indicates whether the discretiser should train a regression or a classification
         decision tree.
         
-    param_grid : dictionary, default={'max_depth': [1,2,3,4]}
+    param_grid : dictionary, default=None
         The list of parameters over which the decision tree should be optimised
         during the grid search. The param_grid can contain any of the permitted
         parameters for Scikit-learn's DecisionTreeRegressor() or
         DecisionTreeClassifier().
+
+        If None, then param_grid = {'max_depth': [1, 2, 3, 4]}
         
     random_state : int, default=None
         The random_state to initialise the training of the decision tree. It is one
@@ -66,8 +68,11 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     """
 
     def __init__(self, cv=3, scoring='neg_mean_squared_error',
-                 variables=None, param_grid={'max_depth': [1, 2, 3, 4]},
+                 variables=None, param_grid=None,
                  regression=True, random_state=None):
+
+        if param_grid is None:
+            param_grid = {'max_depth': [1, 2, 3, 4]}
 
         if not isinstance(cv, int) or cv < 0:
             raise ValueError('cv can only take only positive integers')
@@ -114,17 +119,17 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.scores_dict_ = {}
 
         for var in self.variables:
-            # call the model
-            if not self.regression:
-                tree_model = GridSearchCV(DecisionTreeClassifier(random_state=self.random_state),
-                                          cv=self.cv,
-                                          scoring=self.scoring,
-                                          param_grid=self.param_grid)
+
+            if self.regression:
+                model = DecisionTreeRegressor(random_state=self.random_state)
             else:
-                tree_model = GridSearchCV(DecisionTreeRegressor(random_state=self.random_state),
-                                          cv=self.cv,
-                                          scoring=self.scoring,
-                                          param_grid=self.param_grid)
+                model = DecisionTreeClassifier(random_state=self.random_state)
+
+            tree_model = GridSearchCV(model,
+                                      cv=self.cv,
+                                      scoring=self.scoring,
+                                      param_grid=self.param_grid)
+
             # fit the model to the variable
             tree_model.fit(X[var].to_frame(), y)
 
@@ -157,10 +162,10 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         X = super().transform(X)
 
         for feature in self.variables:
-            if not self.regression:
+            if self.regression:
+                X[feature] = self.binner_dict_[feature].predict(X[feature].to_frame())
+            else:
                 tmp = self.binner_dict_[feature].predict_proba(X[feature].to_frame())
                 X[feature] = tmp[:, 1]
-            else:
-                X[feature] = self.binner_dict_[feature].predict(X[feature].to_frame())
 
         return X

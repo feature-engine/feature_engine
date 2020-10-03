@@ -1,17 +1,15 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
-from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df, _check_contains_na
-from feature_engine.variable_manipulation import _find_categorical_variables, _define_variables
+from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 from feature_engine.encoding.ordinal import OrdinalEncoder
 from feature_engine.discretisation import DecisionTreeDiscretiser
+from feature_engine.variable_manipulation import _define_variables
 
 
-class DecisionTreeEncoder(BaseEstimator, TransformerMixin):
+class DecisionTreeEncoder(BaseCategoricalTransformer):
     """
     The DecisionTreeCategoricalEncoder() encodes categorical variables with predictions of a decision tree model.
 
@@ -48,11 +46,13 @@ class DecisionTreeEncoder(BaseEstimator, TransformerMixin):
         Indicates whether the encoder should train a regression or a classification
         decision tree.
         
-    param_grid : dictionary, default={'max_depth': [1,2,3,4]}
+    param_grid : dictionary, default=None
         The list of parameters over which the decision tree should be optimised
         during the grid search. The param_grid can contain any of the permitted
         parameters for Scikit-learn's DecisionTreeRegressor() or
         DecisionTreeClassifier().
+
+        If None, then param_grid = {'max_depth': [1, 2, 3, 4]}.
         
     random_state : int, default=None
         The random_state to initialise the training of the decision tree. It is one
@@ -73,9 +73,10 @@ class DecisionTreeEncoder(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, encoding_method='arbitrary', cv=3, scoring='neg_mean_squared_error',
-                 param_grid={'max_depth': [1, 2, 3, 4]}, regression=True,
-                 random_state=None, variables=None):
-      
+                 param_grid=None, regression=True, random_state=None, variables=None):
+        if param_grid is None:
+            param_grid = {'max_depth': [1, 2, 3, 4]}
+
         self.encoding_method = encoding_method
         self.cv = cv
         self.scoring = scoring
@@ -101,17 +102,11 @@ class DecisionTreeEncoder(BaseEstimator, TransformerMixin):
             ordered ordinal encoding.
         """
         # check input dataframe
-        X = _is_dataframe(X)
-
-        # find categorical variables or check that variables entered by user are of type object
-        self.variables = _find_categorical_variables(X, self.variables)
-
-        # check if dataset contains na
-        _check_contains_na(X, self.variables)
+        X = self._check_fit_input_and_variables(X)
 
         # initialize categorical encoder
         cat_encoder = OrdinalEncoder(encoding_method=self.encoding_method,
-                                                variables=self.variables)
+                                     variables=self.variables)
 
         # initialize decision tree discretiser
         tree_discretiser = DecisionTreeDiscretiser(cv=self.cv, scoring=self.scoring,
@@ -144,18 +139,8 @@ class DecisionTreeEncoder(BaseEstimator, TransformerMixin):
         X_transformed : pandas dataframe of shape = [n_samples, n_features].
                         Dataframe with variables encoded with decision tree predictions.
         """
-        # Check method fit has been called
-        check_is_fitted(self)
 
-        # check that input is a dataframe
-        X = _is_dataframe(X)
-
-        # check if dataset contains na
-        _check_contains_na(X, self.variables)
-
-        # Check that the dataframe contains the same number of columns than the dataframe
-        # used to fit the imputer.
-        _check_input_matches_training_df(X, self.input_shape_[1])
+        X = self._check_transform_input_and_state(X)
 
         X = self.encoder_.transform(X)
 

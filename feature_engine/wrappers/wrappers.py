@@ -4,7 +4,11 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
 from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df
-from feature_engine.variable_manipulation import _define_variables, _find_all_variables, _find_numerical_variables
+from feature_engine.variable_manipulation import (
+    _define_variables,
+    _find_all_variables,
+    _find_numerical_variables
+)
 
 
 class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
@@ -79,7 +83,6 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         # Check that input data contains same number of columns than
         # the dataframe used to fit the imputer.
-
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         if isinstance(self.transformer, OneHotEncoder):
