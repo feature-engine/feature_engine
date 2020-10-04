@@ -7,7 +7,7 @@ from typing import List, Optional, Union
 import pandas as pd
 
 
-def _define_variables(variables: Union[Optional[str], List[str]]) -> Union[Optional[str], List[str]]:
+def _define_variables(variables: Union[None, List[str]]) -> Union[List[str], None]:
     """
     Takes string or list of strings and checks if argument is list of strings.
     Can take None as argument.
