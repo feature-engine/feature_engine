@@ -59,7 +59,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         Args:
             X: Pandas DataFrame to fit the transformer
             y: This parameter exists only for compatibility with sklearn.pipeline.Pipeline.
-                Defaults to None.
+            Defaults to None.
 
         Returns:
             self
