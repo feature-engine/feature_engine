@@ -6,7 +6,6 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from feature_engine.wrappers import SklearnTransformerWrapper
 
 
-
 def test_sklearn_imputer_numeric_with_constant(dataframe_na):
     variables_to_impute = ['Age', 'Marks']
     na_variables_left_after_imputation = [col
@@ -134,7 +133,8 @@ def test_sklearn_standardscaler_allfeatures(dataframe_vartypes):
 def test_sklearn_ohe_object_one_feature(dataframe_vartypes):
     variables_to_encode = ['Name']
 
-    transformer = SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=False, dtype=np.int64), variables=variables_to_encode)
+    transformer = SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=False, dtype=np.int64),
+                                            variables=variables_to_encode)
 
     ref = pd.DataFrame({
         'Name': ['tom', 'nick', 'krish', 'jack'],
@@ -157,7 +157,8 @@ def test_sklearn_ohe_object_one_feature(dataframe_vartypes):
 def test_sklearn_ohe_object_many_features(dataframe_vartypes):
     variables_to_encode = ['Name', 'City']
 
-    transformer = SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=False, dtype=np.int64), variables=variables_to_encode)
+    transformer = SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=False, dtype=np.int64),
+                                            variables=variables_to_encode)
 
     ref = pd.DataFrame({
         'Name': ['tom', 'nick', 'krish', 'jack'],
@@ -185,14 +186,15 @@ def test_sklearn_ohe_object_many_features(dataframe_vartypes):
 def test_sklearn_ohe_numeric(dataframe_vartypes):
     variables_to_encode = ['Age']
 
-    transformer = SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=False, dtype=np.int64), variables=variables_to_encode)
+    transformer = SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=False, dtype=np.int64),
+                                            variables=variables_to_encode)
 
     ref = pd.DataFrame({
         'Age': [20, 21, 19, 18],
-        'Age_18': [0,0,0,1],
-        'Age_19': [0,0,1,0],
-        'Age_20': [1,0,0,0],
-        'Age_21': [0,1,0,0]
+        'Age_18': [0, 0, 0, 1],
+        'Age_19': [0, 0, 1, 0],
+        'Age_20': [1, 0, 0, 0],
+        'Age_21': [0, 1, 0, 0]
     })
 
     transformed_df = transformer.fit_transform(dataframe_vartypes[variables_to_encode])
@@ -248,4 +250,3 @@ def test_sklearn_ohe_all_features(dataframe_vartypes):
 def test_sklearn_ohe_errors(dataframe_vartypes):
     with pytest.raises(AttributeError):
         transformer = SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=True))
-
