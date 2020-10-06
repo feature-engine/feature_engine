@@ -16,7 +16,7 @@ be indicated, or the encoder will automatically select all categorical variables
 	import matplotlib.pyplot as plt
 	from sklearn.model_selection import train_test_split
 
-	from feature_engine.encoding import PRatioEncoder, RareLabelCEncoder
+	from feature_engine.encoding import PRatioEncoder, RareLabelEncoder
 
 	# Load dataset
 	def load_titanic():
@@ -35,7 +35,7 @@ be indicated, or the encoder will automatically select all categorical variables
 			data['survived'], test_size=0.3, random_state=0)
 
 	# set up a rare label encoder
-	rare_encoder = RareLabelCEncoder(tol=0.03, n_categories=2, variables=['cabin', 'pclass', 'embarked'])
+	rare_encoder = RareLabelEncoder(tol=0.03, n_categories=2, variables=['cabin', 'pclass', 'embarked'])
 
 	# fit and transform data
 	train_t = rare_encoder.fit_transform(X_train)
@@ -56,18 +56,7 @@ be indicated, or the encoder will automatically select all categorical variables
 
 .. code:: python
 
-    {'cabin': {'B': 1.6299623810120747,
-    'C': 0.7217038208351837,
-    'D': 1.405081209799324,
-    'E': 1.405081209799324,
-    'Rare': 0.7387452866900354,
-    'n': -0.35752781962490193},
-    'pclass': {1: 0.9453018143294478,
-    2: 0.21009172435857942,
-    3: -0.5841726684724614},
-    'embarked': {'C': 0.6999054533737715,
-    'Q': -0.05044494288988759,
-    'S': -0.20113381737960143}}
+    {'cabin': {'B': 3.1999999999999993, 'C': 1.2903225806451615, 'D': 2.5555555555555554, 'E': 2.5555555555555554, 'Rare': 1.3124999999999998, 'n': 0.4385245901639344}, 'pclass': {1: 1.6136363636363635, 2: 0.7735849056603774, 3: 0.34959349593495936}, 'embarked': {'C': 1.2625000000000002, 'Q': 0.5961538461538461, 'S': 0.5127610208816704}}
 
 API Reference
 -------------
