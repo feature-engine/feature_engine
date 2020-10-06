@@ -1,12 +1,12 @@
-WoEEncoder
+PRatioEncoder
 ==========
 
-The WoEEncoder() replaces the labels by the weight of evidence. 
-It only works for binary classification.
+The PRatioEncoder() replaces the labels by the ratio of
+probabilities. It only works for binary classification.
+    
+The target probability ratio is given by: p(1) / p(0)
 
-The weight of evidence is given by: np.log( p(1) / p(0) )
-
-The WoEEncoder() works only with categorical variables. A list of variables can
+The PRatioEncoder() works only with categorical variables. A list of variables can
 be indicated, or the encoder will automatically select all categorical variables in the train set.
 
 .. code:: python
@@ -16,7 +16,7 @@ be indicated, or the encoder will automatically select all categorical variables
 	import matplotlib.pyplot as plt
 	from sklearn.model_selection import train_test_split
 
-	from feature_engine.encoding import WoEEncoder, RareLabelCEncoder
+	from feature_engine.encoding import PRatioEncoder, RareLabelCEncoder
 
 	# Load dataset
 	def load_titanic():
@@ -42,16 +42,16 @@ be indicated, or the encoder will automatically select all categorical variables
 	test_t = rare_encoder.transform(X_train)
 
 	# set up a weight of evidence encoder
-	woe_encoder = WoEEncoder(variables=['cabin', 'pclass', 'embarked'])
+	pratio_encoder = PRatioEncoder(encoding_method='ratio', variables=['cabin', 'pclass', 'embarked'])
 
 	# fit the encoder
-	woe_encoder.fit(train_t, y_train)
+	pratio_encoder.fit(train_t, y_train)
 
 	# transform
-	train_t = woe_encoder.transform(train_t)
-	test_t = woe_encoder.transform(test_t)
+	train_t = pratio_encoder.transform(train_t)
+	test_t = pratio_encoder.transform(test_t)
 
-	woe_encoder.encoder_dict_
+	pratio_encoder.encoder_dict_
 
 
 .. code:: python
@@ -72,5 +72,5 @@ be indicated, or the encoder will automatically select all categorical variables
 API Reference
 -------------
 
-.. autoclass:: feature_engine.encoding.WoEEncoder
+.. autoclass:: feature_engine.encoding.PRatioEncoder
     :members:
