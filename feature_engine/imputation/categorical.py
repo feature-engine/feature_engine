@@ -107,9 +107,7 @@ class CategoricalImputer(BaseImputer):
                     self.imputer_dict_[var] = mode_vals[0]
                 else:
                     raise ValueError(
-                        "The variable {} contains multiple frequent categories.".format(
-                            var
-                        )
+                        "Variable {} contains multiple frequent categories.".format(var)
                     )
 
         self.input_shape_ = X.shape

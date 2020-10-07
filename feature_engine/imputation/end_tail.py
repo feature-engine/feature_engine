@@ -80,7 +80,7 @@ class EndTailImputer(BaseImputer):
 
         if imputation_method not in ["gaussian", "iqr", "max"]:
             raise ValueError(
-                "distribution takes only values 'gaussian', 'iqr' or 'max'"
+                "imputation_method takes only values 'gaussian', 'iqr' or 'max'"
             )
 
         if tail not in ["right", "left"]:
