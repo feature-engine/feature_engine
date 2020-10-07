@@ -5,4 +5,4 @@ selected subset of features and return a dataframe.
 
 from .wrappers import SklearnTransformerWrapper
 
-__all__ = ['SklearnTransformerWrapper']
+__all__ = ["SklearnTransformerWrapper"]
