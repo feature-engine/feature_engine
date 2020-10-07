@@ -42,10 +42,12 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
     def __init__(self, binning_dict, return_object=False, return_boundaries=False):
 
         if not isinstance(binning_dict, dict):
-            raise ValueError("Please provide at a dictionary with the interval limits per variable")
+            raise ValueError(
+                "Please provide at a dictionary with the interval limits per variable"
+            )
 
         if not isinstance(return_object, bool):
-            raise ValueError('return_object must be True or False')
+            raise ValueError("return_object must be True or False")
 
         self.binning_dict = binning_dict
         self.variables = [x for x in binning_dict.keys()]
@@ -80,15 +82,17 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         if all(variable in X.columns for variable in self.variables):
             self.binner_dict_ = self.binning_dict
         else:
-            raise ValueError('There are variables in the provided dictionary which are not present in the train set '
-                             'or not cast as numerical')
+            raise ValueError(
+                "There are variables in the provided dictionary which are not present in the train set "
+                "or not cast as numerical"
+            )
 
         self.input_shape_ = X.shape
 
         return self
 
     def transform(self, X):
-        """ Sorts the variable values into the intervals.
+        """Sorts the variable values into the intervals.
 
         Parameters
         ----------
@@ -112,10 +116,12 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
         else:
             for feature in self.variables:
-                X[feature] = pd.cut(X[feature], self.binner_dict_[feature], labels=False)
+                X[feature] = pd.cut(
+                    X[feature], self.binner_dict_[feature], labels=False
+                )
 
             # return object
             if self.return_object:
-                X[self.variables] = X[self.variables].astype('O')
+                X[self.variables] = X[self.variables].astype("O")
 
         return X
