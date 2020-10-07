@@ -4,7 +4,7 @@ from sklearn.datasets import load_boston
 from feature_engine.discretisation import ArbitraryDiscretiser
 
 
-def test_ArbitraryDiscretise():
+def test_arbitrary_discretiser():
     boston_dataset = load_boston()
     data = pd.DataFrame(boston_dataset.data, columns=boston_dataset.feature_names)
     user_dict = {'LSTAT': [0, 10, 20, 30, np.Inf]}
