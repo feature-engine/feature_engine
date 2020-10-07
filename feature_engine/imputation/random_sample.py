@@ -9,12 +9,12 @@ from feature_engine.variable_manipulation import _define_variables
 
 
 # for RandomSampleImputer
-def _define_seed(X, index, seed_variables, how='add'):
+def _define_seed(X, index, seed_variables, how="add"):
     # determine seed by adding or multiplying the value of 1 or
     # more variables
-    if how == 'add':
+    if how == "add":
         internal_seed = int(np.round(X.loc[index, seed_variables].sum(), 0))
-    elif how == 'multiply':
+    elif how == "multiply":
         internal_seed = int(np.round(X.loc[index, seed_variables].product(), 0))
     return internal_seed
 
@@ -86,21 +86,27 @@ class RandomSampleImputer(BaseImputer):
         all variables in the train set.
     """
 
-    def __init__(self, variables=None, random_state=None, seed='general', seeding_method='add'):
+    def __init__(
+        self, variables=None, random_state=None, seed="general", seeding_method="add"
+    ):
 
-        if seed not in ['general', 'observation']:
+        if seed not in ["general", "observation"]:
             raise ValueError("seed takes only values 'general' or 'observation'")
 
-        if seeding_method not in ['add', 'multiply']:
+        if seeding_method not in ["add", "multiply"]:
             raise ValueError("seeding_method takes only values 'add' or 'multiply'")
 
-        if seed == 'general' and random_state:
+        if seed == "general" and random_state:
             if not isinstance(random_state, int):
-                raise ValueError("if seed == 'general' the random state must take an integer")
+                raise ValueError(
+                    "if seed == 'general' the random state must take an integer"
+                )
 
-        if seed == 'observation' and not random_state:
-            raise ValueError("if seed == 'observation' the random state must take the name of one or more variables "
-                             "which will be used to seed the imputer")
+        if seed == "observation" and not random_state:
+            raise ValueError(
+                "if seed == 'observation' the random state must take the name of one or more variables "
+                "which will be used to seed the imputer"
+            )
 
         self.variables = _define_variables(variables)
         self.random_state = random_state
@@ -143,11 +149,13 @@ class RandomSampleImputer(BaseImputer):
         self.X_ = X[self.variables].copy()
 
         # check the variables assigned to the random state
-        if self.seed == 'observation':
+        if self.seed == "observation":
             self.random_state = _define_variables(self.random_state)
             if any(var for var in self.random_state if var not in X.columns):
-                raise ValueError("There are variables assigned as random state which are not part of the training "
-                                 "dataframe.")
+                raise ValueError(
+                    "There are variables assigned as random state which are not part of the training "
+                    "dataframe."
+                )
         self.input_shape_ = X.shape
 
         return self
@@ -172,17 +180,18 @@ class RandomSampleImputer(BaseImputer):
         X = self._check_transform_input_and_state(X)
 
         # random sampling with a general seed
-        if self.seed == 'general':
+        if self.seed == "general":
             for feature in self.variables:
                 if X[feature].isnull().sum() > 0:
                     # determine number of data points to extract at random
                     n_samples = X[feature].isnull().sum()
 
                     # extract values
-                    random_sample = self.X_[feature].dropna().sample(n_samples,
-                                                                     replace=True,
-                                                                     random_state=self.random_state
-                                                                     )
+                    random_sample = (
+                        self.X_[feature]
+                        .dropna()
+                        .sample(n_samples, replace=True, random_state=self.random_state)
+                    )
                     # re-index: pandas needs this to add values in the correct observations
                     random_sample.index = X[X[feature].isnull()].index
 
@@ -190,20 +199,23 @@ class RandomSampleImputer(BaseImputer):
                     X.loc[X[feature].isnull(), feature] = random_sample
 
         # random sampling observation per observation
-        elif self.seed == 'observation':
+        elif self.seed == "observation":
             for feature in self.variables:
                 if X[feature].isnull().sum() > 0:
 
                     # loop over each observation with missing data
                     for i in X[X[feature].isnull()].index:
                         # find the seed using additional variables
-                        internal_seed = _define_seed(X, i, self.random_state, how=self.seeding_method)
+                        internal_seed = _define_seed(
+                            X, i, self.random_state, how=self.seeding_method
+                        )
 
                         # extract 1 value at random
-                        random_sample = self.X_[feature].dropna().sample(1,
-                                                                         replace=True,
-                                                                         random_state=internal_seed
-                                                                         )
+                        random_sample = (
+                            self.X_[feature]
+                            .dropna()
+                            .sample(1, replace=True, random_state=internal_seed)
+                        )
                         random_sample = random_sample.values[0]
 
                         # replace the missing data point

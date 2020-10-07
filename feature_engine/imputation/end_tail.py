@@ -5,7 +5,7 @@ from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
     _define_variables,
-    _find_numerical_variables
+    _find_numerical_variables,
 )
 
 
@@ -74,12 +74,16 @@ class EndTailImputer(BaseImputer):
         select all variables of type numeric.
     """
 
-    def __init__(self, imputation_method='gaussian', tail='right', fold=3, variables=None):
+    def __init__(
+        self, imputation_method="gaussian", tail="right", fold=3, variables=None
+    ):
 
-        if imputation_method not in ['gaussian', 'iqr', 'max']:
-            raise ValueError("distribution takes only values 'gaussian', 'iqr' or 'max'")
+        if imputation_method not in ["gaussian", "iqr", "max"]:
+            raise ValueError(
+                "distribution takes only values 'gaussian', 'iqr' or 'max'"
+            )
 
-        if tail not in ['right', 'left']:
+        if tail not in ["right", "left"]:
             raise ValueError("tail takes only values 'right' or 'left'")
 
         if fold <= 0:
@@ -119,21 +123,29 @@ class EndTailImputer(BaseImputer):
         self.variables = _find_numerical_variables(X, self.variables)
 
         # estimate imputation values
-        if self.imputation_method == 'max':
+        if self.imputation_method == "max":
             self.imputer_dict_ = (X[self.variables].max() * self.fold).to_dict()
 
-        elif self.imputation_method == 'gaussian':
-            if self.tail == 'right':
-                self.imputer_dict_ = (X[self.variables].mean() + self.fold * X[self.variables].std()).to_dict()
-            elif self.tail == 'left':
-                self.imputer_dict_ = (X[self.variables].mean() - self.fold * X[self.variables].std()).to_dict()
+        elif self.imputation_method == "gaussian":
+            if self.tail == "right":
+                self.imputer_dict_ = (
+                    X[self.variables].mean() + self.fold * X[self.variables].std()
+                ).to_dict()
+            elif self.tail == "left":
+                self.imputer_dict_ = (
+                    X[self.variables].mean() - self.fold * X[self.variables].std()
+                ).to_dict()
 
-        elif self.imputation_method == 'iqr':
+        elif self.imputation_method == "iqr":
             IQR = X[self.variables].quantile(0.75) - X[self.variables].quantile(0.25)
-            if self.tail == 'right':
-                self.imputer_dict_ = (X[self.variables].quantile(0.75) + (IQR * self.fold)).to_dict()
-            elif self.tail == 'left':
-                self.imputer_dict_ = (X[self.variables].quantile(0.25) - (IQR * self.fold)).to_dict()
+            if self.tail == "right":
+                self.imputer_dict_ = (
+                    X[self.variables].quantile(0.75) + (IQR * self.fold)
+                ).to_dict()
+            elif self.tail == "left":
+                self.imputer_dict_ = (
+                    X[self.variables].quantile(0.25) - (IQR * self.fold)
+                ).to_dict()
 
         self.input_shape_ = X.shape
 

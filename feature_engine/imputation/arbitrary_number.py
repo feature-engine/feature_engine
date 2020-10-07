@@ -6,7 +6,7 @@ from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.parameter_checks import _define_numerical_dict
 from feature_engine.variable_manipulation import (
     _define_variables,
-    _find_numerical_variables
+    _find_numerical_variables,
 )
 
 
@@ -37,7 +37,7 @@ class ArbitraryNumberImputer(BaseImputer):
         if isinstance(arbitrary_number, int) or isinstance(arbitrary_number, float):
             self.arbitrary_number = arbitrary_number
         else:
-            raise ValueError('arbitrary_number must be numeric of type int or float')
+            raise ValueError("arbitrary_number must be numeric of type int or float")
 
         self.variables = _define_variables(variables)
 

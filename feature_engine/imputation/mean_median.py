@@ -34,9 +34,9 @@ class MeanMedianImputer(BaseImputer):
         all variables of type numeric.
     """
 
-    def __init__(self, imputation_method='median', variables=None):
+    def __init__(self, imputation_method="median", variables=None):
 
-        if imputation_method not in ['median', 'mean']:
+        if imputation_method not in ["median", "mean"]:
             raise ValueError("imputation_method takes only values 'median' or 'mean'")
 
         self.imputation_method = imputation_method
@@ -70,10 +70,10 @@ class MeanMedianImputer(BaseImputer):
         self.variables = _find_numerical_variables(X, self.variables)
 
         # find imputation parameters: mean or median
-        if self.imputation_method == 'mean':
+        if self.imputation_method == "mean":
             self.imputer_dict_ = X[self.variables].mean().to_dict()
 
-        elif self.imputation_method == 'median':
+        elif self.imputation_method == "median":
             self.imputer_dict_ = X[self.variables].median().to_dict()
 
         self.input_shape_ = X.shape

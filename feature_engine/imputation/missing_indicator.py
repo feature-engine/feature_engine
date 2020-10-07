@@ -75,9 +75,13 @@ class AddMissingIndicator(BaseImputer):
         # find variables for which indicator should be added
         if self.missing_only:
             if not self.variables:
-                self.variables_ = [var for var in X.columns if X[var].isnull().sum() > 0]
+                self.variables_ = [
+                    var for var in X.columns if X[var].isnull().sum() > 0
+                ]
             else:
-                self.variables_ = [var for var in self.variables if X[var].isnull().sum() > 0]
+                self.variables_ = [
+                    var for var in self.variables if X[var].isnull().sum() > 0
+                ]
 
         else:
             if not self.variables:
@@ -112,7 +116,6 @@ class AddMissingIndicator(BaseImputer):
 
         X = X.copy()
         for feature in self.variables_:
-            X[feature + '_na'] = np.where(X[feature].isnull(), 1, 0)
+            X[feature + "_na"] = np.where(X[feature].isnull(), 1, 0)
 
         return X
-
