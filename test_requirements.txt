@@ -1,3 +1,6 @@
 -r requirements.txt
 pytest>=5.4.1
+
+# repo maintenance tooling
+black>=19.10b0
 flake8>=3.7.9
