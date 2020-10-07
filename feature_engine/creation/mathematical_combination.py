@@ -77,26 +77,34 @@ class MathematicalCombination(BaseNumericalTransformer):
     def __init__(self, variables=None, math_operations=None, new_variables_names=None):
 
         if math_operations is None:
-            math_operations = ['sum', 'prod', 'mean', 'std', 'max', 'min']
+            math_operations = ["sum", "prod", "mean", "std", "max", "min"]
 
         self.variables = variables
         self.new_variables_names = new_variables_names
-        self._math_operations_permitted = ['sum', 'prod', 'mean', 'std', 'max', 'min']
+        self._math_operations_permitted = ["sum", "prod", "mean", "std", "max", "min"]
 
         if not isinstance(math_operations, list):
             raise KeyError("math_operations parameter must be a list or None")
 
-        if any(operation not in self._math_operations_permitted for operation in math_operations):
-            raise KeyError("At least one of math_operations is not found in permitted operations set. "
-                           "Choose one of ['sum', 'prod', 'mean', 'std', 'max', 'min']")
+        if any(
+            operation not in self._math_operations_permitted
+            for operation in math_operations
+        ):
+            raise KeyError(
+                "At least one of math_operations is not found in permitted operations set. "
+                "Choose one of ['sum', 'prod', 'mean', 'std', 'max', 'min']"
+            )
         else:
             self.math_operations = math_operations
 
         if self.variables and len(self.variables) <= 1:
             raise KeyError(
-                "MathematicalCombination requires two or more features to make proper transformations.")
+                "MathematicalCombination requires two or more features to make proper transformations."
+            )
 
-        if self.new_variables_names and len(self.new_variables_names) != len(self.math_operations):
+        if self.new_variables_names and len(self.new_variables_names) != len(
+            self.math_operations
+        ):
             raise KeyError(
                 "Number of items in New_variables_names must be equal to number of items in math_operations."
             )
@@ -118,12 +126,13 @@ class MathematicalCombination(BaseNumericalTransformer):
         self.input_shape_ = X.shape
 
         if self.new_variables_names:
-            self.combination_dict_ = dict(zip(self.new_variables_names, self.math_operations))
+            self.combination_dict_ = dict(
+                zip(self.new_variables_names, self.math_operations)
+            )
         else:
             self.combination_dict_ = {
                 f"{operation}({'-'.join(self.variables)})": operation
-                for operation
-                in self.math_operations
+                for operation in self.math_operations
             }
 
         return self

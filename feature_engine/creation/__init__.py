@@ -5,6 +5,4 @@ dataframe.
 
 from .mathematical_combination import MathematicalCombination
 
-__all__ = [
-    'MathematicalCombination'
-]
+__all__ = ["MathematicalCombination"]
