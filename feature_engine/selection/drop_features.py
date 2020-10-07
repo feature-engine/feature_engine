@@ -1,7 +1,10 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df
+from feature_engine.dataframe_checks import (
+    _is_dataframe,
+    _check_input_matches_training_df,
+)
 from feature_engine.variable_manipulation import _define_variables
 
 
@@ -23,7 +26,9 @@ class DropFeatures(BaseEstimator, TransformerMixin):
         self.features_to_drop = _define_variables(features_to_drop)
 
         if len(self.features_to_drop) == 0:
-            raise ValueError('List of features to drop cannot be empty. Please pass at least 1 variable to drop')
+            raise ValueError(
+                "List of features to drop cannot be empty. Please pass at least 1 variable to drop"
+            )
 
     def fit(self, X, y=None):
         """
@@ -52,7 +57,9 @@ class DropFeatures(BaseEstimator, TransformerMixin):
 
         # check that user does not drop all columns returning empty dataframe
         if len(self.features_to_drop) == len(X.columns):
-            raise ValueError("The resulting dataframe will have no columns after dropping all existing variables")
+            raise ValueError(
+                "The resulting dataframe will have no columns after dropping all existing variables"
+            )
 
         # add input shape
         self.input_shape_ = X.shape
