@@ -10,23 +10,22 @@ from feature_engine.variable_manipulation import _define_variables
 
 class PRatioEncoder(BaseCategoricalTransformer):
     """ 
+    The PRatioEncoder() replaces categories by the ratio of the probability of the target = 1 
+    and the probability of the target = 0.
     
     The target probability ratio is given by: p(1) / p(0)
 
-    And the log of the target probability ratio is: np.log( p(1) / p(0) )
+    The log of the target probability ratio is: np.log( p(1) / p(0) )
     
     Note: This categorical encoding is exclusive for binary classification.
     
     For example in the variable colour, if the mean of the target = 1 for blue
     is 0.8 and the mean of the target = 0  is 0.2, blue will be replaced by:
-    0.8 / 0.2 = 4 if ratio is selected.
-
-    For details on the calculation of the weight of evidence visit:
-    https://www.listendata.com/2015/03/weight-of-evidence-woe-and-information.html
+    0.8 / 0.2 = 4 if ratio is selected, or log(0.8/0.2) if log_ratio is selected.
     
     Note: the division by 0 is not defined and the log(0) is not defined.
     Thus, if p(0) = 0 for the ratio encoder, or either p(0) = 0 or p(1) = 0 for
-    woe or log_ratio, in any of the variables, the encoder will return an error.
+    log_ratio, in any of the variables, the encoder will return an error.
        
     The encoder will encode only categorical variables (type 'object'). A list
     of variables can be passed as an argument. If no variables are passed as 
@@ -42,7 +41,6 @@ class PRatioEncoder(BaseCategoricalTransformer):
     
     encoding_method : str, default=woe
         Desired method of encoding.
-
 
         'ratio' : probability ratio
 

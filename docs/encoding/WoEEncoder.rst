@@ -4,7 +4,7 @@ WoEEncoder
 The WoEEncoder() replaces the labels by the weight of evidence. 
 It only works for binary classification.
 
-The weight of evidence is given by: np.log( p(1) / p(0) )
+The weight of evidence is given by: np.log(P(X=xj|Y = 1)/P(X=xj|Y=0))
 
 The WoEEncoder() works only with categorical variables. A list of variables can
 be indicated, or the encoder will automatically select all categorical variables in the train set.
@@ -16,7 +16,7 @@ be indicated, or the encoder will automatically select all categorical variables
 	import matplotlib.pyplot as plt
 	from sklearn.model_selection import train_test_split
 
-	from feature_engine.encoding import WoEEncoder, RareLabelCEncoder
+	from feature_engine.encoding import WoEEncoder, RareLabelEncoder
 
 	# Load dataset
 	def load_titanic():
@@ -35,7 +35,7 @@ be indicated, or the encoder will automatically select all categorical variables
 			data['survived'], test_size=0.3, random_state=0)
 
 	# set up a rare label encoder
-	rare_encoder = RareLabelCEncoder(tol=0.03, n_categories=2, variables=['cabin', 'pclass', 'embarked'])
+	rare_encoder = RareLabelEncoder(tol=0.03, n_categories=2, variables=['cabin', 'pclass', 'embarked'])
 
 	# fit and transform data
 	train_t = rare_encoder.fit_transform(X_train)

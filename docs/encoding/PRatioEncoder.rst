@@ -1,10 +1,12 @@
 PRatioEncoder
-==========
+=============
 
 The PRatioEncoder() replaces the labels by the ratio of
 probabilities. It only works for binary classification.
     
 The target probability ratio is given by: p(1) / p(0)
+
+The log of the target probability ratio is: np.log( p(1) / p(0) )
 
 The PRatioEncoder() works only with categorical variables. A list of variables can
 be indicated, or the encoder will automatically select all categorical variables in the train set.
@@ -56,7 +58,18 @@ be indicated, or the encoder will automatically select all categorical variables
 
 .. code:: python
 
-    {'cabin': {'B': 3.1999999999999993, 'C': 1.2903225806451615, 'D': 2.5555555555555554, 'E': 2.5555555555555554, 'Rare': 1.3124999999999998, 'n': 0.4385245901639344}, 'pclass': {1: 1.6136363636363635, 2: 0.7735849056603774, 3: 0.34959349593495936}, 'embarked': {'C': 1.2625000000000002, 'Q': 0.5961538461538461, 'S': 0.5127610208816704}}
+    {'cabin': {'B': 3.1999999999999993,
+     'C': 1.2903225806451615
+     'D': 2.5555555555555554,
+     'E': 2.5555555555555554,
+     'Rare': 1.3124999999999998,
+     'n': 0.4385245901639344}, 
+     'pclass': {1: 1.6136363636363635, 
+      2: 0.7735849056603774,
+      3: 0.34959349593495936}, 
+      'embarked': {'C': 1.2625000000000002,
+      'Q': 0.5961538461538461,
+      'S': 0.5127610208816704}}
 
 API Reference
 -------------
