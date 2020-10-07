@@ -10,7 +10,6 @@ from feature_engine.dataframe_checks import (
 
 
 class BaseOutlier(BaseEstimator, TransformerMixin):
-
     def _check_transform_input_and_state(self, X):
         # check if class was fitted
         check_is_fitted(self)
@@ -18,7 +17,7 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
         # check that input is a dataframe
         X = _is_dataframe(X)
 
-        if self.missing_values == 'raise':
+        if self.missing_values == "raise":
             # check if dataset contains na
             _check_contains_na(X, self.variables)
 
@@ -50,11 +49,17 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
         # replace outliers
         for feature in self.right_tail_caps_.keys():
-            X[feature] = np.where(X[feature] > self.right_tail_caps_[feature],
-                                  self.right_tail_caps_[feature], X[feature])
+            X[feature] = np.where(
+                X[feature] > self.right_tail_caps_[feature],
+                self.right_tail_caps_[feature],
+                X[feature],
+            )
 
         for feature in self.left_tail_caps_.keys():
-            X[feature] = np.where(X[feature] < self.left_tail_caps_[feature],
-                                  self.left_tail_caps_[feature], X[feature])
+            X[feature] = np.where(
+                X[feature] < self.left_tail_caps_[feature],
+                self.left_tail_caps_[feature],
+                X[feature],
+            )
 
         return X
