@@ -50,7 +50,7 @@ class WoEEncoder(BaseCategoricalTransformer):
     def fit(self, X, y):
         """
         Learns the numbers that should be used to replace the categories in each
-        variable. That is the WoE or ratio of probability.
+        variable. That is the WoE.
         
         Parameters
         ----------
@@ -66,7 +66,7 @@ class WoEEncoder(BaseCategoricalTransformer):
         ----------
 
         encoder_dict_: dictionary
-            The dictionary containing the {category: WoE / ratio} pairs per variable.
+            The dictionary containing the {category: WoE} pairs per variable.
         """
 
         X = self._check_fit_input_and_variables(X)
