@@ -1,17 +1,33 @@
-import itertools
 from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.utils.validation import check_is_fitted
-from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df
+from feature_engine.dataframe_checks import (
+    _is_dataframe,
+    _check_input_matches_training_df,
+)
+from feature_engine.variable_manipulation import _find_all_variables, _define_variables
 
 
 class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
     """
-    Drop duplicate features from a dataframe. Duplicate features are those set of features which show same value across
-    all observations.
+    DropDuplicateFeatures finds and removes duplicated features in a dataframe.
+
+    Duplicated features are identical features, regardless of the variable or column name. If they
+    show the same values for every observation, then they are considered duplicated.
+
+    The transformer will first identify and store the duplicated variables. Next, the transformer
+    will drop these variables from a dataframe.
+
+    Parameters
+    ----------
+
+    variables: list, default=None
+        The list of variables to evaluate. If None, the transformer will evaluate all variables in
+        the dataset.
+
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, variables=None):
+        self.variables = _define_variables(variables)
 
     def fit(self, X, y=None):
 
@@ -31,36 +47,76 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
         Attributes
         ----------
 
-        duplicate_feature_dict_: dict
-            The dictionary where keys are features and values are duplicate features.
+        duplicated_features_: set
+            The duplicated features.
+
+        duplicated_feature_sets_: list
+            Groups of duplicated features. Or in other words, features that are duplicated with
+            each other. Each list represents a group of duplicated features.
         """
 
         # check input dataframe
         X = _is_dataframe(X)
 
-        duplicated_features_list = []
+        # find all variables or check those entered are in the dataframe
+        self.variables = _find_all_variables(X, self.variables)
 
-        # create column pairs
-        col_pair = list(itertools.combinations(X.columns, 2))
+        # create tuples of duplicated feature groups
+        self.duplicated_feature_sets_ = []
 
-        # create a dictionary of features with values as list of duplicate features
-        self.duplicate_feature_dict_ = {col: [] for col in X.columns}
+        # set to collect features that are duplicated
+        self.duplicated_features_ = set()
 
-        for feat_1, feat_2 in col_pair:
-            if feat_1 not in duplicated_features_list and X[feat_1].equals(X[feat_2]):
-                self.duplicate_feature_dict_[feat_1].append(feat_2)
-                duplicated_features_list.append(feat_2)
+        # create set of examined features
+        _examined_features = set()
 
-        # remove features which are found as duplicate
-        self.duplicate_feature_dict_ = {key: value for key, value in self.duplicate_feature_dict_.items()
-                                        if key not in duplicated_features_list}
+        for feature in self.variables:
+
+            # append so we can remove when we create the combinations
+            _examined_features.add(feature)
+
+            if feature not in self.duplicated_features_:
+
+                _temp_set = set([feature])
+
+                # features that have not been examined, are not currently examined and were
+                # not found duplicates
+                _features_to_compare = [
+                    f
+                    for f in self.variables
+                    if f not in _examined_features.union(self.duplicated_features_)
+                ]
+
+                # create combinations:
+                for f2 in _features_to_compare:
+
+                    if X[feature].equals(X[f2]):
+                        self.duplicated_features_.add(f2)
+                        _temp_set.add(f2)
+
+                # if there are duplicated features
+                if len(_temp_set) > 1:
+                    self.duplicated_feature_sets_.append(_temp_set)
 
         self.input_shape_ = X.shape
 
         return self
 
     def transform(self, X):
+        """
+        Drops the duplicated features from a dataframe.
 
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features].
+            The input samples.
+
+        Returns
+        -------
+        X_transformed: pandas dataframe of shape = [n_samples, n_features - (duplicated features)]
+            The transformed dataframe with the remaining subset of variables.
+
+        """
         # check if fit is performed prior to transform
         check_is_fitted(self)
 
@@ -71,6 +127,6 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         # returned non-duplicate features
-        X = X[self.duplicate_feature_dict_.keys()]
+        X = X.drop(columns=self.duplicated_features_)
 
         return X
