@@ -1,12 +1,14 @@
-WoEEncoder
-==========
+PRatioEncoder
+=============
 
-The WoEEncoder() replaces the labels by the weight of evidence. 
-It only works for binary classification.
+The PRatioEncoder() replaces the labels by the ratio of
+probabilities. It only works for binary classification.
+    
+The target probability ratio is given by: p(1) / p(0)
 
-The weight of evidence is given by: np.log(P(X=xj|Y = 1)/P(X=xj|Y=0))
+The log of the target probability ratio is: np.log( p(1) / p(0) )
 
-The WoEEncoder() works only with categorical variables. A list of variables can
+The PRatioEncoder() works only with categorical variables. A list of variables can
 be indicated, or the encoder will automatically select all categorical variables in the train set.
 
 .. code:: python
@@ -16,7 +18,7 @@ be indicated, or the encoder will automatically select all categorical variables
 	import matplotlib.pyplot as plt
 	from sklearn.model_selection import train_test_split
 
-	from feature_engine.encoding import WoEEncoder, RareLabelEncoder
+	from feature_engine.encoding import PRatioEncoder, RareLabelEncoder
 
 	# Load dataset
 	def load_titanic():
@@ -42,35 +44,35 @@ be indicated, or the encoder will automatically select all categorical variables
 	test_t = rare_encoder.transform(X_train)
 
 	# set up a weight of evidence encoder
-	woe_encoder = WoEEncoder(variables=['cabin', 'pclass', 'embarked'])
+	pratio_encoder = PRatioEncoder(encoding_method='ratio', variables=['cabin', 'pclass', 'embarked'])
 
 	# fit the encoder
-	woe_encoder.fit(train_t, y_train)
+	pratio_encoder.fit(train_t, y_train)
 
 	# transform
-	train_t = woe_encoder.transform(train_t)
-	test_t = woe_encoder.transform(test_t)
+	train_t = pratio_encoder.transform(train_t)
+	test_t = pratio_encoder.transform(test_t)
 
-	woe_encoder.encoder_dict_
+	pratio_encoder.encoder_dict_
 
 
 .. code:: python
 
-    {'cabin': {'B': 1.6299623810120747,
-    'C': 0.7217038208351837,
-    'D': 1.405081209799324,
-    'E': 1.405081209799324,
-    'Rare': 0.7387452866900354,
-    'n': -0.35752781962490193},
-    'pclass': {1: 0.9453018143294478,
-    2: 0.21009172435857942,
-    3: -0.5841726684724614},
-    'embarked': {'C': 0.6999054533737715,
-    'Q': -0.05044494288988759,
-    'S': -0.20113381737960143}}
+    {'cabin': {'B': 3.1999999999999993,
+     'C': 1.2903225806451615
+     'D': 2.5555555555555554,
+     'E': 2.5555555555555554,
+     'Rare': 1.3124999999999998,
+     'n': 0.4385245901639344}, 
+     'pclass': {1: 1.6136363636363635, 
+      2: 0.7735849056603774,
+      3: 0.34959349593495936}, 
+      'embarked': {'C': 1.2625000000000002,
+      'Q': 0.5961538461538461,
+      'S': 0.5127610208816704}}
 
 API Reference
 -------------
 
-.. autoclass:: feature_engine.encoding.WoEEncoder
+.. autoclass:: feature_engine.encoding.PRatioEncoder
     :members:
