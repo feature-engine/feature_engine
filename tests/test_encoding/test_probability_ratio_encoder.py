@@ -5,7 +5,7 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.encoding import PRatioEncoder
 
 
-def test_one_variable(dataframe_enc, dataframe_enc_rare, dataframe_enc_na):
+def test_ratio_with_one_variable(dataframe_enc):
     # test case 1: 1 variable, ratio
     encoder = PRatioEncoder(encoding_method='ratio', variables=['var_A'])
     encoder.fit(dataframe_enc[['var_A', 'var_B']], dataframe_enc['target'])
@@ -27,7 +27,7 @@ def test_one_variable(dataframe_enc, dataframe_enc_rare, dataframe_enc_na):
     pd.testing.assert_frame_equal(X, transf_df[['var_A', 'var_B']])
 
 
-def test_automatically_select_variable(dataframe_enc):
+def test_logratio_and_automaticcally_select_variables(dataframe_enc):
     # test case 2: automatically select variables, log_ratio
     encoder = PRatioEncoder(encoding_method='log_ratio', variables=None)
     encoder.fit(dataframe_enc[['var_A', 'var_B']], dataframe_enc['target'])
@@ -61,7 +61,7 @@ def test_automatically_select_variable(dataframe_enc):
         PRatioEncoder(encoding_method='other')
 
 
-def test_ratio_denominator_probability_zero():
+def test_ratio_raises_error_if_denominator_probability_zero():
     # test case 3: when the denominator probability is zero, ratio
     with pytest.raises(ValueError):
         df = {'var_A': ['A'] * 6 + ['B'] * 10 + ['C'] * 4,
@@ -72,7 +72,7 @@ def test_ratio_denominator_probability_zero():
         encoder.fit(df[['var_A', 'var_B']], df['target'])
 
 
-def test_log_ratio_denominator_probability_zero():
+def test_log_ratio_raises_error_if_denominator_probability_zero():
     # test case 4: when the denominator probability is zero, log_ratio
     with pytest.raises(ValueError):
         df = {'var_A': ['A'] * 6 + ['B'] * 10 + ['C'] * 4,
@@ -83,7 +83,7 @@ def test_log_ratio_denominator_probability_zero():
         encoder.fit(df[['var_A', 'var_B']], df['target'])
 
 
-def test_log_ratio_numerator_probability_zero():
+def test_logratio_raises_error_if_numerator_probability_zero():
     # test case 5: when the numerator probability is zero, only applies to log_ratio
     with pytest.raises(ValueError):
         df = {'var_A': ['A'] * 6 + ['B'] * 10 + ['C'] * 4,
@@ -94,21 +94,21 @@ def test_log_ratio_numerator_probability_zero():
         encoder.fit(df[['var_A', 'var_B']], df['target'])
 
 
-def test_non_fitted(dataframe_enc):
+def test_raises_non_fitted_error(dataframe_enc):
     # test case 6: non fitted error
     with pytest.raises(NotFittedError):
         imputer = PRatioEncoder()
         imputer.transform(dataframe_enc)
 
 
-def test_dataset_contains_na_fit(dataframe_enc_na):
+def test_error_if_df_contains_na_fit(dataframe_enc_na):
     # test case 7: when dataset contains na, fit method
     with pytest.raises(ValueError):
         encoder = PRatioEncoder(encoding_method='ratio')
         encoder.fit(dataframe_enc_na[['var_A', 'var_B']], dataframe_enc_na['target'])
 
 
-def test_dataset_contains_na_transform(dataframe_enc,dataframe_enc_na):
+def test_error_if_df_contains_na_transform(dataframe_enc, dataframe_enc_na):
     # test case 8: when dataset contains na, transform method
     with pytest.raises(ValueError):
         encoder = PRatioEncoder(encoding_method='ratio')
