@@ -20,9 +20,9 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(1, os.path.dirname(os.path.abspath('../')) + os.sep + 'feature_engine')
+sys.path.insert(0, os.path.abspath("."))
+sys.path.insert(0, os.path.abspath("../"))
+sys.path.insert(1, os.path.dirname(os.path.abspath("../")) + os.sep + "feature_engine")
 
 # -- General configuration ------------------------------------------------
 
@@ -33,19 +33,20 @@ sys.path.insert(1, os.path.dirname(os.path.abspath('../')) + os.sep + 'feature_e
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
-              #    'sphinx.ext.doctest',
-              'sphinx.ext.intersphinx',
-              'sphinx.ext.todo',
-              'sphinx.ext.coverage',
-              #   'sphinx.ext.mathjax',
-              #   'sphinx.ext.ifconfig',
-              'sphinx.ext.viewcode',
-              'sphinx.ext.githubpages',
-              #    'sphinx.ext.autosummary',
-              'sphinx.ext.napoleon',
-              'numpydoc'
-              ]
+extensions = [
+    "sphinx.ext.autodoc",
+    #    'sphinx.ext.doctest',
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    #   'sphinx.ext.mathjax',
+    #   'sphinx.ext.ifconfig',
+    "sphinx.ext.viewcode",
+    "sphinx.ext.githubpages",
+    #    'sphinx.ext.autosummary',
+    "sphinx.ext.napoleon",
+    "numpydoc",
+]
 
 numpydoc_show_class_members = False
 
@@ -54,28 +55,28 @@ napoleon_use_param = True
 napoleon_use_ivar = False
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'feature-engine'
-copyright = '2018-2020, Soledad Galli'
-author = 'Soledad Galli'
+project = "feature-engine"
+copyright = "2018-2020, Soledad Galli"
+author = "Soledad Galli"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-VERSION_PATH = '../feature_engine/VERSION'
-with open(VERSION_PATH, 'r') as version_file:
+VERSION_PATH = "../feature_engine/VERSION"
+with open(VERSION_PATH, "r") as version_file:
     v = version_file.read().strip()
 #
 # The short X.Y version.
@@ -107,7 +108,7 @@ add_module_names = True
 show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -117,7 +118,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -129,7 +130,7 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = []
-autoclass_content = 'both'
+autoclass_content = "both"
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 html_show_sphinx = True
@@ -140,7 +141,7 @@ html_show_copyright = True
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'feature_enginedoc'
+htmlhelp_basename = "feature_enginedoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -148,15 +149,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -166,8 +164,13 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'feature_engine.tex', 'feature\\_engine Documentation',
-     'Soledad Galli', 'manual'),
+    (
+        master_doc,
+        "feature_engine.tex",
+        "feature\\_engine Documentation",
+        "Soledad Galli",
+        "manual",
+    ),
 ]
 
 # -- Options for manual page output ---------------------------------------
@@ -175,8 +178,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'feature_engine', 'feature_engine Documentation',
-     [author], 1)
+    (master_doc, "feature_engine", "feature_engine Documentation", [author], 1)
 ]
 
 # -- Options for Texinfo output -------------------------------------------
@@ -185,9 +187,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'feature_engine', 'feature_engine Documentation',
-     author, 'feature_engine', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        "feature_engine",
+        "feature_engine Documentation",
+        author,
+        "feature_engine",
+        "One line description of project.",
+        "Miscellaneous",
+    ),
 ]
 
 # -- Options for Epub output ----------------------------------------------
@@ -208,7 +216,7 @@ epub_copyright = copyright
 # epub_uid = ''
 
 # A list of files that should not be packed into the epub file.
-epub_exclude_files = ['search.html']
+epub_exclude_files = ["search.html"]
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {"https://docs.python.org/": None}

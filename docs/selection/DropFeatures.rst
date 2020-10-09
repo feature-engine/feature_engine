@@ -1,7 +1,8 @@
 DropFeatures
 =============
-The DropFeatures() drops a list of variables from the original dataframe. The user can pass a single variable as
-a string or list of variables to be dropped.
+
+The DropFeatures() drops a list of variables from the original dataframe. The user can
+pass a single variable as a string or list of variables to be dropped.
 
 .. code:: python
 
@@ -26,13 +27,12 @@ a string or list of variables to be dropped.
 
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-                data.drop(['survived', 'name', 'ticket'], axis=1),
+                data.drop(['survived', 'name'], axis=1),
                 data['survived'], test_size=0.3, random_state=0)
 
     # set up the transformer
     transformer = DropFeatures(
-        features_to_drop=['survived', 'name', 'sibsp', 'parch',
-                          'ticket', 'fare', 'body', 'home.dest']
+        features_to_drop=['sibsp', 'parch', 'ticket', 'fare', 'body', 'home.dest']
     )
 
     # fit the transformer

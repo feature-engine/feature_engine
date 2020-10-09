@@ -1,15 +1,16 @@
 PRatioEncoder
 =============
 
-The PRatioEncoder() replaces the labels by the ratio of
-probabilities. It only works for binary classification.
+The PRatioEncoder() replaces the labels by the ratio of probabilities. It only works
+for binary classification.
     
 The target probability ratio is given by: p(1) / p(0)
 
 The log of the target probability ratio is: np.log( p(1) / p(0) )
 
 The PRatioEncoder() works only with categorical variables. A list of variables can
-be indicated, or the encoder will automatically select all categorical variables in the train set.
+be indicated, or the encoder will automatically select all categorical variables in the
+train set.
 
 .. code:: python
 
@@ -28,7 +29,7 @@ be indicated, or the encoder will automatically select all categorical variables
 		data['pclass'] = data['pclass'].astype('O')
 		data['embarked'].fillna('C', inplace=True)
 		return data
-	
+
 	data = load_titanic()
 
 	# Separate into train and test sets
