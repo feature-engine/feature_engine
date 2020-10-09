@@ -10,18 +10,12 @@ from feature_engine.variable_manipulation import _define_variables
 
 class WoEEncoder(BaseCategoricalTransformer):
     """ 
-    The WoERatioCategoricalEncoder() replaces categories by the weight of evidence
-    or by the ratio between the probability of the target = 1 and the probability
-    of the  target = 0.
-
+    The WoERatioCategoricalEncoder() replaces categories by the weight of evidence.
+    
     The weight of evidence is given by: np.log(P(X=xj|Y = 1)/P(X=xj|Y=0))
         
     Note: This categorical encoding is exclusive for binary classification.
     
-    For example in the variable colour, if the mean of the target = 1 for blue
-    is 0.8 and the mean of the target = 0  is 0.2, blue will be replaced by:
-    np.log(0.8/0.2) = 1.386 if log_ratio is selected. 
-
     For details on the calculation of the weight of evidence visit:
     https://www.listendata.com/2015/03/weight-of-evidence-woe-and-information.html
     
@@ -34,7 +28,7 @@ class WoEEncoder(BaseCategoricalTransformer):
     argument, the encoder will find and encode all categorical variables
     (object type).
     
-    The encoder first maps the categories to the numbers for each variable (fit).
+    The encoder first maps the categories to the weight of evidence for variable (fit).
 
     The encoder then transforms the categories into the mapped numbers (transform).
         
