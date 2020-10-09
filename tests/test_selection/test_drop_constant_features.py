@@ -4,7 +4,6 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.selection import DropConstantFeatures
 
 
-# DropConstant transformer tests
 def test_drop_constant_features(dataframe_constant_features):
     transformer = DropConstantFeatures(tol=1, variables=None)
     X = transformer.fit_transform(dataframe_constant_features)

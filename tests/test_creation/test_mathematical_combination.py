@@ -4,7 +4,7 @@ import pytest
 from feature_engine.creation import MathematicalCombination
 
 
-def test_MathematicalCombination_default_parameters(dataframe_vartypes):
+def test_math_combination_default_parameters(dataframe_vartypes):
     transformer = MathematicalCombination()
 
     X = transformer.fit_transform(dataframe_vartypes)
@@ -42,7 +42,7 @@ def test_MathematicalCombination_default_parameters(dataframe_vartypes):
     pd.testing.assert_frame_equal(X, ref)
 
 
-def test_MathematicalCombination_select_variables(dataframe_vartypes):
+def test_math_combination_select_variables(dataframe_vartypes):
     transformer = MathematicalCombination(variables=['Age', 'Marks'])
 
     X = transformer.fit_transform(dataframe_vartypes)
@@ -80,24 +80,24 @@ def test_MathematicalCombination_select_variables(dataframe_vartypes):
     pd.testing.assert_frame_equal(X, ref)
 
 
-def test_MathematicalCombination_error_when_select_one_feature(dataframe_vartypes):
+def test_math_combination_error_when_user_selects_one_variable(dataframe_vartypes):
     with pytest.raises(KeyError):
         transformer = MathematicalCombination(variables=['Age'])
 
 
-def test_MathematicalCombination_error_when_selected__variable_not_numeric(dataframe_vartypes):
+def test_math_combination_error_when_selected_variable_not_numeric(dataframe_vartypes):
     transformer = MathematicalCombination(variables=['Name', 'Age', 'Marks'])
     with pytest.raises(TypeError):
         X = transformer.fit_transform(dataframe_vartypes)
 
 
-def test_MathematicalCombination_Serror_when_selected__variable_not_in_df(dataframe_vartypes):
+def test_math_combination_error_when_selected_variable_not_in_df(dataframe_vartypes):
     transformer = MathematicalCombination(variables=['FeatOutsideDataset', 'Age'])
     with pytest.raises(KeyError):
         X = transformer.fit_transform(dataframe_vartypes)
 
 
-def test_MathematicalCombination_select_two_operations(dataframe_vartypes):
+def test_math_combination_select_two_operations(dataframe_vartypes):
     transformer = MathematicalCombination(math_operations=['sum', 'mean'])
 
     X = transformer.fit_transform(dataframe_vartypes)
@@ -127,7 +127,7 @@ def test_MathematicalCombination_select_two_operations(dataframe_vartypes):
     pd.testing.assert_frame_equal(X, ref)
 
 
-def test_MathematicalCombination__user_gives_new_variable_names(dataframe_vartypes):
+def test_math_combination_user_enters_new_variable_names(dataframe_vartypes):
     transformer = MathematicalCombination(
         math_operations=['sum', 'mean'],
         new_variables_names=['sum_of_two_vars', 'mean_of_two_vars']
@@ -161,7 +161,7 @@ def test_MathematicalCombination__user_gives_new_variable_names(dataframe_vartyp
     pd.testing.assert_frame_equal(X, ref)
 
 
-def test_MathematicalCombination_error_when_variable_names_and_operations_LengthNotEqual(dataframe_vartypes):
+def test_math_combination_error_when_variable_names_and_operations_list_length_not_equal(dataframe_vartypes):
     with pytest.raises(KeyError):
         transformer = MathematicalCombination(
             math_operations=['sum', 'mean'],
@@ -174,7 +174,7 @@ def test_MathematicalCombination_error_when_variable_names_and_operations_Length
             new_variables_names=['sum_of_two_vars']
         )
 
-def test_MathematicalCombination_only_one_mathematical_operation(dataframe_vartypes):
+def test_math_combination_only_one_mathematical_operation(dataframe_vartypes):
     # case 2: selected only one operation:
     transformer = MathematicalCombination(math_operations=['sum'])
 
@@ -203,11 +203,11 @@ def test_MathematicalCombination_only_one_mathematical_operation(dataframe_varty
     pd.testing.assert_frame_equal(X, ref)
 
 
-def test_MathematicalCombination_SelectedoperationsOutsidePermittedList(dataframe_vartypes):
+def test_math_combination_selected_operation_not_in_permitted_list(dataframe_vartypes):
     with pytest.raises(KeyError):
         transformer = MathematicalCombination(math_operations=['OperationOutsidePermittedList'])
 
 
-def test_MathematicalCombination_SelectedoperationsWrongType(dataframe_vartypes):
+def test_math_combination_selected_operation_is_wrong_type(dataframe_vartypes):
     with pytest.raises(KeyError):
         transformer = MathematicalCombination(math_operations=[sum])
