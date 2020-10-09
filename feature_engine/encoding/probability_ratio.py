@@ -21,7 +21,8 @@ class PRatioEncoder(BaseCategoricalTransformer):
     
     For example in the variable colour, if the mean of the target = 1 for blue
     is 0.8 and the mean of the target = 0  is 0.2, blue will be replaced by:
-    0.8 / 0.2 = 4 if ratio is selected, or log(0.8/0.2) if log_ratio is selected.
+    0.8 / 0.2 = 4 if ratio is selected, or log(0.8/0.2) = 1.386 if log_ratio
+    is selected.
     
     Note: the division by 0 is not defined and the log(0) is not defined.
     Thus, if p(0) = 0 for the ratio encoder, or either p(0) = 0 or p(1) = 0 for
