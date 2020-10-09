@@ -88,6 +88,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
         # check that y is binary
         if any(x for x in y.unique() if x not in [0, 1]):
+
             raise ValueError(
                 "This encoder is only designed for binary classification, values of y can be only 0 or 1"
             )
@@ -98,6 +99,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
         self.encoder_dict_ = {}
 
         for var in self.variables:
+          
             t = temp.groupby(var)["target"].mean()
             t = pd.concat([t, 1 - t], axis=1)
             t.columns = ["p1", "p0"]
@@ -119,6 +121,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
                             var
                         )
                     )
+
                 else:
                     self.encoder_dict_[var] = (t.p1 / t.p0).to_dict()
 
@@ -140,3 +143,4 @@ class PRatioEncoder(BaseCategoricalTransformer):
         return X
 
     inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
+

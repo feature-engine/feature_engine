@@ -46,6 +46,7 @@ class WoEEncoder(BaseCategoricalTransformer):
         Learns the numbers that should be used to replace the categories in each
         variable. That is the WoE.
 
+
         Parameters
         ----------
 
