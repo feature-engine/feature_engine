@@ -4,7 +4,7 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.encoding import WoEEncoder
 
 
-def test_automatically_select_variables(dataframe_enc, dataframe_enc_rare, dataframe_enc_na):
+def test_automatically_select_variables(dataframe_enc):
 
     # test case 1: automatically select variables, woe
     encoder = WoEEncoder(variables=None)
@@ -41,7 +41,7 @@ def test_error_target_is_not_passed(dataframe_enc):
         encoder.fit(dataframe_enc)
 
 
-def test_transformed_contains_categories_not_present_in_training(dataframe_enc,dataframe_enc_rare):
+def test_warn_if_transform_df_contains_categories_not_seen_in_fit(dataframe_enc,dataframe_enc_rare):
     # test case 3: when dataset to be transformed contains categories not present in training dataset
     encoder = WoEEncoder(variables=None)
     with pytest.warns(UserWarning):
@@ -49,7 +49,7 @@ def test_transformed_contains_categories_not_present_in_training(dataframe_enc,d
         encoder.transform(dataframe_enc_rare[['var_A', 'var_B']])
 
 
-def test_target_not_binary():
+def test_error_if_target_not_binary():
     # test case 4: the target is not binary
     encoder = WoEEncoder(variables=None)
     with pytest.raises(ValueError):
@@ -60,7 +60,7 @@ def test_target_not_binary():
         encoder.fit(df[['var_A', 'var_B']], df['target'])
 
 
-def test_denominator_probability_is_zero():
+def test_error_if_denominator_probability_is_zero():
     # test case 5: when the denominator probability is zero
     encoder = WoEEncoder(variables=None)
     with pytest.raises(ValueError):
@@ -87,21 +87,21 @@ def test_denominator_probability_is_zero():
     # #     encoder.fit(df[['var_A', 'var_B']], df['target'])
 
 
-def test_non_fitted_error(dataframe_enc):
+def test_raises_non_fitted_error(dataframe_enc):
     # test case 8: non fitted error
     with pytest.raises(NotFittedError):
         imputer = WoEEncoder()
         imputer.transform(dataframe_enc)
 
 
-def test_dataset_contains_na_fit_method(dataframe_enc_na):
+def test_error_if_contains_na_fit_method(dataframe_enc_na):
     # test case 9: when dataset contains na, fit method
     encoder = WoEEncoder(variables=None)
     with pytest.raises(ValueError):
         encoder.fit(dataframe_enc_na[['var_A', 'var_B']], dataframe_enc_na['target'])
 
 
-def test_dataset_contains_na_transform_method(dataframe_enc,dataframe_enc_na):
+def test_error_if_df_contains_na_transform_method(dataframe_enc,dataframe_enc_na):
     # test case 10: when dataset contains na, transform method}
     encoder = WoEEncoder(variables=None)
     with pytest.raises(ValueError):
