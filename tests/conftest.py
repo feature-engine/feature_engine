@@ -205,18 +205,3 @@ def dataframe_duplicate_features_with_na():
 
     df = pd.DataFrame(data)
     return df
-
-
-@pytest.fixture(scope='module')
-def dataframe_duplicate_features():
-    data = {'Name': ['tom', 'nick', 'krish', 'jack'],
-            'dob2': pd.date_range('2020-02-24', periods=4, freq='T'),
-            'City': ['London', 'Manchester', 'Liverpool', 'Bristol'],
-            'Age': [20, 21, 19, 18],
-            'Marks': [0.9, 0.8, 0.7, 0.6],
-            'dob': pd.date_range('2020-02-24', periods=4, freq='T'),
-            'City2': ['London', 'Manchester', 'Liverpool', 'Bristol'],
-            'dob3': pd.date_range('2020-02-24', periods=4, freq='T')}
-
-    df = pd.DataFrame(data)
-    return df
