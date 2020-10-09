@@ -11,19 +11,19 @@ class ReciprocalTransformer(BaseNumericalTransformer):
     """
     The ReciprocalTransformer() applies the reciprocal transformation 1 / x
     to numerical variables.
-    
+
     The ReciprocalTransformer() only works with numerical variables with non-zero
     values. If a variable contains the value 0, the transformer will raise an error.
-    
+
     A list of variables can be passed as an argument. Alternatively, the
     transformer will automatically select and transform all numerical
     variables.
-    
+
     Parameters
-    ----------   
-    
+    ----------
+
     variables : list, default=None
-        The list of numerical variables that will be transformed. If None, the 
+        The list of numerical variables that will be transformed. If None, the
         transformer will automatically find and select all numerical variables.
     """
 
@@ -32,10 +32,10 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         self.variables = _define_variables(variables)
 
     def fit(self, X, y=None):
-        """        
+        """
         Parameters
         ----------
-        
+
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to transform.
@@ -48,7 +48,10 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         # check if the variables contain the value 0
         if (X[self.variables] == 0).any().any():
-            raise ValueError("Some variables contain the value zero, can't apply reciprocal transformation")
+            raise ValueError(
+                "Some variables contain the value zero, can't apply reciprocal "
+                "transformation."
+            )
 
         self.input_shape_ = X.shape
         return self
@@ -56,16 +59,16 @@ class ReciprocalTransformer(BaseNumericalTransformer):
     def transform(self, X):
         """
         Applies the reciprocal 1 / x transformation.
-        
+
         Parameters
         ----------
-        
+
         X : pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        
+
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with reciprocally transformed variables.
         """
@@ -74,13 +77,14 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         # check if the variables contain the value 0
         if (X[self.variables] == 0).any().any():
-            raise ValueError("Some variables contain the value zero, can't apply reciprocal transformation")
+            raise ValueError(
+                "Some variables contain the value zero, can't apply reciprocal "
+                "transformation."
+            )
 
         # transform
         # for some reason reciprocal does not work with integers
-        X.loc[:, self.variables] = X.loc[:, self.variables].astype('float')
+        X.loc[:, self.variables] = X.loc[:, self.variables].astype("float")
         X.loc[:, self.variables] = np.reciprocal(X.loc[:, self.variables])
 
         return X
-
-

@@ -11,20 +11,20 @@ class PowerTransformer(BaseNumericalTransformer):
     """
     The PowerTransformer() applies power or exponential transformations to
     numerical variables.
-    
+
     The PowerTransformer() works only with numerical variables.
-    
+
     A list of variables can be passed as an argument. Alternatively, the
     transformer will automatically select and transform all numerical
     variables.
-    
+
     Parameters
     ----------
-    
+
     variables : list, default=None
-        The list of numerical variables that will be transformed. If None, the 
+        The list of numerical variables that will be transformed. If None, the
         transformer will automatically find and select all numerical variables.
-        
+
     exp : float or int, default=0.5
         The power (or exponent).
     """
@@ -32,7 +32,7 @@ class PowerTransformer(BaseNumericalTransformer):
     def __init__(self, exp=0.5, variables=None):
 
         if not isinstance(exp, float) and not isinstance(exp, int):
-            raise ValueError('exp must be a float or an int')
+            raise ValueError("exp must be a float or an int")
 
         self.exp = exp
         self.variables = _define_variables(variables)
@@ -41,7 +41,7 @@ class PowerTransformer(BaseNumericalTransformer):
         """
         Parameters
         ----------
-        
+
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to transform.
@@ -58,16 +58,16 @@ class PowerTransformer(BaseNumericalTransformer):
     def transform(self, X):
         """
         Applies the power transformation to the variables.
-        
+
         Parameters
         ----------
-        
+
         X : pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        
+
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with the power transformed variables.
         """
@@ -78,5 +78,3 @@ class PowerTransformer(BaseNumericalTransformer):
         X.loc[:, self.variables] = np.power(X.loc[:, self.variables], self.exp)
 
         return X
-
-

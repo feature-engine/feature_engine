@@ -1,4 +1,4 @@
-# Authors: Soledad Galli <solegalli@protonmail.com>
+# Authors: Nicolas Galli <nicolas.galli@yahoo.com>
 # License: BSD 3 clause
 
 import numpy as np
@@ -8,44 +8,64 @@ from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 from feature_engine.variable_manipulation import _define_variables
 
 
-class WoEEncoder(BaseCategoricalTransformer):
+class PRatioEncoder(BaseCategoricalTransformer):
     """
-    The WoERatioCategoricalEncoder() replaces categories by the weight of evidence.
+    The PRatioEncoder() replaces categories by the ratio of the probability of the
+    target = 1 and the probability of the target = 0.
 
-    The weight of evidence is given by: np.log(P(X=xj|Y = 1)/P(X=xj|Y=0))
+    The target probability ratio is given by: p(1) / p(0)
+
+    The log of the target probability ratio is: np.log( p(1) / p(0) )
 
     Note: This categorical encoding is exclusive for binary classification.
 
-    For details on the calculation of the weight of evidence visit:
-    https://www.listendata.com/2015/03/weight-of-evidence-woe-and-information.html
+    For example in the variable colour, if the mean of the target = 1 for blue
+    is 0.8 and the mean of the target = 0  is 0.2, blue will be replaced by:
+    0.8 / 0.2 = 4 if ratio is selected, or log(0.8/0.2) = 1.386 if log_ratio
+    is selected.
 
     Note: the division by 0 is not defined and the log(0) is not defined.
     Thus, if p(0) = 0 for the ratio encoder, or either p(0) = 0 or p(1) = 0 for
-    woe or log_ratio, in any of the variables, the encoder will return an error.
+    log_ratio, in any of the variables, the encoder will return an error.
 
     The encoder will encode only categorical variables (type 'object'). A list
     of variables can be passed as an argument. If no variables are passed as
     argument, the encoder will find and encode all categorical variables
     (object type).
 
-    The encoder first maps the categories to the weight of evidence for variable (fit).
+    The encoder first maps the categories to the numbers for each variable (fit).
 
     The encoder then transforms the categories into the mapped numbers (transform).
+
+    Parameters
+    ----------
+
+    encoding_method : str, default=woe
+        Desired method of encoding.
+
+        'ratio' : probability ratio
+
+        'log_ratio' : log probability ratio
 
     variables : list, default=None
         The list of categorical variables that will be encoded. If None, the
         encoder will find and select all object type variables.
     """
 
-    def __init__(self, variables=None):
+    def __init__(self, encoding_method="ratio", variables=None):
 
+        if encoding_method not in ["ratio", "log_ratio"]:
+            raise ValueError(
+                "encoding_method takes only values 'ratio' and 'log_ratio'"
+            )
+
+        self.encoding_method = encoding_method
         self.variables = _define_variables(variables)
 
     def fit(self, X, y):
         """
         Learns the numbers that should be used to replace the categories in each
-        variable. That is the WoE.
-
+        variable. That is the ratio of probability.
 
         Parameters
         ----------
@@ -61,13 +81,14 @@ class WoEEncoder(BaseCategoricalTransformer):
         ----------
 
         encoder_dict_: dictionary
-            The dictionary containing the {category: WoE} pairs per variable.
+            The dictionary containing the {category: ratio} pairs per variable.
         """
 
         X = self._check_fit_input_and_variables(X)
 
         # check that y is binary
         if any(x for x in y.unique() if x not in [0, 1]):
+
             raise ValueError(
                 "This encoder is only designed for binary classification, values of y "
                 "can be only 0 or 1."
@@ -78,27 +99,30 @@ class WoEEncoder(BaseCategoricalTransformer):
 
         self.encoder_dict_ = {}
 
-        total_pos = temp["target"].sum()
-        total_neg = len(temp) - total_pos
-        temp["non_target"] = np.where(temp["target"] == 1, 0, 1)
-
         for var in self.variables:
-            pos = temp.groupby([var])["target"].sum() / total_pos
-            neg = temp.groupby([var])["non_target"].sum() / total_neg
+          
+            t = temp.groupby(var)["target"].mean()
+            t = pd.concat([t, 1 - t], axis=1)
+            t.columns = ["p1", "p0"]
 
-            t = pd.concat([pos, neg], axis=1)
-            t["woe"] = np.log(t["target"] / t["non_target"])
+            if self.encoding_method == "log_ratio":
+                if not t.loc[t["p0"] == 0, :].empty or not t.loc[t["p1"] == 0, :].empty:
+                    raise ValueError(
+                        "p(0) or p(1) for a category in variable {} is zero, log of "
+                        "zero is not defined".format(var)
+                    )
+                else:
+                    self.encoder_dict_[var] = (np.log(t.p1 / t.p0)).to_dict()
 
-            if (
-                not t.loc[t["target"] == 0, :].empty
-                or not t.loc[t["non_target"] == 0, :].empty
-            ):
-                raise ValueError(
-                    "The proportion of one of the classes for a category in "
-                    "variable {} is zero, and log of zero is not defined".format(var)
-                )
+            elif self.encoding_method == "ratio":
+                if not t.loc[t["p0"] == 0, :].empty:
+                    raise ValueError(
+                        "p(0) for a category in variable {} is zero, division by 0 is "
+                        "not defined".format(var)
+                    )
 
-            self.encoder_dict_[var] = t["woe"].to_dict()
+                else:
+                    self.encoder_dict_[var] = (t.p1 / t.p0).to_dict()
 
         self._check_encoding_dictionary()
 
@@ -118,3 +142,4 @@ class WoEEncoder(BaseCategoricalTransformer):
         return X
 
     inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
+
