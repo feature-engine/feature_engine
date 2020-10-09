@@ -13,5 +13,7 @@ Feature-engine's categorical encoders replace variable strings by estimated or a
    OrdinalEncoder
    MeanEncoder
    WoEEncoder
+   PRatioEncoder
    DecisionTreeEncoder
    RareLabelEncoder
+   
