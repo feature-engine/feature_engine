@@ -4,7 +4,7 @@ import pandas as pd
 
 
 @pytest.fixture(scope="module")
-def dataframe_vartypes():
+def df_vartypes():
     data = {
         "Name": ["tom", "nick", "krish", "jack"],
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
@@ -18,7 +18,7 @@ def dataframe_vartypes():
 
 
 @pytest.fixture(scope="module")
-def dataframe_na():
+def df_na():
     data = {
         "Name": ["tom", "nick", "krish", np.nan, "peter", np.nan, "fred", "sam"],
         "City": [
@@ -51,7 +51,7 @@ def dataframe_na():
 
 
 @pytest.fixture(scope="module")
-def dataframe_enc():
+def df_enc():
     df = {
         "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
         "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
@@ -62,7 +62,7 @@ def dataframe_enc():
 
 
 @pytest.fixture(scope="module")
-def dataframe_enc_rare():
+def df_enc_rare():
     df = {
         "var_A": ["B"] * 9 + ["A"] * 6 + ["C"] * 4 + ["D"] * 1,
         "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
@@ -73,7 +73,7 @@ def dataframe_enc_rare():
 
 
 @pytest.fixture(scope="module")
-def dataframe_enc_na():
+def df_enc_na():
     df = {
         "var_A": ["B"] * 9 + ["A"] * 6 + ["C"] * 4 + ["D"] * 1,
         "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
@@ -85,7 +85,7 @@ def dataframe_enc_na():
 
 
 @pytest.fixture(scope="module")
-def dataframe_enc_big():
+def df_enc_big():
     df = {
         "var_A": ["A"] * 6
         + ["B"] * 10
@@ -114,7 +114,7 @@ def dataframe_enc_big():
 
 
 @pytest.fixture(scope="module")
-def dataframe_enc_big_na():
+def df_enc_big_na():
     df = {
         "var_A": ["A"] * 6
         + ["B"] * 10
@@ -144,7 +144,7 @@ def dataframe_enc_big_na():
 
 
 @pytest.fixture(scope="module")
-def dataframe_normal_dist():
+def df_normal_dist():
     np.random.seed(0)
     mu, sigma = 0, 0.1  # mean and standard deviation
     s = np.random.normal(mu, sigma, 100)
@@ -154,7 +154,7 @@ def dataframe_normal_dist():
 
 
 @pytest.fixture(scope="module")
-def dataframe_constant_features():
+def df_constant_features():
     data = {
         "Name": ["tom", "nick", "krish", "jack"],
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
@@ -172,7 +172,7 @@ def dataframe_constant_features():
 
 
 @pytest.fixture(scope="module")
-def dataframe_duplicate_features():
+def df_duplicate_features():
     data = {
         "Name": ["tom", "nick", "krish", "jack"],
         "dob2": pd.date_range("2020-02-24", periods=4, freq="T"),
@@ -190,7 +190,7 @@ def dataframe_duplicate_features():
 
 
 @pytest.fixture(scope="module")
-def dataframe_duplicate_features_with_na():
+def df_duplicate_features_with_na():
     data = {
         "Name": ["tom", "nick", "krish", "jack", np.nan],
         "dob2": pd.date_range("2020-02-24", periods=5, freq="T"),
