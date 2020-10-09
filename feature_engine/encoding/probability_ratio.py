@@ -44,7 +44,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
         'ratio' : probability ratio
 
-        'log_ratio : log probability ratio
+        'log_ratio' : log probability ratio
         
     variables : list, default=None
         The list of categorical variables that will be encoded. If None, the 
