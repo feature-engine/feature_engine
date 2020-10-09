@@ -7,16 +7,16 @@ from feature_engine.variable_manipulation import _find_numerical_variables
 
 
 class ArbitraryOutlierCapper(BaseOutlier):
-    """ 
+    """
     The ArbitraryOutlierCapper() caps the maximum or minimum values of a variable
     by an arbitrary value indicated by the user.
-       
+
     The user must provide the maximum or minimum values that will be used
     to cap each variable in a dictionary {feature:capping value}
 
     Parameters
     ----------
-    
+
     capping_max : dictionary, default=None
         user specified capping values on right tail of the distribution (maximum
         values).
@@ -26,15 +26,20 @@ class ArbitraryOutlierCapper(BaseOutlier):
         values).
 
     missing_values : string, default='raise'
-    	Indicates if missing values should be ignored or raised. If 
-    	missing_values='raise' the transformer will return an error if the
-    	training or other datasets contain missing values.        
+        Indicates if missing values should be ignored or raised. If
+        missing_values='raise' the transformer will return an error if the
+        training or other datasets contain missing values.
     """
 
-    def __init__(self, max_capping_dict=None, min_capping_dict=None, missing_values='raise'):
+    def __init__(
+        self, max_capping_dict=None, min_capping_dict=None, missing_values="raise"
+    ):
 
         if not max_capping_dict and not min_capping_dict:
-            raise ValueError("Please provide at least 1 dictionary with the capping values per variable")
+            raise ValueError(
+                "Please provide at least 1 dictionary with the capping values per "
+                "variable."
+            )
 
         if max_capping_dict is None or isinstance(max_capping_dict, dict):
             self.max_capping_dict = max_capping_dict
@@ -55,7 +60,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
             tmp.update(max_capping_dict)
             self.variables = [x for x in tmp.keys()]
 
-        if missing_values not in ['raise', 'ignore']:
+        if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'")
 
         self.missing_values = missing_values
@@ -84,7 +89,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
         """
         X = _is_dataframe(X)
 
-        if self.missing_values == 'raise':
+        if self.missing_values == "raise":
             # check if dataset contains na
             _check_contains_na(X, self.variables)
 
@@ -105,11 +110,9 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X):
         X = super().transform(X)
         return X
 
     transform.__doc__ = BaseOutlier.transform.__doc__
-
-

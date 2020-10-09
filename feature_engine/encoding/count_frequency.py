@@ -7,43 +7,45 @@ from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 
 
 class CountFrequencyEncoder(BaseCategoricalTransformer):
-    """ 
+    """
     The CountFrequencyCategoricalEncoder() replaces categories by the count of
     observations per category or by the percentage of observations per category.
-    
+
     For example in the variable colour, if 10 observations are blue, blue will
     be replaced by 10. Alternatively, if 10% of the observations are blue, blue
     will be replaced by 0.1.
-    
+
     The CountFrequencyCategoricalEncoder() will encode only categorical variables
     (type 'object'). A list of variables to be encoded can be passed as argument.
     Alternatively, the encoder will find and encode all categorical variables
     (object type).
-    
+
     The encoder first maps the categories to the numbers (counts or frequencies)
     for each variable (fit).
 
     The encoder then transforms the categories to those mapped numbers (transform).
-    
+
     Parameters
     ----------
-    
+
     encoding_method : str, default='count'
         Desired method of encoding.
 
         'count': number of observations per category
 
         'frequency': percentage of observations per category
-    
+
     variables : list
-        The list of categorical variables that will be encoded. If None, the 
+        The list of categorical variables that will be encoded. If None, the
         encoder will find and transform all object type variables.
     """
 
-    def __init__(self, encoding_method='count', variables=None):
+    def __init__(self, encoding_method="count", variables=None):
 
-        if encoding_method not in ['count', 'frequency']:
-            raise ValueError("encoding_method takes only values 'count' and 'frequency'")
+        if encoding_method not in ["count", "frequency"]:
+            raise ValueError(
+                "encoding_method takes only values 'count' and 'frequency'"
+            )
 
         self.encoding_method = encoding_method
         self.variables = _define_variables(variables)
@@ -51,10 +53,10 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
     def fit(self, X, y=None):
         """
         Learns the counts or frequencies which will be used to replace the categories.
-        
+
         Parameters
         ----------
-        
+
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             The user can pass the entire dataframe.
@@ -76,10 +78,10 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
 
         # learn encoding maps
         for var in self.variables:
-            if self.encoding_method == 'count':
+            if self.encoding_method == "count":
                 self.encoder_dict_[var] = X[var].value_counts().to_dict()
 
-            elif self.encoding_method == 'frequency':
+            elif self.encoding_method == "frequency":
                 n_obs = np.float(len(X))
                 self.encoder_dict_[var] = (X[var].value_counts() / n_obs).to_dict()
 
@@ -89,7 +91,7 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X):
         X = super().transform(X)
         return X
@@ -101,5 +103,3 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
         return X
 
     inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
-
-

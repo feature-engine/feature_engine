@@ -5,7 +5,7 @@ from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
     _define_variables,
-    _find_numerical_variables
+    _find_numerical_variables,
 )
 
 
@@ -19,9 +19,10 @@ class EndTailImputer(BaseImputer):
     The user can indicate the variables to be imputed in a list. Alternatively, the
     EndTailImputer() will automatically find and select all variables of type numeric.
 
-    The imputer first calculates the values at the end of the distribution for each variable
-    (fit). The values at the end of the distribution are determined using the Gaussian limits,
-    the the IQR proximity rule limits, or a factor of the maximum value:
+    The imputer first calculates the values at the end of the distribution for each
+    variable (fit). The values at the end of the distribution are determined using
+    the Gaussian limits, the the IQR proximity rule limits, or a factor of the maximum
+    value:
 
     Gaussian limits:
         right tail: mean + 3*std
@@ -62,8 +63,9 @@ class EndTailImputer(BaseImputer):
         that if 'max' is passed, the parameter 'tail' is ignored.
 
     tail : str, default=right
-        Indicates if the values to replace missing data should be selected from the right
-        or left tail of the variable distribution. Can take values 'left' or 'right'.
+        Indicates if the values to replace missing data should be selected from the
+        right or left tail of the variable distribution. Can take values 'left' or
+        'right'.
 
     fold: int, default=3
         Factor to multiply the std, the IQR or the Max values. Recommended values
@@ -74,12 +76,16 @@ class EndTailImputer(BaseImputer):
         select all variables of type numeric.
     """
 
-    def __init__(self, imputation_method='gaussian', tail='right', fold=3, variables=None):
+    def __init__(
+        self, imputation_method="gaussian", tail="right", fold=3, variables=None
+    ):
 
-        if imputation_method not in ['gaussian', 'iqr', 'max']:
-            raise ValueError("distribution takes only values 'gaussian', 'iqr' or 'max'")
+        if imputation_method not in ["gaussian", "iqr", "max"]:
+            raise ValueError(
+                "imputation_method takes only values 'gaussian', 'iqr' or 'max'"
+            )
 
-        if tail not in ['right', 'left']:
+        if tail not in ["right", "left"]:
             raise ValueError("tail takes only values 'right' or 'left'")
 
         if fold <= 0:
@@ -99,7 +105,7 @@ class EndTailImputer(BaseImputer):
 
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            The user can pass the entire dataframe, not just the variables that need imputation.
+            Can pass the entire dataframe, not just the variables that need imputation.
 
         y : None
             y is not needed in this imputation. You can pass None or y.
@@ -119,27 +125,35 @@ class EndTailImputer(BaseImputer):
         self.variables = _find_numerical_variables(X, self.variables)
 
         # estimate imputation values
-        if self.imputation_method == 'max':
+        if self.imputation_method == "max":
             self.imputer_dict_ = (X[self.variables].max() * self.fold).to_dict()
 
-        elif self.imputation_method == 'gaussian':
-            if self.tail == 'right':
-                self.imputer_dict_ = (X[self.variables].mean() + self.fold * X[self.variables].std()).to_dict()
-            elif self.tail == 'left':
-                self.imputer_dict_ = (X[self.variables].mean() - self.fold * X[self.variables].std()).to_dict()
+        elif self.imputation_method == "gaussian":
+            if self.tail == "right":
+                self.imputer_dict_ = (
+                    X[self.variables].mean() + self.fold * X[self.variables].std()
+                ).to_dict()
+            elif self.tail == "left":
+                self.imputer_dict_ = (
+                    X[self.variables].mean() - self.fold * X[self.variables].std()
+                ).to_dict()
 
-        elif self.imputation_method == 'iqr':
+        elif self.imputation_method == "iqr":
             IQR = X[self.variables].quantile(0.75) - X[self.variables].quantile(0.25)
-            if self.tail == 'right':
-                self.imputer_dict_ = (X[self.variables].quantile(0.75) + (IQR * self.fold)).to_dict()
-            elif self.tail == 'left':
-                self.imputer_dict_ = (X[self.variables].quantile(0.25) - (IQR * self.fold)).to_dict()
+            if self.tail == "right":
+                self.imputer_dict_ = (
+                    X[self.variables].quantile(0.75) + (IQR * self.fold)
+                ).to_dict()
+            elif self.tail == "left":
+                self.imputer_dict_ = (
+                    X[self.variables].quantile(0.25) - (IQR * self.fold)
+                ).to_dict()
 
         self.input_shape_ = X.shape
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X):
         X = super().transform(X)
         return X

@@ -6,18 +6,17 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_contains_na,
-    _check_input_matches_training_df
+    _check_input_matches_training_df,
 )
 from feature_engine.variable_manipulation import _find_categorical_variables
 
 
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
-
     def _check_fit_input_and_variables(self, X):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # find categorical variables or check that variables entered by user are of type object
+        # find categorical variables or check variables entered by user are object
         self.variables = _find_categorical_variables(X, self.variables)
 
         # check if dataset contains na
@@ -35,7 +34,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables)
 
-        # Check that input data contains same number of columns as dataframe used to fit
+        # Check input data contains same number of columns as df used to fit
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         return X
@@ -43,11 +42,13 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
     def _check_encoding_dictionary(self):
         # check that dictionary is not empty
         if len(self.encoder_dict_) == 0:
-            raise ValueError('Encoder could not be fitted. Check the parameters and the variables '
-                             'in your dataframe.')
+            raise ValueError(
+                "Encoder could not be fitted. Check the parameters and the variables "
+                "in your dataframe."
+            )
 
     def transform(self, X):
-        """ Replaces categories with the learned parameters.
+        """Replaces categories with the learned parameters.
 
         Parameters
         ----------
@@ -60,7 +61,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         X_transformed : pandas dataframe of shape = [n_samples, n_features].
             The dataframe containing categories replaced by numbers.
-       """
+        """
 
         X = self._check_transform_input_and_state(X)
 
@@ -82,7 +83,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         return X
 
     def inverse_transform(self, X):
-        """ Convert the data back to the original representation.
+        """Convert the data back to the original representation.
 
         Parameters
         ----------
@@ -96,7 +97,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         X : pandas dataframe of shape = [n_samples, n_features].
             The un-transformed dataframe, that is, containing the original values
             of the categorical variables.
-       """
+        """
 
         X = self._check_transform_input_and_state(X)
 

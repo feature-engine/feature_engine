@@ -15,8 +15,9 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
     'var2':[5, 10, 15, 20]}.
 
     The UserInputDiscretiser() works only with numerical variables. The discretiser will
-    check if the dictionary entered by the user contains variables present in the training
-    set, and if these variables are cast as numerical, before doing any transformation.
+    check if the dictionary entered by the user contains variables present in the
+    training set, and if these variables are cast as numerical, before doing any
+    transformation.
 
     Then it transforms the variables, that is, it sorts the values into the intervals,
     transform.
@@ -25,8 +26,10 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
     ----------
 
     binning_dict : dict
-        The dictionary with the variable : interval limits pairs, provided by the user. A
-        valid dictionary looks like this: {'var1':[0, 10, 100, 1000], 'var2':[5, 10, 15, 20]}.
+        The dictionary with the variable : interval limits pairs, provided by the user.
+        A valid dictionary looks like this:
+
+         binning_dict = {'var1':[0, 10, 100, 1000], 'var2':[5, 10, 15, 20]}.
 
     return_object : bool, default=False
         Whether the numbers in the discrete variable should be returned as
@@ -42,10 +45,12 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
     def __init__(self, binning_dict, return_object=False, return_boundaries=False):
 
         if not isinstance(binning_dict, dict):
-            raise ValueError("Please provide at a dictionary with the interval limits per variable")
+            raise ValueError(
+                "Please provide at a dictionary with the interval limits per variable"
+            )
 
         if not isinstance(return_object, bool):
-            raise ValueError('return_object must be True or False')
+            raise ValueError("return_object must be True or False")
 
         self.binning_dict = binning_dict
         self.variables = [x for x in binning_dict.keys()]
@@ -54,7 +59,8 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     def fit(self, X, y=None):
         """
-        Checks that the user entered variables are in the train set and cast as numerical.
+        Checks that the user entered variables are in the train set and cast as
+        numerical.
 
         Parameters
         ----------
@@ -80,15 +86,17 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         if all(variable in X.columns for variable in self.variables):
             self.binner_dict_ = self.binning_dict
         else:
-            raise ValueError('There are variables in the provided dictionary which are not present in the train set '
-                             'or not cast as numerical')
+            raise ValueError(
+                "There are variables in the provided dictionary which are not present "
+                "in the train set or not cast as numerical"
+            )
 
         self.input_shape_ = X.shape
 
         return self
 
     def transform(self, X):
-        """ Sorts the variable values into the intervals.
+        """Sorts the variable values into the intervals.
 
         Parameters
         ----------
@@ -112,10 +120,12 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
         else:
             for feature in self.variables:
-                X[feature] = pd.cut(X[feature], self.binner_dict_[feature], labels=False)
+                X[feature] = pd.cut(
+                    X[feature], self.binner_dict_[feature], labels=False
+                )
 
             # return object
             if self.return_object:
-                X[self.variables] = X[self.variables].astype('O')
+                X[self.variables] = X[self.variables].astype("O")
 
         return X
