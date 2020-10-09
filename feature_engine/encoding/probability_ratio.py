@@ -100,7 +100,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
         self.encoder_dict_ = {}
 
         for var in self.variables:
-          
+
             t = temp.groupby(var)["target"].mean()
             t = pd.concat([t, 1 - t], axis=1)
             t.columns = ["p1", "p0"]
@@ -142,4 +142,3 @@ class PRatioEncoder(BaseCategoricalTransformer):
         return X
 
     inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
-
