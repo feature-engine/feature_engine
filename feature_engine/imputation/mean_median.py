@@ -17,11 +17,13 @@ class MeanMedianImputer(BaseImputer):
     The MeanMedianImputer() works only with numerical variables.
 
     Users can pass a list of variables to be imputed as argument. Alternatively, the
-    MeanMedianImputer() will automatically find and select all variables of type numeric.
+    MeanMedianImputer() will automatically find and select all variables of type
+    numeric.
 
     The imputer first calculates the mean / median values of the variables (fit).
 
-    The imputer then replaces the missing data with the estimated mean / median (transform).
+    The imputer then replaces the missing data with the estimated mean / median
+    (transform).
 
     Parameters
     ----------
@@ -34,9 +36,9 @@ class MeanMedianImputer(BaseImputer):
         all variables of type numeric.
     """
 
-    def __init__(self, imputation_method='median', variables=None):
+    def __init__(self, imputation_method="median", variables=None):
 
-        if imputation_method not in ['median', 'mean']:
+        if imputation_method not in ["median", "mean"]:
             raise ValueError("imputation_method takes only values 'median' or 'mean'")
 
         self.imputation_method = imputation_method
@@ -51,7 +53,7 @@ class MeanMedianImputer(BaseImputer):
 
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            User can pass the entire dataframe, not just the variables that need imputation.
+            Can pass the entire dataframe, not just the variables that need imputation.
 
         y : pandas series or None, default=None
             y is not needed in this imputation. You can pass None or y.
@@ -70,17 +72,17 @@ class MeanMedianImputer(BaseImputer):
         self.variables = _find_numerical_variables(X, self.variables)
 
         # find imputation parameters: mean or median
-        if self.imputation_method == 'mean':
+        if self.imputation_method == "mean":
             self.imputer_dict_ = X[self.variables].mean().to_dict()
 
-        elif self.imputation_method == 'median':
+        elif self.imputation_method == "median":
             self.imputer_dict_ = X[self.variables].median().to_dict()
 
         self.input_shape_ = X.shape
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X):
         X = super().transform(X)
         return X

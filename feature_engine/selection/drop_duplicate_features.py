@@ -11,19 +11,19 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
     """
     DropDuplicateFeatures finds and removes duplicated features in a dataframe.
 
-    Duplicated features are identical features, regardless of the variable or column name. If they
-    show the same values for every observation, then they are considered duplicated.
+    Duplicated features are identical features, regardless of the variable or column
+    name. If they show the same values for every observation, then they are considered
+    duplicated.
 
-    The transformer will first identify and store the duplicated variables. Next, the transformer
-    will drop these variables from a dataframe.
+    The transformer will first identify and store the duplicated variables. Next, the
+    transformer will drop these variables from a dataframe.
 
     Parameters
     ----------
 
     variables: list, default=None
-        The list of variables to evaluate. If None, the transformer will evaluate all variables in
-        the dataset.
-
+        The list of variables to evaluate. If None, the transformer will evaluate all
+        variables in the dataset.
     """
 
     def __init__(self, variables=None):
@@ -51,8 +51,9 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
             The duplicated features.
 
         duplicated_feature_sets_: list
-            Groups of duplicated features. Or in other words, features that are duplicated with
-            each other. Each list represents a group of duplicated features.
+            Groups of duplicated features. Or in other words, features that are
+            duplicated with each other. Each list represents a group of duplicated
+            features.
         """
 
         # check input dataframe
@@ -79,8 +80,8 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
 
                 _temp_set = set([feature])
 
-                # features that have not been examined, are not currently examined and were
-                # not found duplicates
+                # features that have not been examined, are not currently examined and
+                # were not found duplicates
                 _features_to_compare = [
                     f
                     for f in self.variables
@@ -113,7 +114,8 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X_transformed: pandas dataframe of shape = [n_samples, n_features - (duplicated features)]
+        X_transformed: pandas dataframe,
+            shape = [n_samples, n_features - (duplicated features)]
             The transformed dataframe with the remaining subset of variables.
 
         """

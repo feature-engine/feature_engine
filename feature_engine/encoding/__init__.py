@@ -12,12 +12,12 @@ from .woe import WoEEncoder
 from .probability_ratio import PRatioEncoder
 
 __all__ = [
-    'CountFrequencyEncoder',
-    'DecisionTreeEncoder',
-    'MeanEncoder',
-    'OneHotEncoder',
-    'OrdinalEncoder',
-    'RareLabelEncoder',
-    'WoEEncoder',
-    'PRatioEncoder'
+    "CountFrequencyEncoder",
+    "DecisionTreeEncoder",
+    "MeanEncoder",
+    "OneHotEncoder",
+    "OrdinalEncoder",
+    "RareLabelEncoder",
+    "WoEEncoder",
+    "PRatioEncoder",
 ]

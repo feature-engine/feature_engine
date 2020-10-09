@@ -5,7 +5,7 @@ from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
     _find_categorical_variables,
-    _define_variables
+    _define_variables,
 )
 
 
@@ -25,9 +25,9 @@ class CategoricalImputer(BaseImputer):
 
     imputation_method : str, default=missing
         Desired method of imputation. Can be 'frequent' or 'missing'.
-        
+
     fill_value : str, default='Missing'
-        Only used when imputation_method='missing'. Can be used to set a 
+        Only used when imputation_method='missing'. Can be used to set a
         user-defined value to replace the missing data.
 
     variables : list, default=None
@@ -44,10 +44,18 @@ class CategoricalImputer(BaseImputer):
         with feature-engine.
     """
 
-    def __init__(self, imputation_method='missing', fill_value='Missing', variables=None, return_object=False):
+    def __init__(
+        self,
+        imputation_method="missing",
+        fill_value="Missing",
+        variables=None,
+        return_object=False,
+    ):
 
-        if imputation_method not in ['missing', 'frequent']:
-            raise ValueError("imputation_method takes only values 'missing' or 'frequent'")
+        if imputation_method not in ["missing", "frequent"]:
+            raise ValueError(
+                "imputation_method takes only values 'missing' or 'frequent'"
+            )
 
         if not isinstance(fill_value, str):
             raise ValueError("parameter 'fill_value' should be string")
@@ -85,10 +93,10 @@ class CategoricalImputer(BaseImputer):
         # find or check for categorical variables
         self.variables = _find_categorical_variables(X, self.variables)
 
-        if self.imputation_method == 'missing':
+        if self.imputation_method == "missing":
             self.imputer_dict_ = {var: self.fill_value for var in self.variables}
 
-        elif self.imputation_method == 'frequent':
+        elif self.imputation_method == "frequent":
             self.imputer_dict_ = {}
 
             for var in self.variables:
@@ -98,7 +106,9 @@ class CategoricalImputer(BaseImputer):
                 if len(mode_vals) == 1:
                     self.imputer_dict_[var] = mode_vals[0]
                 else:
-                    raise ValueError('The variable {} contains multiple frequent categories.'.format(var))
+                    raise ValueError(
+                        "Variable {} contains multiple frequent categories.".format(var)
+                    )
 
         self.input_shape_ = X.shape
 
@@ -110,8 +120,8 @@ class CategoricalImputer(BaseImputer):
 
         # add additional step to return variables cast as object
         if self.return_object:
-            X[self.variables] = X[self.variables].astype('O')
+            X[self.variables] = X[self.variables].astype("O")
         return X
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     transform.__doc__ = BaseImputer.transform.__doc__

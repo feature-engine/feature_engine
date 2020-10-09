@@ -11,28 +11,28 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     """
     The BoxCoxTransformer() applies the BoxCox transformation to numerical
     variables.
-    
+
     The BoxCox transformation implemented by this transformer is that of
     SciPy.stats:
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.boxcox.html
-    
-    The BoxCoxTransformer() works only with numerical positive variables (>=0, 
+
+    The BoxCoxTransformer() works only with numerical positive variables (>=0,
     the transformer also works for zero values).
 
     A list of variables can be passed as an argument. Alternatively, the
     transformer will automatically select and transform all numerical
     variables.
-    
+
     Parameters
-    ----------    
-    
+    ----------
+
     variables : list, default=None
-        The list of numerical variables that will be transformed. If None, the 
+        The list of numerical variables that will be transformed. If None, the
         transformer will automatically find and select all numerical variables.
-        
+
     Attributes
     ----------
-    
+
     lamda_dict_ : dictionary
         The dictionary containing the {variable: best exponent for the BoxCox
         transfomration} pairs. These are determined automatically.
@@ -45,7 +45,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     def fit(self, X, y=None):
         """
         Learns the optimal lambda for the BoxCox transformation.
-        
+
         Parameters
         ----------
 
@@ -60,7 +60,10 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         X = super().fit(X)
 
         if (X[self.variables] < 0).any().any():
-            raise ValueError("Some variables contain negative values, try Yeo-Johnson transformation instead")
+            raise ValueError(
+                "Some variables contain negative values, try Yeo-Johnson "
+                "transformation instead."
+            )
 
         self.lambda_dict_ = {}
 
@@ -74,16 +77,16 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     def transform(self, X):
         """
         Applies the BoxCox transformation.
-        
+
         Parameters
         ----------
-        
+
         X : pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        
+
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with the transformed variables.
         """
@@ -92,7 +95,10 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         # check if variable contains negative numbers
         if (X[self.variables] < 0).any().any():
-            raise ValueError("Some variables contain negative values, try Yeo-Johnson transformation instead")
+            raise ValueError(
+                "Some variables contain negative values, try Yeo-Johnson "
+                "transformation instead."
+            )
 
         # transform
         for feature in self.variables:

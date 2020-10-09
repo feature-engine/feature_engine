@@ -13,7 +13,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
     """
     The RareLabelCategoricalEncoder() groups rare / infrequent categories in
     a new category called "Rare", or any other name entered by the user.
-    
+
     For example in the variable colour, if the percentage of observations
     for the categories magenta, cyan and burgundy are < 5 %, all those
     categories will be replaced by the new label "Rare".
@@ -21,20 +21,20 @@ class RareLabelEncoder(BaseCategoricalTransformer):
     Note, infrequent labels can also be grouped under a user defined name, for
     example 'Other'. The name to replace infrequent categories is defined
     with the parameter replace_with.
-       
+
     The encoder will encode only categorical variables (type 'object'). A list
-    of variables can be passed as an argument. If no variables are passed as 
+    of variables can be passed as an argument. If no variables are passed as
     argument, the encoder will find and encode all categorical variables
     (object type).
-    
+
     The encoder first finds the frequent labels for each variable (fit).
 
     The encoder then groups the infrequent labels under the new label 'Rare'
     or by another user defined string (transform).
-    
+
     Parameters
     ----------
-    
+
     tol: float, default=0.05
         the minimum frequency a label should have to be considered frequent.
         Categories with frequencies lower than tol will be grouped.
@@ -50,7 +50,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         considered.
 
     variables : list, default=None
-        The list of categorical variables that will be encoded. If None, the 
+        The list of categorical variables that will be encoded. If None, the
         encoder will find and select all object type variables.
 
     replace_with : string, default='Rare'
@@ -58,7 +58,14 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
     """
 
-    def __init__(self, tol=0.05, n_categories=10, max_n_categories=None, variables=None, replace_with='Rare'):
+    def __init__(
+        self,
+        tol=0.05,
+        n_categories=10,
+        max_n_categories=None,
+        variables=None,
+        replace_with="Rare",
+    ):
 
         if tol < 0 or tol > 1:
             raise ValueError("tol takes values between 0 and 1")
@@ -82,10 +89,10 @@ class RareLabelEncoder(BaseCategoricalTransformer):
     def fit(self, X, y=None):
         """
         Learns the frequent categories for each variable.
-        
+
         Parameters
         ----------
-        
+
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just selected variables
@@ -117,15 +124,18 @@ class RareLabelEncoder(BaseCategoricalTransformer):
                 freq_idx = t[t >= self.tol].index
 
                 if self.max_n_categories:
-                    self.encoder_dict_[var] = freq_idx[:self.max_n_categories]
+                    self.encoder_dict_[var] = freq_idx[: self.max_n_categories]
                 else:
                     self.encoder_dict_[var] = freq_idx
 
             else:
                 # if the total number of categories is smaller than the indicated
                 # the encoder will consider all categories as frequent.
-                warnings.warn("The number of unique categories for variable {} is less than that indicated in "
-                              "n_categories. Thus, all categories will be considered frequent".format(var))
+                warnings.warn(
+                    "The number of unique categories for variable {} is less than that "
+                    "indicated in n_categories. Thus, all categories will be "
+                    "considered frequent".format(var)
+                )
                 self.encoder_dict_[var] = X[var].unique()
 
         self._check_encoding_dictionary()
@@ -138,22 +148,26 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         """
         Groups rare labels under separate group 'Rare' or any other name provided
         by the user.
-        
+
         Parameters
         ----------
-        
+
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
-        
+
         Returns
         -------
-        
+
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe where rare categories have been grouped.
         """
         X = self._check_transform_input_and_state(X)
 
         for feature in self.variables:
-            X[feature] = np.where(X[feature].isin(self.encoder_dict_[feature]), X[feature], self.replace_with)
+            X[feature] = np.where(
+                X[feature].isin(self.encoder_dict_[feature]),
+                X[feature],
+                self.replace_with,
+            )
 
         return X

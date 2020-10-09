@@ -1,32 +1,38 @@
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
-from feature_engine.dataframe_checks import _is_dataframe, _check_input_matches_training_df
+from feature_engine.dataframe_checks import (
+    _is_dataframe,
+    _check_input_matches_training_df,
+)
 from feature_engine.variable_manipulation import _define_variables, _find_all_variables
 
 
 class DropConstantFeatures(TransformerMixin, BaseEstimator):
     """
-    Drops constant and quasi-constant variables from a dataframe. Constant variables show the same value across all the
-    observations in the dataset. Quasi-constant variables show the same value in almost all the observations in the
-    dataset.
+    Drops constant and quasi-constant variables from a dataframe. Constant variables
+    show the same value across all the observations in the dataset. Quasi-constant
+    variables show the same value in almost all the observations in the dataset.
 
-    By default, DropConstantFeatures drops only constant variables. This transformer works with both numerical and
-    categorical variables. The user can indicate a list of variables to examine. Alternatively, the transformer will
-    evaluate all the variables in the dataset.
+    By default, DropConstantFeatures drops only constant variables. This transformer
+    works with both numerical and categorical variables. The user can indicate a list
+    of variables to examine. Alternatively, the transformer will evaluate all the
+    variables in the dataset.
 
-    The transformer will first identify and store the constant and quasi-constant variables. Next, the transformer
-    will drop these variables from a dataframe.
+    The transformer will first identify and store the constant and quasi-constant
+    variables. Next, the transformer will drop these variables from a dataframe.
 
     Parameters
     ----------
 
     tol: float, default=1
-        Threshold to detect constant/quasi-constant features. Variables showing the same value in a percentage of
-        observations greater than tol will be considered constant / quasi-constant and dropped.
+        Threshold to detect constant/quasi-constant features. Variables showing the
+        same value in a percentage of observations greater than tol will be considered
+        constant / quasi-constant and dropped.
 
     variables: list, default=None
-        The list of variables to evaluate. If None, the transformer will evaluate all variables in the dataset.
+        The list of variables to evaluate. If None, the transformer will evaluate all
+        variables in the dataset.
     """
 
     def __init__(self, tol=1, variables=None):
@@ -70,14 +76,21 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
 
         for feature in self.variables:
 
-            predominant = (X[feature].value_counts() / np.float(len(X))).sort_values(ascending=False).values[0]
+            predominant = (
+                (X[feature].value_counts() / np.float(len(X)))
+                .sort_values(ascending=False)
+                .values[0]
+            )
 
             if predominant >= self.tol:
                 self.constant_features_.append(feature)
 
         # if total constant features is equal to total features raise an error
         if len(self.constant_features_) == len(X.columns):
-            raise ValueError("The resulting dataframe will have no columns after dropping all constant features.")
+            raise ValueError(
+                "The resulting dataframe will have no columns after dropping all "
+                "constant features."
+            )
 
         self.input_shape_ = X.shape
 
@@ -94,7 +107,8 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        X_transformed: pandas dataframe of shape = [n_samples, n_features - (constant_features+quasi constant features)]
+        X_transformed: pandas dataframe,
+            shape = [n_samples, n_features - (constant + quasi_constant features)]
             The transformed dataframe with the remaining subset of variables.
 
         """

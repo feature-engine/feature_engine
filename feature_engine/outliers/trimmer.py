@@ -6,7 +6,7 @@ from feature_engine.outliers import Winsorizer
 
 
 class OutlierTrimmer(Winsorizer):
-    """ The OutlierTrimmer() removes observations with outliers from the dataset.
+    """The OutlierTrimmer() removes observations with outliers from the dataset.
 
     It works only with numerical variables. A list of variables can be indicated.
     Alternatively, the OutlierTrimmer() will select all numerical variables.
@@ -40,11 +40,11 @@ class OutlierTrimmer(Winsorizer):
     You can select how far out to allow the maximum or minimum values with the
     parameter 'fold'.
 
-    If distribution='gaussian' fold gives the value to multiply the std.
+    If capping_method='gaussian' fold gives the value to multiply the std.
 
-    If distribution='iqr' fold is the value to multiply the IQR.
+    If capping_method='iqr' fold is the value to multiply the IQR.
 
-    If distribution='quantile', fold is the percentile on each tail that should
+    If capping_method='quantile', fold is the percentile on each tail that should
     be censored. For example, if fold=0.05, the limits will be the 5th and 95th
     percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
 
@@ -57,8 +57,8 @@ class OutlierTrimmer(Winsorizer):
     Parameters
     ----------
 
-    distribution : str, default=gaussian
-        Desired distribution. Can take 'gaussian', 'iqr' or 'quantiles'.
+    capping_method : str, default=gaussian
+        Desired capping method. Can take 'gaussian', 'iqr' or 'quantiles'.
 
         gaussian: the transformer will find the maximum and / or minimum values to
         cap the variables using the Gaussian approximation.
@@ -77,10 +77,10 @@ class OutlierTrimmer(Winsorizer):
         or 3 for the gaussian approximation, or 1.5 or 3 for the IQR proximity
         rule.
 
-        If distribution='quantile', then 'fold' indicates the percentile. So if
+        If capping_method='quantile', then 'fold' indicates the percentile. So if
         fold=0.05, the limits will be the 95th and 5th percentiles.
         Note: Outliers will be removed up to a maximum of the 20th percentiles on both
-        sides. Thus, when distribution='quantile', then 'fold' takes values between 0
+        sides. Thus, when capping_method='quantile', then 'fold' takes values between 0
         and 0.20.
 
     variables : list, default=None
@@ -88,13 +88,13 @@ class OutlierTrimmer(Winsorizer):
         the transformer will find and select all numerical variables.
 
     missing_values: string, default='raise'
-    	Indicates if missing values should be ignored or raised. Sometimes we want to remove
-    	outliers in the raw, original data, sometimes, we may want to remove outliers in the
-    	already pre-transformed data. If missing_values='ignore', the transformer will ignore
-    	missing data when learning the capping parameters or transforming the data. If 
-    	missing_values='raise' the transformer will return an error if the training or other
-    	datasets contain missing values.
-    	
+        Indicates if missing values should be ignored or raised. Sometimes we want to
+        remove outliers in the raw, original data, sometimes, we may want to remove
+        outliers in the already pre-transformed data. If missing_values='ignore', the
+        transformer will ignore missing data when learning the capping parameters or
+        transforming the data. If missing_values='raise' the transformer will return
+        an error if the training or other datasets contain missing values.
+
     """
 
     def transform(self, X):
@@ -117,7 +117,9 @@ class OutlierTrimmer(Winsorizer):
         X = self._check_transform_input_and_state(X)
 
         for feature in self.right_tail_caps_.keys():
-            outliers = np.where(X[feature] > self.right_tail_caps_[feature], True, False)
+            outliers = np.where(
+                X[feature] > self.right_tail_caps_[feature], True, False
+            )
             X = X.loc[~outliers]
 
         for feature in self.left_tail_caps_.keys():
