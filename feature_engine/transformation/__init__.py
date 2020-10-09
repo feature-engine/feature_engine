@@ -1,5 +1,6 @@
 """
-The module transformation includes classes to transform variables using mathematical functions.
+The module transformation includes classes to transform variables using mathematical
+functions.
 """
 
 from .boxcox import BoxCoxTransformer

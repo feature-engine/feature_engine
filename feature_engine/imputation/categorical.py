@@ -123,5 +123,5 @@ class CategoricalImputer(BaseImputer):
             X[self.variables] = X[self.variables].astype("O")
         return X
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     transform.__doc__ = BaseImputer.transform.__doc__

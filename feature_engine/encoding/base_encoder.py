@@ -16,7 +16,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # find categorical variables or check that variables entered by user are of type object
+        # find categorical variables or check variables entered by user are object
         self.variables = _find_categorical_variables(X, self.variables)
 
         # check if dataset contains na
@@ -34,7 +34,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables)
 
-        # Check that input data contains same number of columns as dataframe used to fit
+        # Check input data contains same number of columns as df used to fit
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         return X

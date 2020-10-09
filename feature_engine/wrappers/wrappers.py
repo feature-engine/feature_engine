@@ -26,9 +26,9 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     variables : list, default=None
         The list of variables to be imputed.
 
-        If None, the wrapper will select all variables of type numeric for all transformers
-        except the SimpleImputer, OrdinalEncoder and OneHotEncoder, in which case it will
-        select all variables in the dataset.
+        If None, the wrapper will select all variables of type numeric for all
+        transformers except the SimpleImputer, OrdinalEncoder and OneHotEncoder, in
+        which case it will select all variables in the dataset.
 
     transformer : sklearn transformer, default=None
         The desired Scikit-learn transformer.
@@ -45,18 +45,18 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         """
-        The `fit` method allows Scikit-learn transformers to learn the required parameters
-        from the training data set.
+        The `fit` method allows Scikit-learn transformers to learn the required
+        parameters from the training data set.
 
-        If transformer is OneHotEncoder, OrdinalEncoder or SimpleImputer, all variables indicated
-        in the variables parameter will be transformed. When the variables parameter is None, the
-        SklearnWrapper will automatically select and transform all features in the dataset,
-        numerical or otherwise.
+        If transformer is OneHotEncoder, OrdinalEncoder or SimpleImputer, all variables
+        indicated in the variables parameter will be transformed. When the variables
+        parameter is None, the SklearnWrapper will automatically select and transform
+        all features in the dataset, numerical or otherwise.
 
-        For all other Scikit-learn transformers only numerical variables will be transformed.
-        The SklearnWrapper will check that the variables indicated in the variables parameter
-        are numerical, or alternatively, if variables is None, it will automatically select
-        the numerical variables in the data set.
+        For all other Scikit-learn transformers only numerical variables will be
+        transformed. The SklearnWrapper will check that the variables indicated in the
+        variables parameter are numerical, or alternatively, if variables is None, it
+        will automatically select the numerical variables in the data set.
         """
 
         # check input dataframe
@@ -75,12 +75,13 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """
-        Apply the transformation to the dataframe. Only the selected features will be modified.
+        Apply the transformation to the dataframe. Only the selected features will be
+        modified.
 
-        If transformer is OneHotEncoder, dummy features are concatenated to the source dataset.
-        Note that the original categorical variables will not be removed from the dataset
-        after encoding. If this is the desired effect, please use Feature-engine's
-        OneHotCategoricalEncoder instead.
+        If transformer is OneHotEncoder, dummy features are concatenated to the source
+        dataset. Note that the original categorical variables will not be removed from
+        the dataset after encoding. If this is the desired effect, please use
+        Feature-engine's OneHotCategoricalEncoder instead.
         """
 
         # check that input is a dataframe

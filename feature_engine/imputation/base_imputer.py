@@ -15,7 +15,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         # check that input is a dataframe
         X = _is_dataframe(X)
 
-        # Check that input data contains same number of columns as dataframe used to fit
+        # Check that input df contains same number of columns as df used to fit
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         return X

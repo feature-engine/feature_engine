@@ -138,7 +138,8 @@ class OneHotEncoder(BaseCategoricalTransformer):
         -------
 
         X_transformed : pandas dataframe.
-            The shape of the dataframe will be different from the original as it includes the dummy variables.
+            The shape of the dataframe will be different from the original as it
+            includes the dummy variables.
         """
         X = self._check_transform_input_and_state(X)
 

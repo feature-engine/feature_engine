@@ -1,5 +1,6 @@
 """
-The module discretisation includes classes to sort continuous variables into bins / intervals.
+The module discretisation includes classes to sort continuous variables into bins or
+intervals.
 """
 
 from .decision_tree import DecisionTreeDiscretiser

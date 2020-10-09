@@ -73,7 +73,7 @@ class MeanEncoder(BaseCategoricalTransformer):
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X):
         X = super().transform(X)
         return X

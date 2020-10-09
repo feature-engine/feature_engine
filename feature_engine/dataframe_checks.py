@@ -17,8 +17,8 @@ def _check_input_matches_training_df(X, reference):
     # that the dataframe used during fit method
     if X.shape[1] != reference:
         raise ValueError(
-            "The number of columns in this data set is different from the one used to fit this "
-            "transformer (when using the fit method)"
+            "The number of columns in this data set is different from the one used to "
+            "fit this transformer (when using the fit method)"
         )
     return None
 
@@ -26,6 +26,6 @@ def _check_input_matches_training_df(X, reference):
 def _check_contains_na(X, variables):
     if X[variables].isnull().values.any():
         raise ValueError(
-            "Some of the variables to transform contain missing values. Check and remove those "
-            "before using this transformer."
+            "Some of the variables to transform contain missing values. Check and "
+            "remove those before using this transformer."
         )

@@ -44,11 +44,11 @@ class Winsorizer(BaseOutlier):
     You can select how far out to cap the maximum or minimum values with the
     parameter 'fold'.
 
-    If distribution='gaussian' fold gives the value to multiply the std.
+    If capping_method='gaussian' fold gives the value to multiply the std.
 
-    If distribution='iqr' fold is the value to multiply the IQR.
+    If capping_method='iqr' fold is the value to multiply the IQR.
 
-    If distribution='quantile', fold is the percentile on each tail that should
+    If capping_method='quantile', fold is the percentile on each tail that should
     be censored. For example, if fold=0.05, the limits will be the 5th and 95th
     percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
 
@@ -61,7 +61,7 @@ class Winsorizer(BaseOutlier):
     ----------
 
     capping_method : str, default=gaussian
-        Desired distribution. Can take 'gaussian', 'iqr' or 'quantiles'.
+        Desired capping method. Can take 'gaussian', 'iqr' or 'quantiles'.
 
         gaussian: the transformer will find the maximum and / or minimum values to
         cap the variables using the Gaussian approximation.
@@ -80,10 +80,10 @@ class Winsorizer(BaseOutlier):
         or 3 for the gaussian approximation, or 1.5 or 3 for the IQR proximity
         rule.
 
-        If distribution='quantile', then 'fold' indicates the percentile. So if
+        If capping_method='quantile', then 'fold' indicates the percentile. So if
         fold=0.05, the limits will be the 95th and 5th percentiles.
         Note: Outliers will be removed up to a maximum of the 20th percentiles on both
-        sides. Thus, when distribution='quantile', then 'fold' takes values between 0
+        sides. Thus, when capping_method='quantile', then 'fold' takes values between 0
         and 0.20.
 
     variables: list, default=None
@@ -91,12 +91,12 @@ class Winsorizer(BaseOutlier):
         the transformer will find and select all numerical variables.
 
     missing_values: string, default='raise'
-        Indicates if missing values should be ignored or raised. Sometimes we want to remove
-        outliers in the raw, original data, sometimes, we may want to remove outliers in the
-        already pre-transformed data. If missing_values='ignore', the transformer will ignore
-        missing data when learning the capping parameters or transforming the data. If
-        missing_values='raise' the transformer will return an error if the training or other
-        datasets contain missing values.
+        Indicates if missing values should be ignored or raised. Sometimes we want to
+        remove outliers in the raw, original data, sometimes, we may want to remove
+        outliers in the already pre-transformed data. If missing_values='ignore', the
+        transformer will ignore missing data when learning the capping parameters or
+        transforming the data. If missing_values='raise' the transformer will return
+        an error if the training or other datasets contain missing values.
     """
 
     def __init__(
@@ -110,7 +110,7 @@ class Winsorizer(BaseOutlier):
 
         if capping_method not in ["gaussian", "iqr", "quantiles"]:
             raise ValueError(
-                "distribution takes only values 'gaussian', 'iqr' or 'quantiles'"
+                "capping_method takes only values 'gaussian', 'iqr' or 'quantiles'"
             )
 
         if tail not in ["right", "left", "both"]:
@@ -121,7 +121,8 @@ class Winsorizer(BaseOutlier):
 
         if capping_method == "quantiles" and fold > 0.2:
             raise ValueError(
-                "with distribution='quantiles', fold takes values between 0 and 0.20 only."
+                "with capping_method ='quantiles', fold takes values between 0 and "
+                "0.20 only."
             )
 
         if missing_values not in ["raise", "ignore"]:
@@ -212,7 +213,7 @@ class Winsorizer(BaseOutlier):
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X):
         X = super().transform(X)
         return X

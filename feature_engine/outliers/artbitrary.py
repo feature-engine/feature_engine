@@ -37,7 +37,8 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
         if not max_capping_dict and not min_capping_dict:
             raise ValueError(
-                "Please provide at least 1 dictionary with the capping values per variable"
+                "Please provide at least 1 dictionary with the capping values per "
+                "variable."
             )
 
         if max_capping_dict is None or isinstance(max_capping_dict, dict):
@@ -109,7 +110,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X):
         X = super().transform(X)
         return X

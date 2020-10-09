@@ -10,8 +10,8 @@ from feature_engine.variable_manipulation import _define_variables
 
 class PRatioEncoder(BaseCategoricalTransformer):
     """
-    The PRatioEncoder() replaces categories by the ratio of the probability of the target = 1
-    and the probability of the target = 0.
+    The PRatioEncoder() replaces categories by the ratio of the probability of the
+    target = 1 and the probability of the target = 0.
 
     The target probability ratio is given by: p(1) / p(0)
 
@@ -90,7 +90,8 @@ class PRatioEncoder(BaseCategoricalTransformer):
         if any(x for x in y.unique() if x not in [0, 1]):
 
             raise ValueError(
-                "This encoder is only designed for binary classification, values of y can be only 0 or 1"
+                "This encoder is only designed for binary classification, values of y "
+                "can be only 0 or 1."
             )
 
         temp = pd.concat([X, y], axis=1)
@@ -107,9 +108,8 @@ class PRatioEncoder(BaseCategoricalTransformer):
             if self.encoding_method == "log_ratio":
                 if not t.loc[t["p0"] == 0, :].empty or not t.loc[t["p1"] == 0, :].empty:
                     raise ValueError(
-                        "p(0) or p(1) for a category in variable {} is zero, log of zero is not defined".format(
-                            var
-                        )
+                        "p(0) or p(1) for a category in variable {} is zero, log of "
+                        "zero is not defined".format(var)
                     )
                 else:
                     self.encoder_dict_[var] = (np.log(t.p1 / t.p0)).to_dict()
@@ -117,9 +117,8 @@ class PRatioEncoder(BaseCategoricalTransformer):
             elif self.encoding_method == "ratio":
                 if not t.loc[t["p0"] == 0, :].empty:
                     raise ValueError(
-                        "p(0) for a category in variable {} is zero, division by 0 is not defined".format(
-                            var
-                        )
+                        "p(0) for a category in variable {} is zero, division by 0 is "
+                        "not defined".format(var)
                     )
 
                 else:
@@ -131,7 +130,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X):
         X = super().transform(X)
         return X

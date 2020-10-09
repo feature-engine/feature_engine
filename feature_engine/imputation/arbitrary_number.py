@@ -27,8 +27,8 @@ class ArbitraryNumberImputer(BaseImputer):
         attribute is None.
 
     imputer_dict: dict, default=None
-        The dictionary of variables and their arbitrary numbers. If imputer_dict is not None,
-        it has to be dictionary with all values of integer or float type.
+        The dictionary of variables and their arbitrary numbers. If imputer_dict is
+        not None, it has to be dictionary with all values of integer or float type.
         If None, `variables` attribute is used for imputation.
     """
 
@@ -62,7 +62,7 @@ class ArbitraryNumberImputer(BaseImputer):
         ----------
 
         imputer_dict_: dictionary
-            The dictionary containing the values that will be used to replace each variable.
+            The dictionary containing the values that will replace each variable.
         """
         # check input dataframe
         X = _is_dataframe(X)
@@ -83,7 +83,7 @@ class ArbitraryNumberImputer(BaseImputer):
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X):
         X = super().transform(X)
         return X

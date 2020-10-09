@@ -22,8 +22,8 @@ class LogTransformer(BaseNumericalTransformer):
     ----------
 
     base: string, default='e'
-        Indicates if the natural or base 10 logarithm should be applied. Can take values
-        'e' or '10'.
+        Indicates if the natural or base 10 logarithm should be applied. Can take
+        values 'e' or '10'.
 
     variables : list, default=None
         The list of numerical variables to be transformed. If None, the transformer

@@ -27,7 +27,8 @@ class DropFeatures(BaseEstimator, TransformerMixin):
 
         if len(self.features_to_drop) == 0:
             raise ValueError(
-                "List of features to drop cannot be empty. Please pass at least 1 variable to drop"
+                "List of features to drop cannot be empty. Please pass at least 1 "
+                "variable to drop."
             )
 
     def fit(self, X, y=None):
@@ -51,14 +52,15 @@ class DropFeatures(BaseEstimator, TransformerMixin):
         non_existent = [x for x in self.features_to_drop if x not in X.columns]
         if non_existent:
             raise KeyError(
-                f"Columns '{', '.join(non_existent)}' not present in the input dataframe, "
+                f"Columns '{', '.join(non_existent)}' not present in input dataframe, "
                 f"please check the columns and enter a new list of features to drop"
             )
 
         # check that user does not drop all columns returning empty dataframe
         if len(self.features_to_drop) == len(X.columns):
             raise ValueError(
-                "The resulting dataframe will have no columns after dropping all existing variables"
+                "The resulting dataframe will have no columns after dropping all "
+                "existing variables"
             )
 
         # add input shape
@@ -68,8 +70,8 @@ class DropFeatures(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """
-        Drops the variable or list of variables indicated by the user from the original dataframe
-        and returns a new dataframe with the remaining subset of variables.
+        Drops the variable or list of variables indicated by the user from the original
+        dataframe and returns a new dataframe with the remaining subset of variables.
 
         Parameters
         ----------
@@ -78,7 +80,8 @@ class DropFeatures(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X_transformed: pandas dataframe of shape = [n_samples, n_features - len(features_to_drop)]
+        X_transformed: pandas dataframe,
+            shape = [n_samples, n_features - len(features_to_drop)]
             The transformed dataframe with the remaining subset of variables.
 
         """

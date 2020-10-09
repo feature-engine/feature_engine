@@ -17,11 +17,13 @@ class MeanMedianImputer(BaseImputer):
     The MeanMedianImputer() works only with numerical variables.
 
     Users can pass a list of variables to be imputed as argument. Alternatively, the
-    MeanMedianImputer() will automatically find and select all variables of type numeric.
+    MeanMedianImputer() will automatically find and select all variables of type
+    numeric.
 
     The imputer first calculates the mean / median values of the variables (fit).
 
-    The imputer then replaces the missing data with the estimated mean / median (transform).
+    The imputer then replaces the missing data with the estimated mean / median
+    (transform).
 
     Parameters
     ----------
@@ -51,7 +53,7 @@ class MeanMedianImputer(BaseImputer):
 
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            User can pass the entire dataframe, not just the variables that need imputation.
+            Can pass the entire dataframe, not just the variables that need imputation.
 
         y : pandas series or None, default=None
             y is not needed in this imputation. You can pass None or y.
@@ -80,7 +82,7 @@ class MeanMedianImputer(BaseImputer):
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X):
         X = super().transform(X)
         return X

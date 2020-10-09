@@ -49,7 +49,8 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         # check if the variables contain the value 0
         if (X[self.variables] == 0).any().any():
             raise ValueError(
-                "Some variables contain the value zero, can't apply reciprocal transformation"
+                "Some variables contain the value zero, can't apply reciprocal "
+                "transformation."
             )
 
         self.input_shape_ = X.shape
@@ -77,7 +78,8 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         # check if the variables contain the value 0
         if (X[self.variables] == 0).any().any():
             raise ValueError(
-                "Some variables contain the value zero, can't apply reciprocal transformation"
+                "Some variables contain the value zero, can't apply reciprocal "
+                "transformation."
             )
 
         # transform

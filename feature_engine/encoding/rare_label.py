@@ -132,10 +132,9 @@ class RareLabelEncoder(BaseCategoricalTransformer):
                 # if the total number of categories is smaller than the indicated
                 # the encoder will consider all categories as frequent.
                 warnings.warn(
-                    "The number of unique categories for variable {} is less than that indicated in "
-                    "n_categories. Thus, all categories will be considered frequent".format(
-                        var
-                    )
+                    "The number of unique categories for variable {} is less than that "
+                    "indicated in n_categories. Thus, all categories will be "
+                    "considered frequent".format(var)
                 )
                 self.encoder_dict_[var] = X[var].unique()
 

@@ -36,9 +36,9 @@ class AddMissingIndicator(BaseImputer):
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will find and
         select all variables with missing data.
-        Note: the transformer will first select all variables or all user entered variables
-        and if how=missing_only, it will re-select from the original group only those
-        that show missing data in during fit.
+        Note: the transformer will first select all variables or all user entered
+        variables and if how=missing_only, it will re-select from the original group
+        only those that show missing data in during fit.
     """
 
     def __init__(self, missing_only=True, variables=None):

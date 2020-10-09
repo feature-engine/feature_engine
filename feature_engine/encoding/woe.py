@@ -69,7 +69,8 @@ class WoEEncoder(BaseCategoricalTransformer):
         # check that y is binary
         if any(x for x in y.unique() if x not in [0, 1]):
             raise ValueError(
-                "This encoder is only designed for binary classification, values of y can be only 0 or 1"
+                "This encoder is only designed for binary classification, values of y "
+                "can be only 0 or 1."
             )
 
         temp = pd.concat([X, y], axis=1)
@@ -93,8 +94,8 @@ class WoEEncoder(BaseCategoricalTransformer):
                 or not t.loc[t["non_target"] == 0, :].empty
             ):
                 raise ValueError(
-                    "The proportion of 1 of the classes for a category in variable {} is zero, and log of zero is "
-                    "not defined".format(var)
+                    "The proportion of one of the classes for a category in "
+                    "variable {} is zero, and log of zero is not defined".format(var)
                 )
 
             self.encoder_dict_[var] = t["woe"].to_dict()
@@ -105,7 +106,7 @@ class WoEEncoder(BaseCategoricalTransformer):
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise none of this is necessary
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X):
         X = super().transform(X)
         return X

@@ -61,7 +61,8 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         if (X[self.variables] < 0).any().any():
             raise ValueError(
-                "Some variables contain negative values, try Yeo-Johnson transformation instead"
+                "Some variables contain negative values, try Yeo-Johnson "
+                "transformation instead."
             )
 
         self.lambda_dict_ = {}
@@ -95,7 +96,8 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         # check if variable contains negative numbers
         if (X[self.variables] < 0).any().any():
             raise ValueError(
-                "Some variables contain negative values, try Yeo-Johnson transformation instead"
+                "Some variables contain negative values, try Yeo-Johnson "
+                "transformation instead."
             )
 
         # transform

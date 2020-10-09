@@ -104,8 +104,8 @@ class RandomSampleImputer(BaseImputer):
 
         if seed == "observation" and not random_state:
             raise ValueError(
-                "if seed == 'observation' the random state must take the name of one or more variables "
-                "which will be used to seed the imputer"
+                "if seed == 'observation' the random state must take the name of one "
+                "or more variables which will be used to seed the imputer"
             )
 
         self.variables = _define_variables(variables)
@@ -153,8 +153,8 @@ class RandomSampleImputer(BaseImputer):
             self.random_state = _define_variables(self.random_state)
             if any(var for var in self.random_state if var not in X.columns):
                 raise ValueError(
-                    "There are variables assigned as random state which are not part of the training "
-                    "dataframe."
+                    "There are variables assigned as random state which are not part "
+                    "of the training dataframe."
                 )
         self.input_shape_ = X.shape
 
@@ -192,7 +192,8 @@ class RandomSampleImputer(BaseImputer):
                         .dropna()
                         .sample(n_samples, replace=True, random_state=self.random_state)
                     )
-                    # re-index: pandas needs this to add values in the correct observations
+                    # re-index: pandas needs this to add the values to the right
+                    # observations
                     random_sample.index = X[X[feature].isnull()].index
 
                     # replace na
