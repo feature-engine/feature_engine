@@ -5,9 +5,9 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.selection import DropDuplicateFeatures
 
 
-def test_drops_duplicates_features(dataframe_duplicate_features):
+def test_drop_duplicates_features(df_duplicate_features):
     transformer = DropDuplicateFeatures()
-    X = transformer.fit_transform(dataframe_duplicate_features)
+    X = transformer.fit_transform(df_duplicate_features)
 
     # expected result
     df = pd.DataFrame(
@@ -22,17 +22,17 @@ def test_drops_duplicates_features(dataframe_duplicate_features):
     pd.testing.assert_frame_equal(X, df)
 
 
-def test_variables_assigned_correctly(dataframe_duplicate_features):
+def test_variables_assigned_correctly(df_duplicate_features):
     transformer = DropDuplicateFeatures()
     assert transformer.variables is None
 
-    transformer.fit(dataframe_duplicate_features)
-    assert transformer.variables == (list(dataframe_duplicate_features.columns))
+    transformer.fit(df_duplicate_features)
+    assert transformer.variables == (list(df_duplicate_features.columns))
 
 
-def test_fit_attributes(dataframe_duplicate_features):
+def test_fit_attributes(df_duplicate_features):
     transformer = DropDuplicateFeatures()
-    transformer.fit(dataframe_duplicate_features)
+    transformer.fit(df_duplicate_features)
 
     assert transformer.duplicated_features_ == {"dob", "dob3", "City2", "Age2"}
     assert transformer.duplicated_feature_sets_ == [
@@ -43,9 +43,9 @@ def test_fit_attributes(dataframe_duplicate_features):
     assert transformer.input_shape_ == (4, 9)
 
 
-def test_with_df_with_na(dataframe_duplicate_features_with_na):
+def test_with_df_with_na(df_duplicate_features_with_na):
     transformer = DropDuplicateFeatures()
-    X = transformer.fit_transform(dataframe_duplicate_features_with_na)
+    X = transformer.fit_transform(df_duplicate_features_with_na)
 
     # expected result
     df = pd.DataFrame(
@@ -68,13 +68,13 @@ def test_with_df_with_na(dataframe_duplicate_features_with_na):
     assert transformer.input_shape_ == (5, 9)
 
 
-def test_raises_error__if_fit_input_not_dataframe():
+def test_error_if_fit_input_not_dataframe():
     with pytest.raises(TypeError):
         DropDuplicateFeatures().fit({"Name": ["Karthik"]})
 
 
-def test_raises_non_fitted_error(dataframe_duplicate_features):
+def test_non_fitted_error(df_duplicate_features):
     # test case 3: when fit is not called prior to transform
     with pytest.raises(NotFittedError):
         transformer = DropDuplicateFeatures()
-        transformer.transform(dataframe_duplicate_features)
+        transformer.transform(df_duplicate_features)
