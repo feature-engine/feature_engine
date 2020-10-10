@@ -1,14 +1,15 @@
 # Transformation methods are shared by most transformer groups.
 # Each transformer can inherit the transform method from these base classes.
 
+from typing import Optional
+
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_input_matches_training_df,
-    _check_contains_na,
-)
+from feature_engine.dataframe_checks import (_check_contains_na,
+                                             _check_input_matches_training_df,
+                                             _is_dataframe)
 from feature_engine.variable_manipulation import _find_numerical_variables
 
 
@@ -16,7 +17,20 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
     # shared set-up procedures across numerical transformers, i.e.,
     # variable transformers, discretisers, math combination
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[str] =None) -> pd.DataFrame:
+        """
+        Fits the transformation to the DataFrame.
+
+        Args:
+            X: Pandas DataFrame to fit the transformation
+            y: This parameter exists only for compatibility with sklearn.pipeline.Pipeline.
+            Defaults to None.
+
+        Returns:
+            DataFrame with fitted transformation
+
+        """
+
         # check input dataframe
         X = _is_dataframe(X)
 
@@ -28,7 +42,17 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
 
         return X
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Applies transformation to the DataFrame.
+
+        Args:
+            X: Pandas DataFrame to apply the transformation
+
+        Returns:
+            Transformed DataFrame
+        """
+
         # Check method fit has been called
         check_is_fitted(self)
 
