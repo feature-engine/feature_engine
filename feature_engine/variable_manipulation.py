@@ -21,9 +21,11 @@ def _define_variables(variables: Optional[List[str]]) -> Optional[List[str]]:
 
     if not variables or (isinstance(variables, list) and all(isinstance(i, str) for i in variables)):
         variables = variables
+
     else:
         if isinstance(variables, str):
             variables = [variables]
+
         else:
             raise ValueError("Variables should be string or list of strings")
 
@@ -55,6 +57,7 @@ def _find_numerical_variables(X: pd.DataFrame, variables: Optional[List[str]] =N
                 "No numerical variables in this dataframe. Please check variable"
                 "format with pandas dtypes"
             )
+
     else:
         if any(X[variables].select_dtypes(exclude="number").columns):
             raise TypeError(
@@ -89,6 +92,7 @@ def _find_categorical_variables(X: pd.DataFrame, variables: Optional[List[str]] 
                 "No categorical variables in this dataframe. Please check variable "
                 "format with pandas dtypes"
             )
+
     else:
         if any(X[variables].select_dtypes(exclude="O").columns):
             raise TypeError(
@@ -118,6 +122,7 @@ def _find_all_variables(X: pd.DataFrame, variables: Optional[List[str]] =None) -
 
     if not variables:
         variables = list(X.columns)
+
     else:
         # variables indicated by user
         if any(set(variables).difference(X.columns)):
