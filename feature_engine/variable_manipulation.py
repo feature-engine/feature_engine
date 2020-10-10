@@ -101,11 +101,8 @@ def _find_categorical_variables(X: pd.DataFrame, variables: Optional[List[str]] 
 
 def _find_all_variables(X: pd.DataFrame, variables: Optional[List[str]] =None) -> List[str]:
     """
-    Takes Pandas DataFrame and extracts all variables if not provided corresponding list.
-    If variables are provided, returns them back.
-    
-    If None, captures all variables in the dataframe in a list.
-    If user enters variable names list, it returns the list
+    If variables are None, captures all variables in the dataframe in a list.
+    If user enters variable names list, it returns the list.
 
     Args:
         X:  DataFrame to perform the check against
