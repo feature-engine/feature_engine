@@ -12,7 +12,7 @@ def test_define_variables():
     vars_str = "var1"
     vars_tuple = ("var1", "var2")
     vars_set = {"var1", "var2"}
-    vars_dict = {"var1" : 1, "var2" : 2}
+    vars_dict = {"var1": 1, "var2": 2}
 
     assert _define_variables(vars_ls) == vars_ls
     assert _define_variables(vars_none) == vars_none

@@ -32,7 +32,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         The desired Scikit-learn transformer.
     """
 
-    def __init__(self, variables: List[str] = None, transformer = None) -> None:
+    def __init__(self, variables: List[str] = None, transformer=None) -> None:
         self.variables = _define_variables(variables)
         self.transformer = transformer
 
@@ -44,23 +44,23 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """
-        The `fit` method allows Scikit-learn transformers to learn 
+        The `fit` method allows Scikit-learn transformers to learn
         the required parameters from the training data set.
 
-        If transformer is OneHotEncoder, OrdinalEncoder or SimpleImputer, 
-        all variables indicated in the ```variables``` parameter will be transformed. 
-        When the variables parameter is None, the SklearnWrapper will automatically 
+        If transformer is OneHotEncoder, OrdinalEncoder or SimpleImputer,
+        all variables indicated in the ```variables``` parameter will be transformed.
+        When the variables parameter is None, the SklearnWrapper will automatically
         select and transform all features in the dataset, numerical or otherwise.
 
-        For all other Scikit-learn transformers only numerical variables 
-        will be transformed. The SklearnWrapper will check that the variables 
-        indicated in the variables parameter are numerical, or alternatively, 
-        if variables is None, it will automatically select 
+        For all other Scikit-learn transformers only numerical variables
+        will be transformed. The SklearnWrapper will check that the variables
+        indicated in the variables parameter are numerical, or alternatively,
+        if variables is None, it will automatically select
         the numerical variables in the data set.
 
         Args:
             X: Pandas DataFrame to fit the transformer
-            y: This parameter exists only for compatibility 
+            y: This parameter exists only for compatibility
             with sklearn.pipeline.Pipeline.
             Defaults to None.
 
@@ -85,19 +85,19 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Apply the transformation to the dataframe. 
-        Only the selected features will be modified. 
+        Apply the transformation to the dataframe.
+        Only the selected features will be modified.
 
-        If transformer is OneHotEncoder, dummy features are concatenated 
-        to the source dataset. Note that the original categorical variables 
-        will not be removed from the dataset after encoding. If this is the desired 
+        If transformer is OneHotEncoder, dummy features are concatenated
+        to the source dataset. Note that the original categorical variables
+        will not be removed from the dataset after encoding. If this is the desired
         effect, please use Feature-engine's OneHotCategoricalEncoder instead.
 
         Args:
             X: Pandas DataFrame to perform desired transformation
 
         Returns:
-            Pandas DataFrame 
+            Pandas DataFrame
         """
 
         # check that input is a dataframe

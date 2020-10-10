@@ -19,7 +19,7 @@ def _define_variables(variables: Optional[List[str]]) -> Optional[List[str]]:
         List of strings
     """
 
-    if not variables or (isinstance(variables, list) and 
+    if not variables or (isinstance(variables, list) and \
                         all(isinstance(i, str) for i in variables)):
         variables = variables
 

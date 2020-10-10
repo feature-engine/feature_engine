@@ -23,7 +23,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
 
         Args:
             X: Pandas DataFrame to fit the transformation
-            y: This parameter exists only for compatibility with 
+            y: This parameter exists only for compatibility with
             sklearn.pipeline.Pipeline.
             Defaults to None.
 
