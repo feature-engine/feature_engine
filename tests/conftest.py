@@ -1,6 +1,6 @@
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 
 
 @pytest.fixture(scope="module")
@@ -14,6 +14,7 @@ def df_vartypes():
     }
 
     df = pd.DataFrame(data)
+
     return df
 
 
@@ -47,6 +48,7 @@ def df_na():
     }
 
     df = pd.DataFrame(data)
+
     return df
 
 
@@ -58,6 +60,7 @@ def df_enc():
         "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
     }
     df = pd.DataFrame(df)
+
     return df
 
 
@@ -69,6 +72,7 @@ def df_enc_rare():
         "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
     }
     df = pd.DataFrame(df)
+
     return df
 
 
@@ -81,6 +85,7 @@ def df_enc_na():
     }
     df = pd.DataFrame(df)
     df.loc[0, "var_A"] = np.nan
+
     return df
 
 
@@ -110,6 +115,7 @@ def df_enc_big():
         + ["G"] * 6,
     }
     df = pd.DataFrame(df)
+
     return df
 
 
@@ -140,6 +146,7 @@ def df_enc_big_na():
     }
     df = pd.DataFrame(df)
     df.loc[0, "var_A"] = np.nan
+
     return df
 
 
@@ -150,6 +157,7 @@ def df_normal_dist():
     s = np.random.normal(mu, sigma, 100)
     df = pd.DataFrame(s)
     df.columns = ["var"]
+
     return df
 
 
@@ -168,6 +176,7 @@ def df_constant_features():
     }
 
     df = pd.DataFrame(data)
+
     return df
 
 
@@ -186,6 +195,7 @@ def df_duplicate_features():
     }
 
     df = pd.DataFrame(data)
+
     return df
 
 
@@ -204,4 +214,5 @@ def df_duplicate_features_with_na():
     }
 
     df = pd.DataFrame(data)
+
     return df
