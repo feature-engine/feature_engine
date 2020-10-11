@@ -1,10 +1,12 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import scipy.stats as stats
+from typing import List, Optional
 
-from feature_engine.variable_manipulation import _define_variables
+import pandas as pd
+import scipy.stats as stats
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.variable_manipulation import _define_variables
 
 
 class BoxCoxTransformer(BaseNumericalTransformer):
@@ -38,24 +40,28 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         transfomration} pairs. These are determined automatically.
     """
 
-    def __init__(self, variables=None):
+    def __init__(self, variables: Optional[List[str]] =None):
 
         self.variables = _define_variables(variables)
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[str] =None):
         """
         Learns the optimal lambda for the BoxCox transformation.
 
-        Parameters
-        ----------
-
-        X : pandas dataframe of shape = [n_samples, n_features]
+        Args:
+            X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to transform.
 
-        y : None
-            y is not needed in this transformer. You can pass y or None.
+            y: It is not needed in this transformer. Defaults to None.
+
+        Raises:
+            ValueError: If some variables contain zero values
+
+        Returns:
+            self
         """
+
         # check input dataframe
         X = super().fit(X)
 
@@ -74,22 +80,21 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Applies the BoxCox transformation.
 
-        Parameters
-        ----------
-
-        X : pandas dataframe of shape = [n_samples, n_features]
+        Args:
+            X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
-        Returns
-        -------
+        Raises:
+            ValueError: If some variables contain negative values.
 
-        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+        Returns:
             The dataframe with the transformed variables.
         """
+
         # check input dataframe and if class was fitted
         X = super().transform(X)
 
