@@ -1,10 +1,12 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import numpy as np
+from typing import List, Optional, Union
 
-from feature_engine.variable_manipulation import _define_variables
+import numpy as np
+import pandas as pd
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.variable_manipulation import _define_variables
 
 
 class PowerTransformer(BaseNumericalTransformer):
@@ -29,48 +31,49 @@ class PowerTransformer(BaseNumericalTransformer):
         The power (or exponent).
     """
 
-    def __init__(self, exp=0.5, variables=None):
+    def __init__(self, exp: Union[float, int] =0.5,
+                variables: Optional[List[str]] =None):
 
-        if not isinstance(exp, float) and not isinstance(exp, int):
+        if not isinstance(exp, (float, int)):
             raise ValueError("exp must be a float or an int")
 
         self.exp = exp
         self.variables = _define_variables(variables)
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[str] =None):
         """
-        Parameters
-        ----------
+        Fits the power transformation.
 
-        X : pandas dataframe of shape = [n_samples, n_features]
+        Args:
+            X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to transform.
 
-        y : None
-            y is not needed in this transformer. You can pass y or None.
+            y: It is not needed in this transformer. Defaults to None.
+
+        Returns:
+            self
         """
+
         # check input dataframe
         X = super().fit(X)
 
         self.input_shape_ = X.shape
+
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Applies the power transformation to the variables.
 
-        Parameters
-        ----------
-
-        X : pandas dataframe of shape = [n_samples, n_features]
+        Args:
+            X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
-        Returns
-        -------
-
-        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+        Returns:
             The dataframe with the power transformed variables.
         """
+
         # check input dataframe and if class was fitted
         X = super().transform(X)
 
