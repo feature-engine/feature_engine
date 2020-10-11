@@ -29,11 +29,11 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         transformer will automatically find and select all numerical variables.
     """
 
-    def __init__(self, variables: Optional[List[str]] =None):
+    def __init__(self, variables: Optional[List[str]] = None) -> None:
 
         self.variables = _define_variables(variables)
 
-    def fit(self, X: pd.DataFrame, y: Optional[str] =None):
+    def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """
         Fits the reciprocal transformation
 

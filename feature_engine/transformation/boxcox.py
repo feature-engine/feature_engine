@@ -40,11 +40,11 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         transfomration} pairs. These are determined automatically.
     """
 
-    def __init__(self, variables: Optional[List[str]] =None):
+    def __init__(self, variables: Optional[List[str]] = None) -> None:
 
         self.variables = _define_variables(variables)
 
-    def fit(self, X: pd.DataFrame, y: Optional[str] =None):
+    def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """
         Learns the optimal lambda for the BoxCox transformation.
 

@@ -32,7 +32,7 @@ class LogTransformer(BaseNumericalTransformer):
         will find and select all numerical variables.
     """
 
-    def __init__(self, base: str ="e", variables: Optional[List[str]] =None):
+    def __init__(self, base: str = "e", variables: Optional[List[str]] = None) -> None:
 
         if base not in ["e", "10"]:
             raise ValueError("base can take only '10' or 'e' as values")
@@ -40,7 +40,7 @@ class LogTransformer(BaseNumericalTransformer):
         self.variables = _define_variables(variables)
         self.base = base
 
-    def fit(self, X: pd.DataFrame, y: Optional[str] =None):
+    def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """
         Selects the numerical variables and determines whether the logarithm
         can be applied on the selected variables (it checks if the variables
