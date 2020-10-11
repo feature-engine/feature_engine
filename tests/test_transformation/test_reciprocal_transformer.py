@@ -1,8 +1,7 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
-
 from feature_engine.transformation import ReciprocalTransformer
+from sklearn.exceptions import NotFittedError
 
 
 def test_automatically_find_variables(df_vartypes):
