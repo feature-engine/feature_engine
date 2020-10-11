@@ -153,7 +153,6 @@ class MathematicalCombination(BaseNumericalTransformer):
 
         return self
 
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Transforms source dataset.
