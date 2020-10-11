@@ -1,3 +1,6 @@
+from typing import List, Optional
+
+import pandas as pd
 from feature_engine.base_transformers import BaseNumericalTransformer
 
 
@@ -65,7 +68,7 @@ class MathematicalCombination(BaseNumericalTransformer):
         mathematical transformations, enter 6 new variable names.
 
         The name of the variables indicated by the user should coincide with the order
-        in which the mathematical operations are initialised in the transformer.
+        in which the mathematical operations are initialized in the transformer.
         That is, if you set math_operations = ['mean', 'prod'], the first new variable
         name will be assigned to the mean of the variables and the second variable name
         to the product of the variables.
@@ -76,7 +79,11 @@ class MathematicalCombination(BaseNumericalTransformer):
 
     """
 
-    def __init__(self, variables=None, math_operations=None, new_variables_names=None):
+    def __init__(
+        self, variables: Optional[List[str]] = None,
+        math_operations: Optional[List[str]] = None,
+        new_variables_names: Optional[List[str]] = None
+    ) -> None:
 
         if math_operations is None:
             math_operations = ["sum", "prod", "mean", "std", "max", "min"]
@@ -113,18 +120,23 @@ class MathematicalCombination(BaseNumericalTransformer):
                 "items in math_operations."
             )
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """
-        Performs dataframe checks. Selects variables to transform if None were indicated
-        by the user. Creates dictionary of column to transformation mappings.
+        Performs dataframe checks.
+        Selects variables to transform if None were indicated.
 
-        X : pandas dataframe of shape = [n_samples, n_features]
+        Args:
+            X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to transform.
 
-        y : None
-            y is not needed in this transformer. You can pass y or None.
+            y: It is not needed in this transformer.
+            Defaults to None.
+
+        Returns:
+            self
         """
+
         X = super().fit(X, y)
 
         self.input_shape_ = X.shape
@@ -141,25 +153,23 @@ class MathematicalCombination(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X):
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Transforms source dataset.
 
         Adds a column for each operation with the calculation based on the variables
         and operations indicated when setting up the transformer.
 
-        Parameters
-        ----------
-
-        X : pandas dataframe of shape = [n_samples, n_features]
+        Args:
+            X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
 
-        Returns
-        -------
-
-        X_transformed : pandas dataframe, shape = [n_samples, n_features + n_operations]
+        Returns:
+            Pandas dataframe, shape = [n_samples, n_features + n_operations]
             The dataframe with the operations results added as columns.
         """
+
         X = super().transform(X)
 
         for new_variable_name, operation in self.combination_dict_.items():
