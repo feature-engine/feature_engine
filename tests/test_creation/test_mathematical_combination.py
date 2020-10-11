@@ -224,3 +224,8 @@ def test_error_if_operation_not_permitted(df_vartypes):
 def test_error_if_operation_is_wrong_type(df_vartypes):
     with pytest.raises(KeyError):
         MathematicalCombination(math_operations=[sum])
+
+
+def test_math_operations_type():
+    with pytest.raises(KeyError):
+        MathematicalCombination(math_operations=("sum", "mean"))
