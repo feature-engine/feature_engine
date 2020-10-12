@@ -1,13 +1,14 @@
 WoEEncoder
 ==========
 
-The WoEEncoder() replaces the labels by the weight of evidence. 
-It only works for binary classification.
+The WoEEncoder() replaces the labels by the weight of evidence. It only works for
+binary classification.
 
 The weight of evidence is given by: np.log(P(X=xj|Y = 1)/P(X=xj|Y=0))
 
 The WoEEncoder() works only with categorical variables. A list of variables can
-be indicated, or the encoder will automatically select all categorical variables in the train set.
+be indicated, or the encoder will automatically select all categorical variables in the
+train set.
 
 .. code:: python
 

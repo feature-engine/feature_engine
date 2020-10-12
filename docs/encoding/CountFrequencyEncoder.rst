@@ -1,12 +1,13 @@
 CountFrequencyEncoder
 =====================
-The CountFrequencyEncoder() replaces categories with the number of observations or percentage
-of observations per category. For example, if 10 observations show the category blue for the variable
-color, blue will be replaced by 10. If, using frequency, if 20% of observations show the category red, 
-red will be replaced by 0.20.
+The CountFrequencyEncoder() replaces categories with the number of observations or
+percentage of observations per category. For example, if 10 observations show the
+category blue for the variable color, blue will be replaced by 10. If, using frequency,
+if 20% of observations show the category red, red will be replaced by 0.20.
 
-The CountFrequencyEncoder() works only with categorical variables. A list of variables can
-be indicated, or the encoder will automatically select all categorical variables in the train set.
+The CountFrequencyEncoder() works only with categorical variables. A list of variables
+can be indicated, or the encoder will automatically select all categorical variables in
+the train set.
 
 .. code:: python
 

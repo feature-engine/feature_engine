@@ -1,11 +1,13 @@
 AddMissingIndicator
 ===================
-The AddMissingIndicator() adds a binary variable indicating if observations are missing (missing indicator).
-It adds a missing indicator for both categorical and numerical variables. A list of variables for which to
-add a missing indicator can be passed, or the imputer will automatically select all variables.
+The AddMissingIndicator() adds a binary variable indicating if observations are missing
+(missing indicator). It adds a missing indicator for both categorical and numerical
+variables. A list of variables for which to add a missing indicator can be passed, or
+the imputer will automatically select all variables.
 
-The imputer has the option to select if binary variables should be added to all variables, or only to those
-that show missing data in the train set, by setting the option how='missing_only'.
+The imputer has the option to select if binary variables should be added to all
+variables, or only to those that show missing data in the train set, by setting the
+option how='missing_only'.
 
 .. code:: python
 

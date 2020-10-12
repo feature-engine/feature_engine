@@ -1,15 +1,16 @@
 EqualWidthDiscretiser
 =====================
-The EqualWidthDiscretiser() sorts the variable values into contiguous intervals of equal size. The size
-of the interval is calculated as:
+The EqualWidthDiscretiser() sorts the variable values into contiguous intervals of
+equal size. The size of the interval is calculated as:
 
 ( max(X) - min(X) ) / bins
 
-where bins, which is the number of intervals, should be determined by the user. The transformer can return
-the variable as numeric or object (default = numeric).
+where bins, which is the number of intervals, should be determined by the user. The
+transformer can return the variable as numeric or object (default = numeric).
 
 The EqualWidthDiscretiser() works only with numerical variables. A list of variables can
-be indicated, or the imputer will automatically select all numerical variables in the train set.
+be indicated, or the imputer will automatically select all numerical variables in the
+train set.
 
 .. code:: python
 
@@ -29,7 +30,7 @@ be indicated, or the imputer will automatically select all numerical variables i
 		    data['SalePrice'], test_size=0.3, random_state=0)
 
 	# set up the discretisation transformer
-	disc = dsc.EqualWidthDiscretiser(bins=10, variables=['LotArea', 'GrLivArea'])
+	disc = EqualWidthDiscretiser(bins=10, variables=['LotArea', 'GrLivArea'])
 
 	# fit the transformer
 	disc.fit(X_train)

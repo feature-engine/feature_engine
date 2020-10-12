@@ -1,12 +1,14 @@
 RareLabelEncoder
 ================
-The RareLabelEncoder() groups infrequent categories altogether into one new category called
-'Rare' or a different string indicated by the user. We need to specify the minimum percentage of observations
-a category should show to be preserved and the minimum number of unique categories a variable should
-have to be re-grouped.
+
+The RareLabelEncoder() groups infrequent categories altogether into one new category
+called 'Rare' or a different string indicated by the user. We need to specify the
+minimum percentage of observations a category should show to be preserved and the
+minimum number of unique categories a variable should have to be re-grouped.
 
 The RareLabelEncoder() works only with categorical variables. A list of variables can
-be indicated, or the encoder will automatically select all categorical variables in the train set.
+be indicated, or the encoder will automatically select all categorical variables in
+the train set.
 
 .. code:: python
 
@@ -53,7 +55,8 @@ be indicated, or the encoder will automatically select all categorical variables
 	 'pclass': array([2, 3, 1], dtype='int64'),
 	 'embarked': array(['S', 'C', 'Q'], dtype=object)}
 
-You can also specify the maximum number of categories that can be considered frequent using the `max_n_categories` parameter.
+You can also specify the maximum number of categories that can be considered frequent
+using the `max_n_categories` parameter.
 
 .. code:: python
 

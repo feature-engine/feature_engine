@@ -1,15 +1,17 @@
 EndTailImputer
 ==============
-The EndTailImputer() replaces missing data with a value at the end of the distribution. The value can be 
-determined using the mean plus or minus a number of times the standard deviation, or using the inter-quartile
-range proximity rule. The value can also be determined as a factor of the maximum value. See the API Reference
-below for more details.
+
+The EndTailImputer() replaces missing data with a value at the end of the distribution.
+The value can be determined using the mean plus or minus a number of times the standard
+deviation, or using the inter-quartile range proximity rule. The value can also be
+determined as a factor of the maximum value. See the API Reference below for more
+details.
 
 The user decides whether the missing data should be placed at the right or left tail of
 the variable distribution.
 
-It works only with numerical variables. A list of variables can be indicated, or the imputer will automatically
-select all numerical variables in the train set.
+It works only with numerical variables. A list of variables can be indicated, or the
+imputer will automatically select all numerical variables in the train set.
 
 .. code:: python
 
@@ -28,7 +30,7 @@ select all numerical variables in the train set.
     	data.drop(['Id', 'SalePrice'], axis=1), data['SalePrice'], test_size=0.3, random_state=0)
 
 	# set up the imputer
-	tail_imputer = EndTailImputer(distribution='gaussian',
+	tail_imputer = EndTailImputer(imputation_method='gaussian',
                                   tail='right',
                                   fold=3,
                                   variables=['LotFrontage', 'MasVnrArea'])

@@ -1,7 +1,10 @@
 MathematicalCombination
 =======================
-    MathematicalCombination() applies basic mathematical operations across features,
-    returning one or more additional features as a result.
+
+    MathematicalCombination() applies basic mathematical operations to multiple features,
+    returning one or more additional features as a result. Tha is, it sums, multiplies,
+    takes the average, maximum, minimum or standard deviation of a group of variables
+    and returns the result into new variables.
 
 .. code:: python
 

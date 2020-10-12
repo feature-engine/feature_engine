@@ -1,11 +1,13 @@
 Datasets
 ========
 
-The user guide and examples included in Feature-engine's documentation are based on these 3 datasets:
+The user guide and examples included in Feature-engine's documentation are based on
+these 3 datasets:
 
 **Titanic dataset**
 
-We use the dataset available in `openML <https://www.openml.org/d/40945>`_ which can be downloaded from `here <https://www.openml.org/data/get_csv/16826755/phpMYEkMl>`_.
+We use the dataset available in `openML <https://www.openml.org/d/40945>`_ which can be
+downloaded from `here <https://www.openml.org/data/get_csv/16826755/phpMYEkMl>`_.
 
 **Ames House Prices dataset**
 
@@ -13,7 +15,8 @@ We use the data set created by Professor Dean De Cock:
 * Dean De Cock (2011) Ames, Iowa: Alternative to the Boston Housing
 * Data as an End of Semester Regression Project, Journal of Statistics Education, Vol.19, No. 3.
 
-The examples are based on a copy of the dataset available on `Kaggle <https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data>`_.
+The examples are based on a copy of the dataset available on
+`Kaggle <https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data>`_.
 
 The original data and documentation can be found here:
 
@@ -25,9 +28,12 @@ The original data and documentation can be found here:
 
 We use the Credit Approval dataset from the UCI Machine Learning Repository:
 
-Dua, D. and Graff, C. (2019). `UCI Machine Learning Repository <http://archive.ics.uci.edu/ml>`_. Irvine, CA: University of California, School of Information and Computer Science.
+Dua, D. and Graff, C. (2019). `UCI Machine Learning Repository <http://archive.ics.uci.edu/ml>`_.
+Irvine, CA: University of California, School of Information and Computer Science.
 
-To download the dataset visit this `website <http://archive.ics.uci.edu/ml/machine-learning-databases/credit-screening/>`_ and click on "crx.data" to download the data set.
+To download the dataset visit this
+`website <http://archive.ics.uci.edu/ml/machine-learning-databases/credit-screening/>`_
+and click on "crx.data" to download the data set.
 
 To prepare the data for the examples:
 

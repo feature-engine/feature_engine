@@ -53,7 +53,7 @@ See the API Reference for more details.
 		data['survived'], test_size=0.3, random_state=0)
 
     # set up the capper
-    capper = OutlierTrimmer(distribution='skewed', tail='right', fold=1.5, variables=['age', 'fare'])
+    capper = OutlierTrimmer(capping_method='iqr', tail='right', fold=1.5, variables=['age', 'fare'])
 
     # fit the capper
     capper.fit(X_train)

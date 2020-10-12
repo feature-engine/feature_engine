@@ -3,7 +3,8 @@
 Feature Creation
 ================
 
-Feature-engine's mathematical combinator applies mathematical operations across features.
+Feature-engine's creation transformers combine features into new variables through
+various mathematical and other methods.
 
 .. toctree::
    :maxdepth: 2
