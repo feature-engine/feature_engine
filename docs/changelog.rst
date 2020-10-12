@@ -14,77 +14,51 @@ Contributors:
     - Soledad Galli
 
 
-Renaming of Modules within Feature-engine:
+**Renaming of Modules within Feature-engine**:
 
 Feature-engine transformers have been sorted into submodules to smooth the development
 of the package and shorten import syntax for users.
 
-    - **Module imputation**: missing data imputers are now imported from
-``feature_engine.imputation`` instead of ``feature_engine.missing_data_imputation``.
-    - **Module encoding**: categorical variable encoders are now imported from
-``feature_engine.encoding`` instead of ``feature_engine_categorical_encoders``.
-    - **Module discretisation**: discretisation transformers are now imported from
-``feature_engine.discretisation`` instead of ``feature_engine.discretisers``.
-    - **Module transformation**: transformers are now imported from ``feature_engine.transformation``
-instead of ``feature_engine.variable_transformers``.
-    - **Module outliers**: transformers to remove or censor outliers are now imported
-from ``feature_engine.outliers`` instead of ``feature_engine.outlier_removers``.
-    - **Module selection**: new module hosts transformers to select or remove variables
-from a dataset.
-    - **Module creation**: new module hosts transformers that combine variables into new
-features using mathematical or other operations.
+    - **Module imputation**: missing data imputers are now imported from ``feature_engine.imputation`` instead of ``feature_engine.missing_data_imputation``.
+    - **Module encoding**: categorical variable encoders are now imported from ``feature_engine.encoding`` instead of ``feature_engine_categorical_encoders``.
+    - **Module discretisation**: discretisation transformers are now imported from ``feature_engine.discretisation`` instead of ``feature_engine.discretisers``.
+    - **Module transformation**: transformers are now imported from ``feature_engine.transformation`` instead of ``feature_engine.variable_transformers``.
+    - **Module outliers**: transformers to remove or censor outliers are now imported from ``feature_engine.outliers`` instead of ``feature_engine.outlier_removers``.
+    - **Module selection**: new module hosts transformers to select or remove variables from a dataset.
+    - **Module creation**: new module hosts transformers that combine variables into new features using mathematical or other operations.
 
-Renaming of Classes:
+**Renaming of Classes**:
 
 In this release, we have shortened the name of categorical encoders, and also renamed
 other classes of Feature-engine to simplify import syntax.
 
-    -**encoders**: the word ``Categorical`` was removed from the classes name. Now, instead
-of ``MeanCategoricalEncoder``, the class is called ``MeanEncoder``. Instead of
-``RareLabelCategoricalEncoder`` it is ``RareLabelEncoder`` and so on. Please check the
-encoders documentation for more details.
-    -**imputers**: the ``CategoricalVariableImputer`` is now called ``CategoricalImputer``.
-    -**discretisers**: the ``UserInputDiscretiser`` is now called ``ArbitraryDiscretiser``.
-    -**creation**: the ``MathematicalCombinator`` is not called ``MathematicalCombination``.
-    -**WoEEncoder and PRatioEncoder**: the ``WoEEncoder`` now applies only encoding
-with the weight of evidence. To apply encoding by probability ratios, use a different
-transformer: the ``PRatioEncoder`` (**by Nicolas Galli**).
+    - **Encoders**: the word ``Categorical`` was removed from the classes name. Now, instead of ``MeanCategoricalEncoder``, the class is called ``MeanEncoder``. Instead of ``RareLabelCategoricalEncoder`` it is ``RareLabelEncoder`` and so on. Please check the encoders documentation for more details.
+    - **Imputers**: the ``CategoricalVariableImputer`` is now called ``CategoricalImputer``.
+    - **Discretisers**: the ``UserInputDiscretiser`` is now called ``ArbitraryDiscretiser``.
+    - **Creation**: the ``MathematicalCombinator`` is not called ``MathematicalCombination``.
+    - **WoEEncoder and PRatioEncoder**: the ``WoEEncoder`` now applies only encoding with the weight of evidence. To apply encoding by probability ratios, use a different transformer: the ``PRatioEncoder`` (**by Nicolas Galli**).
 
-Renaming of class init Parameters:
+**Renaming of class init Parameters**:
 
 We renamed a few parameters to unify the nomenclature across the Package.
 
-    -**EndTailImputer**: the parameter ``distribution`` is now called ``imputation_method``
-to unify convention among imputers. To impute using the IQR, we now need to pass
-``imputation_method='iqr'`` instead of ``imputation_method=skewed``.
-    -**AddMissingIndicator**: the parameter ``missing_only`` now takes the boolean
-values ``True`` or ``False``.
-    -**Winzoriser and OutlierTrimmer``: the parameter ``distribution`` is now called
-``capping_method`` to unify names across Feature-engine transformers.
+    - **EndTailImputer**: the parameter ``distribution`` is now called ``imputation_method`` to unify convention among imputers. To impute using the IQR, we now need to pass ``imputation_method="iqr"`` instead of ``imputation_method="skewed"``.
+    - **AddMissingIndicator**: the parameter ``missing_only`` now takes the boolean values ``True`` or ``False``.
+    - **Winzoriser and OutlierTrimmer**: the parameter ``distribution`` is now called ``capping_method`` to unify names across Feature-engine transformers.
 
-New transformers and classes:
-    -**DropConstantFeatures**: DropConstantFeatures finds and removes constant and
-quasi-constant features from a dataframe (**by Tejash Shah**)
-    -**DropDuplicateFeatures**: DropDuplicateFeatures finds and removes duplicated
-features from a dataset (**by Tejash Shah and Soledad Galli**)
+**New transformers and classes**:
+    - **DropConstantFeatures**: DropConstantFeatures finds and removes constant and quasi-constant features from a dataframe (**by Tejash Shah**)
+    - **DropDuplicateFeatures**: DropDuplicateFeatures finds and removes duplicated features from a dataset (**by Tejash Shah and Soledad Galli**)
 
-    -
-Other Changes:
-    - **Updated documentation**: documentation reflects the current use of Feature-engine
-transformers
-    - **Typo fixes**: Thank you to all who contributed to typo fixes (Tim Vink, Github
-user @piecot)
+**Code Architecture - Important for Contributors and Developers**:
+    - **Submodules**: transformers have been grouped within relevant submodules and modules.
+    - **Individual tests**: testing classes have been subdivided into individual tests
+    - **Code Style**: we adopted the use of flake8 for linting and PEP8 style checks, and black for automatic re-styling of code.
+    - **Type hint**: we are slowly rolling out the use of type hint throughout Feature-engine classes and functions (**by Nodar Okroshiashvili**)
 
-Code Changes - Important for Contributors and Developers:
-    -**Submodules**: transformers have been grouped within relevant submodules and
-modules.
-    -**Individual tests**: testing classes have been subdivided into individual tests
-    -**Code Style**: we adopted the use of flake8 for linting and PEP8 style checks,
-and black for automatic re-styling of code.
-    -**Type hint**: we are slowly rolling out the use of type hint throughout
-Feature-engine classes and functions (**by Nodar Okroshiashvili**)
-
-
+**Other Changes**:
+    - **Updated documentation**: documentation reflects the current use of Feature-engine transformers
+    - **Typo fixes**: Thank you to all who contributed to typo fixes (Tim Vink, Github user @piecot)
 
 Version 0.6.1
 -------------
