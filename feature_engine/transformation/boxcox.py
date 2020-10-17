@@ -45,7 +45,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         self.variables = _define_variables(variables)
 
-    def fit(self, X: pd.DataFrame, y: Optional[str] = None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learns the optimal lambda for the BoxCox transformation.
 
@@ -55,6 +55,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
             Can be the entire dataframe, not just the variables to transform.
 
             y: It is not needed in this transformer. Defaults to None.
+            Alternatively takes Pandas Series.
 
         Raises:
             ValueError: If some variables contain zero values

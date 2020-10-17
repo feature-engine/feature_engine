@@ -43,7 +43,7 @@ class LogTransformer(BaseNumericalTransformer):
         self.variables = _define_variables(variables)
         self.base = base
 
-    def fit(self, X: pd.DataFrame, y: Optional[str] = None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Selects the numerical variables and determines whether the logarithm
         can be applied on the selected variables (it checks if the variables
@@ -55,6 +55,7 @@ class LogTransformer(BaseNumericalTransformer):
                 Can be the entire dataframe, not just the variables to transform.
 
             y: It is not needed in this transformer. Defaults to None.
+            Alternatively takes Pandas Series.
 
         Raises:
             ValueError: If some variables contain zero or negative values

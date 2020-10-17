@@ -42,7 +42,7 @@ class PowerTransformer(BaseNumericalTransformer):
         self.exp = exp
         self.variables = _define_variables(variables)
 
-    def fit(self, X: pd.DataFrame, y: Optional[str] = None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Fits the power transformation.
 
@@ -52,6 +52,7 @@ class PowerTransformer(BaseNumericalTransformer):
             Can be the entire dataframe, not just the variables to transform.
 
             y: It is not needed in this transformer. Defaults to None.
+            Alternatively takes Pandas Series.
 
         Returns:
             self
