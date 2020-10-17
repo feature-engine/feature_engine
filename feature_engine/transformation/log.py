@@ -33,7 +33,9 @@ class LogTransformer(BaseNumericalTransformer):
         will find and select all numerical variables.
     """
 
-    def __init__(self, base: str = "e", variables: Union[List[str], str] = None) -> None:
+    def __init__(
+        self, base: str = "e", variables: Union[List[str], str] = None
+    ) -> None:
 
         if base not in ["e", "10"]:
             raise ValueError("base can take only '10' or 'e' as values")
