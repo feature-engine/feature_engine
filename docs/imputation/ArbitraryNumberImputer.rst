@@ -1,9 +1,10 @@
 ArbitraryNumberImputer
 ======================
-The ArbitraryNumberImputer() replaces missing data with an arbitrary value determined by the user. It works only
-with numerical variables. A list of variables can be indicated, or the imputer will automatically select
-all numerical variables in the train set.
-A dictionary with variables and their arbitrary values can be indicated to use different arbitrary values for variables.
+The ArbitraryNumberImputer() replaces missing data with an arbitrary value determined
+by the user. It works only with numerical variables. A list of variables can be
+indicated, or the imputer will automatically select all numerical variables in the
+train set. A dictionary with variables and their arbitrary values can be indicated to
+use different arbitrary values for variables.
 
 .. code:: python
 

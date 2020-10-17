@@ -3,8 +3,8 @@
 Variable Transformation
 =======================
 
-Feature-engine's variable transformers transform numerical variables with various mathematical
-transformations.
+Feature-engine's variable transformers transform numerical variables with various
+mathematical transformations.
 
 .. toctree::
    :maxdepth: 2

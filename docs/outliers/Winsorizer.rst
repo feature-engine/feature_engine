@@ -1,8 +1,8 @@
 Winsorizer
 ==========
 
-Censors variables at predefined minimum and maximum values. The minimum and maximum values can be calculated
-in 1 of 3 different ways:
+Censors variables at predefined minimum and maximum values. The minimum and maximum
+values can be calculated in 1 of 3 different ways:
 
 Gaussian limits:
     right tail: mean + 3* std
@@ -53,7 +53,7 @@ See the API Reference for more details.
 		data['survived'], test_size=0.3, random_state=0)
 
     # set up the capper
-    capper = Winsorizer(distribution='gaussian', tail='right', fold=3, variables=['age', 'fare'])
+    capper = Winsorizer(capping_method='gaussian', tail='right', fold=3, variables=['age', 'fare'])
 
     # fit the capper
     capper.fit(X_train)

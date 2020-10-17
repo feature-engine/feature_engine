@@ -3,7 +3,8 @@
 Categorical Variable Encoding
 =============================
 
-Feature-engine's categorical encoders replace variable strings by estimated or arbitrary numbers.
+Feature-engine's categorical encoders replace variable strings by estimated or
+arbitrary numbers.
 
 .. toctree::
    :maxdepth: 2

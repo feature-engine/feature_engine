@@ -1,8 +1,9 @@
 DropConstantFeatures
 ====================
-The DropConstantFeatures() drops constant and quasi-constant variables from a dataframe. By default,
-DropConstantFeatures drops only constant variables. This transformer works with both numerical and
-categorical variables.
+
+The DropConstantFeatures() drops constant and quasi-constant variables from a dataframe.
+By default, DropConstantFeatures drops only constant variables. This transformer works
+with both numerical and categorical variables.
 
 .. code:: python
 

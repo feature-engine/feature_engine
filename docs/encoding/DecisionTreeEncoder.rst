@@ -9,9 +9,9 @@ fits with this numerical variable a decision tree to predict the target variable
 Finally, the original categorical variable is replaced by the predictions of
 the decision tree.
 
-The DecisionTreeEncoder() works only with categorical variables. A
-list of variables can be indicated, or alternatively, the imputer will automatically
-select all categorical variables in the train set.
+The DecisionTreeEncoder() works only with categorical variables. A list of variables
+can be indicated, or alternatively, the imputer will automatically select all
+categorical variables in the train set.
 
 Note that a decision tree is fit per every single variable. With this transformer
 variables are not combined.

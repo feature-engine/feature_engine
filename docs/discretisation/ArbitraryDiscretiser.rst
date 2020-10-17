@@ -1,19 +1,22 @@
 ArbitraryDiscretiser
 ====================
-The ArbitraryDiscretiser() sorts the variable values into contiguous intervals which limits are arbitrarily
-defined by the user.
 
-The user must provide a dictionary of variable:list of limits pair when setting up the discretiser. 
+The ArbitraryDiscretiser() sorts the variable values into contiguous intervals which
+limits are arbitrarily defined by the user.
 
-The ArbitraryDiscretiser() works only with numerical variables. The discretiser will check that the variables
-entered by the user are present in the train set and cast as numerical.
+The user must provide a dictionary of variable:list of limits pair when setting up the
+discretiser.
+
+The ArbitraryDiscretiser() works only with numerical variables. The discretiser will
+check that the variables entered by the user are present in the train set and cast as
+numerical.
 
 .. code:: python
 
 	import numpy as np
 	import pandas as pd
 	from sklearn.datasets import load_boston
-	from feature_engine.discretisation import ArbitrarytDiscretiser
+	from feature_engine.discretisation import ArbitraryDiscretiser
 
 	boston_dataset = load_boston()
 	data = pd.DataFrame(boston_dataset.data, columns=boston_dataset.feature_names)

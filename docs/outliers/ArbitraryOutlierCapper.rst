@@ -1,7 +1,8 @@
 ArbitraryOutlierCapper
 ======================
-The ArbitraryOutlierCapper censors variable values at user pre-defined maximum and minimum values.
-For more details, read the API Reference below.
+
+The ArbitraryOutlierCapper censors variable values at user pre-defined maximum and
+minimum values. For more details, read the API Reference below.
 
 .. code:: python
 

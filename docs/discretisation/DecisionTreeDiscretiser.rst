@@ -1,12 +1,14 @@
 DecisionTreeDiscretiser
 =======================
-The DecisionTreeDiscretiser() divides the numerical variable into groups estimated by a decision tree.
-In other words, the bins are the predictions made by a decision tree. More details in the API Reference
-section at the end of this page. A grid with parameters can be passed to find the best performing tree,
-determining the scoring metric and cross-validation fold.
+The DecisionTreeDiscretiser() divides the numerical variable into groups estimated by a
+decision tree. In other words, the bins are the predictions made by a decision tree.
+More details in the API Reference section at the end of this page. A grid with
+parameters can be passed to find the best performing tree, determining the scoring
+metric and cross-validation fold.
 
-The DecisionTreeDiscretiser() works only with numerical variables. A list of variables can
-be indicated, or the imputer will automatically select all numerical variables in the train set.
+The DecisionTreeDiscretiser() works only with numerical variables. A list of variables
+can be indicated, or the imputer will automatically select all numerical variables in
+the train set.
 
 .. code:: python
 

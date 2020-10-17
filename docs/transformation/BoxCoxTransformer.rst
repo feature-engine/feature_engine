@@ -5,8 +5,9 @@ The Box-Cox transformation is defined as:
 
 T(Y)=(Y exp(λ)−1)/λ if λ!=0, or log(Y) otherwise.
 
-where Y is the response variable and λ is the transformation parameter. λ varies, typically from -5 to 5.
-In the transformation, all values of λ are considered and the optimal value for a given variable is selected.
+where Y is the response variable and λ is the transformation parameter. λ varies,
+typically from -5 to 5. In the transformation, all values of λ are considered and the
+optimal value for a given variable is selected.
 
 API Reference
 -------------
