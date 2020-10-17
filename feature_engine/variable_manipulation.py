@@ -19,11 +19,9 @@ def _define_variables(variables: Optional[List[str]]) -> Optional[List[str]]:
         List of strings
     """
 
-    if (not variables or
-            (
-                isinstance(variables, list) and
-                all(isinstance(i, str) for i in variables)
-            )):
+    if not variables or (
+        isinstance(variables, list) and all(isinstance(i, str) for i in variables)
+    ):
         variables = variables
 
     else:
@@ -36,8 +34,9 @@ def _define_variables(variables: Optional[List[str]]) -> Optional[List[str]]:
     return variables
 
 
-def _find_numerical_variables(X: pd.DataFrame,
-                              variables: Optional[List[str]] = None) -> List[str]:
+def _find_numerical_variables(
+    X: pd.DataFrame, variables: Optional[List[str]] = None
+) -> List[str]:
     """
     Takes Pandas DataFrame and checks if user provided variables
     are numerical type. If no variables are provided by the user,
@@ -73,8 +72,9 @@ def _find_numerical_variables(X: pd.DataFrame,
     return variables
 
 
-def _find_categorical_variables(X: pd.DataFrame,
-                                variables: Optional[List[str]] = None) -> List[str]:
+def _find_categorical_variables(
+    X: pd.DataFrame, variables: Optional[List[str]] = None
+) -> List[str]:
     """
     Takes Pandas DataFrame and finds all categorical variables if not provided.
     If variables are provided, checks if they are indeed categorical.
@@ -109,8 +109,9 @@ def _find_categorical_variables(X: pd.DataFrame,
     return variables
 
 
-def _find_all_variables(X: pd.DataFrame,
-                        variables: Optional[List[str]] = None) -> List[str]:
+def _find_all_variables(
+    X: pd.DataFrame, variables: Optional[List[str]] = None
+) -> List[str]:
     """
     If variables are None, captures all variables in the dataframe in a list.
     If user enters variable names list, it returns the list.
