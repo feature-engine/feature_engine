@@ -19,15 +19,16 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
     # shared set-up procedures across numerical transformers, i.e.,
     # variable transformers, discretisers, math combination
 
-    def fit(self, X: pd.DataFrame, y: Optional[str] = None) -> pd.DataFrame:
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.DataFrame:
         """
         Fits the transformation to the DataFrame.
 
         Args:
             X: Pandas DataFrame to fit the transformation
+
             y: This parameter exists only for compatibility with
             sklearn.pipeline.Pipeline.
-            Defaults to None.
+            Defaults to None. Alternatively takes Pandas Series.
 
         Returns:
             DataFrame with fitted transformation
