@@ -1,15 +1,21 @@
 from typing import List, Optional
 
 import pandas as pd
-from feature_engine.dataframe_checks import (_check_input_matches_training_df,
-                                             _is_dataframe)
-from feature_engine.variable_manipulation import (_define_variables,
-                                                  _find_all_variables,
-                                                  _find_numerical_variables)
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
+
+from feature_engine.dataframe_checks import (
+    _check_input_matches_training_df,
+    _is_dataframe,
+)
+
+from feature_engine.variable_manipulation import (
+    _define_variables,
+    _find_all_variables,
+    _find_numerical_variables,
+)
 
 
 class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
