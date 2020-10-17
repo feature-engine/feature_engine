@@ -1,10 +1,11 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 import scipy.stats as stats
+
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.variable_manipulation import _define_variables
 
@@ -39,7 +40,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         transformation} pairs.
     """
 
-    def __init__(self, variables: Optional[List[str]] = None) -> None:
+    def __init__(self, variables: Union[List[str], str] = None) -> None:
 
         self.variables = _define_variables(variables)
 

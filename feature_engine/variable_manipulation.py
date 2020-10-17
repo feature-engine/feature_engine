@@ -2,12 +2,14 @@
 # License: BSD 3 clause
 # functions shared across transformers
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 
 
-def _define_variables(variables: Optional[List[str]]) -> Optional[List[str]]:
+def _define_variables(
+    variables: Union[str, Optional[List[str]]]
+) -> Optional[List[str]]:
     """
     Takes string or list of strings and checks if argument is list of strings.
     Can take None as argument.

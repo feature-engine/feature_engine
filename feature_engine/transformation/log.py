@@ -1,10 +1,11 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
+
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.variable_manipulation import _define_variables
 
@@ -32,7 +33,7 @@ class LogTransformer(BaseNumericalTransformer):
         will find and select all numerical variables.
     """
 
-    def __init__(self, base: str = "e", variables: Optional[List[str]] = None) -> None:
+    def __init__(self, base: str = "e", variables: Union[List[str], str] = None) -> None:
 
         if base not in ["e", "10"]:
             raise ValueError("base can take only '10' or 'e' as values")
