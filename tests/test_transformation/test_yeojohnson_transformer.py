@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
-from feature_engine.transformation import YeoJohnsonTransformer
 from sklearn.exceptions import NotFittedError
+
+from feature_engine.transformation import YeoJohnsonTransformer
 
 
 def test_automatically_select_variables(df_vartypes):
