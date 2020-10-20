@@ -1,7 +1,9 @@
 import pandas as pd
 import pytest
-from feature_engine.transformation import LogTransformer
+
 from sklearn.exceptions import NotFittedError
+
+from feature_engine.transformation import LogTransformer
 
 
 def test_log_base_e_plus_automatically_find_variables(df_vartypes):
