@@ -1,8 +1,9 @@
 DropConstantFeatures
 ====================
-The DropConstantFeatures() drops constant and quasi-constant variables from a dataframe. By default,
-DropConstantFeatures drops only constant variables. This transformer works with both numerical and
-categorical variables.
+
+The DropConstantFeatures() drops constant and quasi-constant variables from a dataframe.
+By default, DropConstantFeatures drops only constant variables. This transformer works
+with both numerical and categorical variables.
 
 .. code:: python
 
@@ -10,7 +11,7 @@ categorical variables.
     import pandas as pd
     from sklearn.model_selection import train_test_split
 
-    from feature_engine.feature_selection import DropConstantFeatures
+    from feature_engine.selection import DropConstantFeatures
 
     # Load dataset
     def load_titanic():
@@ -75,5 +76,5 @@ categorical variables.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.feature_selection.DropConstantFeatures
+.. autoclass:: feature_engine.selection.DropConstantFeatures
     :members:

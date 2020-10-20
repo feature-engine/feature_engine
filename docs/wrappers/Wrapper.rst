@@ -1,7 +1,8 @@
 SklearnTransformerWrapper
 =========================
 
-Implements Scikit-learn transformers like the SimpleImputer, the OrdinalEncoder or most scalers only to the selected subset of features.
+Implements Scikit-learn transformers like the SimpleImputer, the OrdinalEncoder or most
+scalers only to the selected subset of features.
 
 .. code:: python
 
