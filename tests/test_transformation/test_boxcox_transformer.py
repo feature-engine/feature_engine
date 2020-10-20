@@ -1,7 +1,9 @@
 import pandas as pd
 import pytest
-from feature_engine.transformation import BoxCoxTransformer
+
 from sklearn.exceptions import NotFittedError
+
+from feature_engine.transformation import BoxCoxTransformer
 
 
 def test_automatically_finds_variables(df_vartypes):
