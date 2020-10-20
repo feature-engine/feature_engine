@@ -1,10 +1,13 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import numpy as np
+from typing import List, Optional, Union
 
-from feature_engine.variable_manipulation import _define_variables
+import numpy as np
+import pandas as pd
+
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.variable_manipulation import _define_variables
 
 
 class LogTransformer(BaseNumericalTransformer):
@@ -30,7 +33,9 @@ class LogTransformer(BaseNumericalTransformer):
         will find and select all numerical variables.
     """
 
-    def __init__(self, base="e", variables=None):
+    def __init__(
+        self, base: str = "e", variables: Union[List[str], str] = None
+    ) -> None:
 
         if base not in ["e", "10"]:
             raise ValueError("base can take only '10' or 'e' as values")
@@ -38,21 +43,27 @@ class LogTransformer(BaseNumericalTransformer):
         self.variables = _define_variables(variables)
         self.base = base
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Selects the numerical variables and determines whether the logarithm
         can be applied on the selected variables (it checks if the variables
         are all positive).
 
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the variables to transform.
+        Args:
+            X: Pandas DataFrame of shape = [n_samples, n_features].
+                The training input samples.
+                Can be the entire dataframe, not just the variables to transform.
 
-        y : None
-            y is not needed in this transformer. You can pass y or None.
+            y: It is not needed in this transformer. Defaults to None.
+            Alternatively takes Pandas Series.
+
+        Raises:
+            ValueError: If some variables contain zero or negative values
+
+        Returns:
+            self
         """
+
         # check input dataframe
         X = super().fit(X)
 
@@ -66,22 +77,21 @@ class LogTransformer(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Transforms the variables using logarithm.
+        Transforms the variables using log transformation.
 
-        Parameters
-        ----------
-
-        X : pandas dataframe of shape = [n_samples, n_features]
+        Args:
+            X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
 
-        Returns
-        -------
+        Raises:
+            ValueError: If some variables contains zero or negative values
 
-        X_transformed : pandas dataframe of shape = [n_samples, n_features]
-            The log transformed dataframe.
+        Returns:
+            DataFrame containing transformed values
         """
+
         # check input dataframe and if class was fitted
         X = super().transform(X)
 

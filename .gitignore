@@ -107,6 +107,7 @@ venv.bak/
 
 # Miscelaneous
 .idea
+.vscode
 *.csv
 
 *.DS_Store

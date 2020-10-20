@@ -1,12 +1,16 @@
+from typing import List, Optional
+
 import pandas as pd
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
 from feature_engine.dataframe_checks import (
-    _is_dataframe,
     _check_input_matches_training_df,
+    _is_dataframe,
 )
+
 from feature_engine.variable_manipulation import (
     _define_variables,
     _find_all_variables,
@@ -34,29 +38,40 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         The desired Scikit-learn transformer.
     """
 
-    def __init__(self, variables=None, transformer=None):
+    def __init__(self, variables: List[str] = None, transformer=None) -> None:
         self.variables = _define_variables(variables)
         self.transformer = transformer
+
         if isinstance(self.transformer, OneHotEncoder) and self.transformer.sparse:
             raise AttributeError(
                 "The SklearnTransformerWrapper can only wrap the OneHotEncoder if you "
                 "set its sparse attribute to False"
             )
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """
-        The `fit` method allows Scikit-learn transformers to learn the required
-        parameters from the training data set.
+        The `fit` method allows Scikit-learn transformers to learn
+        the required parameters from the training data set.
 
-        If transformer is OneHotEncoder, OrdinalEncoder or SimpleImputer, all variables
-        indicated in the variables parameter will be transformed. When the variables
-        parameter is None, the SklearnWrapper will automatically select and transform
-        all features in the dataset, numerical or otherwise.
+        If transformer is OneHotEncoder, OrdinalEncoder or SimpleImputer,
+        all variables indicated in the ```variables``` parameter will be transformed.
+        When the variables parameter is None, the SklearnWrapper will automatically
+        select and transform all features in the dataset, numerical or otherwise.
 
-        For all other Scikit-learn transformers only numerical variables will be
-        transformed. The SklearnWrapper will check that the variables indicated in the
-        variables parameter are numerical, or alternatively, if variables is None, it
-        will automatically select the numerical variables in the data set.
+        For all other Scikit-learn transformers only numerical variables
+        will be transformed. The SklearnWrapper will check that the variables
+        indicated in the variables parameter are numerical, or alternatively,
+        if variables is None, it will automatically select
+        the numerical variables in the data set.
+
+        Args:
+            X: Pandas DataFrame to fit the transformer
+            y: This parameter exists only for compatibility
+            with sklearn.pipeline.Pipeline.
+            Defaults to None.
+
+        Returns:
+            self
         """
 
         # check input dataframe
@@ -64,6 +79,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         if isinstance(self.transformer, (OneHotEncoder, OrdinalEncoder, SimpleImputer)):
             self.variables = _find_all_variables(X, self.variables)
+
         else:
             self.variables = _find_numerical_variables(X, self.variables)
 
@@ -73,15 +89,21 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Apply the transformation to the dataframe. Only the selected features will be
-        modified.
+        Apply the transformation to the dataframe.
+        Only the selected features will be modified.
 
-        If transformer is OneHotEncoder, dummy features are concatenated to the source
-        dataset. Note that the original categorical variables will not be removed from
-        the dataset after encoding. If this is the desired effect, please use
-        Feature-engine's OneHotCategoricalEncoder instead.
+        If transformer is OneHotEncoder, dummy features are concatenated
+        to the source dataset. Note that the original categorical variables
+        will not be removed from the dataset after encoding. If this is the desired
+        effect, please use Feature-engine's OneHotCategoricalEncoder instead.
+
+        Args:
+            X: Pandas DataFrame to perform desired transformation
+
+        Returns:
+            Pandas DataFrame
         """
 
         # check that input is a dataframe
@@ -89,6 +111,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         # Check that input data contains same number of columns than
         # the dataframe used to fit the imputer.
+
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         if isinstance(self.transformer, OneHotEncoder):
@@ -97,6 +120,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
                 columns=self.transformer.get_feature_names(self.variables),
             )
             X = pd.concat([X, ohe_results_as_df], axis=1)
+
         else:
             X[self.variables] = self.transformer.transform(X[self.variables])
 

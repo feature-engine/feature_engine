@@ -1,10 +1,13 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import numpy as np
+from typing import List, Optional, Union
 
-from feature_engine.variable_manipulation import _define_variables
+import numpy as np
+import pandas as pd
+
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.variable_manipulation import _define_variables
 
 
 class ReciprocalTransformer(BaseNumericalTransformer):
@@ -27,22 +30,29 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         transformer will automatically find and select all numerical variables.
     """
 
-    def __init__(self, variables=None):
+    def __init__(self, variables: Union[List[str], str] = None) -> None:
 
         self.variables = _define_variables(variables)
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Parameters
-        ----------
+        Fits the reciprocal transformation
 
-        X : pandas dataframe of shape = [n_samples, n_features]
+        Args:
+            X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to transform.
 
-        y : None
-            y is not needed in this encoder. You can pass y or None.
+            y: It is not needed in this transformer. Defaults to None.
+            Alternatively takes Pandas Series.ss
+
+        Raises:
+            ValueError: If some variables contains zero
+
+        Returns:
+            self
         """
+
         # check input dataframe
         X = super().fit(X)
 
@@ -54,24 +64,24 @@ class ReciprocalTransformer(BaseNumericalTransformer):
             )
 
         self.input_shape_ = X.shape
+
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Applies the reciprocal 1 / x transformation.
 
-        Parameters
-        ----------
-
-        X : pandas dataframe of shape = [n_samples, n_features]
+        Args:
+            X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to transform.
 
-        Returns
-        -------
+        Raises:
+            ValueError: If some variables contain zero values.
 
-        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+        Returns:
             The dataframe with reciprocally transformed variables.
         """
+
         # check input dataframe and if class was fitted
         X = super().transform(X)
 
