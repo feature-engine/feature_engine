@@ -6,7 +6,7 @@ from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_input_matches_training_df,
 )
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _define_variables, _find_all_variables
 
 
 class ShuffleFeatures(BaseEstimator, TransformerMixin):
@@ -44,23 +44,25 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
         Attributes
         ----------
 
-        shuffled_features_: list
-            The shuffled features.
+        shuffled_features_: dict
+            The shuffled features values
 
         """
 
         # check input dataframe
         X = _is_dataframe(X)
         
+        # find all variables or check those entered are in the dataframe
+        self.features_to_shuffle = _find_all_variables(X, self.features_to_shuffle)
 
-
-        # list to collect features that are shuffled
-        self.shuffled_features_ = list()
+        # dict to collect features that are shuffled
+        self.shuffled_features_ = {}
         
         for feature in self.features_to_shuffle:
-            feature = random.shuffle(feature)
             
-            self.shuffled_features_.append(feature)
+            shuffled_feature = random.sample(list(X[feature]), len(X))
+
+            self.shuffled_variables_[feature] = shuffled_feature
 
         return self
 
@@ -91,7 +93,7 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
 
         
         ## Overwrite olf features with shuffled ones
-        X = X.assign(self.shuffled_features_)
+        X = X.assign(**self.shuffled_features_)
         
         return X
     
