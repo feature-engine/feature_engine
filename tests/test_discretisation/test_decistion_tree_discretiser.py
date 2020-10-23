@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
+
 from feature_engine.discretisation import DecisionTreeDiscretiser, EqualWidthDiscretiser
+from sklearn.exceptions import NotFittedError
 
 
 def test_classification(df_normal_dist):
@@ -28,7 +29,7 @@ def test_classification(df_normal_dist):
     # fit params
     assert transformer.input_shape_ == (100, 1)
     # transform params
-    assert len([x for x in np.round(X["var"].unique(), 2) if x not in X_t]) == 0
+    assert all(x for x in np.round(X["var"].unique(), 2) if x not in X_t)
     assert transformer.scores_dict_ == {"var": 0.717391304347826}
 
 
@@ -73,7 +74,7 @@ def test_regression(df_normal_dist):
     assert transformer.input_shape_ == (100, 1)
     assert transformer.scores_dict_ == {"var": -4.4373314584616444e-05}
     # transform params
-    assert len([x for x in np.round(X["var"].unique(), 2) if x not in X_t]) == 0
+    assert all(x for x in np.round(X["var"].unique(), 2) if x not in X_t)
 
 
 def test_error_when_cv_is_string():

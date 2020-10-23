@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
-from sklearn.datasets import load_boston
+
 from feature_engine.discretisation import ArbitraryDiscretiser
+from sklearn.datasets import load_boston
 
 
 def test_arbitrary_discretiser():
