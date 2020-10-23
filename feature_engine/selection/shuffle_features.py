@@ -62,7 +62,7 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
             
             shuffled_feature = random.sample(list(X[feature]), len(X))
 
-            self.shuffled_variables_[feature] = shuffled_feature
+            self.self.shuffled_features_[feature] = shuffled_feature
 
         return self
 
