@@ -60,7 +60,7 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
         for feature in self.features_to_shuffle:
             feature = random.shuffle(feature)
             
-             self.shuffled_features_.append(feature)
+            self.shuffled_features_.append(feature)
 
         return self
 
