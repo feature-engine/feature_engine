@@ -200,7 +200,12 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
 
         X = _is_dataframe(X)
 
-        # Overwrite old features with shuffled ones
-        columns_to_keep = [feature for (feature, drift) in self.features_performance_drifts_.items() if drift > self.threshold ]
+        # Create a list of the features to be kept depending on their 
+        # performance drift and the threshold and the ML problem.
+        
+        if (self.regression):
+            columns_to_keep = [feature for (feature, drift) in self.features_performance_drifts_.items() if drift < self.threshold ]
+        else:
+            columns_to_keep = [feature for (feature, drift) in self.features_performance_drifts_.items() if drift > self.threshold ]
 
         return X[columns_to_keep]
