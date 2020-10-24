@@ -2,9 +2,9 @@ from pandas.testing import assert_frame_equal
 import pytest
 
 from feature_engine.dataframe_checks import (
-  _check_contains_na,
-  _check_input_matches_training_df,
-  _is_dataframe
+    _check_contains_na,
+    _check_input_matches_training_df,
+    _is_dataframe,
 )
 
 

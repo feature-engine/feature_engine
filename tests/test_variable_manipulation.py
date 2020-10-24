@@ -1,11 +1,10 @@
-
 import pytest
 
 from feature_engine.variable_manipulation import (
-  _define_variables,
-  _find_all_variables,
-  _find_categorical_variables,
-  _find_numerical_variables,
+    _define_variables,
+    _find_all_variables,
+    _find_categorical_variables,
+    _find_numerical_variables,
 )
 
 

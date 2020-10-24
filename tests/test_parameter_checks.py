@@ -1,4 +1,3 @@
-
 import pytest
 
 from feature_engine.parameter_checks import _define_numerical_dict
