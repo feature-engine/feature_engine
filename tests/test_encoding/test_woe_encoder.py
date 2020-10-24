@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
+
 from feature_engine.encoding import WoEEncoder
 
 
@@ -75,7 +76,7 @@ def test_automatically_select_variables(df_enc):
     }
     assert encoder.input_shape_ == (20, 2)
     # transform params
-    assert pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]]) is None
+    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
 
 def test_error_target_is_not_passed(df_enc):

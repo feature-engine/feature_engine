@@ -36,7 +36,7 @@ def test_sklearn_imputer_numeric_with_constant(df_na):
         dataframe_na_transformed[na_variables_left_after_imputation].isna().sum() != 0
     )
     assert all(dataframe_na_transformed[variables_to_impute].isna().sum() == 0)
-    assert pd.testing.assert_frame_equal(ref, dataframe_na_transformed) is None
+    pd.testing.assert_frame_equal(ref, dataframe_na_transformed)
 
 
 def test_sklearn_imputer_object_with_constant(df_na):
@@ -68,7 +68,7 @@ def test_sklearn_imputer_object_with_constant(df_na):
         dataframe_na_transformed[na_variables_left_after_imputation].isna().sum() != 0
     )
     assert all(dataframe_na_transformed[variables_to_impute].isna().sum() == 0)
-    assert pd.testing.assert_frame_equal(ref, dataframe_na_transformed) is None
+    pd.testing.assert_frame_equal(ref, dataframe_na_transformed)
 
 
 def test_sklearn_imputer_allfeatures_with_constant(df_na):
@@ -88,7 +88,7 @@ def test_sklearn_imputer_allfeatures_with_constant(df_na):
     assert transformer.input_shape_ == (8, 6)
     # transformed output
     assert all(dataframe_na_transformed.isna().sum() == 0)
-    assert pd.testing.assert_frame_equal(ref, dataframe_na_transformed) is None
+    pd.testing.assert_frame_equal(ref, dataframe_na_transformed)
 
 
 def test_sklearn_standardscaler_numeric(df_vartypes):
@@ -111,7 +111,7 @@ def test_sklearn_standardscaler_numeric(df_vartypes):
     assert transformer.input_shape_ == (4, 5)
     assert (transformer.transformer.mean_.round(6) == np.array([19.5, 0.75])).all()
     assert all(transformer.transformer.scale_.round(6) == [1.118034, 0.111803])
-    assert pd.testing.assert_frame_equal(ref, transformed_df) is None
+    pd.testing.assert_frame_equal(ref, transformed_df)
 
 
 def test_sklearn_standardscaler_object(df_vartypes):
@@ -146,7 +146,7 @@ def test_sklearn_standardscaler_allfeatures(df_vartypes):
     assert transformer.input_shape_ == (4, 5)
     assert (transformer.transformer.mean_.round(6) == np.array([19.5, 0.75])).all()
     assert all(transformer.transformer.scale_.round(6) == [1.118034, 0.111803])
-    assert pd.testing.assert_frame_equal(ref, transformed_df) is None
+    pd.testing.assert_frame_equal(ref, transformed_df)
 
 
 def test_sklearn_ohe_object_one_feature(df_vartypes):
@@ -174,7 +174,7 @@ def test_sklearn_ohe_object_one_feature(df_vartypes):
     assert transformer.variables == variables_to_encode
     # fit params
     assert transformer.input_shape_ == (4, 1)
-    assert pd.testing.assert_frame_equal(ref, transformed_df) is None
+    pd.testing.assert_frame_equal(ref, transformed_df)
 
 
 def test_sklearn_ohe_object_many_features(df_vartypes):
@@ -207,7 +207,7 @@ def test_sklearn_ohe_object_many_features(df_vartypes):
     assert transformer.variables == variables_to_encode
     # fit params
     assert transformer.input_shape_ == (4, 2)
-    assert pd.testing.assert_frame_equal(ref, transformed_df) is None
+    pd.testing.assert_frame_equal(ref, transformed_df)
 
 
 def test_sklearn_ohe_numeric(df_vartypes):
@@ -235,7 +235,7 @@ def test_sklearn_ohe_numeric(df_vartypes):
     assert transformer.variables == variables_to_encode
     # fit params
     assert transformer.input_shape_ == (4, 1)
-    assert pd.testing.assert_frame_equal(ref, transformed_df) is None
+    pd.testing.assert_frame_equal(ref, transformed_df)
 
 
 def test_sklearn_ohe_all_features(df_vartypes):
@@ -279,7 +279,7 @@ def test_sklearn_ohe_all_features(df_vartypes):
     assert isinstance(transformer.transformer, OneHotEncoder)
     # fit params
     assert transformer.input_shape_ == (4, 5)
-    assert pd.testing.assert_frame_equal(ref, transformed_df) is None
+    pd.testing.assert_frame_equal(ref, transformed_df)
 
 
 def test_sklearn_ohe_errors(df_vartypes):

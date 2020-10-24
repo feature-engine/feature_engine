@@ -22,7 +22,7 @@ def test_drop_2_variables(df_vartypes):
     # transform params
     assert X.shape == (4, 3)
     assert type(X) == pd.DataFrame
-    assert pd.testing.assert_frame_equal(X, df) is None
+    pd.testing.assert_frame_equal(X, df)
 
 
 def test_error_if_non_existing_variables(df_vartypes):

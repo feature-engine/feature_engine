@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.exceptions import NotFittedError
 
 from feature_engine.discretisation import DecisionTreeDiscretiser, EqualWidthDiscretiser
-from sklearn.exceptions import NotFittedError
 
 
 def test_classification(df_normal_dist):

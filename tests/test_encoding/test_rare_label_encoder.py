@@ -42,7 +42,7 @@ def test_defo_params_plus_automatically_find_variables(df_enc_big):
     # test fit attr
     assert encoder.input_shape_ == (40, 3)
     # test transform output
-    assert pd.testing.assert_frame_equal(X, df) is None
+    pd.testing.assert_frame_equal(X, df)
 
 
 def test_user_provides_grouping_label_name_and_variable_list(df_enc_big):
@@ -84,7 +84,7 @@ def test_user_provides_grouping_label_name_and_variable_list(df_enc_big):
     # test fit attr
     assert encoder.input_shape_ == (40, 3)
     # test transform output
-    assert pd.testing.assert_frame_equal(X, df) is None
+    pd.testing.assert_frame_equal(X, df)
 
 
 def test_error_if_tol_not_between_0_and_1():
@@ -102,9 +102,7 @@ def test_error_if_replace_with_not_string():
         RareLabelEncoder(replace_with=0.5)
 
 
-def test_warning_if_variable_cardinality_less_than_n_categories(
-    df_enc_big,
-):
+def test_warning_if_variable_cardinality_less_than_n_categories(df_enc_big):
     # test case 3: when the variable has low cardinality
     with pytest.warns(UserWarning):
         encoder = RareLabelEncoder(n_categories=10)
@@ -151,4 +149,4 @@ def test_max_n_categories(df_enc_big):
         + ["G"] * 6,
     }
     df = pd.DataFrame(df)
-    assert pd.testing.assert_frame_equal(X, df) is None
+    pd.testing.assert_frame_equal(X, df)

@@ -45,7 +45,7 @@ def test_ratio_with_one_variable(df_enc):
     }
     assert encoder.input_shape_ == (20, 2)
     # transform params
-    assert pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]]) is None
+    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
 
 def test_logratio_and_automaticcally_select_variables(df_enc):
@@ -111,7 +111,7 @@ def test_logratio_and_automaticcally_select_variables(df_enc):
     }
     assert encoder.input_shape_ == (20, 2)
     # transform params
-    assert pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]]) is None
+    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
     # test error raise
     with pytest.raises(ValueError):

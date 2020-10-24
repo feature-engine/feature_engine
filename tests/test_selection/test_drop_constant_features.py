@@ -40,7 +40,7 @@ def test_drop_constant_features(df_constant_features):
     assert transformer.input_shape_ == (4, 9)
 
     # transform output
-    assert pd.testing.assert_frame_equal(X, df) is None
+    pd.testing.assert_frame_equal(X, df)
 
 
 def test_drop_constant_and_quasiconstant_features(df_constant_features):
@@ -82,7 +82,7 @@ def test_drop_constant_and_quasiconstant_features(df_constant_features):
     assert transformer.input_shape_ == (4, 9)
 
     # transform params
-    assert pd.testing.assert_frame_equal(X, df) is None
+    pd.testing.assert_frame_equal(X, df)
 
 
 def test_drop_constant_features_with_list_of_variables(df_constant_features):
@@ -114,7 +114,7 @@ def test_drop_constant_features_with_list_of_variables(df_constant_features):
     assert transformer.input_shape_ == (4, 9)
 
     # transform params
-    assert pd.testing.assert_frame_equal(X, df) is None
+    pd.testing.assert_frame_equal(X, df)
 
 
 def test_drop_constant_features_if_fit_input_not_df():

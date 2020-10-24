@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.transformation import BoxCoxTransformer
@@ -21,7 +20,7 @@ def test_automatically_finds_variables(df_vartypes):
     # test fit attr
     assert transformer.input_shape_ == (4, 5)
     # test transform output
-    assert pd.testing.assert_frame_equal(X, transf_df) is None
+    pd.testing.assert_frame_equal(X, transf_df)
 
 
 def test_fit_raises_error_if_df_contains_na(df_na):

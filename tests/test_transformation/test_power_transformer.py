@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.transformation import PowerTransformer
@@ -22,7 +21,7 @@ def test_defo_params_plus_automatically_find_variables(df_vartypes):
     # test fit attr
     assert transformer.input_shape_ == (4, 5)
     # test transform output
-    assert pd.testing.assert_frame_equal(X, transf_df) is None
+    pd.testing.assert_frame_equal(X, transf_df)
 
 
 def test_error_if_exp_value_not_allowed():

@@ -31,7 +31,7 @@ def test_automatically_find_variables_and_gaussian_imputation_on_right_tail(df_n
     # transform output: indicated vars ==> no NA, not indicated vars with NA
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() == 0
     assert X_transformed[["City", "Name"]].isnull().sum().sum() > 0
-    assert pd.testing.assert_frame_equal(X_transformed, X_reference) is None
+    pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
 def test_user_enters_variables_and_iqr_imputation_on_right_tail(df_na):
@@ -49,7 +49,7 @@ def test_user_enters_variables_and_iqr_imputation_on_right_tail(df_na):
     # test fit  and transform attr and output
     assert imputer.imputer_dict_ == {"Age": 65.5, "Marks": 1.0625}
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() == 0
-    assert pd.testing.assert_frame_equal(X_transformed, X_reference) is None
+    pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
 def test_user_enters_variables_and_max_value_imputation(df_na):

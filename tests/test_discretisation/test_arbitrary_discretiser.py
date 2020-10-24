@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
+from sklearn.datasets import load_boston
 
 from feature_engine.discretisation import ArbitraryDiscretiser
-from sklearn.datasets import load_boston
 
 
 def test_arbitrary_discretiser():
@@ -27,10 +27,10 @@ def test_arbitrary_discretiser():
     # fit params
     assert transformer.binner_dict_ == user_dict
     # transform params
-    assert pd.testing.assert_frame_equal(X, data_t2) is None
+    pd.testing.assert_frame_equal(X, data_t2)
 
     transformer = ArbitraryDiscretiser(
         binning_dict=user_dict, return_object=False, return_boundaries=True
     )
     X = transformer.fit_transform(data)
-    assert pd.testing.assert_frame_equal(X, data_t1) is None
+    pd.testing.assert_frame_equal(X, data_t1)

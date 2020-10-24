@@ -28,7 +28,7 @@ def test_impute_with_99_and_automatically_select_variables(df_na):
     # non selected variables should still contain NA
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() == 0
     assert X_transformed[["Name", "City"]].isnull().sum().sum() > 0
-    assert pd.testing.assert_frame_equal(X_transformed, X_reference) is None
+    pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
 def test_impute_with_1_and_single_variable_entered_by_user(df_na):
@@ -50,7 +50,7 @@ def test_impute_with_1_and_single_variable_entered_by_user(df_na):
 
     # test transform output
     assert X_transformed["Age"].isnull().sum() == 0
-    assert pd.testing.assert_frame_equal(X_transformed, X_reference) is None
+    pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
 def test_error_when_arbitrary_number_is_string():
@@ -81,7 +81,7 @@ def test_dictionary_of_imputation_values(df_na):
     # test transform params
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() == 0
     assert X_transformed[["Name", "City"]].isnull().sum().sum() > 0
-    assert pd.testing.assert_frame_equal(X_transformed, X_reference) is None
+    pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
 def imputer_error_when_dictionary_value_is_string():

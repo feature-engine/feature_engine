@@ -60,10 +60,10 @@ def test_general_seed_plus_automatically_select_variables(df_na):
 
     # test fit attr
     assert imputer.input_shape_ == (8, 6)
-    assert pd.testing.assert_frame_equal(imputer.X_, df_na) is None
+    pd.testing.assert_frame_equal(imputer.X_, df_na)
 
     # test transform output
-    assert pd.testing.assert_frame_equal(X_transformed, ref, check_dtype=False) is None
+    pd.testing.assert_frame_equal(X_transformed, ref, check_dtype=False)
 
 
 def test_seed_per_observation_and_multiple_variables_in_random_state(df_na):
@@ -108,17 +108,12 @@ def test_seed_per_observation_and_multiple_variables_in_random_state(df_na):
     assert imputer.variables == ["City", "Studies"]
     assert imputer.random_state == ["Marks", "Age"]
     assert imputer.seed == "observation"
-    assert (
-        pd.testing.assert_frame_equal(
-            imputer.X_[["City", "Studies"]], df_na[["City", "Studies"]]
-        )
-        is None
+    pd.testing.assert_frame_equal(
+        imputer.X_[["City", "Studies"]], df_na[["City", "Studies"]]
     )
-    assert (
-        pd.testing.assert_frame_equal(
-            X_transformed[["City", "Studies"]], ref[["City", "Studies"]]
-        )
-        is None
+
+    pd.testing.assert_frame_equal(
+        X_transformed[["City", "Studies"]], ref[["City", "Studies"]]
     )
 
 
@@ -165,19 +160,15 @@ def test_seed_per_observation_plus_product_of_seeding_variables(df_na):
     assert imputer.variables == ["City", "Studies"]
     assert imputer.random_state == ["Marks", "Age"]
     assert imputer.seed == "observation"
-    assert (
-        pd.testing.assert_frame_equal(
-            imputer.X_[["City", "Studies"]], df_na[["City", "Studies"]]
-        )
-        is None
+
+    pd.testing.assert_frame_equal(
+        imputer.X_[["City", "Studies"]], df_na[["City", "Studies"]]
     )
-    assert (
-        pd.testing.assert_frame_equal(
-            X_transformed[["City", "Studies"]],
-            ref[["City", "Studies"]],
-            check_dtype=False,
-        )
-        is None
+
+    pd.testing.assert_frame_equal(
+        X_transformed[["City", "Studies"]],
+        ref[["City", "Studies"]],
+        check_dtype=False,
     )
 
 
@@ -220,19 +211,15 @@ def test_seed_per_observation_with_only_1_variable_as_seed(df_na):
     ref = pd.DataFrame(ref)
 
     assert imputer.random_state == ["Age"]
-    assert (
-        pd.testing.assert_frame_equal(
-            imputer.X_[["City", "Studies"]], df_na[["City", "Studies"]]
-        )
-        is None
+
+    pd.testing.assert_frame_equal(
+        imputer.X_[["City", "Studies"]], df_na[["City", "Studies"]]
     )
-    assert (
-        pd.testing.assert_frame_equal(
-            X_transformed[["City", "Studies"]],
-            ref[["City", "Studies"]],
-            check_dtype=False,
-        )
-        is None
+
+    pd.testing.assert_frame_equal(
+        X_transformed[["City", "Studies"]],
+        ref[["City", "Studies"]],
+        check_dtype=False,
     )
 
 

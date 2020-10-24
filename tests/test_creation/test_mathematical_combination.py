@@ -44,7 +44,7 @@ def test_default_parameters(df_vartypes):
         "min(Age-Marks)": "min",
     }
     # transform params
-    assert pd.testing.assert_frame_equal(X, ref) is None
+    pd.testing.assert_frame_equal(X, ref)
 
 
 def test_input_variables(df_vartypes):
@@ -87,7 +87,7 @@ def test_input_variables(df_vartypes):
         "min(Age-Marks)": "min",
     }
     # transform params
-    assert pd.testing.assert_frame_equal(X, ref) is None
+    pd.testing.assert_frame_equal(X, ref)
 
 
 def test_error_when_user_enters_one_variable(df_vartypes):
@@ -134,7 +134,7 @@ def test_user_enters_two_operations(df_vartypes):
         "mean(Age-Marks)": "mean",
     }
     # transform params
-    assert pd.testing.assert_frame_equal(X, ref) is None
+    pd.testing.assert_frame_equal(X, ref)
 
 
 def test_user_enters_output_variable_names(df_vartypes):
@@ -168,7 +168,7 @@ def test_user_enters_output_variable_names(df_vartypes):
         "mean_of_two_vars": "mean",
     }
     # transform params
-    assert pd.testing.assert_frame_equal(X, ref) is None
+    pd.testing.assert_frame_equal(X, ref)
 
 
 def test_error_if_variable_names_and_operations_list_length_not_equal(df_vartypes):
@@ -213,7 +213,7 @@ def test_one_mathematical_operation(df_vartypes):
     assert transformer.input_shape_ == (4, 5)
     assert transformer.combination_dict_ == {"sum(Age-Marks)": "sum"}
     # transform params
-    assert pd.testing.assert_frame_equal(X, ref) is None
+    pd.testing.assert_frame_equal(X, ref)
 
 
 def test_error_if_operation_not_permitted(df_vartypes):

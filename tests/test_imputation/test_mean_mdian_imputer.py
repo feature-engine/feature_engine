@@ -31,7 +31,7 @@ def test_mean_imputation_and_automatically_select_variables(df_na):
     # not selected variables should still have NA
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() == 0
     assert X_transformed[["Name", "City"]].isnull().sum().sum() > 0
-    assert pd.testing.assert_frame_equal(X_transformed, X_reference) is None
+    pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
 def test_median_imputation_when_user_enters_single_variables(df_na):
@@ -53,7 +53,7 @@ def test_median_imputation_when_user_enters_single_variables(df_na):
 
     # test transform output
     assert X_transformed["Age"].isnull().sum() == 0
-    assert pd.testing.assert_frame_equal(X_transformed, X_reference) is None
+    pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
 def test_error_with_wrong_imputation_method():
