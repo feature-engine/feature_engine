@@ -188,8 +188,8 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
         Returns
         -------
 
-        X_transformed: pandas dataframe of shape = [n_samples, n_features]
-            Pandas dataframe with shuffled features
+        X_transformed: pandas dataframe of shape = [n_samples, n_features - dropped features]
+            Pandas dataframe with the selected features 
         """
 
         # check if fit is performed prior to transform
@@ -201,7 +201,6 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # Overwrite old features with shuffled ones
+        columns_to_keep = [feature for (feature, drift) in self.features_performance_drifts_.items() if drift > self.threshold ]
 
-        X = X.assign(**self.shuffled_features_)
-
-        return X
+        return X[columns_to_keep]
