@@ -75,7 +75,7 @@ def test_automatically_select_variables(df_enc):
     }
     assert encoder.input_shape_ == (20, 2)
     # transform params
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    assert pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]]) is None
 
 
 def test_error_target_is_not_passed(df_enc):

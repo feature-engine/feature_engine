@@ -6,7 +6,7 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.outliers import ArbitraryOutlierCapper
 
 
-def test_right_end_capping(df_normal_dist, df_na, df_vartypes):
+def test_right_end_capping(df_normal_dist):
     # test case 1: right end capping
     transformer = ArbitraryOutlierCapper(
         max_capping_dict={"var": 0.10727677848029868}, min_capping_dict=None
@@ -28,7 +28,7 @@ def test_right_end_capping(df_normal_dist, df_na, df_vartypes):
     assert transformer.left_tail_caps_ == {}
     assert transformer.input_shape_ == (100, 1)
     # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
+    assert pd.testing.assert_frame_equal(X, df_transf) is None
     assert X["var"].max() <= 0.10727677848029868
     assert df_normal_dist["var"].max() > 0.10727677848029868
 
@@ -54,7 +54,7 @@ def test_both_ends_capping(df_normal_dist):
     assert transformer.right_tail_caps_ == {"var": 0.20857275540714884}
     assert transformer.left_tail_caps_ == {"var": -0.19661115230025186}
     # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
+    assert pd.testing.assert_frame_equal(X, df_transf) is None
     assert X["var"].max() <= 0.20857275540714884
     assert X["var"].min() >= -0.19661115230025186
     assert df_normal_dist["var"].max() > 0.20857275540714884
@@ -81,7 +81,7 @@ def test_left_tail_capping(df_normal_dist):
     assert transformer.right_tail_caps_ == {}
     assert transformer.left_tail_caps_ == {"var": -0.17486039103044}
     # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
+    assert pd.testing.assert_frame_equal(X, df_transf) is None
     assert X["var"].min() >= -0.17486039103044
     assert df_normal_dist["var"].min() < -0.17486039103044
 
@@ -102,7 +102,7 @@ def test_ignores_na_in_input_df(df_na):
     assert transformer.min_capping_dict == {"Age": 20}
     assert transformer.input_shape_ == (8, 6)
     # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
+    assert pd.testing.assert_frame_equal(X, df_transf) is None
     assert X["Age"].min() >= 20
     assert df_na["Age"].min() < 20
 

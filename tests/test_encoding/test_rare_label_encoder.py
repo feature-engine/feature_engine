@@ -42,7 +42,7 @@ def test_defo_params_plus_automatically_find_variables(df_enc_big):
     # test fit attr
     assert encoder.input_shape_ == (40, 3)
     # test transform output
-    pd.testing.assert_frame_equal(X, df)
+    assert pd.testing.assert_frame_equal(X, df) is None
 
 
 def test_user_provides_grouping_label_name_and_variable_list(df_enc_big):
@@ -84,7 +84,7 @@ def test_user_provides_grouping_label_name_and_variable_list(df_enc_big):
     # test fit attr
     assert encoder.input_shape_ == (40, 3)
     # test transform output
-    pd.testing.assert_frame_equal(X, df)
+    assert pd.testing.assert_frame_equal(X, df) is None
 
 
 def test_error_if_tol_not_between_0_and_1():
@@ -151,4 +151,4 @@ def test_max_n_categories(df_enc_big):
         + ["G"] * 6,
     }
     df = pd.DataFrame(df)
-    pd.testing.assert_frame_equal(X, df)
+    assert pd.testing.assert_frame_equal(X, df) is None

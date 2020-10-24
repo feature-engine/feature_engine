@@ -18,7 +18,7 @@ def test_gaussian_right_tail_capping_when_fold_is_1(df_normal_dist):
     df_transf = df_transf.loc[~outliers]
 
     # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
+    assert pd.testing.assert_frame_equal(X, df_transf) is None
     assert len(X) == 83
 
 
@@ -38,7 +38,7 @@ def test_iqr_left_tail_capping_with_fold_2(df_normal_dist):
     outliers = np.where(df_transf["var"] < -0.17486039103044, True, False)
     df_transf = df_transf.loc[~outliers]
 
-    pd.testing.assert_frame_equal(X, df_transf)
+    assert pd.testing.assert_frame_equal(X, df_transf) is None
     assert len(X) == 98
 
 
@@ -57,5 +57,5 @@ def test_transformer_ignores_na_in_df(df_na):
     outliers = np.where(df_transf["Age"] > 38.79255087111844, True, False)
     df_transf = df_transf.loc[~outliers]
 
-    pd.testing.assert_frame_equal(X, df_transf)
+    assert pd.testing.assert_frame_equal(X, df_transf) is None
     assert len(X) == 6

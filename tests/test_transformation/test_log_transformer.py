@@ -22,7 +22,7 @@ def test_log_base_e_plus_automatically_find_variables(df_vartypes):
     # test fit attr
     assert transformer.input_shape_ == (4, 5)
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df)
+    assert pd.testing.assert_frame_equal(X, transf_df) is None
 
 
 def test_log_base_10_plus_user_passes_var_list(df_vartypes):
@@ -40,7 +40,7 @@ def test_log_base_10_plus_user_passes_var_list(df_vartypes):
     # test fit attr
     assert transformer.input_shape_ == (4, 5)
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df)
+    assert pd.testing.assert_frame_equal(X, transf_df) is None
 
 
 def test_error_if_base_value_not_allowed():

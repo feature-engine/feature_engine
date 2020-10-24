@@ -5,9 +5,7 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.imputation import EndTailImputer
 
 
-def test_automatically_find_variables_and_gaussian_imputation_on_right_tail(
-    df_na,
-):
+def test_automatically_find_variables_and_gaussian_imputation_on_right_tail(df_na):
     # set up transformer
     imputer = EndTailImputer(
         imputation_method="gaussian", tail="right", fold=3, variables=None
@@ -33,7 +31,7 @@ def test_automatically_find_variables_and_gaussian_imputation_on_right_tail(
     # transform output: indicated vars ==> no NA, not indicated vars with NA
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() == 0
     assert X_transformed[["City", "Name"]].isnull().sum().sum() > 0
-    pd.testing.assert_frame_equal(X_transformed, X_reference)
+    assert pd.testing.assert_frame_equal(X_transformed, X_reference) is None
 
 
 def test_user_enters_variables_and_iqr_imputation_on_right_tail(df_na):
@@ -51,7 +49,7 @@ def test_user_enters_variables_and_iqr_imputation_on_right_tail(df_na):
     # test fit  and transform attr and output
     assert imputer.imputer_dict_ == {"Age": 65.5, "Marks": 1.0625}
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() == 0
-    pd.testing.assert_frame_equal(X_transformed, X_reference)
+    assert pd.testing.assert_frame_equal(X_transformed, X_reference) is None
 
 
 def test_user_enters_variables_and_max_value_imputation(df_na):
@@ -62,9 +60,7 @@ def test_user_enters_variables_and_max_value_imputation(df_na):
     assert imputer.imputer_dict_ == {"Age": 82.0, "Marks": 1.8}
 
 
-def test_automatically_select_variables_and_gaussian_imputation_on_left_tail(
-    df_na,
-):
+def test_automatically_select_variables_and_gaussian_imputation_on_left_tail(df_na):
     imputer = EndTailImputer(imputation_method="gaussian", tail="left", fold=3)
     imputer.fit(df_na)
     assert imputer.imputer_dict_ == {

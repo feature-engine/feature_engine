@@ -31,7 +31,7 @@ def test_classification(df_enc, df_enc_na):
     transf_df = df_enc.copy()
     transf_df["var_A"] = [0.25] * 16 + [0.5] * 4  # Tree: var_A <= 1.5 -> 0.25 else 0.5
     transf_df["var_B"] = [0.2] * 10 + [0.4] * 10  # Tree: var_B <= 0.5 -> 0.2 else 0.4
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    assert pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]]) is None
 
 
 def test_regression(df_enc, df_enc_na):
@@ -46,7 +46,9 @@ def test_regression(df_enc, df_enc_na):
         [0.034348] * 6 + [-0.024679] * 10 + [-0.075473] * 4
     )  # Tree: var_A <= 1.5 -> 0.25 else 0.5
     transf_df["var_B"] = [0.044806] * 10 + [-0.079066] * 10
-    pd.testing.assert_frame_equal(X.round(6), transf_df[["var_A", "var_B"]])
+    assert (
+        pd.testing.assert_frame_equal(X.round(6), transf_df[["var_A", "var_B"]]) is None
+    )
 
 
 def test_non_fitted_error(df_enc):

@@ -42,7 +42,7 @@ def test_encode_1_variable_with_counts(df_enc):
     assert encoder.encoder_dict_ == {"var_A": {"A": 6, "B": 10, "C": 4}}
     assert encoder.input_shape_ == (20, 3)
     # transform params
-    pd.testing.assert_frame_equal(X, transf_df)
+    assert pd.testing.assert_frame_equal(X, transf_df) is None
 
 
 def test_automatically_select_variables_encode_with_frequency(df_enc):
@@ -107,7 +107,7 @@ def test_automatically_select_variables_encode_with_frequency(df_enc):
     }
     assert encoder.input_shape_ == (20, 3)
     # transform params
-    pd.testing.assert_frame_equal(X, transf_df)
+    assert pd.testing.assert_frame_equal(X, transf_df) is None
 
 
 def test_error_if_encoding_method_not_permitted_value():

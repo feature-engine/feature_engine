@@ -21,7 +21,7 @@ def test_automatically_finds_variables(df_vartypes):
     # test fit attr
     assert transformer.input_shape_ == (4, 5)
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df)
+    assert pd.testing.assert_frame_equal(X, transf_df) is None
 
 
 def test_fit_raises_error_if_df_contains_na(df_na):

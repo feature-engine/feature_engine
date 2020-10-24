@@ -22,7 +22,7 @@ def test_ordered_encoding_1_variable(df_enc):
     assert encoder.encoder_dict_ == {"var_A": {"A": 1, "B": 0, "C": 2}}
     assert encoder.input_shape_ == (20, 2)
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    assert pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]]) is None
 
 
 def test_arbitrary_encoding_automatically_find_variables(df_enc):
@@ -45,7 +45,7 @@ def test_arbitrary_encoding_automatically_find_variables(df_enc):
     }
     assert encoder.input_shape_ == (20, 3)
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df)
+    assert pd.testing.assert_frame_equal(X, transf_df) is None
 
 
 def test_error_if_encoding_method_not_allowed():

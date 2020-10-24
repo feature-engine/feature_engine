@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
+
 from feature_engine.selection import DropDuplicateFeatures
 
 
@@ -19,7 +20,7 @@ def test_drop_duplicates_features(df_duplicate_features):
             "Marks": [0.9, 0.8, 0.7, 0.6],
         }
     )
-    pd.testing.assert_frame_equal(X, df)
+    assert pd.testing.assert_frame_equal(X, df) is None
 
 
 def test_variables_assigned_correctly(df_duplicate_features):
@@ -57,7 +58,7 @@ def test_with_df_with_na(df_duplicate_features_with_na):
             "Marks": [0.9, 0.8, 0.7, 0.6, 0.5],
         }
     )
-    pd.testing.assert_frame_equal(X, df)
+    assert pd.testing.assert_frame_equal(X, df) is None
 
     assert transformer.duplicated_features_ == {"dob", "dob3", "City2", "Age2"}
     assert transformer.duplicated_feature_sets_ == [

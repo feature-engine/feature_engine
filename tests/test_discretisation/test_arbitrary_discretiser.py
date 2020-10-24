@@ -27,10 +27,10 @@ def test_arbitrary_discretiser():
     # fit params
     assert transformer.binner_dict_ == user_dict
     # transform params
-    pd.testing.assert_frame_equal(X, data_t2)
+    assert pd.testing.assert_frame_equal(X, data_t2) is None
 
     transformer = ArbitraryDiscretiser(
         binning_dict=user_dict, return_object=False, return_boundaries=True
     )
     X = transformer.fit_transform(data)
-    pd.testing.assert_frame_equal(X, data_t1)
+    assert pd.testing.assert_frame_equal(X, data_t1) is None

@@ -44,7 +44,7 @@ def test_user_enters_1_variable(df_enc):
     }
     assert encoder.input_shape_ == (20, 2)
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    assert pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]]) is None
 
 
 def test_automatically_find_variables(df_enc):
@@ -109,7 +109,7 @@ def test_automatically_find_variables(df_enc):
     }
     assert encoder.input_shape_ == (20, 2)
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    assert pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]]) is None
 
 
 def test_error_if_y_not_passed_to_fit(df_enc):
