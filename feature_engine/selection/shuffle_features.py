@@ -1,4 +1,3 @@
-import random
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -54,12 +53,12 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self,
+                 regression,
+                 cv = False,
+                 threshold = 0,
                  features_to_shuffle = None,
                  estimator = None,
-                 scoring = None,
-                 threshold,
-                 regression,
-                 cv):
+                 scoring = None):
         
         
         if not isinstance(cv, bool):
@@ -126,8 +125,8 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
             
         else:
             
-            model = RandomForestClassifier().(X,
-                                              y)
+            model = RandomForestClassifier().fit(X,
+                                                 y)
             y_pred = model.predict_proba(X)[:, 1]
             model_performance = roc_auc_score(y,
                                               y_pred)
@@ -146,7 +145,7 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
             X_shuffled = X.copy()
                                        
             # shuffle individual feature
-            X_shuffled[feature] = X_shuffled[feature].sample().reset_index(drop=True)
+            X_shuffled[feature] = X_shuffled[feature].sample(frac=1).reset_index(drop=True)
             
             # Use fitted model to calculate new target prediction with
             # the shuffled feature.
