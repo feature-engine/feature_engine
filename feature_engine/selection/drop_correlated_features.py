@@ -1,5 +1,6 @@
 import pandas as pd
 
+from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 from feature_engine.dataframe_checks import (
     _is_dataframe,
@@ -8,7 +9,7 @@ from feature_engine.dataframe_checks import (
 from feature_engine.variable_manipulation import _find_all_variables, _define_variables
 
 
-class DropCorrelatedFeatures:
+class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
 
     """
     DropCorrelatedFeatures finds and removes correlated features
