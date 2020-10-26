@@ -33,12 +33,15 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
         The list of variable(s) to be shuffled from the dataframe.
         If None, the transformer will shuffle all variables in the dataset.
         
-    estimator: object, default = DecisionTreeClassifier or DecisionTreeRegressor
+    estimator: object, default = RandomForestClassifier()
         depending on 'regression' value
         Estimator can be a classifier or regressor
         
-    scoring: str
-        metric used to evaluate to determine if feature needs to be kept or removed.
+    scoring: str, default='neg_mean_squared_error'
+        Desired metric to optimise the performance for the tree. Comes from
+        sklearn metrics. See DecisionTreeRegressor or DecisionTreeClassifier
+        model evaluation documentation for more options:
+        https://scikit-learn.org/stable/modules/model_evaluation.html
 
     threshold: float
         the value that defines if a feature will be kept or removed.
@@ -47,18 +50,19 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
         Indicates whether the discretiser should train a regression or a classification
         decision tree.
 
-    cv: boolean
-         Indicates whether cross-validation will be applied.
+    cv : int, default=3
+        Desired number of cross-validation fold to be used to fit the decision
+        tree.
     
     """
 
     def __init__(self,
                  regression,
-                 cv = False,
+                 cv = 3,
                  threshold = 0,
                  features_to_shuffle = None,
                  estimator = None,
-                 scoring = None):
+                 scoring = "neg_mean_squared_error"):
         
         
         if not isinstance(cv, bool):
@@ -116,15 +120,15 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
             
             model = self.estimator.fit(X,
                                        y)
-            y_pred = 1
+            y_pred = model.predict(X)
             model_performance = 1
             
         elif (self.regression):
             
             model = RandomForestRegressor().fit(X,
                                                 y)
-            y_pred = 1
-            model_performance = 1
+            y_pred = model.predict(X)
+            model_performance = mean_squared_error(y, y_pred)
             
         else:
             
@@ -156,7 +160,8 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
             if (self.regression):
                 
                 shuffled_y_pred = model.predict(X_shuffled)
-                shuffled_model_performance = 1
+                shuffled_model_performance = mean_squared_error(y,
+                                                                shuffled_y_pred)
                 
             else:
                 

@@ -1,5 +1,5 @@
 """
-The module selection includes classes to select features, remove unwanted features or shuffle feature values
+The module selection includes classes to select features or remove unwanted features.
 """
 
 from .drop_features import DropFeatures
