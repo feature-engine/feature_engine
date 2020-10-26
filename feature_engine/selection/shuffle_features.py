@@ -1,10 +1,12 @@
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
+from feature_engine.variable_manipulation import (
+    _define_variables,
+    _find_all_variables
+)
 
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_validate
-
-from feature_engine.variable_manipulation import _define_variables, _find_all_variables
+from sklearn.utils.validation import check_is_fitted
 
 
 class ShuffleFeatures(BaseEstimator, TransformerMixin):
@@ -50,24 +52,20 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        cv=3,
-        threshold=0,
-        variables=None,
         estimator=RandomForestClassifier(),
         scoring="neg_mean_squared_error",
+        cv=3,
+        threshold=0.01,
+        variables=None,
     ):
 
         if not isinstance(cv, int) or cv < 0:
             raise ValueError("cv can only take only positive integers")
 
         self.variables = _define_variables(variables)
-
         self.estimator = estimator
-
         self.scoring = scoring
-
         self.threshold = threshold
-
         self.cv = cv
 
     def fit(self, X, y):
@@ -112,13 +110,12 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
         model_performance = model_scores["test_score"].mean()
 
         # dict to collect features and their performance_drift
-        self.features_performance_drifts_ = {}
+        self.performance_drifts_ = {}
 
         # list to collect selected features
         self.selected_features_ = []
 
         # shuffle features and save feature performance drift into a dict
-
         for feature in self.variables:
 
             #  Create a copy of X
@@ -147,7 +144,7 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
 
             # Save feature and its performance drift in the
             # features_performance_drifts_ attribute.
-            self.features_performance_drifts_[feature] = drift
+            self.performance_drifts_[feature] = drift
 
             # save the selected features to keep in attribute "selected_features_"
             if drift > self.threshold:
@@ -183,7 +180,7 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
         # Create a list of the features to be dropped depending on the threshold value
         columns_to_drop = [
             feature
-            for (feature, drift) in self.features_performance_drifts_.items()
+            for (feature, drift) in self.performance_drifts_.items()
             if drift <= self.threshold
         ]
 
