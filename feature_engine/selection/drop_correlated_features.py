@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.utils.validation import check_is_fitted
@@ -48,6 +49,12 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
 
         # find all variables or check those entered are in the dataframe
         self.variables = _find_all_variables(X, self.variables)
+
+        # check that X is numeric
+        if X.shape[1] != X.select_dtypes(include=np.number).shape[1]:
+            raise TypeError(
+                "This transformer is only designed for numeric dataframes."
+            )
 
         # create the correlation matrix
         self.corr_matrix = X.corr(self.method)
