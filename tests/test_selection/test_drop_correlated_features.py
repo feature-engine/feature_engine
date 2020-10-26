@@ -12,14 +12,24 @@ def test_drop_correlated_features(df_correlated_features):
     # expected result
     df = pd.DataFrame(
         {
-            "Name": ["tom", "nick", "krish", "jack"],
-            "dob2": pd.date_range("2020-02-24", periods=4, freq="T"),
-            "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
          }
     )
     pd.testing.assert_frame_equal(X, df)
+
+
+def test_error_if_df_columns_not_numeric():
+    transformer = DropCorrelatedFeatures()
+    with pytest.raises(TypeError):
+        df = {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, 21, 19, 18],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            }
+        transformer.fit(df)
 
 
 def test_variables_assigned_correctly(df_correlated_features):
@@ -34,12 +44,11 @@ def test_fit_attributes(df_correlated_features):
     transformer = DropCorrelatedFeatures()
     transformer.fit(df_correlated_features)
 
-    assert transformer.df_correlated_features == {"dob", "dob3", "City2", "Age2"}
+    assert transformer.df_correlated_features == {"Age2"}
     assert transformer.df_correlated_features_sets_ == [
-        {"dob", "dob2", "dob3"},
-        {"City", "City2"},
         {"Age", "Age2"},
     ]
+    # Next line needs review
     assert transformer.input_shape_ == (4, 9)
 
 
@@ -50,31 +59,28 @@ def test_with_df_with_na(df_correlated_features_with_na):
     # expected result
     df = pd.DataFrame(
         {
-            "Name": ["tom", "nick", "krish", "jack", np.nan],
-            "dob2": pd.date_range("2020-02-24", periods=5, freq="T"),
-            "City": ["London", "Manchester", "Liverpool", "Bristol", np.nan],
             "Age": [20, 21, np.nan, 18, 34],
             "Marks": [0.9, 0.8, 0.7, 0.6, 0.5],
         }
     )
     pd.testing.assert_frame_equal(X, df)
 
-    assert transformer.df_correlated_features_ == {"dob", "dob3", "City2", "Age2"}
+    assert transformer.df_correlated_features_ == {"Age2"}
     assert transformer.df_correlated_features_sets_ == [
-        {"dob", "dob2", "dob3"},
-        {"City", "City2"},
         {"Age", "Age2"},
     ]
+    # Next line needs review
     assert transformer.input_shape_ == (5, 9)
 
 
 def test_error_if_fit_input_not_dataframe():
     with pytest.raises(TypeError):
-        DropCorrelatedFeatures().fit({"Name": ["Karthik"]})
+        # Next line needs review
+        DropCorrelatedFeatures().fit({"Name": [1]})
 
 
 def test_non_fitted_error(df_correlated_features):
-    # test case 3: when fit is not called prior to transform
+    # when fit is not called prior to transform
     with pytest.raises(NotFittedError):
         transformer = DropCorrelatedFeatures()
         transformer.transform(df_correlated_features)
