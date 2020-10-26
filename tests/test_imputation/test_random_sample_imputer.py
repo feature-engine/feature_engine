@@ -111,14 +111,13 @@ def test_seed_per_observation_and_multiple_variables_in_random_state(df_na):
     pd.testing.assert_frame_equal(
         imputer.X_[["City", "Studies"]], df_na[["City", "Studies"]]
     )
+
     pd.testing.assert_frame_equal(
         X_transformed[["City", "Studies"]], ref[["City", "Studies"]]
     )
 
 
-def test_seed_per_observation_plus_product_of_seeding_variables(
-    df_na,
-):
+def test_seed_per_observation_plus_product_of_seeding_variables(df_na):
     # test case 3: observation seed, 2 variables as seed, product of seed variables
     imputer = RandomSampleImputer(
         variables=["City", "Studies"],
@@ -161,11 +160,15 @@ def test_seed_per_observation_plus_product_of_seeding_variables(
     assert imputer.variables == ["City", "Studies"]
     assert imputer.random_state == ["Marks", "Age"]
     assert imputer.seed == "observation"
+
     pd.testing.assert_frame_equal(
         imputer.X_[["City", "Studies"]], df_na[["City", "Studies"]]
     )
+
     pd.testing.assert_frame_equal(
-        X_transformed[["City", "Studies"]], ref[["City", "Studies"]], check_dtype=False
+        X_transformed[["City", "Studies"]],
+        ref[["City", "Studies"]],
+        check_dtype=False,
     )
 
 
@@ -208,11 +211,15 @@ def test_seed_per_observation_with_only_1_variable_as_seed(df_na):
     ref = pd.DataFrame(ref)
 
     assert imputer.random_state == ["Age"]
+
     pd.testing.assert_frame_equal(
         imputer.X_[["City", "Studies"]], df_na[["City", "Studies"]]
     )
+
     pd.testing.assert_frame_equal(
-        X_transformed[["City", "Studies"]], ref[["City", "Studies"]], check_dtype=False
+        X_transformed[["City", "Studies"]],
+        ref[["City", "Studies"]],
+        check_dtype=False,
     )
 
 

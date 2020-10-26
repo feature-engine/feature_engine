@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
+
 from feature_engine.selection import DropConstantFeatures
 
 

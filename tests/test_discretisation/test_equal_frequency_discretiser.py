@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
+
 from feature_engine.discretisation import EqualFrequencyDiscretiser
 
 
@@ -25,7 +26,7 @@ def test_automatically_find_variables_and_return_as_numeric(df_normal_dist):
     assert transformer.input_shape_ == (100, 1)
     # test transform output
     assert (transformer.binner_dict_["var"] == bins).all()
-    assert len([x for x in X["var"].unique() if x not in X_t]) == 0
+    assert all(x for x in X["var"].unique() if x not in X_t)
     # in equal frequency discretisation, all intervals get same proportion of values
     assert len((X["var"].value_counts()).unique()) == 1
 

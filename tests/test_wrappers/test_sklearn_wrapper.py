@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
 from feature_engine.wrappers import SklearnTransformerWrapper
 
 

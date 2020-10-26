@@ -6,7 +6,7 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.outliers import ArbitraryOutlierCapper
 
 
-def test_right_end_capping(df_normal_dist, df_na, df_vartypes):
+def test_right_end_capping(df_normal_dist):
     # test case 1: right end capping
     transformer = ArbitraryOutlierCapper(
         max_capping_dict={"var": 0.10727677848029868}, min_capping_dict=None

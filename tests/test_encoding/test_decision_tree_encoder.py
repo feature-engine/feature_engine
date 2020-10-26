@@ -6,7 +6,7 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.encoding import DecisionTreeEncoder
 
 
-def test_encoding_method_param(df_enc, df_enc_na):
+def test_encoding_method_param(df_enc):
     # defaults
     encoder = DecisionTreeEncoder()
     encoder.fit(df_enc, df_enc["target"])
@@ -23,7 +23,7 @@ def test_encoding_method_param(df_enc, df_enc_na):
         encoder.fit(df_enc, df_enc["target"])
 
 
-def test_classification(df_enc, df_enc_na):
+def test_classification(df_enc):
     encoder = DecisionTreeEncoder(regression=False)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     X = encoder.transform(df_enc[["var_A", "var_B"]])
@@ -34,7 +34,7 @@ def test_classification(df_enc, df_enc_na):
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
 
-def test_regression(df_enc, df_enc_na):
+def test_regression(df_enc):
     random = np.random.RandomState(42)
     y = random.normal(0, 0.1, len(df_enc))
     encoder = DecisionTreeEncoder(regression=True, random_state=random)
