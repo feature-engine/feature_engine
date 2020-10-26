@@ -105,6 +105,9 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
 
         X = _is_dataframe(X)
         
+        # find all variables or check those entered are in the dataframe
+        self.features_to_shuffle = _find_all_variables(X, self.features_to_shuffle)
+        
         # Fit machine learning model with the input estimator if provided.
         # If the estimator is not provided, default to random tree model 
         # depending on value of self.regression
@@ -187,7 +190,7 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
         Returns
         -------
 
-        X_transformed: pandas dataframe of shape = [n_samples, n_features - dropped features]
+        X_transformed: pandas dataframe of shape = [n_samples, n_features - len(dropped features)] 
             Pandas dataframe with the selected features 
         """
 
@@ -203,8 +206,8 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
         # performance drift and the threshold and the ML problem.
         
         if (self.regression):
-            columns_to_keep = [feature for (feature, drift) in self.features_performance_drifts_.items() if drift < self.threshold ]
+            columns_to_drop = [feature for (feature, drift) in self.features_performance_drifts_.items() if drift >= self.threshold ]
         else:
-            columns_to_keep = [feature for (feature, drift) in self.features_performance_drifts_.items() if drift > self.threshold ]
+            columns_to_drop = [feature for (feature, drift) in self.features_performance_drifts_.items() if drift <= self.threshold ]
 
-        return X[columns_to_keep]
+        return X.drop(columns = columns_to_drop)
