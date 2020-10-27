@@ -174,6 +174,7 @@ Feature Selection:
 - :doc:`selection/DropFeatures`: drops a subset of variables from a dataframe
 - :doc:`selection/DropConstantFeatures`: drops constant and quasi-constant variables from a dataframe
 - :doc:`selection/DropDuplicateFeatures`: drops duplicated variables from a dataframe
+- :doc:`selection/DropCorrelatedFeatures`: drops correlated variables from a dataframe
 
 
 Getting Help
