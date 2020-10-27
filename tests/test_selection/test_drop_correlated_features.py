@@ -1,76 +1,134 @@
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.datasets import make_classification
 from sklearn.exceptions import NotFittedError
+
 from feature_engine.selection import DropCorrelatedFeatures
 
 
-def test_drop_correlated_features(df_correlated_features):
-    transformer = DropCorrelatedFeatures()
-    X = transformer.fit_transform(df_correlated_features)
+@pytest.fixture(scope="module")
+def df_correlated_single():
+    # create array with 4 correlated features and 2 independent ones
+    X, y = make_classification(
+        n_samples=1000,
+        n_features=6,
+        n_redundant=2,
+        n_clusters_per_class=1,
+        weights=[0.50],
+        class_sep=2,
+        random_state=1,
+    )
+
+    # trasform array into pandas df
+    colnames = ["var_" + str(i) for i in range(6)]
+    X = pd.DataFrame(X, columns=colnames)
+
+    return X
+
+
+@pytest.fixture(scope="module")
+def df_correlated_double():
+    # create array with 4 correlated features and 2 independent ones
+    X, y = make_classification(
+        n_samples=1000,
+        n_features=12,
+        n_redundant=4,
+        n_clusters_per_class=1,
+        weights=[0.50],
+        class_sep=2,
+        random_state=1,
+    )
+
+    # trasform array into pandas df
+    colnames = ["var_" + str(i) for i in range(12)]
+    X = pd.DataFrame(X, columns=colnames)
+
+    return X
+
+
+def test_default_params(df_correlated_single):
+    transformer = DropCorrelatedFeatures(
+        variables=None, method="pearson", threshold=0.8
+    )
+    X = transformer.fit_transform(df_correlated_single)
 
     # expected result
-    df = pd.DataFrame(
-        {
-            "Age": [20, 21, 19, 18],
-            "Marks": [0.9, 0.8, 0.7, 0.6],
-         }
+    df = df_correlated_single.drop("var_2", axis=1)
+
+    # test init params
+    assert transformer.method == "pearson"
+    assert transformer.threshold == 0.8
+    assert transformer.variables == [
+        "var_0",
+        "var_1",
+        "var_2",
+        "var_3",
+        "var_4",
+        "var_5",
+    ]
+
+    # test fit attrs
+    pd.testing.assert_frame_equal(
+        transformer.correlated_matrix_, df_correlated_single.corr()
     )
+    assert transformer.correlated_features_ == {"var_2"}
+    assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
+    # test transform output
     pd.testing.assert_frame_equal(X, df)
 
 
-def test_error_if_df_columns_not_numeric():
-    transformer = DropCorrelatedFeatures()
-    with pytest.raises(TypeError):
-        df = {
-            "Name": ["tom", "nick", "krish", "jack"],
-            "City": ["London", "Manchester", "Liverpool", "Bristol"],
-            "Age": [20, 21, 19, 18],
-            "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
-            }
-        transformer.fit(df)
-
-
-def test_variables_assigned_correctly(df_correlated_features):
-    transformer = DropCorrelatedFeatures()
-    assert transformer.variables is None
-
-    transformer.fit(df_correlated_features)
-    assert transformer.variables == (list(df_correlated_features.columns))
-
-
-def test_fit_attributes(df_correlated_features):
-    transformer = DropCorrelatedFeatures()
-    transformer.fit(df_correlated_features)
-
-    assert transformer.df_correlated_features == {"Age2"}
-    assert transformer.df_correlated_features_sets_ == [
-        {"Age", "Age2"},
-    ]
-    # Next line needs review
-    assert transformer.input_shape_ == (4, 9)
-
-
-def test_with_df_with_na(df_correlated_features_with_na):
-    transformer = DropCorrelatedFeatures()
-    X = transformer.fit_transform(df_correlated_features_with_na)
+def test_lower_threshold(df_correlated_single):
+    transformer = DropCorrelatedFeatures(
+        variables=None, method="pearson", threshold=0.6
+    )
+    X = transformer.fit_transform(df_correlated_single)
 
     # expected result
-    df = pd.DataFrame(
-        {
-            "Age": [20, 21, np.nan, 18, 34],
-            "Marks": [0.9, 0.8, 0.7, 0.6, 0.5],
-        }
+    df = df_correlated_single.drop(["var_2", "var_4"], axis=1)
+
+    # test init params
+    assert transformer.method == "pearson"
+    assert transformer.threshold == 0.6
+    assert transformer.variables == [
+        "var_0",
+        "var_1",
+        "var_2",
+        "var_3",
+        "var_4",
+        "var_5",
+    ]
+
+    # test fit attrs
+    pd.testing.assert_frame_equal(
+        transformer.correlated_matrix_, df_correlated_single.corr()
     )
+    assert transformer.correlated_features_ == {"var_2", "var_4"}
+    assert transformer.correlated_feature_sets_ == [{"var_1", "var_2", "var_4"}]
+    # test transform output
     pd.testing.assert_frame_equal(X, df)
 
-    assert transformer.df_correlated_features_ == {"Age2"}
-    assert transformer.df_correlated_features_sets_ == [
-        {"Age", "Age2"},
+
+def test_more_than_1_correlated_group(df_correlated_double):
+    transformer = DropCorrelatedFeatures(
+        variables=None, method="pearson", threshold=0.6
+    )
+    X = transformer.fit_transform(df_correlated_double)
+
+    # expected result
+    df = df_correlated_double.drop(["var_6", "var_7", "var_8", "var_9"], axis=1)
+
+    # test fit attrs
+    pd.testing.assert_frame_equal(
+        transformer.correlated_matrix_, df_correlated_double.corr()
+    )
+    assert transformer.correlated_features_ == {"var_6", "var_7", "var_8", "var_9"}
+    assert transformer.correlated_feature_sets_ == [
+        {"var_0", "var_8"},
+        {"var_4", "var_6", "var_7", "var_9"},
     ]
-    # Next line needs review
-    assert transformer.input_shape_ == (5, 9)
+    # test transform output
+    pd.testing.assert_frame_equal(X, df)
 
 
 def test_error_if_fit_input_not_dataframe():
@@ -79,8 +137,8 @@ def test_error_if_fit_input_not_dataframe():
         DropCorrelatedFeatures().fit({"Name": [1]})
 
 
-def test_non_fitted_error(df_correlated_features):
+def test_non_fitted_error(df_correlated_single):
     # when fit is not called prior to transform
     with pytest.raises(NotFittedError):
         transformer = DropCorrelatedFeatures()
-        transformer.transform(df_correlated_features)
+        transformer.transform(df_correlated_single)
