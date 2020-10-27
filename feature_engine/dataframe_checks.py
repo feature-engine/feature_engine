@@ -20,6 +20,7 @@ def _is_dataframe(X: pd.DataFrame) -> pd.DataFrame:
     Returns:
         The copy of initial DataFrame.
         Important not to transform the original dataset.
+
     """
 
     if not isinstance(X, pd.DataFrame):
@@ -42,6 +43,7 @@ def _check_input_matches_training_df(X: pd.DataFrame, reference: int) -> None:
 
     Returns:
         None
+
     """
 
     if X.shape[1] != reference:
@@ -63,7 +65,9 @@ def _check_contains_na(X: pd.DataFrame, variables: Union[str, List[str]]):
 
     Raises:
         ValueError: If variable(s) contain null values
+
     """
+
     if X[variables].isnull().values.any():
         raise ValueError(
             "Some of the variables to transform contain missing values. Check and "

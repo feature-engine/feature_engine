@@ -24,18 +24,20 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     SimpleImputer() or OrdinalEncoder(), to allow the use of the
     transformer on a selected group of variables.
 
-    Parameters
-    ----------
+    Attributes:
+        variables:
+            List of variables to transform.
+            Defaults to None.
+        transformer:
+            Sklearn transformer. One of OneHotEncoder or OneHotEncoder.
+            Defaults to None.
 
-    variables : list, default=None
-        The list of variables to be imputed.
+    Methods:
+        fit(): The method allows Scikit-learn transformers to learn
+        the required parameters from the training data set.
 
-        If None, the wrapper will select all variables of type numeric for all
-        transformers except the SimpleImputer, OrdinalEncoder and OneHotEncoder, in
-        which case it will select all variables in the dataset.
+        transform(): Apply the transformation to the dataframe.
 
-    transformer : sklearn transformer, default=None
-        The desired Scikit-learn transformer.
     """
 
     def __init__(self, variables: List[str] = None, transformer=None) -> None:
@@ -66,6 +68,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         Args:
             X: Pandas DataFrame to fit the transformer
+
             y: This parameter exists only for compatibility
             with sklearn.pipeline.Pipeline.
             Defaults to None.

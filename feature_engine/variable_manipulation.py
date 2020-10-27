@@ -19,6 +19,7 @@ def _define_variables(
 
     Returns:
         List of strings
+
     """
 
     if not variables or (
@@ -54,6 +55,7 @@ def _find_numerical_variables(
 
     Returns:
         List of variables
+
     """
 
     if not variables:
@@ -91,6 +93,7 @@ def _find_categorical_variables(
 
     Returns:
         List of variables
+
     """
 
     if not variables:
@@ -128,6 +131,7 @@ def _find_all_variables(
 
     Returns:
         List of variables
+
     """
 
     if not variables:

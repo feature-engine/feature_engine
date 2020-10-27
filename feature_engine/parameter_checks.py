@@ -15,6 +15,7 @@ def _define_numerical_dict(dict_: Optional[dict]) -> Optional[dict]:
 
     Returns:
         None or the dict
+
     """
 
     if not dict_:

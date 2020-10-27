@@ -1,7 +1,11 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from feature_engine.dataframe_checks import _is_dataframe, _check_contains_na
+from typing import Optional
+
+import pandas as pd
+
+from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.variable_manipulation import _find_numerical_variables
 
@@ -14,26 +18,32 @@ class ArbitraryOutlierCapper(BaseOutlier):
     The user must provide the maximum or minimum values that will be used
     to cap each variable in a dictionary {feature:capping value}
 
-    Parameters
-    ----------
+    Attributes:
+        max_capping_dict:
+            user specified capping values on right
+            tail of the distribution (maximum values).
 
-    capping_max : dictionary, default=None
-        user specified capping values on right tail of the distribution (maximum
-        values).
+        min_capping_dict:
+            user specified capping values on left
+            tail of the distribution (minimum values).
 
-    capping_min : dictionary, default=None
-        user specified capping values on left tail of the distribution (minimum
-        values).
+        missing_values:
+            Indicates if missing values should be ignored or raised.
+            If missing_values='raise' the transformer will return an error if the
+            training or other datasets contain missing values.
 
-    missing_values : string, default='raise'
-        Indicates if missing values should be ignored or raised. If
-        missing_values='raise' the transformer will return an error if the
-        training or other datasets contain missing values.
+    Methods:
+        fit(): Fits the transformer
+        transform(): Apply the transformation to the data
+
     """
 
     def __init__(
-        self, max_capping_dict=None, min_capping_dict=None, missing_values="raise"
-    ):
+        self,
+        max_capping_dict: Optional[dict] = None,
+        min_capping_dict: Optional[dict] = None,
+        missing_values: str = "raise",
+    ) -> None:
 
         if not max_capping_dict and not min_capping_dict:
             raise ValueError(
@@ -65,28 +75,22 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
         self.missing_values = missing_values
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Parameters
-        ----------
+        Fits the transformer to the DataFrame.
+        Contains methods to clap variables at minimum and maximum value.
 
-        X : pandas dataframe of shape = [n_samples, n_features]
+        Args:
+            X: Pandas DataFrame of shape = [n_samples, n_features]
             The training input samples.
 
-        y : None
-            y is not needed in this transformer. You can pass y or None.
+            y: It is not needed in this transformer.
+            Defaults to None.
 
-        Attributes
-        ----------
-
-        right_tail_caps_: dictionary
-            The dictionary containing the maximum values at which variables
-            will be capped.
-
-        left_tail_caps_ : dictionary
-            The dictionary containing the minimum values at which variables
-            will be capped.
+        Returns:
+            self
         """
+
         X = _is_dataframe(X)
 
         if self.missing_values == "raise":
@@ -111,8 +115,19 @@ class ArbitraryOutlierCapper(BaseOutlier):
         return self
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Apply transformation to the DataFrame
+
+        Args:
+            X: The data to transform
+
+        Returns:
+            Transformed DataFrame
+        """
+
         X = super().transform(X)
+
         return X
 
     transform.__doc__ = BaseOutlier.transform.__doc__

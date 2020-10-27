@@ -16,8 +16,15 @@ from feature_engine.variable_manipulation import _find_numerical_variables
 
 
 class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
-    # shared set-up procedures across numerical transformers, i.e.,
-    # variable transformers, discretisers, math combination
+    """
+    Shared set-up procedures across numerical transformers, i.e.,
+    variable transformers, discretisers, math combination.
+
+    Methods:
+        fit(): Fits the transformation to the data
+        transform(): Apply the transformation to the data
+
+    """
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.DataFrame:
         """
@@ -55,6 +62,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
 
         Returns:
             Transformed DataFrame
+
         """
 
         # Check method fit has been called

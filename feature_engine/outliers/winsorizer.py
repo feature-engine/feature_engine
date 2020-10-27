@@ -1,7 +1,11 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from feature_engine.dataframe_checks import _is_dataframe, _check_contains_na
+from typing import Optional, List, Union
+
+import pandas as pd
+
+from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.variable_manipulation import (
     _define_variables,
@@ -18,95 +22,93 @@ class Winsorizer(BaseOutlier):
     variables in the train set.
 
     The Winsorizer() first calculates the capping values at the end of the
-    distribution. The values are determined using 1) a Gaussian approximation,
-    2) the inter-quantile range proximity rule or 3) percentiles.
+    distribution.
+
+    The values are determined using:
+    1) A Gaussian approximation,
+    2) The interquartile range proximity rule
+    3) Percentiles.
 
     Gaussian limits:
 
-        right tail: mean + 3* std
-
-        left tail: mean - 3* std
+        right tail: mean + 3 * std
+        left tail: mean - 3 * std
 
     IQR limits:
 
-        right tail: 75th quantile + 3* IQR
+        right tail: 75th percentile + 3* IQR
+        left tail:  25th percentile - 3* IQR
 
-        left tail:  25th quantile - 3* IQR
+    where IQR is the inter-quartile range:
+        (75th percentile - 25th percentile) or (3th quartile - 1st quartile)
 
-    where IQR is the inter-quartile range: 75th quantile - 25th quantile.
-
-    percentiles or quantiles:
+    Percentiles or quantiles:
 
         right tail: 95th percentile
-
         left tail:  5th percentile
 
-    You can select how far out to cap the maximum or minimum values with the
-    parameter 'fold'.
+    Attributes:
+        capping_method:
+            Desired capping method. Can take 'gaussian', 'iqr' or 'quantiles'.
+            If capping_method='gaussian' fold gives the value to multiply the std.
+            If capping_method='iqr' fold is the value to multiply the IQR.
+            If capping_method='quantile', fold is the percentile on each tail
+            that should be censored. For example, if fold=0.05, the limits
+            will be the 5th and 95th percentiles. If fold=0.1, the limits
+            will be the 10th and 90th percentiles.
 
-    If capping_method='gaussian' fold gives the value to multiply the std.
+            gaussian: the transformer will find the maximum and / or minimum values to
+            cap the variables using the Gaussian approximation.
 
-    If capping_method='iqr' fold is the value to multiply the IQR.
+            iqr: the transformer will find the boundaries using the IQR proximity rule.
 
-    If capping_method='quantile', fold is the percentile on each tail that should
-    be censored. For example, if fold=0.05, the limits will be the 5th and 95th
-    percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
+            quantiles: the limits are given by the percentiles.
 
-    The transformer first finds the values at one or both tails of the distributions
-    (fit).
+        tail:
+            Whether to cap outliers on the right, left or both tails of the
+            distribution. Can take 'left', 'right' or 'both'.
 
-    The transformer then caps the variables (transform).
+        fold:
+            How far out to to place the capping values. The number that will multiply
+            the std or IQR to calculate the capping values. Recommended values, 2
+            or 3 for the gaussian approximation, or 1.5 or 3 for the IQR proximity rule.
 
-    Parameters
-    ----------
+            If capping_method='quantile', then 'fold' indicates the percentile. So if
+            fold=0.05, the limits will be the 95th and 5th percentiles.
+            Note: Outliers will be removed up to a maximum of the 20th percentiles
+            on both sides. Thus, when capping_method='quantile', then 'fold'
+            takes values between 0 and 0.20.
 
-    capping_method : str, default=gaussian
-        Desired capping method. Can take 'gaussian', 'iqr' or 'quantiles'.
+        variables:
+            The list of variables for which the outliers will be capped.
+            If None the transformer will find and select all numerical variables.
 
-        gaussian: the transformer will find the maximum and / or minimum values to
-        cap the variables using the Gaussian approximation.
+        missing_values:
+            Indicates if missing values should be ignored or raised.
+            Sometimes we want to remove outliers in the raw, original data.
+            Sometimes, we may want to remove outliers in the already
+            pre-transformed data.
+            If missing_values='ignore', the transformer will ignore missing data when
+            learning the capping parameters or transforming the data.
+            If missing_values='raise' the transformer will return an error
+            if the training or other datasets contain missing values.
 
-        iqr: the transformer will find the boundaries using the IQR proximity rule.
+    Methods:
+        fit(): The transformer first finds the values at one or both
+        tails of the distributions
 
-        quantiles: the limits are given by the percentiles.
+        transform(): The transformer then caps the variables.
 
-    tail : str, default=right
-        Whether to cap outliers on the right, left or both tails of the distribution.
-        Can take 'left', 'right' or 'both'.
-
-    fold: int or float, default=3
-        How far out to to place the capping values. The number that will multiply
-        the std or IQR to calculate the capping values. Recommended values, 2
-        or 3 for the gaussian approximation, or 1.5 or 3 for the IQR proximity
-        rule.
-
-        If capping_method='quantile', then 'fold' indicates the percentile. So if
-        fold=0.05, the limits will be the 95th and 5th percentiles.
-        Note: Outliers will be removed up to a maximum of the 20th percentiles on both
-        sides. Thus, when capping_method='quantile', then 'fold' takes values between 0
-        and 0.20.
-
-    variables: list, default=None
-        The list of variables for which the outliers will be capped. If None,
-        the transformer will find and select all numerical variables.
-
-    missing_values: string, default='raise'
-        Indicates if missing values should be ignored or raised. Sometimes we want to
-        remove outliers in the raw, original data, sometimes, we may want to remove
-        outliers in the already pre-transformed data. If missing_values='ignore', the
-        transformer will ignore missing data when learning the capping parameters or
-        transforming the data. If missing_values='raise' the transformer will return
-        an error if the training or other datasets contain missing values.
     """
 
     def __init__(
         self,
-        capping_method="gaussian",
-        tail="right",
-        fold=3,
-        variables=None,
-        missing_values="raise",
-    ):
+        capping_method: str = "gaussian",
+        tail: str = "right",
+        fold: Union[int, float] = 3,
+        variables: Optional[List] = None,
+        missing_values: str = "raise",
+    ) -> None:
 
         if capping_method not in ["gaussian", "iqr", "quantiles"]:
             raise ValueError(
@@ -134,29 +136,20 @@ class Winsorizer(BaseOutlier):
         self.variables = _define_variables(variables)
         self.missing_values = missing_values
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learns the values that should be used to replace outliers.
 
-        Parameters
-        ----------
-
-        X : pandas dataframe of shape = [n_samples, n_features]
+        Args:
+            X: Pandas DataFrame of shape = [n_samples, n_features]
             The training input samples.
 
-        y : None
-            y is not needed in this transformer. You can pass y or None.
+            y: It is not needed in this transformer.
+            Defaults to None.
 
-        Attributes
-        ----------
+        Returns:
+            self
 
-        right_tail_caps_: dictionary
-            The dictionary containing the maximum values at which variables
-            will be capped.
-
-        left_tail_caps_ : dictionary
-            The dictionary containing the minimum values at which variables
-            will be capped.
         """
 
         # check input dataframe
@@ -214,8 +207,20 @@ class Winsorizer(BaseOutlier):
         return self
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Apply the transformation to the data.
+
+        Args:
+            X: pandas dataframe of shape = [n_samples, n_features]
+            The data to be transformed.
+
+        Returns:
+            The DataFrame with winsorized values.
+
+        """
         X = super().transform(X)
+
         return X
 
     transform.__doc__ = BaseOutlier.transform.__doc__

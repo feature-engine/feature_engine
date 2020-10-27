@@ -1,47 +1,60 @@
 import numpy as np
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_input_matches_training_df,
     _check_contains_na,
+    _check_input_matches_training_df,
+    _is_dataframe,
 )
 
 
 class BaseOutlier(BaseEstimator, TransformerMixin):
-    def _check_transform_input_and_state(self, X):
-        # check if class was fitted
+    """
+    Base class for outliers module.
+    Other classes inherits from it.
+
+    Methods:
+        transform(): Apply the transformation to the data.
+    """
+
+    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Checks if class was fitted along with DataFrame type existence check.
+        Then checks if there are NA values and lastly checks if the DataFrame
+        contains the same number of columns than the dataframe used to fit the imputer.
+
+        Args:
+            X: Pandas dataframe of shape = [n_samples, n_features]
+
+        Returns:
+            Pandas DataFrame after performing all the required checks.
+
+        """
+
         check_is_fitted(self)
 
-        # check that input is a dataframe
         X = _is_dataframe(X)
 
         if self.missing_values == "raise":
-            # check if dataset contains na
             _check_contains_na(X, self.variables)
 
-        # Check that the dataframe contains the same number of columns
-        # than the dataframe used to fit the imputer.
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         return X
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Caps the variable values, that is, censors outliers.
 
-        Parameters
-        ----------
-
-        X : pandas dataframe of shape = [n_samples, n_features]
+        Args:
+            X: Pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
-        Returns
-        -------
-
-        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+        Returns:
             The dataframe with the capped variables.
+
         """
 
         # check if class was fitted
