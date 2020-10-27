@@ -176,7 +176,7 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.correlated_matrix_.count())
+        _check_input_matches_training_df(X, self.input_shape_[1])
 
         # returned non-duplicate features
         X = X.drop(columns=self.correlated_features_)
