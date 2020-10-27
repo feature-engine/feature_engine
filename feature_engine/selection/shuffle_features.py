@@ -155,7 +155,9 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
             )
 
             # determine the performance with the shuffled feature
-            performance = np.mean([scorer(m, X_shuffled, y) for m in model["estimator"]])
+            performance = np.mean(
+                [scorer(m, X_shuffled, y) for m in model["estimator"]]
+            )
 
             # determine drift in performance
             if self.scoring in [
