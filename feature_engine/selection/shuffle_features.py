@@ -1,66 +1,99 @@
-from feature_engine.variable_manipulation import (
-    _define_variables,
-    _find_all_variables
-)
-
+import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import get_scorer
 from sklearn.model_selection import cross_validate
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine.dataframe_checks import (
+    _is_dataframe,
+    _check_input_matches_training_df,
+)
+from feature_engine.variable_manipulation import (
+    _define_variables,
+    _find_numerical_variables,
+)
 
-class ShuffleFeatures(BaseEstimator, TransformerMixin):
 
+class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
     """
 
-    ShuffleFeatures reorganizes the values inside each feature, one feature
-    at the time, from a dataframe and determines how that permutation affects
-    the performance metric of the machine learning algorithm.
+    ShuffleFeaturesSelector selects features by determining the drop in machine learning
+    model performance when each feature's values are randomly shuffled.
 
     If the variables are important, a random permutation of their values will
-    decrease dramatically any of these metrics. Contrarily, the permutation of
-    values should have little to no effect on the model performance metric we
-    are assessing.
+    decrease dramatically the machine learning model performance. Contrarily, the
+    permutation of the values should have little to no effect on the model performance
+    metric we are assessing.
 
+    The ShuffleFeaturesSelector first trains a machine learning model utilising all
+    features. Next, it shuffles the values of 1 feature, obtains a prediction with the
+    pre-trained model, and determines the performance drop (if any). If the drop in
+    performance is bigger than a threshold then the feature is retained, otherwise
+    removed. It continues until all features have been shuffled and the drop in
+    performance evaluated.
+
+    The user can determine the model for which performance drop after feature shuffling
+    should be assessed. The user also determines the threshold in performance under
+    which a feature will be removed, and the performance metric to evaluate.
+
+    Model training and performance calculatio are done with cross-validation.
 
     Parameters
     ----------
 
     variables : str or list, default=None
         The list of variable(s) to be shuffled from the dataframe.
-        If None, the transformer will shuffle all variables in the dataset.
+        If None, the transformer will shuffle all numerical variables in the dataset.
 
     estimator: object, default = RandomForestClassifier()
-        estimator object implementing ‘fit’
-        The object to use to fit the data.
+        A Scikit-learn estimator for regression or classification.
 
-    scoring: str, default='neg_mean_squared_error'
-        Desired metric to optimise the performance for the tree. Comes from
-        sklearn metrics. See DecisionTreeRegressor or DecisionTreeClassifier
-        model evaluation documentation for more options:
+    scoring: str, default='roc_auc'
+        Desired metric to optimise the performance for the estimator. Comes from
+        sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold: float
-        the value that defines if a feature will be kept or removed.
-
+    threshold: float, int
+        the value that defines if a feature will be kept or removed. Note that for
+        metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
+        between 0 and 1. For metrics like the mean_square_error and the
+        root_mean_square_error the threshold will be a big number.
+        The threshold must be defined by the user.
 
     cv : int, default=3
         Desired number of cross-validation fold to be used to fit the decision
         tree.
+
+    Attributes
+    ----------
+
+    initial_model_performance_: float,
+        performance of the model built using the original dataset.
+
+    performance_drifts_: dict
+            A dictionary containing the feature, performance drift pairs, after
+            shuffling each feature.
+
+    selected_features_: list
+        The selected features.
 
     """
 
     def __init__(
         self,
         estimator=RandomForestClassifier(),
-        scoring="neg_mean_squared_error",
+        scoring="roc_auc",
         cv=3,
         threshold=0.01,
         variables=None,
     ):
 
         if not isinstance(cv, int) or cv < 0:
-            raise ValueError("cv can only take only positive integers")
+            raise ValueError("cv can only take positive integers")
+
+        if not isinstance(threshold, (int, float)):
+            raise ValueError("threshold can only be integer or float")
 
         self.variables = _define_variables(variables)
         self.estimator = estimator
@@ -71,35 +104,26 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
     def fit(self, X, y):
         """
 
-        Parameters
-        ----------
+        Args:
+            X: pandas dataframe of shape = [n_samples, n_features]
+                The input dataframe
 
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The input dataframe
-
-        y: array-like of shape (n_samples)
-            Target variable. Required to train the estimator.
+            y: array-like of shape (n_samples)
+                Target variable. Required to train the estimator.
 
 
-        Attributes
-        ----------
-
-        shuffled_features_: dict
-            The shuffled features values
-
+        Returns:
+            self
         """
 
         # check input dataframe
         X = _is_dataframe(X)
 
-        # find all variables or check those entered are in the dataframe
-        self.variables = _find_all_variables(X, self.variables)
+        # find numerical variables or check variables entered by user
+        self.variables = _find_numerical_variables(X, self.variables)
 
-        # Fit machine learning model with the input estimator if provided.
-        # If the estimator is not provided, default to random tree model
-        # depending on value of self.regression
-
-        model_scores = cross_validate(
+        # train model with all features and cross-validation
+        model = cross_validate(
             self.estimator,
             X,
             y,
@@ -107,9 +131,14 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
             return_estimator=True,
             scoring=self.scoring,
         )
-        model_performance = model_scores["test_score"].mean()
 
-        # dict to collect features and their performance_drift
+        # store initial model performance
+        self.initial_model_performance_ = model["test_score"].mean()
+
+        # get performance metric
+        scorer = get_scorer(self.scoring)
+
+        # dict to collect features and their performance_drift after shuffling
         self.performance_drifts_ = {}
 
         # list to collect selected features
@@ -118,7 +147,6 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
         # shuffle features and save feature performance drift into a dict
         for feature in self.variables:
 
-            #  Create a copy of X
             X_shuffled = X.copy()
 
             # shuffle individual feature
@@ -126,49 +154,53 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
                 X_shuffled[feature].sample(frac=1).reset_index(drop=True)
             )
 
-            # fit the estimator with the new data containing the shuffled feature
-            shuffled_model_scores = cross_validate(
-                self.estimator,
-                X_shuffled,
-                y,
-                cv=self.cv,
-                return_estimator=True,
-                scoring=self.scoring,
+            # determine the performance with the shuffled feature
+            performance = np.mean(
+                [scorer(m, X_shuffled, y) for m in model["estimator"]]
             )
-            # calculate the model performance for the new data containing the shuffled feature
-            shuffled_model_performance = shuffled_model_scores["test_score"].mean()
 
-            # Calculate drift in model performance after the feature has
-            # been shuffled.
-            drift = model_performance - shuffled_model_performance
+            # determine drift in performance
+            if self.scoring in [
+                "median_absolute_error",
+                "max_error",
+                "mean_absolute_error",
+                "mean_squared_error",
+            ]:
+                # if feature is important, mean absolute error will be bigger
+                performance_drift = performance - self.initial_model_performance_
 
-            # Save feature and its performance drift in the
-            # features_performance_drifts_ attribute.
-            self.performance_drifts_[feature] = drift
+            else:
+                # if feature is important, roc will be smaller
+                performance_drift = self.initial_model_performance_ - performance
 
-            # save the selected features to keep in attribute "selected_features_"
-            if drift > self.threshold:
+            # Save feature and performance drift
+            self.performance_drifts_[feature] = performance_drift
+
+        # select features
+        for feature in self.performance_drifts_.keys():
+
+            if self.performance_drifts_[feature] > self.threshold:
+
                 self.selected_features_.append(feature)
+
+        self.input_shape_ = X.shape
 
         return self
 
     def transform(self, X):
         """
+        Removes non-selected features. That is, features which shuffling did not
+        decrease the machine learning model performance beyond the indicated threshold.
 
-        Updates the X dataframe with the new shuffled features.
-
-        Parameters
-        ----------
-
-        X: pandas dataframe of shape = [n_samples, n_features].
+        Args:
+            X: pandas dataframe of shape = [n_samples, n_features].
             The input dataframe from which feature values will be shuffled.
 
 
-        Returns
-        -------
-
-        X_transformed: pandas dataframe of shape = [n_samples, n_features - len(dropped features)]
-            Pandas dataframe with the selected features
+        Returns:
+            X_transformed: pandas dataframe
+             of shape = [n_samples, n_features - len(dropped features)]
+            Pandas dataframe with the selected features.
         """
 
         # check if fit is performed prior to transform
@@ -177,11 +209,7 @@ class ShuffleFeatures(BaseEstimator, TransformerMixin):
         # check if input is a dataframe
         X = _is_dataframe(X)
 
-        # Create a list of the features to be dropped depending on the threshold value
-        columns_to_drop = [
-            feature
-            for (feature, drift) in self.performance_drifts_.items()
-            if drift <= self.threshold
-        ]
+        # check if number of columns in test dataset matches to train dataset
+        _check_input_matches_training_df(X, self.input_shape_[1])
 
-        return X.drop(columns=columns_to_drop)
+        return X[self.selected_features_]
