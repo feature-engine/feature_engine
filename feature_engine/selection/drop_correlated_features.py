@@ -36,7 +36,9 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
         kendall : Kendall Tau correlation coefficient
         spearman : Spearman rank correlation
 
-        See https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.corr.html
+        See
+        https://pandas.pydata.org/pandas-docs/stable/reference/api/
+        pandas.DataFrame.corr.html
         for more details.
 
     threshold: float, default=0.8
