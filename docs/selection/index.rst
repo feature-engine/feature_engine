@@ -12,3 +12,4 @@ Or in other words to select subsets of variables.
    DropFeatures
    DropConstantFeatures
    DropDuplicateFeatures
+   ShuffleFeaturesSelector
