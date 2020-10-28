@@ -67,7 +67,7 @@ def test_non_fitted_error(df_test):
         transformer = ShuffleFeaturesSelector()
         transformer.transform(df_test)
         
-def test_regression_cv_2(df_test):
+def test_regression_cv_3(df_test):
     #  test for regression using cv=2, and the r2 as metric.
     
     # Load the diabetes dataset from sklearn
@@ -77,12 +77,12 @@ def test_regression_cv_2(df_test):
     # initialize linear regresion estimator
     linear_model = LinearRegression()
     # initialize transformer
-    transformer = ShuffleFeaturesSelector(estimator=linear_model, scoring='r2', cv = 2)
+    transformer = ShuffleFeaturesSelector(estimator=linear_model, scoring='r2', cv = 3)
     # fit transformer
     X = transformer.fit_transform(data, target)
 
     # initialization parameters
-    assert transformer.cv == 2
+    assert transformer.cv == 3
     assert transformer.variables == list(data.columns)
     assert transformer.scoring == "r2"
     assert transformer.threshold == 0.01
