@@ -68,7 +68,7 @@ def test_non_fitted_error(df_test):
         transformer.transform(df_test)
         
 def test_regression_cv_3(df_test):
-    #  test for regression using cv=2, and the r2 as metric.
+    #  test for regression using cv=3, and the r2 as metric.
     
     # Load the diabetes dataset from sklearn
     diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
