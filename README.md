@@ -95,6 +95,7 @@ More resources will be added as they appear online!
 ### Feature Selection:
 
  * DropFeatures
+ * ShuffleFeaturesSelector
 
 
 ## Installing
