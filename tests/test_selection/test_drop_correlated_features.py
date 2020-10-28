@@ -28,7 +28,7 @@ def df_correlated_single():
 
 @pytest.fixture(scope="module")
 def df_correlated_double():
-    # create array with 4 correlated features and 2 independent ones
+    # create array with 8 correlated features and 4 independent ones
     X, y = make_classification(
         n_samples=1000,
         n_features=12,
