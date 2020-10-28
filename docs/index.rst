@@ -174,6 +174,8 @@ Feature Selection:
 - :doc:`selection/DropFeatures`: drops a subset of variables from a dataframe
 - :doc:`selection/DropConstantFeatures`: drops constant and quasi-constant variables from a dataframe
 - :doc:`selection/DropDuplicateFeatures`: drops duplicated variables from a dataframe
+- :doc:`selection/ShuffleFeaturesSelector`:  selects features by determining the drop in machine learning model performance when each feature's values are randomly shuffled from a dataframe
+
 
 
 Getting Help
