@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.datasets import make_classification
+from sklearn.datasets import load_diabetes, make_classification
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import NotFittedError
+from sklearn.linear_model import LinearRegression
 
 from feature_engine.selection import ShuffleFeaturesSelector
 
@@ -65,3 +66,31 @@ def test_non_fitted_error(df_test):
     with pytest.raises(NotFittedError):
         transformer = ShuffleFeaturesSelector()
         transformer.transform(df_test)
+        
+def test_regression_cv_2(df_test):
+    #  test for regression using cv=2, and the r2 as metric.
+    
+    # Load the diabetes dataset from sklearn
+    diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
+    data = pd.DataFrame(diabetes_X)
+    target = pd.DataFrame(diabetes_y)
+    # initialize linear regresion estimator
+    linear_model = LinearRegression()
+    # initialize transformer
+    transformer = ShuffleFeaturesSelector(estimator=linear_model, scoring='r2', cv = 2)
+    # fit transformer
+    X = transformer.fit_transform(data, target)
+
+    # initialization parameters
+    assert transformer.cv == 2
+    assert transformer.variables == list(data.columns)
+    assert transformer.scoring == "r2"
+    assert transformer.threshold == 0.01
+    
+    # fit params
+    # Number of selected features should always be less or equal to 
+    # the number of input variables
+    assert len(transformer.selected_features_) <= len(transformer.variables)
+    # Number of keys in attribute should always be equal to number of of input variables
+    assert len(transformer.performance_drifts_) == len(transformer.variables)
+    
