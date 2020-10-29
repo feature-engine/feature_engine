@@ -37,7 +37,7 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
     should be assessed. The user also determines the threshold in performance under
     which a feature will be removed, and the performance metric to evaluate.
 
-    Model training and performance calculatio are done with cross-validation.
+    Model training and performance calculation are done with cross-validation.
 
     Parameters
     ----------
@@ -54,16 +54,15 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold: float, int
-        the value that defines if a feature will be kept or removed. Note that for
+    threshold: float, int, default = 0.01
+        The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
         root_mean_square_error the threshold will be a big number.
         The threshold must be defined by the user.
 
     cv : int, default=3
-        Desired number of cross-validation fold to be used to fit the decision
-        tree.
+        Desired number of cross-validation fold to be used to fit the estimator.
 
     Attributes
     ----------
@@ -72,11 +71,20 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
         performance of the model built using the original dataset.
 
     performance_drifts_: dict
-            A dictionary containing the feature, performance drift pairs, after
-            shuffling each feature.
+        A dictionary containing the feature, performance drift pairs, after
+        shuffling each feature.
 
     selected_features_: list
         The selected features.
+        
+    Methods
+    -------
+    
+    fit: finds important features
+    
+    transform: removes non-important / non-selected features
+    
+    fit_transform: finds and removes non-important features
 
     """
 
@@ -104,16 +112,20 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
     def fit(self, X, y):
         """
 
-        Args:
-            X: pandas dataframe of shape = [n_samples, n_features]
-                The input dataframe
+        Args
+        ----
+            
+        X: pandas dataframe of shape = [n_samples, n_features]
+           The input dataframe
 
-            y: array-like of shape (n_samples)
-                Target variable. Required to train the estimator.
+        y: array-like of shape (n_samples)
+           Target variable. Required to train the estimator.
 
 
-        Returns:
-            self
+        Returns
+        -------
+        
+        self
         """
 
         # check input dataframe
@@ -192,14 +204,18 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
         Removes non-selected features. That is, features which shuffling did not
         decrease the machine learning model performance beyond the indicated threshold.
 
-        Args:
-            X: pandas dataframe of shape = [n_samples, n_features].
+        Args
+        ----
+            
+        X: pandas dataframe of shape = [n_samples, n_features].
             The input dataframe from which feature values will be shuffled.
 
 
-        Returns:
-            X_transformed: pandas dataframe
-             of shape = [n_samples, n_features - len(dropped features)]
+        Returns
+        -------
+        
+        X_transformed: pandas dataframe
+            of shape = [n_samples, n_features - len(dropped features)]
             Pandas dataframe with the selected features.
         """
 
