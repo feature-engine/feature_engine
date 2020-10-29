@@ -76,14 +76,14 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
 
     selected_features_: list
         The selected features.
-        
+
     Methods
     -------
-    
+
     fit: finds important features
-    
+
     transform: removes non-important / non-selected features
-    
+
     fit_transform: finds and removes non-important features
 
     """
@@ -114,7 +114,7 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
 
         Args
         ----
-            
+
         X: pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
 
@@ -124,7 +124,7 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        
+
         self
         """
 
@@ -134,7 +134,7 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
         # reset the index
         X = X.reset_index()
         y = y.reset_index()
-        
+
         # find numerical variables or check variables entered by user
         self.variables = _find_numerical_variables(X, self.variables)
 
@@ -210,14 +210,14 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
 
         Args
         ----
-            
+
         X: pandas dataframe of shape = [n_samples, n_features].
             The input dataframe from which feature values will be shuffled.
 
 
         Returns
         -------
-        
+
         X_transformed: pandas dataframe
             of shape = [n_samples, n_features - len(dropped features)]
             Pandas dataframe with the selected features.
@@ -231,7 +231,7 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
 
         # reset the index
         X = X.reset_index()
-        
+
         # check if number of columns in test dataset matches to train dataset
         _check_input_matches_training_df(X, self.input_shape_[1])
 
