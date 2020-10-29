@@ -95,6 +95,10 @@ More resources will be added as they appear online!
 ### Feature Selection:
 
  * DropFeatures
+ * DropConstantFeatures
+ * DropDuplicateFeatures
+ * DropCorrelatedFeatures
+ * ShuffleFeaturesSelector
 
 
 ## Installing
