@@ -36,9 +36,7 @@ def test_impute_with_string_missing_and_automatically_find_variables(df_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
-def test_user_defined_string_and_automatically_find_variables(
-    df_na,
-):
+def test_user_defined_string_and_automatically_find_variables(df_na):
     # set up imputer
     imputer = CategoricalImputer(
         imputation_method="missing", fill_value="Unknown", variables=None
@@ -106,9 +104,7 @@ def test_mode_imputation_with_multiple_variables(df_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
-def test_imputation_of_numerical_vars_cast_as_object_and_returned_as_numerical(
-    df_na,
-):
+def test_imputation_of_numerical_vars_cast_as_object_and_returned_as_numerical(df_na):
     # test case: imputing of numerical variables cast as object + return numeric
     df_na["Marks"] = df_na["Marks"].astype("O")
     imputer = CategoricalImputer(
@@ -130,9 +126,7 @@ def test_imputation_of_numerical_vars_cast_as_object_and_returned_as_numerical(
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
-def test_imputation_of_numerical_vars_cast_as_object_and_returned_as_object(
-    df_na,
-):
+def test_imputation_of_numerical_vars_cast_as_object_and_returned_as_object(df_na):
     # test case 6: imputing of numerical variables cast as object + return as object
     # after imputation
     df_na["Marks"] = df_na["Marks"].astype("O")

@@ -2,7 +2,46 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
+
 from feature_engine.selection import DropDuplicateFeatures
+
+
+@pytest.fixture(scope="module")
+def df_duplicate_features():
+    data = {
+        "Name": ["tom", "nick", "krish", "jack"],
+        "dob2": pd.date_range("2020-02-24", periods=4, freq="T"),
+        "City": ["London", "Manchester", "Liverpool", "Bristol"],
+        "Age": [20, 21, 19, 18],
+        "Marks": [0.9, 0.8, 0.7, 0.6],
+        "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+        "City2": ["London", "Manchester", "Liverpool", "Bristol"],
+        "dob3": pd.date_range("2020-02-24", periods=4, freq="T"),
+        "Age2": [20, 21, 19, 18],
+    }
+
+    df = pd.DataFrame(data)
+
+    return df
+
+
+@pytest.fixture(scope="module")
+def df_duplicate_features_with_na():
+    data = {
+        "Name": ["tom", "nick", "krish", "jack", np.nan],
+        "dob2": pd.date_range("2020-02-24", periods=5, freq="T"),
+        "City": ["London", "Manchester", "Liverpool", "Bristol", np.nan],
+        "Age": [20, 21, np.nan, 18, 34],
+        "Marks": [0.9, 0.8, 0.7, 0.6, 0.5],
+        "dob": pd.date_range("2020-02-24", periods=5, freq="T"),
+        "City2": ["London", "Manchester", "Liverpool", "Bristol", np.nan],
+        "dob3": pd.date_range("2020-02-24", periods=5, freq="T"),
+        "Age2": [20, 21, np.nan, 18, 34],
+    }
+
+    df = pd.DataFrame(data)
+
+    return df
 
 
 def test_drop_duplicates_features(df_duplicate_features):

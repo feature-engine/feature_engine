@@ -4,9 +4,7 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.imputation import AddMissingIndicator
 
 
-def test_detect_variables_with_missing_data_and_variables_is_none(
-    df_na,
-):
+def test_detect_variables_with_missing_data_and_variables_is_none(df_na):
     # test case 1: automatically detect variables with missing data
     imputer = AddMissingIndicator(missing_only=True, variables=None)
     X_transformed = imputer.fit_transform(df_na)
@@ -32,9 +30,7 @@ def test_add_indicators_to_all_variables_when_variables_is_none(df_na):
     assert X_transformed["dob_na"].sum() == 0
 
 
-def test_detect_variables_with_missing_data_in_variables_entered_by_user(
-    df_na,
-):
+def test_detect_variables_with_missing_data_in_variables_entered_by_user(df_na):
     imputer = AddMissingIndicator(
         missing_only=True, variables=["City", "Studies", "Age", "dob"]
     )

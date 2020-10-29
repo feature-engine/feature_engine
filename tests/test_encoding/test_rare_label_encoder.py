@@ -102,9 +102,7 @@ def test_error_if_replace_with_not_string():
         RareLabelEncoder(replace_with=0.5)
 
 
-def test_warning_if_variable_cardinality_less_than_n_categories(
-    df_enc_big,
-):
+def test_warning_if_variable_cardinality_less_than_n_categories(df_enc_big):
     # test case 3: when the variable has low cardinality
     with pytest.warns(UserWarning):
         encoder = RareLabelEncoder(n_categories=10)

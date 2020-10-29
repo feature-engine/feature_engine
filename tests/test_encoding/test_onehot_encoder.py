@@ -3,9 +3,7 @@ import pytest
 from feature_engine.encoding import OneHotEncoder
 
 
-def test_encode_categories_in_k_binary_plus_select_vars_automatically(
-    df_enc_big,
-):
+def test_encode_categories_in_k_binary_plus_select_vars_automatically(df_enc_big):
     # test case 1: encode all categories into k binary variables, select variables
     # automatically
     encoder = OneHotEncoder(top_categories=None, variables=None, drop_last=False)
@@ -46,9 +44,7 @@ def test_encode_categories_in_k_binary_plus_select_vars_automatically(
     assert "var_A" not in X.columns
 
 
-def test_encode_categories_in_k_minus_1_binary_plus_list_of_variables(
-    df_enc_big,
-):
+def test_encode_categories_in_k_minus_1_binary_plus_list_of_variables(df_enc_big):
     # test case 2: encode all categories into k-1 binary variables,
     # pass list of variables
     encoder = OneHotEncoder(
