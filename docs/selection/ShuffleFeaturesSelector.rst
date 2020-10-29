@@ -1,84 +1,77 @@
 ShuffleFeaturesSelector
 =======================
 
-The ShuffleFeaturesSelector() selects features by determining the drop in machine
-learning model performance when each feature's values are randomly shuffled.
-The user can pass a list of variables to examine, or alternatively the selector will
-examine all variables in the data set.
+The ShuffleFeaturesSelector() selects important features if permutation their values
+at random produces a decrease in the initial model performance. See API below for
+more details into its functionality.
 
 .. code:: python
 
-    def load_diabetes_data():
+    import pandas as pd
+    from sklearn.datasets import load_diabetes
+    from sklearn.linear_model import LinearRegression
+    from feature_engine.selection import ShuffleFeaturesSelector
 
-        diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
-        data = pd.DataFrame(diabetes_X)
-        target = pd.DataFrame(diabetes_y)
-
-        return data, target
-
-    data, target = load_diabetes_data()
-
-    # Separate into train and test sets
-    X_train, X_test, y_train, y_test = train_test_split(
-        data,
-        target,
-        test_size=0.2,
-        random_state=0)
+    # load dataset
+    diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
+    X = pd.DataFrame(diabetes_X)
+    y = pd.DataFrame(diabetes_y)
 
     # initialize linear regresion estimator
     linear_model = LinearRegression()
-    # initialize ShuffleFeaturesSelector 
-    transformer = ShuffleFeaturesSelector(
-        estimator=model,
-        scoring='r2',
-        cv = 3)
 
-    # Fit the selector 
-    X = transformer.fit_transform(X_train, y_train)
-    
-    # Get the initial model performance
-    transformer.initial_model_performance_
-    
+    # initialize feature selector
+    tr = ShuffleFeaturesSelector(estimator=linear_model, scoring="r2", cv=3)
+
+    # fit transformer
+    Xt = tr.fit_transform(X, y)
+
+    tr.initial_model_performance_
+
+
 .. code:: python
 
-    0.7536374800253398
-    
+    0.488702767247119
+
 ..  code:: python
 
-    # Get the model performance drifts
-    transformer.performance_drifts_
+    tr.performance_drifts_
 
 .. code:: python
 
-    {0: -0.02357321349215452,
-     1: 0.02338737974865923,
-     2: 0.19373678730180866,
-     3: 0.07535196370036401,
-     4: 0.4661882256235008,
-     5: 0.1511853641781783,
-     6: -0.01230682744138506,
-     7: 0.006374262665166719,
-     8: 0.4566400050483824,
-     9: -0.015247265065878424}
-     
-..  code:: python
-
-    # Get the transformer variables
-    transformer.variables
+    {0: -0.02368121940502793,
+     1: 0.017909161264480666,
+     2: 0.18565460365508413,
+     3: 0.07655405817715671,
+     4: 0.4327180164470878,
+     5: 0.16394693824418372,
+     6: -0.012876023845921625,
+     7: 0.01048781540981647,
+     8: 0.3921465005640224,
+     9: -0.01427065640301245}
 
 .. code:: python
 
-    ['index', 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-     
-..  code:: python
-
-    # Get the transformer selected features
-    transformer.selected_features_
+    tr.selected_features_
 
 .. code:: python
 
-    ['index', 2, 3, 4, 5, 8]
-    
+    [1, 2, 3, 4, 5, 7, 8]
+
+.. code:: python
+
+    print(print(Xt.head()))
+
+.. code:: python
+
+              1         2         3         4         5         7         8
+    0  0.050680  0.061696  0.021872 -0.044223 -0.034821 -0.002592  0.019908
+    1 -0.044642 -0.051474 -0.026328 -0.008449 -0.019163 -0.039493 -0.068330
+    2  0.050680  0.044451 -0.005671 -0.045599 -0.034194 -0.002592  0.002864
+    3 -0.044642 -0.011595 -0.036656  0.012191  0.024991  0.034309  0.022692
+    4 -0.044642 -0.036385  0.021872  0.003935  0.015596 -0.002592 -0.031991
+    None
+
 API Reference
 -------------
 

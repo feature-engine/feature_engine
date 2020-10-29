@@ -29,6 +29,15 @@ def df_test():
     return X, y
 
 
+@pytest.fixture(scope="module")
+def load_diabetes_dataset():
+    # Load the diabetes dataset from sklearn
+    diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
+    X = pd.DataFrame(diabetes_X)
+    y = pd.DataFrame(diabetes_y)
+    return X, y
+
+
 def test_default_parameters(df_test):
     X, y = df_test
     sel = ShuffleFeaturesSelector(RandomForestClassifier(random_state=1))
@@ -62,63 +71,68 @@ def test_default_parameters(df_test):
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
 
-def test_non_fitted_error(df_test):
-    # test case 3: when fit is not called prior to transform
-    with pytest.raises(NotFittedError):
-        transformer = ShuffleFeaturesSelector()
-        transformer.transform(df_test)
-        
-def test_regression_cv_3():
+def test_regression_cv_3_and_r2(load_diabetes_dataset):
     #  test for regression using cv=3, and the r2 as metric.
-    
-    # Load the diabetes dataset from sklearn
-    diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
-    data = pd.DataFrame(diabetes_X)
-    target = pd.DataFrame(diabetes_y)
-    # initialize linear regresion estimator
-    linear_model = LinearRegression()
-    # initialize transformer
-    transformer = ShuffleFeaturesSelector(estimator=linear_model, scoring='r2', cv = 3)
-    # fit transformer
-    X = transformer.fit_transform(data, target)
+    X, y = load_diabetes_dataset
+    sel = ShuffleFeaturesSelector(estimator=LinearRegression(), scoring="r2", cv=3)
+    sel.fit(X, y)
 
-    # initialization parameters
-    assert transformer.cv == 3
-    assert transformer.variables == list(data.columns)
-    assert transformer.scoring == "r2"
-    assert transformer.threshold == 0.01
-    
-    # fit params
-    # Number of selected features should always be less or equal to 
-    # the number of input variables
-    assert len(transformer.selected_features_) <= len(transformer.variables)
-    # Number of keys in attribute should always be equal to number of of input variables
-    assert len(transformer.performance_drifts_) == len(transformer.variables)
-    
-    
-def test_regression_cv_2():
-    #  test for regression using cv=2, and the neg_mean_squared_error as metric. 
-    
-    # Load the diabetes dataset from sklearn
-    diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
-    data = pd.DataFrame(diabetes_X)
-    target = pd.DataFrame(diabetes_y)
-    # initialize decision tree regressor estimator
-    tree_regressor_model = DecisionTreeRegressor(random_state=0)
-    # initialize transformer
-    transformer = ShuffleFeaturesSelector(estimator=tree_regressor_model, scoring='neg_mean_squared_error', cv = 2)
-    # fit transformer
-    X = transformer.fit_transform(data, target)
+    # expected output
+    Xtransformed = pd.DataFrame(X[[1, 2, 3, 4, 5, 8]].copy())
 
-    # initialization parameters
-    assert transformer.cv == 2
-    assert transformer.variables == list(data.columns)
-    assert transformer.scoring == "neg_mean_squared_error"
-    assert transformer.threshold == 0.01
-    
+    # test init params
+    assert sel.cv == 3
+    assert sel.variables == list(X.columns)
+    assert sel.scoring == "r2"
+    assert sel.threshold == 0.01
     # fit params
-    # Number of selected features should always be less or equal to 
-    # the number of input variables
-    assert len(transformer.selected_features_) <= len(transformer.variables)
-    # Number of keys in attribute should always be equal to number of of input variables
-    assert len(transformer.performance_drifts_) == len(transformer.variables)
+    assert np.round(sel.initial_model_performance_, 3) == 0.489
+    assert sel.selected_features_ == [1, 2, 3, 4, 5, 8]
+    # test transform output
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_regression_cv_2_and_mse(load_diabetes_dataset):
+    #  test for regression using cv=2, and the neg_mean_squared_error as metric.
+    # add suitable threshold for regression mse
+
+    X, y = load_diabetes_dataset
+    sel = ShuffleFeaturesSelector(
+        estimator=DecisionTreeRegressor(random_state=0),
+        scoring="neg_mean_squared_error",
+        cv=2,
+        threshold=10,
+    )
+    # fit transformer
+    sel.fit(X, y)
+
+    # expected output
+    Xtransformed = pd.DataFrame(X[[2, 8]].copy())
+
+    # test init params
+    assert sel.cv == 2
+    assert sel.variables == list(X.columns)
+    assert sel.scoring == "neg_mean_squared_error"
+    assert sel.threshold == 10
+    # fit params
+    assert np.round(sel.initial_model_performance_, 0) == -5836.0
+    assert sel.selected_features_ == [2, 8]
+    # test transform output
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_non_fitted_error(df_test):
+    # when fit is not called prior to transform
+    with pytest.raises(NotFittedError):
+        sel = ShuffleFeaturesSelector()
+        sel.transform(df_test)
+
+
+def test_raises_cv_error():
+    with pytest.raises(ValueError):
+        ShuffleFeaturesSelector(cv=0)
+
+
+def test_raises_threshold_error():
+    with pytest.raises(ValueError):
+        ShuffleFeaturesSelector(threshold=None)

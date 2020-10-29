@@ -97,8 +97,8 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
         variables=None,
     ):
 
-        if not isinstance(cv, int) or cv < 0:
-            raise ValueError("cv can only take positive integers")
+        if not isinstance(cv, int) or cv < 1:
+            raise ValueError("cv can only take positive integers bigger than 1")
 
         if not isinstance(threshold, (int, float)):
             raise ValueError("threshold can only be integer or float")
@@ -176,18 +176,12 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
             )
 
             # determine drift in performance
-            if self.scoring in [
-                "median_absolute_error",
-                "max_error",
-                "mean_absolute_error",
-                "mean_squared_error",
-            ]:
-                # if feature is important, mean absolute error will be bigger
-                performance_drift = performance - self.initial_model_performance_
-
-            else:
-                # if feature is important, roc will be smaller
-                performance_drift = self.initial_model_performance_ - performance
+            # Note, sklearn negates the log and error scores, so no need to manually
+            # do the invertion
+            # https://scikit-learn.org/stable/modules/model_evaluation.html
+            # (https://scikit-learn.org/stable/modules/model_evaluation.html
+            # #the-scoring-parameter-defining-model-evaluation-rules)
+            performance_drift = self.initial_model_performance_ - performance
 
             # Save feature and performance drift
             self.performance_drifts_[feature] = performance_drift
