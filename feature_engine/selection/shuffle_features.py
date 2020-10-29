@@ -131,6 +131,10 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
+        # reset the index
+        X = X.reset_index()
+        y = y.reset_index()
+        
         # find numerical variables or check variables entered by user
         self.variables = _find_numerical_variables(X, self.variables)
 
@@ -219,6 +223,9 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
         # check if input is a dataframe
         X = _is_dataframe(X)
 
+        # reset the index
+        X = X.reset_index()
+        
         # check if number of columns in test dataset matches to train dataset
         _check_input_matches_training_df(X, self.input_shape_[1])
 

@@ -72,7 +72,6 @@ more details into its functionality.
     4 -0.044642 -0.036385  0.021872  0.003935  0.015596 -0.002592 -0.031991
     None
 
-
 API Reference
 -------------
 
