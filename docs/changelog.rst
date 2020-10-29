@@ -9,10 +9,10 @@ Deployed: TBD
 
 Contributors:
     - Nodar Okroshiashvili
+    - Sana Ben Driss
     - Nicolas Galli
     - Tejash Shah
     - Soledad Galli
-    - Sana Ben Driss
 
 
 **Renaming of Modules within Feature-engine**:
@@ -50,6 +50,7 @@ We renamed a few parameters to unify the nomenclature across the Package.
 **New transformers and classes**:
     - **DropConstantFeatures**: DropConstantFeatures finds and removes constant and quasi-constant features from a dataframe (**by Tejash Shah**)
     - **DropDuplicateFeatures**: DropDuplicateFeatures finds and removes duplicated features from a dataset (**by Tejash Shah and Soledad Galli**)
+    - **DropCorrelatedFeatures**: DropCorrelatedFeatures finds and removes features that are correlated (**by Nicolas Galli**)
     - **ShuffleFeaturesSelector**: ShuffleFeaturesSelector selects features by determining the drop in machine learning model performance when each feature's values are randomly shuffled from a dataframe (**by Sana Ben Driss**)
 
 **Code Architecture - Important for Contributors and Developers**:
