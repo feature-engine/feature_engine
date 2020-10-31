@@ -2,6 +2,8 @@
 # License: BSD 3 clause
 
 import numpy as np
+import pandas as pd
+
 from feature_engine.outliers import Winsorizer
 
 
@@ -97,7 +99,7 @@ class OutlierTrimmer(Winsorizer):
 
     """
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Removes observations with outliers from the dataframe.
 

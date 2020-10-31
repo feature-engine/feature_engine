@@ -1,5 +1,6 @@
 import warnings
 
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -12,7 +13,8 @@ from feature_engine.variable_manipulation import _find_categorical_variables
 
 
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
-    def _check_fit_input_and_variables(self, X):
+
+    def _check_fit_input_and_variables(self, X: pd.DataFrame) -> pd.DataFrame:
         # check input dataframe
         X = _is_dataframe(X)
 
@@ -24,7 +26,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         return X
 
-    def _check_transform_input_and_state(self, X):
+    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         # Check method fit has been called
         check_is_fitted(self)
 
@@ -47,7 +49,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
                 "in your dataframe."
             )
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Replaces categories with the learned parameters.
 
         Parameters
@@ -82,7 +84,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         return X
 
-    def inverse_transform(self, X):
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Convert the data back to the original representation.
 
         Parameters

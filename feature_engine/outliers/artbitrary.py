@@ -1,6 +1,11 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+
+from typing import Optional
+
+import pandas as pd
+
 from feature_engine.dataframe_checks import _is_dataframe, _check_contains_na
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.variable_manipulation import _find_numerical_variables
@@ -32,8 +37,11 @@ class ArbitraryOutlierCapper(BaseOutlier):
     """
 
     def __init__(
-        self, max_capping_dict=None, min_capping_dict=None, missing_values="raise"
-    ):
+        self,
+        max_capping_dict: Optional[dict] = None,
+        min_capping_dict: Optional[dict] = None,
+        missing_values: str = "raise",
+    ) -> None:
 
         if not max_capping_dict and not min_capping_dict:
             raise ValueError(
@@ -65,7 +73,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
         self.missing_values = missing_values
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Parameters
         ----------
@@ -111,8 +119,9 @@ class ArbitraryOutlierCapper(BaseOutlier):
         return self
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().transform(X)
+
         return X
 
     transform.__doc__ = BaseOutlier.transform.__doc__

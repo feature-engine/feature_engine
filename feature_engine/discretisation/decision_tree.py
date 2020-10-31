@@ -1,6 +1,9 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List
+
+import pandas as pd
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
 
@@ -69,13 +72,13 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
     def __init__(
         self,
-        cv=3,
-        scoring="neg_mean_squared_error",
-        variables=None,
-        param_grid=None,
-        regression=True,
-        random_state=None,
-    ):
+        cv: int = 3,
+        scoring: str = "neg_mean_squared_error",
+        variables: Optional[List[str]] = None,
+        param_grid: Optional[dict] = None,
+        regression: bool = True,
+        random_state: Optional[int] = None,
+    ) -> None:
 
         if param_grid is None:
             param_grid = {"max_depth": [1, 2, 3, 4]}
@@ -93,7 +96,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.param_grid = param_grid
         self.random_state = random_state
 
-    def fit(self, X, y):
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Fits the decision trees. One tree per variable to be transformed.
 
@@ -145,7 +148,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Returns the predictions of the tree, based of the variable original
         values. The tree outcome is finite, aka, discrete.

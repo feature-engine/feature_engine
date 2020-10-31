@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -10,7 +11,7 @@ from feature_engine.dataframe_checks import (
 
 
 class BaseOutlier(BaseEstimator, TransformerMixin):
-    def _check_transform_input_and_state(self, X):
+    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         # check if class was fitted
         check_is_fitted(self)
 
@@ -27,7 +28,7 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
         return X
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Caps the variable values, that is, censors outliers.
 

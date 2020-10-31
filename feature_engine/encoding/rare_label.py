@@ -1,9 +1,11 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List
+import warnings
+
 import numpy as np
 import pandas as pd
-import warnings
 
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 from feature_engine.variable_manipulation import _define_variables
@@ -60,12 +62,12 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
     def __init__(
         self,
-        tol=0.05,
-        n_categories=10,
-        max_n_categories=None,
-        variables=None,
-        replace_with="Rare",
-    ):
+        tol: float = 0.05,
+        n_categories: int = 10,
+        max_n_categories: Optional[int] = None,
+        variables: Optional[List[str]] = None,
+        replace_with: str = "Rare",
+    ) -> None:
 
         if tol < 0 or tol > 1:
             raise ValueError("tol takes values between 0 and 1")
@@ -86,7 +88,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         self.variables = _define_variables(variables)
         self.replace_with = replace_with
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learns the frequent categories for each variable.
 
@@ -144,7 +146,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Groups rare labels under separate group 'Rare' or any other name provided
         by the user.

@@ -1,6 +1,8 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List
+
 import numpy as np
 import pandas as pd
 
@@ -37,11 +39,11 @@ class WoEEncoder(BaseCategoricalTransformer):
         encoder will find and select all object type variables.
     """
 
-    def __init__(self, variables=None):
+    def __init__(self, variables: Optional[List[str]] = None) -> None:
 
         self.variables = _define_variables(variables)
 
-    def fit(self, X, y):
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Learns the numbers that should be used to replace the categories in each
         variable. That is the WoE.
@@ -107,14 +109,16 @@ class WoEEncoder(BaseCategoricalTransformer):
         return self
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().transform(X)
+
         return X
 
     transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
 
-    def inverse_transform(self, X):
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().inverse_transform(X)
+
         return X
 
     inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
