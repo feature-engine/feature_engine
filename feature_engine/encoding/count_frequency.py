@@ -1,7 +1,11 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List
+
+import pandas as pd
 import numpy as np
+
 from feature_engine.variable_manipulation import _define_variables
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 
@@ -40,7 +44,9 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
         encoder will find and transform all object type variables.
     """
 
-    def __init__(self, encoding_method="count", variables=None):
+    def __init__(
+        self, encoding_method: str = "count", variables: Optional[List[str]] = None
+    ) -> None:
 
         if encoding_method not in ["count", "frequency"]:
             raise ValueError(
@@ -50,7 +56,7 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
         self.encoding_method = encoding_method
         self.variables = _define_variables(variables)
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learns the counts or frequencies which will be used to replace the categories.
 
@@ -92,14 +98,16 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
         return self
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().transform(X)
+
         return X
 
     transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
 
-    def inverse_transform(self, X):
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().inverse_transform(X)
+
         return X
 
     inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__

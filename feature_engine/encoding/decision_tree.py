@@ -1,6 +1,9 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List
+
+import pandas as pd
 from sklearn.pipeline import Pipeline
 
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
@@ -76,14 +79,14 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     def __init__(
         self,
-        encoding_method="arbitrary",
-        cv=3,
-        scoring="neg_mean_squared_error",
-        param_grid=None,
-        regression=True,
-        random_state=None,
-        variables=None,
-    ):
+        encoding_method: str = "arbitrary",
+        cv: int = 3,
+        scoring: str = "neg_mean_squared_error",
+        param_grid: Optional[dict] = None,
+        regression: bool = True,
+        random_state: Optional[int] = None,
+        variables: Optional[List[str]] = None,
+    ) -> None:
         if param_grid is None:
             param_grid = {"max_depth": [1, 2, 3, 4]}
 
@@ -95,7 +98,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         self.random_state = random_state
         self.variables = _define_variables(variables)
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learns the numbers that should be used to replace the categories in each
         variable.
@@ -143,7 +146,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Returns the predictions of the decision tree based of the variable's original
         value.

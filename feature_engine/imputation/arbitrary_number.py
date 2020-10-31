@@ -1,6 +1,10 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List, Union
+
+import pandas as pd
+
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.parameter_checks import _define_numerical_dict
@@ -32,7 +36,12 @@ class ArbitraryNumberImputer(BaseImputer):
         If None, `variables` attribute is used for imputation.
     """
 
-    def __init__(self, arbitrary_number=999, variables=None, imputer_dict=None):
+    def __init__(
+        self,
+        arbitrary_number: Union[int, float] = 999,
+        variables: Optional[List[str]] = None,
+        imputer_dict: Optional[dict] = None,
+    ) -> None:
 
         if isinstance(arbitrary_number, int) or isinstance(arbitrary_number, float):
             self.arbitrary_number = arbitrary_number
@@ -43,7 +52,7 @@ class ArbitraryNumberImputer(BaseImputer):
 
         self.imputer_dict = _define_numerical_dict(imputer_dict)
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Checks that the variables are numerical.
 
@@ -84,8 +93,9 @@ class ArbitraryNumberImputer(BaseImputer):
         return self
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().transform(X)
+
         return X
 
     transform.__doc__ = BaseImputer.transform.__doc__

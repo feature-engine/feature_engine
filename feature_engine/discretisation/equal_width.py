@@ -1,6 +1,8 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List
+
 import pandas as pd
 from feature_engine.variable_manipulation import _define_variables
 from feature_engine.base_transformers import BaseNumericalTransformer
@@ -47,8 +49,12 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
     """
 
     def __init__(
-        self, bins=10, variables=None, return_object=False, return_boundaries=False
-    ):
+        self,
+        bins: int = 10,
+        variables: Optional[List[str]] = None,
+        return_object: bool = False,
+        return_boundaries: bool = False,
+    ) -> None:
 
         if not isinstance(bins, int):
             raise ValueError("q must be an integer")
@@ -64,7 +70,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
         self.return_object = return_object
         self.return_boundaries = return_boundaries
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learns the boundaries of the equal width intervals / bins for each
         variable.
@@ -106,7 +112,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Sorts the variable values into the intervals.
 

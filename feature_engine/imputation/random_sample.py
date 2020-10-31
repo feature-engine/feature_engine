@@ -1,6 +1,9 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List, Union
+
+import pandas as pd
 import numpy as np
 
 from feature_engine.dataframe_checks import _is_dataframe
@@ -9,7 +12,12 @@ from feature_engine.variable_manipulation import _define_variables
 
 
 # for RandomSampleImputer
-def _define_seed(X, index, seed_variables, how="add"):
+def _define_seed(
+    X: pd.DataFrame,
+    index: int,
+    seed_variables: Union[str, List[str]],
+    how: str = "add",
+) -> int:
     # determine seed by adding or multiplying the value of 1 or
     # more variables
     if how == "add":
@@ -87,8 +95,12 @@ class RandomSampleImputer(BaseImputer):
     """
 
     def __init__(
-        self, variables=None, random_state=None, seed="general", seeding_method="add"
-    ):
+        self,
+        variables: Optional[List[str]] = None,
+        random_state: Optional[Union[int, str, List[str]]] = None,
+        seed: str = "general",
+        seeding_method: str = "add",
+    ) -> None:
 
         if seed not in ["general", "observation"]:
             raise ValueError("seed takes only values 'general' or 'observation'")
@@ -113,7 +125,7 @@ class RandomSampleImputer(BaseImputer):
         self.seed = seed
         self.seeding_method = seeding_method
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Makes a copy of the variables to impute in the training dataframe from
         which it will randomly extract the values to fill the missing data
@@ -160,7 +172,7 @@ class RandomSampleImputer(BaseImputer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Replaces missing data with random values taken from the train set.
 
