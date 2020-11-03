@@ -1,8 +1,7 @@
 # WORK IN PROGRESS
-import numpy as np
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import get_scorer
 from sklearn.model_selection import cross_validate
 from sklearn.utils.validation import check_is_fitted
 
@@ -16,7 +15,7 @@ from feature_engine.variable_manipulation import (
 )
 
 
-class EliminateFeatureSelector(BaseEstimator, TransformerMixin):
+class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
     """
 
     Model training and performance calculation are done with cross-validation.
@@ -30,6 +29,7 @@ class EliminateFeatureSelector(BaseEstimator, TransformerMixin):
 
     estimator: object, default = RandomForestClassifier()
         A Scikit-learn estimator for regression or classification.
+        The estimator must have either a feature_importances_ or coef_ attribute after fitting.
 
     scoring: str, default='roc_auc'
         Desired metric to optimise the performance for the estimator. Comes from
@@ -109,10 +109,6 @@ class EliminateFeatureSelector(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # reset the index
-        X = X.reset_index(drop=True)
-        y = y.reset_index(drop=True)
-
         # find numerical variables or check variables entered by user
         self.variables = _find_numerical_variables(X, self.variables)
 
@@ -123,13 +119,11 @@ class EliminateFeatureSelector(BaseEstimator, TransformerMixin):
             y,
             cv=self.cv,
             scoring=self.scoring,
+            return_estimator=True
         )
 
         # store initial model performance
         self.initial_model_performance_ = model["test_score"].mean()
-
-        # get performance metric
-        scorer = get_scorer(self.scoring)
 
         # choose the approriate attibute to use for the appropriate model
         if (self.regression):
@@ -137,61 +131,82 @@ class EliminateFeatureSelector(BaseEstimator, TransformerMixin):
         else:
             get_feature_importance_method = "feature_importances_"
 
-        feature_importance_score = {}
+        # Initialize a dataframe that will contain the list of the feature/coeff importance
+        # for each cross validation fold
+        feature_importances_cv = pd.DataFrame()
 
+        # Populate the feature_importances_cv dataframe with columns containing the
+        # feature importance values for each model returned by the cross validation.
+        # There are as many columns as folds.
         for m in model["estimator"]:
 
-            features = pd.DataFrame(data=getattr(
-                m, get_feature_importance_method), columns=["coef_importance"])
-            features.index = self.variables
-            features.sort_values(ascending=True, inplace=True, by='coef_importance')
+            features_importance_ls = list(getattr(m, get_feature_importance_method))
+            feature_importances_cv[m] = features_importance_ls
 
-            features['variable_score'] = np.arange(features.shape[0])
+        # Add the X variables as index to feature_importances_cv
+        feature_importances_cv.index = self.variables
 
-            tmp = features['variable_score'].to_dict()
-            feature_importance_score = {k: tmp.get(
-                k, 0) + feature_importance_score.get(k, 0) for k in set(tmp)}
+        # Apply absolute value function to entire feature_importances_cv dataframe.
+        # This is done specificially for the linear estimators since large negative
+        # coefficients signify important features.
+        feature_importances_cv = feature_importances_cv.abs()
 
-        self.ordered_features_by_importance_ = [k for k, v in sorted(
-            feature_importance_score.items(), key=lambda item: item[1])]
+        # Aggregated the feature importance returned in each fold by applying mean
+        feature_importances_agg = feature_importances_cv.mean(axis=1)
 
+        # Sort the feature importance values in order to etract the ordered feature list
+        feature_importances_agg.sort_values(ascending=True, inplace=True)
+
+        # Store the feature importance series in a attribute
+        self.feature_importances_ = feature_importances_agg
+        # Extract the ordered feature list by importance and store it in the attribute
+        # self.ordered_features_by_importance_
+        self.ordered_features_by_importance_ = list(feature_importances_agg.index)
         # list to collect selected features
         self.selected_features_ = []
 
-        X_amputated = X.copy()
+        X_tmp = X.copy()
 
         baseline_model_performance = self.initial_model_performance_
-        
+
+        # dict to collect features and their performance_drift after shuffling
+        self.performance_drifts_ = {}
+
         for feature in self.ordered_features_by_importance_:
 
-            # train model with all features and cross-validation
-            model_amputated = cross_validate(
+            # train model with new feature list
+            model_tmp = cross_validate(
                 self.estimator,
-                X_amputated.drop(columns=feature),
+                X_tmp.drop(columns=feature),
                 y,
                 cv=self.cv,
                 scoring=self.scoring,
+                return_estimator=True
             )
 
-            # store initial model performance
-            model_amputated_performance = model_amputated["test_score"].mean()
+            # store new model performance
+            model_tmp_performance = model_tmp["test_score"].mean()
 
-            performance_drift = baseline_model_performance - model_amputated_performance
+            # Calculate performance drift
+            performance_drift = baseline_model_performance - model_tmp_performance
+
+            # Save feature and performance drift
+            self.performance_drifts_[feature] = performance_drift
 
             if performance_drift > self.threshold:
 
                 self.selected_features_.append(feature)
 
             else:
-                
-                X_amputated = X_amputated.drop(columns=feature)
+
+                X_tmp = X_tmp.drop(columns=feature)
                 baseline_model = cross_validate(
                     self.estimator,
-                    X_amputated,
+                    X_tmp,
                     y,
                     cv=self.cv,
                     return_estimator=True,
-                    scoring=self.scoring,
+                    scoring=self.scoring
                 )
 
                 # store initial model performance
@@ -224,9 +239,6 @@ class EliminateFeatureSelector(BaseEstimator, TransformerMixin):
 
         # check if input is a dataframe
         X = _is_dataframe(X)
-
-        # reset the index
-        X = X.reset_index(drop=True)
 
         # check if number of columns in test dataset matches to train dataset
         _check_input_matches_training_df(X, self.input_shape_[1])
