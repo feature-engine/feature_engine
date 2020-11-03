@@ -15,6 +15,19 @@ from feature_engine.variable_manipulation import (
 )
 
 
+def get_feature_importances(estimator, norm_order=1):
+    """Retrieve feature importances from a fitted estimator"""
+
+    importances = getattr(estimator, "feature_importances_", None)
+
+    coef_ = getattr(estimator, "coef_", None)
+
+    if importances is None and coef_ is not None:
+        importances = np.abs(coef_)
+
+    return list(importances)
+
+
 class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
     """
 
@@ -68,8 +81,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         scoring="roc_auc",
         cv=3,
         threshold=0.01,
-        variables=None,
-        regression=False
+        variables=None
     ):
 
         if not isinstance(cv, int) or cv < 1:
@@ -78,15 +90,11 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         if not isinstance(threshold, (int, float)):
             raise ValueError("threshold can only be integer or float")
 
-        if not isinstance(regression, bool):
-            raise ValueError("regression should be a boolean")
-
         self.variables = _define_variables(variables)
         self.estimator = estimator
         self.scoring = scoring
         self.threshold = threshold
         self.cv = cv
-        self.regression = regression
 
     def fit(self, X, y):
         """
@@ -126,12 +134,6 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         # store initial model performance
         self.initial_model_performance_ = model["test_score"].mean()
 
-        # choose the approriate attibute to use for the appropriate model
-        if (self.regression):
-            get_feature_importance_method = "coef_"
-        else:
-            get_feature_importance_method = "feature_importances_"
-
         # Initialize a dataframe that will contain the list of the feature/coeff
         # importance for each cross validation fold
         feature_importances_cv = pd.DataFrame()
@@ -142,7 +144,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         # There are as many columns as folds.
         for m in model["estimator"]:
 
-            features_importance_ls = list(getattr(m, get_feature_importance_method))
+            features_importance_ls = get_feature_importances(m)
             feature_importances_cv[m] = features_importance_ls
 
         # Add the X variables as index to feature_importances_cv
