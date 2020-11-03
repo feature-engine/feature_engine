@@ -132,12 +132,12 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         else:
             get_feature_importance_method = "feature_importances_"
 
-        # Initialize a dataframe that will contain the list of the feature/coeff 
+        # Initialize a dataframe that will contain the list of the feature/coeff
         # importance for each cross validation fold
         feature_importances_cv = pd.DataFrame()
 
         # Populate the feature_importances_cv dataframe with columns containing
-        # the feature importance values for each model returned by the cross 
+        # the feature importance values for each model returned by the cross
         # validation.
         # There are as many columns as folds.
         for m in model["estimator"]:
