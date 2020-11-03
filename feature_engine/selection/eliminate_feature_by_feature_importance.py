@@ -64,10 +64,19 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    initial_model_performance_ 
-    feature_importances_ 
-    ordered_features_by_importance_ 
-    performance_drifts_
+    initial_model_performance_: float
+        performance of the model built using the original dataset.
+
+    feature_importances_: pandas series
+        Index contains feature while values represent the feature importances.
+        The series are ordered from least importance to most important feature.
+
+    ordered_features_by_importance_: list
+        Ordered list of the features by importance.
+
+    performance_drifts_: dict
+        A dictionary containing the feature, performance drift pairs, after the recurvsive
+        feature elimination.
 
 
     Methods
