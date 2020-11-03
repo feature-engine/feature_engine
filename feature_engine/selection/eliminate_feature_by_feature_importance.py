@@ -16,7 +16,7 @@ from feature_engine.variable_manipulation import (
 )
 
 
-def get_feature_importances(estimator, norm_order=1):
+def get_feature_importances(estimator):
     """Retrieve feature importances from a fitted estimator"""
 
     importances = getattr(estimator, "feature_importances_", None)
@@ -24,6 +24,7 @@ def get_feature_importances(estimator, norm_order=1):
     coef_ = getattr(estimator, "coef_", None)
 
     if importances is None and coef_ is not None:
+
         importances = np.abs(coef_)
 
     return list(importances)
@@ -63,6 +64,10 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
+    initial_model_performance_ 
+    feature_importances_ 
+    ordered_features_by_importance_ 
+    performance_drifts_
 
 
     Methods
@@ -145,16 +150,10 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         # There are as many columns as folds.
         for m in model["estimator"]:
 
-            features_importance_ls = get_feature_importances(m)
-            feature_importances_cv[m] = features_importance_ls
+            feature_importances_cv[m] = get_feature_importances(m)
 
         # Add the X variables as index to feature_importances_cv
         feature_importances_cv.index = self.variables
-
-        # Apply absolute value function to entire feature_importances_cv dataframe.
-        # This is done specificially for the linear estimators since large negative
-        # coefficients signify important features.
-        feature_importances_cv = feature_importances_cv.abs()
 
         # Aggregated the feature importance returned in each fold by applying mean
         feature_importances_agg = feature_importances_cv.mean(axis=1)
