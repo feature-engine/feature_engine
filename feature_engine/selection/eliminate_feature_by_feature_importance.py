@@ -29,7 +29,8 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
     estimator: object, default = RandomForestClassifier()
         A Scikit-learn estimator for regression or classification.
-        The estimator must have either a feature_importances_ or coef_ attribute after fitting.
+        The estimator must have either a feature_importances_ or coef_ attribute
+        after fitting.
 
     scoring: str, default='roc_auc'
         Desired metric to optimise the performance for the estimator. Comes from
@@ -131,12 +132,13 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         else:
             get_feature_importance_method = "feature_importances_"
 
-        # Initialize a dataframe that will contain the list of the feature/coeff importance
-        # for each cross validation fold
+        # Initialize a dataframe that will contain the list of the feature/coeff 
+        # importance for each cross validation fold
         feature_importances_cv = pd.DataFrame()
 
-        # Populate the feature_importances_cv dataframe with columns containing the
-        # feature importance values for each model returned by the cross validation.
+        # Populate the feature_importances_cv dataframe with columns containing
+        # the feature importance values for each model returned by the cross 
+        # validation.
         # There are as many columns as folds.
         for m in model["estimator"]:
 
@@ -154,13 +156,14 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         # Aggregated the feature importance returned in each fold by applying mean
         feature_importances_agg = feature_importances_cv.mean(axis=1)
 
-        # Sort the feature importance values in order to etract the ordered feature list
+        # Sort the feature importance values
         feature_importances_agg.sort_values(ascending=True, inplace=True)
 
         # Store the feature importance series in a attribute
         self.feature_importances_ = feature_importances_agg
-        # Extract the ordered feature list by importance and store it in the attribute
-        # self.ordered_features_by_importance_
+        
+        # Extract the ordered feature list by importance and store it in
+        # the attribute self.ordered_features_by_importance_
         self.ordered_features_by_importance_ = list(feature_importances_agg.index)
         # list to collect selected features
         self.selected_features_ = []
