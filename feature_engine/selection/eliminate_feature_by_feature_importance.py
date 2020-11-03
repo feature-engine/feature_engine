@@ -161,7 +161,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
         # Store the feature importance series in a attribute
         self.feature_importances_ = feature_importances_agg
-        
+
         # Extract the ordered feature list by importance and store it in
         # the attribute self.ordered_features_by_importance_
         self.ordered_features_by_importance_ = list(feature_importances_agg.index)
