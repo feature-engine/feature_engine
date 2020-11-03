@@ -75,8 +75,8 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         Ordered list of the features by importance.
 
     performance_drifts_: dict
-        A dictionary containing the feature, performance drift pairs, after the recurvsive
-        feature elimination.
+        A dictionary containing the feature, performance drift pairs, after
+        the recursive feature elimination.
 
 
     Methods
