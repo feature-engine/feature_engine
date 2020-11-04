@@ -1,7 +1,7 @@
 import numpy as np
 
-def get_feature_importances(estimator):
 
+def get_feature_importances(estimator):
 
     """Retrieve feature importances from a fitted estimator"""
 
