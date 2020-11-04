@@ -17,14 +17,14 @@ from feature_engine.variable_manipulation import (
 
 class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
     """
-    
+
     RecursiveFeatureElimination selects features following a recursive process.
-    
+
     The process is as follow:
-    
+
     1) Rank the features according to their importance derived from the estimator.
 
-    2) Remove one feature -the least important- and fit the estimator again 
+    2) Remove one feature -the least important- and fit the estimator again
     utilising the remaining features.
 
     3) Calculate the performance of the estimator.
@@ -34,8 +34,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
     Otherwise, that feature is removed.
 
     5) Repeat steps 2-4 until all features have been evaluated.
-    
-    
+
     Model training and performance calculation are done with cross-validation.
 
     Parameters
@@ -67,7 +66,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    
+
     initial_model_performance_: float
         performance of the model built using the original dataset.
 
