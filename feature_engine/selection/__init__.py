@@ -7,7 +7,7 @@ from .drop_constant_features import DropConstantFeatures
 from .drop_duplicate_features import DropDuplicateFeatures
 from .drop_correlated_features import DropCorrelatedFeatures
 from .shuffle_features import ShuffleFeaturesSelector
-from .feature_selection import FeatureSelection
+from .single_feature_performance_selection import SignleFeaturePerformanceSelection
 
 __all__ = [
     "DropFeatures",
@@ -15,5 +15,5 @@ __all__ = [
     "DropDuplicateFeatures",
     "DropCorrelatedFeatures",
     "ShuffleFeaturesSelector",
-    "FeatureSelection",
+    "SignleFeaturePerformanceSelection",
 ]
