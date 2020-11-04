@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List
+from typing import Optional, List, Dict, Union
 
 import pandas as pd
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
@@ -75,7 +75,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         cv: int = 3,
         scoring: str = "neg_mean_squared_error",
         variables: Optional[List[str]] = None,
-        param_grid: Optional[dict] = None,
+        param_grid: Optional[Dict[str, Union[str, int, float, List[int]]]] = None,
         regression: bool = True,
         random_state: Optional[int] = None,
     ) -> None:

@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional
+from typing import Optional, Dict
 
 import pandas as pd
 
@@ -47,7 +47,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     def __init__(
         self,
-        binning_dict: dict,
+        binning_dict: Dict[str, list],
         return_object: bool = False,
         return_boundaries: bool = False,
     ) -> None:
