@@ -1,7 +1,6 @@
-import numpy as np
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import get_scorer
 from sklearn.model_selection import cross_validate
 from sklearn.utils.validation import check_is_fitted
 
@@ -15,10 +14,10 @@ from feature_engine.variable_manipulation import (
 )
 
 
-class FeatureSelection(BaseEstimator, TransformerMixin):
+class SignleFeaturePerformanceSelection(BaseEstimator, TransformerMixin):
     """
 
-    FeatureSelection train a machine learning model using the cross_validate function from sklearn.
+    SignleFeaturePerformanceSelection train a machine learning model using the cross_validate function from sklearn.
 
     Cross_validate takes any machine learning model available in sklearn as input, 
     any metric available in sklearn as input, 
@@ -113,15 +112,13 @@ class FeatureSelection(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # reset the index
-        X = X.reset_index(drop=True)
-        y = y.reset_index(drop=True)
-
         # find numerical variables or check variables entered by user
         self.variables = _find_numerical_variables(X, self.variables)
 
         # list to collect selected features
         self.selected_features_ = []
+
+        self.feature_importance_ = {}
 
         # train model with all features and cross-validation
         for feature in self.variables:
@@ -130,12 +127,13 @@ class FeatureSelection(BaseEstimator, TransformerMixin):
                 X[feature].to_frame(),
                 y,
                 cv=self.cv,
-                return_estimator=True,
+                return_estimator=False,
                 scoring=self.scoring,
             )
 
             if model["test_score"].mean() > self.threshold:
                 self.selected_features_.append(feature)
+                self.feature_importance_[feature] = model["test_score"].mean()
 
         self.input_shape_ = X.shape
 
@@ -166,9 +164,6 @@ class FeatureSelection(BaseEstimator, TransformerMixin):
 
         # check if input is a dataframe
         X = _is_dataframe(X)
-
-        # reset the index
-        X = X.reset_index(drop=True)
 
         # check if number of columns in test dataset matches to train dataset
         _check_input_matches_training_df(X, self.input_shape_[1])
