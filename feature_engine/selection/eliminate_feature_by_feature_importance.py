@@ -1,11 +1,10 @@
-# WORK IN PROGRESS
-import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_validate
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine.selection.base_selector import get_feature_importances
 from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_input_matches_training_df,
@@ -16,23 +15,27 @@ from feature_engine.variable_manipulation import (
 )
 
 
-def get_feature_importances(estimator):
-    """Retrieve feature importances from a fitted estimator"""
-
-    importances = getattr(estimator, "feature_importances_", None)
-
-    coef_ = getattr(estimator, "coef_", None)
-
-    if importances is None and coef_ is not None:
-
-        importances = np.abs(coef_)
-
-    return list(importances)
-
-
 class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
     """
+    
+    RecursiveFeatureElimination selects features following a recursive process.
+    
+    The process is as follow:
+    
+    1) Rank the features according to their importance derived from the estimator.
 
+    2) Remove one feature -the least important- and fit the estimator again 
+    utilising the remaining features.
+
+    3) Calculate the performance of the estimator.
+
+    4) If the estimator performance drops beyond the indicated threshold, then
+    that feature is important and should be kept.
+    Otherwise, that feature is removed.
+
+    5) Repeat steps 2-4 until all features have been evaluated.
+    
+    
     Model training and performance calculation are done with cross-validation.
 
     Parameters
@@ -64,15 +67,13 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
+    
     initial_model_performance_: float
         performance of the model built using the original dataset.
 
     feature_importances_: pandas series
-        Index contains feature while values represent the feature importances.
+        The index contains feature while values represent the feature importances.
         The series are ordered from least importance to most important feature.
-
-    ordered_features_by_importance_: list
-        Ordered list of the features by importance.
 
     performance_drifts_: dict
         A dictionary containing the feature, performance drift pairs, after
@@ -173,9 +174,8 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         # Store the feature importance series in a attribute
         self.feature_importances_ = feature_importances_agg
 
-        # Extract the ordered feature list by importance and store it in
-        # the attribute self.ordered_features_by_importance_
-        self.ordered_features_by_importance_ = list(feature_importances_agg.index)
+        # Extract the ordered feature list by importance and store it
+        ordered_features_by_importance_ = list(feature_importances_agg.index)
         # list to collect selected features
         self.selected_features_ = []
 
@@ -186,7 +186,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         # dict to collect features and their performance_drift after shuffling
         self.performance_drifts_ = {}
 
-        for feature in self.ordered_features_by_importance_:
+        for feature in ordered_features_by_importance_:
 
             # train model with new feature list
             model_tmp = cross_validate(
@@ -232,13 +232,14 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """
+        Removes non-selected features. That is, features when dropped, did not
+        decrease the machine learning model performance beyond the indicated threshold.
 
         Args
         ----
 
         X: pandas dataframe of shape = [n_samples, n_features].
-            The input dataframe from which feature values will be shuffled.
-
+            The input dataframe from which features will be selected.
 
         Returns
         -------
@@ -257,4 +258,5 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         # check if number of columns in test dataset matches to train dataset
         _check_input_matches_training_df(X, self.input_shape_[1])
 
+        # return the dataframe with the selected features
         return X[self.selected_features_]
