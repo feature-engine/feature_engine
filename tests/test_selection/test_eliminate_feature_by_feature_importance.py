@@ -38,7 +38,7 @@ def load_diabetes_dataset():
     return X, y
 
 
-def test_default_parameters(df_test):
+def test_classification_threshold_parameters(df_test):
     X, y = df_test
     sel = RecursiveFeatureElimination(
         RandomForestClassifier(random_state=1), threshold=0.001)
@@ -65,10 +65,58 @@ def test_default_parameters(df_test):
     assert sel.threshold == 0.001
     assert sel.cv == 3
     assert sel.scoring == "roc_auc"
-    print(sel.initial_model_performance_)
-    print(sel.selected_features_)
     # test fit attrs
     assert np.round(sel.initial_model_performance_, 3) == 0.997
     assert sel.selected_features_ == ['var_0', 'var_6']
+    # test transform output
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_regression_cv_3_and_r2(load_diabetes_dataset):
+    #  test for regression using cv=3, and the r2 as metric.
+    X, y = load_diabetes_dataset
+    sel = RecursiveFeatureElimination(estimator=LinearRegression(), scoring="r2", cv=3)
+    sel.fit(X, y)
+
+    # expected output
+    Xtransformed = pd.DataFrame(X[[1, 3, 5, 2, 8, 4]].copy())
+
+    # test init params
+    assert sel.cv == 3
+    assert sel.variables == list(X.columns)
+    assert sel.scoring == "r2"
+    assert sel.threshold == 0.01
+    # fit params
+    assert np.round(sel.initial_model_performance_, 3) == 0.489
+    assert sel.selected_features_ == [1, 3, 5, 2, 8, 4]
+    # test transform output
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_regression_cv_2_and_mse(load_diabetes_dataset):
+    #  test for regression using cv=2, and the neg_mean_squared_error as metric.
+    # add suitable threshold for regression mse
+
+    X, y = load_diabetes_dataset
+    sel = RecursiveFeatureElimination(
+        estimator=DecisionTreeRegressor(random_state=0),
+        scoring="neg_mean_squared_error",
+        cv=2,
+        threshold=10,
+    )
+    # fit transformer
+    sel.fit(X, y)
+
+    # expected output
+    Xtransformed = pd.DataFrame(X[[0, 6, 9, 3, 7, 5, 8, 2]].copy())
+
+    # test init params
+    assert sel.cv == 2
+    assert sel.variables == list(X.columns)
+    assert sel.scoring == "neg_mean_squared_error"
+    assert sel.threshold == 10
+    # fit params
+    assert np.round(sel.initial_model_performance_, 0) == -5836.0
+    assert sel.selected_features_ == [0, 6, 9, 3, 7, 5, 8, 2]
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
