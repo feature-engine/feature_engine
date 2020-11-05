@@ -120,3 +120,20 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     assert sel.selected_features_ == [0, 6, 9, 3, 7, 5, 8, 2]
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_non_fitted_error(df_test):
+    # when fit is not called prior to transform
+    with pytest.raises(NotFittedError):
+        sel = RecursiveFeatureElimination()
+        sel.transform(df_test)
+
+
+def test_raises_cv_error():
+    with pytest.raises(ValueError):
+        RecursiveFeatureElimination(cv=0)
+
+
+def test_raises_threshold_error():
+    with pytest.raises(ValueError):
+        RecursiveFeatureElimination(threshold=None)
