@@ -11,6 +11,11 @@ def get_feature_importances(estimator):
 
     if importances is None and coef_ is not None:
 
-        importances = np.abs(coef_)
+        if estimator.coef_.ndim == 1:
+            importances = np.abs(coef_)
+
+        else:
+            importances = np.linalg.norm(coef_, axis=0,
+                                         ord=len(estimator.coef_))
 
     return list(importances)
