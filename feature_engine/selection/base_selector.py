@@ -9,7 +9,7 @@ def get_feature_importances(estimator):
 
     coef_ = getattr(estimator, "coef_", None)
 
-    if importances is None and coef_ is not None:
+    if coef_:
 
         if estimator.coef_.ndim == 1:
             importances = np.abs(coef_)
