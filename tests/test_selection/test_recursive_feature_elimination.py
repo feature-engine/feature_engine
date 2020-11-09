@@ -47,6 +47,20 @@ def test_classification_threshold_parameters(df_test):
     # expected result
     Xtransformed = pd.DataFrame(X[['var_0', 'var_6']].copy())
 
+    # expected ordred features by importance
+    ordered_features = ['var_3',
+                        'var_2',
+                        'var_11',
+                        'var_5',
+                        'var_10',
+                        'var_1',
+                        'var_8',
+                        'var_0',
+                        'var_9',
+                        'var_6',
+                        'var_4',
+                        'var_7']
+
     # test init params
     assert sel.variables == [
         "var_0",
@@ -68,6 +82,7 @@ def test_classification_threshold_parameters(df_test):
     # test fit attrs
     assert np.round(sel.initial_model_performance_, 3) == 0.997
     assert sel.selected_features_ == ['var_0', 'var_6']
+    assert list(sel.performance_drifts_.keys()) == ordered_features
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
@@ -81,6 +96,9 @@ def test_regression_cv_3_and_r2(load_diabetes_dataset):
     # expected output
     Xtransformed = pd.DataFrame(X[[1, 3, 5, 2, 8, 4]].copy())
 
+    # expected ordred features by importance
+    ordered_features = [0, 9, 6, 7, 1, 3, 5, 2, 8, 4]
+
     # test init params
     assert sel.cv == 3
     assert sel.variables == list(X.columns)
@@ -89,6 +107,7 @@ def test_regression_cv_3_and_r2(load_diabetes_dataset):
     # fit params
     assert np.round(sel.initial_model_performance_, 3) == 0.489
     assert sel.selected_features_ == [1, 3, 5, 2, 8, 4]
+    assert list(sel.performance_drifts_.keys()) == ordered_features
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
@@ -110,6 +129,9 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     # expected output
     Xtransformed = pd.DataFrame(X[[0, 6, 9, 3, 7, 5, 8, 2]].copy())
 
+    # expected ordred features by importance
+    ordered_features = [1, 0, 4, 6, 9, 3, 7, 5, 8, 2]
+
     # test init params
     assert sel.cv == 2
     assert sel.variables == list(X.columns)
@@ -118,6 +140,7 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     # fit params
     assert np.round(sel.initial_model_performance_, 0) == -5836.0
     assert sel.selected_features_ == [0, 6, 9, 3, 7, 5, 8, 2]
+    assert list(sel.performance_drifts_.keys()) == ordered_features
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
