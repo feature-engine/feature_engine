@@ -133,7 +133,8 @@ class SignleFeaturePerformanceSelection(BaseEstimator, TransformerMixin):
 
             if model["test_score"].mean() > self.threshold:
                 self.selected_features_.append(feature)
-                self.feature_importance_[feature] = model["test_score"].mean()
+        
+             self.feature_importance_[feature] = model["test_score"].mean()
 
         self.input_shape_ = X.shape
 
