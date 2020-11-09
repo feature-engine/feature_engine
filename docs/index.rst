@@ -176,6 +176,7 @@ Feature Selection:
 - :doc:`selection/DropDuplicateFeatures`: drops duplicated variables from a dataframe
 - :doc:`selection/DropCorrelatedFeatures`: drops correlated variables from a dataframe
 - :doc:`selection/ShuffleFeaturesSelector`: selects features by evaluating model performance after feature shuffling
+- :doc:`selection/SignleFeaturePerformanceSelection`: train a machine learning model using the cross_validate function from sklearn
 
 Getting Help
 ------------

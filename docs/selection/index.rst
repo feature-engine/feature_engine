@@ -14,3 +14,4 @@ Or in other words to select subsets of variables.
    DropDuplicateFeatures
    DropCorrelatedFeatures
    ShuffleFeaturesSelector
+   SignleFeaturePerformanceSelection
