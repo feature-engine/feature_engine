@@ -134,7 +134,7 @@ class SignleFeaturePerformanceSelection(BaseEstimator, TransformerMixin):
             if model["test_score"].mean() > self.threshold:
                 self.selected_features_.append(feature)
         
-             self.feature_importance_[feature] = model["test_score"].mean()
+            self.feature_importance_[feature] = model["test_score"].mean()
 
         self.input_shape_ = X.shape
 
@@ -142,14 +142,14 @@ class SignleFeaturePerformanceSelection(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """
-        Removes non-selected features. That is, features which shuffling did not
+        Removes non-selected features. That is, features which  did not
         decrease the machine learning model performance beyond the indicated threshold.
 
         Args
         ----
 
         X: pandas dataframe of shape = [n_samples, n_features].
-            The input dataframe from which feature values will be shuffled.
+            The input dataframe from which feature values will be train.
 
 
         Returns

@@ -43,7 +43,9 @@ def test_default_parameters(df_test):
     sel.fit(X, y)
 
     # expected result
-    Xtransformed = pd.DataFrame(X["var_7"].copy())
+    Xtransformed = X.copy()
+    Xtransformed.drop('var_3', 1, inplace=True)
+    Xtransformed.drop('var_10', 1, inplace=True)
 
     # test init params
     assert sel.variables == [
@@ -64,7 +66,30 @@ def test_default_parameters(df_test):
     assert sel.cv == 3
     assert sel.scoring == "roc_auc"
     # test fit attrs
-    assert sel.selected_features_ == ["var_7"]
+    assert sel.selected_features_ == [
+        "var_0",
+        "var_1",
+        "var_2",
+        "var_4",
+        "var_5",
+        "var_6",
+        "var_7",
+        "var_8",
+        "var_9",
+        "var_11",
+    ]
+    assert sel.feature_importance_ == {'var_0': 0.5957642619540211,
+                                        'var_1': 0.5365534287221033,
+                                        'var_2': 0.5001855546283257,
+                                        'var_3': 0.4752954458526748,
+                                        'var_4': 0.9780875304971691,
+                                        'var_5': 0.5065441419357082,
+                                        'var_6': 0.9758243290622809,
+                                        'var_7': 0.994571685008432,
+                                        'var_8': 0.5164434795458892,
+                                        'var_9': 0.9543427678969847,
+                                        'var_10': 0.47404183834906727,
+                                        'var_11': 0.5227164067525513}
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
@@ -72,11 +97,11 @@ def test_default_parameters(df_test):
 def test_regression_cv_3_and_r2(load_diabetes_dataset):
     #  test for regression using cv=3, and the r2 as metric.
     X, y = load_diabetes_dataset
-    sel = SignleFeaturePerformanceSelection(estimator=LinearRegression(), scoring="r2", cv=3)
+    sel = SignleFeaturePerformanceSelection(estimator=LinearRegression(), scoring="r2", cv=3, threshold=0.01)
     sel.fit(X, y)
 
     # expected output
-    Xtransformed = pd.DataFrame(X[[1, 2, 3, 4, 5, 8]].copy())
+    Xtransformed = pd.DataFrame(X[[0, 2, 3, 4, 5, 6, 7, 8, 9]].copy())
 
     # test init params
     assert sel.cv == 3
@@ -84,7 +109,17 @@ def test_regression_cv_3_and_r2(load_diabetes_dataset):
     assert sel.scoring == "r2"
     assert sel.threshold == 0.01
     # fit params
-    assert sel.selected_features_ == [1, 2, 3, 4, 5, 8]
+    assert sel.selected_features_ == [0, 2, 3, 4, 5, 6, 7, 8, 9]
+    assert sel.feature_importance_ == {0: 0.029231969375784466,
+                                        1: -0.003738551760264386,
+                                        2: 0.336620809987693,
+                                        3: 0.19219056680145052,
+                                        4: 0.037115559827549806,
+                                        5: 0.017854228256932614,
+                                        6: 0.15153886177526887,
+                                        7: 0.17721609966501742,
+                                        8: 0.3149462084418813,
+                                        9: 0.13876602125792703}
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
@@ -104,7 +139,8 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     sel.fit(X, y)
 
     # expected output
-    Xtransformed = pd.DataFrame(X[[2, 8]].copy())
+    Xtransformed = X.copy()
+    Xtransformed.drop(Xtransformed.columns[[0,1,2,3,4,5,6,7,8,9]], axis = 1, inplace=True)
 
     # test init params
     assert sel.cv == 2
@@ -112,9 +148,19 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     assert sel.scoring == "neg_mean_squared_error"
     assert sel.threshold == 10
     # fit params
-
-    assert sel.selected_features_ == [2, 8]
+    assert sel.selected_features_ == []
+    assert sel.feature_importance_ == {0: -7657.154138192973,
+                                        1: -5966.662211695372,
+                                        2: -6613.779604700854,
+                                        3: -6502.621725718592,
+                                        4: -9415.586278197177,
+                                        5: -11760.999622926094,
+                                        6: -6592.584431571728,
+                                        7: -5270.563893676307,
+                                        8: -7641.414795123177,
+                                        9: -6287.557824391035}
     # test transform output
+    print(sel.transform(X))
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
 
