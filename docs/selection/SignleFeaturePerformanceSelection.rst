@@ -16,54 +16,34 @@ The SignleFeaturePerformanceSelection() train a machine learning model using the
     y = pd.DataFrame(diabetes_y)
 
     # initialize feature selector
-    sel = SignleFeaturePerformanceSelection(estimator=LinearRegression(), scoring="r2", cv=3)
+    sel = SignleFeaturePerformanceSelection(estimator=LinearRegression(), scoring="r2", cv=3, threshold=0.01)
 
     # fit transformer
     sel.fit(X, y)
 
+    sel.selected_features_
 
 .. code:: python
 
-    0.488702767247119
+    [0, 2, 3, 4, 5, 6, 7, 8, 9]
 
 ..  code:: python
 
-    tr.performance_drifts_
+    sel.feature_importance_
 
 .. code:: python
 
-    {0: -0.02368121940502793,
-     1: 0.017909161264480666,
-     2: 0.18565460365508413,
-     3: 0.07655405817715671,
-     4: 0.4327180164470878,
-     5: 0.16394693824418372,
-     6: -0.012876023845921625,
-     7: 0.01048781540981647,
-     8: 0.3921465005640224,
-     9: -0.01427065640301245}
+    {0: 0.029231969375784466,
+    1: -0.003738551760264386,
+    2: 0.336620809987693,
+    3: 0.19219056680145055,
+    4: 0.037115559827549806,
+    5: 0.017854228256932614,
+    6: 0.15153886177526896,
+    7: 0.17721609966501747,
+    8: 0.3149462084418813,
+    9: 0.13876602125792703}
 
-.. code:: python
-
-    tr.selected_features_
-
-.. code:: python
-
-    [1, 2, 3, 4, 5, 7, 8]
-
-.. code:: python
-
-    print(print(Xt.head()))
-
-.. code:: python
-
-              1         2         3         4         5         7         8
-    0  0.050680  0.061696  0.021872 -0.044223 -0.034821 -0.002592  0.019908
-    1 -0.044642 -0.051474 -0.026328 -0.008449 -0.019163 -0.039493 -0.068330
-    2  0.050680  0.044451 -0.005671 -0.045599 -0.034194 -0.002592  0.002864
-    3 -0.044642 -0.011595 -0.036656  0.012191  0.024991  0.034309  0.022692
-    4 -0.044642 -0.036385  0.021872  0.003935  0.015596 -0.002592 -0.031991
-    None
 
 API Reference
 -------------
