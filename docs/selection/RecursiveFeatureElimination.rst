@@ -1,6 +1,5 @@
 RecursiveFeatureElimination
-===========================
-
+============================
 
 RecursiveFeatureElimination() selects features following a recursive process:
 
