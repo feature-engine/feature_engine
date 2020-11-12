@@ -60,7 +60,7 @@ more details into its functionality.
 
 .. code:: python
 
-    print(print(Xt.head()))
+    print(Xt.head())
 
 .. code:: python
 
