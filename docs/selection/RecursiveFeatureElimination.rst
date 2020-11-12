@@ -37,6 +37,7 @@ RecursiveFeatureElimination() selects features following a recursive process:
     # fit transformer
     Xt = tr.fit_transform(X, y)
 
+    # get the initial linear model performance, using all features
     tr.initial_model_performance_
     
 .. code:: python
@@ -45,6 +46,7 @@ RecursiveFeatureElimination() selects features following a recursive process:
 
 ..  code:: python
 
+    # Get the performance drift of each feature
     tr.performance_drifts_
     
 ..  code:: python
@@ -62,6 +64,7 @@ RecursiveFeatureElimination() selects features following a recursive process:
      
 ..  code:: python
 
+    # get the selected features
     tr.selected_features_
 
 ..  code:: python
