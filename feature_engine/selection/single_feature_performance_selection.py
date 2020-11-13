@@ -137,7 +137,7 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
 
             if model["test_score"].mean() > self.threshold:
                 self.selected_features_.append(feature)
-        
+
             self.feature_performance_[feature] = model["test_score"].mean()
 
         self.input_shape_ = X.shape
