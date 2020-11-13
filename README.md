@@ -99,6 +99,7 @@ More resources will be added as they appear online!
  * DropDuplicateFeatures
  * DropCorrelatedFeatures
  * ShuffleFeaturesSelector
+ * RecursiveFeatureElimination
 
 
 ## Installing
