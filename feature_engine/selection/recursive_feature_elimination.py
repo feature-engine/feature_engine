@@ -22,18 +22,22 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
     The process is as follow:
 
-    1) Rank the features according to their importance derived from the estimator.
+    1. Train an estimator using all the features.
 
-    2) Remove one feature -the least important- and fit the estimator again
-    utilising the remaining features.
+    2. Rank the features according to their importance derived from the estimator.
 
-    3) Calculate the performance of the estimator.
+    3. Remove one feature -the least important- and fit a new estimator utilising the
+    remaining features.
 
-    4) If the estimator performance drops beyond the indicated threshold, then
-    that feature is important and should be kept.
-    Otherwise, that feature is removed.
+    4. Calculate the performance of the estimator.
 
-    5) Repeat steps 2-4 until all features have been evaluated.
+    5. Calculate the difference in performance between the new and the original
+    estimator.
+
+    6. If the performance drops beyond the indicated threshold, then that feature is
+    important and will be kept. Otherwise, that feature is removed.
+
+    7. Repeat steps 3-6 until all features have been evaluated.
 
     Model training and performance calculation are done with cross-validation.
 
@@ -41,16 +45,16 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
     ----------
 
     variables : str or list, default=None
-        The list of variable(s) to be shuffled from the dataframe.
-        If None, the transformer will shuffle all numerical variables in the dataset.
+        The list of variable to be evaluated. If None, the transformer will evaluate
+        all numerical features in the dataset.
 
     estimator: object, default = RandomForestClassifier()
         A Scikit-learn estimator for regression or classification.
-        The estimator must have either a feature_importances_ or coef_ attribute
+        The estimator must have either a feature_importances or coef attribute
         after fitting.
 
     scoring: str, default='roc_auc'
-        Desired metric to optimise the performance for the estimator. Comes from
+        Desired metric to optimise the performance of the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
@@ -59,24 +63,26 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
         root_mean_square_error the threshold will be a big number.
-        The threshold must be defined by the user.
+        The threshold must be defined by the user. Bigger thresholds will retain less
+        features.
 
     cv : int, default=3
-        Desired number of cross-validation fold to be used to fit the estimator.
+        Cross-validation fold to be used to fit the estimator.
 
     Attributes
     ----------
 
     initial_model_performance_: float
-        performance of the model built using the original dataset.
+        performance of the model built using the original dataset with all the features.
 
     feature_importances_: pandas series
-        The index contains feature while values represent the feature importances.
-        The series are ordered from least importance to most important feature.
+        A pandas Series containing the feature names in the axis, and the performance
+        derived from the model trained on the entire dataset, as values. The Series is
+        ordered from least important to most important feature.
 
     performance_drifts_: dict
-        A dictionary containing the feature, performance drift pairs, after
-        the recursive feature elimination.
+        A dictionary containing the feature, and the change in performance incurred
+        when training a model without that feature.
 
 
     Methods
@@ -96,7 +102,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         scoring="roc_auc",
         cv=3,
         threshold=0.01,
-        variables=None
+        variables=None,
     ):
 
         if not isinstance(cv, int) or cv < 1:
@@ -139,11 +145,11 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         # train model with all features and cross-validation
         model = cross_validate(
             self.estimator,
-            X,
+            X[self.variables],
             y,
             cv=self.cv,
             scoring=self.scoring,
-            return_estimator=True
+            return_estimator=True,
         )
 
         # store initial model performance
@@ -161,43 +167,42 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
             feature_importances_cv[m] = get_feature_importances(m)
 
-        # Add the X variables as index to feature_importances_cv
+        # Add the variables as index to feature_importances_cv
         feature_importances_cv.index = self.variables
 
-        # Aggregated the feature importance returned in each fold by applying mean
-        feature_importances_agg = feature_importances_cv.mean(axis=1)
+        # Aggregate the feature importance returned in each fold
+        self.feature_importances_ = feature_importances_cv.mean(axis=1)
 
         # Sort the feature importance values
-        feature_importances_agg.sort_values(ascending=True, inplace=True)
+        self.feature_importances_.sort_values(ascending=True, inplace=True)
 
-        # Store the feature importance series in a attribute
-        self.feature_importances_ = feature_importances_agg
-
-        # Extract the ordered feature list by importance and store it
-        ordered_features_by_importance_ = list(feature_importances_agg.index)
         # list to collect selected features
         self.selected_features_ = []
 
-        X_tmp = X.copy()
+        # temporary copy where we will remove features recursively
+        X_tmp = X[self.variables].copy()
 
+        # we need to update the performance as we remove features
         baseline_model_performance = self.initial_model_performance_
 
         # dict to collect features and their performance_drift after shuffling
         self.performance_drifts_ = {}
 
-        for feature in ordered_features_by_importance_:
+        # evaluate every feature, starting from the least important
+        # remember that feature_importances_ is ordered already
+        for feature in list(self.feature_importances_.index):
 
-            # train model with new feature list
+            # remove feature and train new model
             model_tmp = cross_validate(
                 self.estimator,
                 X_tmp.drop(columns=feature),
                 y,
                 cv=self.cv,
                 scoring=self.scoring,
-                return_estimator=True
+                return_estimator=False,
             )
 
-            # store new model performance
+            # assign new model performance
             model_tmp_performance = model_tmp["test_score"].mean()
 
             # Calculate performance drift
@@ -211,15 +216,16 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
                 self.selected_features_.append(feature)
 
             else:
-
+                # remove feature and adjust initial performance
                 X_tmp = X_tmp.drop(columns=feature)
+
                 baseline_model = cross_validate(
                     self.estimator,
                     X_tmp,
                     y,
                     cv=self.cv,
-                    return_estimator=True,
-                    scoring=self.scoring
+                    return_estimator=False,
+                    scoring=self.scoring,
                 )
 
                 # store initial model performance
@@ -231,8 +237,8 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """
-        Removes non-selected features. That is, features when dropped, did not
-        decrease the machine learning model performance beyond the indicated threshold.
+        Removes non-selected features. That is, features which did not cause a big
+        estimator performance drop when removed from the dataset.
 
         Args
         ----
@@ -244,7 +250,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         -------
 
         X_transformed: pandas dataframe
-            of shape = [n_samples, n_features - len(dropped features)]
+            of shape = [n_samples, n_selected_features]
             Pandas dataframe with the selected features.
         """
 

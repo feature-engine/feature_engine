@@ -1,21 +1,11 @@
 RecursiveFeatureElimination
 ============================
 
-RecursiveFeatureElimination() selects features following a recursive process:
+RecursiveFeatureElimination() selects features recursively by examining the drop in the
+estimator performance when the feature is removed. It starts removing the least
+important feature, and evaluates all numerical features in the dataset, until it
+reaches the last and most important one. More details in the API below.
 
-    1) Rank the features according to their importance derived from the estimator.
-
-    2) Remove one feature -the least important- and fit the estimator again
-    utilising the remaining features.
-
-    3) Calculate the performance of the estimator.
-
-    4) If the estimator performance drops beyond the indicated threshold, then
-    that feature is important and should be kept.
-    Otherwise, that feature is removed.
-
-    5) Repeat steps 2-4 until all features have been evaluated.
-    
 .. code:: python
 
     import pandas as pd

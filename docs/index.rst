@@ -176,7 +176,7 @@ Feature Selection:
 - :doc:`selection/DropDuplicateFeatures`: drops duplicated variables from a dataframe
 - :doc:`selection/DropCorrelatedFeatures`: drops correlated variables from a dataframe
 - :doc:`selection/ShuffleFeaturesSelector`: selects features by evaluating model performance after feature shuffling
-- :doc:`selection/RecursiveFeatureElimination`: selects features by evaluating model performance after recursively removing the least important feature until the total number of features is reached
+- :doc:`selection/RecursiveFeatureElimination`: selects features recursively, by evaluating model performance
 
 
 Getting Help
