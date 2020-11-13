@@ -1,4 +1,3 @@
-
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_validate
@@ -14,22 +13,26 @@ from feature_engine.variable_manipulation import (
 )
 
 
-class SignleFeaturePerformanceSelection(BaseEstimator, TransformerMixin):
+class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
     """
 
-    SignleFeaturePerformanceSelection train a machine learning model using the cross_validate function from sklearn.
+    SelectBySingleFeaturePerformance selects features based on the performance obtained
+    from a machine learning model trained utilising a single feature. In other words,
+    it trains a machine learning model for every single feature, utilising that
+    individual feature, then determines each model performance. If the performance of
+    the model based on the single feature is greater than a user specified threshold,
+    then the feature is retained, otherwise removed.
 
-    Cross_validate takes any machine learning model available in sklearn as input, 
-    any metric available in sklearn as input, 
-    a cross validation fold and it returns trained machine lerning model if return_estimator=True. 
-    and the model performance.
+    The models trained on the individual features are trained using cross-validation.
+    The performance metric to evaluate and the machine learning model to train are
+    specified by the user.
 
     Parameters
     ----------
 
     variables : str or list, default=None
-        The list of variable(s) to be shuffled from the dataframe.
-        If None, the transformer will shuffle all numerical variables in the dataset.
+        The list of variable(s) to be evaluated.
+        If None, the transformer will evaluate all numerical variables in the dataset.
 
     estimator: object, default = RandomForestClassifier()
         A Scikit-learn estimator for regression or classification.
@@ -39,7 +42,7 @@ class SignleFeaturePerformanceSelection(BaseEstimator, TransformerMixin):
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold: float, int, default = 0.01
+    threshold: float, int, default = 0.5
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
@@ -52,11 +55,12 @@ class SignleFeaturePerformanceSelection(BaseEstimator, TransformerMixin):
     Attributes
     ----------
 
-    initial_model_performance_: float,
-        performance of the model built using the original dataset.
-
     selected_features_: list
         The selected features.
+
+    feature_performance_: dict
+        A dictionary containing the feature name as key and the performance of the
+        model trained on each feature as value.
 
     Methods
     -------
@@ -118,9 +122,9 @@ class SignleFeaturePerformanceSelection(BaseEstimator, TransformerMixin):
         # list to collect selected features
         self.selected_features_ = []
 
-        self.feature_importance_ = {}
+        self.feature_performance_ = {}
 
-        # train model with all features and cross-validation
+        # train a model for every feature
         for feature in self.variables:
             model = cross_validate(
                 self.estimator,
@@ -133,17 +137,16 @@ class SignleFeaturePerformanceSelection(BaseEstimator, TransformerMixin):
 
             if model["test_score"].mean() > self.threshold:
                 self.selected_features_.append(feature)
-        
-            self.feature_importance_[feature] = model["test_score"].mean()
+
+            self.feature_performance_[feature] = model["test_score"].mean()
 
         self.input_shape_ = X.shape
 
         return self
 
     def transform(self, X):
-        """
-        Removes non-selected features. That is, features which  did not
-        decrease the machine learning model performance beyond the indicated threshold.
+        """        
+        Removes non-selected features.
 
         Args
         ----
@@ -155,8 +158,7 @@ class SignleFeaturePerformanceSelection(BaseEstimator, TransformerMixin):
         Returns
         -------
 
-        X_transformed: pandas dataframe
-            of shape = [n_samples, n_features - len(dropped features)]
+        X_transformed: pandas dataframe of shape = [n_samples, selected_features]
             Pandas dataframe with the selected features.
         """
 
