@@ -47,6 +47,7 @@ def test_default_parameters(df_test):
     Xtransformed.drop("var_3", 1, inplace=True)
     Xtransformed.drop("var_10", 1, inplace=True)
 
+
     # test init params
     assert sel.variables == [
         "var_0",
@@ -94,6 +95,7 @@ def test_default_parameters(df_test):
         "var_11": 0.5227164067525513,
     }
 
+
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
@@ -105,6 +107,7 @@ def test_regression_cv_3_and_r2(load_diabetes_dataset):
     sel = SelectBySingleFeaturePerformance(
         estimator=LinearRegression(), scoring="r2", cv=3, threshold=0.01
     )
+
     sel.fit(X, y)
 
     # expected output
@@ -122,6 +125,7 @@ def test_regression_cv_3_and_r2(load_diabetes_dataset):
         8: 0.315,
         9: 0.139,
     }
+
 
     # test init params
     assert sel.cv == 3
@@ -202,4 +206,3 @@ def test_raises_cv_error():
 def test_raises_threshold_error():
     with pytest.raises(ValueError):
         SelectBySingleFeaturePerformance(threshold=None)
-
