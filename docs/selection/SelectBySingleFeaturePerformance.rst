@@ -1,14 +1,17 @@
-SignleFeaturePerformanceSelection
-=======================
+SelectBySingleFeaturePerformance
+================================
 
-The SignleFeaturePerformanceSelection() train a machine learning model using the cross_validate function from sklearn.
+The SelectBySingleFeaturePerformance()selects features based on the performance of
+machine learning models trained using individual features. In other words, selects
+features based on their individual performance, returned by estimators trained on
+only that particular feature.
 
 .. code:: python
 
     import pandas as pd
     from sklearn.datasets import load_diabetes
     from sklearn.linear_model import LinearRegression
-    from feature_engine.selection import SignleFeaturePerformanceSelection
+    from feature_engine.selection import SelectBySingleFeaturePerformance
 
     # load dataset
     diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
@@ -16,7 +19,8 @@ The SignleFeaturePerformanceSelection() train a machine learning model using the
     y = pd.DataFrame(diabetes_y)
 
     # initialize feature selector
-    sel = SignleFeaturePerformanceSelection(estimator=LinearRegression(), scoring="r2", cv=3, threshold=0.01)
+    sel = SelectBySingleFeaturePerformance(
+            estimator=LinearRegression(), scoring="r2", cv=3, threshold=0.01)
 
     # fit transformer
     sel.fit(X, y)
@@ -48,5 +52,5 @@ The SignleFeaturePerformanceSelection() train a machine learning model using the
 API Reference
 -------------
 
-.. autoclass:: feature_engine.selection.SignleFeaturePerformanceSelection
+.. autoclass:: feature_engine.selection.SelectBySingleFeaturePerformance
     :members:
