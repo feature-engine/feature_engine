@@ -43,6 +43,7 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
     threshold: float, int, default = 0.5
+
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
@@ -146,6 +147,7 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """
+        
         Removes non-selected features.
 
         Args
