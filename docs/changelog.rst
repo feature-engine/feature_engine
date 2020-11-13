@@ -52,7 +52,7 @@ We renamed a few parameters to unify the nomenclature across the Package.
     - **DropDuplicateFeatures**: DropDuplicateFeatures finds and removes duplicated features from a dataset (**by Tejash Shah and Soledad Galli**)
     - **DropCorrelatedFeatures**: DropCorrelatedFeatures finds and removes features that are correlated (**by Nicolas Galli**)
     - **ShuffleFeaturesSelector**: ShuffleFeaturesSelector selects features by determining the drop in machine learning model performance when each feature's values are randomly shuffled from a dataframe (**by Sana Ben Driss**)
-    - **RecursiveFeatureElimination**: RecursiveFeatureElimination selects features by determining the drop in machine learning model performance by recursively removing features starting from the least important ones (**by Sana Ben Driss**)
+    - **RecursiveFeatureElimination**: RecursiveFeatureElimination selects features recursively, evaluating the drop in ML performance, from the least to the important feature (**by Sana Ben Driss**)
 
 **Code Architecture - Important for Contributors and Developers**:
     - **Submodules**: transformers have been grouped within relevant submodules and modules.
