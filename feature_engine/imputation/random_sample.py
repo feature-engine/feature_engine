@@ -15,7 +15,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 def _define_seed(
     X: pd.DataFrame,
     index: int,
-    seed_variables: Union[str, List[str]],
+    seed_variables: Union[str, int, List[Union[str, int]]],
     how: str = "add",
 ) -> int:
     # determine seed by adding or multiplying the value of 1 or
@@ -96,8 +96,8 @@ class RandomSampleImputer(BaseImputer):
 
     def __init__(
         self,
-        variables: Optional[List[str]] = None,
-        random_state: Optional[Union[int, str, List[str]]] = None,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        random_state: Union[None, int, str, List[Union[str, int]]] = None,
         seed: str = "general",
         seeding_method: str = "add",
     ) -> None:
@@ -111,7 +111,7 @@ class RandomSampleImputer(BaseImputer):
         if seed == "general" and random_state:
             if not isinstance(random_state, int):
                 raise ValueError(
-                    "if seed == 'general' the random state must take an integer"
+                    "if seed == 'general' then random_state must take an integer"
                 )
 
         if seed == "observation" and not random_state:
@@ -165,7 +165,9 @@ class RandomSampleImputer(BaseImputer):
             self.random_state = _check_input_parameter_variables(self.random_state)
             if isinstance(self.random_state, (int, str)):
                 self.random_state = [self.random_state]
-            if any(var for var in self.random_state if var not in X.columns):
+            if self.random_state and any(
+                var for var in self.random_state if var not in X.columns
+            ):
                 raise ValueError(
                     "There are variables assigned as random state which are not part "
                     "of the training dataframe."
@@ -214,7 +216,7 @@ class RandomSampleImputer(BaseImputer):
                     X.loc[X[feature].isnull(), feature] = random_sample
 
         # random sampling observation per observation
-        elif self.seed == "observation":
+        elif self.seed == "observation" and self.random_state:
             for feature in self.variables:
                 if X[feature].isnull().sum() > 0:
 
