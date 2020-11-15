@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class PowerTransformer(BaseNumericalTransformer):
@@ -40,7 +40,7 @@ class PowerTransformer(BaseNumericalTransformer):
             raise ValueError("exp must be a float or an int")
 
         self.exp = exp
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

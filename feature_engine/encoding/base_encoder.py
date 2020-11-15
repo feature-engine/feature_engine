@@ -9,7 +9,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_input_matches_training_df,
 )
-from feature_engine.variable_manipulation import _find_categorical_variables
+from feature_engine.variable_manipulation import _find_or_check_categorical_variables
 
 
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
@@ -19,7 +19,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # find categorical variables or check variables entered by user are object
-        self.variables = _find_categorical_variables(X, self.variables)
+        self.variables = _find_or_check_categorical_variables(X, self.variables)
 
         # check if dataset contains na
         _check_contains_na(X, self.variables)

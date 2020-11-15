@@ -8,7 +8,7 @@ import numpy as np
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 # for RandomSampleImputer
@@ -120,7 +120,7 @@ class RandomSampleImputer(BaseImputer):
                 "or more variables which will be used to seed the imputer"
             )
 
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.random_state = random_state
         self.seed = seed
         self.seeding_method = seeding_method
@@ -162,7 +162,9 @@ class RandomSampleImputer(BaseImputer):
 
         # check the variables assigned to the random state
         if self.seed == "observation":
-            self.random_state = _define_variables(self.random_state)
+            self.random_state = _check_input_parameter_variables(self.random_state)
+            if isinstance(self.random_state, (int, str)):
+                self.random_state = [self.random_state]
             if any(var for var in self.random_state if var not in X.columns):
                 raise ValueError(
                     "There are variables assigned as random state which are not part "

@@ -12,9 +12,9 @@ from feature_engine.dataframe_checks import (
 )
 
 from feature_engine.variable_manipulation import (
-    _define_variables,
+    _check_input_parameter_variables,
     _find_all_variables,
-    _find_numerical_variables,
+    _find_or_check_numerical_variables,
 )
 
 
@@ -39,7 +39,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, variables: List[str] = None, transformer=None) -> None:
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.transformer = transformer
 
         if isinstance(self.transformer, OneHotEncoder) and self.transformer.sparse:
@@ -81,7 +81,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             self.variables = _find_all_variables(X, self.variables)
 
         else:
-            self.variables = _find_numerical_variables(X, self.variables)
+            self.variables = _find_or_check_numerical_variables(X, self.variables)
 
         self.transformer.fit(X[self.variables])
 

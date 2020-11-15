@@ -9,7 +9,7 @@ from sklearn.pipeline import Pipeline
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 from feature_engine.encoding.ordinal import OrdinalEncoder
 from feature_engine.discretisation import DecisionTreeDiscretiser
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class DecisionTreeEncoder(BaseCategoricalTransformer):
@@ -96,7 +96,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         self.regression = regression
         self.param_grid = param_grid
         self.random_state = random_state
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

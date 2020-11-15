@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class RareLabelEncoder(BaseCategoricalTransformer):
@@ -85,7 +85,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         self.tol = tol
         self.n_categories = n_categories
         self.max_n_categories = max_n_categories
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.replace_with = replace_with
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):

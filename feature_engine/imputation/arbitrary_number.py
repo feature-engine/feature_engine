@@ -9,8 +9,8 @@ from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.parameter_checks import _define_numerical_dict
 from feature_engine.variable_manipulation import (
-    _define_variables,
-    _find_numerical_variables,
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
 )
 
 
@@ -48,7 +48,7 @@ class ArbitraryNumberImputer(BaseImputer):
         else:
             raise ValueError("arbitrary_number must be numeric of type int or float")
 
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
 
         self.imputer_dict = _define_numerical_dict(imputer_dict)
 
@@ -78,9 +78,11 @@ class ArbitraryNumberImputer(BaseImputer):
 
         # find or check for numerical variables
         if self.imputer_dict:
-            self.variables = _find_numerical_variables(X, self.imputer_dict.keys())
+            self.variables = _find_or_check_numerical_variables(
+                X, self.imputer_dict.keys()
+            )
         else:
-            self.variables = _find_numerical_variables(X, self.variables)
+            self.variables = _find_or_check_numerical_variables(X, self.variables)
 
         # create the imputer dictionary
         if self.imputer_dict:

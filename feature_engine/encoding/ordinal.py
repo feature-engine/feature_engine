@@ -6,7 +6,7 @@ from typing import Optional, List
 import pandas as pd
 
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class OrdinalEncoder(BaseCategoricalTransformer):
@@ -63,7 +63,7 @@ class OrdinalEncoder(BaseCategoricalTransformer):
             )
 
         self.encoding_method = encoding_method
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Learns the numbers to be used to replace the categories in each

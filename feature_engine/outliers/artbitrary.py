@@ -8,7 +8,7 @@ import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe, _check_contains_na
 from feature_engine.outliers.base_outlier import BaseOutlier
-from feature_engine.variable_manipulation import _find_numerical_variables
+from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
 class ArbitraryOutlierCapper(BaseOutlier):
@@ -102,7 +102,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
             _check_contains_na(X, self.variables)
 
         # find or check for numerical variables
-        self.variables = _find_numerical_variables(X, self.variables)
+        self.variables = _find_or_check_numerical_variables(X, self.variables)
 
         if self.max_capping_dict is not None:
             self.right_tail_caps_ = self.max_capping_dict

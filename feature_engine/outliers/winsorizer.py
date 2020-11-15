@@ -8,8 +8,8 @@ import pandas as pd
 from feature_engine.dataframe_checks import _is_dataframe, _check_contains_na
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.variable_manipulation import (
-    _define_variables,
-    _find_numerical_variables,
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
 )
 
 
@@ -135,7 +135,7 @@ class Winsorizer(BaseOutlier):
         self.capping_method = capping_method
         self.tail = tail
         self.fold = fold
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -167,7 +167,7 @@ class Winsorizer(BaseOutlier):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables = _find_numerical_variables(X, self.variables)
+        self.variables = _find_or_check_numerical_variables(X, self.variables)
 
         if self.missing_values == "raise":
             # check if dataset contains na

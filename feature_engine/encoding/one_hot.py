@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class OneHotEncoder(BaseCategoricalTransformer):
@@ -77,7 +77,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         self.top_categories = top_categories
         self.drop_last = drop_last
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

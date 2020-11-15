@@ -8,8 +8,8 @@ import pandas as pd
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
-    _find_categorical_variables,
-    _define_variables,
+    _find_or_check_categorical_variables,
+    _check_input_parameter_variables,
 )
 
 
@@ -66,7 +66,7 @@ class CategoricalImputer(BaseImputer):
 
         self.imputation_method = imputation_method
         self.fill_value = fill_value
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.return_object = return_object
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -95,7 +95,7 @@ class CategoricalImputer(BaseImputer):
         X = _is_dataframe(X)
 
         # find or check for categorical variables
-        self.variables = _find_categorical_variables(X, self.variables)
+        self.variables = _find_or_check_categorical_variables(X, self.variables)
 
         if self.imputation_method == "missing":
             self.imputer_dict_ = {var: self.fill_value for var in self.variables}

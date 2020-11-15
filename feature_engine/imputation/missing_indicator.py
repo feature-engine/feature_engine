@@ -8,7 +8,7 @@ import numpy as np
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class AddMissingIndicator(BaseImputer):
@@ -51,7 +51,7 @@ class AddMissingIndicator(BaseImputer):
         if not isinstance(missing_only, bool):
             raise ValueError("missing_only takes values True or False")
 
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.missing_only = missing_only
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):

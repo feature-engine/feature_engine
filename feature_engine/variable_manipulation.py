@@ -7,56 +7,56 @@ from typing import List, Optional, Union
 import pandas as pd
 
 
-def _define_variables(
-    variables: Union[str, Optional[List[str]]]
-) -> Optional[List[str]]:
+def _check_input_parameter_variables(
+        variables: Union[None, int, str, List[str], List[int]]
+) -> Union[None, int, str, List[str], List[int]]:
     """
-    Takes string or list of strings and checks if argument is list of strings.
-    Can take None as argument.
+    Checks that the input is of the correct type
 
     Args:
-        variables: string or list of strings
+        variables: string, int, list of strings, list of integers. Default=None
 
     Returns:
-        List of strings
+        Returns the same input
     """
-
-    if not variables or (
-        isinstance(variables, list) and all(isinstance(i, str) for i in variables)
-    ):
-        variables = variables
-
-    else:
-        if isinstance(variables, str):
-            variables = [variables]
-
+    if variables:
+        if isinstance(variables, list):
+            if not all(isinstance(i, (str, int)) for i in variables):
+                raise ValueError(
+                    "Variables should be string, int, list of strings, list of integers"
+                )
         else:
-            raise ValueError("Variables should be string or list of strings")
+            if not isinstance(variables, (str, int)):
+                raise ValueError(
+                    "Variables should be string, int, list of strings, list of integers"
+                )
 
     return variables
 
 
-def _find_numerical_variables(
-    X: pd.DataFrame, variables: Optional[List[str]] = None
-) -> List[str]:
+def _find_or_check_numerical_variables(
+        X: pd.DataFrame, variables: Union[None, int, str, List[Union[str, int]]] = None
+) -> List[Union[str, int]]:
     """
-    Takes Pandas DataFrame and checks if user provided variables
-    are numerical type. If no variables are provided by the user,
-    it captures all the numerical variables presented in DataFrame.
+    Checks that variables provided by the user are of type numerical. If None was
+    entered, finds all the numerical variables in the DataFrame.
 
     Args:
-        X: DataFrame to perform the check against
-        variables: List of variables. Defaults to None.
+        X: DataFrame
+        variables: variable or list of variables. Defaults to None.
 
     Raises:
         ValueError: If all variables are non-numerical type or DataFrame is empty
-        TypeError: If user provided variables are non-numerical
+        TypeError: If any user provided variables are non-numerical
 
     Returns:
         List of variables
     """
+    if isinstance(variables, (str, int)):
+        variables = [variables]
 
     if not variables:
+        # find numerical variables in dataset
         variables = list(X.select_dtypes(include="number").columns)
         if len(variables) == 0:
             raise ValueError(
@@ -65,6 +65,7 @@ def _find_numerical_variables(
             )
 
     else:
+        # check that user entered variables are of type numerical
         if any(X[variables].select_dtypes(exclude="number").columns):
             raise TypeError(
                 "Some of the variables are not numerical. Please cast them as "
@@ -74,16 +75,16 @@ def _find_numerical_variables(
     return variables
 
 
-def _find_categorical_variables(
-    X: pd.DataFrame, variables: Optional[List[str]] = None
-) -> List[str]:
+def _find_or_check_categorical_variables(
+        X: pd.DataFrame, variables: Union[None, int, str, List[Union[str, int]]] = None
+) -> List[Union[str, int]]:
     """
-    Takes Pandas DataFrame and finds all categorical variables if not provided.
-    If variables are provided, checks if they are indeed categorical.
+    Checks that variables provided by the user are of type object. If None was
+    entered, finds all the categorical (object type) variables in the DataFrame.
 
     Args:
-        X: DataFrame to perform the check against
-        variables: List of variables. Defaults to None.
+        X: DataFrame
+        variables: variable or list of variables. Defaults to None.
 
     Raises:
         ValueError: If all variables are non-categorical type or DataFrame is empty
@@ -92,6 +93,8 @@ def _find_categorical_variables(
     Returns:
         List of variables
     """
+    if isinstance(variables, (str, int)):
+        variables = [variables]
 
     if not variables:
         variables = list(X.select_dtypes(include="O").columns)
@@ -112,7 +115,7 @@ def _find_categorical_variables(
 
 
 def _find_all_variables(
-    X: pd.DataFrame, variables: Optional[List[str]] = None
+        X: pd.DataFrame, variables: Optional[List[str]] = None
 ) -> List[str]:
     """
     If variables are None, captures all variables in the dataframe in a list.

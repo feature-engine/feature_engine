@@ -8,8 +8,8 @@ import pandas as pd
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
-    _define_variables,
-    _find_numerical_variables,
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
 )
 
 
@@ -48,7 +48,7 @@ class MeanMedianImputer(BaseImputer):
             raise ValueError("imputation_method takes only values 'median' or 'mean'")
 
         self.imputation_method = imputation_method
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -75,7 +75,7 @@ class MeanMedianImputer(BaseImputer):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables = _find_numerical_variables(X, self.variables)
+        self.variables = _find_or_check_numerical_variables(X, self.variables)
 
         # find imputation parameters: mean or median
         if self.imputation_method == "mean":

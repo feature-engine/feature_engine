@@ -4,7 +4,7 @@
 from typing import Optional, List
 
 import pandas as pd
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 from feature_engine.base_transformers import BaseNumericalTransformer
 
 
@@ -66,7 +66,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
             raise ValueError("return_boundaries must be True or False")
 
         self.bins = bins
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.return_object = return_object
         self.return_boundaries = return_boundaries
 

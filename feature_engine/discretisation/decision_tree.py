@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
 
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 from feature_engine.base_transformers import BaseNumericalTransformer
 
 
@@ -92,7 +92,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.cv = cv
         self.scoring = scoring
         self.regression = regression
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.param_grid = param_grid
         self.random_state = random_state
 
