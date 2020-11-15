@@ -17,6 +17,7 @@ def df_vartypes():
 
     return df
 
+
 @pytest.fixture(scope="module")
 def df_numeric_columns():
     data = {
