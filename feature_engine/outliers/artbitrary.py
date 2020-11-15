@@ -8,6 +8,7 @@ import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe, _check_contains_na
 from feature_engine.outliers.base_outlier import BaseOutlier
+from feature_engine.parameter_checks import _define_numerical_dict
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
@@ -45,32 +46,14 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
         if not max_capping_dict and not min_capping_dict:
             raise ValueError(
-                "Please provide at least 1 dictionary with the capping values per "
-                "variable."
+                "Please provide at least 1 dictionary with the capping values."
             )
-
-        if max_capping_dict is None or isinstance(max_capping_dict, dict):
-            self.max_capping_dict = max_capping_dict
-        else:
-            raise ValueError("max_capping_dict should be a dictionary")
-
-        if min_capping_dict is None or isinstance(min_capping_dict, dict):
-            self.min_capping_dict = min_capping_dict
-        else:
-            raise ValueError("min_capping_dict should be a dictionary")
-
-        if min_capping_dict is None:
-            self.variables = [x for x in max_capping_dict.keys()]
-        elif max_capping_dict is None:
-            self.variables = [x for x in min_capping_dict.keys()]
-        else:
-            tmp = min_capping_dict.copy()
-            tmp.update(max_capping_dict)
-            self.variables = [x for x in tmp.keys()]
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'")
 
+        self.max_capping_dict = _define_numerical_dict(max_capping_dict)
+        self.min_capping_dict = _define_numerical_dict(min_capping_dict)
         self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -96,6 +79,16 @@ class ArbitraryOutlierCapper(BaseOutlier):
             will be capped.
         """
         X = _is_dataframe(X)
+
+        # find variables to be capped
+        if self.min_capping_dict is None and self.max_capping_dict:
+            self.variables = [x for x in self.max_capping_dict.keys()]
+        elif self.max_capping_dict is None and self.min_capping_dict:
+            self.variables = [x for x in self.min_capping_dict.keys()]
+        elif self.min_capping_dict and self.max_capping_dict:
+            tmp = self.min_capping_dict.copy()
+            tmp.update(self.max_capping_dict)
+            self.variables = [x for x in tmp.keys()]
 
         if self.missing_values == "raise":
             # check if dataset contains na
