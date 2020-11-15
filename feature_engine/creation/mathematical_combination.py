@@ -87,15 +87,15 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-            self,
-            variables_to_combine: List[Union[str, int]],
-            math_operations: Optional[List[str]] = None,
-            new_variables_names: Optional[List[str]] = None,
+        self,
+        variables_to_combine: List[Union[str, int]],
+        math_operations: Optional[List[str]] = None,
+        new_variables_names: Optional[List[str]] = None,
     ) -> None:
 
         # check input types
         if not isinstance(variables_to_combine, list) or not all(
-                isinstance(var, (int, str)) for var in variables_to_combine
+            isinstance(var, (int, str)) for var in variables_to_combine
         ):
             raise ValueError(
                 "variables_to_combine takes a list of strings or integers "
@@ -105,7 +105,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
         if new_variables_names:
             if not isinstance(new_variables_names, list) or not all(
-                    isinstance(var, str) for var in new_variables_names
+                isinstance(var, str) for var in new_variables_names
             ):
                 raise ValueError(
                     "new_variable_names should be None or a list with the "
@@ -118,8 +118,8 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
                 raise ValueError("math_operations parameter must be a list or None")
 
             if any(
-                    operation not in ["sum", "prod", "mean", "std", "max", "min"]
-                    for operation in math_operations
+                operation not in ["sum", "prod", "mean", "std", "max", "min"]
+                for operation in math_operations
             ):
                 raise ValueError(
                     "At least one of the entered math_operations is not supported. "
@@ -133,13 +133,15 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
                 "transformations."
             )
 
-        if new_variables_names and len(new_variables_names) != len(math_operations): # type: ignore
-            raise ValueError(
-                "Number of items in new_variables_names must be equal to number of "
-                "items in math_operations."
-                "In other words, the transformer needs as many new variable names as "
-                "mathematical operations to perform over the variables to combine."
-            )
+        if new_variables_names:
+            if len(new_variables_names) != len(math_operations):  # type: ignore
+                raise ValueError(
+                    "Number of items in new_variables_names must be equal to number of "
+                    "items in math_operations."
+                    "In other words, the transformer needs as many new variable names"
+                    "as mathematical operations to perform over the variables to "
+                    "combine."
+                )
 
         self.variables_to_combine = variables_to_combine
         self.new_variables_names = new_variables_names
@@ -188,7 +190,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
                 vars_ls = [str(var) for var in self.variables_to_combine]
 
             self.combination_dict_ = {
-                f"{operation}({'-'.join(vars_ls)})": operation # type: ignore
+                f"{operation}({'-'.join(vars_ls)})": operation  # type: ignore
                 for operation in self.math_operations_
             }
 

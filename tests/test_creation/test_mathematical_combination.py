@@ -25,22 +25,32 @@ def test_error_when_variables_to_combine_wrong_type():
 # test param math_operations
 def test_error_if_operation_not_supported():
     with pytest.raises(ValueError):
-        MathematicalCombination(variables_to_combine=["Age", "Name"], math_operations=["an_operation"])
+        MathematicalCombination(
+            variables_to_combine=["Age", "Name"], math_operations=["an_operation"]
+        )
 
 
 def test_error_if_operation_is_wrong_type():
     with pytest.raises(ValueError):
-        MathematicalCombination(variables_to_combine=["Age", "Name"], math_operations=[sum])
+        MathematicalCombination(
+            variables_to_combine=["Age", "Name"], math_operations=[sum]
+        )
     with pytest.raises(ValueError):
-        MathematicalCombination(variables_to_combine=["Age", "Name"], math_operations=("sum", "mean"))
+        MathematicalCombination(
+            variables_to_combine=["Age", "Name"], math_operations=("sum", "mean")
+        )
 
 
 # test new variable names
 def test_error_if_new_variable_names_of_wrong_type():
     with pytest.raises(ValueError):
-        MathematicalCombination(variables_to_combine=["Age", "Name"], new_variables_names=[4])
+        MathematicalCombination(
+            variables_to_combine=["Age", "Name"], new_variables_names=[4]
+        )
     with pytest.raises(ValueError):
-        MathematicalCombination(variables_to_combine=["Age", "Name"], new_variables_names=("var1", "var2"))
+        MathematicalCombination(
+            variables_to_combine=["Age", "Name"], new_variables_names=("var1", "var2")
+        )
 
 
 # test values entered fit with each other
@@ -61,12 +71,12 @@ def test_error_if_variable_names_and_operations_list_length_not_equal():
         MathematicalCombination(
             variables_to_combine=["Age", "Name"],
             math_operations=["sum", "mean"],
-            new_variables_names=["sum_of_two_vars"]
+            new_variables_names=["sum_of_two_vars"],
         )
 
 
 def test_default_parameters(df_vartypes):
-    transformer = MathematicalCombination(variables_to_combine=['Age', 'Marks'])
+    transformer = MathematicalCombination(variables_to_combine=["Age", "Marks"])
     X = transformer.fit_transform(df_vartypes)
 
     ref = pd.DataFrame.from_dict(
@@ -123,7 +133,9 @@ def test_error_when_entered_variables_not_in_df(df_vartypes):
 
 
 def test_user_enters_two_operations(df_vartypes):
-    transformer = MathematicalCombination(variables_to_combine=['Age', 'Marks'], math_operations=["sum", "mean"])
+    transformer = MathematicalCombination(
+        variables_to_combine=["Age", "Marks"], math_operations=["sum", "mean"]
+    )
 
     X = transformer.fit_transform(df_vartypes)
 
@@ -155,7 +167,7 @@ def test_user_enters_two_operations(df_vartypes):
 
 def test_user_enters_output_variable_names(df_vartypes):
     transformer = MathematicalCombination(
-        variables_to_combine=['Age', 'Marks'],
+        variables_to_combine=["Age", "Marks"],
         math_operations=["sum", "mean"],
         new_variables_names=["sum_of_two_vars", "mean_of_two_vars"],
     )
@@ -190,7 +202,9 @@ def test_user_enters_output_variable_names(df_vartypes):
 
 def test_one_mathematical_operation(df_vartypes):
     # case 2: selected only one operation:
-    transformer = MathematicalCombination(variables_to_combine=['Age', 'Marks'], math_operations=["sum"])
+    transformer = MathematicalCombination(
+        variables_to_combine=["Age", "Marks"], math_operations=["sum"]
+    )
 
     X = transformer.fit_transform(df_vartypes)
 
