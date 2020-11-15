@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import pandas as pd
 
@@ -54,7 +54,9 @@ class OrdinalEncoder(BaseCategoricalTransformer):
     """
 
     def __init__(
-        self, encoding_method: str = "ordered", variables: Optional[List[str]] = None
+        self,
+        encoding_method: str = "ordered",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if encoding_method not in ["ordered", "arbitrary"]:

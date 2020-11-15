@@ -1,3 +1,4 @@
+from typing import List, Union
 import warnings
 
 import pandas as pd
@@ -13,13 +14,14 @@ from feature_engine.variable_manipulation import _find_or_check_categorical_vari
 
 
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
-
     def _check_fit_input_and_variables(self, X: pd.DataFrame) -> pd.DataFrame:
         # check input dataframe
         X = _is_dataframe(X)
 
         # find categorical variables or check variables entered by user are object
-        self.variables = _find_or_check_categorical_variables(X, self.variables)
+        self.variables: List[Union[str, int]] = _find_or_check_categorical_variables(
+            X, self.variables
+        )
 
         # check if dataset contains na
         _check_contains_na(X, self.variables)

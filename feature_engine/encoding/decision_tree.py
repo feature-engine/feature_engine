@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import pandas as pd
 from sklearn.pipeline import Pipeline
@@ -85,7 +85,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         param_grid: Optional[dict] = None,
         regression: bool = True,
         random_state: Optional[int] = None,
-        variables: Optional[List[str]] = None,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
         if param_grid is None:
             param_grid = {"max_depth": [1, 2, 3, 4]}
