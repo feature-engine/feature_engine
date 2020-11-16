@@ -48,16 +48,6 @@ class TargetMeanEncoderFeatureSelector(BaseEstimator, TransformerMixin):
         The list of variables to evaluate. If None, the transformer will evaluate all 
         variables in the dataset associated with the variables_type.
 
-    target: string, default=None
-        The target variable to evaluate. If None, the transformer will return the 
-        relevant message for the missing value.
-
-    variables_type: boolean, default=True
-        If variables_type = True: the transformer will evaluate the variables as the 
-            categorical variables. 
-        If variables_type = False: the transformer will evaluate the variables as the
-            numerical variables.
-
     scoring: string, default='roc_auc_score'
         This indicates the metrics score to perform the feature selection.
         The current support includes 'roc_auc_score' and 'r2_score'.
