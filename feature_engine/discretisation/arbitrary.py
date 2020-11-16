@@ -124,12 +124,12 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         # transform variables
         if self.return_boundaries:
             for feature in self.variables:
-                X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
+                X[feature] = pd.cut(X[feature], self.binner_dict_[feature])  # type: ignore
 
         else:
             for feature in self.variables:
                 X[feature] = pd.cut(
-                    X[feature], self.binner_dict_[feature], labels=False
+                    X[feature], self.binner_dict_[feature], labels=False  # type: ignore
                 )
 
             # return object

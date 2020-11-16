@@ -79,7 +79,7 @@ class ArbitraryNumberImputer(BaseImputer):
         # find or check for numerical variables
         if self.imputer_dict:
             self.variables = _find_or_check_numerical_variables(
-                X, self.imputer_dict.keys()
+                X, self.imputer_dict.keys()  # type: ignore
             )
         else:
             self.variables = _find_or_check_numerical_variables(X, self.variables)

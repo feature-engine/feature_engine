@@ -2,14 +2,14 @@
 # License: BSD 3 clause
 # functions shared across transformers
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Any
 
 import pandas as pd
 
+Variables = Union[None, int, str, List[Union[str, int]]]
 
-def _check_input_parameter_variables(
-    variables: Union[None, int, str, List[Union[str, int]]]
-) -> Union[None, int, str, List[Union[str, int]]]:
+# set return value typehint to Any here to avoid issues with the base transformer fit methods
+def _check_input_parameter_variables(variables: Variables) -> Any:
     """
     Checks that the input is of the correct type
 

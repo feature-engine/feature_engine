@@ -96,7 +96,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.param_grid = param_grid
         self.random_state = random_state
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: pd.DataFrame, y: pd.Series):  # type: ignore
         """
         Fits the decision trees. One tree per variable to be transformed.
 

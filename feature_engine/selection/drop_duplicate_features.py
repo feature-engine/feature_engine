@@ -69,7 +69,7 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
         self.duplicated_feature_sets_ = []
 
         # set to collect features that are duplicated
-        self.duplicated_features_ = set()
+        self.duplicated_features_ = set()  # type: ignore
 
         # create set of examined features
         _examined_features = set()
