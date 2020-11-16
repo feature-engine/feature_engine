@@ -270,5 +270,5 @@ class TargetMeanEncoderFeatureSelector(BaseEstimator, TransformerMixin):
             None
 
         """
-        X_test_enc, y_test = self.fit(X, y, quantiles=quantiles, test_size=test_size, random_state=random_state)
-        return self.transform(X_test_enc, y_test)
+        self.fit(X, y, quantiles=quantiles, test_size=test_size, random_state=random_state)
+        return self.transform(self.X_test_enc, self.y_test)
