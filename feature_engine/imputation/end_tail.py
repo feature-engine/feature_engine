@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import pandas as pd
 
@@ -85,7 +85,7 @@ class EndTailImputer(BaseImputer):
         imputation_method: str = "gaussian",
         tail: str = "right",
         fold: int = 3,
-        variables: Optional[List[str]] = None,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if imputation_method not in ["gaussian", "iqr", "max"]:

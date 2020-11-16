@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import pandas as pd
 
@@ -41,7 +41,9 @@ class MeanMedianImputer(BaseImputer):
     """
 
     def __init__(
-        self, imputation_method: str = "median", variables: Optional[List[str]] = None
+        self,
+        imputation_method: str = "median",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if imputation_method not in ["median", "mean"]:

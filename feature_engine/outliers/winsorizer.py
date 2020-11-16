@@ -108,7 +108,7 @@ class Winsorizer(BaseOutlier):
         capping_method: str = "gaussian",
         tail: str = "right",
         fold: Union[int, float] = 3,
-        variables: Optional[List] = None,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
     ) -> None:
 

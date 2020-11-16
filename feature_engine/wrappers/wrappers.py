@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 
@@ -38,7 +38,11 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         The desired Scikit-learn transformer.
     """
 
-    def __init__(self, variables: List[str] = None, transformer=None) -> None:
+    def __init__(
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        transformer=None,
+    ) -> None:
         self.variables = _check_input_parameter_variables(variables)
         self.transformer = transformer
 

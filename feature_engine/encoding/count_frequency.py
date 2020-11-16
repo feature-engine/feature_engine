@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import pandas as pd
 import numpy as np
@@ -45,7 +45,9 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
     """
 
     def __init__(
-        self, encoding_method: str = "count", variables: Optional[List[str]] = None
+        self,
+        encoding_method: str = "count",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if encoding_method not in ["count", "frequency"]:

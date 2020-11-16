@@ -34,7 +34,9 @@ class LogTransformer(BaseNumericalTransformer):
     """
 
     def __init__(
-        self, base: str = "e", variables: Union[List[str], str] = None
+        self,
+        base: str = "e",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if base not in ["e", "10"]:

@@ -8,8 +8,8 @@ import pandas as pd
 
 
 def _check_input_parameter_variables(
-        variables: Union[None, int, str, List[str], List[int]]
-) -> Union[None, int, str, List[str], List[int]]:
+    variables: Union[None, int, str, List[Union[str, int]]]
+) -> Union[None, int, str, List[Union[str, int]]]:
     """
     Checks that the input is of the correct type
 
@@ -35,7 +35,7 @@ def _check_input_parameter_variables(
 
 
 def _find_or_check_numerical_variables(
-        X: pd.DataFrame, variables: Union[None, int, str, List[Union[str, int]]] = None
+    X: pd.DataFrame, variables: Union[None, int, str, List[Union[str, int]]] = None
 ) -> List[Union[str, int]]:
     """
     Checks that variables provided by the user are of type numerical. If None was
@@ -76,7 +76,7 @@ def _find_or_check_numerical_variables(
 
 
 def _find_or_check_categorical_variables(
-        X: pd.DataFrame, variables: Union[None, int, str, List[Union[str, int]]] = None
+    X: pd.DataFrame, variables: Union[None, int, str, List[Union[str, int]]] = None
 ) -> List[Union[str, int]]:
     """
     Checks that variables provided by the user are of type object. If None was
@@ -115,7 +115,7 @@ def _find_or_check_categorical_variables(
 
 
 def _find_all_variables(
-        X: pd.DataFrame, variables: Optional[List[str]] = None
+    X: pd.DataFrame, variables: Optional[List[str]] = None
 ) -> List[str]:
     """
     If variables are None, captures all variables in the dataframe in a list.

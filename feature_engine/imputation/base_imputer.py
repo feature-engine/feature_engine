@@ -9,7 +9,6 @@ from feature_engine.dataframe_checks import (
 
 
 class BaseImputer(BaseEstimator, TransformerMixin):
-
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         # Check method fit has been called
         check_is_fitted(self)

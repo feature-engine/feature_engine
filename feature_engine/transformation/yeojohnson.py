@@ -40,7 +40,9 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         transformation} pairs.
     """
 
-    def __init__(self, variables: Union[List[str], str] = None) -> None:
+    def __init__(
+        self, variables: Union[None, int, str, List[Union[str, int]]] = None
+    ) -> None:
 
         self.variables = _check_input_parameter_variables(variables)
 

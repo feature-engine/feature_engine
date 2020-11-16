@@ -1,7 +1,7 @@
 # Authors: Nicolas Galli <nicolas.galli@yahoo.com>
 # License: BSD 3 clause
 
-from typing import Optional, List
+from typing import Union, List
 
 import numpy as np
 import pandas as pd
@@ -55,7 +55,9 @@ class PRatioEncoder(BaseCategoricalTransformer):
     """
 
     def __init__(
-        self, encoding_method: str = "ratio", variables: Optional[List[str]] = None
+        self,
+        encoding_method: str = "ratio",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if encoding_method not in ["ratio", "log_ratio"]:

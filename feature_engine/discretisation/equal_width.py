@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import pandas as pd
 from feature_engine.variable_manipulation import _check_input_parameter_variables
@@ -51,7 +51,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
     def __init__(
         self,
         bins: int = 10,
-        variables: Optional[List[str]] = None,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
         return_object: bool = False,
         return_boundaries: bool = False,
     ) -> None:

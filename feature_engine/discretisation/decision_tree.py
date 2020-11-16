@@ -74,7 +74,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self,
         cv: int = 3,
         scoring: str = "neg_mean_squared_error",
-        variables: Optional[List[str]] = None,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
         param_grid: Optional[Dict[str, Union[str, int, float, List[int]]]] = None,
         regression: bool = True,
         random_state: Optional[int] = None,

@@ -33,7 +33,9 @@ class PowerTransformer(BaseNumericalTransformer):
     """
 
     def __init__(
-        self, exp: Union[float, int] = 0.5, variables: Union[List[str], str] = None
+        self,
+        exp: Union[float, int] = 0.5,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ):
 
         if not isinstance(exp, (float, int)):

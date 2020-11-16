@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -39,7 +39,9 @@ class WoEEncoder(BaseCategoricalTransformer):
         encoder will find and select all object type variables.
     """
 
-    def __init__(self, variables: Optional[List[str]] = None) -> None:
+    def __init__(
+        self, variables: Union[None, int, str, List[Union[str, int]]] = None
+    ) -> None:
 
         self.variables = _check_input_parameter_variables(variables)
 

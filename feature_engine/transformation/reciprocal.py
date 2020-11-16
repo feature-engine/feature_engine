@@ -30,7 +30,9 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         transformer will automatically find and select all numerical variables.
     """
 
-    def __init__(self, variables: Union[List[str], str] = None) -> None:
+    def __init__(
+        self, variables: Union[None, int, str, List[Union[str, int]]] = None
+    ) -> None:
 
         self.variables = _check_input_parameter_variables(variables)
 

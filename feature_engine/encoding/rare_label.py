@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List
+from typing import Optional, List, Union
 import warnings
 
 import numpy as np
@@ -65,7 +65,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         tol: float = 0.05,
         n_categories: int = 10,
         max_n_categories: Optional[int] = None,
-        variables: Optional[List[str]] = None,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
         replace_with: str = "Rare",
     ) -> None:
 

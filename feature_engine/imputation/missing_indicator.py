@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import pandas as pd
 import numpy as np
@@ -45,7 +45,9 @@ class AddMissingIndicator(BaseImputer):
     """
 
     def __init__(
-        self, missing_only: bool = True, variables: Optional[List[str]] = None
+        self,
+        missing_only: bool = True,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if not isinstance(missing_only, bool):

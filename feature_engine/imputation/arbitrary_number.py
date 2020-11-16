@@ -39,7 +39,7 @@ class ArbitraryNumberImputer(BaseImputer):
     def __init__(
         self,
         arbitrary_number: Union[int, float] = 999,
-        variables: Optional[List[str]] = None,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
         imputer_dict: Optional[dict] = None,
     ) -> None:
 

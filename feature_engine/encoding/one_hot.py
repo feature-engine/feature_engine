@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import pandas as pd
 import numpy as np
@@ -65,7 +65,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
     def __init__(
         self,
         top_categories: Optional[int] = None,
-        variables: Optional[List[str]] = None,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
         drop_last: bool = False,
     ) -> None:
 
