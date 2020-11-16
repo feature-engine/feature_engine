@@ -35,11 +35,6 @@ class TargetMeanEncoderFeatureSelector(BaseEstimator, TransformerMixin):
         Implementation
         --------------
 
-            Private methods
-            ---------------
-                `__target_mean_encoding(self, df_train_, df_test_, var_cols=None)`
-                `__validate_variables(self, X)`
-                    
             Public methods
             --------------
                 `fit(self, X, y=None)`
