@@ -83,8 +83,7 @@ class TargetMeanEncoderFeatureSelector(BaseEstimator, TransformerMixin):
         
         Returns
         -------
-            X_test_enc
-            y_test
+            None
 
         Parameters
         ----------
