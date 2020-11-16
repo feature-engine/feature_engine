@@ -37,9 +37,9 @@ class TargetMeanEncoderFeatureSelector(BaseEstimator, TransformerMixin):
 
             Public methods
             --------------
-                `fit(self, X, y=None)`
+                `fit(self, X, y)`
                 `transform(self)`
-                `fit_transform(self, X, y=None)`
+                `fit_transform(self, X, y)`
         
     Parameters
     ----------
@@ -200,7 +200,7 @@ class TargetMeanEncoderFeatureSelector(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X=None, y=None):
+    def transform(self):
         """
         Performs
         --------
