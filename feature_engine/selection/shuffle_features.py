@@ -20,10 +20,10 @@ from feature_engine.variable_manipulation import (
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
+class SelectByShuffling(BaseEstimator, TransformerMixin):
     """
 
-    ShuffleFeaturesSelector selects features by determining the drop in machine learning
+    SelectByShuffling selects features by determining the drop in machine learning
     model performance when each feature's values are randomly shuffled.
 
     If the variables are important, a random permutation of their values will
@@ -31,7 +31,7 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
     permutation of the values should have little to no effect on the model performance
     metric we are assessing.
 
-    The ShuffleFeaturesSelector first trains a machine learning model utilising all
+    The SelectByShuffling first trains a machine learning model utilising all
     features. Next, it shuffles the values of 1 feature, obtains a prediction with the
     pre-trained model, and determines the performance drop (if any). If the drop in
     performance is bigger than a threshold then the feature is retained, otherwise
