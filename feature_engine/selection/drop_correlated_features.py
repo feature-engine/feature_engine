@@ -1,14 +1,20 @@
+from typing import List, Union
+
+import pandas as pd
 from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_input_matches_training_df,
+    _check_contains_na,
 )
 from feature_engine.variable_manipulation import (
     _find_or_check_numerical_variables,
     _check_input_parameter_variables,
 )
+
+Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
@@ -69,21 +75,31 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
      fit_transform: finds and removes correlated features
     """
 
-    def __init__(self, variables=None, method="pearson", threshold=0.8):
+    def __init__(
+        self,
+        variables: Variables = None,
+        method: str = "pearson",
+        threshold: float = 0.8,
+        missing_values: str = "raise",
+    ):
 
         if method not in ["pearson", "spearman", "kendall"]:
             raise ValueError(
                 "correlation method takes only values 'pearson', 'spearman', 'kendall'"
             )
 
-        if (threshold < 0 or threshold > 1) or not isinstance(threshold, float):
+        if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError("threshold must be a float between 0 and 1")
+
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
 
         self.variables = _check_input_parameter_variables(variables)
         self.method = method
         self.threshold = threshold
+        self.missing_values = missing_values
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
         Finds the correlated features
 
@@ -104,6 +120,10 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
 
         # find all numerical variables or check those entered are in the dataframe
         self.variables = _find_or_check_numerical_variables(X, self.variables)
+
+        if self.missing_values == "raise":
+            # check if dataset contains na
+            _check_contains_na(X, self.variables)
 
         # set to collect features that are correlated
         self.correlated_features_ = set()
@@ -180,7 +200,11 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
         # check if number of columns in test dataset matches to train dataset
         _check_input_matches_training_df(X, self.input_shape_[1])
 
-        # returned non-duplicate features
+        if self.missing_values == "raise":
+            # check if dataset contains na
+            _check_contains_na(X, self.variables)
+
+        # returned non-correlated features
         X = X.drop(columns=self.correlated_features_)
 
         return X
