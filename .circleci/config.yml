@@ -126,6 +126,7 @@ workflows:
       - test_feature_engine_py38
       - test_style
       - test_docs
+      - test_type
       - package_and_upload_to_pypi:
           requires:
             - test_feature_engine_py36
@@ -133,7 +134,8 @@ workflows:
             - test_feature_engine_py38
             - test_style
             - test_docs
+            - test_type
           filters:
             branches:
               only:
-                - 0.6.X
+                - 1.1.X
