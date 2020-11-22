@@ -116,6 +116,7 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
+        Finds the important features
 
         Args
         ----

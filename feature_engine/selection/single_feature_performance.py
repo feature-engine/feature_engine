@@ -93,9 +93,11 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
         if not isinstance(threshold, (int, float)):
             raise ValueError("threshold can only be integer or float")
 
-        if scoring == 'roc_auc' and (threshold < 0.5 or threshold > 1):
-            raise ValueError("roc-auc score should vary between 0.5 and 1. Pick a "
-                             "threshold within this interval.")
+        if scoring == "roc_auc" and (threshold < 0.5 or threshold > 1):
+            raise ValueError(
+                "roc-auc score should vary between 0.5 and 1. Pick a "
+                "threshold within this interval."
+            )
 
         self.variables = _check_input_parameter_variables(variables)
         self.estimator = estimator
@@ -151,9 +153,7 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
 
         # check we are not dropping all the columns in the df
         if len(self.selected_features_) == 0:
-            raise ValueError(
-                "No features were selected, try changing the threshold."
-            )
+            raise ValueError("No features were selected, try changing the threshold.")
 
         self.input_shape_ = X.shape
 

@@ -31,42 +31,63 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
     """
-    TargetMeanEncoderFeatureSelector
-    ------------------
-        Description
-        -----------
-        Calculates the feature importance.
+    SelectByTargetMeanPerformance selects features by using the mean value of the
+    target per category or bin as proxy of target estimation, by determining its
+    performance.
 
-        For each categorical variable:
-            1) Separate into train and test
-            2) Determine the mean value of the target within each label of the categorical variable using the train set
-            3) Use that mean target value per label as the prediction (using the test set) and calculate the roc-auc.
+    Works with both numerical and categorical variables.
 
-        For each numerical variable:
-            1) Separate into train and test
-            2) Divide the variable into 100 quantiles
-            3) Calculate the mean target within each quantile using the training set
-            4) Use that mean target value / bin as the prediction (using the test set) and calculate the roc-auc
+    The transformer works as follows:
 
-        Implementation
-        --------------
+    1) Separates the training set into train and test sets.
 
-            Public methods
-            --------------
-                `fit(self, X, y)`
-                `transform(self)`
-                `fit_transform(self, X, y)`
+    Then, for each categorical variable:
 
-    Parameters
-    ----------
+    2) Determine the mean value of the target for each category of the
+    variable using the train set (equivalent of Target mean encoding)
+
+    3) Replaces the categories in the test set, by the target mean values
+    determined from the train set
+
+    4) Using the encoded variable calculates the roc-auc or r2
+
+    5) Selects the features which roc-auc or r2 is bigger than the indicated
+    threshold
+
+    For each numerical variable:
+
+    2) Discretize the variable into intervals of equal width or equal frequency
+    (uses the discretizers of Feature-engine)
+
+    3) Determine the mean value of the target for each interval of the
+    variable using the train set (equivalent of Target mean encoding)
+
+    3) Replaces the intervals in the test set, by the target mean values
+    determined from the train set
+
+    4) Using the encoded variable calculates the roc-auc or r2
+
+    5) Selects the features which roc-auc or r2 is bigger than the indicated
+    threshold
 
     variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
-        variables in the dataset associated with the variables_type.
+        variables in the dataset.
 
     scoring: string, default='roc_auc_score'
         This indicates the metrics score to perform the feature selection.
-        The current support includes 'roc_auc_score' and 'r2_score'.
+        The current implementation supports 'roc_auc_score' and 'r2_score'.
+
+    threshold: float, default = 0.5
+        The performance threshold above which a feature will be selected.
+
+    bins: int, default = 5
+        If the dataset contains numerical variables, the number of bins into which
+        the values will be sorted.
+
+    strategy: str, default = equal_width
+        whether to create the bins for discretisation of numerical variables of
+        equal width or equal frequency.
 
     test_size: float, default=0.3
         The test size setting of the data in the train_test_split method.
@@ -74,6 +95,14 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
     random_state: int, default=0
         The random state setting in the train_test_split method.
 
+    Attributes
+    ----------
+    selected_features_: list
+        The selected features.
+
+    feature_performance_: dict
+        A dictionary containing the feature name as key and the performance of the
+        model trained on each feature as value.
 
     """
 
@@ -193,12 +222,20 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
                 if roc_auc_score(y_test, X_test[f]) > self.threshold
             ]
 
+            self.feature_performance_ = {
+                f: roc_auc_score(y_test, X_test[f]) for f in self.variables
+            }
+
         else:
             self.selected_features_ = [
                 f
                 for f in self.variables
                 if r2_score(y_test, X_test[f]) > self.threshold
             ]
+
+            self.feature_performance_ = {
+                f: r2_score(y_test, X_test[f]) for f in self.variables
+            }
 
         self.input_shape_ = X.shape
 
