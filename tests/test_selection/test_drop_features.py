@@ -1,6 +1,8 @@
 import pandas as pd
 import pytest
 
+from sklearn.exceptions import NotFittedError
+
 from feature_engine.selection import DropFeatures
 
 
@@ -74,3 +76,10 @@ def test_drop_2_variables_integer_colnames(df_numeric_columns):
     assert transformer.input_shape_ == (4, 5)
     # transform params
     pd.testing.assert_frame_equal(X, df)
+
+
+def test_non_fitted_error(df_numeric_columns):
+    # test case 8: when fit is not called prior to transform
+    with pytest.raises(NotFittedError):
+        transformer = DropFeatures(features_to_drop=[0, 1])
+        transformer.transform(df_numeric_columns)
