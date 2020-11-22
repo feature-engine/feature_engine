@@ -36,7 +36,7 @@ def _check_input_parameter_variables(variables: Variables) -> Any:
 
 
 def _find_or_check_numerical_variables(
-        X: pd.DataFrame, variables: Union[None, int, str, List[Union[str, int]]] = None
+        X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
     Checks that variables provided by the user are of type numerical. If None was
@@ -77,7 +77,7 @@ def _find_or_check_numerical_variables(
 
 
 def _find_or_check_categorical_variables(
-        X: pd.DataFrame, variables: Union[None, int, str, List[Union[str, int]]] = None
+        X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
     Checks that variables provided by the user are of type object. If None was
@@ -116,8 +116,8 @@ def _find_or_check_categorical_variables(
 
 
 def _find_all_variables(
-        X: pd.DataFrame, variables: Optional[List[str]] = None
-) -> List[str]:
+        X: pd.DataFrame, variables: Variables = None
+) -> List[Union[str, int]]:
     """
     If variables are None, captures all variables in the dataframe in a list.
     If user enters variable names list, it returns the list.
@@ -133,16 +133,14 @@ def _find_all_variables(
     Returns:
         List of variables
     """
+    if isinstance(variables, (str, int)):
+        variables = [variables]
 
     if not variables:
         variables = list(X.columns)
 
     else:
-        # variables indicated by user
-        if any(set(variables).difference(X.columns)):
-            raise TypeError(
-                "Some variables are not present in the dataset. Please check your "
-                "variable list."
-            )
+        # call pandas to test if variables entered by user are in df
+        X[variables]
 
     return variables

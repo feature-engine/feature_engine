@@ -80,5 +80,5 @@ def test_find_all_variables(df_vartypes):
     assert _find_all_variables(df_vartypes) == all_vars
     assert _find_all_variables(df_vartypes, ["Name", "City"]) == user_vars
 
-    with pytest.raises(TypeError):
+    with pytest.raises(KeyError):
         assert _find_all_variables(df_vartypes, non_existing_vars)
