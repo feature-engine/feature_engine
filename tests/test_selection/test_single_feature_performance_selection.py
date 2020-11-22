@@ -131,7 +131,7 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     assert sel.scoring == "neg_mean_squared_error"
     assert sel.threshold == -6000
     # fit params
-    assert sel.selected_features_ == [1,7]
+    assert sel.selected_features_ == [1, 7]
     assert sel.feature_performance_ == {
         0: -7657.154138192973,
         1: -5966.662211695372,
@@ -176,3 +176,8 @@ def test_raises_cv_error():
 def test_raises_threshold_error():
     with pytest.raises(ValueError):
         SelectBySingleFeaturePerformance(threshold=None)
+
+
+def test_raises_error_when_roc_threshold_not_allowed():
+    with pytest.raises(ValueError):
+        SelectBySingleFeaturePerformance(scoring='roc_auc', threshold=0.4)
