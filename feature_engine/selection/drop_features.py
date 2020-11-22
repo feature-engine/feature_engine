@@ -1,3 +1,6 @@
+from typing import List, Union
+import pandas as pd
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -5,7 +8,6 @@ from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_input_matches_training_df,
 )
-from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class DropFeatures(BaseEstimator, TransformerMixin):
@@ -21,19 +23,20 @@ class DropFeatures(BaseEstimator, TransformerMixin):
 
     """
 
-    def __init__(self, features_to_drop=None):
+    def __init__(self, features_to_drop: List[Union[str, int]]):
 
-        self.features_to_drop = _check_input_parameter_variables(features_to_drop)
-
-        if len(self.features_to_drop) == 0:
+        if not isinstance(features_to_drop, list) or len(features_to_drop) == 0:
             raise ValueError(
-                "List of features to drop cannot be empty. Please pass at least 1 "
-                "variable to drop."
+                "features_to_drop should be a list with the name of the variables"
+                "you wish to drop from the dataframe."
             )
 
-    def fit(self, X, y=None):
+        self.features_to_drop = features_to_drop
+
+    def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
-        Verifies that the input X is a pandas dataframe
+        Verifies that the input X is a pandas dataframe, and that the variables to
+        drop exist in the training dataframe
 
         Parameters
         ----------
@@ -48,15 +51,11 @@ class DropFeatures(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # check for non existent columns
-        non_existent = [x for x in self.features_to_drop if x not in X.columns]
-        if non_existent:
-            raise KeyError(
-                f"Columns '{', '.join(non_existent)}' not present in input dataframe, "
-                f"please check the columns and enter a new list of features to drop"
-            )
+        # X[self.features_to_drops] calls to pandas to check if columns are
+        # present in the df.
+        X[self.features_to_drop]
 
-        # check that user does not drop all columns returning empty dataframe
+        # check user is not removing all columns in the dataframe
         if len(self.features_to_drop) == len(X.columns):
             raise ValueError(
                 "The resulting dataframe will have no columns after dropping all "
@@ -68,7 +67,7 @@ class DropFeatures(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """
         Drops the variable or list of variables indicated by the user from the original
         dataframe and returns a new dataframe with the remaining subset of variables.
