@@ -116,24 +116,22 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
         estimator=DecisionTreeRegressor(random_state=0),
         scoring="neg_mean_squared_error",
         cv=2,
-        threshold=10,
+        threshold=-6000,
     )
     # fit transformer
     sel.fit(X, y)
 
     # expected output
     Xtransformed = X.copy()
-    Xtransformed.drop(
-        Xtransformed.columns[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]], axis=1, inplace=True
-    )
+    Xtransformed = Xtransformed[[1, 7]].copy()
 
     # test init params
     assert sel.cv == 2
     assert sel.variables == list(X.columns)
     assert sel.scoring == "neg_mean_squared_error"
-    assert sel.threshold == 10
+    assert sel.threshold == -6000
     # fit params
-    assert sel.selected_features_ == []
+    assert sel.selected_features_ == [1, 7]
     assert sel.feature_performance_ == {
         0: -7657.154138192973,
         1: -5966.662211695372,
@@ -151,6 +149,18 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
 
+def test_raises_error_if_no_feature_selected(load_diabetes_dataset):
+    X, y = load_diabetes_dataset
+    sel = SelectBySingleFeaturePerformance(
+        estimator=DecisionTreeRegressor(random_state=0),
+        scoring="neg_mean_squared_error",
+        cv=2,
+        threshold=10,
+    )
+    with pytest.raises(ValueError):
+        sel.fit(X, y)
+
+
 def test_non_fitted_error(df_test):
     # when fit is not called prior to transform
     with pytest.raises(NotFittedError):
@@ -166,3 +176,8 @@ def test_raises_cv_error():
 def test_raises_threshold_error():
     with pytest.raises(ValueError):
         SelectBySingleFeaturePerformance(threshold=None)
+
+
+def test_raises_error_when_roc_threshold_not_allowed():
+    with pytest.raises(ValueError):
+        SelectBySingleFeaturePerformance(scoring='roc_auc', threshold=0.4)

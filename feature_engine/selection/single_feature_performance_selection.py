@@ -1,3 +1,6 @@
+from typing import List, Union
+
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_validate
@@ -11,6 +14,8 @@ from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+
+Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
@@ -76,10 +81,10 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         estimator=RandomForestClassifier(),
-        scoring="roc_auc",
-        cv=3,
-        threshold=0.5,
-        variables=None,
+        scoring: str = "roc_auc",
+        cv: int = 3,
+        threshold: Union[int, float] = 0.5,
+        variables: Variables = None,
     ):
 
         if not isinstance(cv, int) or cv < 1:
@@ -88,13 +93,17 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
         if not isinstance(threshold, (int, float)):
             raise ValueError("threshold can only be integer or float")
 
+        if scoring == 'roc_auc' and (threshold < 0.5 or threshold > 1):
+            raise ValueError("roc-auc score should vary between 0.5 and 1. Pick a "
+                             "threshold within this interval.")
+
         self.variables = _check_input_parameter_variables(variables)
         self.estimator = estimator
         self.scoring = scoring
         self.threshold = threshold
         self.cv = cv
 
-    def fit(self, X, y):
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
 
         Args
@@ -140,11 +149,17 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
 
             self.feature_performance_[feature] = model["test_score"].mean()
 
+        # check we are not dropping all the columns in the df
+        if len(self.selected_features_) == 0:
+            raise ValueError(
+                "No features were selected, try changing the threshold."
+            )
+
         self.input_shape_ = X.shape
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """
         Removes non-selected features.
 
