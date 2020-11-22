@@ -4,7 +4,10 @@ from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_input_matches_training_df,
 )
-from feature_engine.variable_manipulation import _find_all_variables, _define_variables
+from feature_engine.variable_manipulation import (
+    _find_all_variables,
+    _check_input_parameter_variables,
+)
 
 
 class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
@@ -27,7 +30,7 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, variables=None):
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X, y=None):
 
@@ -66,7 +69,7 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
         self.duplicated_feature_sets_ = []
 
         # set to collect features that are duplicated
-        self.duplicated_features_ = set()
+        self.duplicated_features_ = set()  # type: ignore
 
         # create set of examined features
         _examined_features = set()

@@ -53,7 +53,7 @@ def _check_input_matches_training_df(X: pd.DataFrame, reference: int) -> None:
     return None
 
 
-def _check_contains_na(X: pd.DataFrame, variables: Union[str, List[str]]):
+def _check_contains_na(X: pd.DataFrame, variables: List[Union[str, int]]) -> None:
     """
     Checks if DataFrame columns contain null values.
 

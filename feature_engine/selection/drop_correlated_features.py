@@ -6,8 +6,8 @@ from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
 )
 from feature_engine.variable_manipulation import (
-    _find_numerical_variables,
-    _define_variables,
+    _find_or_check_numerical_variables,
+    _check_input_parameter_variables,
 )
 
 
@@ -79,7 +79,7 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
         if (threshold < 0 or threshold > 1) or not isinstance(threshold, float):
             raise ValueError("threshold must be a float between 0 and 1")
 
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.method = method
         self.threshold = threshold
 
@@ -103,7 +103,7 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # find all numerical variables or check those entered are in the dataframe
-        self.variables = _find_numerical_variables(X, self.variables)
+        self.variables = _find_or_check_numerical_variables(X, self.variables)
 
         # set to collect features that are correlated
         self.correlated_features_ = set()

@@ -5,7 +5,10 @@ from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_input_matches_training_df,
 )
-from feature_engine.variable_manipulation import _define_variables, _find_all_variables
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_all_variables,
+)
 
 
 class DropConstantFeatures(TransformerMixin, BaseEstimator):
@@ -41,7 +44,7 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
             raise ValueError("tol takes values between 0 and 1")
 
         self.tol = tol
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X, y=None):
 

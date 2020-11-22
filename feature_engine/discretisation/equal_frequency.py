@@ -1,8 +1,10 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List, Union
+
 import pandas as pd
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 from feature_engine.base_transformers import BaseNumericalTransformer
 
 
@@ -50,8 +52,12 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
     """
 
     def __init__(
-        self, q=10, variables=None, return_object=False, return_boundaries=False
-    ):
+        self,
+        q: int = 10,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_object: bool = False,
+        return_boundaries: bool = False,
+    ) -> None:
 
         if not isinstance(q, int):
             raise ValueError("q must be an integer")
@@ -63,11 +69,11 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
             raise ValueError("return_boundaries must be True or False")
 
         self.q = q
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.return_object = return_object
         self.return_boundaries = return_boundaries
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learns the limits of the equal frequency intervals, that is the
         quantiles for each variable.
@@ -106,7 +112,7 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Sorts the variable values into the intervals.
 
         Parameters

@@ -107,14 +107,18 @@ def test_ignores_na_in_input_df(df_na):
     assert df_na["Age"].min() < 20
 
 
-def test_error_if_max_capping_dict_not_dict_or_none():
-    with pytest.raises(ValueError):
+def test_error_if_max_capping_dict_wrong_input():
+    with pytest.raises(TypeError):
         ArbitraryOutlierCapper(max_capping_dict="other")
-
-
-def test_error_if_min_capping_dict_not_dict_or_none():
     with pytest.raises(ValueError):
+        ArbitraryOutlierCapper(max_capping_dict={"a": "a"})
+
+
+def test_error_if_min_capping_dict_wrong_input():
+    with pytest.raises(TypeError):
         ArbitraryOutlierCapper(min_capping_dict="other")
+    with pytest.raises(ValueError):
+        ArbitraryOutlierCapper(min_capping_dict={"a": "a"})
 
 
 def test_error_if_both_capping_dicts_are_none():

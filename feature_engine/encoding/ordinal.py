@@ -1,9 +1,12 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List, Union
+
 import pandas as pd
+
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class OrdinalEncoder(BaseCategoricalTransformer):
@@ -50,7 +53,11 @@ class OrdinalEncoder(BaseCategoricalTransformer):
         every variable.
     """
 
-    def __init__(self, encoding_method="ordered", variables=None):
+    def __init__(
+        self,
+        encoding_method: str = "ordered",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+    ) -> None:
 
         if encoding_method not in ["ordered", "arbitrary"]:
             raise ValueError(
@@ -58,9 +65,9 @@ class OrdinalEncoder(BaseCategoricalTransformer):
             )
 
         self.encoding_method = encoding_method
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Learns the numbers to be used to replace the categories in each
         variable.
 
@@ -113,14 +120,16 @@ class OrdinalEncoder(BaseCategoricalTransformer):
         return self
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().transform(X)
+
         return X
 
     transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
 
-    def inverse_transform(self, X):
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().inverse_transform(X)
+
         return X
 
     inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__

@@ -1,10 +1,13 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List, Union
+
+import pandas as pd
 import numpy as np
 
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class OneHotEncoder(BaseCategoricalTransformer):
@@ -59,7 +62,12 @@ class OneHotEncoder(BaseCategoricalTransformer):
         ignore the last variable of the list (k-1 dummies).
     """
 
-    def __init__(self, top_categories=None, variables=None, drop_last=False):
+    def __init__(
+        self,
+        top_categories: Optional[int] = None,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        drop_last: bool = False,
+    ) -> None:
 
         if top_categories and not isinstance(top_categories, int):
             raise ValueError("top_categories takes only integer numbers, 1, 2, 3, etc.")
@@ -69,9 +77,9 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         self.top_categories = top_categories
         self.drop_last = drop_last
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learns the unique categories per variable. If top_categories is indicated,
         it will learn the most popular categories. Alternatively, it learns all
@@ -124,7 +132,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Creates the dummy / binary variables.
 

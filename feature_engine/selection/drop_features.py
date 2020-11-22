@@ -5,7 +5,7 @@ from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_input_matches_training_df,
 )
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class DropFeatures(BaseEstimator, TransformerMixin):
@@ -23,7 +23,7 @@ class DropFeatures(BaseEstimator, TransformerMixin):
 
     def __init__(self, features_to_drop=None):
 
-        self.features_to_drop = _define_variables(features_to_drop)
+        self.features_to_drop = _check_input_parameter_variables(features_to_drop)
 
         if len(self.features_to_drop) == 0:
             raise ValueError(

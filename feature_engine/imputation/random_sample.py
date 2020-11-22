@@ -1,15 +1,23 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List, Union
+
+import pandas as pd
 import numpy as np
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 # for RandomSampleImputer
-def _define_seed(X, index, seed_variables, how="add"):
+def _define_seed(
+    X: pd.DataFrame,
+    index: int,
+    seed_variables: Union[str, int, List[Union[str, int]]],
+    how: str = "add",
+) -> int:
     # determine seed by adding or multiplying the value of 1 or
     # more variables
     if how == "add":
@@ -87,8 +95,12 @@ class RandomSampleImputer(BaseImputer):
     """
 
     def __init__(
-        self, variables=None, random_state=None, seed="general", seeding_method="add"
-    ):
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        random_state: Union[None, int, str, List[Union[str, int]]] = None,
+        seed: str = "general",
+        seeding_method: str = "add",
+    ) -> None:
 
         if seed not in ["general", "observation"]:
             raise ValueError("seed takes only values 'general' or 'observation'")
@@ -99,7 +111,7 @@ class RandomSampleImputer(BaseImputer):
         if seed == "general" and random_state:
             if not isinstance(random_state, int):
                 raise ValueError(
-                    "if seed == 'general' the random state must take an integer"
+                    "if seed == 'general' then random_state must take an integer"
                 )
 
         if seed == "observation" and not random_state:
@@ -108,12 +120,12 @@ class RandomSampleImputer(BaseImputer):
                 "or more variables which will be used to seed the imputer"
             )
 
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.random_state = random_state
         self.seed = seed
         self.seeding_method = seeding_method
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Makes a copy of the variables to impute in the training dataframe from
         which it will randomly extract the values to fill the missing data
@@ -150,8 +162,12 @@ class RandomSampleImputer(BaseImputer):
 
         # check the variables assigned to the random state
         if self.seed == "observation":
-            self.random_state = _define_variables(self.random_state)
-            if any(var for var in self.random_state if var not in X.columns):
+            self.random_state = _check_input_parameter_variables(self.random_state)
+            if isinstance(self.random_state, (int, str)):
+                self.random_state = [self.random_state]
+            if self.random_state and any(
+                var for var in self.random_state if var not in X.columns
+            ):
                 raise ValueError(
                     "There are variables assigned as random state which are not part "
                     "of the training dataframe."
@@ -160,7 +176,7 @@ class RandomSampleImputer(BaseImputer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Replaces missing data with random values taken from the train set.
 
@@ -200,7 +216,7 @@ class RandomSampleImputer(BaseImputer):
                     X.loc[X[feature].isnull(), feature] = random_sample
 
         # random sampling observation per observation
-        elif self.seed == "observation":
+        elif self.seed == "observation" and self.random_state:
             for feature in self.variables:
                 if X[feature].isnull().sum() > 0:
 

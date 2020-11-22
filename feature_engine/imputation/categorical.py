@@ -1,11 +1,15 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List, Union
+
+import pandas as pd
+
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
-    _find_categorical_variables,
-    _define_variables,
+    _find_or_check_categorical_variables,
+    _check_input_parameter_variables,
 )
 
 
@@ -46,11 +50,11 @@ class CategoricalImputer(BaseImputer):
 
     def __init__(
         self,
-        imputation_method="missing",
-        fill_value="Missing",
-        variables=None,
-        return_object=False,
-    ):
+        imputation_method: str = "missing",
+        fill_value: str = "Missing",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_object: bool = False,
+    ) -> None:
 
         if imputation_method not in ["missing", "frequent"]:
             raise ValueError(
@@ -62,10 +66,10 @@ class CategoricalImputer(BaseImputer):
 
         self.imputation_method = imputation_method
         self.fill_value = fill_value
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.return_object = return_object
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learns the most frequent category if the imputation method is set to frequent.
 
@@ -91,7 +95,7 @@ class CategoricalImputer(BaseImputer):
         X = _is_dataframe(X)
 
         # find or check for categorical variables
-        self.variables = _find_categorical_variables(X, self.variables)
+        self.variables = _find_or_check_categorical_variables(X, self.variables)
 
         if self.imputation_method == "missing":
             self.imputer_dict_ = {var: self.fill_value for var in self.variables}
@@ -114,13 +118,14 @@ class CategoricalImputer(BaseImputer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         # bring functionality from the BaseImputer
         X = super().transform(X)
 
         # add additional step to return variables cast as object
         if self.return_object:
             X[self.variables] = X[self.variables].astype("O")
+
         return X
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary

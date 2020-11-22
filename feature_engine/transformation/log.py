@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class LogTransformer(BaseNumericalTransformer):
@@ -34,13 +34,15 @@ class LogTransformer(BaseNumericalTransformer):
     """
 
     def __init__(
-        self, base: str = "e", variables: Union[List[str], str] = None
+        self,
+        base: str = "e",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if base not in ["e", "10"]:
             raise ValueError("base can take only '10' or 'e' as values")
 
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.base = base
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):

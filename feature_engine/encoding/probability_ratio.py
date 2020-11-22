@@ -1,11 +1,13 @@
 # Authors: Nicolas Galli <nicolas.galli@yahoo.com>
 # License: BSD 3 clause
 
+from typing import Union, List
+
 import numpy as np
 import pandas as pd
 
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
-from feature_engine.variable_manipulation import _define_variables
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class PRatioEncoder(BaseCategoricalTransformer):
@@ -52,7 +54,11 @@ class PRatioEncoder(BaseCategoricalTransformer):
         encoder will find and select all object type variables.
     """
 
-    def __init__(self, encoding_method="ratio", variables=None):
+    def __init__(
+        self,
+        encoding_method: str = "ratio",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+    ) -> None:
 
         if encoding_method not in ["ratio", "log_ratio"]:
             raise ValueError(
@@ -60,9 +66,9 @@ class PRatioEncoder(BaseCategoricalTransformer):
             )
 
         self.encoding_method = encoding_method
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
 
-    def fit(self, X, y):
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Learns the numbers that should be used to replace the categories in each
         variable. That is the ratio of probability.
@@ -131,14 +137,16 @@ class PRatioEncoder(BaseCategoricalTransformer):
         return self
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().transform(X)
+
         return X
 
     transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
 
-    def inverse_transform(self, X):
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().inverse_transform(X)
+
         return X
 
     inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__

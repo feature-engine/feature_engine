@@ -1,11 +1,15 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List, Union
+
+import pandas as pd
+
 from feature_engine.dataframe_checks import _is_dataframe, _check_contains_na
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.variable_manipulation import (
-    _define_variables,
-    _find_numerical_variables,
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
 )
 
 
@@ -101,12 +105,12 @@ class Winsorizer(BaseOutlier):
 
     def __init__(
         self,
-        capping_method="gaussian",
-        tail="right",
-        fold=3,
-        variables=None,
-        missing_values="raise",
-    ):
+        capping_method: str = "gaussian",
+        tail: str = "right",
+        fold: Union[int, float] = 3,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_values: str = "raise",
+    ) -> None:
 
         if capping_method not in ["gaussian", "iqr", "quantiles"]:
             raise ValueError(
@@ -131,10 +135,10 @@ class Winsorizer(BaseOutlier):
         self.capping_method = capping_method
         self.tail = tail
         self.fold = fold
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.missing_values = missing_values
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learns the values that should be used to replace outliers.
 
@@ -163,7 +167,7 @@ class Winsorizer(BaseOutlier):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables = _find_numerical_variables(X, self.variables)
+        self.variables = _find_or_check_numerical_variables(X, self.variables)
 
         if self.missing_values == "raise":
             # check if dataset contains na
@@ -214,8 +218,9 @@ class Winsorizer(BaseOutlier):
         return self
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().transform(X)
+
         return X
 
     transform.__doc__ = BaseOutlier.transform.__doc__

@@ -10,8 +10,8 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.selection.base_selector import get_feature_importances
 from feature_engine.variable_manipulation import (
-    _define_variables,
-    _find_numerical_variables,
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
 )
 
 
@@ -111,7 +111,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         if not isinstance(threshold, (int, float)):
             raise ValueError("threshold can only be integer or float")
 
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
         self.estimator = estimator
         self.scoring = scoring
         self.threshold = threshold
@@ -140,7 +140,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # find numerical variables or check variables entered by user
-        self.variables = _find_numerical_variables(X, self.variables)
+        self.variables = _find_or_check_numerical_variables(X, self.variables)
 
         # train model with all features and cross-validation
         model = cross_validate(

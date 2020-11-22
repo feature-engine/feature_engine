@@ -87,6 +87,19 @@ jobs:
           command: |
             tox -e docs
 
+  test_type:
+    docker:
+      - image: circleci/python:3.8.0
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run typechecks
+          command: |
+            tox -e typechecks
+
   package_and_upload_to_pypi:
     <<: *defaults
     steps:
@@ -113,6 +126,7 @@ workflows:
       - test_feature_engine_py38
       - test_style
       - test_docs
+      - test_type
       - package_and_upload_to_pypi:
           requires:
             - test_feature_engine_py36
@@ -120,7 +134,8 @@ workflows:
             - test_feature_engine_py38
             - test_style
             - test_docs
+            - test_type
           filters:
             branches:
               only:
-                - 0.6.X
+                - 1.1.X

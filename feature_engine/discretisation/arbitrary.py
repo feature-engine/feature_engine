@@ -1,7 +1,10 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, Dict
+
 import pandas as pd
+
 from feature_engine.base_transformers import BaseNumericalTransformer
 
 
@@ -42,7 +45,12 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         the interval boundaries. If False, it returns integers.
     """
 
-    def __init__(self, binning_dict, return_object=False, return_boundaries=False):
+    def __init__(
+        self,
+        binning_dict: Dict[str, list],
+        return_object: bool = False,
+        return_boundaries: bool = False,
+    ) -> None:
 
         if not isinstance(binning_dict, dict):
             raise ValueError(
@@ -57,7 +65,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         self.return_object = return_object
         self.return_boundaries = return_boundaries
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Checks that the user entered variables are in the train set and cast as
         numerical.
@@ -95,7 +103,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Sorts the variable values into the intervals.
 
         Parameters
@@ -116,12 +124,14 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         # transform variables
         if self.return_boundaries:
             for feature in self.variables:
-                X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
+                X[feature] = pd.cut(
+                    X[feature], self.binner_dict_[feature]  # type: ignore
+                )
 
         else:
             for feature in self.variables:
                 X[feature] = pd.cut(
-                    X[feature], self.binner_dict_[feature], labels=False
+                    X[feature], self.binner_dict_[feature], labels=False  # type: ignore
                 )
 
             # return object

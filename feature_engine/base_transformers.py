@@ -1,7 +1,7 @@
 # Transformation methods are shared by most transformer groups.
 # Each transformer can inherit the transform method from these base classes.
 
-from typing import Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -12,7 +12,7 @@ from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
     _is_dataframe,
 )
-from feature_engine.variable_manipulation import _find_numerical_variables
+from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
 class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
@@ -39,7 +39,9 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables = _find_numerical_variables(X, self.variables)
+        self.variables: List[Union[str, int]] = _find_or_check_numerical_variables(
+            X, self.variables
+        )
 
         # check if dataset contains na
         _check_contains_na(X, self.variables)

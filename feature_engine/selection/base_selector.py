@@ -15,7 +15,6 @@ def get_feature_importances(estimator):
             importances = np.abs(coef_)
 
         else:
-            importances = np.linalg.norm(coef_, axis=0,
-                                         ord=len(estimator.coef_))
+            importances = np.linalg.norm(coef_, axis=0, ord=len(estimator.coef_))
 
     return list(importances)

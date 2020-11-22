@@ -1,11 +1,15 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from typing import Optional, List, Union
+
+import pandas as pd
+
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
-    _define_variables,
-    _find_numerical_variables,
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
 )
 
 
@@ -36,15 +40,19 @@ class MeanMedianImputer(BaseImputer):
         all variables of type numeric.
     """
 
-    def __init__(self, imputation_method="median", variables=None):
+    def __init__(
+        self,
+        imputation_method: str = "median",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+    ) -> None:
 
         if imputation_method not in ["median", "mean"]:
             raise ValueError("imputation_method takes only values 'median' or 'mean'")
 
         self.imputation_method = imputation_method
-        self.variables = _define_variables(variables)
+        self.variables = _check_input_parameter_variables(variables)
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learns the mean or median values.
 
@@ -69,7 +77,7 @@ class MeanMedianImputer(BaseImputer):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables = _find_numerical_variables(X, self.variables)
+        self.variables = _find_or_check_numerical_variables(X, self.variables)
 
         # find imputation parameters: mean or median
         if self.imputation_method == "mean":
@@ -83,8 +91,9 @@ class MeanMedianImputer(BaseImputer):
         return self
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().transform(X)
+
         return X
 
     transform.__doc__ = BaseImputer.transform.__doc__
