@@ -8,7 +8,8 @@ import pandas as pd
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
-# set return value typehint to Any here to avoid issues with the base transformer fit methods
+
+# set return value typehint to Any to avoid issues with the base transformer fit methods
 def _check_input_parameter_variables(variables: Variables) -> Any:
     """
     Checks that the input is of the correct type
@@ -35,7 +36,7 @@ def _check_input_parameter_variables(variables: Variables) -> Any:
 
 
 def _find_or_check_numerical_variables(
-    X: pd.DataFrame, variables: Union[None, int, str, List[Union[str, int]]] = None
+        X: pd.DataFrame, variables: Union[None, int, str, List[Union[str, int]]] = None
 ) -> List[Union[str, int]]:
     """
     Checks that variables provided by the user are of type numerical. If None was
@@ -76,7 +77,7 @@ def _find_or_check_numerical_variables(
 
 
 def _find_or_check_categorical_variables(
-    X: pd.DataFrame, variables: Union[None, int, str, List[Union[str, int]]] = None
+        X: pd.DataFrame, variables: Union[None, int, str, List[Union[str, int]]] = None
 ) -> List[Union[str, int]]:
     """
     Checks that variables provided by the user are of type object. If None was
@@ -115,7 +116,7 @@ def _find_or_check_categorical_variables(
 
 
 def _find_all_variables(
-    X: pd.DataFrame, variables: Optional[List[str]] = None
+        X: pd.DataFrame, variables: Optional[List[str]] = None
 ) -> List[str]:
     """
     If variables are None, captures all variables in the dataframe in a list.
