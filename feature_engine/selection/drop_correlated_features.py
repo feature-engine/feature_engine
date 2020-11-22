@@ -51,6 +51,11 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
         The correlation threshold above which a feature will be deemed correlated with
         another one and removed from the dataset.
 
+    missing_values: str, default=ignore
+        Takes values 'raise' and 'ignore'
+        Whether the missing values should be raised as error or ignored when
+        determining correlation.
+
     Attributes
     ----------
 
@@ -80,7 +85,7 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
         variables: Variables = None,
         method: str = "pearson",
         threshold: float = 0.8,
-        missing_values: str = "raise",
+        missing_values: str = "ignore",
     ):
 
         if method not in ["pearson", "spearman", "kendall"]:

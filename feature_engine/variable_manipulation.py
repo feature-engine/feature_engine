@@ -2,7 +2,7 @@
 # License: BSD 3 clause
 # functions shared across transformers
 
-from typing import List, Optional, Union, Any
+from typing import List, Union, Any
 
 import pandas as pd
 

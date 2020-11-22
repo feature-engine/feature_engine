@@ -1,13 +1,19 @@
+from typing import List, Union
+
+import pandas as pd
 from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_input_matches_training_df,
+    _check_contains_na,
 )
 from feature_engine.variable_manipulation import (
     _find_all_variables,
     _check_input_parameter_variables,
 )
+
+Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
@@ -27,12 +33,22 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
     variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         variables in the dataset.
+
+    missing_values: str, default=ignore
+        Takes values 'raise' and 'ignore'
+        Whether the missing values should be raised as error or ignored when
+        finding duplicated features.
     """
 
-    def __init__(self, variables=None):
-        self.variables = _check_input_parameter_variables(variables)
+    def __init__(self, variables: Variables = None, missing_values: str = 'ignore'):
 
-    def fit(self, X, y=None):
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
+
+        self.variables = _check_input_parameter_variables(variables)
+        self.missing_values = missing_values
+
+    def fit(self, X: pd.DataFrame, y: pd.Series = None):
 
         """
         Find duplicated features.
@@ -64,6 +80,10 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
 
         # find all variables or check those entered are in the dataframe
         self.variables = _find_all_variables(X, self.variables)
+
+        if self.missing_values == "raise":
+            # check if dataset contains na
+            _check_contains_na(X, self.variables)
 
         # create tuples of duplicated feature groups
         self.duplicated_feature_sets_ = []
@@ -130,6 +150,10 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
 
         # check if number of columns in test dataset matches to train dataset
         _check_input_matches_training_df(X, self.input_shape_[1])
+
+        if self.missing_values == "raise":
+            # check if dataset contains na
+            _check_contains_na(X, self.variables)
 
         # returned non-duplicate features
         X = X.drop(columns=self.duplicated_features_)

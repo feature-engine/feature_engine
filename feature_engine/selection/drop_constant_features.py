@@ -45,6 +45,7 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
         variables in the dataset.
 
     missing_values: str, default=raises
+        Takes values 'raise', 'ignore', 'include'.
         Whether the missing values should be raised as error, ignored or included as an
         additional value of the variable, when considering if the feature is constant
         or quasi-constant
