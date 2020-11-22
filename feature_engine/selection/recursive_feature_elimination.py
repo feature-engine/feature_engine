@@ -1,3 +1,5 @@
+from typing import List, Union
+
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
@@ -13,6 +15,8 @@ from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+
+Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
@@ -99,10 +103,10 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         estimator=RandomForestClassifier(),
-        scoring="roc_auc",
-        cv=3,
-        threshold=0.01,
-        variables=None,
+        scoring: str = "roc_auc",
+        cv: int = 3,
+        threshold: Union[int, float] = 0.01,
+        variables: Variables = None,
     ):
 
         if not isinstance(cv, int) or cv < 1:
@@ -117,7 +121,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         self.threshold = threshold
         self.cv = cv
 
-    def fit(self, X, y):
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
 
         Args
@@ -235,7 +239,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """
         Removes non-selected features. That is, features which did not cause a big
         estimator performance drop when removed from the dataset.

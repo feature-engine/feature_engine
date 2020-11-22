@@ -1,4 +1,7 @@
+from typing import List, Union
+
 import numpy as np
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import get_scorer
@@ -13,6 +16,8 @@ from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+
+Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
@@ -91,10 +96,10 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         estimator=RandomForestClassifier(),
-        scoring="roc_auc",
-        cv=3,
-        threshold=0.01,
-        variables=None,
+        scoring: str = "roc_auc",
+        cv: int = 3,
+        threshold: Union[float, int] = 0.01,
+        variables: Variables = None,
     ):
 
         if not isinstance(cv, int) or cv < 1:
@@ -109,7 +114,7 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
         self.threshold = threshold
         self.cv = cv
 
-    def fit(self, X, y):
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
 
         Args
@@ -197,7 +202,7 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """
         Removes non-selected features. That is, features which shuffling did not
         decrease the machine learning model performance beyond the indicated threshold.
