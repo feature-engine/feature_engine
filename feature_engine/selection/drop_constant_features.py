@@ -1,14 +1,21 @@
+from typing import List, Union
+
 import numpy as np
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
+
 from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_input_matches_training_df,
+    _check_contains_na,
 )
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
 )
+
+Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 class DropConstantFeatures(TransformerMixin, BaseEstimator):
@@ -28,7 +35,7 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
     Parameters
     ----------
 
-    tol: float, default=1
+    tol: float,int,  default=1
         Threshold to detect constant/quasi-constant features. Variables showing the
         same value in a percentage of observations greater than tol will be considered
         constant / quasi-constant and dropped.
@@ -36,17 +43,30 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
     variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         variables in the dataset.
+
+    missing_values: str, default=raises
+        Whether the missing values should be raised as error, ignored or included as an
+        additional value of the variable, when considering if the feature is constant
+        or quasi-constant
     """
 
-    def __init__(self, tol=1, variables=None):
+    def __init__(
+        self, tol: float = 1, variables: Variables = None, missing_values: str = "raise"
+    ):
 
-        if tol < 0 or tol > 1:
-            raise ValueError("tol takes values between 0 and 1")
+        if not isinstance(tol, (float, int)) or tol < 0 or tol > 1:
+            raise ValueError("tol must be a float or integer between 0 and 1")
+
+        if missing_values not in ["raise", "ignore", "include"]:
+            raise ValueError(
+                "missing_values takes only values 'raise', 'ignore' or " "'include'."
+            )
 
         self.tol = tol
         self.variables = _check_input_parameter_variables(variables)
+        self.missing_values = missing_values
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y: pd.Series = None):
 
         """
         Find constant and quasi-constant features.
@@ -74,32 +94,46 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
         # find all variables or check those entered are present in the dataframe
         self.variables = _find_all_variables(X, self.variables)
 
-        # find constant and quasi-constant
-        self.constant_features_ = []
+        if self.missing_values == "raise":
+            # check if dataset contains na
+            _check_contains_na(X, self.variables)
 
-        for feature in self.variables:
+        if self.missing_values == "include":
+            X[self.variables] = X[self.variables].fillna("missing_values")
 
-            predominant = (
-                (X[feature].value_counts() / np.float(len(X)))
-                .sort_values(ascending=False)
-                .values[0]
-            )
+        # find constant features
+        if self.tol == 1:
+            self.constant_features_ = [
+                feature for feature in self.variables if X[feature].nunique() == 1
+            ]
 
-            if predominant >= self.tol:
-                self.constant_features_.append(feature)
+        # find constant and quasi-constant features
+        else:
+            self.constant_features_ = []
 
-        # if total constant features is equal to total features raise an error
+            for feature in self.variables:
+                # find most frequent value / category in the variable
+                predominant = (
+                    (X[feature].value_counts() / np.float(len(X)))
+                    .sort_values(ascending=False)
+                    .values[0]
+                )
+
+                if predominant >= self.tol:
+                    self.constant_features_.append(feature)
+
+        # check we are not dropping all the columns in the df
         if len(self.constant_features_) == len(X.columns):
             raise ValueError(
                 "The resulting dataframe will have no columns after dropping all "
-                "constant features."
+                "constant or quasi-constant features. Try changing the tol value."
             )
 
         self.input_shape_ = X.shape
 
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """
         Drops the constant and quasi-constant features from a dataframe.
 
@@ -124,6 +158,10 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
 
         # check if number of columns in test dataset matches to train dataset
         _check_input_matches_training_df(X, self.input_shape_[1])
+
+        if self.missing_values == "raise":
+            # check if dataset contains na
+            _check_contains_na(X, self.variables)
 
         # returned selected features
         X = X.drop(columns=self.constant_features_)
