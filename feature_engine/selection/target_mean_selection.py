@@ -3,7 +3,7 @@ from typing import List, Union
 import pandas as pd
 from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.metrics import roc_auc_score, r2_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
@@ -22,8 +22,7 @@ from feature_engine.encoding import MeanEncoder
 
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
-    _find_or_check_categorical_variables,
-    _find_or_check_numerical_variables,
+    _find_all_variables,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -89,8 +88,8 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
         whether to create the bins for discretisation of numerical variables of
         equal width or equal frequency.
 
-    test_size: float, default=0.3
-        The test size setting of the data in the train_test_split method.
+    cv : int, default=3
+        Desired number of cross-validation fold to be used to fit the estimator.
 
     random_state: int, default=0
         The random state setting in the train_test_split method.
@@ -107,14 +106,14 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-        self,
-        variables: Variables = None,
-        scoring: str = "roc_auc_score",
-        threshold: float = 0.5,
-        bins: int = 5,
-        strategy: str = "equal_width",
-        test_size: float = 0.3,
-        random_state: int = None,
+            self,
+            variables: Variables = None,
+            scoring: str = "roc_auc_score",
+            threshold: float = 0.5,
+            bins: int = 5,
+            strategy: str = "equal_width",
+            cv: int = 3,
+            random_state: int = None,
     ):
 
         if scoring not in ["roc_auc_score", "r2_score"]:
@@ -149,8 +148,8 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
                 "'equal_frequency'."
             )
 
-        if not isinstance(test_size, float) or test_size >= 1 or test_size <= 0:
-            raise ValueError("'test_size' takes floats between 0 and 1")
+        if not isinstance(cv, int) or cv <= 1:
+            raise ValueError("cv takes integers bigger than 1")
 
         if not isinstance(random_state, int):
             raise TypeError("'random_state' takes only integers")
@@ -160,7 +159,7 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
         self.threshold = threshold
         self.bins = bins
         self.strategy = strategy
-        self.test_size = test_size
+        self.cv = cv
         self.random_state = random_state
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
@@ -184,58 +183,63 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
+        # check variables
+        self.variables = _find_all_variables(X, self.variables)
+
         # check if df contains na
         _check_contains_na(X, self.variables)
 
-        # split data into train and test sets
-        X_train, X_test, y_train, y_test = train_test_split(
-            X[self.variables],
-            y,
-            test_size=self.test_size,
-            random_state=self.random_state,
-        )
+        # limit df to variables to smooth code below
+        X = X[self.variables].copy()
 
-        # find or check for categorical and numerical variables
-        self.variables_categorical_ = _find_or_check_categorical_variables(
-            X, self.variables
-        )
-        self.variables_numerical_ = _find_or_check_numerical_variables(
-            X, self.variables
-        )
+        # find categorical and numerical variables
+        self.variables_categorical_ = list(X.select_dtypes(include="O").columns)
+        self.variables_numerical_ = list(X.select_dtypes(include=["float", "integer"]).columns)
 
-        # encode variables with mean of target
-        if len(self.variables_categorical_) > 0:
-            _pipeline_categorical = self._make_categorical_pipeline()
-            _pipeline_categorical.fit(X_train, y_train)
-            X_test = _pipeline_categorical.transform(X_test)
+        # obtain cross-validation indeces
+        skf = StratifiedKFold(n_splits=self.cv, shuffle=False, random_state=self.random_state)
+        skf.get_n_splits(X, y)
 
-        if len(self.variables_numerical_) > 0:
-            _pipeline_numerical = self._make_numerical_pipeline()
-            _pipeline_numerical.fit(X_train, y_train)
-            X_test = _pipeline_numerical.transform(X_test)
+        if self.variables_categorical_ and self.variables_numerical_:
+            _pipeline = self.make_combined_pipeline()
 
-        # select features
-        if self.scoring == "roc_auc_score":
-            self.selected_features_ = [
-                f
-                for f in self.variables
-                if roc_auc_score(y_test, X_test[f]) > self.threshold
-            ]
-
-            self.feature_performance_ = {
-                f: roc_auc_score(y_test, X_test[f]) for f in self.variables
-            }
+        elif self.variables_categorical_:
+            _pipeline = self._make_categorical_pipeline()
 
         else:
-            self.selected_features_ = [
+            _pipeline = self._make_numerical_pipeline()
+
+        # obtain feature performance with cross-validation
+        feature_importances_cv = []
+
+        for train_index, test_index in skf.split(X, y):
+            X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+
+            _pipeline.fit(X_train, y_train)
+
+            X_test = _pipeline.transform(X_test)
+
+            if self.scoring == "roc_auc_score":
+                tmp_split = {
+                    f: roc_auc_score(y_test, X_test[f]) for f in self.variables
+                }
+            else:
+                tmp_split = {
+                    f: r2_score(y_test, X_test[f]) for f in self.variables
+                }
+
+            feature_importances_cv.append(pd.Series(tmp_split))
+
+        feature_importances_cv = pd.concat(feature_importances_cv, axis=1)
+
+        self.feature_importances_ = feature_importances_cv.mean(axis=1).to_dict()
+
+        self.selected_features_ = [
                 f
                 for f in self.variables
-                if r2_score(y_test, X_test[f]) > self.threshold
+                if self.feature_importances_[f] > self.threshold
             ]
-
-            self.feature_performance_ = {
-                f: r2_score(y_test, X_test[f]) for f in self.variables
-            }
 
         self.input_shape_ = X.shape
 
@@ -243,7 +247,6 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
 
     def _make_numerical_pipeline(self):
 
-        # initialize categorical encoder
         if self.strategy == "equal_width":
             discretizer = EqualWidthDiscretiser(
                 bins=self.bins, variables=self.variables_numerical_, return_object=True
@@ -266,9 +269,31 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
 
     def _make_categorical_pipeline(self):
 
-        _pipeline_categorical = MeanEncoder(variables=self.variables_categorical_)
+        return MeanEncoder(variables=self.variables_categorical_)
 
-        return _pipeline_categorical
+    def _make_combined_pipeline(self):
+
+        if self.strategy == "equal_width":
+            discretizer = EqualWidthDiscretiser(
+                bins=self.bins, variables=self.variables_numerical_, return_object=True
+            )
+        else:
+            discretizer = EqualFrequencyDiscretiser(
+                q=self.bins, variables=self.variables_numerical_, return_object=True
+            )
+
+        encoder_num = MeanEncoder(variables=self.variables_numerical_)
+        encoder_cat = MeanEncoder(variables=self.variables_categorical_)
+
+        _pipeline_combined = Pipeline(
+            [
+                ("discretization", discretizer),
+                ("encoder_num", encoder_num),
+                ("encoder_cat", encoder_cat),
+            ]
+        )
+
+        return _pipeline_combined
 
     def transform(self, X: pd.DataFrame):
         """

@@ -1,32 +1,67 @@
-# import numpy as np
-# import pandas as pd
-# import pytest
-# from sklearn.exceptions import NotFittedError
-# from feature_engine.selection import SelectByTargetMeanPerformance
-#
-#
-# def test_target_mean_encoding_categorical_variables_r2_score(df_target_mean_encoding):
-#     transformer = SelectByTargetMeanPerformance(
-#         variables=["pclass", "sex", "cabin", "embarked"],
-#         target="survived",
-#         metrics_score="r2_score",
-#         variables_type=True,
-#     )
-#     X = transformer.fit_transform(df_target_mean_encoding)
-#
-#     # expected result
-#     df = pd.DataFrame(
-#         {
-#             "r2_score": {0: "sex", 1: "pclass", 2: "embarked", 3: "cabin"},
-#             "Importance": {
-#                 0: 0.2629646305571747,
-#                 1: 0.10118121894576682,
-#                 2: 0.04226338459397283,
-#                 3: -0.1563034966687058,
-#             },
-#         }
-#     )
-#     pd.testing.assert_frame_equal(X, df)
+import numpy as np
+import pandas as pd
+import pytest
+from sklearn.exceptions import NotFittedError
+from feature_engine.selection import SelectByTargetMeanPerformance
+
+
+def test_numerical_variables_roc_auc(df_test):
+    X, y = df_test
+
+    sel = SelectByTargetMeanPerformance(
+        variables=None,
+        scoring="roc_auc_score",
+        threshold=0.5,
+        bins=5,
+        strategy="equal_width",
+        cv=3,
+        random_state=1,
+    )
+
+    sel.fit(X, y)
+
+    # expected result
+    Xtransformed = X[["var_0", "var_1", "var_4", "var_6", "var_7", "var_8", "var_9"]]
+
+    # test init params
+    assert sel.variables == list(X.columns)
+    assert sel.scoring == "roc_auc_score"
+    assert sel.threshold == 0.5
+    assert sel.bins == 5
+    assert sel.strategy == "equal_width"
+    assert sel.cv == 3
+    assert sel.random_state == 1
+
+    # test fit attrs
+    assert sel.variables_categorical_ == []
+    assert sel.variables_numerical_ == list(X.columns)
+    assert sel.selected_features_ == [
+        "var_0",
+        "var_1",
+        "var_4",
+        "var_6",
+        "var_7",
+        "var_8",
+        "var_9",
+    ]
+    assert sel.feature_importances_ == {
+        "var_0": 0.6298643346836118,
+        "var_1": 0.546738831226783,
+        "var_2": 0.4920250989528098,
+        "var_3": 0.4958928064349751,
+        "var_4": 0.9740784566838783,
+        "var_5": 0.48309920779800297,
+        "var_6": 0.9699643088950318,
+        "var_7": 0.9900229706705611,
+        "var_8": 0.5386016649570867,
+        "var_9": 0.9356700249772539,
+        "var_10": 0.4706415126595849,
+        "var_11": 0.49769018353355704,
+    }
+    # test transform output
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
 #
 #
 # def test_target_mean_encoding_categorical_variables_roc_auc_score(
