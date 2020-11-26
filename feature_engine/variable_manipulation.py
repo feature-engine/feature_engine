@@ -36,7 +36,7 @@ def _check_input_parameter_variables(variables: Variables) -> Any:
 
 
 def _find_or_check_numerical_variables(
-        X: pd.DataFrame, variables: Variables = None
+    X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
     Checks that variables provided by the user are of type numerical. If None was
@@ -56,7 +56,7 @@ def _find_or_check_numerical_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if not variables:
+    elif not variables:
         # find numerical variables in dataset
         variables = list(X.select_dtypes(include="number").columns)
         if len(variables) == 0:
@@ -77,7 +77,7 @@ def _find_or_check_numerical_variables(
 
 
 def _find_or_check_categorical_variables(
-        X: pd.DataFrame, variables: Variables = None
+    X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
     Checks that variables provided by the user are of type object. If None was
@@ -97,7 +97,7 @@ def _find_or_check_categorical_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if not variables:
+    elif not variables:
         variables = list(X.select_dtypes(include="O").columns)
         if len(variables) == 0:
             raise ValueError(
@@ -116,7 +116,7 @@ def _find_or_check_categorical_variables(
 
 
 def _find_all_variables(
-        X: pd.DataFrame, variables: Variables = None
+    X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
     If variables are None, captures all variables in the dataframe in a list.
@@ -136,7 +136,7 @@ def _find_all_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if not variables:
+    elif not variables:
         variables = list(X.columns)
 
     else:

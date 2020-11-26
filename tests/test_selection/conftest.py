@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn.datasets import load_diabetes, make_classification
@@ -28,4 +29,29 @@ def load_diabetes_dataset():
     diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
     X = pd.DataFrame(diabetes_X)
     y = pd.DataFrame(diabetes_y)
+    return X, y
+
+
+@pytest.fixture(scope="module")
+def df_test_num_cat():
+    np.random.seed(1)
+
+    df = {
+        "var_A": ["A"] * 60 + ["B"] * 100 + ["C"] * 40,
+        "var_B": ["A"] * 100 + ["B"] * 60 + ["C"] * 40,
+        "var_C": np.random.normal(size=200),
+        "var_D": np.random.normal(size=200),
+        "target": np.concatenate(
+            (
+                np.random.binomial(1, 0.7, 60),
+                np.random.binomial(1, 0.2, 100),
+                np.random.binomial(1, 0.8, 40),
+            ),
+            axis=None,
+        ),
+    }
+
+    df = pd.DataFrame(df)
+    X = df[["var_A", "var_B", "var_C", "var_D"]]
+    y = df["target"]
     return X, y

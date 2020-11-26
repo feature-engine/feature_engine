@@ -31,8 +31,8 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
     """
     SelectByTargetMeanPerformance selects features by using the mean value of the
-    target per category or bin as proxy of target estimation, by determining its
-    performance.
+    target per category or bin, if the variable is numerical, as proxy of target
+    estimation, by determining its performance.
 
     Works with both numerical and categorical variables.
 
@@ -106,14 +106,14 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-            self,
-            variables: Variables = None,
-            scoring: str = "roc_auc_score",
-            threshold: float = 0.5,
-            bins: int = 5,
-            strategy: str = "equal_width",
-            cv: int = 3,
-            random_state: int = None,
+        self,
+        variables: Variables = None,
+        scoring: str = "roc_auc_score",
+        threshold: float = 0.5,
+        bins: int = 5,
+        strategy: str = "equal_width",
+        cv: int = 3,
+        random_state: int = None,
     ):
 
         if scoring not in ["roc_auc_score", "r2_score"]:
@@ -124,8 +124,8 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
                 "'scoring'"
             )
 
-        if not isinstance(threshold, float):
-            raise ValueError("threshold can only take float")
+        if not isinstance(threshold, (int, float)):
+            raise ValueError("threshold can only take integer or float")
 
         if scoring == "roc_auc_score" and (threshold < 0.5 or threshold > 1):
             raise ValueError(
@@ -151,7 +151,7 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
         if not isinstance(cv, int) or cv <= 1:
             raise ValueError("cv takes integers bigger than 1")
 
-        if not isinstance(random_state, int):
+        if random_state and not isinstance(random_state, int):
             raise TypeError("'random_state' takes only integers")
 
         self.variables = _check_input_parameter_variables(variables)
@@ -194,14 +194,18 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
 
         # find categorical and numerical variables
         self.variables_categorical_ = list(X.select_dtypes(include="O").columns)
-        self.variables_numerical_ = list(X.select_dtypes(include=["float", "integer"]).columns)
+        self.variables_numerical_ = list(
+            X.select_dtypes(include=["float", "integer"]).columns
+        )
 
         # obtain cross-validation indeces
-        skf = StratifiedKFold(n_splits=self.cv, shuffle=False, random_state=self.random_state)
+        skf = StratifiedKFold(
+            n_splits=self.cv, shuffle=True, random_state=self.random_state
+        )
         skf.get_n_splits(X, y)
 
         if self.variables_categorical_ and self.variables_numerical_:
-            _pipeline = self.make_combined_pipeline()
+            _pipeline = self._make_combined_pipeline()
 
         elif self.variables_categorical_:
             _pipeline = self._make_categorical_pipeline()
@@ -225,21 +229,19 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
                     f: roc_auc_score(y_test, X_test[f]) for f in self.variables
                 }
             else:
-                tmp_split = {
-                    f: r2_score(y_test, X_test[f]) for f in self.variables
-                }
+                tmp_split = {f: r2_score(y_test, X_test[f]) for f in self.variables}
 
             feature_importances_cv.append(pd.Series(tmp_split))
 
         feature_importances_cv = pd.concat(feature_importances_cv, axis=1)
 
-        self.feature_importances_ = feature_importances_cv.mean(axis=1).to_dict()
+        self.feature_performance_ = feature_importances_cv.mean(  # type: ignore
+            axis=1
+        ).to_dict()
 
         self.selected_features_ = [
-                f
-                for f in self.variables
-                if self.feature_importances_[f] > self.threshold
-            ]
+            f for f in self.variables if self.feature_performance_[f] > self.threshold
+        ]
 
         self.input_shape_ = X.shape
 
