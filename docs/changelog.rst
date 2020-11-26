@@ -52,13 +52,15 @@ We renamed a few parameters to unify the nomenclature across the Package.
     - **DropDuplicateFeatures**: DropDuplicateFeatures finds and removes duplicated features from a dataset (**by Tejash Shah and Soledad Galli**)
     - **DropCorrelatedFeatures**: DropCorrelatedFeatures finds and removes features that are correlated (**by Nicolas Galli**)
     - **ShuffleFeaturesSelector**: ShuffleFeaturesSelector selects features by determining the drop in machine learning model performance when each feature's values are randomly shuffled from a dataframe (**by Sana Ben Driss**)
+    - **SelectBySingleFeaturePerformance**: SelectBySingleFeaturePerformance trains a model based of each individual features, and derives performance (**by Nicolas Galli**)
+    - **SelectByTargetMeanPerformance**: SelectByTargetMeanPerformance selects features encoding the categories with the target mean and using that as proxy for performance (**by Tung Lee and Soledad Galli**)
     - **RecursiveFeatureElimination**: RecursiveFeatureElimination selects features recursively, evaluating the drop in ML performance, from the least to the important feature (**by Sana Ben Driss**)
 
 **Code Architecture - Important for Contributors and Developers**:
     - **Submodules**: transformers have been grouped within relevant submodules and modules.
     - **Individual tests**: testing classes have been subdivided into individual tests
     - **Code Style**: we adopted the use of flake8 for linting and PEP8 style checks, and black for automatic re-styling of code.
-    - **Type hint**: we are slowly rolling out the use of type hint throughout Feature-engine classes and functions (**by Nodar Okroshiashvili**)
+    - **Type hint**: rolled out the use of type hint throughout Feature-engine classes and functions (**by Nodar Okroshiashvili, Soledad Galli and Chris Samiullah**)
 
 **Other Changes**:
     - **Updated documentation**: documentation reflects the current use of Feature-engine transformers
