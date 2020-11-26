@@ -1,17 +1,24 @@
+import pandas as pd 
+
 from sklearn.base import TransformerMixin, BaseEstimator
+from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 from sklearn.model_selection import train_test_split
+
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import r2_score
-from feature_engine.variable_manipulation import _find_all_variables
-from feature_engine.variable_manipulation import _find_categorical_variables
-from feature_engine.variable_manipulation import _find_numerical_variables
-from feature_engine.variable_manipulation import _define_variables
-from feature_engine.dataframe_checks import _is_dataframe
-from feature_engine import categorical_encoders as ce
-from feature_engine import discretisers as dsc
 
-import pandas as pd 
+from feature_engine.variable_manipulation import (
+        _find_categorical_variables,
+        _find_numerical_variables,
+        _define_variables
+)
+
+from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.categorical_encoders import MeanCategoricalEncoder
+from feature_engine.discretisers import EqualFrequencyDiscretiser 
+
+
 
 class TargetMeanEncoderFeatureSelector(BaseEstimator, TransformerMixin):
     """
@@ -55,13 +62,16 @@ class TargetMeanEncoderFeatureSelector(BaseEstimator, TransformerMixin):
 
     """
 
-    def __init__(self, variables=None, scoring='roc_auc_score'):
+    def __init__(self, variables=None, scoring='roc_auc_score', quantiles=5, test_size=0.3, random_state=0):
         self.variables = _define_variables(variables)
         self.scoring = scoring
+        self.quantiles = quantiles
+        self.test_size = test_size
+        self.random_state = random_state
         self.X_test_enc = None
         self.y_test = None
 
-    def fit(self, X, y, quantiles=5, test_size=0.3, random_state=0):
+    def fit(self, X, y):
         """
         Performs
         --------
@@ -110,75 +120,69 @@ class TargetMeanEncoderFeatureSelector(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # find all variables or check those entered are in the dataframe
-        self.variables = _find_all_variables(X, self.variables)
-        
         # find categorical variables or check that those vars entered by the user
         # are of type object
-        cat_variables = _find_categorical_variables(X[self.variables] if self.variables else X)
-        num_variables = _find_numerical_variables(X[self.variables] if self.variables else X)
+        self.variables_categorical = _find_categorical_variables(X[self.variables] if self.variables else X)
+        self.variables_numerical = _find_numerical_variables(X[self.variables] if self.variables else X)
 
         data = pd.concat([X, y], axis=1) # column appending.
         data.columns = list(X.columns) + ['target']
 
         # split data into train and test sets
         X_train, X_test, y_train, y_test = train_test_split(
-                                                data[cat_variables + num_variables + ['target']],
+                                                data[self.variables_categorical + self.variables_numerical + ['target']],
                                                 data['target'],
-                                                test_size = test_size,
-                                                random_state = random_state)
-
-        ## filling missing values.
-        for col in cat_variables:
-            X_train[col].fillna('M', inplace=True)
-            X_test[col].fillna('M', inplace=True)
-
-        for col in num_variables:
-            X_train[col].fillna(0, inplace=True)
-            X_test[col].fillna(0, inplace=True)
+                                                test_size = self.test_size,
+                                                random_state = self.random_state)
 
         # categorical variables
-        if cat_variables: 
-            # create the mean encoder instance 
-            encoder = ce.MeanCategoricalEncoder()
-            # fit
-            encoder.fit(X_train[cat_variables], y_train)
-            # transform
-            X_train_cat_enc, X_test_cat_enc = encoder.transform(X_train[cat_variables]), encoder.transform(X_test[cat_variables])
+        ## create the mean encoder instance 
+        categorical_encoder = MeanCategoricalEncoder(variables = self.variables_categorical)
+        # fit
+        categorical_encoder.fit(X_train[self.variables_categorical], y_train)
+        # transform
+        X_train_cat_enc, X_test_cat_enc = categorical_encoder.transform(X_train[self.variables_categorical]), categorical_encoder.transform(X_test[self.variables_categorical])
+        # filling missing values on the results
+        X_train_cat_enc, X_test_cat_enc = X_train_cat_enc.fillna(0), X_test_cat_enc.fillna(0)
 
-            # filling missing values on the results
-            X_train_cat_enc, X_test_cat_enc = X_train_cat_enc.fillna(0), X_test_cat_enc.fillna(0)
 
         # numerical variables
         self.numerical_binned_ = dict()
-        if num_variables: 
-            # Equal-frequency discretizer
-            disc = dsc.EqualFrequencyDiscretiser(q=quantiles, variables=num_variables, return_object=True)
-            # fit train data
-            disc.fit(X_train[num_variables])
-            # transform the data
-            X_train_t = disc.transform(X_train[num_variables])
-            X_test_t = disc.transform(X_test[num_variables])
+        # Equal-frequency discretizer
+        equalFreqDiscretiser = EqualFrequencyDiscretiser(q=self.quantiles, variables=self.variables_numerical, return_object=True)
+        # fit train data
+        equalFreqDiscretiser.fit(X_train[self.variables_numerical])
+        # transform the data
+        X_train_t = equalFreqDiscretiser.transform(X_train[self.variables_numerical])
+        X_test_t = equalFreqDiscretiser.transform(X_test[self.variables_numerical])
 
-            # create the mean encoder instance 
-            encoder = ce.MeanCategoricalEncoder()
-            # mean encoding
-            encoder.fit(X_train_t[num_variables], y_train)
-            X_train_num_enc, X_test_num_enc = encoder.transform(X_train_t[num_variables]), encoder.transform(X_test_t[num_variables])
-            X_train_num_enc.columns = [i+'_binned' for i in X_train_num_enc.columns]
-            X_test_num_enc.columns = [i+'_binned' for i in X_test_num_enc.columns]
+        # create the mean encoder instance 
+        numerical_encoder = MeanCategoricalEncoder()
+        numerical_encoder.fit(X_train_t[self.variables_numerical], y_train)
+        X_train_num_enc, X_test_num_enc = numerical_encoder.transform(X_train_t[self.variables_numerical]), numerical_encoder.transform(X_test_t[self.variables_numerical])
+        X_train_num_enc.columns = [i+'_binned' for i in X_train_num_enc.columns]
+        X_test_num_enc.columns = [i+'_binned' for i in X_test_num_enc.columns]
 
-            self.numerical_binned_ = disc.binner_dict_
-            # filling missing values on the results
-            X_train_num_enc, X_test_num_enc = X_train_num_enc.fillna(0), X_test_num_enc.fillna(0)
+        self.numerical_binned_ = equalFreqDiscretiser.binner_dict_
 
+        # # pipeline for the encoder
+        # self.encoder_ = Pipeline(
+        #     [
+        #         ("categorical_encoder", categorical_encoder),
+        #         ("equal_frequency_discretiser", equalFreqDiscretiser),
+        #         ("numerical_encoder", numerical_encoder),
+                
+        #     ]
+        # )
+
+        # self.encoder_.fit(X, y)
 
         # results
-        if num_variables and cat_variables:
+        if self.variables_numerical and self.variables_categorical:
             X_test_enc = pd.concat([X_test_cat_enc, X_test_num_enc], axis=1)
-        elif num_variables and not cat_variables:
+        elif self.variables_numerical and not self.variables_categorical:
             X_test_enc = X_test_num_enc
-        elif cat_variables and not num_variables:
+        elif self.variables_categorical and not self.variables_numerical:
             X_test_enc = X_test_cat_enc
         else:
             raise ValueError("No variables found!")
@@ -235,7 +239,7 @@ class TargetMeanEncoderFeatureSelector(BaseEstimator, TransformerMixin):
 
         return output
 
-    def fit_transform(self, X, y, quantiles=5, test_size=0.3, random_state=0):
+    def fit_transform(self, X, y):
         """
         Performs
         --------
@@ -260,5 +264,5 @@ class TargetMeanEncoderFeatureSelector(BaseEstimator, TransformerMixin):
             None
 
         """
-        self.fit(X, y, quantiles=quantiles, test_size=test_size, random_state=random_state)
-        return self.transform(self.X_test_enc, self.y_test)
+        self.fit(X, y)
+        return self.transform()
