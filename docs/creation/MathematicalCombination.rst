@@ -1,10 +1,22 @@
 MathematicalCombination
 =======================
 
-    MathematicalCombination() applies basic mathematical operations to multiple features,
-    returning one or more additional features as a result. Tha is, it sums, multiplies,
-    takes the average, maximum, minimum or standard deviation of a group of variables
-    and returns the result into new variables.
+API Reference
+-------------
+
+.. autoclass:: feature_engine.creation.MathematicalCombination
+    :members:
+
+
+Example
+-------
+
+MathematicalCombination() applies basic mathematical operations to multiple
+features, returning one or more additional features as a result. Tha is, it sums,
+multiplies, takes the average, maximum, minimum or standard deviation of a group
+of variables and returns the result into new variables.
+
+In this example, we sum 2 variables from the houseprices dataset.
 
 .. code:: python
 
@@ -23,7 +35,7 @@ MathematicalCombination
     )
 
     math_combinator = MathematicalCombination(
-        variables=['LotFrontage', 'LotArea'],
+        variables_to_combine=['LotFrontage', 'LotArea'],
         math_operations = ['sum'],
         new_variables_names = ['LotTotal']
     )
@@ -52,8 +64,4 @@ MathematicalCombination
     1384         60.0     9060    9120.0
     1100         60.0     8400    8460.0
 
-API Reference
--------------
 
-.. autoclass:: feature_engine.creation.MathematicalCombination
-    :members:

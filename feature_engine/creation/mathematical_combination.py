@@ -14,8 +14,10 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 
 class MathematicalCombination(BaseEstimator, TransformerMixin):
     """
-    MathematicalCombination() applies basic mathematical operations across features,
-    returning 1 or more additional features as a result.
+    MathematicalCombination() applies basic mathematical operations to multiple features,
+    returning one or more additional features as a result. That is, it sums, multiplies,
+    takes the average, maximum, minimum or standard deviation of a group of variables
+    and returns the result into new variables.
 
     For example, if we have the variables number_payments_first_quarter,
     number_payments_second_quarter, number_payments_third_quarter and
@@ -25,7 +27,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
     .. code-block:: python
 
         transformer = MathematicalCombination(
-            variables=[
+            variables_to_combine=[
                 'number_payments_first_quarter',
                 'number_payments_second_quarter',
                 'number_payments_third_quarter',
@@ -41,23 +43,23 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
             ]
         )
 
-        transformer.fit_transform(X)
+        Xt = transformer.fit_transform(X)
 
-    The transformed X will contain the additional features total_number_payments and
-    mean_number_payments, plus the original set of variables.
+    The transformed X, Xt, will contain the additional features total_number_payments
+    and mean_number_payments, plus the original set of variables.
 
     Parameters
     ----------
 
-    variables_to_combine: list
+    variables_to_combine : list
         The list of numerical variables to be combined.
 
-    math_operations: list, default=None
-        The list of basic math operations to be used in transformation.
+    math_operations : list, default=None
+        The list of basic math operations to be used to create the new features.
 
         If none, all of ['sum', 'prod', 'mean', 'std', 'max', 'min'] will be performed
-        over the variables. Alternatively, user can enter the list of operations to
-        carry out.
+        over the variables_to_combine. Alternatively, the user can enter the list of
+        operations to carry out.
 
         Each operation should be a string and must be one of the elements
         from the list: ['sum', 'prod', 'mean', 'std', 'max', 'min']
@@ -65,11 +67,11 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         Each operation will result in a new variable that will be added to the
         transformed dataset.
 
-    new_variables_names: list, default=None
+    new_variables_names : list, default=None
         Names of the newly created variables. The user can enter a name or a list
-        of names for the newly created features (recommended). User must enter
+        of names for the newly created features (recommended). The user must enter
         one name for each mathematical transformation indicated in the math_operations
-        attribute. That is, if you want to perform mean and sum of features, you
+        parameter. That is, if you want to perform mean and sum of features, you
         should enter 2 new variable names. If you perform only mean of features,
         enter 1 variable name. Alternatively, if you chose to perform all
         mathematical transformations, enter 6 new variable names.
@@ -80,9 +82,39 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         name will be assigned to the mean of the variables and the second variable name
         to the product of the variables.
 
-        If new_variable_names=None, the transformer will assign an arbitrary name
+        If new_variable_names = None, the transformer will assign an arbitrary name
         to the newly created features starting by the name of the mathematical
         operation, followed by the variables combined separated by -.
+
+    Attributes
+    ----------
+    combination_dict_ : dictionary
+        A dictionary containing the mathematical operation : column name pairs
+
+    math_operations_ : list
+        A list with the mathematical operations to be applied to the
+        variables_to_combine.
+
+    Methods
+    -------
+
+    fit
+    transform
+    fit_transform
+
+    Notes
+    -----
+    Although the transformer in essence allows us to combine any feature with any of
+    the allowed mathematical operations, its used is intended mostly for the creation
+    of new features based on some domain knowledge. Typical examples within the
+    financial sector are:
+
+    - Sum debt across financial products, i.e., credit cards, to obtain the total debt.
+    - Take the average payments to various financial products per month.
+    - Find the Minimum payment done at any one month.
+
+    In insurance, we can sum the damage to various parts of a car to obtain the
+    total damage.
 
     """
 
@@ -149,19 +181,31 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Performs dataframe checks.
+        Performs dataframe checks. Creates dictionary of operation to new feature
+        name pairs.
 
-        Args:
-            X: pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the variables to transform.
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The training input samples. Can be the entire dataframe, not just the
+            variables to transform.
 
-            y: It is not needed in this transformer.
-            Defaults to None. Alternatively takes Pandas Series
+        y : pandas Series, or np.array. Defaults to None.
+            It is not needed in this transformer. You can pass y or None.
 
-        Returns:
-            self
+        Raises
+        ------
+        TypeError : If the input is not the Pandas DataFrame
+        TypeError : If any user provided variables in variables_to_combine are not
+            numerical
+        ValueError : If variable(s) contain null values
+
+        Returns
+        -------
+        self
+
         """
+
         # check input dataframe
         X = _is_dataframe(X)
 
@@ -200,17 +244,23 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Transforms source dataset.
+        Combines the variables with the mathematical operations. Returns dataframe
+        with the original variables plus the new variables.
 
-        Adds a column for each operation with the calculation based on the variables
-        and operations indicated when setting up the transformer.
-
-        Args:
-            X: pandas dataframe of shape = [n_samples, n_features]
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
 
-        Returns:
-            Pandas dataframe, shape = [n_samples, n_features + n_operations]
+        Raises
+        ------
+        TypeError : If the input is not the Pandas DataFrame
+        ValueError : If variable(s) contain null values
+        ValueError: If dataframe not of same size as that used in fit()
+
+        Returns
+        -------
+        X : Pandas dataframe, shape = [n_samples, n_features + n_operations]
             The dataframe with the operations results added as columns.
         """
 

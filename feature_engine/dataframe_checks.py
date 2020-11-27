@@ -1,5 +1,7 @@
-# Authors: Soledad Galli <solegalli@protonmail.com>
-# License: BSD 3 clause
+"""Series of checks to be performed on dataframes used as inputs of methods fit() and
+transform().
+
+"""
 
 from typing import List, Union
 
@@ -8,46 +10,56 @@ import pandas as pd
 
 def _is_dataframe(X: pd.DataFrame) -> pd.DataFrame:
     """
-    Checks if the input is a DataFrame.
-    Creates the copy of the initial DataFrame.
+    Checks if the input is a DataFrame and then creates a copy.
 
-    Args:
-        X: Argument to perform check against
+    Parameters
+    ----------
+    X : pandas Dataframe. The one that will be checked and copied.
 
-    Raises:
-        TypeError: If the input is not the Pandas DataFrame
+    Raises
+    ------
+    TypeError: If the input is not the Pandas DataFrame
 
-    Returns:
-        The copy of initial DataFrame.
-        Important not to transform the original dataset.
+    Returns
+    -------
+    X : pandas Dataframe.
+        A copy of original DataFrame. Important step not to transform the original
+        dataset of the user, accidentally.
+
     """
 
     if not isinstance(X, pd.DataFrame):
-        raise TypeError("The data set should be a pandas dataframe")
+        raise TypeError("X is not a pandas dataframe. The dataset should be a "
+                        "pandas dataframe.")
 
     return X.copy()
 
 
 def _check_input_matches_training_df(X: pd.DataFrame, reference: int) -> None:
     """
-    Check that DataFrame to transform has the same number
-    of columns that the DataFrame used during fit method.
+    Checks that DataFrame to transform has the same number of columns that the
+    DataFrame used with the fit() method.
 
-    Args:
-        X: Pandas DataFrame to perform comparison
-        reference: Number of columns
+    Parameters
+    ----------
+    X : Pandas DataFrame, the one to be checked
+    reference : int, the number of columns in the dataframe that was used with the
+        fit() method.
 
-    Raises:
-        ValueError: If number of columns is not the same
+    Raises
+    ------
+    ValueError : If the number of columns does not match.
 
-    Returns:
-        None
+    Returns
+    -------
+    None
+
     """
 
     if X.shape[1] != reference:
         raise ValueError(
-            "The number of columns in this data set is different from the one used to "
-            "fit this transformer (when using the fit method)"
+            "The number of columns in this dataset is different from the one used to "
+            "fit this transformer (when using the fit() method)."
         )
 
     return None
@@ -55,14 +67,18 @@ def _check_input_matches_training_df(X: pd.DataFrame, reference: int) -> None:
 
 def _check_contains_na(X: pd.DataFrame, variables: List[Union[str, int]]) -> None:
     """
-    Checks if DataFrame columns contain null values.
+    Checks if DataFrame contains null values in the selected columns.
 
-    Args:
-        X: Pandas DataFrame to perform check against
-        variables: List of variables to check for null values
+    Parameters
+    ----------
+    X : Pandas DataFrame
+    variables : List, the selected group of variables in which null values will be
+        examined.
 
-    Raises:
-        ValueError: If variable(s) contain null values
+    Raises
+    ------
+    ValueError: If variable(s) contain null values
+
     """
     if X[variables].isnull().values.any():
         raise ValueError(
