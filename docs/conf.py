@@ -16,7 +16,7 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
+
 import os
 import sys
 
@@ -27,7 +27,6 @@ sys.path.insert(1, os.path.dirname(os.path.abspath("../")) + os.sep + "feature_e
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#
 # needs_sphinx = '1.0'
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -43,8 +42,8 @@ extensions = [
     #   'sphinx.ext.ifconfig',
     "sphinx.ext.viewcode",
     "sphinx.ext.githubpages",
-    #    'sphinx.ext.autosummary',
-    "sphinx.ext.napoleon",
+    'sphinx.ext.autosummary',
+    # "sphinx.ext.napoleon",
     "numpydoc",
 ]
 
@@ -68,7 +67,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "feature-engine"
-copyright = "2018-2020, Soledad Galli"
+copyright = "2018-2020, Feature-engine developers"
 author = "Soledad Galli"
 
 # The version info for the project you're documenting, acts as replacement for
