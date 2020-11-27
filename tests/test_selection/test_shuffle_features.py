@@ -7,7 +7,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 
-from feature_engine.selection import ShuffleFeaturesSelector
+from feature_engine.selection import SelectByShuffling
 
 
 @pytest.fixture(scope="module")
@@ -40,7 +40,7 @@ def load_diabetes_dataset():
 
 def test_default_parameters(df_test):
     X, y = df_test
-    sel = ShuffleFeaturesSelector(RandomForestClassifier(random_state=1))
+    sel = SelectByShuffling(RandomForestClassifier(random_state=1))
     sel.fit(X, y)
 
     # expected result
@@ -74,7 +74,7 @@ def test_default_parameters(df_test):
 def test_regression_cv_3_and_r2(load_diabetes_dataset):
     #  test for regression using cv=3, and the r2 as metric.
     X, y = load_diabetes_dataset
-    sel = ShuffleFeaturesSelector(estimator=LinearRegression(), scoring="r2", cv=3)
+    sel = SelectByShuffling(estimator=LinearRegression(), scoring="r2", cv=3)
     sel.fit(X, y)
 
     # expected output
@@ -97,7 +97,7 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     # add suitable threshold for regression mse
 
     X, y = load_diabetes_dataset
-    sel = ShuffleFeaturesSelector(
+    sel = SelectByShuffling(
         estimator=DecisionTreeRegressor(random_state=0),
         scoring="neg_mean_squared_error",
         cv=2,
@@ -124,15 +124,15 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
 def test_non_fitted_error(df_test):
     # when fit is not called prior to transform
     with pytest.raises(NotFittedError):
-        sel = ShuffleFeaturesSelector()
+        sel = SelectByShuffling()
         sel.transform(df_test)
 
 
 def test_raises_cv_error():
     with pytest.raises(ValueError):
-        ShuffleFeaturesSelector(cv=0)
+        SelectByShuffling(cv=0)
 
 
 def test_raises_threshold_error():
     with pytest.raises(ValueError):
-        ShuffleFeaturesSelector(threshold=None)
+        SelectByShuffling(threshold=None)
