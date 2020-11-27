@@ -14,10 +14,10 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 
 class MathematicalCombination(BaseEstimator, TransformerMixin):
     """
-    MathematicalCombination() applies basic mathematical operations to multiple features,
-    returning one or more additional features as a result. That is, it sums, multiplies,
-    takes the average, maximum, minimum or standard deviation of a group of variables
-    and returns the result into new variables.
+    MathematicalCombination() applies basic mathematical operations to multiple
+    features, returning one or more additional features as a result. That is, it sums,
+    multiplies, takes the average, maximum, minimum or standard deviation of a group
+    of variables and returns the result into new variables.
 
     For example, if we have the variables number_payments_first_quarter,
     number_payments_second_quarter, number_payments_third_quarter and
