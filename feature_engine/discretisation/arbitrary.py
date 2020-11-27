@@ -17,8 +17,8 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
     the limits of the intervals as values. For example {'var1':[0, 10, 100, 1000],
     'var2':[5, 10, 15, 20]}.
 
-     ArbitraryDiscretiser() will then sort var1 values into the intervals 0-10, 10-100
-     100-1000, and var2 into 5-10, 10-15 and 15-20. Similar to pandas.cut
+    ArbitraryDiscretiser() will then sort var1 values into the intervals 0-10, 10-100
+    100-1000, and var2 into 5-10, 10-15 and 15-20. Similar to pandas.cut
 
     The  ArbitraryDiscretiser() works only with numerical variables. The discretiser
     will check if the dictionary entered by the user contains variables present in the
