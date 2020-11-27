@@ -33,7 +33,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         The dictionary with the variable : interval limits pairs, provided by the user.
         A valid dictionary looks like this:
 
-         binning_dict = {'var1':[0, 10, 100, 1000], 'var2':[5, 10, 15, 20]}.
+        binning_dict = {'var1':[0, 10, 100, 1000], 'var2':[5, 10, 15, 20]}.
 
     return_object : bool, default=False
         Whether the numbers in the discrete variable should be returned as
@@ -51,7 +51,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     Attributes
     ----------
-    binner_dict_: dictionary
+    binner_dict_ : dictionary
         The dictionary containing the {variable: interval limits} pairs used
         to sort the values into discrete intervals.
 
@@ -63,7 +63,8 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     See Also
     --------
-    pandas.cut
+    pandas.cut :
+        https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.cut.html
 
     """
 
