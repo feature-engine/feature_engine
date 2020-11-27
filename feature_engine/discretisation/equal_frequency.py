@@ -24,10 +24,9 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
     will automatically select and transform all numerical variables.
 
     The EqualFrequencyDiscretiser() first finds the boundaries for the intervals or
-    quantiles for each variable, fit.
+    quantiles for each variable.
 
-    Then it transforms the variables, that is, it sorts the values into the intervals,
-    transform.
+    Then it transforms the variables, that is, it sorts the values into the intervals.
 
     Parameters
     ----------
@@ -46,9 +45,35 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
         whether they would like to proceed the engineering of the variable as
         if it was numerical or categorical.
 
-    return_boundaries: bool, default=False
+    return_boundaries : bool, default=False
         whether the output should be the interval boundaries. If True, it returns
         the interval boundaries. If False, it returns integers.
+
+    Attributes
+    ----------
+    binner_dict_: dictionary
+        The dictionary containing the {variable: interval limits} pairs used
+        to sort the values into discrete intervals.
+
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
+
+    See Also
+    --------
+    pandas.qcut :
+        https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.qcut.html
+
+    References
+    ----------
+    .. [1] Kotsiantis and Pintelas, "Data preprocessing for supervised leaning,"
+        International Journal of Computer Science,  vol. 1, pp. 111 117, 2006.
+
+    .. [2] Dong. "Beating Kaggle the easy way". Master Thesis.
+        https://www.ke.tu-darmstadt.de/lehre/arbeiten/studien/2015/Dong_Ying.pdf
+
     """
 
     def __init__(
@@ -75,25 +100,30 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the limits of the equal frequency intervals, that is the
-        quantiles for each variable.
+        Learns the limits of the equal frequency intervals, that is the percentiles
+        for each variable.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the variables to be transformed.
+            The training dataset. Can be the entire dataframe, not just the variables
+            to be transformed.
         y : None
             y is not needed in this encoder. You can pass y or None.
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError : If the input is not the Pandas DataFrame
+        TypeError : If any user provided variables in variables_to_combine are not
+            numerical
+        ValueError : If variable(s) contain null values
 
-        binner_dict_: dictionary
-            The dictionary containing the {variable: interval limits} pairs used
-            to sort the values into discrete intervals.
+        Returns
+        -------
+        self
+
         """
+
         # check input dataframe
         X = super().fit(X, y)
 
@@ -117,16 +147,22 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The input samples.
+            The data to transform.
+
+        Raises
+        ------
+        TypeError : If the input is not the Pandas DataFrame
+        ValueError : If variable(s) contain null values
+        ValueError: If dataframe not of same size as that used in fit()
 
         Returns
         -------
-
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The transformed data with the discrete variables.
+
         """
+
         # check input dataframe and if class was fitted
         X = super().transform(X)
 
