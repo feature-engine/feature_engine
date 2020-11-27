@@ -20,36 +20,31 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     2009 competition:
     http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf
 
-    At the moment, this transformer only works for binary classification or
-    regression. Multi-class classification is not supported.
-
     The DecisionTreeDiscretiser() works only with numerical variables.
     A list of variables can be passed as an argument. Alternatively, the
     discretiser will automatically select all numerical variables.
 
-    The DecisionTreeDiscretiser() first trains a decision tree for each variable,
-    fit.
+    The DecisionTreeDiscretiser() first trains a decision tree for each variable.
 
     The DecisionTreeDiscretiser() then transforms the variables, that is,
     makes predictions based on the variable values, using the trained decision
-    tree, transform.
+    tree.
 
     Parameters
     ----------
-
     cv : int, default=3
         Desired number of cross-validation fold to be used to fit the decision
         tree.
 
     scoring: str, default='neg_mean_squared_error'
         Desired metric to optimise the performance for the tree. Comes from
-        sklearn metrics. See DecisionTreeRegressor or DecisionTreeClassifier
+        sklearn.metrics. See DecisionTreeRegressor or DecisionTreeClassifier
         model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
     variables : list
         The list of numerical variables that will be transformed. If None, the
-        discretiser will automatically select all numerical type variables.
+        discretiser will automatically select all numerical variables.
 
     regression : boolean, default=True
         Indicates whether the discretiser should train a regression or a classification
@@ -68,6 +63,34 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         of the parameters of the Scikit-learn's DecisionTreeRegressor() or
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
+
+    Attributes
+    ----------
+    binner_dict_: dictionary
+        The dictionary containing the {variable: fitted tree} pairs.
+
+    scores_dict_ : dictionary
+        The score of the best decision tree, over the train set.
+        Provided in case the user wishes to understand the performance of the
+        decision tree.
+
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
+
+    See Also
+    --------
+    sklearn.tree.DecisionTreeClassifier
+    sklearn.tree.DecisionTreeRegressor
+
+    References
+    ----------
+    .. [1] Niculescu-Mizil, et al. "Winning the KDD Cup Orange Challenge with Ensemble
+        Selection". JMLR: Workshop and Conference Proceedings 7: 23-34. KDD 2009
+        http://proceedings.mlr.press/v7/niculescu09/niculescu09.pdf
+
     """
 
     def __init__(
@@ -104,21 +127,22 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         ----------
 
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the variables to transform.
+            The training dataset. Can be the entire dataframe, not just the
+            variables to be transformed.
         y : pandas series.
             Target variable. Required to train the decision tree.
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError : If the input is not the Pandas DataFrame
+        ValueError : If there are no numerical variables in df or df is empty
+        TypeError : If any user provided variables are not numerical
+        ValueError : If variable(s) contain null values
 
-        binner_dict_: dictionary
-            The dictionary containing the {variable: fitted tree} pairs.
+        Returns
+        -------
+        self
 
-        scores_dict_ : dictionary
-            The score of the best decision tree, over the train set.
-            Provided in case the user wishes to understand the performance of the
-            decision tree.
         """
 
         # check input dataframe
@@ -158,6 +182,12 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
+
+        Raises
+        ------
+        TypeError : If the input is not the Pandas DataFrame
+        ValueError : If variable(s) contain null values
+        ValueError: If dataframe not of same size as that used in fit()
 
         Returns
         -------
