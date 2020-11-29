@@ -1,7 +1,7 @@
-ShuffleFeaturesSelector
-=======================
+SelectByShuffling
+=================
 
-The ShuffleFeaturesSelector() selects important features if permutation their values
+The SelectByShuffling() selects important features if permutation their values
 at random produces a decrease in the initial model performance. See API below for
 more details into its functionality.
 
@@ -21,7 +21,7 @@ more details into its functionality.
     linear_model = LinearRegression()
 
     # initialize feature selector
-    tr = ShuffleFeaturesSelector(estimator=linear_model, scoring="r2", cv=3)
+    tr = SelectByShuffling(estimator=linear_model, scoring="r2", cv=3)
 
     # fit transformer
     Xt = tr.fit_transform(X, y)
@@ -75,5 +75,5 @@ more details into its functionality.
 API Reference
 -------------
 
-.. autoclass:: feature_engine.selection.ShuffleFeaturesSelector
+.. autoclass:: feature_engine.selection.SelectByShuffling
     :members:
