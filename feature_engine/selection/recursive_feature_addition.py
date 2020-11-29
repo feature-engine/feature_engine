@@ -186,7 +186,8 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
         # It is initialized with the performance drift of
         # the most important feature
         self.performance_drifts_ = {
-            first_most_important_feature: baseline_model_performance - self.initial_model_performance_
+            first_most_important_feature: baseline_model_performance -
+            self.initial_model_performance_
         }
 
         # loop over the ordered list of features by feature importance starting
