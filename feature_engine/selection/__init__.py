@@ -7,6 +7,7 @@ from .drop_duplicate_features import DropDuplicateFeatures
 from .drop_correlated_features import DropCorrelatedFeatures
 from .shuffle_features import ShuffleFeaturesSelector
 from .single_feature_performance_selection import SelectBySingleFeaturePerformance
+from .recursive_feature_addition import RecursiveFeatureAddition
 from .recursive_feature_elimination import RecursiveFeatureElimination
 
 __all__ = [
@@ -16,5 +17,6 @@ __all__ = [
     "DropCorrelatedFeatures",
     "ShuffleFeaturesSelector",
     "SelectBySingleFeaturePerformance",
+    "RecursiveFeatureAddition",
     "RecursiveFeatureElimination",
 ]
