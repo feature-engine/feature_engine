@@ -99,6 +99,8 @@ More resources will be added as they appear online!
  * DropDuplicateFeatures
  * DropCorrelatedFeatures
  * ShuffleFeaturesSelector
+ * SelectBySingleFeaturePerformance
+ * SelectByTargetMeanPerformance
  * RecursiveFeatureElimination
 
 
@@ -125,7 +127,7 @@ git clone https://github.com/solegalli/feature_engine.git
 ### Usage
 
 ```python
->>> from feature_engine.categorical_encoders import RareLabelCategoricalEncoder
+>>> from feature_engine.encoding import RareLabelEncoder
 >>> import pandas as pd
 
 >>> data = {'var_A': ['A'] * 10 + ['B'] * 10 + ['C'] * 2 + ['D'] * 1}
@@ -143,7 +145,7 @@ Name: var_A, dtype: int64
 ```
     
 ```python 
->>> rare_encoder = RareLabelCategoricalEncoder(tol=0.10, n_categories=3)
+>>> rare_encoder = RareLabelEncoder(tol=0.10, n_categories=3)
 >>> data_encoded = rare_encoder.fit_transform(data)
 >>> data_encoded['var_A'].value_counts()
 ```
