@@ -233,16 +233,6 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
                 # Save updated baseline model performance
                 baseline_model_performance = baseline_model["test_score"].mean()
 
-        """
-        # temporary copy where we will remove features recursively
-        X_tmp = X[self.variables].copy()
-
-        # we need to update the performance as we remove features
-        baseline_model_performance = self.initial_model_performance_
-
-        # dict to collect features and their performance_drift after shuffling
-        self.performance_drifts_ = {}"""
-
         self.input_shape_ = X.shape
 
         return self
