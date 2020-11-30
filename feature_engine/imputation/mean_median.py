@@ -31,13 +31,24 @@ class MeanMedianImputer(BaseImputer):
 
     Parameters
     ----------
-
     imputation_method : str, default=median
         Desired method of imputation. Can take 'mean' or 'median'.
 
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will select
         all variables of type numeric.
+
+    Attributes
+    ----------
+    imputer_dict_ : dictionary
+        The dictionary containing the mean / median values per variable. These
+        values will be used by the imputer to replace missing data.
+
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
     """
 
     def __init__(
@@ -58,7 +69,6 @@ class MeanMedianImputer(BaseImputer):
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can pass the entire dataframe, not just the variables that need imputation.
@@ -66,13 +76,22 @@ class MeanMedianImputer(BaseImputer):
         y : pandas series or None, default=None
             y is not needed in this imputation. You can pass None or y.
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+            If any of the user provided variables are not numerical
+        ValueError
+            If there are no numerical variables in the df or the df is empty
 
-        imputer_dict_ : dictionary
-            The dictionary containing the mean / median values per variable. These
-            values will be used by the imputer to replace missing data.
+        Returns
+        -------
+        self.variables : list
+            The list of numerical variables to impute
+        self.imputer_dict_ : dict
+            The category to number mappings.
         """
+
         # check input dataframe
         X = _is_dataframe(X)
 

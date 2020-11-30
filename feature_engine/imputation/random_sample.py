@@ -66,14 +66,13 @@ class RandomSampleImputer(BaseImputer):
 
     Parameters
     ----------
-
     random_state : int, str or list, default=None
         The random_state can take an integer to set the seed when extracting the
         random samples. Alternatively, it can take a variable name or a list of
         variables, which values will be used to determine the seed observation per
         observation.
 
-    seed: str, default='general'
+    seed : str, default='general'
         Indicates whether the seed should be set for each observation with missing
         values, or if one seed should be used to impute all variables in one go.
 
@@ -92,6 +91,17 @@ class RandomSampleImputer(BaseImputer):
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will select
         all variables in the train set.
+
+    Attributes
+    ----------
+    X_ : dataframe.
+        Copy of the training dataframe from which to extract the random samples.
+
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
     """
 
     def __init__(
@@ -141,10 +151,14 @@ class RandomSampleImputer(BaseImputer):
         y : None
             y is not needed in this imputation. You can pass None or y.
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
 
-        X_ : dataframe.
+        Returns
+        -------
+        self.X_ : dataframe.
             Copy of the training dataframe from which to extract the random samples.
         """
 
@@ -186,10 +200,14 @@ class RandomSampleImputer(BaseImputer):
         X : pandas dataframe of shape = [n_samples, n_features]
             The dataframe to be transformed.
 
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+
         Returns
         -------
-
-        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The dataframe without missing values in the transformed variables.
         """
 

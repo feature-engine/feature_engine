@@ -125,7 +125,7 @@ class WoEEncoder(BaseCategoricalTransformer):
         -------
         self.variables : list
             The list of categorical variables to encode
-        self.encoder_dict : dict
+        self.encoder_dict_ : dict
             The category to number mappings.
         """
 

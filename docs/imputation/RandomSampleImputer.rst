@@ -1,6 +1,15 @@
 RandomSampleImputer
 ===================
 
+API Reference
+-------------
+
+.. autoclass:: feature_engine.imputation.RandomSampleImputer
+    :members:
+
+Example
+-------
+
 The RandomSampleImputer() replaces missing data with a random sample extracted from the
 variable. It works with both numerical and categorical variables. A list of variables
 can be indicated, or the imputer will automatically select all variables in the train
@@ -64,8 +73,4 @@ More details on how to use the RandomSampleImputer():
 
 .. image:: ../images/randomsampleimputation.png
 
-API Reference
--------------
 
-.. autoclass:: feature_engine.imputation.RandomSampleImputer
-    :members:

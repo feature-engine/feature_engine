@@ -1,5 +1,15 @@
 AddMissingIndicator
 ===================
+
+API Reference
+-------------
+
+.. autoclass:: feature_engine.imputation.AddMissingIndicator
+    :members:
+
+Example
+-------
+
 The AddMissingIndicator() adds a binary variable indicating if observations are missing
 (missing indicator). It adds a missing indicator for both categorical and numerical
 variables. A list of variables for which to add a missing indicator can be passed, or
@@ -40,8 +50,4 @@ option how='missing_only'.
 
 .. image:: ../images/missingindicator.png
 
-API Reference
--------------
 
-.. autoclass:: feature_engine.imputation.AddMissingIndicator
-    :members:

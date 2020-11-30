@@ -82,16 +82,17 @@ class MeanEncoder(BaseCategoricalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
+            If the input is not a Pandas DataFrame.
+            If any user provided variable is not categorical
         ValueError
-            If the variable(s) contain null values.
-            If the dataframe is not of same size as that used in fit()
+            If there are no categorical variables in the df or the df is empty
+            If the variable(s) contain null values
 
         Returns
         -------
         self.variables : list
             The list of categorical variables to encode
-        self.encoder_dict : dict
+        self.encoder_dict_ : dict
             The category to number mappings.
         """
 
