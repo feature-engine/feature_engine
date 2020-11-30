@@ -27,17 +27,31 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
     Parameters
     ----------
-
     variables : list, default=None
         The list of numerical variables that will be transformed. If None, the
         transformer will automatically find and select all numerical variables.
 
     Attributes
     ----------
-
-    lamda_dict_ : dictionary
+    lambda_dict_ : dictionary
         The dictionary containing the {variable: best lambda for the Yeo-Johnson
         transformation} pairs.
+
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
+
+    See Also
+    --------
+    scipy.stats.yeojohnson
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.yeojohnson.html
+
+    References
+    ----------
+    .. [1] Weisberg S. "Yeo-Johnson Power Transformations".
+        https://www.stat.umn.edu/arc/yjpower.pdf
     """
 
     def __init__(
@@ -50,16 +64,27 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         """
         Learns the optimal lambda for the Yeo-Johnson transformation.
 
-        Args:
-            X: pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the variables to transform.
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The training input samples. Can be the entire dataframe, not just the
+            variables to transform.
 
-            y: It is not needed in this transformer. Defaults to None.
-            Alternatively takes Pandas Series.
+        y : pandas Series, default=None
+            It is not needed in this transformer. You can pass y or None.
 
-        Returns:
-            self
+        Raises
+        ------
+         TypeError
+            If the input is not a Pandas DataFrame
+            If any of the user provided variables are not numerical
+        ValueError
+            If there are no numerical variables in the df or the df is empty
+            If the variable(s) contain null values
+
+        Returns
+        -------
+        self
         """
 
         # check input dataframe
@@ -81,11 +106,22 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         """
         Applies the Yeo-Johnson transformation.
 
-        Args:
-            X: Pandas DataFrame of shape = [n_samples, n_features]
+        Parameters
+        ----------
+        X : Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
-        Returns:
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            If the variable(s) contain null values.
+            If the dataframe not of the same size as that used in fit().
+
+        Returns
+        -------
+        X : pandas dataframe
             The dataframe with the transformed variables.
         """
 
