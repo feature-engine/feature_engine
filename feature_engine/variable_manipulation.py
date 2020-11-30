@@ -58,7 +58,7 @@ def _find_or_check_numerical_variables(
     -------
     variables: List of numerical variables
     """
-    
+
     if isinstance(variables, (str, int)):
         variables = [variables]
 
@@ -105,7 +105,7 @@ def _find_or_check_categorical_variables(
     -------
     variables : List of numerical variables
     """
-    
+
     if isinstance(variables, (str, int)):
         variables = [variables]
 
@@ -142,14 +142,14 @@ def _find_all_variables(
     Raises
     ------
     TypeError
-        If the variable list provided by the user contains variables not present in the 
+        If the variable list provided by the user contains variables not present in the
         dataframe.
 
     Returns
     -------
     variables : List of numerical variables
     """
-    
+
     if isinstance(variables, (str, int)):
         variables = [variables]
 
