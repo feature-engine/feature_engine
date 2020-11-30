@@ -21,7 +21,6 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
     """shared set-up procedures across numerical transformers, i.e.,
     variable transformers, discretisers, math combination.
-
     """
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.DataFrame:
@@ -38,16 +37,17 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
 
         Raises
         ------
-        TypeError : If the input is not the Pandas DataFrame
-        ValueError : If there are no numerical variables in df or df is empty
-        TypeError : If any user provided variables are not numerical
-        ValueError : If variable(s) contain null values
+        TypeError
+            If the input is not a Pandas DataFrame
+            If any of the user provided variables are not numerical
+        ValueError
+            If there are no numerical variables in the df or the df is empty
+            If the variable(s) contain null values
 
         Returns
         -------
         X : Pandas DataFrame
             The same dataframe entered as parameter
-
         """
 
         # check input dataframe
@@ -74,14 +74,16 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
 
         Raises
         ------
-        TypeError : If the input is not the Pandas DataFrame
-        ValueError : If variable(s) contain null values
-        ValueError: If dataframe not of same size as that used in fit()
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            If the variable(s) contain null values
+            If the dataframe not of the same size as that used in fit()
 
         Returns
         -------
-        X : Pandas DataFrame. The same dataframe entered by the user.
-
+        X : Pandas DataFrame.
+            The same dataframe entered by the user.
         """
 
         # Check method fit has been called

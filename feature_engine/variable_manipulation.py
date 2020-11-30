@@ -20,7 +20,6 @@ def _check_input_parameter_variables(variables: Variables) -> Any:
     Returns
     -------
     variables: same as input
-
     """
 
     msg = "variables should be a string, an int or a list of strings or integers."
@@ -50,14 +49,16 @@ def _find_or_check_numerical_variables(
 
     Raises
     ------
-    ValueError : If there are no numerical variables in df or df is empty
-    TypeError : If any user provided variables are not numerical
+    ValueError
+        If there are no numerical variables in the df or the df is empty
+    TypeError
+        If any of the user provided variables are not numerical
 
     Returns
     -------
     variables: List of numerical variables
-
     """
+
     if isinstance(variables, (str, int)):
         variables = [variables]
 
@@ -95,14 +96,16 @@ def _find_or_check_categorical_variables(
 
     Raises
     ------
-    ValueError : If there are no categorical variables in df or df is empty
-    TypeError : If any user provided variables are not categorical
+    ValueError
+        If there are no categorical variables in df or df is empty
+    TypeError
+        If any of the user provided variables are not categorical
 
     Returns
     -------
     variables : List of numerical variables
-
     """
+
     if isinstance(variables, (str, int)):
         variables = [variables]
 
@@ -138,14 +141,15 @@ def _find_all_variables(
 
     Raises
     ------
-    TypeError : If the variable list provided by the user contains variables not
-        present in the dataframe.
+    TypeError
+        If the variable list provided by the user contains variables not present in the
+        dataframe.
 
     Returns
     -------
     variables : List of numerical variables
-
     """
+    
     if isinstance(variables, (str, int)):
         variables = [variables]
 

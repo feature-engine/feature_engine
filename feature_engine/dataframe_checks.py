@@ -18,14 +18,14 @@ def _is_dataframe(X: pd.DataFrame) -> pd.DataFrame:
 
     Raises
     ------
-    TypeError: If the input is not the Pandas DataFrame
+    TypeError
+        If the input is not the Pandas DataFrame
 
     Returns
     -------
     X : pandas Dataframe.
         A copy of original DataFrame. Important step not to transform the original
         dataset of the user, accidentally.
-
     """
 
     if not isinstance(X, pd.DataFrame):
@@ -42,18 +42,19 @@ def _check_input_matches_training_df(X: pd.DataFrame, reference: int) -> None:
 
     Parameters
     ----------
-    X : Pandas DataFrame, the one to be checked
-    reference : int, the number of columns in the dataframe that was used with the
-        fit() method.
+    X : Pandas DataFrame
+        The df to be checked
+    reference : int
+        The number of columns in the dataframe that was used with the fit() method.
 
     Raises
     ------
-    ValueError : If the number of columns does not match.
+    ValueError
+        If the number of columns does not match.
 
     Returns
     -------
     None
-
     """
 
     if X.shape[1] != reference:
@@ -72,14 +73,15 @@ def _check_contains_na(X: pd.DataFrame, variables: List[Union[str, int]]) -> Non
     Parameters
     ----------
     X : Pandas DataFrame
-    variables : List, the selected group of variables in which null values will be
-        examined.
+    variables : List
+        The selected group of variables in which null values will be examined.
 
     Raises
     ------
-    ValueError: If variable(s) contain null values
-
+    ValueError
+        If the variable(s) contain null values
     """
+
     if X[variables].isnull().values.any():
         raise ValueError(
             "Some of the variables to transform contain missing values. Check and "

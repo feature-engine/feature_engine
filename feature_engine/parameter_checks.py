@@ -8,17 +8,19 @@ def _define_numerical_dict(dict_: Optional[dict]) -> Optional[dict]:
 
     Parameters
     ----------
-    the_dict : Dictionary, the one that will be checked
+    the_dict : dict
+        The dictionary that will be checked
 
     Raises
     ------
-    ValueError : If any of the values in the dictionary are not int or float
-    TypeError : When argument type is not a dictionary.
+    ValueError
+        If any of the values in the dictionary are not int or float
+    TypeError
+        When argument type is not a dictionary.
 
     Returns
     -------
     None or the input dictionary
-
     """
 
     if not dict_:
