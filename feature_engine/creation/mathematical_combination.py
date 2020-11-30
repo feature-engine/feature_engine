@@ -97,7 +97,6 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
     Methods
     -------
-
     fit
     transform
     fit_transform
@@ -115,7 +114,6 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
     In insurance, we can sum the damage to various parts of a car to obtain the
     total damage.
-
     """
 
     def __init__(
@@ -195,15 +193,15 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
         Raises
         ------
-        TypeError : If the input is not the Pandas DataFrame
-        TypeError : If any user provided variables in variables_to_combine are not
-            numerical
-        ValueError : If variable(s) contain null values
+        TypeError
+           If the input is not a Pandas DataFrame
+           If any user provided variables in variables_to_combine are not numerical
+        ValueError
+           If the variable(s) contain null values
 
         Returns
         -------
         self
-
         """
 
         # check input dataframe
@@ -254,9 +252,11 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
         Raises
         ------
-        TypeError : If the input is not the Pandas DataFrame
-        ValueError : If variable(s) contain null values
-        ValueError: If dataframe not of same size as that used in fit()
+        TypeError
+           If the input is not a Pandas DataFrame
+        ValueError
+           If the variable(s) contain null values
+           If the dataframe is not of the same size as that used in fit()
 
         Returns
         -------

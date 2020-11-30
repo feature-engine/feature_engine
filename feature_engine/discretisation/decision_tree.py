@@ -134,15 +134,16 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
         Raises
         ------
-        TypeError : If the input is not the Pandas DataFrame
-        ValueError : If there are no numerical variables in df or df is empty
-        TypeError : If any user provided variables are not numerical
-        ValueError : If variable(s) contain null values
+        TypeError
+            If the input is not a Pandas DataFrame
+            If any of the user provided variables are not numerical
+        ValueError
+            If there are no numerical variables in the df or the df is empty
+            If the variable(s) contain null values
 
         Returns
         -------
         self
-
         """
 
         # check input dataframe
@@ -185,9 +186,11 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
         Raises
         ------
-        TypeError : If the input is not the Pandas DataFrame
-        ValueError : If variable(s) contain null values
-        ValueError: If dataframe not of same size as that used in fit()
+        TypeError
+           If the input is not a Pandas DataFrame
+        ValueError
+           If the variable(s) contain null values
+           If the dataframe is not of the same size as the one used in fit()
 
         Returns
         -------
