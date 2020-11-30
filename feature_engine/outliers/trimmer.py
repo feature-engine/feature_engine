@@ -97,6 +97,19 @@ class OutlierTrimmer(Winsorizer):
         transforming the data. If missing_values='raise' the transformer will return
         an error if the training or other datasets contain missing values.
 
+    Attributes
+    ----------
+    right_tail_caps_: dictionary
+        The dictionary containing the maximum values above which values will be removed
+
+    left_tail_caps_ : dictionary
+        The dictionary containing the minimum values below hich values will be removed
+
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
     """
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -105,14 +118,19 @@ class OutlierTrimmer(Winsorizer):
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            If the dataframe is not of same size as that used in fit()
+
         Returns
         -------
-
-        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The dataframe without outlier observations.
         """
 

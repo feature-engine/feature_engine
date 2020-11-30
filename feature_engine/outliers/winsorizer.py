@@ -63,7 +63,6 @@ class Winsorizer(BaseOutlier):
 
     Parameters
     ----------
-
     capping_method : str, default=gaussian
         Desired capping method. Can take 'gaussian', 'iqr' or 'quantiles'.
 
@@ -101,6 +100,22 @@ class Winsorizer(BaseOutlier):
         transformer will ignore missing data when learning the capping parameters or
         transforming the data. If missing_values='raise' the transformer will return
         an error if the training or other datasets contain missing values.
+
+    Attributes
+    ----------
+    right_tail_caps_: dictionary
+        The dictionary containing the maximum values at which variables
+        will be capped.
+
+    left_tail_caps_ : dictionary
+        The dictionary containing the minimum values at which variables
+        will be capped.
+
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
     """
 
     def __init__(
@@ -144,23 +159,20 @@ class Winsorizer(BaseOutlier):
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
 
-        y : None
+        y : pandas Series, default=None
             y is not needed in this transformer. You can pass y or None.
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
 
-        right_tail_caps_: dictionary
-            The dictionary containing the maximum values at which variables
-            will be capped.
-
-        left_tail_caps_ : dictionary
-            The dictionary containing the minimum values at which variables
-            will be capped.
+        Returns
+        -------
+        self
         """
 
         # check input dataframe
