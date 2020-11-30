@@ -12,31 +12,83 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class WoEEncoder(BaseCategoricalTransformer):
     """
-    The WoERatioCategoricalEncoder() replaces categories by the weight of evidence.
+    The WoERatioCategoricalEncoder() replaces categories by the weight of evidence
+    (WoE). The WoE was used primarily in the financial sector to crate credit risk
+    scorecards.
 
     The weight of evidence is given by: np.log(P(X=xj|Y = 1)/P(X=xj|Y=0))
 
-    Note: This categorical encoding is exclusive for binary classification.
+    **Note**
+    This categorical encoding is exclusive for binary classification.
 
-    For details on the calculation of the weight of evidence visit:
-    https://www.listendata.com/2015/03/weight-of-evidence-woe-and-information.html
+    The WoE is determined as follows: We calculate the percentage positive cases in
+    each category of the total of all positive cases. For example 20 positive cases in
+    category A out of 100 total positive cases equals 20 %. Next, we calculate the
+    percentage of negative cases in each category respect to the total negative cases,
+    for example 5 negative cases in category A out of a total of 50 negative cases
+    equals 10%. Then we calculate the WoE by dividing the category percentages of
+    positive cases by the category percentage of negative cases, and take the
+    logarithm, so for category A in our example WoE = log(20/10).
 
-    Note: the division by 0 is not defined and the log(0) is not defined.
-    Thus, if p(0) = 0 for the ratio encoder, or either p(0) = 0 or p(1) = 0 for
-    woe or log_ratio, in any of the variables, the encoder will return an error.
+    **Note**
+    If WoE values are negative, negative cases supersede the positive cases. If
+    WoE values are positive, positive cases supersede the negative cases. And if WoE is
+    0, then there are equal number of positive and negative examples in the category.
+
+    **Encoding into WoE**:
+    - Creates a monotonic relationship between the encoded variable and the target
+    - Returns variables in a similar scale
+
+    **Note**
+    The log(0) is not defined. Thus, if P(X=xj|Y=0)) = 0 for the ratio encoder
+    the encoder will return an error.
 
     The encoder will encode only categorical variables (type 'object'). A list
     of variables can be passed as an argument. If no variables are passed as
     argument, the encoder will find and encode all categorical variables
     (object type).
 
-    The encoder first maps the categories to the weight of evidence for variable (fit).
+    The encoder first maps the categories to the weight of evidence for each variable
+    (fit). The encoder then transforms the categories into the mapped numbers
+    (transform).
 
-    The encoder then transforms the categories into the mapped numbers (transform).
-
+    Parameters
+    ----------
     variables : list, default=None
         The list of categorical variables that will be encoded. If None, the
         encoder will find and select all object type variables.
+
+    Attributes
+    ----------
+    encoder_dict_ : dictionary
+        The dictionary containing the {category: WoE} pairs per variable.
+
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
+    inverse_transform
+
+    Notes
+    -----
+    For details on the calculation of the weight of evidence visit:
+    https://www.listendata.com/2015/03/weight-of-evidence-woe-and-information.html
+
+    In credit scoring, continuous variables are also transformed using the WoE. To do
+    this, first variables are sorted into a discrete number of bins, and then these
+    bins are encoded with the WoE as explained here for categorical variables. You can
+    do this by combining the use of the equal width, equal frequency or arbitrary
+    discretisera.
+
+    NAN are introduced when encoding categories that were not present in the training
+    dataset. If this happens, try grouping infrequent categories using the
+    RareLabelEncoder().
+
+    See Also
+    --------
+    feature_engine.encoding.RareLabelEncoder
+    feature_engine.discretisation
     """
 
     def __init__(
@@ -47,13 +99,10 @@ class WoEEncoder(BaseCategoricalTransformer):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Learns the numbers that should be used to replace the categories in each
-        variable. That is the WoE.
-
+        Learns the the WoE.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the categorical variables.
@@ -61,11 +110,23 @@ class WoEEncoder(BaseCategoricalTransformer):
         y : pandas series.
             Target, must be binary [0,1].
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError
+            If the input is not the Pandas DataFrame.
+            If any user provided variables are not categorical.
+        ValueError
+            If there are no categorical variables in df or df is empty
+            If variable(s) contain null values.
+            If y is not binary with values 0 and 1.
+            If p(0) = 0 or p(1) = 0.
 
-        encoder_dict_: dictionary
-            The dictionary containing the {category: WoE} pairs per variable.
+        Returns
+        -------
+        self.variables : list
+            The list of categorical variables to encode
+        self.encoder_dict : dict
+            The category to number mappings.
         """
 
         X = self._check_fit_input_and_variables(X)

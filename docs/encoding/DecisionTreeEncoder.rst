@@ -1,5 +1,15 @@
 DecisionTreeEncoder
 ===================
+
+API Reference
+-------------
+
+.. autoclass:: feature_engine.encoding.DecisionTreeEncoder
+    :members:
+
+Example
+-------
+
 The DecisionTreelEncoder() replaces categories in the variable with
 the predictions of a decision tree. The transformer first encodes categorical
 variables into numerical variables using ordinal encoding. You have the option
@@ -8,13 +18,6 @@ or ordered by the mean value of the target per category. After this, the transfo
 fits with this numerical variable a decision tree to predict the target variable.
 Finally, the original categorical variable is replaced by the predictions of
 the decision tree.
-
-The DecisionTreeEncoder() works only with categorical variables. A list of variables
-can be indicated, or alternatively, the imputer will automatically select all
-categorical variables in the train set.
-
-Note that a decision tree is fit per every single variable. With this transformer
-variables are not combined.
 
 .. code:: python
 
@@ -86,8 +89,4 @@ variables are not combined.
     261   0.649533  0.617391  0.338957
 
 
-API Reference
--------------
 
-.. autoclass:: feature_engine.encoding.DecisionTreeEncoder
-    :members:

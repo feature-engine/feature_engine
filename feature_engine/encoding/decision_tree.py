@@ -14,21 +14,27 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class DecisionTreeEncoder(BaseCategoricalTransformer):
     """
-    The DecisionTreeCategoricalEncoder() encodes categorical variables with predictions
+    The DecisionTreeEncoder() encodes categorical variables with predictions
     of a decision tree model.
 
-    The categorical variable will be first encoded into integers with the
-    OrdinalCategoricalEncoder(). The integers can be assigned arbitrarily to the
-    categories or following the mean value of the target in each category.
+    Each categorical feature is recoded by training a decision tree, typically of
+    limited depth (2, 3 or 4) using that feature alone, and let the tree directly
+    predict the target. The probabilistic predictions of this decision tree are used as
+    the new values of the original categorical feature, that now was linearly (or at
+    least monotonically) correlated with the target.
 
-    Then a decision tree will be fit using the resulting numerical variable to predict
-    the target  variable. Finally, the original categorical variable values will be
-    replaced by the predictions of the decision tree.
+    In practice, the categorical variable will be first encoded into integers with the
+    OrdinalCategoricalEncoder(). The integers can be assigned arbitrarily to the
+    categories or following the mean value of the target in each category. Then a
+    decision tree will fit the resulting numerical variable to predict the target
+    variable. Finally, the original categorical variable values will be replaced by the
+    predictions of the decision tree.
+
+    Note that a decision tree is fit per every single categorical variable to encode.
 
     Parameters
     ----------
-
-    encoding_method: str, default='arbitrary'
+    encoding_method : str, default='arbitrary'
         The categorical encoding method that will be used to encode the original
         categories to numerical values.
 
@@ -41,9 +47,9 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         Desired number of cross-validation fold to be used to fit the decision
         tree.
 
-    scoring: str, default='neg_mean_squared_error'
-        Desired metric to optimise the performance for the tree. Comes from
-        sklearn metrics. See the DecisionTreeRegressor or DecisionTreeClassifier
+    scoring : str, default='neg_mean_squared_error'
+        Desired metric to optimise the performance for the decision tree. Comes from
+        sklearn.metrics. See the DecisionTreeRegressor or DecisionTreeClassifier
         model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
@@ -71,10 +77,37 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     Attributes
     ----------
-
     encoder_ : sklearn Pipeline
-        Encoder pipeline containing the ordinal encoder and decision
-        tree discretiser.
+        Encoder pipeline containing the ordinal encoder and the decision tree.
+
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
+
+    Notes
+    -----
+    The authors designed this method originally, to work with numerical variables. We
+    can replace numerical variables by the preditions of a decision tree utilising the
+    DecisionTreeDiscretiser().
+
+    NAN are introduced when encoding categories that were not present in the training
+    dataset. If this happens, try grouping infrequent categories using the
+    RareLabelEncoder().
+
+    See Also
+    --------
+    sklearn.ensemble.DecisionTreeRegressor
+    sklearn.ensemble.DecisionTreeClassifier
+    feature_engine.discretisation.DecisionTreeDiscretiser
+    feature_engine.encoding.RareLabelEncoder
+
+    References
+    ----------
+    .. [1] Niculescu-Mizil, et al. "Winning the KDD Cup Orange Challenge with Ensemble
+        Selection". JMLR: Workshop and Conference Proceedings 7: 23-34. KDD 2009
+        http://proceedings.mlr.press/v7/niculescu09/niculescu09.pdf
     """
 
     def __init__(
@@ -87,6 +120,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
+
         if param_grid is None:
             param_grid = {"max_depth": [1, 2, 3, 4]}
 
@@ -105,15 +139,30 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the categorical variables.
+            The training input samples. Can be the entire dataframe, not just the
+            categorical variables.
 
         y : pandas series.
             The target variable. Required to train the decision tree and for
             ordered ordinal encoding.
+
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            If the variable(s) contain null values.
+            If the dataframe is not of same size as that used in fit()
+
+        Returns
+        -------
+        self.variables : list
+            The list of categorical variables to encode
+        self.encoder_ : sklearn Pipeline
+            Encoder pipeline containing the ordinal encoder and the decision tree.
         """
+
         # check input dataframe
         X = self._check_fit_input_and_variables(X)
 
@@ -153,15 +202,23 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            If the variable(s) contain null values
+            If dataframe is not of same size as that used in fit()
+        Warning
+            If after encoding, NAN were introduced.
+
         Returns
         -------
-
-        X_transformed : pandas dataframe of shape = [n_samples, n_features].
-                        Dataframe with variables encoded with decision tree predictions.
+        X : pandas dataframe of shape = [n_samples, n_features].
+            Dataframe with variables encoded with decision tree predictions.
         """
 
         X = self._check_transform_input_and_state(X)
@@ -169,3 +226,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         X = self.encoder_.transform(X)
 
         return X
+
+    def inverse_transform(self, X: pd.DataFrame):
+        """inverse_transform is not implemented for this transformer yet."""
+        return self

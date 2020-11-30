@@ -20,25 +20,24 @@ class RareLabelEncoder(BaseCategoricalTransformer):
     for the categories magenta, cyan and burgundy are < 5 %, all those
     categories will be replaced by the new label "Rare".
 
-    Note, infrequent labels can also be grouped under a user defined name, for
+    **Note**
+    Infrequent labels can also be grouped under a user defined name, for
     example 'Other'. The name to replace infrequent categories is defined
-    with the parameter replace_with.
+    with the parameter `replace_with`.
 
     The encoder will encode only categorical variables (type 'object'). A list
     of variables can be passed as an argument. If no variables are passed as
     argument, the encoder will find and encode all categorical variables
     (object type).
 
-    The encoder first finds the frequent labels for each variable (fit).
-
-    The encoder then groups the infrequent labels under the new label 'Rare'
-    or by another user defined string (transform).
+    The encoder first finds the frequent labels for each variable (fit). The encoder
+    then groups the infrequent labels under the new label 'Rare' or by another user
+    defined string (transform).
 
     Parameters
     ----------
-
-    tol: float, default=0.05
-        the minimum frequency a label should have to be considered frequent.
+    tol : float, default=0.05
+        The minimum frequency a label should have to be considered frequent.
         Categories with frequencies lower than tol will be grouped.
 
     n_categories: int, default=10
@@ -47,17 +46,29 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         of them will be considered frequent.
 
     max_n_categories: int, default=None
-        the maximum number of categories that should be considered frequent.
+        The maximum number of categories that should be considered frequent.
         If None, all categories with frequency above the tolerance (tol) will be
         considered.
 
     variables : list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and select all object type variables.
+        The list of categorical variables that to encode. If None, the encoder will
+        find and select all object type variables.
 
     replace_with : string, default='Rare'
         The category name that will be used to replace infrequent categories.
 
+    Attributes
+    ----------
+    encoder_dict_: dictionary
+        The dictionary containing the frequent categories, i.e.., those that will be
+        kept, for each variable. Categories not present in this list will be replaced
+        by 'Rare' or by the user defined value.
+
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
     """
 
     def __init__(
@@ -94,21 +105,30 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just selected variables
+            The training input samples. Can be the entire dataframe, not just selected
+            variables
 
         y : None
             y is not required. You can pass y or None.
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            If the variable(s) contain null values.
+            If the dataframe is not of same size as that used in fit()
+        Warning
+            If the number of categories in any one variable is less than the indicated
+            in `n_categories`.
 
-        encoder_dict_: dictionary
-            The dictionary containing the frequent categories (that will be kept)
-            for each variable. Categories not present in this list will be replaced
-            by 'Rare' or by the user defined value.
+        Returns
+        -------
+        self.variables : list
+            The list of categorical variables to encode
+        self.encoder_dict : dict
+            The frequent categories per variable.
         """
 
         X = self._check_fit_input_and_variables(X)
@@ -148,21 +168,28 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Groups rare labels under separate group 'Rare' or any other name provided
+        Replaces infrequent categories by the string 'Rare' or any other name provided
         by the user.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            If the variable(s) contain null values
+            If dataframe is not of same size as that used in fit()
+
         Returns
         -------
-
-        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The dataframe where rare categories have been grouped.
         """
+
         X = self._check_transform_input_and_state(X)
 
         for feature in self.variables:
@@ -173,3 +200,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
             )
 
         return X
+
+    def inverse_transform(self, X: pd.DataFrame):
+        """inverse_transform is not implemented for this transformer yet."""
+        return self
