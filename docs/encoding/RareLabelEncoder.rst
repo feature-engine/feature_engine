@@ -93,8 +93,10 @@ using the `max_n_categories` parameter.
     Name: var_A, dtype: int64
 
 .. code:: python
+
     rare_encoder = RareLabelEncoder(tol=0.05, n_categories=3, max_n_categories=2)
-    rare_encoder.fit_transform(data)['var_A'].value_counts()
+    Xt = rare_encoder.fit_transform(data)
+    Xt['var_A'].value_counts()
 
 .. code:: python
 

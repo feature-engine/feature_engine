@@ -1,0 +1,32 @@
+@import url("theme.css");
+
+.highlight a {
+    text-decoration: underline;
+}
+
+.deprecated p {
+    padding: 10px 7px 10px 10px;
+    color: #b94a48;
+    background-color: #F3E5E5;
+    border: 1px solid #eed3d7;
+}
+
+.deprecated p span.versionmodified {
+    font-weight: bold;
+}
+
+.wy-nav-content {
+    max-width: 1200px !important;
+}
+
+
+/* override table width restrictions as found on https://github.com/getpelican/pelican/issues/1311 */
+.wy-table-responsive table td, .wy-table-responsive table th {
+    /* !important prevents the common CSS stylesheets from
+       overriding this as on RTD they are loaded after this stylesheet */
+    white-space: normal !important;
+}
+
+.wy-table-responsive {
+    overflow: visible !important;
+}

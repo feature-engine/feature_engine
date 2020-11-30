@@ -212,11 +212,16 @@ The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Table of Contents
    
    quickstart
    datasets
+
+.. toctree::
+   :maxdepth: 1
+   :caption: API Documentation
+
    imputation/index
    encoding/index
    transformation/index
@@ -225,7 +230,47 @@ The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
    creation/index
    selection/index
    wrappers/index
-   contributing/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Tutorials
+
+   tutorials/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: How To
+
+   howto/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Books + Courses
+
+   books/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Blogs + Videos
+
+   blogs/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contribute
+
+   contribute/index
    code_of_conduct
    governance
-   changelog
+
+.. toctree::
+   :maxdepth: 1
+   :caption: About
+
+   about/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Releases
+
+   whats_new/index
