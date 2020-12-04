@@ -7,7 +7,6 @@ from .drop_duplicate_features import DropDuplicateFeatures
 from .drop_correlated_features import DropCorrelatedFeatures
 from .shuffle_features import SelectByShuffling
 from .single_feature_performance import SelectBySingleFeaturePerformance
-from .recursive_feature_addition import RecursiveFeatureAddition
 from .recursive_feature_elimination import RecursiveFeatureElimination
 from .target_mean_selection import SelectByTargetMeanPerformance
 
@@ -18,7 +17,6 @@ __all__ = [
     "DropCorrelatedFeatures",
     "SelectByShuffling",
     "SelectBySingleFeaturePerformance",
-    "RecursiveFeatureAddition",
     "RecursiveFeatureElimination",
     "SelectByTargetMeanPerformance",
 ]
