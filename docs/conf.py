@@ -33,20 +33,18 @@ sys.path.insert(1, os.path.dirname(os.path.abspath("../")) + os.sep + "feature_e
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.doctest",
-    "sphinx.ext.intersphinx",
-    "sphinx.ext.todo",
-    "sphinx.ext.coverage",
-    "sphinx.ext.mathjax",
-    "sphinx.ext.ifconfig",
-    "sphinx.ext.viewcode",
-    "sphinx-prompt",
-    # "documenteer.sphinxext"
-    # "sphinx.ext.githubpages",
-    "sphinx.ext.autosummary",
-    # "sphinx.ext.napoleon",
+    'sphinx.ext.autodoc',  # Core Sphinx library for auto html doc generation from docstrings
+    'sphinx.ext.autosummary',  # Create neat summary tables for modules/classes/methods etc
+    'sphinx.ext.intersphinx',  # Link to other project's documentation (see mapping below)
+    'sphinx.ext.viewcode',  # Add a link to the Python source code for classes, functions etc.
+    'sphinx_autodoc_typehints',  # Automatically document param types (less noise in class signature)
     "numpydoc",
+    # "sphinx.ext.doctest",
+    # "sphinx.ext.todo",
+    # "sphinx.ext.coverage",
+    # "sphinx.ext.mathjax",
+    # "sphinx.ext.ifconfig",
+    # "sphinx-prompt",
 ]
 
 # this is needed for some reason...
@@ -57,10 +55,6 @@ numpydoc_show_class_members = False
 # #     "members": True,
 # #     "inherited-members": False,
 # # }
-
-# napoleon_google_docstring = False
-# napoleon_use_param = True
-# napoleon_use_ivar = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -144,7 +138,7 @@ html_theme = "sphinx_rtd_theme"
 #
 html_theme_options = {
     "logo_only": True,
-    "style_nav_header_background": "#343131",
+    "style_nav_header_background": "#e09200",
     "canonical_url": "https://feature-engine.readthedocs.io/en/latest/",
 }
 
