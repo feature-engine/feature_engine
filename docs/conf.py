@@ -20,9 +20,11 @@ import sphinx_rtd_theme
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("../"))
+# sys.path.insert(0, os.path.abspath("."))
+# sys.path.insert(0, os.path.abspath("../"))
 sys.path.insert(1, os.path.dirname(os.path.abspath("../")) + os.sep + "feature_engine")
+sys.path.insert(0, os.path.abspath("sphinxext"))
+from github_link import make_linkcode_resolve
 
 # -- General configuration ------------------------------------------------
 
@@ -33,12 +35,12 @@ sys.path.insert(1, os.path.dirname(os.path.abspath("../")) + os.sep + "feature_e
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',  # Core Sphinx library for auto html doc generation from docstrings
-    'sphinx.ext.autosummary',  # Create neat summary tables for modules/classes/methods etc
-    'sphinx.ext.intersphinx',  # Link to other project's documentation (see mapping below)
-    'sphinx.ext.viewcode',  # Add a link to the Python source code for classes, functions etc.
-    'sphinx_autodoc_typehints',  # Automatically document param types (less noise in class signature)
+    "sphinx.ext.autodoc",  # Core Sphinx library for auto html doc generation from docstrings
+    "sphinx.ext.autosummary",  # Create neat summary tables for modules/classes/methods etc
+    "sphinx.ext.intersphinx",  # Link to other project's documentation (see mapping below)
+    "sphinx_autodoc_typehints",  # Automatically document param types (less noise in class signature)
     "numpydoc",
+    "sphinx.ext.linkcode",
     # "sphinx.ext.doctest",
     # "sphinx.ext.todo",
     # "sphinx.ext.coverage",
@@ -267,3 +269,11 @@ epub_exclude_files = ["search.html"]
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {"https://docs.python.org/": None}
+
+# The following is used by sphinx.ext.linkcode to provide links to github
+linkcode_resolve = make_linkcode_resolve(
+    "feature_engine",
+    "https://github.com/solegalli/feature_engine/"
+    "blob/master/"
+    "{package}/{path}#L{lineno}",
+)
