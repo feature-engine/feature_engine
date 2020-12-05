@@ -13,7 +13,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Checks that the input is a dataframe and of the same size than the one used
+        Check that the input is a dataframe and of the same size than the one used
         in the fit method. Checks absence of NA.
 
         Parameters
@@ -45,7 +45,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Replaces missing data with the learned parameters.
+        Replace missing data with the learned parameters.
 
         Parameters
         ----------

@@ -42,7 +42,7 @@ class RandomSampleImputer(BaseImputer):
     imputed in one go. This is equivalent to pandas.sample(n, random_state=seed).
 
     If seed = 'observation', then the random_state should be a variable name
-    or a list of variable names. The seed will be calculated, observation per
+    or a list of variable names. The seed will be calculated observation per
     observation, either by adding or multiplying the seeding variable values for that
     observation, and passed to the random_state. Thus, a value will be extracted using
     that seed, and used to replace that particular observation. This is the equivalent
@@ -145,8 +145,8 @@ class RandomSampleImputer(BaseImputer):
         ----------
 
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just he variables to impute.
+            The training dataset. Only a copy of the indicated variables will be stored
+            in the transformer.
 
         y : None
             y is not needed in this imputation. You can pass None or y.
@@ -158,8 +158,7 @@ class RandomSampleImputer(BaseImputer):
 
         Returns
         -------
-        self.X_ : dataframe.
-            Copy of the training dataframe from which to extract the random samples.
+        self
         """
 
         # check input dataframe
@@ -192,7 +191,7 @@ class RandomSampleImputer(BaseImputer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Replaces missing data with random values taken from the train set.
+        Replace missing data with random values taken from the train set.
 
         Parameters
         ----------
