@@ -43,8 +43,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
     transform
     fit_transform
 
-    See Also
-    --------
+    **See Also**
     scipy.stats.yeojohnson
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.yeojohnson.html
 

@@ -44,8 +44,8 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     transform
     fit_transform
 
-    See Also
-    --------
+
+    **See Also**
     scipy.stats.boxcox
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.boxcox.html
 
