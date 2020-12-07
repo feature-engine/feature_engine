@@ -14,7 +14,7 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
     into contiguous equal frequency intervals, that is, intervals that contain
     approximately the same proportion of observations.
 
-    The interval limits are determined using pandas.qcut(), in other words,
+    The interval limits are determined using `pandas.qcut()`, in other words,
     the interval limits are determined by the quantiles. The number of intervals,
     i.e., the number of quantiles in which the variable should be divided is
     determined by the user.
@@ -98,7 +98,7 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the limits of the equal frequency intervals, that is the percentiles
+        Learn the limits of the equal frequency intervals, that is the percentiles
         for each variable.
 
         Parameters
@@ -112,11 +112,11 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
-            If any of the user provided variables are not numerical
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
         ValueError
-            If there are no numerical variables in the df or the df is empty
-            If the variable(s) contain null values
+            - If there are no numerical variables in the df or the df is empty
+            - If the variable(s) contain null values
 
         Returns
         -------
@@ -142,7 +142,7 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Sorts the variable values into the intervals.
+        """Sort the variable values into the intervals.
 
         Parameters
         ----------
@@ -154,8 +154,8 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
         TypeError
            If the input is not a Pandas DataFrame
         ValueError
-           If the variable(s) contain null values
-           If the dataframe is not of the same size as the one used in fit()
+           - If the variable(s) contain null values
+           - If the dataframe is not of the same size as the one used in fit()
 
         Returns
         -------

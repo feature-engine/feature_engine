@@ -13,7 +13,7 @@ from feature_engine.base_transformers import BaseNumericalTransformer
 
 class DecisionTreeDiscretiser(BaseNumericalTransformer):
     """
-    The DecisionTreeDiscretiser() divides continuous numerical variables into discrete,
+    The DecisionTreeDiscretiser() replaces continuous numerical variables by discrete,
     finite, values estimated by a decision tree.
 
     The methods is inspired by the following article from the winners of the KDD
@@ -121,7 +121,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):  # type: ignore
         """
-        Fits the decision trees. One tree per variable to be transformed.
+        Fit the decision trees. One tree per variable to be transformed.
 
         Parameters
         ----------
@@ -135,11 +135,11 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
-            If any of the user provided variables are not numerical
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
         ValueError
-            If there are no numerical variables in the df or the df is empty
-            If the variable(s) contain null values
+            - If there are no numerical variables in the df or the df is empty
+            - If the variable(s) contain null values
 
         Returns
         -------
@@ -175,8 +175,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Returns the predictions of the tree, based of the variable original
-        values. The tree outcome is finite, aka, discrete.
+        Replaces original variable with the predictions of the tree. The tree outcome
+        is finite, aka, discrete.
 
         Parameters
         ----------
@@ -189,12 +189,11 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         TypeError
            If the input is not a Pandas DataFrame
         ValueError
-           If the variable(s) contain null values
-           If the dataframe is not of the same size as the one used in fit()
+           - If the variable(s) contain null values
+           - If the dataframe is not of the same size as the one used in fit()
 
         Returns
         -------
-
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe with transformed variables.
         """

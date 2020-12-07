@@ -16,11 +16,13 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
     The size of the interval is calculated as:
 
-    ( max(X) - min(X) ) / bins
+    .. math::
+
+        ( max(X) - min(X) ) / bins
 
     where bins, which is the number of intervals, should be determined by the user.
 
-    The interval limits are determined using pandas.cut(). The number of intervals
+    The interval limits are determined using `pandas.cut()`. The number of intervals
     in which the variable should be divided must be indicated by the user.
 
     The EqualWidthDiscretiser() works only with numerical variables.
@@ -101,7 +103,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the boundaries of the equal width intervals / bins for each
+        Learn the boundaries of the equal width intervals / bins for each
         variable.
 
         Parameters
@@ -115,11 +117,11 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
-            If any of the user provided variables are not numerical
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
         ValueError
-            If there are no numerical variables in the df or the df is empty
-            If the variable(s) contain null values
+            - If there are no numerical variables in the df or the df is empty
+            - If the variable(s) contain null values
 
         Returns
         -------
@@ -149,7 +151,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Sorts the variable values into the intervals.
+        Sort the variable values into the intervals.
 
         Parameters
         ----------
@@ -161,8 +163,8 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
         TypeError
            If the input is not a Pandas DataFrame
         ValueError
-           If the variable(s) contain null values
-           If the dataframe is not of the same size as the one used in fit()
+           - If the variable(s) contain null values
+           - If the dataframe is not of the same size as the one used in fit()
 
         Returns
         -------

@@ -18,7 +18,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
     'var2':[5, 10, 15, 20]}.
 
     ArbitraryDiscretiser() will then sort var1 values into the intervals 0-10, 10-100
-    100-1000, and var2 into 5-10, 10-15 and 15-20. Similar to pandas.cut
+    100-1000, and var2 into 5-10, 10-15 and 15-20. Similar to `pandas.cut`.
 
     The  ArbitraryDiscretiser() works only with numerical variables. The discretiser
     will check if the dictionary entered by the user contains variables present in the
@@ -90,7 +90,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Checks dataframe and variables. Checks that the user entered variables are in
+        Check dataframe and variables. Checks that the user entered variables are in
         the train set and cast as numerical.
 
         Parameters
@@ -105,11 +105,11 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
-            If any of the user provided variables are not numerical
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
         ValueError
-            If there are no numerical variables in the df or the df is empty
-            If the variable(s) contain null values
+            - If there are no numerical variables in the df or the df is empty
+            - If the variable(s) contain null values
 
         Returns
         -------
@@ -133,7 +133,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Sorts the variable values into the intervals.
+        """Sort the variable values into the intervals.
 
         Parameters
         ----------
@@ -145,8 +145,8 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         TypeError
            If the input is not a Pandas DataFrame
         ValueError
-           If the variable(s) contain null values
-           If the dataframe is not of the same size as the one used in fit()
+           - If the variable(s) contain null values
+           - If the dataframe is not of the same size as the one used in fit()
 
         Returns
         -------
