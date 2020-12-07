@@ -20,7 +20,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     Each categorical feature is recoded by training a decision tree, typically of
     limited depth (2, 3 or 4) using that feature alone, and let the tree directly
     predict the target. The probabilistic predictions of this decision tree are used as
-    the new values of the original categorical feature, that now was linearly (or at
+    the new values of the original categorical feature, that now is linearly (or at
     least monotonically) correlated with the target.
 
     In practice, the categorical variable will be first encoded into integers with the
@@ -134,7 +134,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the numbers that should be used to replace the categories in each
+        Learn the numbers that should be used to replace the categories in each
         variable.
 
         Parameters
@@ -150,18 +150,15 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame.
-            If any user provided variable is not categorical
+            - If the input is not a Pandas DataFrame.
+            - If any user provided variable is not categorical
         ValueError
-            If there are no categorical variables in the df or the df is empty
-            If the variable(s) contain null values
+            - If there are no categorical variables in the df or the df is empty
+            - If the variable(s) contain null values
 
         Returns
         -------
-        self.variables : list
-            The list of categorical variables to encode
-        self.encoder_ : sklearn Pipeline
-            Encoder pipeline containing the ordinal encoder and the decision tree.
+        self
         """
 
         # check input dataframe
@@ -198,8 +195,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Returns the predictions of the decision tree based of the variable's original
-        value.
+        Replace categorical variable by the predictions of the decision tree.
 
         Parameters
         ----------
@@ -211,8 +207,8 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            If the variable(s) contain null values
-            If dataframe is not of same size as that used in fit()
+            - If the variable(s) contain null values
+            - If dataframe is not of same size as that used in fit()
         Warning
             If after encoding, NAN were introduced.
 

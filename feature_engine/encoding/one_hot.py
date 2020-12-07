@@ -32,12 +32,13 @@ class OneHotEncoder(BaseCategoricalTransformer):
     the parameter `top_categories`.
 
     **Note**
+
     Only when creating binary variables for all categories of the variable, we
     can specify if we want to encode into k or k-1 binary variables, where k is the
-    number if unique categories. If we select to encode only the top n most popular
-    categories, the encoder will create only n binary variables per categorical
-    variable. Observations that do not show any of these popular categories, will
-    have 0 in all the binary variables.
+    number if unique categories. If we encode only the top n most popular categories,
+    the encoder will create only n binary variables per categorical variable.
+    Observations that do not show any of these popular categories, will have 0 in all
+    the binary variables.
 
     The encoder will encode only categorical variables (type 'object'). A list
     of variables can be passed as an argument. If no variables are passed as
@@ -48,12 +49,14 @@ class OneHotEncoder(BaseCategoricalTransformer):
     (transform).
 
     **Note**
+
     New categories in the data to transform, that is, those that did not appear
     in the training set, will be ignored (no binary variable will be created for them).
     This means that observations with categories not present in the train set, will be
     encoded as 0 in all the binary variables.
 
     **Also Note**
+
     The original categorical variables are removed from the returned dataset when we
     apply the transform() method. In their place, the binary variables are returned.
 
@@ -61,18 +64,18 @@ class OneHotEncoder(BaseCategoricalTransformer):
     ----------
     top_categories : int, default=None
         If None, a dummy variable will be created for each category of the variable.
-        Alternatively, `top_categories` indicates the number of most frequent categories
-        to encode. Dummy variables will be created only for those popular categories
-        and the rest will be ignored. Note that this is equivalent to grouping all the
-        remaining categories in one group.
+        Alternatively, we can indicate in `top_categories` the number of most frequent
+        categories to encode. In this case, dummy variables will be created only for
+        those popular categories and the rest will be ignored, i.e., they will show the
+        value 0 in all the binary variables.
 
     variables : list
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and select all object type variables.
+        The list of categorical variables to encode. If None, the encoder will find and
+        select all object type variables in the train set.
 
     drop_last : boolean, default=False
         Only used if `top_categories = None`. It indicates whether to create dummy
-        variables for all the categories (k dummies), or if set to True, it will
+        variables for all the categories (k dummies), or if set to `True`, it will
         ignore the last binary variable of the list (k-1 dummies).
 
     Attributes
@@ -142,18 +145,15 @@ class OneHotEncoder(BaseCategoricalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame.
-            If any user provided variable is not categorical
+            - If the input is not a Pandas DataFrame.
+            - If any user provided variable is not categorical
         ValueError
-            If there are no categorical variables in the df or the df is empty
-            If the variable(s) contain null values
+            - If there are no categorical variables in the df or the df is empty
+            - If the variable(s) contain null values
 
         Returns
         -------
-        self.variables : list
-            The list of categorical variables to encode
-        self.encoder_dict_ : dict
-            The variable to categories mappings.
+        self
         """
 
         X = self._check_fit_input_and_variables(X)
@@ -198,8 +198,8 @@ class OneHotEncoder(BaseCategoricalTransformer):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            If the variable(s) contain null values.
-            If the dataframe is not of same size as that used in fit()
+            - If the variable(s) contain null values.
+            - If the dataframe is not of same size as that used in fit()
 
         Returns
         -------
@@ -223,5 +223,5 @@ class OneHotEncoder(BaseCategoricalTransformer):
         return X
 
     def inverse_transform(self, X: pd.DataFrame):
-        """inverse_transform is not implemented for this transformer yet."""
+        """inverse_transform is not implemented for this transformer."""
         return self

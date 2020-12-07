@@ -107,7 +107,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
             )
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Replaces categories with the learned parameters.
+        """Replace categories with the learned parameters.
 
         Parameters
         ----------
@@ -119,8 +119,8 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            If the variable(s) contain null values
-            If dataframe is not of same size as that used in fit()
+            - If the variable(s) contain null values
+            - If dataframe is not of same size as that used in fit()
         Warning
             If after encoding, NAN were introduced.
 
@@ -150,7 +150,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         return X
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Converts the encoded variable back to the original values.
+        """Convert the encoded variable back to the original values.
 
         Parameters
         ----------
@@ -160,10 +160,10 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         Raises
         ------
         TypeError
-           If the input is not a Pandas DataFrame
+            - If the input is not a Pandas DataFrame
         ValueError
-            If the variable(s) contain null values
-            If the dataframe is not of same size as that used in fit()
+            - If the variable(s) contain null values
+            - If the dataframe is not of same size as that used in fit()
 
         Returns
         -------

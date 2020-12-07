@@ -70,12 +70,12 @@ class AddMissingIndicator(BaseImputer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the variables for which the missing indicators will be created.
+        Learn the variables for which the missing indicators will be created.
 
         Parameters
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
+            The training dataset.
 
         y : pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
@@ -117,7 +117,7 @@ class AddMissingIndicator(BaseImputer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Adds the binary missing indicators.
+        Add the binary missing indicators.
 
         Parameters
         ----------

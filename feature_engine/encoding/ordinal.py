@@ -90,7 +90,7 @@ class OrdinalEncoder(BaseCategoricalTransformer):
         self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
-        """Learns the numbers to be used to replace the categories in each
+        """Learn the numbers to be used to replace the categories in each
         variable.
 
         Parameters
@@ -106,18 +106,15 @@ class OrdinalEncoder(BaseCategoricalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame.
-            If any user provided variable is not categorical
+            - If the input is not a Pandas DataFrame.
+            - If any user provided variable is not categorical
         ValueError
-            If there are no categorical variables in the df or the df is empty
-            If the variable(s) contain null values
+            - If there are no categorical variables in the df or the df is empty
+            - If the variable(s) contain null values
 
         Returns
         -------
-        self.variables : list
-            The list of categorical variables to encode
-        self.encoder_dict_ : dict
-            The category to number mappings.
+        self
         """
 
         X = self._check_fit_input_and_variables(X)

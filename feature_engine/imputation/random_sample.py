@@ -32,23 +32,28 @@ class RandomSampleImputer(BaseImputer):
     The RandomSampleImputer() replaces missing data in each feature with a random
     sample extracted from the variables in the training set.
     The RandomSampleImputer() works with both numerical and categorical variables.
-    Note: random samples will vary from execution to execution. This may affect
+
+    **Note**
+
+    Random samples will vary from execution to execution. This may affect
     the results of your work. Remember to set a seed before running the
     RandomSampleImputer().
 
     There are 2 ways in which the seed can be set with the RandomSampleImputer():
+
     If seed = 'general' then the random_state can be either None or an integer.
     The seed will be used as the random_state and all observations will be
-    imputed in one go. This is equivalent to pandas.sample(n, random_state=seed).
+    imputed in one go. This is equivalent to `pandas.sample(n, random_state=seed)`
+    where n is the number of observations with missing data.
 
     If seed = 'observation', then the random_state should be a variable name
     or a list of variable names. The seed will be calculated observation per
-    observation, either by adding or multiplying the seeding variable values for that
-    observation, and passed to the random_state. Thus, a value will be extracted using
-    that seed, and used to replace that particular observation. This is the equivalent
-    of pandas.sample(1, random_state=var1+var2) if the 'seeding_method' is set to 'add'
-    or pandas.sample(1, random_state=var1*var2) if the 'seeding_method' is set to
-    'multiply'.
+    observation, either by adding or multiplying the seeding variable values, and
+    passed to the random_state. Then, a value will be extracted from the train set
+    using that seed and  used to replace the NAN in particular observation. This is the
+    equivalent of `pandas.sample(1, random_state=var1+var2)` if the 'seeding_method' is
+    set to 'add' or `pandas.sample(1, random_state=var1*var2)` if the 'seeding_method'
+    is set to 'multiply'.
 
     For more details on why this functionality is important refer to the course
     Feature Engineering for Machine Learning in Udemy:
@@ -62,7 +67,6 @@ class RandomSampleImputer(BaseImputer):
     called. Therefore, the object can become quite heavy. Also, it may not be GDPR
     compliant if your training data set contains Personal Information. Please check
     if this behaviour is allowed within your organisation.
-    The imputer replaces missing data with a random sample from the training set.
 
     Parameters
     ----------
@@ -76,10 +80,10 @@ class RandomSampleImputer(BaseImputer):
         Indicates whether the seed should be set for each observation with missing
         values, or if one seed should be used to impute all variables in one go.
 
-        general: one seed will be used to impute the entire dataframe. This is
+        **general**: one seed will be used to impute the entire dataframe. This is
         equivalent to setting the seed in pandas.sample(random_state).
 
-        observation: the seed will be set for each observation using the values
+        **observation**: the seed will be set for each observation using the values
         of the variables indicated in the random_state for that particular
         observation.
 
@@ -137,8 +141,8 @@ class RandomSampleImputer(BaseImputer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Makes a copy of the variables to impute in the training dataframe from
-        which it will randomly extract the values to fill the missing data
+        Makes a copy of the train set. Only stores a copy of the variables to impute.
+        This copy is then used to randomly extract the values to fill the missing data
         during transform.
 
         Parameters

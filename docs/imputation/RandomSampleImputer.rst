@@ -51,12 +51,19 @@ More details on how to use the RandomSampleImputer():
 
 	# Separate into train and test sets
 	X_train, X_test, y_train, y_test = train_test_split(
-    	data.drop(['Id', 'SalePrice'], axis=1), data['SalePrice'], test_size=0.3, random_state=0)
+            data.drop(['Id', 'SalePrice'], axis=1),
+            data['SalePrice'],
+            test_size=0.3,
+            random_state=0
+        )
 
 	# set up the imputer
-	imputer = RandomSampleImputer(random_state=['MSSubClass', 'YrSold'],
-                                  seed='observation',
-                                  seeding_method='add')
+	imputer = RandomSampleImputer(
+                random_state=['MSSubClass', 'YrSold'],
+                seed='observation',
+                seeding_method='add'
+            )
+
 	# fit the imputer
 	imputer.fit(X_train)
 

@@ -81,7 +81,7 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the counts or frequencies which will be used to replace the categories.
+        Learn the counts or frequencies which will be used to replace the categories.
 
         Parameters
         ----------
@@ -95,18 +95,15 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame.
-            If any user provided variable is not categorical
+            - If the input is not a Pandas DataFrame.
+            - If any user provided variable is not categorical
         ValueError
-            If there are no categorical variables in the df or the df is empty
-            If the variable(s) contain null values
+            - If there are no categorical variables in the df or the df is empty
+            - If the variable(s) contain null values
 
         Returns
         -------
-        self.variables : list
-            The list of categorical variables to encode
-        self.encoder_dict_ : dict
-            The category to number mappings.
+        self
         """
 
         X = self._check_fit_input_and_variables(X)

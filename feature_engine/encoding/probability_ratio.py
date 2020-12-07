@@ -15,11 +15,20 @@ class PRatioEncoder(BaseCategoricalTransformer):
     The PRatioEncoder() replaces categories by the ratio of the probability of the
     target = 1 and the probability of the target = 0.
 
-    The target probability ratio is given by: p(1) / p(0)
+    The target probability ratio is given by:
 
-    The log of the target probability ratio is: np.log( p(1) / p(0) )
+    .. math::
+
+        p(1) / p(0)
+
+    The log of the target probability ratio is:
+
+    .. math::
+
+        log( p(1) / p(0) )
 
     **Note**
+
     This categorical encoding is exclusive for binary classification.
 
     For example in the variable colour, if the mean of the target = 1 for blue
@@ -32,9 +41,8 @@ class PRatioEncoder(BaseCategoricalTransformer):
     log_ratio, in any of the variables, the encoder will return an error.
 
     The encoder will encode only categorical variables (type 'object'). A list
-    of variables can be passed as an argument. If no variables are passed as
-    argument, the encoder will find and encode all categorical variables
-    (object type).
+    of variables can be passed as an argument. If no variables are passed the encoder
+    will find and encode all categorical variables (object type).
 
     The encoder first maps the categories to the numbers for each variable (fit). The
     encoder then transforms the categories into the mapped numbers (transform).
@@ -49,8 +57,8 @@ class PRatioEncoder(BaseCategoricalTransformer):
         'log_ratio' : log probability ratio
 
     variables : list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and select all object type variables.
+        The list of categorical variables to encode. If None, the encoder will find and
+        select all object type variables.
 
     Attributes
     ----------
@@ -91,7 +99,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Learns the numbers that should be used to replace the categories in each
+        Learn the numbers that should be used to replace the categories in each
         variable. That is the ratio of probability.
 
         Parameters
@@ -106,21 +114,18 @@ class PRatioEncoder(BaseCategoricalTransformer):
         Raises
         ------
         TypeError
-            If the input is not the Pandas DataFrame.
-            If any user provided variables are not categorical.
+            - If the input is not the Pandas DataFrame.
+            - If any user provided variables are not categorical.
         ValueError
-            If there are no categorical variables in df or df is empty
-            If variable(s) contain null values.
-            If y is not binary with values 0 and 1.
-            If p(0) = 0 or any of p(0) or p(1) are 0 when determining the ratio
+            - If there are no categorical variables in df or df is empty
+            - If variable(s) contain null values.
+            - If y is not binary with values 0 and 1.
+            - If p(0) = 0 or any of p(0) or p(1) are 0 when determining the ratio
             or log_ratio.
 
         Returns
         -------
-        self.variables : list
-            The list of categorical variables to encode
-        self.encoder_dict_ : dict
-            The category to number mappings.
+        self
         """
 
         X = self._check_fit_input_and_variables(X)
