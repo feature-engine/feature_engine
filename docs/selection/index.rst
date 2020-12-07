@@ -14,7 +14,7 @@ Or in other words to select subsets of variables.
    DropDuplicateFeatures
    DropCorrelatedFeatures
    SmartCorrelatedSelection
-   ShuffleFeaturesSelector
+   SelectByShuffling
    SelectBySingleFeaturePerformance
    SelectByTargetMeanPerformance
    RecursiveFeatureElimination
