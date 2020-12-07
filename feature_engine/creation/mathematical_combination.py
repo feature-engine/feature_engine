@@ -19,10 +19,10 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
     multiplies, takes the average, maximum, minimum or standard deviation of a group
     of variables and returns the result into new variables.
 
-    For example, if we have the variables number_payments_first_quarter,
-    number_payments_second_quarter, number_payments_third_quarter and
-    number_payments_fourth_quarter, we can use MathematicalCombination() to calculate
-    the total number of payments and mean number of payments as follows:
+    For example, if we have the variables **number_payments_first_quarter**,
+    **number_payments_second_quarter**, **number_payments_third_quarter** and
+    **number_payments_fourth_quarter**, we can use MathematicalCombination() to
+    calculate the total number of payments and mean number of payments as follows:
 
     .. code-block:: python
 
@@ -45,8 +45,9 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
         Xt = transformer.fit_transform(X)
 
-    The transformed X, Xt, will contain the additional features total_number_payments
-    and mean_number_payments, plus the original set of variables.
+    The transformed X, Xt, will contain the additional features
+    **total_number_payments** and **mean_number_payments**, plus the original set of
+    variables.
 
     Parameters
     ----------
@@ -57,8 +58,8 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
     math_operations : list, default=None
         The list of basic math operations to be used to create the new features.
 
-        If none, all of ['sum', 'prod', 'mean', 'std', 'max', 'min'] will be performed
-        over the variables_to_combine. Alternatively, the user can enter the list of
+        If None, all of ['sum', 'prod', 'mean', 'std', 'max', 'min'] will be performed
+        over the `variables_to_combine`. Alternatively, the user can enter the list of
         operations to carry out.
 
         Each operation should be a string and must be one of the elements
@@ -70,7 +71,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
     new_variables_names : list, default=None
         Names of the newly created variables. The user can enter a name or a list
         of names for the newly created features (recommended). The user must enter
-        one name for each mathematical transformation indicated in the math_operations
+        one name for each mathematical transformation indicated in the `math_operations`
         parameter. That is, if you want to perform mean and sum of features, you
         should enter 2 new variable names. If you perform only mean of features,
         enter 1 variable name. Alternatively, if you chose to perform all
@@ -82,7 +83,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         name will be assigned to the mean of the variables and the second variable name
         to the product of the variables.
 
-        If new_variable_names = None, the transformer will assign an arbitrary name
+        If `new_variable_names = None`, the transformer will assign an arbitrary name
         to the newly created features starting by the name of the mathematical
         operation, followed by the variables combined separated by -.
 
@@ -93,7 +94,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
     math_operations_ : list
         A list with the mathematical operations to be applied to the
-        variables_to_combine.
+        `variables_to_combine`.
 
     Methods
     -------
@@ -179,7 +180,9 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Performs dataframe checks. Creates dictionary of operation to new feature
+        This transformer does not learn parameters.
+
+        Perform dataframe checks. Creates dictionary of operation to new feature
         name pairs.
 
         Parameters
@@ -194,8 +197,8 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         Raises
         ------
         TypeError
-           If the input is not a Pandas DataFrame
-           If any user provided variables in variables_to_combine are not numerical
+           - If the input is not a Pandas DataFrame
+           - If any user provided variables in variables_to_combine are not numerical
         ValueError
            If the variable(s) contain null values
 
@@ -242,8 +245,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Combines the variables with the mathematical operations. Returns dataframe
-        with the original variables plus the new variables.
+        Combine the variables with the mathematical operations.
 
         Parameters
         ----------
@@ -255,13 +257,13 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         TypeError
            If the input is not a Pandas DataFrame
         ValueError
-           If the variable(s) contain null values
-           If the dataframe is not of the same size as that used in fit()
+           - If the variable(s) contain null values
+           - If the dataframe is not of the same size as that used in fit()
 
         Returns
         -------
         X : Pandas dataframe, shape = [n_samples, n_features + n_operations]
-            The dataframe with the operations results added as columns.
+            The dataframe with the original variables plus the new variables.
         """
 
         # Check method fit has been called

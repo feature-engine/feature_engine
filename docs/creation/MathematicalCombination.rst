@@ -12,11 +12,11 @@ Example
 -------
 
 MathematicalCombination() applies basic mathematical operations to multiple
-features, returning one or more additional features as a result. Tha is, it sums,
+features, returning one or more additional features as a result. That is, it sums,
 multiplies, takes the average, maximum, minimum or standard deviation of a group
 of variables and returns the result into new variables.
 
-In this example, we sum 2 variables from the houseprices dataset.
+In this example, we sum 2 variables from the house prices dataset.
 
 .. code:: python
 
