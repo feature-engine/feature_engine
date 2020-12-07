@@ -1,9 +1,17 @@
 SelectByShuffling
 =================
 
+API Reference
+-------------
+
+.. autoclass:: feature_engine.selection.SelectByShuffling
+    :members:
+
+Example
+-------
+
 The SelectByShuffling() selects important features if permutation their values
-at random produces a decrease in the initial model performance. See API below for
-more details into its functionality.
+at random produces a decrease in the initial model performance.
 
 .. code:: python
 
@@ -71,9 +79,3 @@ more details into its functionality.
     3 -0.044642 -0.011595 -0.036656  0.012191  0.024991  0.034309  0.022692
     4 -0.044642 -0.036385  0.021872  0.003935  0.015596 -0.002592 -0.031991
     None
-
-API Reference
--------------
-
-.. autoclass:: feature_engine.selection.SelectByShuffling
-    :members:

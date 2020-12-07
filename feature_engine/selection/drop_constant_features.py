@@ -20,11 +20,11 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class DropConstantFeatures(TransformerMixin, BaseEstimator):
     """
-    Drops constant and quasi-constant variables from a dataframe. Constant variables
+    Drop constant and quasi-constant variables from a dataframe. Constant variables
     show the same value across all the observations in the dataset. Quasi-constant
     variables show the same value in almost all the observations in the dataset.
 
-    By default, DropConstantFeatures drops only constant variables. This transformer
+    By default, DropConstantFeatures() drops only constant variables. This transformer
     works with both numerical and categorical variables. The user can indicate a list
     of variables to examine. Alternatively, the transformer will evaluate all the
     variables in the dataset.
@@ -34,21 +34,40 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
 
     Parameters
     ----------
-
-    tol: float,int,  default=1
+    tol : float,int,  default=1
         Threshold to detect constant/quasi-constant features. Variables showing the
         same value in a percentage of observations greater than tol will be considered
-        constant / quasi-constant and dropped.
+        constant / quasi-constant and dropped. If tol=1, the transformer removes
+        constant variables. Else, it will remove quasi-constant variables.
 
-    variables: list, default=None
+    variables : list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         variables in the dataset.
 
-    missing_values: str, default=raises
-        Takes values 'raise', 'ignore', 'include'.
+    missing_values : str, default=raises
         Whether the missing values should be raised as error, ignored or included as an
         additional value of the variable, when considering if the feature is constant
-        or quasi-constant
+        or quasi-constant. Takes values 'raise', 'ignore', 'include'.
+
+    Attributes
+    ----------
+    constant_features_: list
+        The list of constant and quasi-constant features.
+
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
+
+    Notes
+    -----
+    This transformer is a similar concept to the VarianceThreshold from Scikit-learn,
+    but it evaluates number of unique values instead of variance
+
+    See Also
+    --------
+    sklearn.feature_selection.VarianceThreshold
     """
 
     def __init__(
@@ -74,19 +93,14 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The input dataframe.
-
-        y: None
+        y : None
             y is not needed for this transformer. You can pass y or None.
 
-
-        Attributes
-        ----------
-
-        constant_features_: list
-            The list of constant and quasi-constant features.
+        Returns
+        -------
+        self
         """
 
         # check input dataframe
@@ -136,19 +150,18 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
 
     def transform(self, X: pd.DataFrame):
         """
-        Drops the constant and quasi-constant features from a dataframe.
+        Drop the constant and quasi-constant features from a dataframe.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X : pandas dataframe of shape = [n_samples, n_features].
             The input samples.
 
         Returns
         -------
-        X_transformed: pandas dataframe,
+        X_transformed : pandas dataframe,
             shape = [n_samples, n_features - (constant + quasi_constant features)]
             The transformed dataframe with the remaining subset of variables.
-
         """
 
         # check if fit is performed prior to transform

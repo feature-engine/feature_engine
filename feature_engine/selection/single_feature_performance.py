@@ -20,34 +20,32 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
     """
-
-    SelectBySingleFeaturePerformance selects features based on the performance obtained
-    from a machine learning model trained utilising a single feature. In other words,
-    it trains a machine learning model for every single feature, utilising that
+    SelectBySingleFeaturePerformance() selects features based on the performance
+    obtained from a machine learning model trained utilising a single feature. In other
+    words, it trains a machine learning model for every single feature, utilising that
     individual feature, then determines each model performance. If the performance of
     the model based on the single feature is greater than a user specified threshold,
     then the feature is retained, otherwise removed.
 
-    The models trained on the individual features are trained using cross-validation.
+    The models are trained on the individual features using cross-validation.
     The performance metric to evaluate and the machine learning model to train are
     specified by the user.
 
     Parameters
     ----------
-
     variables : str or list, default=None
         The list of variable(s) to be evaluated.
         If None, the transformer will evaluate all numerical variables in the dataset.
 
-    estimator: object, default = RandomForestClassifier()
+    estimator : object, default = RandomForestClassifier()
         A Scikit-learn estimator for regression or classification.
 
-    scoring: str, default='roc_auc'
+    scoring : str, default='roc_auc'
         Desired metric to optimise the performance for the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold: float, int, default = 0.5
+    threshold : float, int, default = 0.5
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
@@ -59,7 +57,6 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-
     selected_features_: list
         The selected features.
 
@@ -69,13 +66,9 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
 
     Methods
     -------
-
-    fit: finds important features
-
-    transform: removes non-important / non-selected features
-
-    fit_transform: finds and removes non-important features
-
+    fit
+    transform
+    fit_transform
     """
 
     def __init__(
@@ -107,20 +100,18 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
+        Find the important features.
 
-        Args
-        ----
-
-        X: pandas dataframe of shape = [n_samples, n_features]
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
 
-        y: array-like of shape (n_samples)
+        y : array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
 
         Returns
         -------
-
         self
         """
 
@@ -161,18 +152,15 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame):
         """
-        Removes non-selected features.
+        Return dataframe with selected features.
 
-        Args
-        ----
-
-        X: pandas dataframe of shape = [n_samples, n_features].
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features].
             The input dataframe from which feature values will be train.
-
 
         Returns
         -------
-
         X_transformed: pandas dataframe
             of shape = [n_samples, selected_features]
             Pandas dataframe with the selected features.

@@ -22,8 +22,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class SelectByShuffling(BaseEstimator, TransformerMixin):
     """
-
-    SelectByShuffling selects features by determining the drop in machine learning
+    SelectByShuffling() selects features by determining the drop in machine learning
     model performance when each feature's values are randomly shuffled.
 
     If the variables are important, a random permutation of their values will
@@ -31,7 +30,7 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
     permutation of the values should have little to no effect on the model performance
     metric we are assessing.
 
-    The SelectByShuffling first trains a machine learning model utilising all
+    The SelectByShuffling() first trains a machine learning model utilising all
     features. Next, it shuffles the values of 1 feature, obtains a prediction with the
     pre-trained model, and determines the performance drop (if any). If the drop in
     performance is bigger than a threshold then the feature is retained, otherwise
@@ -46,20 +45,19 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-
     variables : str or list, default=None
         The list of variable(s) to be shuffled from the dataframe.
         If None, the transformer will shuffle all numerical variables in the dataset.
 
-    estimator: object, default = RandomForestClassifier()
+    estimator : object, default = RandomForestClassifier()
         A Scikit-learn estimator for regression or classification.
 
-    scoring: str, default='roc_auc'
+    scoring : str, default='roc_auc'
         Desired metric to optimise the performance for the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold: float, int, default = 0.01
+    threshold : float, int, default = 0.01
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
@@ -71,7 +69,6 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-
     initial_model_performance_: float,
         performance of the model built using the original dataset.
 
@@ -84,13 +81,9 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
 
     Methods
     -------
-
-    fit: finds important features
-
-    transform: removes non-important / non-selected features
-
-    fit_transform: finds and removes non-important features
-
+    fit
+    transform
+    fit_transform
     """
 
     def __init__(
@@ -116,21 +109,17 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Finds the important features
+        Find the important features.
 
-        Args
-        ----
-
-        X: pandas dataframe of shape = [n_samples, n_features]
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
-
-        y: array-like of shape (n_samples)
+        y : array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
 
         Returns
         -------
-
         self
         """
 
@@ -205,20 +194,16 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame):
         """
-        Removes non-selected features. That is, features which shuffling did not
-        decrease the machine learning model performance beyond the indicated threshold.
+        Return dataframe with selected features.
 
-        Args
-        ----
-
-        X: pandas dataframe of shape = [n_samples, n_features].
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features].
             The input dataframe from which feature values will be shuffled.
-
 
         Returns
         -------
-
-        X_transformed: pandas dataframe
+        X_transformed : pandas dataframe
             of shape = [n_samples, n_features - len(dropped features)]
             Pandas dataframe with the selected features.
         """

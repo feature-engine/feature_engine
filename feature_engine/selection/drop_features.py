@@ -12,15 +12,26 @@ from feature_engine.dataframe_checks import (
 
 class DropFeatures(BaseEstimator, TransformerMixin):
     """
-    DropFeatures() drops the list of variable(s) indicated by the user
-    from the original dataframe and returns the remaining variables.
+    DropFeatures() drops a list of variable(s) indicated by the user from the dataframe.
+
+    **When is this transformer useful?**
+
+    Sometimes, we create new variables combining other variables in the dataset, for
+    example, we obtain the variable `age` by subtracting `date_of_application` from
+    `date_of_birth`. After we obtained our new variable, we do not need the date
+    variables in the dataset any more. Thus, we can add DropFeatures() in the Pipeline
+    to have these removed.
 
     Parameters
     ----------
-
     features_to_drop : str or list, default=None
         Variable(s) to be dropped from the dataframe
 
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
     """
 
     def __init__(self, features_to_drop: List[Union[str, int]]):
@@ -35,18 +46,21 @@ class DropFeatures(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
+        This transformer does not learn any parameter.
+
         Verifies that the input X is a pandas dataframe, and that the variables to
-        drop exist in the training dataframe
+        drop exist in the training dataframe.
 
         Parameters
         ----------
-
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The input dataframe
-
-        y: None
+        y : pandas Series, default = None
             y is not needed for this transformer. You can pass y or None.
 
+        Returns
+        -------
+        self
         """
         # check input dataframe
         X = _is_dataframe(X)
@@ -69,17 +83,16 @@ class DropFeatures(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame):
         """
-        Drops the variable or list of variables indicated by the user from the original
-        dataframe and returns a new dataframe with the remaining subset of variables.
+        Drop the variable or list of variables from the dataframe.
 
         Parameters
         ----------
-        X: pandas dataframe
+        X : pandas dataframe
             The input dataframe from which features will be dropped
 
         Returns
         -------
-        X_transformed: pandas dataframe,
+        X_transformed : pandas dataframe,
             shape = [n_samples, n_features - len(features_to_drop)]
             The transformed dataframe with the remaining subset of variables.
 

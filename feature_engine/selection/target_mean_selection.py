@@ -30,7 +30,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
     """
-    SelectByTargetMeanPerformance selects features by using the mean value of the
+    SelectByTargetMeanPerformance() selects features by using the mean value of the
     target per category or bin, if the variable is numerical, as proxy of target
     estimation, by determining its performance.
 
@@ -38,60 +38,62 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
 
     The transformer works as follows:
 
-    1) Separates the training set into train and test sets.
+    1. Separates the training set into train and test sets.
 
     Then, for each categorical variable:
 
-    2) Determine the mean value of the target for each category of the
-    variable using the train set (equivalent of Target mean encoding)
+    2. Determine the mean value of the target for each category of the variable using
+    the train set (equivalent of Target mean encoding)
 
-    3) Replaces the categories in the test set, by the target mean values
-    determined from the train set
+    3. Replaces the categories in the test set, by the target mean values determined
+    from the train set
 
-    4) Using the encoded variable calculates the roc-auc or r2
+    4. Using the encoded variable calculates the roc-auc or r2
 
-    5) Selects the features which roc-auc or r2 is bigger than the indicated
+    5. Selects the features which roc-auc or r2 is bigger than the indicated
     threshold
 
     For each numerical variable:
 
-    2) Discretize the variable into intervals of equal width or equal frequency
+    2. Discretize the variable into intervals of equal width or equal frequency
     (uses the discretizers of Feature-engine)
 
-    3) Determine the mean value of the target for each interval of the
+    3. Determine the mean value of the target for each interval of the
     variable using the train set (equivalent of Target mean encoding)
 
-    3) Replaces the intervals in the test set, by the target mean values
+    4. Replaces the intervals in the test set, by the target mean values
     determined from the train set
 
-    4) Using the encoded variable calculates the roc-auc or r2
+    5. Using the encoded variable calculates the roc-auc or r2
 
-    5) Selects the features which roc-auc or r2 is bigger than the indicated
+    6. Selects the features which roc-auc or r2 is bigger than the indicated
     threshold
 
-    variables: list, default=None
+    Parameters
+    ----------
+    variables : list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         variables in the dataset.
 
-    scoring: string, default='roc_auc_score'
+    scoring : string, default='roc_auc_score'
         This indicates the metrics score to perform the feature selection.
         The current implementation supports 'roc_auc_score' and 'r2_score'.
 
-    threshold: float, default = 0.5
+    threshold : float, default = 0.5
         The performance threshold above which a feature will be selected.
 
-    bins: int, default = 5
+    bins : int, default = 5
         If the dataset contains numerical variables, the number of bins into which
         the values will be sorted.
 
-    strategy: str, default = equal_width
+    strategy : str, default = equal_width
         whether to create the bins for discretisation of numerical variables of
         equal width or equal frequency.
 
     cv : int, default=3
         Desired number of cross-validation fold to be used to fit the estimator.
 
-    random_state: int, default=0
+    random_state : int, default=0
         The random state setting in the train_test_split method.
 
     Attributes
@@ -103,6 +105,11 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
         A dictionary containing the feature name as key and the performance of the
         model trained on each feature as value.
 
+    Methods
+    -------
+    fit
+    transform
+    fit_transform
     """
 
     def __init__(
@@ -164,21 +171,19 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Args
-        ----
+        Find the important features.
 
-        X: pandas dataframe of shape = [n_samples, n_features]
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
 
-        y: array-like of shape (n_samples)
+        y : array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
 
         Returns
         -------
-
         self
-
         """
         # check input dataframe
         X = _is_dataframe(X)
@@ -299,22 +304,18 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame):
         """
-        Removes non-selected features.
+        Return dataframe with selected features.
 
-        Args
-        ----
-
-        X: pandas dataframe of shape = [n_samples, n_features].
-            The input dataframe from which feature values will be shuffled.
-
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features].
+            The input dataframe from which feature values will be train.
 
         Returns
         -------
-
         X_transformed: pandas dataframe
-            of shape = [n_samples, n_features - len(dropped features)]
+            of shape = [n_samples, selected_features]
             Pandas dataframe with the selected features.
-
         """
         # check if fit is performed prior to transform
         check_is_fitted(self)

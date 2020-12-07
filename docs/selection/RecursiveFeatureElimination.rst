@@ -1,10 +1,15 @@
 RecursiveFeatureElimination
 ============================
 
-RecursiveFeatureElimination() selects features recursively by examining the drop in the
-estimator performance when the feature is removed. It starts removing the least
-important feature, and evaluates all numerical features in the dataset, until it
-reaches the last and most important one. More details in the API below.
+API Reference
+-------------
+
+.. autoclass:: feature_engine.selection.RecursiveFeatureElimination
+    :members:
+
+
+Example
+-------
 
 .. code:: python
 
@@ -74,8 +79,3 @@ reaches the last and most important one. More details in the API below.
     3 -0.044642 -0.036656  0.024991 -0.011595  0.022692  0.012191
     4 -0.044642  0.021872  0.015596 -0.036385 -0.031991  0.003935
     
-API Reference
--------------
-
-.. autoclass:: feature_engine.selection.RecursiveFeatureElimination
-    :members:
