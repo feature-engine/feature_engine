@@ -23,17 +23,17 @@ class ArbitraryOutlierCapper(BaseOutlier):
     Parameters
     ----------
     max_capping_dict : dictionary, default=None
-        Dictionary containing the variable to user specified capping values for the
-        right tail of the distribution (maximum values).
+        Dictionary containing the user specified capping values for the right tail of
+        the distribution of each variable (maximum values).
 
     min_capping_dict : dictionary, default=None
-        Dictionary containing the variable to user specified capping values for the
-        left tail of the distribution (minimum values).
+        Dictionary containing user specified capping values for the eft tail of the
+        distribution of each variable (minimum values).
 
     missing_values : string, default='raise'
         Indicates if missing values should be ignored or raised. If
-        missing_values='raise' the transformer will return an error if the
-        training or other datasets contain missing values.
+        `missing_values='raise'` the transformer will return an error if the
+        training or the datasets to transform contain missing values.
 
     Attributes
     ----------
@@ -71,6 +71,8 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
+        This transformer does not learn any parameter.
+
         Parameters
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
