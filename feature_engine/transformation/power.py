@@ -51,7 +51,7 @@ class PowerTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Fits the power transformation.
+        This transformer does not learn parameters.
 
         Parameters
         ----------
@@ -65,11 +65,11 @@ class PowerTransformer(BaseNumericalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
-            If any of the user provided variables are not numerical
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
         ValueError
-            If there are no numerical variables in the df or the df is empty
-            If the variable(s) contain null values
+            - If there are no numerical variables in the df or the df is empty
+            - If the variable(s) contain null values
 
         Returns
         -------
@@ -85,7 +85,7 @@ class PowerTransformer(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Applies the power transformation to the variables.
+        Apply the power transformation to the variables.
 
         Parameters
         ----------
@@ -97,8 +97,8 @@ class PowerTransformer(BaseNumericalTransformer):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            If the variable(s) contain null values.
-            If the dataframe not of the same size as that used in fit().
+            - If the variable(s) contain null values.
+            - If the dataframe not of the same size as that used in fit().
 
         Returns
         -------

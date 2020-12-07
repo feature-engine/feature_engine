@@ -43,10 +43,6 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
     transform
     fit_transform
 
-    **See Also**
-    scipy.stats.yeojohnson
-    https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.yeojohnson.html
-
     References
     ----------
     .. [1] Weisberg S. "Yeo-Johnson Power Transformations".
@@ -61,7 +57,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the optimal lambda for the Yeo-Johnson transformation.
+        Learn the optimal lambda for the Yeo-Johnson transformation.
 
         Parameters
         ----------
@@ -75,11 +71,11 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         Raises
         ------
          TypeError
-            If the input is not a Pandas DataFrame
-            If any of the user provided variables are not numerical
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
         ValueError
-            If there are no numerical variables in the df or the df is empty
-            If the variable(s) contain null values
+            - If there are no numerical variables in the df or the df is empty
+            - If the variable(s) contain null values
 
         Returns
         -------
@@ -103,7 +99,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Applies the Yeo-Johnson transformation.
+        Apply the Yeo-Johnson transformation.
 
         Parameters
         ----------
@@ -115,8 +111,8 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            If the variable(s) contain null values.
-            If the dataframe not of the same size as that used in fit().
+            - If the variable(s) contain null values.
+            - If the dataframe not of the same size as that used in fit().
 
         Returns
         -------

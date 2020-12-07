@@ -43,7 +43,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Fits the reciprocal transformation
+        This transformer does not learn parameters.
 
         Parameters
         ----------
@@ -57,12 +57,12 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
-            If any of the user provided variables are not numerical
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
         ValueError
-            If there are no numerical variables in the df or the df is empty
-            If the variable(s) contain null values
-            If some variables contain zero as values
+            - If there are no numerical variables in the df or the df is empty
+            - If the variable(s) contain null values
+            - If some variables contain zero as values
 
         Returns
         -------
@@ -85,7 +85,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Applies the reciprocal 1 / x transformation.
+        Apply the reciprocal 1 / x transformation.
 
         Parameters
         ----------
@@ -97,9 +97,9 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            If the variable(s) contain null values.
-            If the dataframe not of the same size as that used in fit().
-            If some variables contain zero values.
+            - If the variable(s) contain null values.
+            - If the dataframe not of the same size as that used in fit().
+            - If some variables contain zero values.
 
         Returns
         -------

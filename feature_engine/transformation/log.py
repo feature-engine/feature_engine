@@ -52,7 +52,9 @@ class LogTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Selects the numerical variables and determines whether the logarithm
+        This transformer does not learn parameters.
+
+        Select the numerical variables and determines whether the logarithm
         can be applied on the selected variables (it checks if the variables
         are all positive).
 
@@ -68,12 +70,12 @@ class LogTransformer(BaseNumericalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
-            If any of the user provided variables are not numerical
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
         ValueError
-            If there are no numerical variables in the df or the df is empty
-            If the variable(s) contain null values
-            If some variables contain zero or negative values
+            - If there are no numerical variables in the df or the df is empty
+            - If the variable(s) contain null values
+            - If some variables contain zero or negative values
 
         Returns
         -------
@@ -107,9 +109,9 @@ class LogTransformer(BaseNumericalTransformer):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            If the variable(s) contain null values.
-            If the dataframe not of the same size as that used in fit().
-            If some variables contains zero or negative values.
+            - If the variable(s) contain null values.
+            - If the dataframe not of the same size as that used in fit().
+            - If some variables contains zero or negative values.
 
         Returns
         -------

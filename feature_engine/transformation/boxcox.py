@@ -15,6 +15,15 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     The BoxCoxTransformer() applies the BoxCox transformation to numerical
     variables.
 
+    The Box-Cox transformation is defined as:
+
+    - T(Y)=(Y exp(λ)−1)/λ if λ!=0
+    - log(Y) otherwise
+
+    where Y is the response variable and λ is the transformation parameter. λ varies,
+    typically from -5 to 5. In the transformation, all values of λ are considered and
+    the optimal value for a given variable is selected.
+
     The BoxCox transformation implemented by this transformer is that of
     SciPy.stats:
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.boxcox.html
@@ -44,11 +53,6 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     transform
     fit_transform
 
-
-    **See Also**
-    scipy.stats.boxcox
-    https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.boxcox.html
-
     References
     ----------
     .. [1] Box and Cox. "An Analysis of Transformations". Read at a RESEARCH MEETING,
@@ -64,7 +68,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the optimal lambda for the BoxCox transformation.
+        Learn the optimal lambda for the BoxCox transformation.
 
         Parameters
         ----------
@@ -78,12 +82,12 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         Raises
         ------
          TypeError
-            If the input is not a Pandas DataFrame
-            If any of the user provided variables are not numerical
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
         ValueError
-            If there are no numerical variables in the df or the df is empty
-            If the variable(s) contain null values
-            If some variables contain zero values
+            - If there are no numerical variables in the df or the df is empty
+            - If the variable(s) contain null values
+            - If some variables contain zero values
 
         Returns
         -------
@@ -110,7 +114,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Applies the BoxCox transformation.
+        Apply the BoxCox transformation.
 
         Parameters
         ----------
@@ -122,9 +126,9 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            If the variable(s) contain null values.
-            If the dataframe not of the same size as that used in fit().
-            If some variables contain negative values.
+            - If the variable(s) contain null values.
+            - If the dataframe not of the same size as that used in fit().
+            - If some variables contain negative values.
 
         Returns
         -------
