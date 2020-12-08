@@ -70,7 +70,7 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
         A dictionary containing the feature, and the change in performance incurred
         when training a model without that feature.
 
-    selected_features_: list 
+    selected_features_: list
         The selected features by the recursive feature addition selector
 
     Methods
@@ -242,7 +242,7 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
     def transform(self, X: pd.DataFrame):
         """
         Removes non-selected features. That is, features which did not cause a big
-        estimator performance drop when removed from the dataset.
+        estimator performance increase when added to the dataset.
 
         Args
         ----
