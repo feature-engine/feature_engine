@@ -88,6 +88,9 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         A dictionary containing the feature, and the change in performance incurred
         when training a model without that feature.
 
+    selected_features_: list 
+        The selected features by the recursive feature elimination selector
+
 
     Methods
     -------
