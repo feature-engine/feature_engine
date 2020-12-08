@@ -9,9 +9,8 @@ A typical contributing workflow goes like this:
 
 1. **Find** a bug while using Feature-engine, **suggest** new functionality, or **pick
 up** an issue from our `repo <https://github.com/solegalli/feature_engine/issues/>`_.
-2. **Discuss** with us how you would like to get involved and your approach to resolve
-the issue.
 
+2. **Discuss** with us your approach to resolve the issue.
 3. Then, **fork** the repository into your GitHub account.
 4. **Clone** your fork into your local computer.
 5. **Code** the feature, the tests and update or add the documentation.

@@ -1,26 +1,12 @@
-.. -*- mode: rst -*-
-Books & Courses
-===============
+Books
+=====
 
-|pic1|  |pic2| |pic3|
+You can learn more about how to use Feature-engine and feature engineering in general
+in the following books:
 
-.. |pic1| figure::  images/cookbook.png
+.. figure::  images/cookbook.png
    :width: 200
    :align: left
-   :target: http://www.trainindata.com
+   :target: https://www.packtpub.com/product/python-feature-engineering-cookbook/9781789806311
 
    Python Feature Engineering Cookbook
-
-.. |pic2| figure::  images/feml_logo.png
-   :width: 200
-   :align: left
-   :target: http://www.trainindata.com
-
-   Feature Engineering for Machine Learning
-
-.. |pic3| figure:: images/ivml_logo.png
-   :width: 200
-   :align: left
-   :target: http://www.trainindata.com
-
-   Ingeniería de variables para Machine Learning

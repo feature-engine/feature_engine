@@ -87,8 +87,8 @@ En Español:
 - `Ingeniería de variables para machine learning <https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C>`_, Curso Online.
 - `Ingeniería de variables, MachinLenin <https://www.youtube.com/watch?v=NhCxOOoFXds>`_, charla online.
 
-More resources in the **Books + Courses** and **Blogs + Videos** sections on the
-navigation panel on the left.
+More resources in the **Learning Resources** sections on the navigation panel on the
+left.
 
 Contributing
 ------------
@@ -101,14 +101,11 @@ on board. We follow the
 
 Regardless of your skill level you can help us. We appreciate bug reports, user testing,
 feature requests, bug fixes, addition of tests, product enhancements, and documentation
-improvements.
-
-We also appreciate blogs about Feature-engine. If you happen to have one, let us know!
+improvements. We also appreciate blogs about Feature-engine. If you happen to have one,
+let us know!
 
 For more details on how to contribute check the contributing page. Click on the
 "Contributing" page on the left of this page.
-
-Thank you for your contributions!
 
 
 Feature-engine's Transformers
@@ -221,6 +218,7 @@ The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
    quickstart
    installation
    getting_help
+   about
    datasets
 
 .. toctree::
@@ -238,26 +236,12 @@ The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
 
 .. toctree::
    :maxdepth: 1
-   :caption: Tutorials
+   :caption: Learning Resources
 
    tutorials
-
-.. toctree::
-   :maxdepth: 1
-   :caption: How To
-
    howto
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Books & Courses
-
    books
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Blogs & Videos
-
+   courses
    blogs
 
 .. toctree::
@@ -267,12 +251,6 @@ The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
    contribute/index
    code_of_conduct
    governance
-
-.. toctree::
-   :maxdepth: 1
-   :caption: About
-
-   about
 
 .. toctree::
    :maxdepth: 1

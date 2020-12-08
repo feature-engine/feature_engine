@@ -18,3 +18,4 @@ Or in other words to select subsets of variables.
    SelectBySingleFeaturePerformance
    SelectByTargetMeanPerformance
    RecursiveFeatureElimination
+   RecursiveFeatureAddition
