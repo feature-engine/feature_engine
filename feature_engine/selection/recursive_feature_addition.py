@@ -222,18 +222,8 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
                 # add feature to the list of selected features
                 self.selected_features_.append(feature)
 
-                # run updated baseline model with the new list of features
-                baseline_model = cross_validate(
-                    self.estimator,
-                    X[self.selected_features_],
-                    y,
-                    cv=self.cv,
-                    scoring=self.scoring,
-                    return_estimator=True,
-                )
-
-                # Save updated baseline model performance
-                baseline_model_performance = baseline_model["test_score"].mean()
+                # Update new baseline model performance
+                baseline_model_performance = model_tmp_performance
 
         self.input_shape_ = X.shape
 
