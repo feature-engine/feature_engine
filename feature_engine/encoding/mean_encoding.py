@@ -34,15 +34,19 @@ class MeanEncoder(BaseCategoricalTransformer):
 
     Attributes
     ----------
-    encoder_dict_ : dictionary
-        The dictionary containing the {category: target mean} pairs.
+    encoder_dict_ :
+        Dictionary with the target mean value per category per variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
-    inverse_transform
+    fit:
+        Learn the target mean value per category, per variable.
+    transform:
+        Encode the categories to numbers.
+    fit_transform:
+        Fit to the data, then transform it.
+    inverse_transform:
+        Encode the numbers into the original categories.
 
     Notes
     -----
@@ -57,8 +61,8 @@ class MeanEncoder(BaseCategoricalTransformer):
     References
     ----------
     .. [1] Micci-Barreca D. "A Preprocessing Scheme for High-Cardinality Categorical
-    Attributes in Classification and Prediction Problems". ACM SIGKDD Explorations
-    Newsletter, 2001. https://dl.acm.org/citation.cfm?id=507538
+       Attributes in Classification and Prediction Problems". ACM SIGKDD Explorations
+       Newsletter, 2001. https://dl.acm.org/citation.cfm?id=507538
     """
 
     def __init__(

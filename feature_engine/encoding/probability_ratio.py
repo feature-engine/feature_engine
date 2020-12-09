@@ -62,15 +62,19 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
     Attributes
     ----------
-    encoder_dict_ : dictionary
-        The dictionary containing the {category: ratio} pairs per variable.
+    encoder_dict_ :
+        Dictionary with the probability ratio per category per variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
-    inverse_transform
+    fit:
+        Learn probability ratio per category, per variable.
+    transform:
+        Encode categories into numbers.
+    fit_transform:
+        Fit to the data, then transform it.
+    inverse_transform:
+        Encode the numbers into the original categories.
 
     Notes
     -----
@@ -120,8 +124,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
             - If there are no categorical variables in df or df is empty
             - If variable(s) contain null values.
             - If y is not binary with values 0 and 1.
-            - If p(0) = 0 or any of p(0) or p(1) are 0 when determining the ratio
-            or log_ratio.
+            - If p(0) = 0 or any of p(0) or p(1) are 0.
 
         Returns
         -------

@@ -60,16 +60,18 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
     Attributes
     ----------
-    encoder_dict_: dictionary
-        The dictionary containing the frequent categories, i.e.., those that will be
-        kept, for each variable. Categories not present in this list will be replaced
-        by 'Rare' or by the user defined value.
+    encoder_dict_:
+        Dictionary with the frequent categories, i.e.., those that will be
+        kept, per variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Find frequent categories.
+    transform:
+        Group rare categories
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(

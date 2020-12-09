@@ -80,14 +80,17 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
     Attributes
     ----------
-    encoder_dict_ : dictionary
-        The dictionary with the categories for which dummy variables will be created.
+    encoder_dict_ :
+        Dictionary with the categories for which dummy variables will be created.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Learn the unique categories per variable
+    transform:
+        Replace the categorical variables by the binary variables.
+    fit_transform:
+        Fit to the data, then transform it.
 
     Notes
     -----

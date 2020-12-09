@@ -22,9 +22,11 @@ class MeanMedianImputer(BaseImputer):
     MeanMedianImputer() will automatically select all variables of type numeric in the
     training set.
 
-    - The imputer first calculates the mean / median values of the variables (fit).
-    - The imputer then replaces the missing data with the estimated mean / median
-    (transform).
+    The imputer:
+
+    - first calculates the mean / median values of the variables (fit).
+    - Then replaces the missing data with the estimated mean / median (transform).
+
 
     Parameters
     ----------
@@ -37,15 +39,17 @@ class MeanMedianImputer(BaseImputer):
 
     Attributes
     ----------
-    imputer_dict_ : dictionary
-        The dictionary containing the mean or median values per variable. These
-        values will be used by the imputer to replace missing data.
+    imputer_dict_ :
+        Dictionary with the mean or median values per variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Learn the mean or median values.
+    transform:
+        Impute missing data.
+    fit_transform:
+        Fit to the data, then transform it.
     """
 
     def __init__(

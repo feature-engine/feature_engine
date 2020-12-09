@@ -29,9 +29,12 @@ class DropFeatures(BaseEstimator, TransformerMixin):
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        This transformer does not learn any parameter.
+    transform:
+        Drops indicated features.
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(self, features_to_drop: List[Union[str, int]]):

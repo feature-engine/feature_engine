@@ -69,21 +69,23 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    initial_model_performance_: float,
-        performance of the model built using the original dataset.
+    initial_model_performance_:
+        Performance of the model trained using the original dataset.
 
-    performance_drifts_: dict
-        A dictionary containing the feature, performance drift pairs, after
-        shuffling each feature.
+    performance_drifts_:
+        Dictionary with the performance drift per shuffled feature.
 
-    selected_features_: list
+    selected_features_:
         The selected features.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Find the important features.
+    transform:
+        Reduce X to the selected features.
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(

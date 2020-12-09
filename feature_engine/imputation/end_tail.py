@@ -75,16 +75,17 @@ class EndTailImputer(BaseImputer):
 
     Attributes
     ----------
-    imputer_dict_: dictionary
-        The dictionary containing the values at the end of the distribution
-        per variable. These values will be used by the imputer to replace missing
-        data.
+    imputer_dict_:
+        Dictionary with the values at the end of the distribution per variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Learn values to replace missing data.
+    transform:
+        Impute missing data.
+    fit_transform:
+        Fit to the data, then transform it.
     """
 
     def __init__(

@@ -55,16 +55,17 @@ class CategoricalImputer(BaseImputer):
 
     Attributes
     ----------
-    imputer_dict_: dictionary
-        The dictionary mapping each variable to the most frequent category, or to
-        the value 'Missing' depending on the imputation_method. The most frequent
-        category is calculated when fitting the transformer.
+    imputer_dict_:
+        Dictionary with most frequent category or string per variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Learn more frequent category, or assign string to variable.
+    transform:
+        Impute missing data.
+    fit_transform:
+        Fit to the data, than transform it.
     """
 
     def __init__(

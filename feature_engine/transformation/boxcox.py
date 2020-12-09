@@ -43,15 +43,17 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
     Attributes
     ----------
-    lambda_dict_ : dictionary
-        The dictionary containing the {variable: best exponent for the BoxCox
-        transformation} pairs. These are determined automatically.
+    lambda_dict_ :
+        Dictionary with the best BoxCox exponent per variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Learn the optimal lambda for the BoxCox transformation.
+    transform:
+        Apply the BoxCox transformation.
+    fit_transform:
+        Fit to data, then transform it.
 
     References
     ----------

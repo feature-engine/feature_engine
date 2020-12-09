@@ -89,18 +89,21 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    combination_dict_ : dictionary
-        A dictionary containing the mathematical operation : column name pairs
+    combination_dict_ :
+        Dictionary containing the mathematical operation to column name pairs
 
-    math_operations_ : list
-        A list with the mathematical operations to be applied to the
+    math_operations_ :
+        List with the mathematical operations to be applied to the
         `variables_to_combine`.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        This transformer does not learn parameters.
+    transform:
+        Combine the variables with the mathematical operations.
+    fit_transform:
+        Fit to the data, then transform it.
 
     Notes
     -----

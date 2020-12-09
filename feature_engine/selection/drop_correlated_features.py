@@ -52,22 +52,23 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    correlated_features_: set
-        The correlated features.
+    correlated_features_:
+        Set with the correlated features.
 
-    correlated_feature_sets_: list
-        Groups of correlated features. Or in other words, features that are
-        correlated with each other. Each list represents a group of correlated
-        features.
+    correlated_feature_sets_:
+        Groups of correlated features.  Each list is a group of correlated features.
 
-    correlated_matrix_: pandas dataframe
-        The correlated matrix.
+    correlated_matrix_:
+        The correlation matrix.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Find correlated features.
+    transform:
+        Remove correlated features.
+    fit_transform:
+        Fit to the data. Then transform it.
 
     See Also
     --------

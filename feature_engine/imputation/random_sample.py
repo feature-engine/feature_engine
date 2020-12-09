@@ -98,14 +98,17 @@ class RandomSampleImputer(BaseImputer):
 
     Attributes
     ----------
-    X_ : dataframe.
+    X_ :
         Copy of the training dataframe from which to extract the random samples.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Make a copy of the dataframe
+    transform:
+        Impute missing data.
+    fit_transform:
+        Fit to the data, then transform it.
     """
 
     def __init__(

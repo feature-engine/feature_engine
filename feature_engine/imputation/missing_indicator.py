@@ -46,14 +46,17 @@ class AddMissingIndicator(BaseImputer):
 
     Attributes
     ----------
-    variables_: list
-        the lit of variables for which the missing indicator will be created.
+    variables_:
+        List of variables for which the missing indicators will be created.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Learn the variables for which the missing indicators will be created
+    transform:
+        Add the missing indicators.
+    fit_transform:
+        Fit to the data, then trasnform it.
     """
 
     def __init__(

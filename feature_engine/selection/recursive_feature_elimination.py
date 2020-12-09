@@ -73,23 +73,23 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    initial_model_performance_ : float
-        performance of the model built using the original dataset with all the features.
+    initial_model_performance_ :
+        Performance of the model trained using the original dataset.
 
-    feature_importances_ : pandas series
-        A pandas Series containing the feature names in the axis, and the performance
-        derived from the model trained on the entire dataset, as values. The Series is
-        ordered from least important to most important feature.
+    feature_importances_ :
+        Pandas Series with the feature importance
 
-    performance_drifts_: dict
-        A dictionary containing the feature, and the change in performance incurred
-        when training a model without that feature.
+    performance_drifts_:
+        Dictionary with the performance drift per removed feature.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Find the important features.
+    transform:
+         Reduce X to the selected features.
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(

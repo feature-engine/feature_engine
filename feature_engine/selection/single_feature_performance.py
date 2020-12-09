@@ -57,18 +57,20 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    selected_features_: list
-        The selected features.
+    selected_features_:
+        List with the selected features.
 
-    feature_performance_: dict
-        A dictionary containing the feature name as key and the performance of the
-        model trained on each feature as value.
+    feature_performance_:
+        Dictionary with the single feature model performance per feature.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Find the important features.
+    transform:
+        Reduce X to the selected features.
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(

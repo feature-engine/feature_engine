@@ -99,17 +99,20 @@ class OutlierTrimmer(Winsorizer):
 
     Attributes
     ----------
-    right_tail_caps_: dictionary
-        The dictionary containing the maximum values above which values will be removed
+    right_tail_caps_:
+        Dictionary with the maximum values above which values will be removed
 
-    left_tail_caps_ : dictionary
-        The dictionary containing the minimum values below hich values will be removed
+    left_tail_caps_ :
+        Dictionary with the minimum values below which values will be removed
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Find maximum and minimum values.
+    transform:
+        Remove outliers.
+    fit_transform:
+        Fit to the data. Then transform it.
     """
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:

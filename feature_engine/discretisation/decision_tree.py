@@ -66,19 +66,20 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
     Attributes
     ----------
-    binner_dict_: dictionary
-        The dictionary containing the {variable: fitted tree} pairs.
+    binner_dict_:
+        Dictionary containing the fitted tree per variable.
 
-    scores_dict_ : dictionary
-        The score of the best decision tree, over the train set.
-        Provided in case the user wishes to understand the performance of the
-        decision tree.
+    scores_dict_ :
+        Dictionary with the score of the best decision tree, over the train set.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Fit a decision tree per variable.
+    transform:
+        Replace continuous values by the predictions of the decision tree.
+    fit_transform:
+        Fit to the data, then transform it.
 
     See Also
     --------

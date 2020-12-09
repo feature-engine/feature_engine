@@ -32,9 +32,12 @@ class PowerTransformer(BaseNumericalTransformer):
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        This transformer does not learn parameters.
+    transform:
+        Apply the power transformation to the variables.
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(

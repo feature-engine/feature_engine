@@ -43,16 +43,19 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
 
     Attributes
     ----------
-    encoder_dict_: dictionary
-        Dictionary containing the {category: count / frequency} pairs for
-        each variable.
+    encoder_dict_:
+        Dictionary with the count or frequency} per category, per variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
-    inverse_transform
+    fit:
+        Learn the count or frequency per category, per variable.
+    transform:
+        Encode the categories to numbers.
+    fit_transform:
+        Fit to the data, then transform it.
+    inverse_transform:
+        Encode the numbers into the original categories.
 
     Notes
     -----

@@ -30,9 +30,12 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        This transformer does not learn parameters.
+    transform:
+        Apply the reciprocal 1 / x transformation.
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(

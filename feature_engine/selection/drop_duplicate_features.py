@@ -39,19 +39,20 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    duplicated_features_: set
-        The duplicated features.
+    duplicated_features_:
+        Set with the duplicated features.
 
-    duplicated_feature_sets_: list
-        Groups of duplicated features. Or in other words, features that are
-        duplicated with each other. Each list represents a group of duplicated
-        features.
+    duplicated_feature_sets_:
+        Groups of duplicated features. Each list is a group of duplicated features.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Find duplicated features.
+    transform:
+        Remove duplicated features
+    fit_transform:
+        Fit to data. Then transform it.
     """
 
     def __init__(self, variables: Variables = None, missing_values: str = 'ignore'):

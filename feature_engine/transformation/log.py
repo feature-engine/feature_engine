@@ -33,9 +33,12 @@ class LogTransformer(BaseNumericalTransformer):
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        This transformer does not learn parameters.
+    transform:
+        Transforms the variables using log transformation.
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(

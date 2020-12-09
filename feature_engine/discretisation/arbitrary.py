@@ -51,15 +51,17 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     Attributes
     ----------
-    binner_dict_ : dictionary
-        The dictionary containing the {variable: interval limits} pairs used
-        to sort the values into discrete intervals.
+    binner_dict_ :
+         Dictionary with the interval limits per variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        This transformer does not learn any parameter.
+    transform:
+        Sort continuous variable values into the intervals.
+    fit_transform:
+        Fit to the data, then transform it.
 
     See Also
     --------
@@ -90,6 +92,8 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
+        This transformer does not learn any parameter.
+
         Check dataframe and variables. Checks that the user entered variables are in
         the train set and cast as numerical.
 

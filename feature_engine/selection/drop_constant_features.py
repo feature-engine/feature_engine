@@ -51,14 +51,17 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
 
     Attributes
     ----------
-    constant_features_: list
-        The list of constant and quasi-constant features.
+    constant_features_:
+        List with constant and quasi-constant features.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Find constant and quasi-constant features.
+    transform:
+        Remove constant and quasi-constant features.
+    fit_transform:
+        Fit to the data. Then transform it.
 
     Notes
     -----

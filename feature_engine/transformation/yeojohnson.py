@@ -33,15 +33,17 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
     Attributes
     ----------
-    lambda_dict_ : dictionary
-        The dictionary containing the {variable: best lambda for the Yeo-Johnson
-        transformation} pairs.
+    lambda_dict_ :
+        Dictionary containing the best lambda for the Yeo-Johnson per variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Learn the optimal lambda for the Yeo-Johnson transformation.
+    transform:
+        Apply the Yeo-Johnson transformation.
+    fit_transform:
+        Fit to data, then transform it.
 
     References
     ----------

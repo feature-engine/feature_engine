@@ -60,14 +60,17 @@ class ArbitraryNumberImputer(BaseImputer):
 
     Attributes
     ----------
-    imputer_dict_ : dictionary
-        The dictionary containing the values that will replace NAs in each variable.
+    imputer_dict_ :
+        Dictionary with the values to replace NAs in each variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        This transformer does not learn parameters.
+    transform:
+        Impute missing data.
+    fit_transform:
+        Fit to the data, then transform it.
 
     See Also
     --------

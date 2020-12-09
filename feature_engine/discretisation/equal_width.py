@@ -54,15 +54,17 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
     Attributes
     ----------
-    binner_dict_: dictionary
-        The dictionary containing the {variable: interval limits} pairs used
-        to sort the values into discrete intervals.
+    binner_dict_:
+        Dictionary with the interval limits per variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Find the interval limits.
+    transform:
+        Sort continuous variable values into the intervals.
+    fit_transform:
+        Fit to the data, then transform it.
 
     See Also
     --------

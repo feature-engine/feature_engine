@@ -101,19 +101,20 @@ class Winsorizer(BaseOutlier):
 
     Attributes
     ----------
-    right_tail_caps_: dictionary
-        The dictionary containing the maximum values at which variables
-        will be capped.
+    right_tail_caps_:
+        Dictionary with the maximum values at which variables will be capped.
 
-    left_tail_caps_ : dictionary
-        The dictionary containing the minimum values at which variables
-        will be capped.
+    left_tail_caps_ :
+        Dictionary with the minimum values at which variables will be capped.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Learn the values that should be used to replace outliers.
+    transform:
+        Cap the variables.
+    fit_transform:
+        Fit to the data. Then transform it.
     """
 
     def __init__(

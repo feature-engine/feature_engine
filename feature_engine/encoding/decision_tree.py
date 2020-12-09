@@ -77,14 +77,17 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     Attributes
     ----------
-    encoder_ : sklearn Pipeline
-        Encoder pipeline containing the ordinal encoder and the decision tree.
+    encoder_ :
+        sklearn Pipeline containing the ordinal encoder and the decision tree.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Fit a decision tree per variable.
+    transform:
+        Replace categorical variable by the predictions of the decision tree.
+    fit_transform:
+        Fit to the data, then transform it.
 
     Notes
     -----
@@ -134,8 +137,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learn the numbers that should be used to replace the categories in each
-        variable.
+        Fit a decision tree per variable.
 
         Parameters
         ----------

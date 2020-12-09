@@ -38,9 +38,12 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
+    fit:
+        Fit Scikit-learn transformers
+    transform:
+        Transforms with Scikit-learn transformers
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(

@@ -45,16 +45,19 @@ class OrdinalEncoder(BaseCategoricalTransformer):
 
     Attributes
     ----------
-    encoder_dict_ : dictionary
-        The dictionary containing the {category: ordinal number} pairs for
-        every variable.
+    encoder_dict_ :
+        Dictionary with the ordinal number per category, per variable.
 
     Methods
     -------
-    fit
-    transform
-    fit_transform
-    inverse_transform
+    fit:
+        Find the integer to replace each category in each variable.
+    transform:
+        Encode the categories to numbers.
+    fit_transform:
+        Fit to the data, then transform it.
+    inverse_transform:
+        Encode the numbers into the original categories.
 
     Notes
     -----
