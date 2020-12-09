@@ -82,6 +82,9 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
     performance_drifts_:
         Dictionary with the performance drift per removed feature.
 
+    selected_features_:
+        The selected features list.
+
     Methods
     -------
     fit:
