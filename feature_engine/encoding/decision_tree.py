@@ -14,11 +14,11 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class DecisionTreeEncoder(BaseCategoricalTransformer):
     """
-    The DecisionTreeCategoricalEncoder() encodes categorical variables with predictions
+    The DecisionTreeEncoder() encodes categorical variables with predictions
     of a decision tree model.
 
     The categorical variable will be first encoded into integers with the
-    OrdinalCategoricalEncoder(). The integers can be assigned arbitrarily to the
+    OrdinalEncoder(). The integers can be assigned arbitrarily to the
     categories or following the mean value of the target in each category.
 
     Then a decision tree will be fit using the resulting numerical variable to predict
