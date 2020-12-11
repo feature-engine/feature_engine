@@ -10,14 +10,14 @@ from feature_engine.base_transformers import BaseNumericalTransformer
 
 class ArbitraryDiscretiser(BaseNumericalTransformer):
     """
-    The UserInputDiscretiser() divides continuous numerical variables
+    The ArbitraryDiscretiser() divides continuous numerical variables
     into contiguous intervals are arbitrarily entered by the user.
 
     The user needs to enter a dictionary with variable names as keys, and a list of
     the limits of the intervals as values. For example {'var1':[0, 10, 100, 1000],
     'var2':[5, 10, 15, 20]}.
 
-    The UserInputDiscretiser() works only with numerical variables. The discretiser will
+    The ArbitraryDiscretiser() works only with numerical variables. The discretiser will
     check if the dictionary entered by the user contains variables present in the
     training set, and if these variables are cast as numerical, before doing any
     transformation.
