@@ -1,6 +1,15 @@
 DropCorrelatedFeatures
 ======================
 
+API Reference
+-------------
+
+.. autoclass:: feature_engine.selection.DropCorrelatedFeatures
+    :members:
+
+Example
+-------
+
 The DropCorrelatedFeatures() finds and removes correlated variables from a dataframe.
 The user can pass a list of variables to examine, or alternatively the selector will
 examine all numerical variables in the data set.
@@ -68,8 +77,3 @@ examine all numerical variables in the data set.
     4 -0.186530
 
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.selection.DropCorrelatedFeatures
-    :members:

@@ -1,16 +1,21 @@
 PRatioEncoder
 =============
 
+API Reference
+-------------
+
+.. autoclass:: feature_engine.encoding.PRatioEncoder
+    :members:
+
+Example
+-------
+
 The PRatioEncoder() replaces the labels by the ratio of probabilities. It only works
 for binary classification.
     
 The target probability ratio is given by: p(1) / p(0)
 
 The log of the target probability ratio is: np.log( p(1) / p(0) )
-
-The PRatioEncoder() works only with categorical variables. A list of variables can
-be indicated, or the encoder will automatically select all categorical variables in the
-train set.
 
 .. code:: python
 
@@ -72,8 +77,3 @@ train set.
       'Q': 0.5961538461538461,
       'S': 0.5127610208816704}}
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.encoding.PRatioEncoder
-    :members:

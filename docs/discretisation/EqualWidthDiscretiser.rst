@@ -1,5 +1,15 @@
 EqualWidthDiscretiser
 =====================
+
+API Reference
+-------------
+
+.. autoclass:: feature_engine.discretisation.EqualWidthDiscretiser
+    :members:
+
+Example
+-------
+
 The EqualWidthDiscretiser() sorts the variable values into contiguous intervals of
 equal size. The size of the interval is calculated as:
 
@@ -9,8 +19,8 @@ where bins, which is the number of intervals, should be determined by the user. 
 transformer can return the variable as numeric or object (default = numeric).
 
 The EqualWidthDiscretiser() works only with numerical variables. A list of variables can
-be indicated, or the imputer will automatically select all numerical variables in the
-train set.
+be indicated, or the discretiser will automatically select all numerical variables in
+the train set.
 
 .. code:: python
 
@@ -79,8 +89,3 @@ train set.
 .. image:: ../images/equalwidthdiscretisation.png
 
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.discretisation.EqualWidthDiscretiser
-    :members:

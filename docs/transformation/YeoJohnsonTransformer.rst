@@ -14,8 +14,8 @@ API Reference
     :members:
 
 
-Example Use
------------
+Example
+-------
 
 .. code:: python
 

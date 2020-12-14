@@ -15,11 +15,21 @@ class PRatioEncoder(BaseCategoricalTransformer):
     The PRatioEncoder() replaces categories by the ratio of the probability of the
     target = 1 and the probability of the target = 0.
 
-    The target probability ratio is given by: p(1) / p(0)
+    The target probability ratio is given by:
 
-    The log of the target probability ratio is: np.log( p(1) / p(0) )
+    .. math::
 
-    Note: This categorical encoding is exclusive for binary classification.
+        p(1) / p(0)
+
+    The log of the target probability ratio is:
+
+    .. math::
+
+        log( p(1) / p(0) )
+
+    **Note**
+
+    This categorical encoding is exclusive for binary classification.
 
     For example in the variable colour, if the mean of the target = 1 for blue
     is 0.8 and the mean of the target = 0  is 0.2, blue will be replaced by:
@@ -31,17 +41,14 @@ class PRatioEncoder(BaseCategoricalTransformer):
     log_ratio, in any of the variables, the encoder will return an error.
 
     The encoder will encode only categorical variables (type 'object'). A list
-    of variables can be passed as an argument. If no variables are passed as
-    argument, the encoder will find and encode all categorical variables
-    (object type).
+    of variables can be passed as an argument. If no variables are passed the encoder
+    will find and encode all categorical variables (object type).
 
-    The encoder first maps the categories to the numbers for each variable (fit).
-
-    The encoder then transforms the categories into the mapped numbers (transform).
+    The encoder first maps the categories to the numbers for each variable (fit). The
+    encoder then transforms the categories into the mapped numbers (transform).
 
     Parameters
     ----------
-
     encoding_method : str, default=woe
         Desired method of encoding.
 
@@ -50,8 +57,34 @@ class PRatioEncoder(BaseCategoricalTransformer):
         'log_ratio' : log probability ratio
 
     variables : list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and select all object type variables.
+        The list of categorical variables to encode. If None, the encoder will find and
+        select all object type variables.
+
+    Attributes
+    ----------
+    encoder_dict_ :
+        Dictionary with the probability ratio per category per variable.
+
+    Methods
+    -------
+    fit:
+        Learn probability ratio per category, per variable.
+    transform:
+        Encode categories into numbers.
+    fit_transform:
+        Fit to the data, then transform it.
+    inverse_transform:
+        Encode the numbers into the original categories.
+
+    Notes
+    -----
+    NAN are introduced when encoding categories that were not present in the training
+    dataset. If this happens, try grouping infrequent categories using the
+    RareLabelEncoder().
+
+    See Also
+    --------
+    feature_engine.encoding.RareLabelEncoder
     """
 
     def __init__(
@@ -70,24 +103,32 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Learns the numbers that should be used to replace the categories in each
+        Learn the numbers that should be used to replace the categories in each
         variable. That is the ratio of probability.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the categorical variables.
+            The training input samples. Can be the entire dataframe, not just the
+            categorical variables.
 
         y : pandas series.
             Target, must be binary [0,1].
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError
+            - If the input is not the Pandas DataFrame.
+            - If any user provided variables are not categorical.
+        ValueError
+            - If there are no categorical variables in df or df is empty
+            - If variable(s) contain null values.
+            - If y is not binary with values 0 and 1.
+            - If p(0) = 0 or any of p(0) or p(1) are 0.
 
-        encoder_dict_: dictionary
-            The dictionary containing the {category: ratio} pairs per variable.
+        Returns
+        -------
+        self
         """
 
         X = self._check_fit_input_and_variables(X)

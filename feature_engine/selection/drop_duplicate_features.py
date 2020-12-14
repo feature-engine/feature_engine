@@ -18,7 +18,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
     """
-    DropDuplicateFeatures finds and removes duplicated features in a dataframe.
+    DropDuplicateFeatures() finds and removes duplicated features in a dataframe.
 
     Duplicated features are identical features, regardless of the variable or column
     name. If they show the same values for every observation, then they are considered
@@ -29,15 +29,30 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-
-    variables: list, default=None
+    variables : list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         variables in the dataset.
 
-    missing_values: str, default=ignore
-        Takes values 'raise' and 'ignore'
-        Whether the missing values should be raised as error or ignored when
-        finding duplicated features.
+    missing_values : str, default=ignore
+        Takes values 'raise' and 'ignore'. Whether the missing values should be raised
+        as error or ignored when finding duplicated features.
+
+    Attributes
+    ----------
+    duplicated_features_:
+        Set with the duplicated features.
+
+    duplicated_feature_sets_:
+        Groups of duplicated features. Each list is a group of duplicated features.
+
+    Methods
+    -------
+    fit:
+        Find duplicated features.
+    transform:
+        Remove duplicated features
+    fit_transform:
+        Fit to data. Then transform it.
     """
 
     def __init__(self, variables: Variables = None, missing_values: str = 'ignore'):
@@ -55,24 +70,14 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The input dataframe.
-
-        y: None
+        y : None
             y is not needed for this transformer. You can pass y or None.
 
-
-        Attributes
-        ----------
-
-        duplicated_features_: set
-            The duplicated features.
-
-        duplicated_feature_sets_: list
-            Groups of duplicated features. Or in other words, features that are
-            duplicated with each other. Each list represents a group of duplicated
-            features.
+        Returns
+        -------
+        self
         """
 
         # check input dataframe
@@ -128,16 +133,16 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """
-        Drops the duplicated features from a dataframe.
+        Drop the duplicated features from a dataframe.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X : pandas dataframe of shape = [n_samples, n_features].
             The input samples.
 
         Returns
         -------
-        X_transformed: pandas dataframe,
+        X_transformed : pandas dataframe,
             shape = [n_samples, n_features - (duplicated features)]
             The transformed dataframe with the remaining subset of variables.
 

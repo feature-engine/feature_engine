@@ -1,5 +1,15 @@
 ArbitraryNumberImputer
 ======================
+
+API Reference
+-------------
+
+.. autoclass:: feature_engine.imputation.ArbitraryNumberImputer
+    :members:
+
+Example
+-------
+
 The ArbitraryNumberImputer() replaces missing data with an arbitrary value determined
 by the user. It works only with numerical variables. A list of variables can be
 indicated, or the imputer will automatically select all numerical variables in the
@@ -41,8 +51,4 @@ use different arbitrary values for variables.
 
 .. image:: ../images/arbitraryvalueimputation.png
 
-API Reference
--------------
 
-.. autoclass:: feature_engine.imputation.ArbitraryNumberImputer
-    :members:

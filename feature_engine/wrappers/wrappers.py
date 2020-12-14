@@ -20,13 +20,12 @@ from feature_engine.variable_manipulation import (
 
 class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     """
-    Wrapper for Scikit-learn pre-processing transformers like the
-    SimpleImputer() or OrdinalEncoder(), to allow the use of the
-    transformer on a selected group of variables.
+    Wrapper for Scikit-learn pre-processing transformers like the SimpleImputer() or
+    OrdinalEncoder(), to allow the use of the transformer on a selected group of
+    variables.
 
     Parameters
     ----------
-
     variables : list, default=None
         The list of variables to be imputed.
 
@@ -36,6 +35,15 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     transformer : sklearn transformer, default=None
         The desired Scikit-learn transformer.
+
+    Methods
+    -------
+    fit:
+        Fit Scikit-learn transformers
+    transform:
+        Transforms with Scikit-learn transformers
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(
@@ -54,28 +62,34 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """
-        The `fit` method allows Scikit-learn transformers to learn
-        the required parameters from the training data set.
+        The `fit` method allows Scikit-learn transformers to learn the required
+        parameters from the training data set.
 
         If transformer is OneHotEncoder, OrdinalEncoder or SimpleImputer,
         all variables indicated in the ```variables``` parameter will be transformed.
         When the variables parameter is None, the SklearnWrapper will automatically
         select and transform all features in the dataset, numerical or otherwise.
 
-        For all other Scikit-learn transformers only numerical variables
-        will be transformed. The SklearnWrapper will check that the variables
-        indicated in the variables parameter are numerical, or alternatively,
-        if variables is None, it will automatically select
-        the numerical variables in the data set.
+        For all other Scikit-learn transformers only numerical variables will be
+        transformed. The SklearnWrapper will check that the variables indicated in the
+        variables parameter are numerical, or alternatively, if variables is None, it
+        will automatically select the numerical variables in the data set.
 
-        Args:
-            X: Pandas DataFrame to fit the transformer
-            y: This parameter exists only for compatibility
-            with sklearn.pipeline.Pipeline.
-            Defaults to None.
+        Parameters
+        ----------
+        X : Pandas DataFrame
+            The dataset to fit the transformer
+        y : pandas Series, default=None
+            This parameter exists only for compatibility with sklearn.pipeline.Pipeline.
 
-        Returns:
-            self
+        Raises
+        ------
+         TypeError
+            If the input is not a Pandas DataFrame
+
+        Returns
+        -------
+        self
         """
 
         # check input dataframe
@@ -95,19 +109,28 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Apply the transformation to the dataframe.
-        Only the selected features will be modified.
+        Apply the transformation to the dataframe. Only the selected features will be
+        modified.
 
         If transformer is OneHotEncoder, dummy features are concatenated
         to the source dataset. Note that the original categorical variables
         will not be removed from the dataset after encoding. If this is the desired
-        effect, please use Feature-engine's OneHotCategoricalEncoder instead.
+        effect, please use Feature-engine's OneHotEncoder instead.
 
-        Args:
-            X: Pandas DataFrame to perform desired transformation
+        Parameters
+        ----------
+        X : Pandas DataFrame
+            The data to transform
 
-        Returns:
-            Pandas DataFrame
+        Raises
+        ------
+         TypeError
+            If the input is not a Pandas DataFrame
+
+        Returns
+        -------
+        X : Pandas DataFrame
+            The transformed dataset.
         """
 
         # check that input is a dataframe

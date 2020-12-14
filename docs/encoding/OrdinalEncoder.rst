@@ -1,16 +1,23 @@
 OrdinalEncoder
 ==============
 
+API Reference
+-------------
+
+.. autoclass:: feature_engine.encoding.OrdinalEncoder
+    :members:
+
+Example
+-------
+
 The OrdinalEncoder() replaces the categories by digits, starting from 0 to k-1, where k
 is the number of different categories. If we select "arbitrary", then the encoder will
 assign numbers as the labels appear in the variable (first come first served). If we
 select "ordered", the encoder will assign numbers following the mean of the target
 value for that label. So labels for which the mean of the target is higher will get the
 number 0, and those where the mean of the target is smallest will get the number k-1.
-
-The OrdinalEncoder() works only with categorical variables. A list of variables can
-be indicated, or the encoder will automatically select all categorical variables in the
-train set.
+This way, we create a monotonic relationship between the encoded variable and the
+target.
 
 .. code:: python
 
@@ -65,8 +72,3 @@ train set.
 	 'embarked': {'S': 0, 'Q': 1, 'C': 2}}
 
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.encoding.OrdinalEncoder
-    :members:
