@@ -4,16 +4,15 @@ Quick Start
 ===========
 
 If you're new to Feature-engine this guide will get you started. Feature-engine
-transformers have the methods fit() and transform() to learn parameters from the data
-and then modify the data. They work just like any Scikit-learn transformer.
+transformers have the methods `fit()` and `transform()` to learn parameters from the
+data and then modify the data. They work just like any Scikit-learn transformer.
 
 
 Installation
 ------------
 
 Feature-engine is a Python 3 package and works well with 3.6 or later. Earlier versions
-have not been tested. The simplest way to install Feature-engine is from PyPI with pip,
-Python's preferred package installer.
+have not been tested. The simplest way to install Feature-engine is from PyPI with pip:
 
 .. code-block:: bash
 
@@ -34,7 +33,7 @@ order to upgrade Feature-engine to the latest version, use ``pip`` as follows.
 
     $ pip install -U feature-engine
 
-If you’re using Anaconda, you can take advantage of the conda utility to install the
+If you’re using Anaconda, you can install the
 `Anaconda Feature-engine package <https://anaconda.org/conda-forge/feature_engine>`_:
 
 .. code-block:: bash
@@ -64,19 +63,22 @@ imputation.
 
 	# Separate into train and test sets
 	X_train, X_test, y_train, y_test = train_test_split(
-    	data.drop(['Id', 'SalePrice'], axis=1), data['SalePrice'],
-                   test_size=0.3, random_state=0)
+    	    data.drop(['Id', 'SalePrice'], axis=1), data['SalePrice'],
+            test_size=0.3,
+            random_state=0
+        )
 
 	# set up the imputer
 	median_imputer = MeanMedianImputer(
             imputation_method='median', variables=['LotFrontage', 'MasVnrArea']
             )
+
 	# fit the imputer
 	median_imputer.fit(X_train)
 
 	# transform the data
-	train_t= median_imputer.transform(X_train)
-	test_t= median_imputer.transform(X_test)
+	train_t = median_imputer.transform(X_train)
+	test_t = median_imputer.transform(X_test)
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
@@ -86,11 +88,6 @@ imputation.
 	ax.legend(lines, labels, loc='best')
 
 .. image:: images/medianimputation.png
-
-
-More examples can be found in the documentation for each transformer and in a dedicated
-section in the repository with
-`Jupyter notebooks <https://github.com/solegalli/feature_engine/tree/master/examples>`_.
 
 
 Feature-engine with the Scikit-learn's pipeline
@@ -113,7 +110,7 @@ pickle (.pkl). Here is an example on how to do it:
     from sklearn.pipeline import Pipeline as pipe
     from sklearn.preprocessing import MinMaxScaler
     
-    from feature_engine.encoding import RareLabelEncoder, MeanCategoricalEncoder
+    from feature_engine.encoding import RareLabelEncoder, MeanEncoder
     from feature_engine.discretisation import DecisionTreeDiscretiser
     from feature_engine.imputation import (
         AddMissingIndicator,
@@ -230,74 +227,11 @@ pickle (.pkl). Here is an example on how to do it:
 
 .. image:: images/pipelineprediction.png
 
-More examples can be found in the documentation for each transformer and in a dedicated
-section of
-`Jupyter notebooks <https://github.com/solegalli/feature_engine/tree/master/examples>`_.
 
+More examples can be found in:
 
-Dataset attribution
--------------------
+- The API documentation
+- Tutorials
+- How To
 
-The user guide and examples included in Feature-engine's documentation are based on
-these 3 datasets:
-
-**Titanic dataset**
-
-We use the dataset available in `openML <https://www.openml.org/d/40945>`_ which can be
-downloaded from `here <https://www.openml.org/data/get_csv/16826755/phpMYEkMl>`_.
-
-**Ames House Prices dataset**
-
-We use the data set created by Professor Dean De Cock:
-* Dean De Cock (2011) Ames, Iowa: Alternative to the Boston Housing
-* Data as an End of Semester Regression Project, Journal of Statistics Education,
-Vol.19, No. 3.
-
-The examples are based on a copy of the dataset available on
-`Kaggle <https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data>`_.
-
-The original data and documentation can be found here:
-
-* `Documentation <http://jse.amstat.org/v19n3/decock/DataDocumentation.txt>`_
-
-* `Data <http://jse.amstat.org/v19n3/decock/AmesHousing.xls>`_
-
-**Credit Approval dataset**
-
-We use the Credit Approval dataset from the UCI Machine Learning Repository:
-
-Dua, D. and Graff, C. (2019).
-`UCI Machine Learning Repository <http://archive.ics.uci.edu/ml>`_.
-Irvine, CA: University of California, School of Information and Computer Science.
-
-To download the dataset visit this
-`website <http://archive.ics.uci.edu/ml/machine-learning-databases/credit-screening/>`_
-and click on "crx.data" to download the data set.
-
-To prepare the data for the examples:
-
-.. code:: python
-
-    import random
-    import pandas as pd
-    import numpy as np
-
-    # load data
-    data = pd.read_csv('crx.data', header=None)
-
-    # create variable names according to UCI Machine Learning information
-    varnames = ['A'+str(s) for s in range(1,17)]
-    data.columns = varnames
-
-    # replace ? by np.nan
-    data = data.replace('?', np.nan)
-
-    # re-cast some variables to the correct types
-    data['A2'] = data['A2'].astype('float')
-    data['A14'] = data['A14'].astype('float')
-
-    # encode target to binary
-    data['A16'] = data['A16'].map({'+':1, '-':0})
-
-    # save the data
-    data.to_csv('creditApprovalUCI.csv', index=False)
+Check the navigation panel on the left.

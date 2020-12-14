@@ -1,6 +1,15 @@
 EndTailImputer
 ==============
 
+API Reference
+-------------
+
+.. autoclass:: feature_engine.imputation.EndTailImputer
+    :members:
+
+Example
+-------
+
 The EndTailImputer() replaces missing data with a value at the end of the distribution.
 The value can be determined using the mean plus or minus a number of times the standard
 deviation, or using the inter-quartile range proximity rule. The value can also be
@@ -50,8 +59,4 @@ imputer will automatically select all numerical variables in the train set.
 
 .. image:: ../images/endtailimputer.png
 
-API Reference
--------------
 
-.. autoclass:: feature_engine.imputation.EndTailImputer
-    :members:

@@ -1,14 +1,14 @@
 WoEEncoder
 ==========
 
-The WoEEncoder() replaces the labels by the weight of evidence. It only works for
-binary classification.
+API Reference
+-------------
 
-The weight of evidence is given by: np.log(P(X=xj|Y = 1)/P(X=xj|Y=0))
+.. autoclass:: feature_engine.encoding.WoEEncoder
+    :members:
 
-The WoEEncoder() works only with categorical variables. A list of variables can
-be indicated, or the encoder will automatically select all categorical variables in the
-train set.
+Example
+-------
 
 .. code:: python
 
@@ -70,8 +70,3 @@ train set.
     'Q': -0.05044494288988759,
     'S': -0.20113381737960143}}
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.encoding.WoEEncoder
-    :members:

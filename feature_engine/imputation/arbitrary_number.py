@@ -16,24 +16,65 @@ from feature_engine.variable_manipulation import (
 
 class ArbitraryNumberImputer(BaseImputer):
     """
-    The ArbitraryNumberImputer() replaces missing data in each variable
-    by an arbitrary value determined by the user.
+    The ArbitraryNumberImputer() replaces missing data in each variable by an arbitrary
+    value determined by the user. It works only with numerical variables.
+
+    We can impute all variables with the same number, in which case we need to define
+    the variables to impute in `variables` and the imputation number in
+    `arbitrary_number`. Alternatively, we can pass a dictionary of variable and numbers
+    to use for their imputation.
+
+    For example, we can impute varA and varB with 99 like this:
+
+    .. code-block:: python
+
+        transformer = ArbitraryNumberImputer(
+                variables = ['varA', 'varB'],
+                arbitrary_number = 99
+                )
+
+        Xt = transformer.fit_transform(X)
+
+    Alternatively, we can impute varA with 1 and varB with 99 like this:
+
+    .. code-block:: python
+
+        transformer = ArbitraryNumberImputer(
+                imputer_dict = {'varA' : 1, 'varB': 99]
+                )
+
+        Xt = transformer.fit_transform(X)
 
     Parameters
     ----------
-
     arbitrary_number : int or float, default=999
-        the number to be used to replace missing data.
+        The number to be used to replace missing data.
 
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will find and
-        select all numerical type variables. Attribute is used only if `imputer_dict`
-        attribute is None.
+        select all numerical type variables. This parameter is used only if
+        `imputer_dict` is None.
 
-    imputer_dict: dict, default=None
-        The dictionary of variables and their arbitrary numbers. If imputer_dict is
-        not None, it has to be dictionary with all values of integer or float type.
-        If None, `variables` attribute is used for imputation.
+    imputer_dict : dict, default=None
+        The dictionary of variables and the arbitrary numbers for their imputation.
+
+    Attributes
+    ----------
+    imputer_dict_ :
+        Dictionary with the values to replace NAs in each variable.
+
+    Methods
+    -------
+    fit:
+        This transformer does not learn parameters.
+    transform:
+        Impute missing data.
+    fit_transform:
+        Fit to the data, then transform it.
+
+    See Also
+    --------
+    feature_engine.imputation.EndTailImputer
     """
 
     def __init__(
@@ -54,25 +95,30 @@ class ArbitraryNumberImputer(BaseImputer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Checks that the variables are numerical.
+        This method does not learn any parameter. Checks dataframe and finds numerical
+        variables, or checks that the variables entered by user are numerical.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            User can pass the entire dataframe, not just the variables to impute.
+            The training dataset.
 
         y : None
             y is not needed in this imputation. You can pass None or y.
 
+        Raises
+        ------
+        TypeError
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
+        ValueError
+            If there are no numerical variables in the df or the df is empty
 
-        Attributes
-        ----------
-
-        imputer_dict_: dictionary
-            The dictionary containing the values that will replace each variable.
+        Returns
+        -------
+        self
         """
+
         # check input dataframe
         X = _is_dataframe(X)
 

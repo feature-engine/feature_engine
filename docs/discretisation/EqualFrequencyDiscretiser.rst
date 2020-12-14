@@ -1,12 +1,22 @@
 EqualFrequencyDiscretiser
 =========================
+
+API Reference
+-------------
+
+.. autoclass:: feature_engine.discretisation.EqualFrequencyDiscretiser
+    :members:
+
+Example
+-------
+
 The EqualFrequencyDiscretiser() sorts the variable values into contiguous intervals of
 equal proportion of observations. The limits of the intervals are calculated according
 to the quantiles. The number of intervals or quantiles should be determined by the user.
 The transformer can return the variable as numeric or object (default = numeric).
 
 The EqualFrequencyDiscretiser() works only with numerical variables. A list of
-variables can be indiacated, or the imputer will automatically select all numerical
+variables can be indicated, or the discretiser will automatically select all numerical
 variables in the train set.
 
 .. code:: python
@@ -76,8 +86,3 @@ variables in the train set.
 .. image:: ../images/equalfrequencydiscretisation.png
 
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.discretisation.EqualFrequencyDiscretiser
-    :members:

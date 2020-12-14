@@ -15,10 +15,8 @@ from feature_engine.variable_manipulation import (
 
 class EndTailImputer(BaseImputer):
     """
-    The EndTailImputer() transforms features by replacing missing data by a
-    value at either tail of the distribution.
-
-    The EndTailImputer() works only with numerical variables.
+    The EndTailImputer() transforms features by replacing missing data by a value at
+    either tail of the distribution. Ti works only with numerical variables.
 
     The user can indicate the variables to be imputed in a list. Alternatively, the
     EndTailImputer() will automatically find and select all variables of type numeric.
@@ -28,22 +26,19 @@ class EndTailImputer(BaseImputer):
     the Gaussian limits, the the IQR proximity rule limits, or a factor of the maximum
     value:
 
-    Gaussian limits:
-        right tail: mean + 3*std
-
-        left tail: mean - 3*std
+    Gaussian limits
+        - right tail: mean + 3*std
+        - left tail: mean - 3*std
 
     IQR limits:
-        right tail: 75th quantile + 3*IQR
-
-        left tail:  25th quantile - 3*IQR
+        - right tail: 75th quantile + 3*IQR
+        - left tail:  25th quantile - 3*IQR
 
     where IQR is the inter-quartile range = 75th quantile - 25th quantile
 
     Maximum value:
-        right tail: max * 3
-
-        left tail: not applicable
+        - right tail: max * 3
+        - left tail: not applicable
 
     You can change the factor that multiplies the std, IQR or the maximum value
     using the parameter 'fold'.
@@ -52,18 +47,17 @@ class EndTailImputer(BaseImputer):
 
     Parameters
     ----------
-
     imputation_method : str, default=gaussian
         Method to be used to find the replacement values. Can take 'gaussian',
         'iqr' or 'max'.
 
-        gaussian: the imputer will use the Gaussian limits to find the values
+        **gaussian**: the imputer will use the Gaussian limits to find the values
         to replace missing data.
 
-        iqr: the imputer will use the IQR limits to find the values to replace
+        **iqr**: the imputer will use the IQR limits to find the values to replace
         missing data.
 
-        max: the imputer will use the maximum values to replace missing data. Note
+        **max**: the imputer will use the maximum values to replace missing data. Note
         that if 'max' is passed, the parameter 'tail' is ignored.
 
     tail : str, default=right
@@ -71,13 +65,27 @@ class EndTailImputer(BaseImputer):
         right or left tail of the variable distribution. Can take values 'left' or
         'right'.
 
-    fold: int, default=3
+    fold : int, default=3
         Factor to multiply the std, the IQR or the Max values. Recommended values
-        are 2 or 3 for Gaussian, or 1.5 or 3 for skewed.
+        are 2 or 3 for Gaussian, or 1.5 or 3 for IQR.
 
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will find and
         select all variables of type numeric.
+
+    Attributes
+    ----------
+    imputer_dict_:
+        Dictionary with the values at the end of the distribution per variable.
+
+    Methods
+    -------
+    fit:
+        Learn values to replace missing data.
+    transform:
+        Impute missing data.
+    fit_transform:
+        Fit to the data, then transform it.
     """
 
     def __init__(
@@ -106,25 +114,27 @@ class EndTailImputer(BaseImputer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the values at the end of the variable distribution.
+        Learn the values at the end of the variable distribution.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can pass the entire dataframe, not just the variables that need imputation.
+            The training dataset.
 
-        y : None
+        y : pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
+        ValueError
+            If there are no numerical variables in the df or the df is empty
 
-        imputer_dict_: dictionary
-            The dictionary containing the values at the end of the distribution
-            per variable. These values will be used by the imputer to replace missing
-            data.
+        Returns
+        -------
+        self
         """
         # check input dataframe
         X = _is_dataframe(X)

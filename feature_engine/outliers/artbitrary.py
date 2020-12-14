@@ -15,26 +15,42 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 class ArbitraryOutlierCapper(BaseOutlier):
     """
     The ArbitraryOutlierCapper() caps the maximum or minimum values of a variable
-    by an arbitrary value indicated by the user.
+    at an arbitrary value indicated by the user.
 
     The user must provide the maximum or minimum values that will be used
     to cap each variable in a dictionary {feature:capping value}
 
     Parameters
     ----------
+    max_capping_dict : dictionary, default=None
+        Dictionary containing the user specified capping values for the right tail of
+        the distribution of each variable (maximum values).
 
-    capping_max : dictionary, default=None
-        user specified capping values on right tail of the distribution (maximum
-        values).
-
-    capping_min : dictionary, default=None
-        user specified capping values on left tail of the distribution (minimum
-        values).
+    min_capping_dict : dictionary, default=None
+        Dictionary containing user specified capping values for the eft tail of the
+        distribution of each variable (minimum values).
 
     missing_values : string, default='raise'
         Indicates if missing values should be ignored or raised. If
-        missing_values='raise' the transformer will return an error if the
-        training or other datasets contain missing values.
+        `missing_values='raise'` the transformer will return an error if the
+        training or the datasets to transform contain missing values.
+
+    Attributes
+    ----------
+    right_tail_caps_:
+        Dictionary with the maximum values at which variables will be capped.
+
+    left_tail_caps_ :
+        Dictionary with the minimum values at which variables will be capped.
+
+    Methods
+    -------
+    fit:
+        This transformer does not learn any parameter.
+    transform:
+        Cap the variables.
+    fit_transform:
+        Fit to the data. Then transform it.
     """
 
     def __init__(
@@ -58,25 +74,24 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
+        This transformer does not learn any parameter.
+
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
 
-        y : None
+        y : pandas Series, default=None
             y is not needed in this transformer. You can pass y or None.
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
 
-        right_tail_caps_: dictionary
-            The dictionary containing the maximum values at which variables
-            will be capped.
-
-        left_tail_caps_ : dictionary
-            The dictionary containing the minimum values at which variables
-            will be capped.
+        Returns
+        -------
+        self
         """
         X = _is_dataframe(X)
 

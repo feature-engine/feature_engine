@@ -1,8 +1,19 @@
 DropFeatures
 =============
 
-The DropFeatures() drops a list of variables from the original dataframe. The user can
-pass a single variable as a string or list of variables to be dropped.
+API Reference
+-------------
+
+.. autoclass:: feature_engine.selection.DropFeatures
+    :members:
+
+
+Example
+-------
+
+The DropFeatures() drops a list of variables indicated by the user from the original
+dataframe. The user can pass a single variable as a string or list of variables to be
+dropped.
 
 .. code:: python
 
@@ -49,8 +60,3 @@ pass a single variable as a string or list of variables to be dropped.
           dtype='object')
 
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.selection.DropFeatures
-    :members:

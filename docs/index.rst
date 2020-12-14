@@ -12,40 +12,41 @@ Feature-engine: A Python library for Feature Engineering for Machine Learning
 
 Feature-engine is a Python library with multiple transformers to engineer features for
 use in machine learning models. Feature-engine preserves Scikit-learn functionality with
-methods fit() and transform() to learn parameters from and then transform the data.
+methods `fit()` and `transform()` to learn parameters from and then transform the data.
 
 Feature-engine includes transformers for:
 
 - Missing data imputation
 - Categorical variable encoding
 - Discretisation
-- Numerical variable transformation
+- Variable transformation
 - Outlier capping or removal
-- Variables combination
+- Variable creation
 - Variable selection
 
-Feature-engine allows you to select the variables you want to engineer or transform
-within each transformer. This way, different engineering procedures can be easily
-applied to different feature subsets.
+Feature-engine allows you to select the variables you want to transform within each
+transformer. This way, different engineering procedures can be easily applied to
+different feature subsets.
 
-Feature-engine's transformers can be assembled within the Scikit-learn pipeline,
+Feature-engine transformers can be assembled within the Scikit-learn pipeline,
 therefore making it possible to save and deploy one single object (.pkl) with the
-entire machine learning pipeline. That is, with the entire sequence of transformations
-to transform your raw data into data that can be fed to machine learning algorithms.
+entire machine learning pipeline. That is, one object with the entire sequence of
+variable transformations to leave the raw data ready to be consumed by a machine
+learning algorithm, and the machine learning model at the back. Check the **quickstart**
+for an example.
 
-Would you like to know more about what is unique about Feature-engine?
+**Would you like to know more about what is unique about Feature-engine?**
 
 This article provides a nice summary:
-`Feature-engine: A new open source Python package for feature engineering
-<https://www.trainindatablog.com/feature-engine-a-new-open-source-python-package-for-feature-engineering>`_.
+
+- `Feature-engine: A new open source Python package for feature engineering <https://www.trainindatablog.com/feature-engine-a-new-open-source-python-package-for-feature-engineering>`_.
 
 
 Installation
 ------------
 
 Feature-engine is a Python 3 package and works well with 3.6 or later. Earlier versions
-have not been tested. The simplest way to install Feature-engine is from PyPI with pip,
-Python's preferred package installer:
+have not been tested. The simplest way to install Feature-engine is from PyPI with pip:
 
 .. code-block:: bash
 
@@ -57,15 +58,14 @@ Note, you can also install it with a _ as follows:
 
     $ pip install feature_engine
 
-Feature-engine is an active project and routinely publishes new releases with new or
-updated transformers. To upgrade Feature-engine to the latest version, use pip like
-this:
+Feature-engine is an active project and routinely publishes new releases. To upgrade
+Feature-engine to the latest version, use pip like this:
 
 .. code-block:: bash
 
     $ pip install -U feature-engine
 
-If you’re using Anaconda, you can take advantage of the conda utility to install the
+If you’re using Anaconda, you can install the
 `Anaconda Feature-engine package <https://anaconda.org/conda-forge/feature_engine>`_:
 
 .. code-block:: bash
@@ -76,18 +76,19 @@ If you’re using Anaconda, you can take advantage of the conda utility to insta
 Feature-engine features in the following resources
 ---------------------------------------------------
 
-- `Home page <https://www.trainindata.com/feature-engine>`_.
-- `Feature Engineering for Machine Learning, Online Course <https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO>`_.
+- `Website <https://www.trainindata.com/feature-engine>`_.
+- `Feature Engineering for Machine Learning <https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO>`_, Online Course .
 - `Python Feature Engineering Cookbook <https://www.packtpub.com/data/python-feature-engineering-cookbook>`_.
 - `Feature-engine: A new open-source Python package for feature engineering <https://www.trainindatablog.com/feature-engine-a-new-open-source-python-package-for-feature-engineering/>`_.
 - `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://www.trainindatablog.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python/>`_.
 
 En Español:
 
-- `Ingeniería de variables para machine learning, Curso Online <https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C>`_.
-- `Ingeniería de variables, MachinLenin, charla online <https://www.youtube.com/watch?v=NhCxOOoFXds>`_.
+- `Ingeniería de variables para machine learning <https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C>`_, Curso Online.
+- `Ingeniería de variables, MachinLenin <https://www.youtube.com/watch?v=NhCxOOoFXds>`_, charla online.
 
-More resources will be added as they appear online!
+More resources in the **Learning Resources** sections on the navigation panel on the
+left.
 
 Contributing
 ------------
@@ -100,14 +101,11 @@ on board. We follow the
 
 Regardless of your skill level you can help us. We appreciate bug reports, user testing,
 feature requests, bug fixes, addition of tests, product enhancements, and documentation
-improvements.
-
-We also appreciate blogs about Feature-engine. If you happen to have one, let us know!
+improvements. We also appreciate blogs about Feature-engine. If you happen to have one,
+let us know!
 
 For more details on how to contribute check the contributing page. Click on the
-"Contributing" page in the "Table of Contents" on the left of this page.
-
-Thank you for your contributions!
+"Contributing" page on the left of this page.
 
 
 Feature-engine's Transformers
@@ -146,7 +144,7 @@ Numerical Variable Transformation: Transformers
 Variable Discretisation: Discretisers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`discretisation/ArbitraryDiscretiser`: allows the user to arbitrarily define the intervals
+- :doc:`discretisation/ArbitraryDiscretiser`: sorts variable into intervals arbitrarily defined by the user
 - :doc:`discretisation/EqualFrequencyDiscretiser`: sorts variable into equal frequency intervals
 - :doc:`discretisation/EqualWidthDiscretiser`: sorts variable into equal size contiguous intervals
 - :doc:`discretisation/DecisionTreeDiscretiser`: uses decision trees to create finite variables
@@ -166,7 +164,7 @@ Scikit-learn Wrapper:
 Mathematical Combination:
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  :doc:`creation/MathematicalCombination`: applies basic mathematical operations across features
+-  :doc:`creation/MathematicalCombination`: creates new variables by combining features with mathematical operations
 
 Feature Selection:
 ~~~~~~~~~~~~~~~~~~
@@ -175,10 +173,12 @@ Feature Selection:
 - :doc:`selection/DropConstantFeatures`: drops constant and quasi-constant variables from a dataframe
 - :doc:`selection/DropDuplicateFeatures`: drops duplicated variables from a dataframe
 - :doc:`selection/DropCorrelatedFeatures`: drops correlated variables from a dataframe
-- :doc:`selection/ShuffleFeaturesSelector`: selects features by evaluating model performance after feature shuffling
+- :doc:`selection/SelectByShuffling`: selects features by evaluating model performance after feature shuffling
 - :doc:`selection/SelectBySingleFeaturePerformance`: selects features based on their performance on univariate estimators
 - :doc:`selection/SelectByTargetMeanPerformance`: selects features based on target mean encoding performance
 - :doc:`selection/RecursiveFeatureElimination`: selects features recursively, by evaluating model performance
+- :doc:`selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
+
 
 Getting Help
 ------------
@@ -212,11 +212,19 @@ The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Table of Contents
    
    quickstart
+   installation
+   getting_help
+   about
    datasets
+
+.. toctree::
+   :maxdepth: 1
+   :caption: API Documentation
+
    imputation/index
    encoding/index
    transformation/index
@@ -225,7 +233,27 @@ The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
    creation/index
    selection/index
    wrappers/index
-   contributing/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Learning Resources
+
+   tutorials
+   howto
+   books
+   courses
+   blogs
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contribute
+
+   contribute/index
    code_of_conduct
    governance
-   changelog
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Releases
+
+   whats_new/index

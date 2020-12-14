@@ -10,29 +10,30 @@ from feature_engine.base_transformers import BaseNumericalTransformer
 
 class ArbitraryDiscretiser(BaseNumericalTransformer):
     """
-    The UserInputDiscretiser() divides continuous numerical variables
-    into contiguous intervals are arbitrarily entered by the user.
+    The ArbitraryDiscretiser() divides continuous numerical variables into contiguous
+    intervals which limits are determined arbitrarily by the user.
 
     The user needs to enter a dictionary with variable names as keys, and a list of
     the limits of the intervals as values. For example {'var1':[0, 10, 100, 1000],
     'var2':[5, 10, 15, 20]}.
 
-    The UserInputDiscretiser() works only with numerical variables. The discretiser will
-    check if the dictionary entered by the user contains variables present in the
-    training set, and if these variables are cast as numerical, before doing any
+    ArbitraryDiscretiser() will then sort var1 values into the intervals 0-10, 10-100
+    100-1000, and var2 into 5-10, 10-15 and 15-20. Similar to `pandas.cut`.
+
+    The  ArbitraryDiscretiser() works only with numerical variables. The discretiser
+    will check if the dictionary entered by the user contains variables present in the
+    training set, and if these variables are numerical, before doing any
     transformation.
 
-    Then it transforms the variables, that is, it sorts the values into the intervals,
-    transform.
+    Then it transforms the variables, that is, it sorts the values into the intervals.
 
     Parameters
     ----------
-
     binning_dict : dict
         The dictionary with the variable : interval limits pairs, provided by the user.
         A valid dictionary looks like this:
 
-         binning_dict = {'var1':[0, 10, 100, 1000], 'var2':[5, 10, 15, 20]}.
+        binning_dict = {'var1':[0, 10, 100, 1000], 'var2':[5, 10, 15, 20]}.
 
     return_object : bool, default=False
         Whether the numbers in the discrete variable should be returned as
@@ -40,9 +41,33 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         whether they would like to proceed the engineering of the variable as
         if it was numerical or categorical.
 
-    return_boundaries: bool, default=False
-        whether the output should be the interval boundaries. If True, it returns
-        the interval boundaries. If False, it returns integers.
+        Categorical encoders in Feature-engine work only with variables of type object,
+        thus, if you wish to encode the returned bins, set return_object to True.
+
+    return_boundaries : bool, default=False
+        whether the output, that is the bin names / values, should be the interval
+        boundaries. If True, it returns the interval boundaries. If False, it returns
+        integers.
+
+    Attributes
+    ----------
+    binner_dict_ :
+         Dictionary with the interval limits per variable.
+
+    Methods
+    -------
+    fit:
+        This transformer does not learn any parameter.
+    transform:
+        Sort continuous variable values into the intervals.
+    fit_transform:
+        Fit to the data, then transform it.
+
+    See Also
+    --------
+    pandas.cut :
+        https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.cut.html
+
     """
 
     def __init__(
@@ -67,26 +92,34 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Checks that the user entered variables are in the train set and cast as
-        numerical.
+        This transformer does not learn any parameter.
+
+        Check dataframe and variables. Checks that the user entered variables are in
+        the train set and cast as numerical.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the variables to be transformed.
+            The training dataset. Can be the entire dataframe, not just the
+            variables to be transformed.
 
         y : None
             y is not needed in this encoder. You can pass y or None.
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
+        ValueError
+            - If there are no numerical variables in the df or the df is empty
+            - If the variable(s) contain null values
 
-        binner_dict_: dictionary
-            The dictionary containing the {variable: interval limits} pairs used
-            to sort the values into discrete intervals.
+        Returns
+        -------
+        self
         """
+
         # check input dataframe
         X = super().fit(X, y)
 
@@ -104,20 +137,27 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Sorts the variable values into the intervals.
+        """Sort the variable values into the intervals.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The input samples.
+            The dataframe to be transformed.
+
+        Raises
+        ------
+        TypeError
+           If the input is not a Pandas DataFrame
+        ValueError
+           - If the variable(s) contain null values
+           - If the dataframe is not of the same size as the one used in fit()
 
         Returns
         -------
-
-        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The transformed data with the discrete variables.
         """
+
         # check input dataframe and if class was fitted
         X = super().transform(X)
 

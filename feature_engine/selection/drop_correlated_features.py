@@ -19,7 +19,8 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
     """
-    DropCorrelatedFeatures finds and removes correlated features.
+    DropCorrelatedFeatures() finds and removes correlated features. Correlation is
+    calculated with `pandas.corr()`.
 
     Features are removed on first found first removed basis, without any further
     insight.
@@ -29,55 +30,50 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-
-    variables: list, default=None
+    variables : list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         numerical variables in the dataset.
 
-    method: string, default='pearson'
+    method : string, default='pearson'
         Can take 'pearson', 'spearman' or'kendall'. It refers to the correlation method
         to be used to identify the correlated features.
 
-        pearson : standard correlation coefficient
-        kendall : Kendall Tau correlation coefficient
-        spearman : Spearman rank correlation
+        - pearson : standard correlation coefficient
+        - kendall : Kendall Tau correlation coefficient
+        - spearman : Spearman rank correlation
 
-        See
-        https://pandas.pydata.org/pandas-docs/stable/reference/api/
-        pandas.DataFrame.corr.html
-        for more details.
-
-    threshold: float, default=0.8
+    threshold : float, default=0.8
         The correlation threshold above which a feature will be deemed correlated with
         another one and removed from the dataset.
 
-    missing_values: str, default=ignore
-        Takes values 'raise' and 'ignore'
-        Whether the missing values should be raised as error or ignored when
-        determining correlation.
+    missing_values : str, default=ignore
+        Takes values 'raise' and 'ignore'. Whether the missing values should be raised
+        as error or ignored when determining correlation.
 
     Attributes
     ----------
+    correlated_features_:
+        Set with the correlated features.
 
-    correlated_features_: set
-        The correlated features.
+    correlated_feature_sets_:
+        Groups of correlated features.  Each list is a group of correlated features.
 
-    correlated_feature_sets_: list
-        Groups of correlated features. Or in other words, features that are
-        correlated with each other. Each list represents a group of correlated
-        features.
-
-    correlated_matrix_: pandas dataframe
-        The correlated matrix.
+    correlated_matrix_:
+        The correlation matrix.
 
     Methods
     -------
+    fit:
+        Find correlated features.
+    transform:
+        Remove correlated features.
+    fit_transform:
+        Fit to the data. Then transform it.
 
-     fit: finds the correlated features
-
-     transform: removes correlated features
-
-     fit_transform: finds and removes correlated features
+    See Also
+    --------
+    pandas.corr
+    feature_engine.selection.SmartCorrelationSelection
     """
 
     def __init__(
@@ -106,18 +102,19 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
-        Finds the correlated features
+        Find the correlated features.
 
-        Args:
-            X: pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the variables to transform.
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The training dataset.
 
-            y: It is not needed in this transformer. Defaults to None.
-            Alternatively takes Pandas Series.ss
+        y : pandas series. Default = None
+            y is not needed in this transformer. You can pass y or None.
 
-        Returns:
-            self
+        Returns
+        -------
+        self
         """
 
         # check input dataframe
@@ -185,14 +182,16 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """
-        Drops the correlated features from a dataframe.
+        Drop the correlated features from a dataframe.
 
-        Args:
-            X: pandas dataframe of shape = [n_samples, n_features].
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features].
             The input samples.
 
-        Returns:
-            X_transformed: pandas dataframe
+        Returns
+        -------
+        X_transformed : pandas dataframe
             shape = [n_samples, n_features - (correlated features)]
             The transformed dataframe with the remaining subset of variables.
         """
