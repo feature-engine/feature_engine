@@ -21,35 +21,50 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
     """
+     RecursiveFeatureAddition selects features following a recursive process.
 
-    RecursiveFeatureAddition selects features. #WIP
+    The process is as follows:
 
+    1. Train an estimator using all the features.
+
+    2. Rank the features according to their importance, derived from the estimator.
+
+    3. Train an estimator with the most important feature and determine its performance.
+
+    4. Add the second most important feature and train a new estimator.
+
+    5. Calculate the difference in performance between the last estimator and the
+    previous one.
+
+    6. If the performance increases beyond the threshold, then that feature is important
+    and will be kept. Otherwise, that feature is removed
+    .
+    7. Repeat steps 4-6 until all features have been evaluated.
 
     Model training and performance calculation are done with cross-validation.
 
     Parameters
     ----------
-
     variables : str or list, default=None
         The list of variable to be evaluated. If None, the transformer will evaluate
         all numerical features in the dataset.
 
-    estimator: object, default = RandomForestClassifier()
+    estimator : object, default = RandomForestClassifier()
         A Scikit-learn estimator for regression or classification.
-        The estimator must have either a feature_importances or coef attribute
+        The estimator must have either a `feature_importances` or `coef_` attribute
         after fitting.
 
-    scoring: str, default='roc_auc'
+    scoring : str, default='roc_auc'
         Desired metric to optimise the performance of the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold: float, int, default = 0.01
+    threshold : float, int, default = 0.01
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
         root_mean_square_error the threshold will be a big number.
-        The threshold must be defined by the user. Bigger thresholds will retain less
+        The threshold must be defined by the user. Bigger thresholds will select less
         features.
 
     cv : int, default=3
@@ -57,31 +72,26 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
+    initial_model_performance_ :
+        Performance of the model trained using the original dataset.
 
-    initial_model_performance_: float
-        performance of the model built using the original dataset with all the features.
+    feature_importances_ :
+        Pandas Series with the feature importance.
 
-    feature_importances_: pandas series
-        A pandas Series containing the feature names in the axis, and the performance
-        derived from the model trained on the entire dataset, as values. The Series is
-        ordered from least important to most important feature.
+    performance_drifts_:
+        Dictionary with the performance drift per removed feature.
 
-    performance_drifts_: dict
-        A dictionary containing the feature, and the change in performance incurred
-        when training a model without that feature.
-
-    selected_features_: list
-        The selected features by the recursive feature addition selector
+    selected_features_:
+        List with the selected features.
 
     Methods
     -------
-
-    fit: finds important features
-
-    transform: removes non-important / non-selected features
-
-    fit_transform: finds and removes non-important features
-
+    fit:
+        Find the important features.
+    transform:
+         Reduce X to the selected features.
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(
@@ -107,20 +117,19 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
+        Find the important features. Note that the selector trains various models at
+        each round of selection, so it might take a while.
 
-        Args
-        ----
-
-        X: pandas dataframe of shape = [n_samples, n_features]
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
 
-        y: array-like of shape (n_samples)
+        y : array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
 
         Returns
         -------
-
         self
         """
 
@@ -188,13 +197,11 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
         # It is initialized with the performance drift of
         # the most important feature
         self.performance_drifts_ = {
-            first_most_important_feature: baseline_model_performance -
-            self.initial_model_performance_
+            first_most_important_feature: 0
         }
 
         # loop over the ordered list of features by feature importance starting
         # from the second element in the list.
-        # Train the estimator with
         for feature in list(self.feature_importances_.index)[1:]:
 
             # Add feature and train new model
@@ -231,22 +238,18 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame):
         """
-        Removes non-selected features. That is, features which did not cause a big
-        estimator performance increase when added to the dataset.
+         Return dataframe with selected features.
 
-        Args
-        ----
+         Parameters
+         ----------
+         X : pandas dataframe of shape = [n_samples, n_features].
+             The input dataframe.
 
-        X: pandas dataframe of shape = [n_samples, n_features].
-            The input dataframe from which features will be selected.
-
-        Returns
-        -------
-
-        X_transformed: pandas dataframe
-            of shape = [n_samples, n_selected_features]
-            Pandas dataframe with the selected features.
-        """
+         Returns
+         -------
+         X_transformed: pandas dataframe of shape = [n_samples, n_selected_features]
+             Pandas dataframe with the selected features.
+         """
 
         # check if fit is performed prior to transform
         check_is_fitted(self)
