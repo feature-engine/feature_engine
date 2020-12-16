@@ -28,6 +28,10 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
     - Feature with highest variance
     - Best performing feature according to estimator entered by user
 
+    SmartCorrelatedSelection() returns a dataframe containing from each group of
+    correlated features, the selected variable, plus all original features that were
+    not correlated to any other.
+
     Correlation is calculated with `pandas.corr()`.
 
     SmartCorrelatedSelection() works only with numerical variables. Categorical

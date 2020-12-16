@@ -173,6 +173,7 @@ Feature Selection:
 - :doc:`selection/DropConstantFeatures`: drops constant and quasi-constant variables from a dataframe
 - :doc:`selection/DropDuplicateFeatures`: drops duplicated variables from a dataframe
 - :doc:`selection/DropCorrelatedFeatures`: drops correlated variables from a dataframe
+- :doc:`selection/SmartCorrelatedSelection`: selects best feature from correlated group
 - :doc:`selection/SelectByShuffling`: selects features by evaluating model performance after feature shuffling
 - :doc:`selection/SelectBySingleFeaturePerformance`: selects features based on their performance on univariate estimators
 - :doc:`selection/SelectByTargetMeanPerformance`: selects features based on target mean encoding performance
