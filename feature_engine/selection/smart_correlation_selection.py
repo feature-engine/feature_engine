@@ -94,15 +94,15 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-            self,
-            variables: Variables = None,
-            method: str = "pearson",
-            threshold: float = 0.8,
-            missing_values: str = "ignore",
-            selection_method: str = "missing_values",
-            estimator: sklearn.estimator = None,
-            scoring: str = "roc_auc",
-            cv: int = 3,
+        self,
+        variables: Variables = None,
+        method: str = "pearson",
+        threshold: float = 0.8,
+        missing_values: str = "ignore",
+        selection_method: str = "missing_values",
+        estimator=None,
+        scoring: str = "roc_auc",
+        cv: int = 3,
     ):
 
         if method not in ["pearson", "spearman", "kendall"]:
@@ -111,7 +111,7 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
             )
 
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
-            raise ValueError("corr_threshold must be a float between 0 and 1")
+            raise ValueError("threshold must be a float between 0 and 1")
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
@@ -137,14 +137,16 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
                 "selection_method"
             )
 
-        if selection_method == "missing_values" and missing_values == 'raise':
-            raise ValueError("To select the variables with least missing values, we "
-                             "need to allow this transformer to contemplate variables "
-                             "with NaN by setting missing_values to 'ignore.")
+        if selection_method == "missing_values" and missing_values == "raise":
+            raise ValueError(
+                "To select the variables with least missing values, we "
+                "need to allow this transformer to contemplate variables "
+                "with NaN by setting missing_values to 'ignore."
+            )
 
         self.variables = _check_input_parameter_variables(variables)
         self.method = method
-        self.corr_threshold = threshold
+        self.threshold = threshold
         self.missing_values = missing_values
         self.selection_method = selection_method
         self.estimator = estimator
@@ -178,6 +180,9 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
         if self.missing_values == "raise":
             # check if dataset contains na
             _check_contains_na(X, self.variables)
+
+        if self.selection_method == "model_performance" and y is None:
+            raise ValueError("y is needed to fit the transformer")
 
         # FIND CORRELATED FEATURES
         # ========================
@@ -229,7 +234,11 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
         # ================================
 
         # list to collect selected features
-        self.selected_features_ = []
+        # we start it with all features that were either not examined, i.e., categorical
+        # variables, or not found correlated
+        self.selected_features_ = [
+            f for f in X.columns if f not in set().union(*self.correlated_feature_sets_)
+        ]
 
         # select the feature with least missing values
         if self.selection_method == "missing_values":
@@ -253,6 +262,7 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
         else:
             for feature_group in self.correlated_feature_sets_:
 
+                feature_group = list(feature_group)
                 temp_perf = []
 
                 # train a model for every feature
