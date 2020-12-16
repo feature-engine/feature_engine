@@ -262,7 +262,7 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
         else:
             for feature_group in self.correlated_feature_sets_:
 
-                feature_group = list(feature_group)
+                # feature_group = list(feature_group)
                 temp_perf = []
 
                 # train a model for every feature
@@ -279,7 +279,7 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
                     temp_perf.append(model["test_score"].mean())
 
                 # select best performing feature from group
-                f = feature_group[temp_perf.index(max(temp_perf))]
+                f = list(feature_group)[temp_perf.index(max(temp_perf))]
                 self.selected_features_.append(f)
 
         self.input_shape_ = X.shape
