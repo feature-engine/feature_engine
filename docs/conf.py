@@ -281,8 +281,10 @@ linkcode_resolve = make_linkcode_resolve(
     "{package}/{path}#L{lineno}",
 )
 
-process_examples = False
+# -- Options for sphinx-gallery from notebooks ----------------------------------------
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 example_gallery_config = dict(
+    dont_preprocess = on_rtd,
     urls="https://nbviewer.jupyter.org/github/solegalli/feature_engine/tree/master/examples/",
     )
