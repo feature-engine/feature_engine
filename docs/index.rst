@@ -77,7 +77,7 @@ Feature-engine features in the following resources
 ---------------------------------------------------
 
 - `Website <https://www.trainindata.com/feature-engine>`_.
-- `Feature Engineering for Machine Learning <https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO>`_, Online Course .
+- `Feature Engineering for Machine Learning <https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO>`_, Online Course.
 - `Python Feature Engineering Cookbook <https://www.packtpub.com/data/python-feature-engineering-cookbook>`_.
 - `Feature-engine: A new open-source Python package for feature engineering <https://www.trainindatablog.com/feature-engine-a-new-open-source-python-package-for-feature-engineering/>`_.
 - `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://www.trainindatablog.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python/>`_.
@@ -89,23 +89,6 @@ En Español:
 
 More resources in the **Learning Resources** sections on the navigation panel on the
 left.
-
-Contributing
-------------
-
-Interested in contributing to Feature-engine? That is great news!
-
-Feature-engine is a welcoming and inclusive project and it would be great to have you
-on board. We follow the
-`Python Software Foundation Code of Conduct <http://www.python.org/psf/codeofconduct/>`_.
-
-Regardless of your skill level you can help us. We appreciate bug reports, user testing,
-feature requests, bug fixes, addition of tests, product enhancements, and documentation
-improvements. We also appreciate blogs about Feature-engine. If you happen to have one,
-let us know!
-
-For more details on how to contribute check the contributing page. Click on the
-"Contributing" page on the left of this page.
 
 
 Feature-engine's Transformers
@@ -200,6 +183,23 @@ Check if there's already an open `issue <https://github.com/solegalli/feature_en
 on the topic. If not, open a new `issue <https://github.com/solegalli/feature_engine/issues/>`_
 with your bug report, suggestion or new feature request.
 
+Contributing
+------------
+
+Interested in contributing to Feature-engine? That is great news!
+
+Feature-engine is a welcoming and inclusive project and it would be great to have you
+on board. We follow the
+`Python Software Foundation Code of Conduct <http://www.python.org/psf/codeofconduct/>`_.
+
+Regardless of your skill level you can help us. We appreciate bug reports, user testing,
+feature requests, bug fixes, addition of tests, product enhancements, and documentation
+improvements. We also appreciate blogs about Feature-engine. If you happen to have one,
+let us know!
+
+For more details on how to contribute check the contributing page. Click on the
+"Contributing" link on the left of this page.
+
 
 Open Source
 -----------
@@ -210,6 +210,7 @@ is an open source BSD 3-Clause.
 Feature-engine is hosted on `GitHub <https://github.com/solegalli/feature_engine/>`_.
 The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
 `pull requests <https://github.com/solegalli/feature_engine/pulls>`_ are tracked there.
+
 
 
 .. toctree::
