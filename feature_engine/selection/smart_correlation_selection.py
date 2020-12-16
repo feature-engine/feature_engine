@@ -85,9 +85,9 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
     Methods
     -------
     fit:
-        Find correlated features.
+        Find best feature from each correlated groups.
     transform:
-        Remove correlated features.
+        Return selected features.
     fit_transform:
         Fit to the data. Then transform it.
 
