@@ -16,6 +16,7 @@
 import os
 import sys
 import sphinx_rtd_theme
+import sphinx_nbexamples
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -41,6 +42,7 @@ extensions = [
     "sphinx_autodoc_typehints",  # Automatically document param types (less noise in class signature)
     "numpydoc",
     "sphinx.ext.linkcode",
+    "sphinx_nbexamples",
     # "sphinx.ext.doctest",
     # "sphinx.ext.todo",
     # "sphinx.ext.coverage",
@@ -278,3 +280,9 @@ linkcode_resolve = make_linkcode_resolve(
     "blob/master/"
     "{package}/{path}#L{lineno}",
 )
+
+process_examples = False
+
+example_gallery_config = dict(
+    urls="https://nbviewer.jupyter.org/github/solegalli/feature_engine/tree/master/examples/",
+    )
