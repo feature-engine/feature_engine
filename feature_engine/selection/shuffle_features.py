@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import cross_validate
+from sklearn.utils.validation import check_random_state
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.variable_manipulation import (
@@ -91,6 +92,7 @@ class SelectByShuffling(BaseSelector):
         cv: int = 3,
         threshold: Union[float, int] = 0.01,
         variables: Variables = None,
+        random_state: int = None,
     ):
 
         if not isinstance(cv, int) or cv < 1:
@@ -104,6 +106,7 @@ class SelectByShuffling(BaseSelector):
         self.scoring = scoring
         self.threshold = threshold
         self.cv = cv
+        self.random_state = random_state
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -147,6 +150,9 @@ class SelectByShuffling(BaseSelector):
         # get performance metric
         scorer = get_scorer(self.scoring)
 
+        # seed
+        random_state = check_random_state(self.random_state)
+
         # dict to collect features and their performance_drift after shuffling
         self.performance_drifts_ = {}
 
@@ -157,7 +163,9 @@ class SelectByShuffling(BaseSelector):
 
             # shuffle individual feature
             X_shuffled[feature] = (
-                X_shuffled[feature].sample(frac=1).reset_index(drop=True)
+                X_shuffled[feature]
+                .sample(frac=1, random_state=random_state)
+                .reset_index(drop=True)
             )
 
             # determine the performance with the shuffled feature
