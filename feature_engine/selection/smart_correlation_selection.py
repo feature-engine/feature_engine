@@ -1,24 +1,22 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.model_selection import cross_validate
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
     _is_dataframe,
-    _check_input_matches_training_df,
     _check_contains_na,
 )
 from feature_engine.variable_manipulation import (
     _find_or_check_numerical_variables,
     _check_input_parameter_variables,
 )
+from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
+class SmartCorrelatedSelection(BaseSelector):
     """
     SmartCorrelatedSelection() finds groups of correlated features and then selects,
     from each group, a feature following certain criteria:
@@ -76,11 +74,8 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
     correlated_feature_sets_:
         Groups of correlated features.  Each list is a group of correlated features.
 
-    correlated_matrix_:
-        The correlation matrix.
-
-    selected_features_:
-        The selected features list.
+    features_to_drop_:
+        The correlated features to remove from the dataset.
 
     Methods
     -------
@@ -194,14 +189,14 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
         self.correlated_feature_sets_ = []
 
         # the correlation matrix
-        self.correlated_matrix_ = X[self.variables].corr(method=self.method)
+        _correlated_matrix = X[self.variables].corr(method=self.method)
 
         # create set of examined features, helps to determine feature combinations
         # to evaluate below
         _examined_features = set()
 
         # for each feature in the dataset (columns of the correlation matrix)
-        for feature in self.correlated_matrix_.columns:
+        for feature in _correlated_matrix.columns:
 
             if feature not in _examined_features:
 
@@ -215,9 +210,7 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
                 # features that have not been examined, are not currently examined and
                 # were not found correlated
                 _features_to_compare = [
-                    f
-                    for f in self.correlated_matrix_.columns
-                    if f not in _examined_features
+                    f for f in _correlated_matrix.columns if f not in _examined_features
                 ]
 
                 # create combinations:
@@ -225,7 +218,7 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
 
                     # if the correlation is higher than the threshold
                     # we are interested in absolute correlation coefficient value
-                    if abs(self.correlated_matrix_.loc[f2, feature]) > self.threshold:
+                    if abs(_correlated_matrix.loc[f2, feature]) > self.threshold:
                         # add feature (f2) to our correlated set
                         _temp_set.add(f2)
                         _examined_features.add(f2)
@@ -240,7 +233,7 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
         # list to collect selected features
         # we start it with all features that were either not examined, i.e., categorical
         # variables, or not found correlated
-        self.selected_features_ = [
+        _selected_features = [
             f for f in X.columns if f not in set().union(*self.correlated_feature_sets_)
         ]
 
@@ -248,19 +241,19 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
         if self.selection_method == "missing_values":
             for feature_group in self.correlated_feature_sets_:
                 f = X[feature_group].isnull().sum().sort_values(ascending=True).index[0]
-                self.selected_features_.append(f)
+                _selected_features.append(f)
 
         # select the feature with most unique values
         elif self.selection_method == "cardinality":
             for feature_group in self.correlated_feature_sets_:
                 f = X[feature_group].nunique().sort_values(ascending=False).index[0]
-                self.selected_features_.append(f)
+                _selected_features.append(f)
 
         # select the feature with biggest variance
         elif self.selection_method == "variance":
             for feature_group in self.correlated_feature_sets_:
                 f = X[feature_group].std().sort_values(ascending=False).index[0]
-                self.selected_features_.append(f)
+                _selected_features.append(f)
 
         # select best performing feature according to estimator
         else:
@@ -284,39 +277,19 @@ class SmartCorrelatedSelection(BaseEstimator, TransformerMixin):
 
                 # select best performing feature from group
                 f = list(feature_group)[temp_perf.index(max(temp_perf))]
-                self.selected_features_.append(f)
+                _selected_features.append(f)
 
+        self.features_to_drop_ = [
+            f for f in self.variables if f not in _selected_features
+        ]
         self.input_shape_ = X.shape
 
         return self
 
-    def transform(self, X):
-        """
-        Return dataframe with selected features.
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
 
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
-            The input dataframe from which feature values will be train.
+        return X
 
-        Returns
-        -------
-        X_transformed: pandas dataframe
-            of shape = [n_samples, selected_features]
-            Pandas dataframe with the selected features.
-        """
-
-        # check if fit is performed prior to transform
-        check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = _is_dataframe(X)
-
-        # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.input_shape_[1])
-
-        if self.missing_values == "raise":
-            # check if dataset contains na
-            _check_contains_na(X, self.variables)
-
-        return X[self.selected_features_]
+    transform.__doc__ = BaseSelector.transform.__doc__

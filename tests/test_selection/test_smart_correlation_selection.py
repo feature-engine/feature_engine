@@ -64,7 +64,7 @@ def test_model_performance_single_corr_group(df_single):
     Xt = transformer.fit_transform(X, y)
 
     # expected result
-    df = X[["var_0", "var_3", "var_4", "var_5", "var_2"]].copy()
+    df = X[["var_0", "var_2", "var_3", "var_4", "var_5"]].copy()
 
     # test init params
     assert transformer.method == "pearson"
@@ -83,16 +83,8 @@ def test_model_performance_single_corr_group(df_single):
     assert transformer.cv == 3
 
     # test fit attrs
-    pd.testing.assert_frame_equal(transformer.correlated_matrix_, X.corr())
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
-    assert transformer.selected_features_ == [
-        "var_0",
-        "var_3",
-        "var_4",
-        "var_5",
-        "var_2",
-    ]
-
+    assert transformer.features_to_drop_ == ["var_1"]
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
 
@@ -115,25 +107,19 @@ def test_model_performance_2_correlated_groups(df_double):
 
     # expected result
     df = X[
-        ["var_1", "var_2", "var_3", "var_5", "var_10", "var_11", "var_0", "var_7"]
+        ["var_0", "var_1", "var_2", "var_3", "var_5", "var_7", "var_10", "var_11"]
     ].copy()
 
     # test fit attrs
-    pd.testing.assert_frame_equal(transformer.correlated_matrix_, X.corr())
-
     assert transformer.correlated_feature_sets_ == [
         {"var_0", "var_8"},
         {"var_4", "var_6", "var_7", "var_9"},
     ]
-    assert transformer.selected_features_ == [
-        "var_1",
-        "var_2",
-        "var_3",
-        "var_5",
-        "var_10",
-        "var_11",
-        "var_0",
-        "var_7",
+    assert transformer.features_to_drop_ == [
+        "var_4",
+        "var_6",
+        "var_8",
+        "var_9",
     ]
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
@@ -173,18 +159,14 @@ def test_variance_2_correlated_groups(df_double):
 
     # expected result
     df = X[
-        ["var_1", "var_2", "var_3", "var_5", "var_10", "var_11", "var_8", "var_7"]
+        ["var_1", "var_2", "var_3", "var_5", "var_7", "var_8", "var_10", "var_11"]
     ].copy()
 
-    assert transformer.selected_features_ == [
-        "var_1",
-        "var_2",
-        "var_3",
-        "var_5",
-        "var_10",
-        "var_11",
-        "var_8",
-        "var_7",
+    assert transformer.features_to_drop_ == [
+        "var_0",
+        "var_4",
+        "var_6",
+        "var_9",
     ]
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
@@ -209,24 +191,64 @@ def test_cardinality_2_correlated_groups(df_double):
 
     # expected result
     df = X[
-        ["var_1", "var_2", "var_3", "var_5", "var_10", "var_11", "var_8", "var_4"]
+        ["var_1", "var_2", "var_3", "var_4", "var_5", "var_8", "var_10", "var_11"]
     ].copy()
 
-    assert transformer.selected_features_ == [
-        "var_1",
-        "var_2",
-        "var_3",
-        "var_5",
-        "var_10",
-        "var_11",
-        "var_8",
-        "var_4",
+    assert transformer.features_to_drop_ == [
+        "var_0",
+        "var_6",
+        "var_7",
+        "var_9",
     ]
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
 
 
-def test_raises_param_errosr():
+# def test_automatic_variable_selection(df_double):
+#     X, y = df_double
+#     # add 2 additional categorical variables, these should not be evaluated by
+#     # the selector
+#     X["cat_1"] = "cat1"
+#     X["cat_2"] = "cat2"
+#
+#     transformer = SmartCorrelatedSelection(
+#         variables=None,
+#         method="pearson",
+#         threshold=0.8,
+#         missing_values="raise",
+#         selection_method="variance",
+#         estimator=None,
+#     )
+#
+#     Xt = transformer.fit_transform(X, y)
+#
+#     # expected result
+#     df = X[
+#         [
+#             "var_1",
+#             "var_2",
+#             "var_3",
+#             "var_5",
+#             "var_6",
+#             "var_8",
+#             "var_10",
+#             "var_11",
+#             "cat_1",
+#             "cat_2",
+#         ]
+#     ].copy()
+#
+#     assert transformer.features_to_drop_ == [
+#         "var_0",
+#         "var_4",
+#         "var_7",
+#         "var_9",
+#     ]
+#     # test transform output
+#     pd.testing.assert_frame_equal(Xt, df)
+
+
+def test_raises_param_errors():
     with pytest.raises(ValueError):
         SmartCorrelatedSelection(cv=0)
 
