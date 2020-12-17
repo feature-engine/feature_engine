@@ -16,8 +16,7 @@ def test_default_parameters(df_test):
 
     # expected result
     Xtransformed = X.copy()
-    Xtransformed.drop("var_3", 1, inplace=True)
-    Xtransformed.drop("var_10", 1, inplace=True)
+    Xtransformed.drop(columns=["var_3", "var_10"], inplace=True)
 
     # test init params
     assert sel.variables == [
@@ -38,18 +37,7 @@ def test_default_parameters(df_test):
     assert sel.cv == 3
     assert sel.scoring == "roc_auc"
     # test fit attrs
-    assert sel.selected_features_ == [
-        "var_0",
-        "var_1",
-        "var_2",
-        "var_4",
-        "var_5",
-        "var_6",
-        "var_7",
-        "var_8",
-        "var_9",
-        "var_11",
-    ]
+    assert sel.features_to_drop_ == ["var_3", "var_10"]
     assert sel.feature_performance_ == {
         "var_0": 0.5957642619540211,
         "var_1": 0.5365534287221033,
@@ -98,7 +86,7 @@ def test_regression_cv_3_and_r2(load_diabetes_dataset):
     assert sel.scoring == "r2"
     assert sel.threshold == 0.01
     # fit params
-    assert sel.selected_features_ == [0, 2, 3, 4, 5, 6, 7, 8, 9]
+    assert sel.features_to_drop_ == [1]
     assert all(
         np.round(sel.feature_performance_[f], 3) == performance_dict[f]
         for f in sel.feature_performance_.keys()
@@ -131,7 +119,7 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     assert sel.scoring == "neg_mean_squared_error"
     assert sel.threshold == -6000
     # fit params
-    assert sel.selected_features_ == [1, 7]
+    assert sel.features_to_drop_ == [0, 2, 3, 4, 5, 6, 8, 9]
     assert sel.feature_performance_ == {
         0: -7657.154138192973,
         1: -5966.662211695372,
@@ -180,4 +168,56 @@ def test_raises_threshold_error():
 
 def test_raises_error_when_roc_threshold_not_allowed():
     with pytest.raises(ValueError):
-        SelectBySingleFeaturePerformance(scoring='roc_auc', threshold=0.4)
+        SelectBySingleFeaturePerformance(scoring="roc_auc", threshold=0.4)
+
+
+def test_automatic_variable_selection(df_test):
+    X, y = df_test
+    # add 2 additional categorical variables, these should not be evaluated by
+    # the selector
+    X["cat_1"] = "cat1"
+    X["cat_2"] = "cat2"
+
+    sel = SelectBySingleFeaturePerformance(RandomForestClassifier(random_state=1))
+    sel.fit(X, y)
+
+    # expected result
+    Xtransformed = X.copy()
+    Xtransformed.drop(columns=["var_3", "var_10"], inplace=True)
+
+    # test init params
+    assert sel.variables == [
+        "var_0",
+        "var_1",
+        "var_2",
+        "var_3",
+        "var_4",
+        "var_5",
+        "var_6",
+        "var_7",
+        "var_8",
+        "var_9",
+        "var_10",
+        "var_11",
+    ]
+    assert sel.threshold == 0.5
+    assert sel.cv == 3
+    assert sel.scoring == "roc_auc"
+    # test fit attrs
+    assert sel.features_to_drop_ == ["var_3", "var_10"]
+    assert sel.feature_performance_ == {
+        "var_0": 0.5957642619540211,
+        "var_1": 0.5365534287221033,
+        "var_2": 0.5001855546283257,
+        "var_3": 0.4752954458526748,
+        "var_4": 0.9780875304971691,
+        "var_5": 0.5065441419357082,
+        "var_6": 0.9758243290622809,
+        "var_7": 0.994571685008432,
+        "var_8": 0.5164434795458892,
+        "var_9": 0.9543427678969847,
+        "var_10": 0.47404183834906727,
+        "var_11": 0.5227164067525513,
+    }
+    # test transform output
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)

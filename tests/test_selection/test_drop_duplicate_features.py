@@ -73,7 +73,7 @@ def test_fit_attributes(df_duplicate_features):
     transformer = DropDuplicateFeatures()
     transformer.fit(df_duplicate_features)
 
-    assert transformer.duplicated_features_ == {"dob", "dob3", "City2", "Age2"}
+    assert transformer.features_to_drop_ == {"dob", "dob3", "City2", "Age2"}
     assert transformer.duplicated_feature_sets_ == [
         {"dob", "dob2", "dob3"},
         {"City", "City2"},
@@ -98,7 +98,7 @@ def test_with_df_with_na(df_duplicate_features_with_na):
     )
     pd.testing.assert_frame_equal(X, df)
 
-    assert transformer.duplicated_features_ == {"dob", "dob3", "City2", "Age2"}
+    assert transformer.features_to_drop_ == {"dob", "dob3", "City2", "Age2"}
     assert transformer.duplicated_feature_sets_ == [
         {"dob", "dob2", "dob3"},
         {"City", "City2"},

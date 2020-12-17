@@ -56,7 +56,7 @@ def test_drop_constant_features(df_constant_features):
         "quasi_feat_cat",
     ]
     # fit attributes
-    assert transformer.constant_features_ == ["const_feat_num", "const_feat_cat"]
+    assert transformer.features_to_drop_ == ["const_feat_num", "const_feat_cat"]
     assert transformer.input_shape_ == (4, 9)
 
     # transform output
@@ -93,7 +93,7 @@ def test_drop_constant_and_quasiconstant_features(df_constant_features):
     ]
 
     # fit attr
-    assert transformer.constant_features_ == [
+    assert transformer.features_to_drop_ == [
         "const_feat_num",
         "const_feat_cat",
         "quasi_feat_num",
@@ -130,7 +130,7 @@ def test_drop_constant_features_with_list_of_variables(df_constant_features):
     assert transformer.variables == ["Name", "const_feat_num", "quasi_feat_num"]
 
     # fit attr
-    assert transformer.constant_features_ == ["const_feat_num", "quasi_feat_num"]
+    assert transformer.features_to_drop_ == ["const_feat_num", "quasi_feat_num"]
     assert transformer.input_shape_ == (4, 9)
 
     # transform params
@@ -213,11 +213,11 @@ def test_missing_values_param():
     # test ignores na
     transformer = DropConstantFeatures(missing_values="ignore").fit(df)
     constant = ["const_feat_num", "const_feat_cat", "quasi_feat_cat"]
-    assert transformer.constant_features_ == constant
+    assert transformer.features_to_drop_ == constant
     pd.testing.assert_frame_equal(df.drop(constant, axis=1), transformer.transform(df))
 
     # test includes na
     transformer = DropConstantFeatures(tol=0.7, missing_values="include").fit(df)
     qconstant = ["const_feat_num", "const_feat_cat", "quasi_feat_num", "quasi_feat_cat"]
-    assert transformer.constant_features_ == qconstant
+    assert transformer.features_to_drop_ == qconstant
     pd.testing.assert_frame_equal(df.drop(qconstant, axis=1), transformer.transform(df))

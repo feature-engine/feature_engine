@@ -1,25 +1,21 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_validate
-from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_input_matches_training_df,
-)
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.selection.base_selector import get_feature_importances
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
+class RecursiveFeatureAddition(BaseSelector):
     """
      RecursiveFeatureAddition selects features following a recursive process.
 
@@ -79,10 +75,10 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
         Pandas Series with the feature importance.
 
     performance_drifts_:
-        Dictionary with the performance drift per removed feature.
+        Dictionary with the performance drift per examined feature.
 
-    selected_features_:
-        List with the selected features.
+    features_to_drop_:
+        List with the features to remove from the dataset.
 
     Methods
     -------
@@ -170,7 +166,7 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
         # Aggregate the feature importance returned in each fold
         self.feature_importances_ = feature_importances_cv.mean(axis=1)
 
-        # Sort the feature importance values descreasingly
+        # Sort the feature importance values decreasingly
         self.feature_importances_.sort_values(ascending=False, inplace=True)
 
         # Extract most important feature from the ordered list of features
@@ -191,14 +187,12 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
 
         # list to collect selected features
         # It is initialized with the most important feature
-        self.selected_features_ = [first_most_important_feature]
+        _selected_features = [first_most_important_feature]
 
         # dict to collect features and their performance_drift
         # It is initialized with the performance drift of
         # the most important feature
-        self.performance_drifts_ = {
-            first_most_important_feature: 0
-        }
+        self.performance_drifts_ = {first_most_important_feature: 0}
 
         # loop over the ordered list of features by feature importance starting
         # from the second element in the list.
@@ -207,7 +201,7 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
             # Add feature and train new model
             model_tmp = cross_validate(
                 self.estimator,
-                X[self.selected_features_ + [feature]],
+                X[_selected_features + [feature]],
                 y,
                 cv=self.cv,
                 scoring=self.scoring,
@@ -227,38 +221,23 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
             if performance_drift > self.threshold:
 
                 # add feature to the list of selected features
-                self.selected_features_.append(feature)
+                _selected_features.append(feature)
 
                 # Update new baseline model performance
                 baseline_model_performance = model_tmp_performance
+
+        self.features_to_drop_ = [
+            f for f in self.variables if f not in _selected_features
+        ]
 
         self.input_shape_ = X.shape
 
         return self
 
-    def transform(self, X: pd.DataFrame):
-        """
-         Return dataframe with selected features.
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
 
-         Parameters
-         ----------
-         X : pandas dataframe of shape = [n_samples, n_features].
-             The input dataframe.
+        return X
 
-         Returns
-         -------
-         X_transformed: pandas dataframe of shape = [n_samples, n_selected_features]
-             Pandas dataframe with the selected features.
-         """
-
-        # check if fit is performed prior to transform
-        check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = _is_dataframe(X)
-
-        # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.input_shape_[1])
-
-        # return the dataframe with the selected features
-        return X[self.selected_features_]
+    transform.__doc__ = BaseSelector.transform.__doc__

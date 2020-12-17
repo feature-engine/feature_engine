@@ -1,25 +1,21 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_validate
-from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_input_matches_training_df,
-)
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.selection.base_selector import get_feature_importances
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
+class RecursiveFeatureElimination(BaseSelector):
     """
     RecursiveFeatureElimination selects features following a recursive process.
 
@@ -80,10 +76,10 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         Pandas Series with the feature importance
 
     performance_drifts_:
-        Dictionary with the performance drift per removed feature.
+        Dictionary with the performance drift per examined feature.
 
-    selected_features_:
-        The selected features list.
+    features_to_drop_:
+        List with the features to remove from the dataset.
 
     Methods
     -------
@@ -174,8 +170,8 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         # Sort the feature importance values
         self.feature_importances_.sort_values(ascending=True, inplace=True)
 
-        # list to collect selected features
-        self.selected_features_ = []
+        # to collect selected features
+        _selected_features = []
 
         # temporary copy where we will remove features recursively
         X_tmp = X[self.variables].copy()
@@ -211,7 +207,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
             if performance_drift > self.threshold:
 
-                self.selected_features_.append(feature)
+                _selected_features.append(feature)
 
             else:
                 # remove feature and adjust initial performance
@@ -229,33 +225,18 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
                 # store initial model performance
                 baseline_model_performance = baseline_model["test_score"].mean()
 
+        self.features_to_drop_ = [
+            f for f in self.variables if f not in _selected_features
+        ]
+
         self.input_shape_ = X.shape
 
         return self
 
-    def transform(self, X: pd.DataFrame):
-        """
-        Return dataframe with selected features.
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
 
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
-            The input dataframe from which features will be selected.
+        return X
 
-        Returns
-        -------
-        X_transformed: pandas dataframe of shape = [n_samples, n_selected_features]
-            Pandas dataframe with the selected features.
-        """
-
-        # check if fit is performed prior to transform
-        check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = _is_dataframe(X)
-
-        # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.input_shape_[1])
-
-        # return the dataframe with the selected features
-        return X[self.selected_features_]
+    transform.__doc__ = BaseSelector.transform.__doc__
