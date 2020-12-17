@@ -1,22 +1,21 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.base import TransformerMixin, BaseEstimator
-from sklearn.utils.validation import check_is_fitted
+
 from feature_engine.dataframe_checks import (
     _is_dataframe,
-    _check_input_matches_training_df,
     _check_contains_na,
 )
 from feature_engine.variable_manipulation import (
     _find_all_variables,
     _check_input_parameter_variables,
 )
+from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
+class DropDuplicateFeatures(BaseSelector):
     """
     DropDuplicateFeatures() finds and removes duplicated features in a dataframe.
 
@@ -39,8 +38,8 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    duplicated_features_:
-        Set with the duplicated features.
+    features_to_drop_:
+        Set with the duplicated features that will be dropped.
 
     duplicated_feature_sets_:
         Groups of duplicated features. Each list is a group of duplicated features.
@@ -55,7 +54,7 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
         Fit to data. Then transform it.
     """
 
-    def __init__(self, variables: Variables = None, missing_values: str = 'ignore'):
+    def __init__(self, variables: Variables = None, missing_values: str = "ignore"):
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
@@ -64,7 +63,6 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
         self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
-
         """
         Find duplicated features.
 
@@ -94,7 +92,7 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
         self.duplicated_feature_sets_ = []
 
         # set to collect features that are duplicated
-        self.duplicated_features_ = set()  # type: ignore
+        self.features_to_drop_ = set()  # type: ignore
 
         # create set of examined features
         _examined_features = set()
@@ -104,7 +102,7 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
             # append so we can remove when we create the combinations
             _examined_features.add(feature)
 
-            if feature not in self.duplicated_features_:
+            if feature not in self.features_to_drop_:
 
                 _temp_set = set([feature])
 
@@ -113,14 +111,14 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
                 _features_to_compare = [
                     f
                     for f in self.variables
-                    if f not in _examined_features.union(self.duplicated_features_)
+                    if f not in _examined_features.union(self.features_to_drop_)
                 ]
 
                 # create combinations:
                 for f2 in _features_to_compare:
 
                     if X[feature].equals(X[f2]):
-                        self.duplicated_features_.add(f2)
+                        self.features_to_drop_.add(f2)
                         _temp_set.add(f2)
 
                 # if there are duplicated features
@@ -131,36 +129,10 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X):
-        """
-        Drop the duplicated features from a dataframe.
-
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
-            The input samples.
-
-        Returns
-        -------
-        X_transformed : pandas dataframe,
-            shape = [n_samples, n_features - (duplicated features)]
-            The transformed dataframe with the remaining subset of variables.
-
-        """
-        # check if fit is performed prior to transform
-        check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = _is_dataframe(X)
-
-        # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.input_shape_[1])
-
-        if self.missing_values == "raise":
-            # check if dataset contains na
-            _check_contains_na(X, self.variables)
-
-        # returned non-duplicate features
-        X = X.drop(columns=self.duplicated_features_)
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
 
         return X
+
+    transform.__doc__ = BaseSelector.transform.__doc__

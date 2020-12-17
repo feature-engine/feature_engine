@@ -2,25 +2,22 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import cross_validate
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_random_state
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_input_matches_training_df,
-)
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-class SelectByShuffling(BaseEstimator, TransformerMixin):
+class SelectByShuffling(BaseSelector):
     """
     SelectByShuffling() selects features by determining the drop in machine learning
     model performance when each feature's values are randomly shuffled.
@@ -75,8 +72,8 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
     performance_drifts_:
         Dictionary with the performance drift per shuffled feature.
 
-    selected_features_:
-        The selected features.
+    features_to_drop_:
+        List with the features to remove from the dataset.
 
     Methods
     -------
@@ -95,6 +92,7 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
         cv: int = 3,
         threshold: Union[float, int] = 0.01,
         variables: Variables = None,
+        random_state: int = None,
     ):
 
         if not isinstance(cv, int) or cv < 1:
@@ -108,6 +106,7 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
         self.scoring = scoring
         self.threshold = threshold
         self.cv = cv
+        self.random_state = random_state
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -138,7 +137,7 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
         # train model with all features and cross-validation
         model = cross_validate(
             self.estimator,
-            X,
+            X[self.variables],
             y,
             cv=self.cv,
             return_estimator=True,
@@ -151,20 +150,22 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
         # get performance metric
         scorer = get_scorer(self.scoring)
 
+        # seed
+        random_state = check_random_state(self.random_state)
+
         # dict to collect features and their performance_drift after shuffling
         self.performance_drifts_ = {}
-
-        # list to collect selected features
-        self.selected_features_ = []
 
         # shuffle features and save feature performance drift into a dict
         for feature in self.variables:
 
-            X_shuffled = X.copy()
+            X_shuffled = X[self.variables].copy()
 
             # shuffle individual feature
             X_shuffled[feature] = (
-                X_shuffled[feature].sample(frac=1).reset_index(drop=True)
+                X_shuffled[feature]
+                .sample(frac=1, random_state=random_state)
+                .reset_index(drop=True)
             )
 
             # determine the performance with the shuffled feature
@@ -184,42 +185,20 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
             self.performance_drifts_[feature] = performance_drift
 
         # select features
-        for feature in self.performance_drifts_.keys():
-
-            if self.performance_drifts_[feature] > self.threshold:
-
-                self.selected_features_.append(feature)
+        self.features_to_drop_ = [
+            f
+            for f in self.performance_drifts_.keys()
+            if self.performance_drifts_[f] < self.threshold
+        ]
 
         self.input_shape_ = X.shape
 
         return self
 
-    def transform(self, X: pd.DataFrame):
-        """
-        Return dataframe with selected features.
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
 
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
-            The input dataframe from which feature values will be shuffled.
+        return X
 
-        Returns
-        -------
-        X_transformed : pandas dataframe
-            of shape = [n_samples, n_features - len(dropped features)]
-            Pandas dataframe with the selected features.
-        """
-
-        # check if fit is performed prior to transform
-        check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = _is_dataframe(X)
-
-        # reset the index
-        X = X.reset_index(drop=True)
-
-        # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.input_shape_[1])
-
-        return X[self.selected_features_]
+    transform.__doc__ = BaseSelector.transform.__doc__
