@@ -57,8 +57,8 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    selected_features_:
-        List with the selected features.
+    features_to_drop_:
+        List with the features to remove from the dataset.
 
     feature_performance_:
         Dictionary with the single feature model performance per feature.
@@ -123,10 +123,8 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
         # find numerical variables or check variables entered by user
         self.variables = _find_or_check_numerical_variables(X, self.variables)
 
-        # list to collect selected features
-        self.selected_features_ = []
-
         self.feature_performance_ = {}
+        self.features_to_drop_ = []
 
         # train a model for every feature
         for feature in self.variables:
@@ -139,14 +137,14 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
                 scoring=self.scoring,
             )
 
-            if model["test_score"].mean() > self.threshold:
-                self.selected_features_.append(feature)
+            if model["test_score"].mean() < self.threshold:
+                self.features_to_drop_.append(feature)
 
             self.feature_performance_[feature] = model["test_score"].mean()
 
         # check we are not dropping all the columns in the df
-        if len(self.selected_features_) == 0:
-            raise ValueError("No features were selected, try changing the threshold.")
+        if len(self.features_to_drop_) == len(X.columns):
+            raise ValueError("All features will be dropped, try changing the threshold.")
 
         self.input_shape_ = X.shape
 
@@ -177,4 +175,4 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
         # check if number of columns in test dataset matches to train dataset
         _check_input_matches_training_df(X, self.input_shape_[1])
 
-        return X[self.selected_features_]
+        return X.drop(columns=self.features_to_drop_)

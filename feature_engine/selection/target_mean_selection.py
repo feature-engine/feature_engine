@@ -98,8 +98,8 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    selected_features_:
-        List with the selected features.
+    features_to_drop_:
+        List with the features to remove from the dataset.
 
     feature_performance_:
         Dictionary with the performance proxy per feature.
@@ -246,8 +246,8 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
             axis=1
         ).to_dict()
 
-        self.selected_features_ = [
-            f for f in self.variables if self.feature_performance_[f] > self.threshold
+        self.features_to_drop_ = [
+            f for f in self.variables if self.feature_performance_[f] < self.threshold
         ]
 
         self.input_shape_ = X.shape
@@ -330,4 +330,4 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
 
         _check_contains_na(X, self.variables)
 
-        return X[self.selected_features_]
+        return X.drop(columns=self.features_to_drop_)

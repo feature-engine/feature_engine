@@ -55,7 +55,7 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
         Fit to data. Then transform it.
     """
 
-    def __init__(self, variables: Variables = None, missing_values: str = 'ignore'):
+    def __init__(self, variables: Variables = None, missing_values: str = "ignore"):
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
@@ -64,7 +64,6 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
         self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
-
         """
         Find duplicated features.
 
@@ -145,8 +144,8 @@ class DropDuplicateFeatures(BaseEstimator, TransformerMixin):
         X_transformed : pandas dataframe,
             shape = [n_samples, n_features - (duplicated features)]
             The transformed dataframe with the remaining subset of variables.
-
         """
+
         # check if fit is performed prior to transform
         check_is_fitted(self)
 

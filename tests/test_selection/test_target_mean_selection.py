@@ -49,7 +49,7 @@ def test_numerical_variables_roc_auc(df_test):
     # test fit attrs
     assert sel.variables_categorical_ == []
     assert sel.variables_numerical_ == list(X.columns)
-    assert sel.selected_features_ == ["var_0", "var_4", "var_6", "var_7", "var_9"]
+    assert sel.features_to_drop_ == ["var_1", "var_2", "var_3", "var_5", "var_8", 'var_10', 'var_11']
     assert all(
         np.round(sel.feature_performance_[f], 3) == performance_dict[f]
         for f in sel.feature_performance_.keys()
@@ -86,7 +86,7 @@ def test_categorical_variables_roc_auc(df_test_num_cat):
     # test fit attrs
     assert sel.variables_categorical_ == list(X.columns)
     assert sel.variables_numerical_ == []
-    assert sel.selected_features_ == ["var_A"]
+    assert sel.features_to_drop_ == ["var_B"]
     assert all(
         np.round(sel.feature_performance_[f], 3) == performance_dict[f]
         for f in sel.feature_performance_.keys()
@@ -124,7 +124,7 @@ def test_df_cat_and_num_variables_roc_auc(df_test_num_cat):
     # test fit attrs
     assert sel.variables_categorical_ == ["var_A", "var_B"]
     assert sel.variables_numerical_ == ["var_C", "var_D"]
-    assert sel.selected_features_ == ["var_A", "var_B"]
+    assert sel.features_to_drop_ == ["var_C", "var_D"]
     assert all(
         np.round(sel.feature_performance_[f], 3) == performance_dict[f]
         for f in sel.feature_performance_.keys()
@@ -169,7 +169,7 @@ def test_df_cat_and_num_variables_r2(df_test_num_cat):
     # test fit attrs
     assert sel.variables_categorical_ == ["var_A", "var_B"]
     assert sel.variables_numerical_ == ["var_C", "var_D"]
-    assert sel.selected_features_ == ["var_A", "var_B"]
+    assert sel.features_to_drop_ == ["var_C", "var_D"]
     assert all(
         np.round(sel.feature_performance_[f], 3) == performance_dict[f]
         for f in sel.feature_performance_.keys()

@@ -80,10 +80,10 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         Pandas Series with the feature importance
 
     performance_drifts_:
-        Dictionary with the performance drift per removed feature.
+        Dictionary with the performance drift per examined feature.
 
-    selected_features_:
-        The selected features list.
+    features_to_drop_:
+        List with the features to remove from the dataset.
 
     Methods
     -------
@@ -174,8 +174,8 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         # Sort the feature importance values
         self.feature_importances_.sort_values(ascending=True, inplace=True)
 
-        # list to collect selected features
-        self.selected_features_ = []
+        # to collect selected features
+        _selected_features = []
 
         # temporary copy where we will remove features recursively
         X_tmp = X[self.variables].copy()
@@ -211,7 +211,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
             if performance_drift > self.threshold:
 
-                self.selected_features_.append(feature)
+                _selected_features.append(feature)
 
             else:
                 # remove feature and adjust initial performance
@@ -228,6 +228,10 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
                 # store initial model performance
                 baseline_model_performance = baseline_model["test_score"].mean()
+
+        self.features_to_drop_ = [
+            f for f in self.variables if f not in _selected_features
+        ]
 
         self.input_shape_ = X.shape
 
@@ -258,4 +262,4 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         # return the dataframe with the selected features
-        return X[self.selected_features_]
+        return X.drop(columns=self.features_to_drop_)

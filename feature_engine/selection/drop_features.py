@@ -91,15 +91,15 @@ class DropFeatures(BaseEstimator, TransformerMixin):
         Parameters
         ----------
         X : pandas dataframe
-            The input dataframe from which features will be dropped
+            The input dataframe from which features will be dropped.
 
         Returns
         -------
         X_transformed : pandas dataframe,
             shape = [n_samples, n_features - len(features_to_drop)]
             The transformed dataframe with the remaining subset of variables.
-
         """
+
         # check if fit is called prior
         check_is_fitted(self)
 

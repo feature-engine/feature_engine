@@ -58,9 +58,6 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
     correlated_feature_sets_:
         Groups of correlated features.  Each list is a group of correlated features.
 
-    correlated_matrix_:
-        The correlation matrix.
-
     Methods
     -------
     fit:
@@ -134,14 +131,14 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
         self.correlated_feature_sets_ = []
 
         # the correlation matrix
-        self.correlated_matrix_ = X[self.variables].corr(method=self.method)
+        _correlated_matrix = X[self.variables].corr(method=self.method)
 
         # create set of examined features, helps to determine feature combinations
         # to evaluate below
         _examined_features = set()
 
         # for each feature in the dataset (columns of the correlation matrix)
-        for feature in self.correlated_matrix_.columns:
+        for feature in _correlated_matrix.columns:
 
             if feature not in _examined_features:
 
@@ -155,9 +152,7 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
                 # features that have not been examined, are not currently examined and
                 # were not found correlated
                 _features_to_compare = [
-                    f
-                    for f in self.correlated_matrix_.columns
-                    if f not in _examined_features
+                    f for f in _correlated_matrix.columns if f not in _examined_features
                 ]
 
                 # create combinations:
@@ -165,7 +160,7 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
 
                     # if the correlation is higher than the threshold
                     # we are interested in absolute correlation coefficient value
-                    if abs(self.correlated_matrix_.loc[f2, feature]) > self.threshold:
+                    if abs(_correlated_matrix.loc[f2, feature]) > self.threshold:
 
                         # add feature (f2) to our correlated set
                         self.correlated_features_.add(f2)
@@ -195,6 +190,7 @@ class DropCorrelatedFeatures(BaseEstimator, TransformerMixin):
             shape = [n_samples, n_features - (correlated features)]
             The transformed dataframe with the remaining subset of variables.
         """
+
         # check if fit is performed prior to transform
         check_is_fitted(self)
 

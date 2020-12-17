@@ -90,7 +90,6 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
         self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
-
         """
         Find constant and quasi-constant features.
 
