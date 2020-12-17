@@ -2,25 +2,21 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import cross_validate
-from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_input_matches_training_df,
-)
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-class SelectByShuffling(BaseEstimator, TransformerMixin):
+class SelectByShuffling(BaseSelector):
     """
     SelectByShuffling() selects features by determining the drop in machine learning
     model performance when each feature's values are randomly shuffled.
@@ -191,32 +187,10 @@ class SelectByShuffling(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X: pd.DataFrame):
-        """
-        Return dataframe with selected features.
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
 
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
-            The input dataframe from which feature values will be shuffled.
+        return X
 
-        Returns
-        -------
-        X_transformed : pandas dataframe
-            of shape = [n_samples, n_features - len(dropped features)]
-            Pandas dataframe with the selected features.
-        """
-
-        # check if fit is performed prior to transform
-        check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = _is_dataframe(X)
-
-        # reset the index
-        X = X.reset_index(drop=True)
-
-        # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.input_shape_[1])
-
-        return X.drop(columns=self.features_to_drop_)
+    transform.__doc__ = BaseSelector.transform.__doc__

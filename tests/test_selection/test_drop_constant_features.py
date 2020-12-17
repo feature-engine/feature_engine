@@ -213,11 +213,11 @@ def test_missing_values_param():
     # test ignores na
     transformer = DropConstantFeatures(missing_values="ignore").fit(df)
     constant = ["const_feat_num", "const_feat_cat", "quasi_feat_cat"]
-    assert transformer.constant_features_ == constant
+    assert transformer.features_to_drop_ == constant
     pd.testing.assert_frame_equal(df.drop(constant, axis=1), transformer.transform(df))
 
     # test includes na
     transformer = DropConstantFeatures(tol=0.7, missing_values="include").fit(df)
     qconstant = ["const_feat_num", "const_feat_cat", "quasi_feat_num", "quasi_feat_cat"]
-    assert transformer.constant_features_ == qconstant
+    assert transformer.features_to_drop_ == qconstant
     pd.testing.assert_frame_equal(df.drop(qconstant, axis=1), transformer.transform(df))

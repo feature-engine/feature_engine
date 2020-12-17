@@ -84,7 +84,7 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
         estimator=DecisionTreeRegressor(random_state=0),
         scoring="neg_mean_squared_error",
         cv=2,
-        threshold=10,
+        threshold=5,
     )
     # fit transformer
     sel.fit(X, y)
@@ -96,7 +96,7 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     assert sel.cv == 2
     assert sel.variables == list(X.columns)
     assert sel.scoring == "neg_mean_squared_error"
-    assert sel.threshold == 10
+    assert sel.threshold == 5
     # fit params
     assert np.round(sel.initial_model_performance_, 0) == -5836.0
     assert sel.features_to_drop_ == [0, 1, 3, 4, 5, 6, 7, 9]

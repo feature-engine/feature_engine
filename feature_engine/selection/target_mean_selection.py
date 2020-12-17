@@ -1,15 +1,12 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.metrics import roc_auc_score, r2_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
     _is_dataframe,
-    _check_input_matches_training_df,
     _check_contains_na,
 )
 
@@ -25,10 +22,12 @@ from feature_engine.variable_manipulation import (
     _find_all_variables,
 )
 
+from feature_engine.selection.base_selector import BaseSelector
+
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
+class SelectByTargetMeanPerformance(BaseSelector):
     """
     SelectByTargetMeanPerformance() selects features by using the mean value of the
     target per category or bin, if the variable is numerical, as proxy of target
@@ -304,30 +303,10 @@ class SelectByTargetMeanPerformance(BaseEstimator, TransformerMixin):
 
         return _pipeline_combined
 
-    def transform(self, X: pd.DataFrame):
-        """
-        Return dataframe with selected features.
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
 
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
-            The input dataframe from which feature values will be train.
+        return X
 
-        Returns
-        -------
-        X_transformed: pandas dataframe
-            of shape = [n_samples, selected_features]
-            Pandas dataframe with the selected features.
-        """
-        # check if fit is performed prior to transform
-        check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = _is_dataframe(X)
-
-        # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.input_shape_[1])
-
-        _check_contains_na(X, self.variables)
-
-        return X.drop(columns=self.features_to_drop_)
+    transform.__doc__ = BaseSelector.transform.__doc__

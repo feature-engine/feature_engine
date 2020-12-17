@@ -1,16 +1,11 @@
 from typing import List, Union
 import pandas as pd
 
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
-
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_input_matches_training_df,
-)
+from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.selection.base_selector import BaseSelector
 
 
-class DropFeatures(BaseEstimator, TransformerMixin):
+class DropFeatures(BaseSelector):
     """
     DropFeatures() drops a list of variable(s) indicated by the user from the dataframe.
 
@@ -72,6 +67,8 @@ class DropFeatures(BaseEstimator, TransformerMixin):
         # present in the df.
         X[self.features_to_drop]
 
+        self.features_to_drop_ = self.features_to_drop
+
         # check user is not removing all columns in the dataframe
         if len(self.features_to_drop) == len(X.columns):
             raise ValueError(
@@ -84,31 +81,10 @@ class DropFeatures(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X: pd.DataFrame):
-        """
-        Drop the variable or list of variables from the dataframe.
-
-        Parameters
-        ----------
-        X : pandas dataframe
-            The input dataframe from which features will be dropped.
-
-        Returns
-        -------
-        X_transformed : pandas dataframe,
-            shape = [n_samples, n_features - len(features_to_drop)]
-            The transformed dataframe with the remaining subset of variables.
-        """
-
-        # check if fit is called prior
-        check_is_fitted(self)
-
-        # check input dataframe
-        X = _is_dataframe(X)
-
-        # check for input consistency
-        _check_input_matches_training_df(X, self.input_shape_[1])
-
-        X = X.drop(columns=self.features_to_drop)
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
 
         return X
+
+    transform.__doc__ = BaseSelector.transform.__doc__

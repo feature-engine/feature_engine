@@ -1,25 +1,21 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_validate
-from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_input_matches_training_df,
-)
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.selection.base_selector import get_feature_importances
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
+class RecursiveFeatureAddition(BaseSelector):
     """
      RecursiveFeatureAddition selects features following a recursive process.
 
@@ -238,29 +234,10 @@ class RecursiveFeatureAddition(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X: pd.DataFrame):
-        """
-        Return dataframe with selected features.
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
 
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
-            The input dataframe.
+        return X
 
-        Returns
-        -------
-        X_transformed: pandas dataframe of shape = [n_samples, n_selected_features]
-            Pandas dataframe with the selected features.
-        """
-
-        # check if fit is performed prior to transform
-        check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = _is_dataframe(X)
-
-        # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.input_shape_[1])
-
-        # return the dataframe with the selected features
-        return X.drop(columns=self.features_to_drop_)
+    transform.__doc__ = BaseSelector.transform.__doc__

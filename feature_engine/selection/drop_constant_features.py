@@ -2,23 +2,21 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
     _is_dataframe,
-    _check_input_matches_training_df,
     _check_contains_na,
 )
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
 )
+from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-class DropConstantFeatures(TransformerMixin, BaseEstimator):
+class DropConstantFeatures(BaseSelector):
     """
     Drop constant and quasi-constant variables from a dataframe. Constant variables
     show the same value across all the observations in the dataset. Quasi-constant
@@ -51,7 +49,7 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
 
     Attributes
     ----------
-    constant_features_:
+    features_to_drop_:
         List with constant and quasi-constant features.
 
     Methods
@@ -120,13 +118,13 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
 
         # find constant features
         if self.tol == 1:
-            self.constant_features_ = [
+            self.features_to_drop_ = [
                 feature for feature in self.variables if X[feature].nunique() == 1
             ]
 
         # find constant and quasi-constant features
         else:
-            self.constant_features_ = []
+            self.features_to_drop_ = []
 
             for feature in self.variables:
                 # find most frequent value / category in the variable
@@ -137,10 +135,10 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
                 )
 
                 if predominant >= self.tol:
-                    self.constant_features_.append(feature)
+                    self.features_to_drop_.append(feature)
 
         # check we are not dropping all the columns in the df
-        if len(self.constant_features_) == len(X.columns):
+        if len(self.features_to_drop_) == len(X.columns):
             raise ValueError(
                 "The resulting dataframe will have no columns after dropping all "
                 "constant or quasi-constant features. Try changing the tol value."
@@ -150,36 +148,10 @@ class DropConstantFeatures(TransformerMixin, BaseEstimator):
 
         return self
 
-    def transform(self, X: pd.DataFrame):
-        """
-        Drop the constant and quasi-constant features from a dataframe.
-
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
-            The input samples.
-
-        Returns
-        -------
-        X_transformed : pandas dataframe,
-            shape = [n_samples, n_features - (constant + quasi_constant features)]
-            The transformed dataframe with the remaining subset of variables.
-        """
-
-        # check if fit is performed prior to transform
-        check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = _is_dataframe(X)
-
-        # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.input_shape_[1])
-
-        if self.missing_values == "raise":
-            # check if dataset contains na
-            _check_contains_na(X, self.variables)
-
-        # returned selected features
-        X = X.drop(columns=self.constant_features_)
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
 
         return X
+
+    transform.__doc__ = BaseSelector.transform.__doc__
