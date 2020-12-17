@@ -16,7 +16,7 @@ def test_default_parameters(df_test):
 
     # expected result
     Xtransformed = X.copy()
-    Xtransformed.drop(columns=["var_3","var_10"], inplace=True)
+    Xtransformed.drop(columns=["var_3", "var_10"], inplace=True)
 
     # test init params
     assert sel.variables == [
@@ -37,7 +37,7 @@ def test_default_parameters(df_test):
     assert sel.cv == 3
     assert sel.scoring == "roc_auc"
     # test fit attrs
-    assert sel.features_to_drop_ == ["var_3","var_10"]
+    assert sel.features_to_drop_ == ["var_3", "var_10"]
     assert sel.feature_performance_ == {
         "var_0": 0.5957642619540211,
         "var_1": 0.5365534287221033,
@@ -119,7 +119,7 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     assert sel.scoring == "neg_mean_squared_error"
     assert sel.threshold == -6000
     # fit params
-    assert sel.features_to_drop_ == [0,2,3,4,5,6,8,9]
+    assert sel.features_to_drop_ == [0, 2, 3, 4, 5, 6, 8, 9]
     assert sel.feature_performance_ == {
         0: -7657.154138192973,
         1: -5966.662211695372,
@@ -183,7 +183,7 @@ def test_automatic_variable_selection(df_test):
 
     # expected result
     Xtransformed = X.copy()
-    Xtransformed.drop(columns=["var_3","var_10"], inplace=True)
+    Xtransformed.drop(columns=["var_3", "var_10"], inplace=True)
 
     # test init params
     assert sel.variables == [
@@ -204,7 +204,7 @@ def test_automatic_variable_selection(df_test):
     assert sel.cv == 3
     assert sel.scoring == "roc_auc"
     # test fit attrs
-    assert sel.features_to_drop_ == ["var_3","var_10"]
+    assert sel.features_to_drop_ == ["var_3", "var_10"]
     assert sel.feature_performance_ == {
         "var_0": 0.5957642619540211,
         "var_1": 0.5365534287221033,

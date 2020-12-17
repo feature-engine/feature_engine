@@ -144,7 +144,9 @@ class SelectBySingleFeaturePerformance(BaseEstimator, TransformerMixin):
 
         # check we are not dropping all the columns in the df
         if len(self.features_to_drop_) == len(X.columns):
-            raise ValueError("All features will be dropped, try changing the threshold.")
+            raise ValueError(
+                "All features will be dropped, try changing the threshold."
+            )
 
         self.input_shape_ = X.shape
 
