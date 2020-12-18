@@ -3,7 +3,9 @@ Version 1.0.0
 
 Deployed: TBD
 
-Contributors:
+Contributors
+------------
+    - Ashok Kumar
     - Christopher Samiullah
     - Nicolas Galli
     - Nodar Okroshiashvili
@@ -14,10 +16,27 @@ Contributors:
 
 
 In this version, we made a major overhaul of the package, with code quality improvement
-throughout the code base, unification of attributes and methods when possible, addition
-of new transformers and extended documentation. Read below for more details.
+throughout the code base, unification of attributes and methods, addition of new
+transformers and extended documentation. Read below for more details.
 
-**Renaming of Modules within Feature-engine**:
+New transformers for Feature Selection
+--------------------------------------
+
+We included a whole new module with multiple transformers to select features.
+
+    - **DropConstantFeatures**: removes constant and quasi-constant features from a dataframe (**by Tejash Shah**)
+    - **DropDuplicateFeatures**: removes duplicated features from a dataset (**by Tejash Shah and Soledad Galli**)
+    - **DropCorrelatedFeatures**: removes features that are correlated (**by Nicolas Galli**)
+    - **SmartCorrelationSelection**: selects feature from group of correlated features based on certain criteria (**by Soledad Galli**)
+    - **ShuffleFeaturesSelector**: selects features by drop in machine learning model performance after feature's values are randomly shuffled (**by Sana Ben Driss**)
+    - **SelectBySingleFeaturePerformance**: selects features based on a ML model performance trained on individual features (**by Nicolas Galli**)
+    - **SelectByTargetMeanPerformance**: selects features encoding the categories or intervals with the target mean and using that as proxy for performance (**by Tung Lee and Soledad Galli**)
+    - **RecursiveFeatureElimination**: selects features recursively, evaluating the drop in ML performance, from the least to the most important feature (**by Sana Ben Driss**)
+    - **RecursiveFeatureAddition**: selects features recursively, evaluating the increase in ML performance, from the most to the least important feature (**by Sana Ben Driss**)
+
+
+Renaming of Modules
+-------------------
 
 Feature-engine transformers have been sorted into submodules to smooth the development
 of the package and shorten import syntax for users.
@@ -30,10 +49,11 @@ of the package and shorten import syntax for users.
     - **Module selection**: new module hosts transformers to select or remove variables from a dataset.
     - **Module creation**: new module hosts transformers that combine variables into new features using mathematical or other operations.
 
-**Renaming of Classes**:
+Renaming of Classes
+-------------------
 
-In this release, we have shortened the name of categorical encoders, and also renamed
-other classes of Feature-engine to simplify import syntax.
+We shortened the name of categorical encoders, and also renamed other classes to
+simplify import syntax.
 
     - **Encoders**: the word ``Categorical`` was removed from the classes name. Now, instead of ``MeanCategoricalEncoder``, the class is called ``MeanEncoder``. Instead of ``RareLabelCategoricalEncoder`` it is ``RareLabelEncoder`` and so on. Please check the encoders documentation for more details.
     - **Imputers**: the ``CategoricalVariableImputer`` is now called ``CategoricalImputer``.
@@ -41,7 +61,8 @@ other classes of Feature-engine to simplify import syntax.
     - **Creation**: the ``MathematicalCombinator`` is not called ``MathematicalCombination``.
     - **WoEEncoder and PRatioEncoder**: the ``WoEEncoder`` now applies only encoding with the weight of evidence. To apply encoding by probability ratios, use a different transformer: the ``PRatioEncoder`` (**by Nicolas Galli**).
 
-**Renaming of class init Parameters**:
+Renaming of Parameters
+----------------------
 
 We renamed a few parameters to unify the nomenclature across the Package.
 
@@ -49,31 +70,35 @@ We renamed a few parameters to unify the nomenclature across the Package.
     - **AddMissingIndicator**: the parameter ``missing_only`` now takes the boolean values ``True`` or ``False``.
     - **Winzoriser and OutlierTrimmer**: the parameter ``distribution`` is now called ``capping_method`` to unify names across Feature-engine transformers.
 
-**New transformers and classes**:
 
-We included a whole new module with multiple transformers to select features.
+Tutorials
+---------
 
-    - **DropConstantFeatures**: finds and removes constant and quasi-constant features from a dataframe (**by Tejash Shah**)
-    - **DropDuplicateFeatures**: finds and removes duplicated features from a dataset (**by Tejash Shah and Soledad Galli**)
-    - **DropCorrelatedFeatures**: finds and removes features that are correlated (**by Nicolas Galli**)
-    - **ShuffleFeaturesSelector**: selects features by determining the drop in machine learning model performance when each feature's values are randomly shuffled from a dataframe (**by Sana Ben Driss**)
-    - **SelectBySingleFeaturePerformance**: trains a model based of each individual features, and derives performance (**by Nicolas Galli**)
-    - **SelectByTargetMeanPerformance**: selects features encoding the categories with the target mean and using that as proxy for performance (**by Tung Lee and Soledad Galli**)
-    - **RecursiveFeatureElimination**: selects features recursively, evaluating the drop in ML performance, from the least to the important feature (**by Sana Ben Driss**)
-    - **RecursiveFeatureAddition**: selects features recursively, evaluating the increase in ML performance, after adding a new feature, starting from the most to the least important feature (**by Sana Ben Driss**)
+    - **Discretisers**: new and updated "how to" examples of discretisation (**by Ashok Kumar**)
+    - **Encoders**: new and updated "how to" examples of categorical encoding (**by Ashok Kumar**)
 
-**Code Architecture - Important for Contributors and Developers**:
+
+For Contributors and Developers
+-------------------------------
+
+Code Architecture
+~~~~~~~~~~~~~~~~~
+
     - **Submodules**: transformers have been grouped within relevant submodules and modules.
     - **Individual tests**: testing classes have been subdivided into individual tests
     - **Code Style**: we adopted the use of flake8 for linting and PEP8 style checks, and black for automatic re-styling of code.
-    - **Type hint**: we rolled out the use of type hint throughout Feature-engine classes and functions (**by Nodar Okroshiashvili, Soledad Galli and Chris Samiullah**)
+    - **Type hint**: we rolled out the use of type hint throughout classes and functions (**by Nodar Okroshiashvili, Soledad Galli and Chris Samiullah**)
 
-**Documentation**
+Documentation
+~~~~~~~~~~~~~
+
     - Switched fully to numpydoc and away from Napoleon
     - Included more detail about methods, parameters, returns and raises, as per numpydoc docstring style (**by Nodar Okroshiashvili, Soledad Galli**)
     - Linked documentation to github repository
     - Improved layout
 
-**Other Changes**:
+Other Changes
+-------------
+
     - **Updated documentation**: documentation reflects the current use of Feature-engine transformers
     - **Typo fixes**: Thank you to all who contributed to typo fixes (Tim Vink, Github user @piecot)
