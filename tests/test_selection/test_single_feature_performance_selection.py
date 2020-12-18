@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -137,7 +139,7 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
 
-def test_raises_error_if_no_feature_selected(load_diabetes_dataset):
+def test_raises_warning_if_no_feature_selected(load_diabetes_dataset):
     X, y = load_diabetes_dataset
     sel = SelectBySingleFeaturePerformance(
         estimator=DecisionTreeRegressor(random_state=0),
@@ -145,8 +147,8 @@ def test_raises_error_if_no_feature_selected(load_diabetes_dataset):
         cv=2,
         threshold=10,
     )
-    with pytest.raises(ValueError):
-        sel.fit(X, y)
+    with pytest.warns(UserWarning):
+            warnings.warn(sel.fit(X, y), UserWarning)
 
 
 def test_non_fitted_error(df_test):

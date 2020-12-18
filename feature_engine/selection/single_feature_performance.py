@@ -1,5 +1,7 @@
 from typing import List, Union
+import warnings
 
+import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_validate
@@ -70,12 +72,12 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     """
 
     def __init__(
-        self,
-        estimator=RandomForestClassifier(),
-        scoring: str = "roc_auc",
-        cv: int = 3,
-        threshold: Union[int, float] = 0.5,
-        variables: Variables = None,
+            self,
+            estimator=RandomForestClassifier(),
+            scoring: str = "roc_auc",
+            cv: int = 3,
+            threshold: Union[int, float] = 0.5,
+            variables: Variables = None,
     ):
 
         if not isinstance(cv, int) or cv < 1:
@@ -133,14 +135,19 @@ class SelectBySingleFeaturePerformance(BaseSelector):
                 scoring=self.scoring,
             )
 
-            if model["test_score"].mean() < self.threshold:
-                self.features_to_drop_.append(feature)
+            if self.scoring == 'r2':
+                # take the absolute value
+                if np.abs(model["test_score"].mean()) < self.threshold:
+                    self.features_to_drop_.append(feature)
+            else:
+                if model["test_score"].mean() < self.threshold:
+                    self.features_to_drop_.append(feature)
 
             self.feature_performance_[feature] = model["test_score"].mean()
 
         # check we are not dropping all the columns in the df
         if len(self.features_to_drop_) == len(X.columns):
-            raise ValueError(
+            warnings.warn(
                 "All features will be dropped, try changing the threshold."
             )
 
