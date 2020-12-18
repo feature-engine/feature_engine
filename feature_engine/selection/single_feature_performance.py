@@ -72,12 +72,12 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     """
 
     def __init__(
-            self,
-            estimator=RandomForestClassifier(),
-            scoring: str = "roc_auc",
-            cv: int = 3,
-            threshold: Union[int, float] = 0.5,
-            variables: Variables = None,
+        self,
+        estimator=RandomForestClassifier(),
+        scoring: str = "roc_auc",
+        cv: int = 3,
+        threshold: Union[int, float] = 0.5,
+        variables: Variables = None,
     ):
 
         if not isinstance(cv, int) or cv < 1:
@@ -135,7 +135,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
                 scoring=self.scoring,
             )
 
-            if self.scoring == 'r2':
+            if self.scoring == "r2":
                 # take the absolute value
                 if np.abs(model["test_score"].mean()) < self.threshold:
                     self.features_to_drop_.append(feature)
@@ -147,9 +147,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
         # check we are not dropping all the columns in the df
         if len(self.features_to_drop_) == len(X.columns):
-            warnings.warn(
-                "All features will be dropped, try changing the threshold."
-            )
+            warnings.warn("All features will be dropped, try changing the threshold.")
 
         self.input_shape_ = X.shape
 
