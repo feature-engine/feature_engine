@@ -204,48 +204,53 @@ def test_cardinality_2_correlated_groups(df_double):
     pd.testing.assert_frame_equal(Xt, df)
 
 
-# def test_automatic_variable_selection(df_double):
-#     X, y = df_double
-#     # add 2 additional categorical variables, these should not be evaluated by
-#     # the selector
-#     X["cat_1"] = "cat1"
-#     X["cat_2"] = "cat2"
-#
-#     transformer = SmartCorrelatedSelection(
-#         variables=None,
-#         method="pearson",
-#         threshold=0.8,
-#         missing_values="raise",
-#         selection_method="variance",
-#         estimator=None,
-#     )
-#
-#     Xt = transformer.fit_transform(X, y)
-#
-#     # expected result
-#     df = X[
-#         [
-#             "var_1",
-#             "var_2",
-#             "var_3",
-#             "var_5",
-#             "var_6",
-#             "var_8",
-#             "var_10",
-#             "var_11",
-#             "cat_1",
-#             "cat_2",
-#         ]
-#     ].copy()
-#
-#     assert transformer.features_to_drop_ == [
-#         "var_0",
-#         "var_4",
-#         "var_7",
-#         "var_9",
-#     ]
-#     # test transform output
-#     pd.testing.assert_frame_equal(Xt, df)
+def test_automatic_variable_selection(df_double):
+    X, y = df_double
+
+    X[["var_0", "var_6", "var_7", "var_9"]] = X[
+        ["var_0", "var_6", "var_7", "var_9"]
+    ].astype(int)
+
+    # add 2 additional categorical variables, these should not be evaluated by
+    # the selector
+    X["cat_1"] = "cat1"
+    X["cat_2"] = "cat2"
+
+    transformer = SmartCorrelatedSelection(
+        variables=None,
+        method="pearson",
+        threshold=0.8,
+        missing_values="raise",
+        selection_method="cardinality",
+        estimator=None,
+    )
+
+    Xt = transformer.fit_transform(X, y)
+
+    # expected result
+    df = X[
+        [
+            "var_1",
+            "var_2",
+            "var_3",
+            "var_4",
+            "var_5",
+            "var_8",
+            "var_10",
+            "var_11",
+            "cat_1",
+            "cat_2",
+        ]
+    ].copy()
+
+    assert transformer.features_to_drop_ == [
+        "var_0",
+        "var_6",
+        "var_7",
+        "var_9",
+    ]
+    # test transform output
+    pd.testing.assert_frame_equal(Xt, df)
 
 
 def test_raises_param_errors():
