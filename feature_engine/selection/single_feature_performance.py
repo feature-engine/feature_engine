@@ -43,12 +43,20 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold : float, int, default = 0.5
-        The value that defines if a feature will be kept or removed. Note that for
-        metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
-        between 0 and 1. For metrics like the mean_square_error and the
-        root_mean_square_error the threshold will be a big number.
-        The threshold must be defined by the user.
+    threshold : float, int, default = None
+        The value that defines if a feature will be kept or removed.
+
+        For r2, the transformer will consider absolute values to select features. So,
+        for a threshold of 0.5, features with r2 > 0.5 or r2 < -0.5 will be selected.
+
+        The roc-auc varies between 0.5 and 1. So a threshold needs to be set-up within
+        these boundaries.
+
+        For metrics like the mean_square_error and the root_mean_square_error the
+        threshold will be a big number.
+
+        The threshold can be specified by the user. If None, it will be automatically
+        set to the mean performance value of all features.
 
     cv : int, default=3
         Desired number of cross-validation fold to be used to fit the estimator.
@@ -76,21 +84,28 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         estimator=RandomForestClassifier(),
         scoring: str = "roc_auc",
         cv: int = 3,
-        threshold: Union[int, float] = 0.5,
+        threshold: Union[int, float] = None,
         variables: Variables = None,
     ):
 
         if not isinstance(cv, int) or cv < 1:
             raise ValueError("cv can only take positive integers bigger than 1")
 
-        if not isinstance(threshold, (int, float)):
-            raise ValueError("threshold can only be integer or float")
+        if threshold:
+            if not isinstance(threshold, (int, float)):
+                raise ValueError("threshold can only be integer, float or None")
 
-        if scoring == "roc_auc" and (threshold < 0.5 or threshold > 1):
-            raise ValueError(
-                "roc-auc score should vary between 0.5 and 1. Pick a "
-                "threshold within this interval."
-            )
+            if scoring == "roc_auc" and (threshold < 0.5 or threshold > 1):
+                raise ValueError(
+                    "roc-auc score should vary between 0.5 and 1. Pick a "
+                    "threshold within this interval."
+                )
+
+            if scoring == "r2" and (threshold < 0 or threshold > 1):
+                raise ValueError(
+                    "r2 takes values between -1 and 1. To select features the transformer "
+                    "considers the absolute value. Pick a threshold within 0 and 1."
+                )
 
         self.variables = _check_input_parameter_variables(variables)
         self.estimator = estimator
@@ -100,7 +115,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Find the important features.
+        Select features.
 
         Parameters
         ----------
@@ -122,9 +137,8 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         self.variables = _find_or_check_numerical_variables(X, self.variables)
 
         self.feature_performance_ = {}
-        self.features_to_drop_ = []
 
-        # train a model for every feature
+        # train a model for every feature and store the performance
         for feature in self.variables:
             model = cross_validate(
                 self.estimator,
@@ -135,15 +149,27 @@ class SelectBySingleFeaturePerformance(BaseSelector):
                 scoring=self.scoring,
             )
 
-            if self.scoring == "r2":
-                # take the absolute value
-                if np.abs(model["test_score"].mean()) < self.threshold:
-                    self.features_to_drop_.append(feature)
-            else:
-                if model["test_score"].mean() < self.threshold:
-                    self.features_to_drop_.append(feature)
-
             self.feature_performance_[feature] = model["test_score"].mean()
+
+        # select features
+        if not self.threshold:
+            threshold = pd.Series(self.feature_performance_).mean()
+        else:
+            threshold = self.threshold
+
+        if self.scoring == "r2":
+            # take the absolute value
+            self.features_to_drop_ = [
+                f
+                for f in self.feature_performance_.keys()
+                if np.abs(self.feature_performance_[f]) < threshold
+            ]
+        else:
+            self.features_to_drop_ = [
+                f
+                for f in self.feature_performance_.keys()
+                if self.feature_performance_[f] < threshold
+            ]
 
         # check we are not dropping all the columns in the df
         if len(self.features_to_drop_) == len(X.columns):

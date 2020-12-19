@@ -13,7 +13,9 @@ from feature_engine.selection import SelectBySingleFeaturePerformance
 
 def test_default_parameters(df_test):
     X, y = df_test
-    sel = SelectBySingleFeaturePerformance(RandomForestClassifier(random_state=1))
+    sel = SelectBySingleFeaturePerformance(
+        RandomForestClassifier(random_state=1), threshold=0.5
+    )
     sel.fit(X, y)
 
     # expected result
@@ -165,12 +167,17 @@ def test_raises_cv_error():
 
 def test_raises_threshold_error():
     with pytest.raises(ValueError):
-        SelectBySingleFeaturePerformance(threshold=None)
+        SelectBySingleFeaturePerformance(threshold="hola")
 
 
 def test_raises_error_when_roc_threshold_not_allowed():
     with pytest.raises(ValueError):
         SelectBySingleFeaturePerformance(scoring="roc_auc", threshold=0.4)
+
+
+def test_raises_error_when_r2_threshold_not_allowed():
+    with pytest.raises(ValueError):
+        SelectBySingleFeaturePerformance(scoring="r2", threshold=4)
 
 
 def test_automatic_variable_selection(df_test):
@@ -180,7 +187,9 @@ def test_automatic_variable_selection(df_test):
     X["cat_1"] = "cat1"
     X["cat_2"] = "cat2"
 
-    sel = SelectBySingleFeaturePerformance(RandomForestClassifier(random_state=1))
+    sel = SelectBySingleFeaturePerformance(
+        RandomForestClassifier(random_state=1), threshold=0.5
+    )
     sel.fit(X, y)
 
     # expected result
