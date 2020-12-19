@@ -103,8 +103,9 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
             if scoring == "r2" and (threshold < 0 or threshold > 1):
                 raise ValueError(
-                    "r2 takes values between -1 and 1. To select features the transformer "
-                    "considers the absolute value. Pick a threshold within 0 and 1."
+                    "r2 takes values between -1 and 1. To select features the "
+                    "transformer considers the absolute value. Pick a threshold within "
+                    "0 and 1."
                 )
 
         self.variables = _check_input_parameter_variables(variables)
