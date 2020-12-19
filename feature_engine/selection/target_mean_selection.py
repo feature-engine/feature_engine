@@ -224,7 +224,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
         for train_index, test_index in skf.split(X, y):
             X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-            y_train, y_test = y[train_index], y[test_index]
+            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
             _pipeline.fit(X_train, y_train)
 
