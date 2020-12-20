@@ -1,5 +1,6 @@
 from typing import List, Union
 
+import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score, r2_score
 from sklearn.model_selection import StratifiedKFold
@@ -79,7 +80,8 @@ class SelectByTargetMeanPerformance(BaseSelector):
         The current implementation supports 'roc_auc_score' and 'r2_score'.
 
     threshold : float, default = 0.5
-        The performance threshold above which a feature will be selected.
+        The performance threshold above which a feature will be selected.If scoring is
+        'r2_score', the selector evaluates the absolute value.
 
     bins : int, default = 5
         If the dataset contains numerical variables, the number of bins into which
@@ -245,10 +247,18 @@ class SelectByTargetMeanPerformance(BaseSelector):
             axis=1
         ).to_dict()
 
-        self.features_to_drop_ = [
-            f for f in self.variables if self.feature_performance_[f] < self.threshold
-        ]
-
+        if self.scoring == "roc_auc_score":
+            self.features_to_drop_ = [
+                f
+                for f in self.variables
+                if self.feature_performance_[f] < self.threshold
+            ]
+        else:
+            self.features_to_drop_ = [
+                f
+                for f in self.variables
+                if np.abs(self.feature_performance_[f]) < self.threshold
+            ]
         self.input_shape_ = X.shape
 
         return self
