@@ -54,15 +54,20 @@ class SelectByShuffling(BaseSelector):
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold : float, int, default = 0.01
+    threshold : float, int, default = None
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
-        root_mean_square_error the threshold will be a big number.
-        The threshold must be defined by the user.
+        root_mean_square_error the threshold will be a big number. The threshold can be
+        defined by the user. If None, the selector will select features which
+        performance drift is smaller than the mean performance drift across all
+        features.
 
     cv : int, default=3
         Desired number of cross-validation fold to be used to fit the estimator.
+
+    random_state: int, default=None
+        Controls the randomness when shuffling features.
 
     Attributes
     ----------
@@ -90,7 +95,7 @@ class SelectByShuffling(BaseSelector):
         estimator=RandomForestClassifier(),
         scoring: str = "roc_auc",
         cv: int = 3,
-        threshold: Union[float, int] = 0.01,
+        threshold: Union[float, int] = None,
         variables: Variables = None,
         random_state: int = None,
     ):
@@ -98,8 +103,8 @@ class SelectByShuffling(BaseSelector):
         if not isinstance(cv, int) or cv < 1:
             raise ValueError("cv can only take positive integers bigger than 1")
 
-        if not isinstance(threshold, (int, float)):
-            raise ValueError("threshold can only be integer or float")
+        if threshold and not isinstance(threshold, (int, float)):
+            raise ValueError("threshold can only be integer or float or None")
 
         self.variables = _check_input_parameter_variables(variables)
         self.estimator = estimator
@@ -175,7 +180,7 @@ class SelectByShuffling(BaseSelector):
 
             # determine drift in performance
             # Note, sklearn negates the log and error scores, so no need to manually
-            # do the invertion
+            # do the inversion
             # https://scikit-learn.org/stable/modules/model_evaluation.html
             # (https://scikit-learn.org/stable/modules/model_evaluation.html
             # #the-scoring-parameter-defining-model-evaluation-rules)
@@ -185,10 +190,15 @@ class SelectByShuffling(BaseSelector):
             self.performance_drifts_[feature] = performance_drift
 
         # select features
+        if not self.threshold:
+            threshold = pd.Series(self.performance_drifts_).mean()
+        else:
+            threshold = self.threshold
+
         self.features_to_drop_ = [
             f
             for f in self.performance_drifts_.keys()
-            if self.performance_drifts_[f] < self.threshold
+            if self.performance_drifts_[f] < threshold
         ]
 
         self.input_shape_ = X.shape
