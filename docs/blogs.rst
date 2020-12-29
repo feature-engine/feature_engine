@@ -16,7 +16,7 @@ Blogs
 Videos
 ------
 
-- Coming soon!
+- `Optimising Feature Engineering Pipelines with Feature-engine <https://www.youtube.com/watch?v=qT-3KUaFYmk/>`_, Pydata Cambridge 2020, from minute 51:43.
 
 En Español
 ----------
