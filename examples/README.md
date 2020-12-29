@@ -12,7 +12,7 @@ If using venv:
 `python -m venv path/to/environment/feateng`
 
 2) activate the environment:
-`path/to/environment/feateng/Scripts\activate`
+`path/to/environment/feateng/Scripts/activate`
 
 Directions 1 and 2 assume you are on windows. If using mac, directions are slightly different. Please check [venv website](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
 
