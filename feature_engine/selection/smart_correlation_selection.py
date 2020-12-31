@@ -253,7 +253,6 @@ class SmartCorrelatedSelection(BaseSelector):
         elif self.selection_method == "variance":
             for feature_group in self.correlated_feature_sets_:
                 f = X[feature_group].std().sort_values(ascending=False).index[0]
-                print(X[feature_group].std().sort_values(ascending=False))
                 _selected_features.append(f)
 
         # select best performing feature according to estimator

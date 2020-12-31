@@ -8,7 +8,9 @@
 ![Documentation Status](https://readthedocs.org/projects/feature-engine/badge/?version=latest)
 
 
-Feature-engine is a Python library with multiple transformers to engineer features for use in machine learning models. Feature-engine's transformers follow scikit-learn's functionality with fit() and transform() methods to first learn the transforming parameters from data and then transform the data.
+Feature-engine is a Python library with multiple transformers to engineer features for use in machine learning models. 
+Feature-engine's transformers follow scikit-learn's functionality with fit() and transform() methods to first learn the 
+transforming parameters from data and then transform the data.
 
 
 ## Feature-engine features in the following resources:
@@ -38,33 +40,32 @@ More resources will be added as they appear online!
 
 
 ## Current Feature-engine's transformers include functionality for:
-
 * Missing Data Imputation
 * Categorical Variable Encoding
 * Outlier Capping or Removal
 * Discretisation
 * Numerical Variable Transformation
 * Scikit-learn Wrappers
-* Variables Combination
+* Variable Combination
 * Variable Selection
 
 ### Imputing Methods
-
 * MeanMedianImputer
 * RandomSampleImputer
 * EndTailImputer
 * AddNaNBinaryImputer
-* CategoricalVariableImputer
-* FrequentCategoryImputer
+* CategoricalImputer
 * ArbitraryNumberImputer
 
 ### Encoding Methods
-* CountFrequencyCategoricalEncoder
-* OrdinalCategoricalEncoder 
-* MeanCategoricalEncoder
-* WoERatioCategoricalEncoder
-* OneHotCategoricalEncoder
-* RareLabelCategoricalEncoder
+* OneHotEncoder
+* OrdinalEncoder
+* CountFrequencyEncoder
+* MeanEncoder
+* WoEEncoder
+* PRatioEncoder
+* RareLabelEncoder
+* DecisionTreeEncoder
 
 ### Outlier Handling methods
 * Winsorizer
@@ -85,23 +86,22 @@ More resources will be added as they appear online!
 * YeoJohnsonTransformer
 
 ### Scikit-learn Wrapper:
-
  * SklearnTransformerWrapper
 
 ### Variable Combinations:
-
- * MathematicalCombinator
+ * MathematicalCombination
 
 ### Feature Selection:
-
  * DropFeatures
  * DropConstantFeatures
  * DropDuplicateFeatures
  * DropCorrelatedFeatures
+ * SmartCorrelationSelection
  * ShuffleFeaturesSelector
  * SelectBySingleFeaturePerformance
  * SelectByTargetMeanPerformance
  * RecursiveFeatureElimination
+ * RecursiveFeatureAddition
 
 
 ## Installing
@@ -127,8 +127,8 @@ git clone https://github.com/solegalli/feature_engine.git
 ### Usage
 
 ```python
->>> from feature_engine.encoding import RareLabelEncoder
 >>> import pandas as pd
+>>> from feature_engine.encoding import RareLabelEncoder
 
 >>> data = {'var_A': ['A'] * 10 + ['B'] * 10 + ['C'] * 2 + ['D'] * 1}
 >>> data = pd.DataFrame(data)

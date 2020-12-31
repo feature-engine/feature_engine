@@ -167,9 +167,13 @@ def test_transformer_ignores_na_in_df(df_na):
     )
 
     # test fit params
+    transformer.right_tail_caps_ = {
+        key: round(value, 3) for (key, value) in transformer.right_tail_caps_.items()
+    }
+
     assert transformer.right_tail_caps_ == {
-        "Age": 38.79255087111844,
-        "Marks": 0.8970309389976613,
+        "Age": 38.793,
+        "Marks": 0.897,
     }
     assert transformer.left_tail_caps_ == {}
     assert transformer.input_shape_ == (8, 6)

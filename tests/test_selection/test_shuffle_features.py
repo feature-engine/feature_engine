@@ -11,7 +11,9 @@ from feature_engine.selection import SelectByShuffling
 
 def test_default_parameters(df_test):
     X, y = df_test
-    sel = SelectByShuffling(RandomForestClassifier(random_state=1), random_state=1)
+    sel = SelectByShuffling(
+        RandomForestClassifier(random_state=1), threshold=0.01, random_state=1
+    )
     sel.fit(X, y)
 
     # expected result
@@ -58,7 +60,7 @@ def test_regression_cv_3_and_r2(load_diabetes_dataset):
     #  test for regression using cv=3, and the r2 as metric.
     X, y = load_diabetes_dataset
     sel = SelectByShuffling(
-        estimator=LinearRegression(), scoring="r2", cv=3, random_state=1
+        estimator=LinearRegression(), scoring="r2", cv=3, threshold=0.01, random_state=1
     )
     sel.fit(X, y)
 
@@ -121,7 +123,7 @@ def test_raises_cv_error():
 
 def test_raises_threshold_error():
     with pytest.raises(ValueError):
-        SelectByShuffling(threshold=None)
+        SelectByShuffling(threshold="hello")
 
 
 def test_automatic_variable_selection(df_test):
@@ -131,7 +133,9 @@ def test_automatic_variable_selection(df_test):
     X["cat_1"] = "cat1"
     X["cat_2"] = "cat2"
 
-    sel = SelectByShuffling(RandomForestClassifier(random_state=1), random_state=1)
+    sel = SelectByShuffling(
+        RandomForestClassifier(random_state=1), threshold=0.01, random_state=1
+    )
     sel.fit(X, y)
 
     # expected result

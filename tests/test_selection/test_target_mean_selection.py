@@ -147,7 +147,7 @@ def test_df_cat_and_num_variables_r2(df_test_num_cat):
     sel = SelectByTargetMeanPerformance(
         variables=None,
         scoring="r2_score",
-        threshold=0,
+        threshold=0.1,
         bins=3,
         strategy="equal_frequency",
         cv=2,
@@ -168,7 +168,7 @@ def test_df_cat_and_num_variables_r2(df_test_num_cat):
     # test init params
     assert sel.variables == list(X.columns)
     assert sel.scoring == "r2_score"
-    assert sel.threshold == 0
+    assert sel.threshold == 0.1
     assert sel.cv == 2
     assert sel.bins == 3
     assert sel.strategy == "equal_frequency"
