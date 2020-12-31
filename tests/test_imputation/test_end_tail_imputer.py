@@ -24,9 +24,12 @@ def test_automatically_find_variables_and_gaussian_imputation_on_right_tail(df_n
     assert imputer.variables == ["Age", "Marks"]
     # test fit attr
     assert imputer.input_shape_ == (8, 6)
+    imputer.imputer_dict_ = {
+        key: round(value, 3) for (key, value) in imputer.imputer_dict_.items()
+    }
     assert imputer.imputer_dict_ == {
-        "Age": 58.94908118478389,
-        "Marks": 1.3244261503263175,
+        "Age": 58.949,
+        "Marks": 1.324,
     }
     # transform output: indicated vars ==> no NA, not indicated vars with NA
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() == 0
@@ -63,9 +66,12 @@ def test_user_enters_variables_and_max_value_imputation(df_na):
 def test_automatically_select_variables_and_gaussian_imputation_on_left_tail(df_na):
     imputer = EndTailImputer(imputation_method="gaussian", tail="left", fold=3)
     imputer.fit(df_na)
+    imputer.imputer_dict_ = {
+        key: round(value, 3) for (key, value) in imputer.imputer_dict_.items()
+    }
     assert imputer.imputer_dict_ == {
-        "Age": -1.520509756212462,
-        "Marks": 0.04224051634034898,
+        "Age": -1.521,
+        "Marks": 0.042,
     }
 
 
