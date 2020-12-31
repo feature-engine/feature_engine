@@ -9,6 +9,7 @@ Contributors
     - Christopher Samiullah
     - Nicolas Galli
     - Nodar Okroshiashvili
+    - Pradumna Suryawanshi
     - Sana Ben Driss
     - Tejash Shah
     - Tung Lee
@@ -74,8 +75,9 @@ We renamed a few parameters to unify the nomenclature across the Package.
 Tutorials
 ---------
 
-    - **Discretisers**: new and updated "how to" examples of discretisation (**by Ashok Kumar**)
+    - **Imputation**: updated "how to" examples of missing data imputation (**by Pradumna Suryawanshi**)
     - **Encoders**: new and updated "how to" examples of categorical encoding (**by Ashok Kumar**)
+    - **Discretisation**: new and updated "how to" examples of discretisation (**by Ashok Kumar**)
 
 
 For Contributors and Developers
