@@ -4,8 +4,8 @@ MeanMedianImputer
 API Reference
 -------------
 
-.. automodule:: feature_engine.imputation.mean_median
-    :members: MeanMedianImputer
+.. autoclass:: feature_engine.imputation.MeanMedianImputer
+    :members:
 
 Example
 -------
