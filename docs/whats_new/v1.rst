@@ -78,6 +78,7 @@ Tutorials
     - **Imputation**: updated "how to" examples of missing data imputation (**by Pradumna Suryawanshi**)
     - **Encoders**: new and updated "how to" examples of categorical encoding (**by Ashok Kumar**)
     - **Discretisation**: new and updated "how to" examples of discretisation (**by Ashok Kumar**)
+    - **Variable transformation**: updated "how to" examples on how to apply mathematical transformations to variables (**by Pradumna Suryawanshi**)
 
 
 For Contributors and Developers

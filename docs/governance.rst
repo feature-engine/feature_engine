@@ -15,7 +15,7 @@ Contributors
 Contributors are community members who contribute in various ways to the project.
 Anyone can become a contributor, and contributions can be of various forms, not just
 code. To see how you can help check the
-`Contributing page <https://feature-engine.readthedocs.io/en/latest/contributing/index.html>`_.
+`Contribute page <https://feature-engine.readthedocs.io/en/latest/contribute/index.html>`_.
 
 
 Core Contributors
