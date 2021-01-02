@@ -8,6 +8,7 @@ from .categorical import CategoricalImputer
 from .end_tail import EndTailImputer
 from .missing_indicator import AddMissingIndicator
 from .random_sample import RandomSampleImputer
+from .na_transformer import Na_transformer
 
 __all__ = [
     "MeanMedianImputer",
@@ -16,4 +17,5 @@ __all__ = [
     "EndTailImputer",
     "AddMissingIndicator",
     "RandomSampleImputer",
+    "Na_transformer",
 ]
