@@ -1,7 +1,6 @@
 from typing import List, Union
 import warnings
 
-import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_validate
@@ -46,8 +45,8 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     threshold : float, int, default = None
         The value that defines if a feature will be kept or removed.
 
-        For r2, the transformer will consider absolute values to select features. So,
-        for a threshold of 0.5, features with r2 > 0.5 or r2 < -0.5 will be selected.
+        The r2varies between 0 and 1. So a threshold needs to be set-up within
+        these boundaries.
 
         The roc-auc varies between 0.5 and 1. So a threshold needs to be set-up within
         these boundaries.
@@ -158,18 +157,10 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         else:
             threshold = self.threshold
 
-        if self.scoring == "r2":
-            # take the absolute value
-            self.features_to_drop_ = [
-                f
-                for f in self.feature_performance_.keys()
-                if np.abs(self.feature_performance_[f]) < threshold
-            ]
-        else:
-            self.features_to_drop_ = [
-                f
-                for f in self.feature_performance_.keys()
-                if self.feature_performance_[f] < threshold
+        self.features_to_drop_ = [
+            f
+            for f in self.feature_performance_.keys()
+            if self.feature_performance_[f] < threshold
             ]
 
         # check we are not dropping all the columns in the df
