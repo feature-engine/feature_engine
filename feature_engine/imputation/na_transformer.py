@@ -32,8 +32,13 @@ class Na_transformer(BaseImputer):
 
 
     
-    def return_na(self):
-        return self.dropped_data_
+    def return_dropped_data(self,X: pd.DataFrame) -> pd.DataFrame:
+
+        X = self._check_transform_input_and_state(X)
+
+        idx=pd.isnull(X[self.variables_]).any(1)
+        idx=idx[idx==True]
+        return X.loc[idx.index, :]
 
 
 
@@ -66,11 +71,6 @@ class Na_transformer(BaseImputer):
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
 
         X = self._check_transform_input_and_state(X)
-
-
-        ser=pd.isnull(X[self.variables_]).any(1)
-        new=ser[ser==True]
-        self.dropped_data_=X[X.index.isin(new.index)].copy()
 
         X.dropna(axis=0,how='any',subset=self.variables, inplace=True)
 
