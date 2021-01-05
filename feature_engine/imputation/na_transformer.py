@@ -31,6 +31,12 @@ class Na_transformer(BaseImputer):
         self.missing_only = missing_only
 
 
+    
+    def return_na(self):
+        return self.dropped_data_
+
+
+
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         # check input dataframe
         X = _is_dataframe(X)
@@ -62,7 +68,10 @@ class Na_transformer(BaseImputer):
         X = self._check_transform_input_and_state(X)
 
 
-        X = X.copy()
+        ser=pd.isnull(X[self.variables_]).any(1)
+        new=ser[ser==True]
+        self.dropped_data_=X[X.index.isin(new.index)].copy()
+
         X.dropna(axis=0,how='any',subset=self.variables, inplace=True)
 
         return X
