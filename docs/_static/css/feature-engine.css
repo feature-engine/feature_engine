@@ -12,3 +12,9 @@
 .wy-table-responsive {
     overflow: visible !important;
 }
+
+.classifier:before {
+    font-style: normal;
+    margin: 0.5em;
+    content: ":";
+}
