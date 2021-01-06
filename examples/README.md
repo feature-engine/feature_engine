@@ -18,7 +18,7 @@ Directions 1 and 2 assume you are on windows. If using mac, directions are sligh
 
 3) install the required libraries:
 
-`pip install requirements.txt`
+`pip install -r example_requirements.txt`
 
 4) add the new environment to the ipykernel:
 
