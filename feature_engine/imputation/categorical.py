@@ -15,23 +15,32 @@ from feature_engine.variable_manipulation import (
 
 class CategoricalImputer(BaseImputer):
     """
-    The CategoricalVariableImputer() replaces missing data in categorical variables
-    by the string 'Missing' or by the most frequent category.
+    The CategoricalImputer() replaces missing data in categorical variables
+    by a string like 'Missing' or any other entered by the user. Alternatively, it
+    replaces missing data by the most frequent category.
 
     The CategoricalVariableImputer() works only with categorical variables.
 
     The user can pass a list with the variables to be imputed. Alternatively,
-    the CategoricalVariableImputer() will automatically find and select all
-    variables of type object.
+    the CategoricalImputer() will automatically find and select all variables of type
+    object.
+
+    **Note**
+
+    If you want to impute numerical variables with this transformer, you first need to
+    cast them as object. It may well be that after the imputation, they are re-casted
+    by pandas as numeric. Thus, if planning to do categorical encoding with
+    feature-engine to this variables after the imputation, make sure to return the
+    variables as object by setting `return_object=True`.
+
 
     Parameters
     ----------
-
     imputation_method : str, default=missing
         Desired method of imputation. Can be 'frequent' or 'missing'.
 
     fill_value : str, default='Missing'
-        Only used when imputation_method='missing'. Can be used to set a
+        Only used when `imputation_method='missing'`. Can be used to set a
         user-defined value to replace the missing data.
 
     variables : list, default=None
@@ -44,8 +53,19 @@ class CategoricalImputer(BaseImputer):
         Note that pandas will re-cast them automatically as numeric after the
         transformation with the mode.
 
-        Tip: return the variables as object if planning to do categorical encoding
-        with feature-engine.
+    Attributes
+    ----------
+    imputer_dict_:
+        Dictionary with most frequent category or string per variable.
+
+    Methods
+    -------
+    fit:
+        Learn more frequent category, or assign string to variable.
+    transform:
+        Impute missing data.
+    fit_transform:
+        Fit to the data, than transform it.
     """
 
     def __init__(
@@ -71,26 +91,29 @@ class CategoricalImputer(BaseImputer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the most frequent category if the imputation method is set to frequent.
+        Learn the most frequent category if the imputation method is set to frequent.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the selected variables.
+            The training dataset.
 
-        y : None
+        y : pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError
+            - If the input is not a Pandas DataFrame.
+            - If any user provided variable is not categorical
+        ValueError
+            If there are no categorical variables in the df or the df is empty
 
-        imputer_dict_: dictionary
-            The dictionary mapping each variable to the most frequent category, or to
-            the value 'Missing' depending on the imputation_method. The most frequent
-            category is calculated when fitting the transformer.
+        Returns
+        -------
+        self
         """
+
         # check input dataframe
         X = _is_dataframe(X)
 

@@ -1,6 +1,16 @@
 SelectBySingleFeaturePerformance
 ================================
 
+API Reference
+-------------
+
+.. autoclass:: feature_engine.selection.SelectBySingleFeaturePerformance
+    :members:
+
+
+Example
+-------
+
 The SelectBySingleFeaturePerformance()selects features based on the performance of
 machine learning models trained using individual features. In other words, selects
 features based on their individual performance, returned by estimators trained on
@@ -49,8 +59,3 @@ only that particular feature.
     9: 0.13876602125792703}
 
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.selection.SelectBySingleFeaturePerformance
-    :members:

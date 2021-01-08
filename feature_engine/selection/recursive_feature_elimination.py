@@ -1,45 +1,40 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_validate
-from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_input_matches_training_df,
-)
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.selection.base_selector import get_feature_importances
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
+class RecursiveFeatureElimination(BaseSelector):
     """
-
     RecursiveFeatureElimination selects features following a recursive process.
 
-    The process is as follow:
+    The process is as follows:
 
     1. Train an estimator using all the features.
 
-    2. Rank the features according to their importance derived from the estimator.
+    2. Rank the features according to their importance, derived from the estimator.
 
-    3. Remove one feature -the least important- and fit a new estimator utilising the
+    3. Remove one feature -the least important- and fit a new estimator with the
     remaining features.
 
-    4. Calculate the performance of the estimator.
+    4. Calculate the performance of the new estimator.
 
     5. Calculate the difference in performance between the new and the original
     estimator.
 
-    6. If the performance drops beyond the indicated threshold, then that feature is
-    important and will be kept. Otherwise, that feature is removed.
+    6. If the performance drops beyond the threshold, then that feature is important
+    and will be kept. Otherwise, that feature is removed.
 
     7. Repeat steps 3-6 until all features have been evaluated.
 
@@ -47,27 +42,26 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-
     variables : str or list, default=None
         The list of variable to be evaluated. If None, the transformer will evaluate
         all numerical features in the dataset.
 
-    estimator: object, default = RandomForestClassifier()
+    estimator : object, default = RandomForestClassifier()
         A Scikit-learn estimator for regression or classification.
-        The estimator must have either a feature_importances or coef attribute
+        The estimator must have either a `feature_importances` or `coef_` attribute
         after fitting.
 
-    scoring: str, default='roc_auc'
+    scoring : str, default='roc_auc'
         Desired metric to optimise the performance of the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold: float, int, default = 0.01
+    threshold : float, int, default = 0.01
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
         root_mean_square_error the threshold will be a big number.
-        The threshold must be defined by the user. Bigger thresholds will retain less
+        The threshold must be defined by the user. Bigger thresholds will select less
         features.
 
     cv : int, default=3
@@ -75,29 +69,26 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
+    initial_model_performance_ :
+        Performance of the model trained using the original dataset.
 
-    initial_model_performance_: float
-        performance of the model built using the original dataset with all the features.
+    feature_importances_ :
+        Pandas Series with the feature importance
 
-    feature_importances_: pandas series
-        A pandas Series containing the feature names in the axis, and the performance
-        derived from the model trained on the entire dataset, as values. The Series is
-        ordered from least important to most important feature.
+    performance_drifts_:
+        Dictionary with the performance drift per examined feature.
 
-    performance_drifts_: dict
-        A dictionary containing the feature, and the change in performance incurred
-        when training a model without that feature.
-
+    features_to_drop_:
+        List with the features to remove from the dataset.
 
     Methods
     -------
-
-    fit: finds important features
-
-    transform: removes non-important / non-selected features
-
-    fit_transform: finds and removes non-important features
-
+    fit:
+        Find the important features.
+    transform:
+         Reduce X to the selected features.
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(
@@ -123,20 +114,19 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
+        Find the important features. Note that the selector trains various models at
+        each round of selection, so it might take a while.
 
-        Args
-        ----
-
-        X: pandas dataframe of shape = [n_samples, n_features]
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
-
-        y: array-like of shape (n_samples)
+        y : array-like of shape (n_samples)
            Target variable. Required to train the estimator.
 
 
         Returns
         -------
-
         self
         """
 
@@ -180,8 +170,8 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
         # Sort the feature importance values
         self.feature_importances_.sort_values(ascending=True, inplace=True)
 
-        # list to collect selected features
-        self.selected_features_ = []
+        # to collect selected features
+        _selected_features = []
 
         # temporary copy where we will remove features recursively
         X_tmp = X[self.variables].copy()
@@ -217,7 +207,7 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
 
             if performance_drift > self.threshold:
 
-                self.selected_features_.append(feature)
+                _selected_features.append(feature)
 
             else:
                 # remove feature and adjust initial performance
@@ -235,37 +225,18 @@ class RecursiveFeatureElimination(BaseEstimator, TransformerMixin):
                 # store initial model performance
                 baseline_model_performance = baseline_model["test_score"].mean()
 
+        self.features_to_drop_ = [
+            f for f in self.variables if f not in _selected_features
+        ]
+
         self.input_shape_ = X.shape
 
         return self
 
-    def transform(self, X: pd.DataFrame):
-        """
-        Removes non-selected features. That is, features which did not cause a big
-        estimator performance drop when removed from the dataset.
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
 
-        Args
-        ----
+        return X
 
-        X: pandas dataframe of shape = [n_samples, n_features].
-            The input dataframe from which features will be selected.
-
-        Returns
-        -------
-
-        X_transformed: pandas dataframe
-            of shape = [n_samples, n_selected_features]
-            Pandas dataframe with the selected features.
-        """
-
-        # check if fit is performed prior to transform
-        check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = _is_dataframe(X)
-
-        # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.input_shape_[1])
-
-        # return the dataframe with the selected features
-        return X[self.selected_features_]
+    transform.__doc__ = BaseSelector.transform.__doc__

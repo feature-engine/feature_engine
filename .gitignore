@@ -109,6 +109,6 @@ venv.bak/
 .idea
 .vscode
 *.csv
-
 *.DS_Store
-untitled9.py
+*.db
+*.pptx

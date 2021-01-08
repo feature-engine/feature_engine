@@ -1,8 +1,14 @@
 ArbitraryOutlierCapper
 ======================
 
-The ArbitraryOutlierCapper censors variable values at user pre-defined maximum and
-minimum values. For more details, read the API Reference below.
+API Reference
+-------------
+
+.. autoclass:: feature_engine.outliers.ArbitraryOutlierCapper
+    :members:
+
+Example
+-------
 
 .. code:: python
 
@@ -63,8 +69,4 @@ minimum values. For more details, read the API Reference below.
 
 
 
-API Reference
--------------
 
-.. autoclass:: feature_engine.outliers.ArbitraryOutlierCapper
-    :members:

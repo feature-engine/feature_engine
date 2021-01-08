@@ -15,24 +15,22 @@ class OrdinalEncoder(BaseCategoricalTransformer):
     (0, 1, 2, 3, etc). The numbers can be ordered based on the mean of the target
     per category, or assigned arbitrarily.
 
-    Ordered ordinal encoding:  for the variable colour, if the mean of the target
+    **Ordered ordinal encoding**: for the variable colour, if the mean of the target
     for blue, red and grey is 0.5, 0.8 and 0.1 respectively, blue is replaced by 1,
     red by 2 and grey by 0.
 
-    Arbitrary ordinal encoding: the numbers will be assigned arbitrarily to the
+    **Arbitrary ordinal encoding**: the numbers will be assigned arbitrarily to the
     categories, on a first seen first served basis.
 
     The encoder will encode only categorical variables (type 'object'). A list
     of variables can be passed as an argument. If no variables are passed, the
     encoder will find and encode all categorical variables (type 'object').
 
-    The encoder first maps the categories to the numbers for each variable (fit).
-
-    The encoder then transforms the categories to the mapped numbers (transform).
+    The encoder first maps the categories to the numbers for each variable (fit). The
+    encoder then transforms the categories to the mapped numbers (transform).
 
     Parameters
     ----------
-
     encoding_method : str, default='ordered'
         Desired method of encoding.
 
@@ -47,10 +45,37 @@ class OrdinalEncoder(BaseCategoricalTransformer):
 
     Attributes
     ----------
+    encoder_dict_ :
+        Dictionary with the ordinal number per category, per variable.
 
-    encoder_dict_: dictionary
-        The dictionary containing the {category: ordinal number} pairs for
-        every variable.
+    Methods
+    -------
+    fit:
+        Find the integer to replace each category in each variable.
+    transform:
+        Encode the categories to numbers.
+    fit_transform:
+        Fit to the data, then transform it.
+    inverse_transform:
+        Encode the numbers into the original categories.
+
+    Notes
+    -----
+    NAN are introduced when encoding categories that were not present in the training
+    dataset. If this happens, try grouping infrequent categories using the
+    RareLabelEncoder().
+
+    See Also
+    --------
+    feature_engine.encoding.RareLabelEncoder
+
+    References
+    ----------
+    Encoding into integers ordered following target mean was discussed in the following
+    talk at PyData London 2017:
+
+    .. [1] Galli S. "Machine Learning in Financial Risk Assessment".
+        https://www.youtube.com/watch?v=KHGGlozsRtA
     """
 
     def __init__(
@@ -68,21 +93,31 @@ class OrdinalEncoder(BaseCategoricalTransformer):
         self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
-        """Learns the numbers to be used to replace the categories in each
+        """Learn the numbers to be used to replace the categories in each
         variable.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the variables to be
-            encoded.
+            The training input samples. Can be the entire dataframe, not just the
+            variables to be encoded.
 
         y : pandas series, default=None
             The Target. Can be None if encoding_method = 'arbitrary'.
             Otherwise, y needs to be passed when fitting the transformer.
 
+        Raises
+        ------
+        TypeError
+            - If the input is not a Pandas DataFrame.
+            - If any user provided variable is not categorical
+        ValueError
+            - If there are no categorical variables in the df or the df is empty
+            - If the variable(s) contain null values
+
+        Returns
+        -------
+        self
         """
 
         X = self._check_fit_input_and_variables(X)

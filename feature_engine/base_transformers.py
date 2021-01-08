@@ -1,6 +1,9 @@
-# Transformation methods are shared by most transformer groups.
-# Each transformer can inherit the transform method from these base classes.
+""" The base transformer provides functionality that is shared by most transformer
+classes. This base transformer provides the base functionality within the fit() and
+transform() methods shared by most transformers, like checking that input is a df,
+the size, NA, etc.
 
+"""
 from typing import List, Optional, Union
 
 import pandas as pd
@@ -16,23 +19,35 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 
 
 class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
-    # shared set-up procedures across numerical transformers, i.e.,
-    # variable transformers, discretisers, math combination
+    """shared set-up procedures across numerical transformers, i.e.,
+    variable transformers, discretisers, math combination.
+    """
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.DataFrame:
         """
-        Fits the transformation to the DataFrame.
+        Checks that input is a dataframe, finds numerical variables, or alternatively
+        checks that variables entered by the user are of type numerical.
 
-        Args:
-            X: Pandas DataFrame to fit the transformation
+        Parameters
+        ----------
+        X : Pandas DataFrame
 
-            y: This parameter exists only for compatibility with
-            sklearn.pipeline.Pipeline.
-            Defaults to None. Alternatively takes Pandas Series.
+        y : Pandas Series, np.array. Default = None
+            Parameter is necessary for compatibility with sklearn.pipeline.Pipeline.
 
-        Returns:
-            DataFrame with fitted transformation
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+            If any of the user provided variables are not numerical
+        ValueError
+            If there are no numerical variables in the df or the df is empty
+            If the variable(s) contain null values
 
+        Returns
+        -------
+        X : Pandas DataFrame
+            The same dataframe entered as parameter
         """
 
         # check input dataframe
@@ -50,13 +65,25 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Applies transformation to the DataFrame.
+        Checks that the input is a dataframe and of the same size than the one used
+        in the fit method. Checks absence of NA.
 
-        Args:
-            X: Pandas DataFrame to apply the transformation
+        Parameters
+        ----------
+        X : Pandas DataFrame
 
-        Returns:
-            Transformed DataFrame
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            If the variable(s) contain null values
+            If the dataframe not of the same size as that used in fit()
+
+        Returns
+        -------
+        X : Pandas DataFrame.
+            The same dataframe entered by the user.
         """
 
         # Check method fit has been called

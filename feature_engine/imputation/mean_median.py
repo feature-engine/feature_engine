@@ -15,29 +15,41 @@ from feature_engine.variable_manipulation import (
 
 class MeanMedianImputer(BaseImputer):
     """
-    The MeanMedianImputer() transforms features by replacing missing data by the mean
-    or median value of the variable.
+    The MeanMedianImputer() replaces missing data by the mean or median value of the
+    variable. It works only with numerical variables.
 
-    The MeanMedianImputer() works only with numerical variables.
+    We can pass a list of variables to be imputed. Alternatively, the
+    MeanMedianImputer() will automatically select all variables of type numeric in the
+    training set.
 
-    Users can pass a list of variables to be imputed as argument. Alternatively, the
-    MeanMedianImputer() will automatically find and select all variables of type
-    numeric.
+    The imputer:
 
-    The imputer first calculates the mean / median values of the variables (fit).
+    - first calculates the mean / median values of the variables (fit).
+    - Then replaces the missing data with the estimated mean / median (transform).
 
-    The imputer then replaces the missing data with the estimated mean / median
-    (transform).
 
     Parameters
     ----------
-
     imputation_method : str, default=median
         Desired method of imputation. Can take 'mean' or 'median'.
 
     variables : list, default=None
         The list of variables to be imputed. If None, the imputer will select
         all variables of type numeric.
+
+    Attributes
+    ----------
+    imputer_dict_ :
+        Dictionary with the mean or median values per variable.
+
+    Methods
+    -------
+    fit:
+        Learn the mean or median values.
+    transform:
+        Impute missing data.
+    fit_transform:
+        Fit to the data, then transform it.
     """
 
     def __init__(
@@ -54,25 +66,29 @@ class MeanMedianImputer(BaseImputer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the mean or median values.
+        Learn the mean or median values.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can pass the entire dataframe, not just the variables that need imputation.
+            The training dataset.
 
         y : pandas series or None, default=None
             y is not needed in this imputation. You can pass None or y.
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError
+            - If the input is not a Pandas DataFrame
+            - If any of the user provided variables are not numerical
+        ValueError
+            If there are no numerical variables in the df or the df is empty
 
-        imputer_dict_ : dictionary
-            The dictionary containing the mean / median values per variable. These
-            values will be used by the imputer to replace missing data.
+        Returns
+        -------
+        self
         """
+
         # check input dataframe
         X = _is_dataframe(X)
 

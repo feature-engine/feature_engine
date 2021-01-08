@@ -1,0 +1,107 @@
+Version 1.0.0
+=============
+
+Deployed: TBD
+
+Contributors
+------------
+    - Ashok Kumar
+    - Christopher Samiullah
+    - Nicolas Galli
+    - Nodar Okroshiashvili
+    - Pradumna Suryawanshi
+    - Sana Ben Driss
+    - Tejash Shah
+    - Tung Lee
+    - Soledad Galli
+
+
+In this version, we made a major overhaul of the package, with code quality improvement
+throughout the code base, unification of attributes and methods, addition of new
+transformers and extended documentation. Read below for more details.
+
+New transformers for Feature Selection
+--------------------------------------
+
+We included a whole new module with multiple transformers to select features.
+
+    - **DropConstantFeatures**: removes constant and quasi-constant features from a dataframe (**by Tejash Shah**)
+    - **DropDuplicateFeatures**: removes duplicated features from a dataset (**by Tejash Shah and Soledad Galli**)
+    - **DropCorrelatedFeatures**: removes features that are correlated (**by Nicolas Galli**)
+    - **SmartCorrelationSelection**: selects feature from group of correlated features based on certain criteria (**by Soledad Galli**)
+    - **ShuffleFeaturesSelector**: selects features by drop in machine learning model performance after feature's values are randomly shuffled (**by Sana Ben Driss**)
+    - **SelectBySingleFeaturePerformance**: selects features based on a ML model performance trained on individual features (**by Nicolas Galli**)
+    - **SelectByTargetMeanPerformance**: selects features encoding the categories or intervals with the target mean and using that as proxy for performance (**by Tung Lee and Soledad Galli**)
+    - **RecursiveFeatureElimination**: selects features recursively, evaluating the drop in ML performance, from the least to the most important feature (**by Sana Ben Driss**)
+    - **RecursiveFeatureAddition**: selects features recursively, evaluating the increase in ML performance, from the most to the least important feature (**by Sana Ben Driss**)
+
+
+Renaming of Modules
+-------------------
+
+Feature-engine transformers have been sorted into submodules to smooth the development
+of the package and shorten import syntax for users.
+
+    - **Module imputation**: missing data imputers are now imported from ``feature_engine.imputation`` instead of ``feature_engine.missing_data_imputation``.
+    - **Module encoding**: categorical variable encoders are now imported from ``feature_engine.encoding`` instead of ``feature_engine_categorical_encoders``.
+    - **Module discretisation**: discretisation transformers are now imported from ``feature_engine.discretisation`` instead of ``feature_engine.discretisers``.
+    - **Module transformation**: transformers are now imported from ``feature_engine.transformation`` instead of ``feature_engine.variable_transformers``.
+    - **Module outliers**: transformers to remove or censor outliers are now imported from ``feature_engine.outliers`` instead of ``feature_engine.outlier_removers``.
+    - **Module selection**: new module hosts transformers to select or remove variables from a dataset.
+    - **Module creation**: new module hosts transformers that combine variables into new features using mathematical or other operations.
+
+Renaming of Classes
+-------------------
+
+We shortened the name of categorical encoders, and also renamed other classes to
+simplify import syntax.
+
+    - **Encoders**: the word ``Categorical`` was removed from the classes name. Now, instead of ``MeanCategoricalEncoder``, the class is called ``MeanEncoder``. Instead of ``RareLabelCategoricalEncoder`` it is ``RareLabelEncoder`` and so on. Please check the encoders documentation for more details.
+    - **Imputers**: the ``CategoricalVariableImputer`` is now called ``CategoricalImputer``.
+    - **Discretisers**: the ``UserInputDiscretiser`` is now called ``ArbitraryDiscretiser``.
+    - **Creation**: the ``MathematicalCombinator`` is not called ``MathematicalCombination``.
+    - **WoEEncoder and PRatioEncoder**: the ``WoEEncoder`` now applies only encoding with the weight of evidence. To apply encoding by probability ratios, use a different transformer: the ``PRatioEncoder`` (**by Nicolas Galli**).
+
+Renaming of Parameters
+----------------------
+
+We renamed a few parameters to unify the nomenclature across the Package.
+
+    - **EndTailImputer**: the parameter ``distribution`` is now called ``imputation_method`` to unify convention among imputers. To impute using the IQR, we now need to pass ``imputation_method="iqr"`` instead of ``imputation_method="skewed"``.
+    - **AddMissingIndicator**: the parameter ``missing_only`` now takes the boolean values ``True`` or ``False``.
+    - **Winzoriser and OutlierTrimmer**: the parameter ``distribution`` is now called ``capping_method`` to unify names across Feature-engine transformers.
+
+
+Tutorials
+---------
+
+    - **Imputation**: updated "how to" examples of missing data imputation (**by Pradumna Suryawanshi**)
+    - **Encoders**: new and updated "how to" examples of categorical encoding (**by Ashok Kumar**)
+    - **Discretisation**: new and updated "how to" examples of discretisation (**by Ashok Kumar**)
+    - **Variable transformation**: updated "how to" examples on how to apply mathematical transformations to variables (**by Pradumna Suryawanshi**)
+
+
+For Contributors and Developers
+-------------------------------
+
+Code Architecture
+~~~~~~~~~~~~~~~~~
+
+    - **Submodules**: transformers have been grouped within relevant submodules and modules.
+    - **Individual tests**: testing classes have been subdivided into individual tests
+    - **Code Style**: we adopted the use of flake8 for linting and PEP8 style checks, and black for automatic re-styling of code.
+    - **Type hint**: we rolled out the use of type hint throughout classes and functions (**by Nodar Okroshiashvili, Soledad Galli and Chris Samiullah**)
+
+Documentation
+~~~~~~~~~~~~~
+
+    - Switched fully to numpydoc and away from Napoleon
+    - Included more detail about methods, parameters, returns and raises, as per numpydoc docstring style (**by Nodar Okroshiashvili, Soledad Galli**)
+    - Linked documentation to github repository
+    - Improved layout
+
+Other Changes
+-------------
+
+    - **Updated documentation**: documentation reflects the current use of Feature-engine transformers
+    - **Typo fixes**: Thank you to all who contributed to typo fixes (Tim Vink, Github user @piecot)

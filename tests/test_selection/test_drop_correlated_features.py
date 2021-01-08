@@ -68,10 +68,7 @@ def test_default_params(df_correlated_single):
     ]
 
     # test fit attrs
-    pd.testing.assert_frame_equal(
-        transformer.correlated_matrix_, df_correlated_single.corr()
-    )
-    assert transformer.correlated_features_ == {"var_2"}
+    assert transformer.features_to_drop_ == {"var_2"}
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
     # test transform output
     pd.testing.assert_frame_equal(X, df)
@@ -99,10 +96,7 @@ def test_lower_threshold(df_correlated_single):
     ]
 
     # test fit attrs
-    pd.testing.assert_frame_equal(
-        transformer.correlated_matrix_, df_correlated_single.corr()
-    )
-    assert transformer.correlated_features_ == {"var_2", "var_4"}
+    assert transformer.features_to_drop_ == {"var_2", "var_4"}
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2", "var_4"}]
     # test transform output
     pd.testing.assert_frame_equal(X, df)
@@ -118,10 +112,7 @@ def test_more_than_1_correlated_group(df_correlated_double):
     df = df_correlated_double.drop(["var_6", "var_7", "var_8", "var_9"], axis=1)
 
     # test fit attrs
-    pd.testing.assert_frame_equal(
-        transformer.correlated_matrix_, df_correlated_double.corr()
-    )
-    assert transformer.correlated_features_ == {"var_6", "var_7", "var_8", "var_9"}
+    assert transformer.features_to_drop_ == {"var_6", "var_7", "var_8", "var_9"}
     assert transformer.correlated_feature_sets_ == [
         {"var_0", "var_8"},
         {"var_4", "var_6", "var_7", "var_9"},

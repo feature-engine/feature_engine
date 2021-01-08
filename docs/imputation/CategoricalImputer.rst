@@ -1,5 +1,15 @@
 CategoricalImputer
 ==================
+
+API Reference
+-------------
+
+.. autoclass:: feature_engine.imputation.CategoricalImputer
+    :members:
+
+Example
+-------
+
 The CategoricalImputer() replaces missing data in categorical variables with the string
 'Missing' or by the most frequent category.
 
@@ -36,8 +46,4 @@ imputer will automatically select all categorical variables in the train set.
 
 .. image:: ../images/missingcategoryimputer.png
 
-API Reference
--------------
 
-.. autoclass:: feature_engine.imputation.CategoricalImputer
-    :members:

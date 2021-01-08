@@ -3,18 +3,24 @@ from typing import Optional
 
 def _define_numerical_dict(dict_: Optional[dict]) -> Optional[dict]:
     """
-    Takes a dictionary and checks if all values in dictionary are integers and floats.
-    Can take None as argument.
+    Checks if all values in dictionary are integers and floats. Can take None as
+    argument.
 
-    Args:
-        the_dict: Dict to perform check against
+    Parameters
+    ----------
+    the_dict : dict
+        The dictionary that will be checked
 
-    Raises:
-        ValueError: If all values of dict are not int or float
-        TypeError: When argument type is not dict
+    Raises
+    ------
+    ValueError
+        If any of the values in the dictionary are not int or float
+    TypeError
+        When argument type is not a dictionary.
 
-    Returns:
-        None or the dict
+    Returns
+    -------
+    None or the input dictionary
     """
 
     if not dict_:

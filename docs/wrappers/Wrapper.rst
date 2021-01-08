@@ -1,6 +1,15 @@
 SklearnTransformerWrapper
 =========================
 
+API Reference
+-------------
+
+.. autoclass:: feature_engine.wrappers.SklearnTransformerWrapper
+    :members:
+
+Example
+-------
+
 Implements Scikit-learn transformers like the SimpleImputer, the OrdinalEncoder or most
 scalers only to the selected subset of features.
 
@@ -30,14 +39,3 @@ scalers only to the selected subset of features.
     # transform the data
     X_train = imputer.transform(X_train)
     X_test = imputer.transform(X_test)
-
-
-For more details, check more examples in the Jupyter notebooks in our repository,
-
-
-API Reference
--------------
-
-.. autoclass:: feature_engine.wrappers.SklearnTransformerWrapper
-    :members:
-

@@ -11,8 +11,8 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class MeanEncoder(BaseCategoricalTransformer):
     """
-    The MeanCategoricalEncoder() replaces categories by the mean value of the
-    target for each category.
+    The MeanEncoder() replaces categories by the mean value of the target for each
+    category.
 
     For example in the variable colour, if the mean of the target for blue, red
     and grey is 0.5, 0.8 and 0.1 respectively, blue is replaced by 0.5, red by 0.8
@@ -23,16 +23,46 @@ class MeanEncoder(BaseCategoricalTransformer):
     argument, the encoder will find and encode all categorical variables
     (object type).
 
-    The encoder first maps the categories to the numbers for each variable (fit).
-
-    The encoder then transforms the categories to the mapped numbers (transform).
+    The encoder first maps the categories to the numbers for each variable (fit). The
+    encoder then replaces the categories with the mapped numbers (transform).
 
     Parameters
     ----------
-
     variables : list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and select all object type variables.
+        The list of categorical variables to encode. If None, the encoder will find and
+        select all object type variables.
+
+    Attributes
+    ----------
+    encoder_dict_ :
+        Dictionary with the target mean value per category per variable.
+
+    Methods
+    -------
+    fit:
+        Learn the target mean value per category, per variable.
+    transform:
+        Encode the categories to numbers.
+    fit_transform:
+        Fit to the data, then transform it.
+    inverse_transform:
+        Encode the numbers into the original categories.
+
+    Notes
+    -----
+    NAN are introduced when encoding categories that were not present in the training
+    dataset. If this happens, try grouping infrequent categories using the
+    RareLabelEncoder().
+
+    See Also
+    --------
+    feature_engine.encoding.RareLabelEncoder
+
+    References
+    ----------
+    .. [1] Micci-Barreca D. "A Preprocessing Scheme for High-Cardinality Categorical
+       Attributes in Classification and Prediction Problems". ACM SIGKDD Explorations
+       Newsletter, 2001. https://dl.acm.org/citation.cfm?id=507538
     """
 
     def __init__(
@@ -42,24 +72,29 @@ class MeanEncoder(BaseCategoricalTransformer):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Learns the mean value of the target for each category of the variable.
+        Learn the mean value of the target for each category of the variable.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the variables to be encoded.
+            The training input samples. Can be the entire dataframe, not just the
+            variables to be encoded.
 
         y : pandas series
             The target.
 
-        Attributes
-        ----------
+        Raises
+        ------
+        TypeError
+            - If the input is not a Pandas DataFrame.
+            - If any user provided variable is not categorical
+        ValueError
+            - If there are no categorical variables in the df or the df is empty
+            - If the variable(s) contain null values
 
-        encoder_dict_: dictionary
-            The dictionary containing the {category: target mean} pairs used
-            to replace categories in every variable.
+        Returns
+        -------
+        self
         """
 
         X = self._check_fit_input_and_variables(X)

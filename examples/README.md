@@ -12,13 +12,13 @@ If using venv:
 `python -m venv path/to/environment/feateng`
 
 2) activate the environment:
-`path/to/environment/feateng/Scripts\activate`
+`path/to/environment/feateng/Scripts/activate`
 
 Directions 1 and 2 assume you are on windows. If using mac, directions are slightly different. Please check [venv website](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
 
 3) install the required libraries:
 
-`pip install requirements.txt`
+`pip install -r example_requirements.txt`
 
 4) add the new environment to the ipykernel:
 

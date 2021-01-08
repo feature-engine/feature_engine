@@ -2,28 +2,24 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import cross_validate
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_random_state
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_input_matches_training_df,
-)
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
+class SelectByShuffling(BaseSelector):
     """
-
-    ShuffleFeaturesSelector selects features by determining the drop in machine learning
+    SelectByShuffling() selects features by determining the drop in machine learning
     model performance when each feature's values are randomly shuffled.
 
     If the variables are important, a random permutation of their values will
@@ -31,7 +27,7 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
     permutation of the values should have little to no effect on the model performance
     metric we are assessing.
 
-    The ShuffleFeaturesSelector first trains a machine learning model utilising all
+    The SelectByShuffling() first trains a machine learning model utilising all
     features. Next, it shuffles the values of 1 feature, obtains a prediction with the
     pre-trained model, and determines the performance drop (if any). If the drop in
     performance is bigger than a threshold then the feature is retained, otherwise
@@ -46,51 +42,52 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-
     variables : str or list, default=None
         The list of variable(s) to be shuffled from the dataframe.
         If None, the transformer will shuffle all numerical variables in the dataset.
 
-    estimator: object, default = RandomForestClassifier()
+    estimator : object, default = RandomForestClassifier()
         A Scikit-learn estimator for regression or classification.
 
-    scoring: str, default='roc_auc'
+    scoring : str, default='roc_auc'
         Desired metric to optimise the performance for the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold: float, int, default = 0.01
+    threshold : float, int, default = None
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
-        root_mean_square_error the threshold will be a big number.
-        The threshold must be defined by the user.
+        root_mean_square_error the threshold will be a big number. The threshold can be
+        defined by the user. If None, the selector will select features which
+        performance drift is smaller than the mean performance drift across all
+        features.
 
     cv : int, default=3
         Desired number of cross-validation fold to be used to fit the estimator.
 
+    random_state: int, default=None
+        Controls the randomness when shuffling features.
+
     Attributes
     ----------
+    initial_model_performance_:
+        Performance of the model trained using the original dataset.
 
-    initial_model_performance_: float,
-        performance of the model built using the original dataset.
+    performance_drifts_:
+        Dictionary with the performance drift per shuffled feature.
 
-    performance_drifts_: dict
-        A dictionary containing the feature, performance drift pairs, after
-        shuffling each feature.
-
-    selected_features_: list
-        The selected features.
+    features_to_drop_:
+        List with the features to remove from the dataset.
 
     Methods
     -------
-
-    fit: finds important features
-
-    transform: removes non-important / non-selected features
-
-    fit_transform: finds and removes non-important features
-
+    fit:
+        Find the important features.
+    transform:
+        Reduce X to the selected features.
+    fit_transform:
+        Fit to data, then transform it.
     """
 
     def __init__(
@@ -98,38 +95,37 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
         estimator=RandomForestClassifier(),
         scoring: str = "roc_auc",
         cv: int = 3,
-        threshold: Union[float, int] = 0.01,
+        threshold: Union[float, int] = None,
         variables: Variables = None,
+        random_state: int = None,
     ):
 
         if not isinstance(cv, int) or cv < 1:
             raise ValueError("cv can only take positive integers bigger than 1")
 
-        if not isinstance(threshold, (int, float)):
-            raise ValueError("threshold can only be integer or float")
+        if threshold and not isinstance(threshold, (int, float)):
+            raise ValueError("threshold can only be integer or float or None")
 
         self.variables = _check_input_parameter_variables(variables)
         self.estimator = estimator
         self.scoring = scoring
         self.threshold = threshold
         self.cv = cv
+        self.random_state = random_state
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
+        Find the important features.
 
-        Args
-        ----
-
-        X: pandas dataframe of shape = [n_samples, n_features]
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
-
-        y: array-like of shape (n_samples)
+        y : array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
 
         Returns
         -------
-
         self
         """
 
@@ -146,7 +142,7 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
         # train model with all features and cross-validation
         model = cross_validate(
             self.estimator,
-            X,
+            X[self.variables],
             y,
             cv=self.cv,
             return_estimator=True,
@@ -159,20 +155,22 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
         # get performance metric
         scorer = get_scorer(self.scoring)
 
+        # seed
+        random_state = check_random_state(self.random_state)
+
         # dict to collect features and their performance_drift after shuffling
         self.performance_drifts_ = {}
-
-        # list to collect selected features
-        self.selected_features_ = []
 
         # shuffle features and save feature performance drift into a dict
         for feature in self.variables:
 
-            X_shuffled = X.copy()
+            X_shuffled = X[self.variables].copy()
 
             # shuffle individual feature
             X_shuffled[feature] = (
-                X_shuffled[feature].sample(frac=1).reset_index(drop=True)
+                X_shuffled[feature]
+                .sample(frac=1, random_state=random_state)
+                .reset_index(drop=True)
             )
 
             # determine the performance with the shuffled feature
@@ -182,7 +180,7 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
 
             # determine drift in performance
             # Note, sklearn negates the log and error scores, so no need to manually
-            # do the invertion
+            # do the inversion
             # https://scikit-learn.org/stable/modules/model_evaluation.html
             # (https://scikit-learn.org/stable/modules/model_evaluation.html
             # #the-scoring-parameter-defining-model-evaluation-rules)
@@ -192,46 +190,25 @@ class ShuffleFeaturesSelector(BaseEstimator, TransformerMixin):
             self.performance_drifts_[feature] = performance_drift
 
         # select features
-        for feature in self.performance_drifts_.keys():
+        if not self.threshold:
+            threshold = pd.Series(self.performance_drifts_).mean()
+        else:
+            threshold = self.threshold
 
-            if self.performance_drifts_[feature] > self.threshold:
-
-                self.selected_features_.append(feature)
+        self.features_to_drop_ = [
+            f
+            for f in self.performance_drifts_.keys()
+            if self.performance_drifts_[f] < threshold
+        ]
 
         self.input_shape_ = X.shape
 
         return self
 
-    def transform(self, X: pd.DataFrame):
-        """
-        Removes non-selected features. That is, features which shuffling did not
-        decrease the machine learning model performance beyond the indicated threshold.
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
 
-        Args
-        ----
+        return X
 
-        X: pandas dataframe of shape = [n_samples, n_features].
-            The input dataframe from which feature values will be shuffled.
-
-
-        Returns
-        -------
-
-        X_transformed: pandas dataframe
-            of shape = [n_samples, n_features - len(dropped features)]
-            Pandas dataframe with the selected features.
-        """
-
-        # check if fit is performed prior to transform
-        check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = _is_dataframe(X)
-
-        # reset the index
-        X = X.reset_index(drop=True)
-
-        # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.input_shape_[1])
-
-        return X[self.selected_features_]
+    transform.__doc__ = BaseSelector.transform.__doc__
