@@ -14,14 +14,11 @@ from feature_engine.variable_manipulation import (
 )
 
 
-
-
 class Na_transformer(BaseImputer):
-
     def __init__(
         self,
         missing_only: bool = True,
-        variables: Union[None, int, str, List[Union[str, int]]] = None
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if not isinstance(missing_only, bool):
@@ -30,17 +27,13 @@ class Na_transformer(BaseImputer):
         self.variables = _check_input_parameter_variables(variables)
         self.missing_only = missing_only
 
-
-    
-    def return_dropped_data(self,X: pd.DataFrame) -> pd.DataFrame:
+    def return_dropped_data(self, X: pd.DataFrame) -> pd.DataFrame:
 
         X = self._check_transform_input_and_state(X)
 
-        idx=pd.isnull(X[self.variables_]).any(1)
-        idx=idx[idx==True]
+        idx = pd.isnull(X[self.variables_]).any(1)
+        idx = idx[idx == True]
         return X.loc[idx.index, :]
-
-
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         # check input dataframe
@@ -67,13 +60,10 @@ class Na_transformer(BaseImputer):
 
         return self
 
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
 
         X = self._check_transform_input_and_state(X)
 
-        X.dropna(axis=0,how='any',subset=self.variables, inplace=True)
+        X.dropna(axis=0, how="any", subset=self.variables, inplace=True)
 
         return X
-
-
