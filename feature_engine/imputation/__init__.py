@@ -17,5 +17,5 @@ __all__ = [
     "EndTailImputer",
     "AddMissingIndicator",
     "RandomSampleImputer",
-    "Na_transformer",
+    "DropMissingData",
 ]

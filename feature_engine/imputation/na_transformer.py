@@ -14,12 +14,81 @@ from feature_engine.variable_manipulation import (
 )
 
 
-class Na_transformer(BaseImputer):
+class DropMissingData(BaseImputer):
+    """
+    The DropMissingData() will delete rows containing NA values.
+
+    DropMissingData() will delete rows containing NA values from the variables
+    indicated by the user, or variables with NA values in the train set.
+
+    The DropMissingData() works for both numerical and categorical variables.
+    The user can pass a list with the variables for which the missing indicators
+    should be added as a list. Alternatively, the imputer will select and add missing
+    indicators to all variables in the training set that show missing data.
+
+    Parameters
+    ----------
+    missing_only : bool, defatult=True
+        Indicates if rows with NA  should be dropped to variables with missing
+        data or to all variables.
+
+        True: rows with NA will be dropped only for those variables that showed
+        missing data during fit.
+
+        False: rows with NA will be dropped for all variables
+
+    variables : list, default=None
+        The list of variables to be imputed. If None, the imputer will find and
+        select all variables with missing data.
+
+    **Note**
+    The transformer will first select all variables or all user entered
+    variables and if how=missing_only, it will re-select from the original group
+    only those that show missing data in during fit.
+
+    Attributes
+    ----------
+    variables_:
+        List of variables for which the rows with NA will be deleted.
+
+    Methods
+    -------
+    fit:
+        Learn the variables for which the rows with NA will be deleted
+    transform:
+        Add the missing indicators.
+    fit_transform:
+        Fit to the data, then trasnform it.
+    return_dropped_data:
+        Returns the dataframe with rows containing NA values.
+    """
+
     def __init__(
         self,
         missing_only: bool = True,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
+        """
+        Learn the variables for which the rows with NA will be deleted.
+
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The training dataset.
+
+        y : pandas Series, default=None
+            y is not needed in this imputation. You can pass None or y.
+
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+
+        Returns
+        -------
+        self.variables_ : list
+            The list of variables for which the rows with NA will be deleted.
+        """
 
         if not isinstance(missing_only, bool):
             raise ValueError("missing_only takes values True or False")
@@ -28,6 +97,24 @@ class Na_transformer(BaseImputer):
         self.missing_only = missing_only
 
     def return_dropped_data(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Returns the subset of the dataframe which contains rows with NA values.
+
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The dataset to be cleaned(Delete rows with NA).
+
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+
+        Returns
+        -------
+        X : pandas dataframe.
+            The cleaned version of dataset that does not contain rows with NA values.
+        """
 
         X = self._check_transform_input_and_state(X)
 
@@ -36,6 +123,27 @@ class Na_transformer(BaseImputer):
         return X.loc[idx.index, :]
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+        """
+        Learn the variables for which the rows with NA will be deleted.
+
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The training dataset.
+
+        y : pandas Series, default=None
+            y is not needed in this imputation. You can pass None or y.
+
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+
+        Returns
+        -------
+        self
+        """
+
         # check input dataframe
         X = _is_dataframe(X)
 
@@ -61,6 +169,21 @@ class Na_transformer(BaseImputer):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Remove rows with NA values.
+
+        Parameters
+        ----------
+
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The dataframe to be transformed.
+
+        Returns
+        -------
+
+        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+            The dataframe containing rows with no NA values.
+        """
 
         X = self._check_transform_input_and_state(X)
 
