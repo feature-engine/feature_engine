@@ -7,11 +7,7 @@ import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.parameter_checks import _define_numerical_dict
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_numerical_variables,
-)
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class DropMissingData(BaseImputer):
@@ -22,9 +18,8 @@ class DropMissingData(BaseImputer):
     indicated by the user, or variables with NA values in the train set.
 
     The DropMissingData() works for both numerical and categorical variables.
-    The user can pass a list with the variables for which the missing indicators
-    should be added as a list. Alternatively, the imputer will select and add missing
-    indicators to all variables in the training set that show missing data.
+    The user can pass a list with the variables rows containing with NA should be dropped. Alternatively, the imputer will select variables with NA values
+    from the training set.
 
     Parameters
     ----------
@@ -68,27 +63,6 @@ class DropMissingData(BaseImputer):
         missing_only: bool = True,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
-        """
-        Learn the variables for which the rows with NA will be deleted.
-
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
-            The training dataset.
-
-        y : pandas Series, default=None
-            y is not needed in this imputation. You can pass None or y.
-
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-
-        Returns
-        -------
-        self.variables_ : list
-            The list of variables for which the rows with NA will be deleted.
-        """
 
         if not isinstance(missing_only, bool):
             raise ValueError("missing_only takes values True or False")
@@ -103,7 +77,7 @@ class DropMissingData(BaseImputer):
         Parameters
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
-            The dataset to be cleaned(Delete rows with NA).
+            The dataset to from which rows containing NA should be dropped.
 
         Raises
         ------
@@ -174,13 +148,11 @@ class DropMissingData(BaseImputer):
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
             The dataframe to be transformed.
 
         Returns
         -------
-
         X_transformed : pandas dataframe of shape = [n_samples, n_features]
             The dataframe containing rows with no NA values.
         """

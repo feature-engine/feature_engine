@@ -29,9 +29,8 @@ def _is_dataframe(X: pd.DataFrame) -> pd.DataFrame:
     """
 
     if not isinstance(X, pd.DataFrame):
-        raise TypeError(
-            "X is not a pandas dataframe. The dataset should be a " "pandas dataframe."
-        )
+        raise TypeError("X is not a pandas dataframe. The dataset should be a "
+                        "pandas dataframe.")
 
     return X.copy()
 

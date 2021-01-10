@@ -1,5 +1,5 @@
-DropMissingDataImputer
-=====================
+DropMissingData
+===============
 
 API Reference
 -------------
@@ -10,15 +10,14 @@ API Reference
 Example
 -------
 
-The DropMissingData() deletes rows with NA values. It works  numerical and categorical 
-variables. A list of variables for which to delete rows with NA values can be passed, or
-the imputer will automatically select all variables
+The DropMissingData() deletes rows with NA values. It works with numerical and categorical variables. 
+A list of variables for which to delete rows with NA values can be passed,or
+the imputer will automatically select variables with NA values.
 
 .. code:: python
 
 	import numpy as np
 	import pandas as pd
-	import matplotlib.pyplot as plt
 	from sklearn.model_selection import train_test_split
 
 	from feature_engine.imputation import DropMissingData
@@ -41,9 +40,11 @@ the imputer will automatically select all variables
 	test_t= missingdata_imputer.transform(X_test)
 
     # No of NA's before and after transformation
+	# Number of rows before and after transformation
 	X_train['LotFrontage'].isna().sum()
+	print(X_train.shape)
 	train_t['LotFrontage'].isna().sum()
-
+	print(train_t.shape)
 
 
 

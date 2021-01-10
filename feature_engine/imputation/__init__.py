@@ -8,7 +8,7 @@ from .categorical import CategoricalImputer
 from .end_tail import EndTailImputer
 from .missing_indicator import AddMissingIndicator
 from .random_sample import RandomSampleImputer
-from .na_transformer import Na_transformer
+from .drop_missing_data import DropMissingData
 
 __all__ = [
     "MeanMedianImputer",
