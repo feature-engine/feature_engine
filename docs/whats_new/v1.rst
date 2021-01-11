@@ -1,7 +1,7 @@
 Version 1.0.0
 =============
 
-Deployed: TBD
+Deployed: 31st December 2020
 
 Contributors
 ------------
