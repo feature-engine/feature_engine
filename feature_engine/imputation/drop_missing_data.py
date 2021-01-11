@@ -50,7 +50,7 @@ class DropMissingData(BaseImputer):
         Remove observations with NA
     fit_transform:
         Fit to the data, then transform it.
-    return_dropped_data:
+    return_na_data:
         Returns the dataframe with the rows that contain NA .
     """
 
