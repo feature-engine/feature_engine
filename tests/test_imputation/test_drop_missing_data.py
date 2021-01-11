@@ -4,7 +4,7 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.imputation import DropMissingData
 
 
-def test_detect_variables_with_NA_values(df_na):
+def test_detect_variables_with_na(df_na):
     # test case 1: automatically detect variables with missing data
     imputer = DropMissingData(missing_only=True, variables=None)
     X_transformed = imputer.fit_transform(df_na)
@@ -20,7 +20,7 @@ def test_detect_variables_with_NA_values(df_na):
     assert X_transformed.isna().sum().sum() == 0
 
 
-def test_selelct_all_variables_with_NA_when_variables_is_none(df_na):
+def test_selelct_all_variables_with_na_when_variables_is_none(df_na):
     imputer = DropMissingData(missing_only=False, variables=None)
     X_transformed = imputer.fit_transform(df_na)
     assert imputer.input_shape_ == (8, 6)
@@ -29,7 +29,7 @@ def test_selelct_all_variables_with_NA_when_variables_is_none(df_na):
     assert X_transformed[imputer.variables_].isna().sum().sum() == 0
 
 
-def test_detect_variables_with_NA_values_in_variables_entered_by_user(df_na):
+def test_detect_variables_with_na_in_variables_entered_by_user(df_na):
     imputer = DropMissingData(
         missing_only=True, variables=["City", "Studies", "Age", "dob"]
     )
@@ -39,12 +39,12 @@ def test_detect_variables_with_NA_values_in_variables_entered_by_user(df_na):
     assert X_transformed.shape == (6, 6)
 
 
-def test_return_dropped_data_method_that_returns_dataframe_with_NA_rows(df_na):
+def test_return_na_data_method(df_na):
     imputer = DropMissingData(
         missing_only=True, variables=["City", "Studies", "Age", "dob"]
     )
-    X_transformed = imputer.fit_transform(df_na)
-    X_nona = imputer.return_dropped_data(df_na)
+    imputer.fit(df_na)
+    X_nona = imputer.return_na_data(df_na)
     assert X_nona.shape == (2, 6)
 
 

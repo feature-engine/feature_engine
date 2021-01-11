@@ -10,9 +10,11 @@ API Reference
 Example
 -------
 
-The DropMissingData() deletes rows with NA values. It works with numerical and categorical variables. 
-A list of variables for which to delete rows with NA values can be passed,or
-the imputer will automatically select variables with NA values.
+DropMissingData() deletes rows with NA values. It works with numerical and categorical
+variables. The user can pass a list of variables for which to delete rows with NA.
+Alternatively, DropMissingData() will default to all variables. The trasformer has the
+option to learn the variables with NA in the train set, and then remove observations
+with NA in only those variables.
 
 .. code:: python
 
@@ -27,7 +29,10 @@ the imputer will automatically select variables with NA values.
 
 	# Separate into train and test sets
 	X_train, X_test, y_train, y_test = train_test_split(
-    	data.drop(['Id', 'SalePrice'], axis=1), data['SalePrice'], test_size=0.3, random_state=0)
+    	data.drop(['Id', 'SalePrice'], axis=1),
+        data['SalePrice'],
+        test_size=0.3,
+        random_state=0)
 
 	# set up the imputer
 	missingdata_imputer = DropMissingData(variables=['LotFrontage', 'MasVnrArea'])
@@ -39,12 +44,32 @@ the imputer will automatically select variables with NA values.
 	train_t= missingdata_imputer.transform(X_train)
 	test_t= missingdata_imputer.transform(X_test)
 
-    # No of NA's before and after transformation
-	# Number of rows before and after transformation
-	X_train['LotFrontage'].isna().sum()
-	print(X_train.shape)
+    # Number of NA before the transformation:
+    X_train['LotFrontage'].isna().sum()
+
+.. code:: python
+
+    189
+
+.. code:: python
+
+    # Number of NA after the transformation:
 	train_t['LotFrontage'].isna().sum()
+
+.. code:: python
+
+    0
+
+.. code:: python
+
+    # Number of rows before and after transformation
+    print(X_train.shape)
 	print(train_t.shape)
+
+.. code:: python
+
+    (1022, 79)
+    (829, 79)
 
 
 
