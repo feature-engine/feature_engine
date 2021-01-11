@@ -119,13 +119,19 @@ class BinaryCombinatioByFeatureReference(BaseEstimator, TransformerMixin):
               "transformations."
           )
 
+        if len(variables_to_combine) <= 0:
+            raise KeyError(
+              "variables_to_combine requires one or more features to make proper "
+              "transformations."
+          )
+
         if new_variables_names:
-            if len(new_variables_names) != len(reference_variables):  # type: ignore
+            if len(new_variables_names) != (len(reference_variables)*len(variables_to_combine)*len(binary_operations)):
                 raise ValueError(
                     "Number of items in new_variables_names must be equal to number of "
-                    "items in Reference_variables."
+                    "items in Reference_variables * intems in variables to combine * binary operations."
                     "In other words, the transformer needs as many new variable names"
-                    "as reference variables to perform over the variables to "
+                    "as reference variables and binary operations to perform over the variables to "
                     "combine."
                 )
 
@@ -156,9 +162,15 @@ class BinaryCombinatioByFeatureReference(BaseEstimator, TransformerMixin):
         self.variables_to_combine = _find_or_check_numerical_variables(
             X, self.variables_to_combine
         )
+        
+       # check reference_variables are numerical
+        self.reference_variables = _find_or_check_numerical_variables(
+            X, self.reference_variables
+        )
 
         # check if dataset contains na
         _check_contains_na(X, self.reference_variables)
+        _check_contains_na(X, self.variables_to_combine)
 
         # cannot divide by 0, as will result in error
         if 'sub' in self.binary_operations:
@@ -168,23 +180,27 @@ class BinaryCombinatioByFeatureReference(BaseEstimator, TransformerMixin):
                     "remove those before using this transformer."
             )
 
-        # dictionary of new_variable_name to operation pairs
-        if self.new_variables_names:
-            self.combination_dict_ = dict(
-                zip(self.new_variables_names, self.binary_operations)
-            )
-        else:
+        result = []
+        result_name = []
+        for operation in self.binary_operations:
+            for combine in self.variables_to_combine:
+                for reference in self.reference_variables:
+                    if operation == "Sub":
+                            result.append(X[combine].values - X[reference].values)  
+                            result_name.append(str(combine)+"_"+operation+"_"+str(reference))
+                    elif operation == "Div":
+                            result.append(X[combine].values / X[reference].values)
+                            result_name.append(str(combine)+"_"+operation+"_"+str(reference))
+                    else: 
+                        result.append("At least one of the entered binary_operations is not supported. ")
+                        result_name.append(str(combine)+"_"+operation+"_"+str(reference))
 
-            # NG - Not enought to support this class new variable names
-            if all(isinstance(var, str) for var in self.variables_to_combine):
-                vars_ls = self.variables_to_combine
-            else:
-                vars_ls = [str(var) for var in self.variables_to_combine]
-
-            self.combination_dict_ = {
-                f"{operation}({'-'.join(vars_ls)})": operation  # type: ignore
-                for operation in self.binary_operations
-            }
+        #replace created variable names with user ones.
+        if len(self.new_variables_names) <= 0:
+            self.new_variables_names = result_name
+            
+        # to convert lists to dictionary 
+        combination_dict_ = dict(zip(self.new_variables_names, result)) 
 
         self.input_shape_ = X.shape
 
@@ -213,6 +229,7 @@ class BinaryCombinatioByFeatureReference(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # check if dataset contains na
+        _check_contains_na(X, self.reference_variables)
         _check_contains_na(X, self.variables_to_combine)
 
         # cannot divide by 0, as will result in error
@@ -226,11 +243,8 @@ class BinaryCombinatioByFeatureReference(BaseEstimator, TransformerMixin):
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_input_matches_training_df(X, self.input_shape_[1])
  
-        # makes de magic 
-        # NG - No way this will works.
-        for variables_to_combine in self.variables_to_combine:
-            for reference_variables in self.reference_variables:
-                for new_variable_name, operation in self.combination_dict_.items():
-                    X[new_variable_name] = X[variables_to_combine,reference_variables].agg(operation, axis=1)
+        # Add new features and values into de data frame.
+        for new_variable_name, result in self.combination_dict_.items():
+            X[new_variable_name] = X[new_variable_name].agg(result, axis=1)
 
         return X
