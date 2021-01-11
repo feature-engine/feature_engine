@@ -1,7 +1,18 @@
+Version 1.0.1
+=============
+
+Deployed: 11th January 2021
+
+Bug Fix
+-------
+    - Fix use of r2 in SelectBySingleFeaturePerformance and SelectByTargetMeanPerformance.
+    - Fix documentation not showing properly in readthedocs.
+
+
 Version 1.0.0
 =============
 
-Deployed: TBD
+Deployed: 31st December 2020
 
 Contributors
 ------------
