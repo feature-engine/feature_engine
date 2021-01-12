@@ -102,6 +102,7 @@ Missing Data Imputation: Imputers
 - :doc:`imputation/CategoricalImputer`: replaces missing data in categorical variables with the string 'Missing' or by the most frequent category
 - :doc:`imputation/RandomSampleImputer`: replaces missing data with random samples of the variable
 - :doc:`imputation/AddMissingIndicator`: adds a binary missing indicator to flag observations with missing data
+- :doc:`imputation/DropMissingData`: removes rows containing NA values from dataframe
 
 Categorical Variable Encoders: Encoders
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

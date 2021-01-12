@@ -15,3 +15,4 @@ from data or arbitrary values pre-defined by the user.
    CategoricalImputer
    RandomSampleImputer
    AddMissingIndicator
+   DropMissingData
