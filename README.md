@@ -90,6 +90,7 @@ More resources will be added as they appear online!
 
 ### Variable Combinations:
  * MathematicalCombination
+ * CombineWithReferenceFeature
 
 ### Feature Selection:
  * DropFeatures
