@@ -10,3 +10,4 @@ various mathematical and other methods.
    :maxdepth: 2
 
    MathematicalCombination
+   CombineWithReferenceFeature
