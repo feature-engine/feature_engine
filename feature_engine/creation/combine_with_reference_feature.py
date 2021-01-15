@@ -14,8 +14,8 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 
 class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     """
-    CombineWithReferenceFeature() applies binary operations across targert and reference features,
-    returning 1 or more additional features as a result.
+    CombineWithReferenceFeature() applies binary operations across targert and
+    reference features, returning 1 or more additional features as a result.
 
     For example ...
 
@@ -36,7 +36,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         carry out.
 
         Each operation should be a string and must be one of the elements
-        from the list: ['sub', 'div','add','mul'] 
+        from the list: ['sub', 'div','add','mul']
 
         Each operation will result in a new variable that will be added to the
         transformed dataset.
@@ -59,7 +59,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         If new_variable_names=None, the transformer will assign an arbitrary name
         to the newly created features starting by the name of the binary
         operation, followed by the variables combined separated by -.
-        
+
     missing_values: string, default='raise'
         Indicates if missing values should be ignored or raised. Sometimes we want to
         remove outliers in the raw, original data, sometimes, we may want to remove
@@ -74,7 +74,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         self,
         variables_to_combine: List[Union[str, int]],
         reference_variables: List[Union[str, int]],
-        operations: [List[str]] = ["sub"],
+        operations: List[str] = ["sub"],
         new_variables_names: Optional[List[str]] = None,
         missing_values: str = "ignore",
     ) -> None:
@@ -88,7 +88,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
                 "corresponding to the names of the variables to be used as  "
                 "reference to combine with the binary operations."
             )
-        
+
         if not isinstance(variables_to_combine, list) or not all(
             isinstance(var, (int, str)) for var in variables_to_combine
         ):
@@ -113,7 +113,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
                 raise ValueError("operations parameter must be a list or None")
 
             if any(
-                operation not in ["sub", "div","add","mul"]
+                operation not in ["sub", "div", "add", "mul"]
                 for operation in operations
             ):
                 raise ValueError(
@@ -124,26 +124,29 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         # check input logic
         if not reference_variables:
             raise ValueError(
-              "reference_variables requires one or more features to make proper "
-              "transformations."
-          )
+                "reference_variables requires one or more features to make proper "
+                "transformations."
+            )
 
         if not variables_to_combine:
             raise ValueError(
-              "variables_to_combine requires one or more features to make proper "
-              "transformations."
-          )
+                "variables_to_combine requires one or more features to make proper "
+                "transformations."
+            )
 
         if new_variables_names:
-            if len(new_variables_names) != (len(reference_variables)*len(variables_to_combine)*len(operations)):
+            if len(new_variables_names) != (
+                len(reference_variables) * len(variables_to_combine) * len(operations)
+            ):
                 raise ValueError(
                     "Number of items in new_variables_names must be equal to number of "
-                    "items in Reference_variables * intems in variables to combine * binary operations."
-                    "In other words, the transformer needs as many new variable names"
-                    "as reference variables and binary operations to perform over the variables to "
+                    "items in Reference_variables * intems in variables to "
+                    "combine * binary operations. In other words, "
+                    "the transformer needs as many new variable names as reference "
+                    "variables and binary operations to perform over the variables to "
                     "combine."
                 )
-                
+
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'")
 
@@ -159,7 +162,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        
+
         X: pandas dataframe of shape = [n_samples, n_features]
         The training input samples.
         Can be the entire dataframe, not just the variables to transform.
@@ -169,7 +172,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
         Returns:
         --------
-        
+
         self
         """
         # check input dataframe
@@ -179,19 +182,19 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         self.variables_to_combine = _find_or_check_numerical_variables(
             X, self.variables_to_combine
         )
-        
-       # check reference_variables are numerical
+
+        # check reference_variables are numerical
         self.reference_variables = _find_or_check_numerical_variables(
             X, self.reference_variables
         )
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.reference_variables)          
+            _check_contains_na(X, self.reference_variables)
             _check_contains_na(X, self.variables_to_combine)
 
         # cannot divide by 0, as will result in error
-        if 'div' in self.operations:
+        if "div" in self.operations:
             if X[self.reference_variables].isin([0]).any().any():
                 raise ValueError(
                     "Some of the refence variables contain 0 values. Check and "
@@ -211,13 +214,13 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        
+
         X: pandas dataframe of shape = [n_samples, n_features]
         The data to transform.
 
         Returns
         -------
-        
+
         X: Pandas dataframe, shape = [n_samples, n_features + n_operations]
         The dataframe with the operations results added as columns.
         """
@@ -230,11 +233,11 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.reference_variables)          
+            _check_contains_na(X, self.reference_variables)
             _check_contains_na(X, self.variables_to_combine)
 
         # cannot divide by 0, as will result in error
-        if 'div' in self.operations:
+        if "div" in self.operations:
             if X[self.reference_variables].isin([0]).any().any():
                 raise ValueError(
                     "Some of the refence variables contain 0 values. Check and "
@@ -246,24 +249,32 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
         original_col_names = [var for var in X.columns]
         # Add new features and values into de data frame.
-        if "sub" in self.operations:    
+        if "sub" in self.operations:
             for reference in self.reference_variables:
-                varname = [var + "_sub_" + reference for var in self.variables_to_combine]
-                X[varname] = X[self.variables_to_combine].sub(X[reference],axis=0)
+                varname = [
+                    str(var) + "_sub_" + str(reference) for var in self.variables_to_combine
+                ]
+                X[varname] = X[self.variables_to_combine].sub(X[reference], axis=0)
         if "div" in self.operations:
             for reference in self.reference_variables:
-                varname = [var + "_div_" + reference for var in self.variables_to_combine]
-                X[varname] = X[self.variables_to_combine].div(X[reference],axis=0)   
+                varname = [
+                   str(var) + "_div_" + str(reference) for var in self.variables_to_combine
+                ]
+                X[varname] = X[self.variables_to_combine].div(X[reference], axis=0)
         if "add" in self.operations:
             for reference in self.reference_variables:
-                varname = [var + "_add_" + reference for var in self.variables_to_combine]
-                X[varname] = X[self.variables_to_combine].add(X[reference],axis=0)   
+                varname = [
+                   str(var) + "_add_" + str(reference) for var in self.variables_to_combine
+                ]
+                X[varname] = X[self.variables_to_combine].add(X[reference], axis=0)
         if "mul" in self.operations:
-             for reference in self.reference_variables:
-                varname = [var + "_mul_" + reference for var in self.variables_to_combine]
-                X[varname] = X[self.variables_to_combine].mul(X[reference],axis=0)   
+            for reference in self.reference_variables:
+                varname = [
+                    str(var) + "_mul_" + str(reference) for var in self.variables_to_combine
+                ]
+                X[varname] = X[self.variables_to_combine].mul(X[reference], axis=0)
 
-        #replace created variable names with user ones.
+        # replace created variable names with user ones.
         if self.new_variables_names:
             X.columns = original_col_names + self.new_variables_names
 

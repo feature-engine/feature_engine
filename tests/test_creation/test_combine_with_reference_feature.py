@@ -7,33 +7,49 @@ from feature_engine.creation import CombineWithReferenceFeature
 def test_error_when_param_variables_not_entered():
     with pytest.raises(TypeError):
         CombineWithReferenceFeature()
-        
+
+
 def test_error_when_variables_to_combine_wrong_type():
     with pytest.raises(ValueError):
-        CombineWithReferenceFeature(variables_to_combine=("Age", "Name"),reference_variables=["Age", "Name"])
+        CombineWithReferenceFeature(
+            variables_to_combine=("Age", "Name"), reference_variables=["Age", "Name"]
+        )
     with pytest.raises(ValueError):
-        CombineWithReferenceFeature(variables_to_combine=["Age", 0, 4.5],reference_variables=["Age", "Name"])
+        CombineWithReferenceFeature(
+            variables_to_combine=["Age", 0, 4.5], reference_variables=["Age", "Name"]
+        )
     with pytest.raises(ValueError):
-        CombineWithReferenceFeature(variables_to_combine=["Age", "Name"],reference_variables=("Age", "Name"))
+        CombineWithReferenceFeature(
+            variables_to_combine=["Age", "Name"], reference_variables=("Age", "Name")
+        )
     with pytest.raises(ValueError):
-        CombineWithReferenceFeature(variables_to_combine=["Age", "Name"],reference_variables=["Age", 0, 4.5])
+        CombineWithReferenceFeature(
+            variables_to_combine=["Age", "Name"], reference_variables=["Age", 0, 4.5]
+        )
+
 
 # test param operations
 def test_error_if_operation_not_supported():
     with pytest.raises(ValueError):
         CombineWithReferenceFeature(
-            variables_to_combine=["Age", "Name"],reference_variables=["Age", "Name"], operations=["an_operation"]
+            variables_to_combine=["Age", "Name"],
+            reference_variables=["Age", "Name"],
+            operations=["an_operation"],
         )
 
 
 def test_error_if_operation_is_wrong_type():
     with pytest.raises(ValueError):
         CombineWithReferenceFeature(
-            variables_to_combine=["Age", "Name"], reference_variables=["Age", "Name"], operations=[sum]
+            variables_to_combine=["Age", "Name"],
+            reference_variables=["Age", "Name"],
+            operations=[sum],
         )
     with pytest.raises(ValueError):
         CombineWithReferenceFeature(
-            variables_to_combine=["Age", "Name"], reference_variables=["Age", "Name"], operations=("sub", "div")
+            variables_to_combine=["Age", "Name"],
+            reference_variables=["Age", "Name"],
+            operations=("sub", "div"),
         )
 
 
@@ -41,38 +57,45 @@ def test_error_if_operation_is_wrong_type():
 def test_error_if_new_variable_names_of_wrong_type():
     with pytest.raises(ValueError):
         CombineWithReferenceFeature(
-            variables_to_combine=["Age", "Name"], reference_variables=["Age", "Name"], new_variables_names=[4]
+            variables_to_combine=["Age", "Name"],
+            reference_variables=["Age", "Name"],
+            new_variables_names=[4],
         )
     with pytest.raises(ValueError):
         CombineWithReferenceFeature(
-            variables_to_combine=["Age", "Name"], reference_variables=["Age", "Name"], new_variables_names=("var1", "var2")
+            variables_to_combine=["Age", "Name"],
+            reference_variables=["Age", "Name"],
+            new_variables_names=("var1", "var2"),
         )
 
 
 def test_error_when_variables_to_combine_not_numeric(df_vartypes):
-    transformer = CombineWithReferenceFeature(variables_to_combine=["Name", "Age", "Marks"],
-                                              reference_variables=["Age", "Name"],
-                                              operations=["sub"]
-                                              )
+    transformer = CombineWithReferenceFeature(
+        variables_to_combine=["Name", "Age", "Marks"],
+        reference_variables=["Age", "Name"],
+        operations=["sub"],
+    )
     with pytest.raises(TypeError):
         transformer.fit_transform(df_vartypes)
 
 
 def test_error_when_entered_variables_not_in_df(df_vartypes):
-    transformer = CombineWithReferenceFeature(variables_to_combine=["FeatOutsideDataset", "Age"],
-                                              reference_variables=["Age", "Name"],
-                                              operations=["sub"]
-                                            )
+    transformer = CombineWithReferenceFeature(
+        variables_to_combine=["FeatOutsideDataset", "Age"],
+        reference_variables=["Age", "Name"],
+        operations=["sub"],
+    )
     with pytest.raises(KeyError):
         transformer.fit_transform(df_vartypes)
 
 
 def test_all_binary_operation(df_vartypes):
     # case 2: selected only one operation:
-    transformer = CombineWithReferenceFeature(variables_to_combine=["Age"],
-                                            reference_variables=["Marks"],
-                                            operations=["sub", "div","add","mul"]
-                                            )
+    transformer = CombineWithReferenceFeature(
+        variables_to_combine=["Age"],
+        reference_variables=["Marks"],
+        operations=["sub", "div", "add", "mul"],
+    )
 
     X = transformer.fit_transform(df_vartypes)
 
@@ -93,17 +116,18 @@ def test_all_binary_operation(df_vartypes):
     # init params
     assert transformer.variables_to_combine == ["Age"]
     assert transformer.reference_variables == ["Marks"]
-    assert transformer.operations == ["sub", "div","add","mul"]
-    # fit params 
+    assert transformer.operations == ["sub", "div", "add", "mul"]
+    # fit params
     assert transformer.input_shape_ == (4, 5)
     # transform params
     pd.testing.assert_frame_equal(X, ref)
-    
+
+
 def test_operations_with_multiple_variables(df_vartypes):
     transformer = CombineWithReferenceFeature(
-        variables_to_combine=["Age","Marks"], 
-        reference_variables=["Age","Marks"],
-        operations=["sub"]
+        variables_to_combine=["Age", "Marks"],
+        reference_variables=["Age", "Marks"],
+        operations=["sub"],
     )
 
     X = transformer.fit_transform(df_vartypes)
@@ -128,17 +152,17 @@ def test_operations_with_multiple_variables(df_vartypes):
     # fit params
     assert transformer.operations == ["sub"]
     assert transformer.input_shape_ == (4, 5)
-    
+
     # transform params
     pd.testing.assert_frame_equal(X, ref)
 
 
 def test_user_enters_output_variable_names(df_vartypes):
     transformer = CombineWithReferenceFeature(
-        variables_to_combine=["Age","Marks"], 
-        reference_variables=["Age","Marks"],
+        variables_to_combine=["Age", "Marks"],
+        reference_variables=["Age", "Marks"],
         operations=["sub"],
-        new_variables_names=["Juan","Pedro","Fasola","GranAmigo"]
+        new_variables_names=["Juan", "Pedro", "Fasola", "GranAmigo"],
     )
 
     X = transformer.fit_transform(df_vartypes)
@@ -163,6 +187,6 @@ def test_user_enters_output_variable_names(df_vartypes):
     # fit params
     assert transformer.operations == ["sub"]
     assert transformer.input_shape_ == (4, 5)
-    
+
     # transform params
     pd.testing.assert_frame_equal(X, ref)

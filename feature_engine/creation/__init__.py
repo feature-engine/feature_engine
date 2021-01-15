@@ -6,4 +6,4 @@ variables in the dataframe.
 from .mathematical_combination import MathematicalCombination
 from .combine_with_reference_feature import CombineWithReferenceFeature
 
-__all__ = ["MathematicalCombination","CombineWithReferenceFeature"]
+__all__ = ["MathematicalCombination", "CombineWithReferenceFeature"]
