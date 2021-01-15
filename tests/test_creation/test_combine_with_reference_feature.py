@@ -3,6 +3,7 @@ import pytest
 
 from feature_engine.creation import CombineWithReferenceFeature
 
+
 # test param variables_to_combine
 def test_error_when_param_variables_not_entered():
     with pytest.raises(TypeError):
