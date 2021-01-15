@@ -252,28 +252,28 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         if "sub" in self.operations:
             for reference in self.reference_variables:
                 varname = [
-                    str(var) + "_sub_" + str(reference) 
+                    str(var) + "_sub_" + str(reference)
                     for var in self.variables_to_combine
                 ]
                 X[varname] = X[self.variables_to_combine].sub(X[reference], axis=0)
         if "div" in self.operations:
             for reference in self.reference_variables:
                 varname = [
-                   str(var) + "_div_" + str(reference) 
-                   for var in self.variables_to_combine
+                    str(var) + "_div_" + str(reference)
+                    for var in self.variables_to_combine
                 ]
                 X[varname] = X[self.variables_to_combine].div(X[reference], axis=0)
         if "add" in self.operations:
             for reference in self.reference_variables:
                 varname = [
-                   str(var) + "_add_" + str(reference) 
-                   for var in self.variables_to_combine
+                    str(var) + "_add_" + str(reference)
+                    for var in self.variables_to_combine
                 ]
                 X[varname] = X[self.variables_to_combine].add(X[reference], axis=0)
         if "mul" in self.operations:
             for reference in self.reference_variables:
                 varname = [
-                    str(var) + "_mul_" + str(reference) 
+                    str(var) + "_mul_" + str(reference)
                     for var in self.variables_to_combine
                 ]
                 X[varname] = X[self.variables_to_combine].mul(X[reference], axis=0)
