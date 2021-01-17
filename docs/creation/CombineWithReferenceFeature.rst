@@ -12,8 +12,8 @@ Example
 -------
 
 CombineWithReferenceFeature() applies basic binary operations to multiple
-features, returning one or more additional features as a result. That is, it substract or
-divide of a group of variables and returns the result into new variables.
+features, returning one or more additional features as a result. That is, it substracts or
+divides of a group of variables and returns the result into new variables.
 
 In this example, we subtract 2 variables from the house prices dataset.
 
@@ -37,13 +37,13 @@ In this example, we subtract 2 variables from the house prices dataset.
         variables_to_combine=['LotArea'],
         reference_variables=['LotFrontage'],
         operations = ['sub'],
-        new_variables_names = ['LotTotal']
+        new_variables_names = ['LotPartial']
         )
 
     combinator.fit(X_train, y_train)
     X_train_ = combinator.transform(X_train)
 
-    print(X_train_[["LotTotal","LotFrontage","LotArea"]].head())
+    print(X_train_[["LotPartial","LotFrontage","LotArea"]].head())
 
 .. code:: python
 
