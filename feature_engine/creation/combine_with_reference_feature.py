@@ -17,15 +17,15 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     CombineWithReferenceFeature() applies basic mathematical operations between one or
     more reference variables and a group of variables, returning one or more additional
     features as a result. That is, it sums, multiplies, substracts or divides a group of
-    features to or by a group of reference variables and returns the result into new 
+    features to or by a group of reference variables and returns the result into new
     variables.
     
     For example, if we have the variables **number_payments_first_quarter**,
-    **number_payments_second_quarter**, **number_payments_third_quarter**, 
+    **number_payments_second_quarter**, **number_payments_third_quarter**,
     **number_payments_fourth_quarter**, and **total_payments** we can use 
-    CombineWithReferenceFeature() to determine the percentage of total payments per 
+    CombineWithReferenceFeature() to determine the percentage of total payments per
     month as follows:
-    
+     
     .. code-block:: python
     
         transformer = CombineWithReferenceFeature(
