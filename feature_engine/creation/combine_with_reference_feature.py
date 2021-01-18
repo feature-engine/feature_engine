@@ -23,8 +23,8 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     For example, if we have the variables **number_payments_first_quarter**,
     **number_payments_second_quarter**, **number_payments_third_quarter**, 
     **number_payments_fourth_quarter**, and **total_payments** we can use 
-    CombineWithReferenceFeature() to determine the percentage of total payments per month
-    as follows:
+    CombineWithReferenceFeature() to determine the percentage of total payments per 
+    month as follows:
     
     .. code-block:: python
     
@@ -228,8 +228,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         ------
         TypeError
            - If the input is not a Pandas DataFrame
-           - If any user provided variables in variables_to_combine or 
-           reference_variables are not numerical
+           - If any user provided variables are not numerical
         ValueError
            If any of the reference variables contain null values and the
            mathematical operation is 'div'
