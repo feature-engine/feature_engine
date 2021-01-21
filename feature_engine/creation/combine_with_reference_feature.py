@@ -173,26 +173,13 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
                     "Choose one or more of ['sub', 'div','add','mul']"
                 )
 
-        # check input logic
-        if not reference_variables:
-            raise ValueError(
-                "reference_variables requires one or more features to make proper "
-                "transformations."
-            )
-
-        if not variables_to_combine:
-            raise ValueError(
-                "variables_to_combine requires one or more features to make proper "
-                "transformations."
-            )
-
         if new_variables_names:
             if len(new_variables_names) != (
                 len(reference_variables) * len(variables_to_combine) * len(operations)
             ):
                 raise ValueError(
                     "Number of items in new_variables_names must be equal to number of "
-                    "items in reference_variables * intems in variables to "
+                    "items in reference_variables * items in variables to "
                     "combine * binary operations. In other words, "
                     "the transformer needs as many new variable names as reference "
                     "variables and binary operations to perform over the variables to "
@@ -259,7 +246,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         if "div" in self.operations:
             if X[self.reference_variables].isin([0]).any().any():
                 raise ValueError(
-                    "Some of the refence variables contain 0 values. Check and "
+                    "Some of the reference variables contain 0 values. Check and "
                     "remove those before using this transformer with div."
                 )
 
@@ -299,7 +286,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         if "div" in self.operations:
             if X[self.reference_variables].isin([0]).any().any():
                 raise ValueError(
-                    "Some of the refence variables contain 0 values. Check and "
+                    "Some of the reference variables contain 0 values. Check and "
                     "remove those before using this transformer."
                 )
 
