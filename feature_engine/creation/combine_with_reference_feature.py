@@ -174,19 +174,6 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
                     "Choose one or more of ['sub', 'div','add','mul']"
                 )
 
-        # check input logic
-        if not reference_variables:
-            raise ValueError(
-                "reference_variables requires one or more features to make proper "
-                "transformations."
-            )
-
-        if not variables_to_combine:
-            raise ValueError(
-                "variables_to_combine requires one or more features to make proper "
-                "transformations."
-            )
-
         if new_variables_names:
             if len(new_variables_names) != (
                 len(reference_variables) * len(variables_to_combine) * len(operations)
