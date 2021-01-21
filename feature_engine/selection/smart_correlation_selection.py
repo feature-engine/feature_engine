@@ -58,6 +58,22 @@ class SmartCorrelatedSelection(BaseSelector):
         Takes values 'raise' and 'ignore'. Whether the missing values should be raised
         as error or ignored when determining correlation.
 
+    selection_method : str, default= "missing_values"
+        Takes the values "missing_values", "cardinality", "variance" and
+        "model_performance".
+
+        "missing_values": keeps the feature from the correlated group with least
+        missing observations
+
+        "cardinality": keeps the feature from the correlated group with the highest
+        cardinality.
+
+        "variance": keeps the feature from the correlated group with the highest
+        variance.
+
+        "model_performance": trains a machine learning model using the correlated
+        feature group and retains the feature with the highest importance.
+
     estimator : object, default = None
         A Scikit-learn estimator for regression or classification.
 
