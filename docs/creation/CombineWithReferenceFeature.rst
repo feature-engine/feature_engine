@@ -11,9 +11,9 @@ API Reference
 Example
 -------
 
-CombineWithReferenceFeature() applies basic binary operations to multiple
-features, returning one or more additional features as a result. That is, it substracts or
-divides of a group of variables and returns the result into new variables.
+CombineWithReferenceFeature() combines a group of variables with a group of reference
+variables utilizing basic mathematical operations (subtraction, division, addition and
+multiplication), returning one or more additional features in the dataframe as a result.
 
 In this example, we subtract 2 variables from the house prices dataset.
 

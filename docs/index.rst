@@ -148,7 +148,7 @@ Mathematical Combination:
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  :doc:`creation/MathematicalCombination`: creates new variables by combining features with mathematical operations
--  :doc:`creation/CombineWithReferenceFeature`: creates new variables by combining features with binary operations
+-  :doc:`creation/CombineWithReferenceFeature`: creates variables with reference features through mathematical operations
 
 Feature Selection:
 ~~~~~~~~~~~~~~~~~~
