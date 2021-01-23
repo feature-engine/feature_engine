@@ -2,7 +2,7 @@ from typing import List, Union
 
 import pandas as pd
 from sklearn.metrics import roc_auc_score, r2_score
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import KFold
 from sklearn.pipeline import Pipeline
 
 from feature_engine.dataframe_checks import (
@@ -78,7 +78,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         This indicates the metrics score to perform the feature selection.
         The current implementation supports 'roc_auc_score' and 'r2_score'.
 
-    threshold : float, default = 0.5
+    threshold : float, default = None
         The performance threshold above which a feature will be selected.
 
     bins : int, default = 5
@@ -86,7 +86,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         the values will be sorted.
 
     strategy : str, default = equal_width
-        whether to create the bins for discretisation of numerical variables of
+        whether to create the bins for discretization of numerical variables of
         equal width or equal frequency.
 
     cv : int, default=3
@@ -132,20 +132,8 @@ class SelectByTargetMeanPerformance(BaseSelector):
                 "'scoring'"
             )
 
-        if not isinstance(threshold, (int, float)):
+        if threshold and not isinstance(threshold, (int, float)):
             raise ValueError("threshold can only take integer or float")
-
-        if scoring == "roc_auc_score" and (threshold < 0.5 or threshold > 1):
-            raise ValueError(
-                "roc-auc score should vary between 0.5 and 1. Pick a "
-                "threshold within this interval."
-            )
-
-        if scoring == "r2_score" and (threshold < 0 or threshold > 1):
-            raise ValueError(
-                "r2 score should vary between 0 and 1. Pick a "
-                "threshold within this interval."
-            )
 
         if not isinstance(bins, int):
             raise TypeError("'bins' takes only integers")
@@ -207,7 +195,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         )
 
         # obtain cross-validation indeces
-        skf = StratifiedKFold(
+        skf = KFold(
             n_splits=self.cv, shuffle=True, random_state=self.random_state
         )
         skf.get_n_splits(X, y)
@@ -247,10 +235,16 @@ class SelectByTargetMeanPerformance(BaseSelector):
             axis=1
         ).to_dict()
 
+        # select features
+        if not self.threshold:
+            threshold = pd.Series(self.feature_performance_).mean()
+        else:
+            threshold = self.threshold
+
         self.features_to_drop_ = [
             f
             for f in self.variables
-            if self.feature_performance_[f] < self.threshold
+            if self.feature_performance_[f] < threshold
         ]
 
         return self
