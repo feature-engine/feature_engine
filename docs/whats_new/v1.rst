@@ -1,3 +1,32 @@
+Version 1.0.2
+=============
+
+Deployed: 22th January 2021
+
+Contributors
+------------
+    - Nicolas Galli
+    - Pradumna Suryawanshi
+    - Elamraoui Sohayb
+    - Soledad Galli
+
+New transformers
+----------------
+    - **CombineWithReferenceFeatures**: applies mathematical operations between a group of variables and reference variables (**by Nicolas Galli**)
+    - **DropMissingData**: removes missing observations from a dataset (**Pradumna Suryawanshi**)
+
+Bug Fix
+-------
+    - Fix bugs in SelectByTargetMeanPerformance.
+    - Fix documentation and jupyter notebook typos.
+
+Tutorials
+---------
+
+    - **Creation**: updated "how to" examples on how to combine variables into new features (**by Elamraoui Sohayb and Nicolas Galli**)
+    - **Kaggle Kernels**: include links to Kaggle kernels
+
+
 Version 1.0.1
 =============
 
