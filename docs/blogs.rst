@@ -9,7 +9,7 @@ Blogs
 - `Feature-engine: A new open-source Python package for feature engineering <https://www.trainindatablog.com/feature-engine-a-new-open-source-python-package-for-feature-engineering/>`_.
 - `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://www.trainindatablog.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python/>`_.
 - `Streamlining Feature Engineering Pipelines with Feature-engine <https://towardsdatascience.com/streamlining-feature-engineering-pipelines-with-feature-engine-e781d551f470?gi=e0fa6e5c0c1a/>`_.
-- `Feature Engineering for Machine Learning: A comprehensive Overvoew <https://www.trainindatablog.com/feature-engineering-for-machine-learning-comprehensive-overview/>`_.
+- `Feature Engineering for Machine Learning: A comprehensive Overview <https://www.trainindatablog.com/feature-engineering-for-machine-learning-comprehensive-overview/>`_.
 - `Feature Selection for Machine Learning: A comprehensive Overview <https://www.trainindatablog.com/feature-selection-for-machine-learning-comprehensive-overview/>`_.
 
 

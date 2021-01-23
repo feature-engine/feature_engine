@@ -104,11 +104,11 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     Methods
     -------
 
-    fit:
+    fit :
         This transformer does not learn parameters.
-    transform:
+    transform :
         Combine the variables with the mathematical operations.
-    fit_transform:
+    fit_transform :
         Fit to the data, then transform it.
 
     Notes
@@ -219,8 +219,8 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
            If any of the reference variables contain null values and the
            mathematical operation is 'div'.
 
-        Returns:
-        --------
+        Returns
+        -------
         self
         """
 
