@@ -138,7 +138,7 @@ def test_quantile_capping_both_tails_with_fold_15_percent(df_normal_dist):
     )
 
     # test fit params
-    assert transformer.right_tail_caps_ == {"var": 0.11823196128033647}
+    assert np.round(transformer.right_tail_caps_["var"], 5) == np.round(0.11823196128033647, 5)
     assert transformer.left_tail_caps_ == {}
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
