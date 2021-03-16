@@ -174,3 +174,30 @@ def df_normal_dist():
     df.columns = ["var"]
 
     return df
+
+
+@pytest.fixture(scope="module")
+def df_ciclycal_trans():
+    df = {
+        'day': [
+            6,
+            7,
+            5,
+            3,
+            1,
+            2,
+            4,
+        ],
+        'months': [
+            3,
+            7,
+            9,
+            12,
+            4,
+            6,
+            12,
+        ]
+    }
+    df = pd.DataFrame(df)
+
+    return df
