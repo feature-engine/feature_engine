@@ -34,7 +34,7 @@ def test_general_transformation(df_ciclycal_trans):
 
     # test init params
     assert ciclycal.variables == ['day']
-    assert ciclycal.max_values == {
+    assert ciclycal.max_values_ == {
         'day': 7,
     }
 

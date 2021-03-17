@@ -81,13 +81,15 @@ class CyclicalTransformer(BaseNumericalTransformer):
         # check input dataframe
         X = super().fit(X)
 
+        self.input_shape_ = X.shape
+
         # check for nans
-        self.max_values = {}
+        self.max_values_ = {}
         for variable in self.variables:
             if X[variable].isna().sum() > 0:
                 raise ValueError(f'The transformer CiclycalTransformer does not allow to have NaN values,'
                                  f'please check the column {variable}')
-            self.max_values[variable] = X[variable].max()
+            self.max_values_[variable] = X[variable].max()
         return self
 
     def transform(self, X: pd.DataFrame):
@@ -99,13 +101,12 @@ class CyclicalTransformer(BaseNumericalTransformer):
         X : Pandas DataFrame of shame = [n_samples, n_features]
             The data to be transformed.
         """
-        # TODO aqui quedé el check_fitted no está pasando
         X = super().transform(X)
         #X = X.copy() # This works
 
 
         for variable in self.variables:
-            max_value = self.max_values[variable]
+            max_value = self.max_values_[variable]
             X[f'{variable}_sin'] = np.sin(X[variable] * (2. * np.pi / max_value))
             X[f'{variable}_cos'] = np.cos(X[variable] * (2. * np.pi / max_value))
             X.drop(columns=variable, inplace=True)
