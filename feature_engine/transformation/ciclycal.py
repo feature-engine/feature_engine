@@ -102,8 +102,6 @@ class CyclicalTransformer(BaseNumericalTransformer):
             The data to be transformed.
         """
         X = super().transform(X)
-        #X = X.copy() # This works
-
 
         for variable in self.variables:
             max_value = self.max_values_[variable]
