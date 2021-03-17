@@ -71,7 +71,9 @@ class CyclicalTransformer(BaseNumericalTransformer):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
+            If the input is not a Pandas DataFrame.
+        ValueError:
+            If some of the columns contains NaNs
 
         Returns
         -------
@@ -100,6 +102,13 @@ class CyclicalTransformer(BaseNumericalTransformer):
         ----------
         X : Pandas DataFrame of shame = [n_samples, n_features]
             The data to be transformed.
+
+        Raises
+        ------
+        TypeError
+            If the input is not Pandas DataFrame.
+        ValueError:
+            If some of the columns contains NaNs
         """
         X = super().transform(X)
 
