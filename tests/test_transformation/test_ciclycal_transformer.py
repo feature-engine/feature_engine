@@ -11,15 +11,6 @@ def test_general_transformation(df_ciclycal_trans):
     X = ciclycal.fit_transform(df_ciclycal_trans)
 
     transf_df = df_ciclycal_trans.copy()
-    # transf_df['day_sin'] = [
-    #     -7.818315e-01,
-    #     -2.449294e-16,
-    #     -9.749279e-01,
-    #     4.338837e-01,
-    #     7.818315e-01,
-    #     9.749279e-01,
-    #     -4.338837e-01
-    # ]
 
     transf_df['day_sin'] = [
         -0.78183,

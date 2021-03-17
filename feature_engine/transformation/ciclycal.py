@@ -40,38 +40,74 @@ class CyclicalTransformer(BaseNumericalTransformer):
     fit:
         This transformer does not learn parameters.
     transform:
-        Apply the BoxCox transformation.
+        Apply the CyclicalTransformer transformation.
     fit_transform:
         Fit to data, then transform it.
 
     References
     ----------
-    .. [1] Box and Cox. "An Analysis of Transformations". Read at a RESEARCH MEETING,
-        1964.
-        https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.2517-6161.1964.tb00553.x
+    ..
     """
 
     def __init__(
-        self, variables: Union[None, int, str, List[Union[str, int]]] = None
+            self, variables: Union[None, int, str, List[Union[str, int]]] = None
     ) -> None:
         self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
-        self.max_values = {}
+        """
+        This transformer does not learn any parameter. But keeps a map of the max values
+        for every column
+
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The training input samples. Can be the entire dataframe, not just the
+            variables to transform.
+
+        y : pandas Series, default=None
+            It is not needed in this transformer. You can pass y or None.
+
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+
+        Returns
+        -------
+        self
+        """
+
         # check input dataframe
         X = super().fit(X)
+
+        # check for nans
+        self.max_values = {}
         for variable in self.variables:
             if X[variable].isna().sum() > 0:
-                raise NotImplementedError(f'The transformer CiclycalTransformer does not allow to have NaN values,'
-                                          f'please check the column {variable}')
+                raise ValueError(f'The transformer CiclycalTransformer does not allow to have NaN values,'
+                                 f'please check the column {variable}')
             self.max_values[variable] = X[variable].max()
         return self
 
-    def transform(self, X):
-        X.copy()
+    def transform(self, X: pd.DataFrame):
+        """
+        Apply a Ciclycal transformation.
+
+        Parameters
+        ----------
+        X : Pandas DataFrame of shame = [n_samples, n_features]
+            The data to be transformed.
+        """
+        # TODO aqui quedé el check_fitted no está pasando
+        X = super().transform(X)
+        #X = X.copy() # This works
+
+
         for variable in self.variables:
-            # check if the varible has nan:
-            max_value = X[variable].max()
+            max_value = self.max_values[variable]
             X[f'{variable}_sin'] = np.sin(X[variable] * (2. * np.pi / max_value))
             X[f'{variable}_cos'] = np.cos(X[variable] * (2. * np.pi / max_value))
-        return X.drop(self.variables, axis=1)
+            X.drop(columns=variable, inplace=True)
+
+        return X
