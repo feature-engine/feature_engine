@@ -105,6 +105,10 @@ def test_automatically_find_variables(df_ciclycal_trans):
     pd.testing.assert_frame_equal(X, transf_df)
 
 
-
+def test_fit_raises_error_if_na_in_df(df_na):
+    # test case 3: when dataset contains na, fit method
+    with pytest.raises(ValueError):
+        transformer = CyclicalTransformer()
+        transformer.fit(df_na)
 
 
