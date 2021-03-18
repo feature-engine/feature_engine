@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.transformation import CyclicalTransformer
 
@@ -110,5 +109,3 @@ def test_fit_raises_error_if_na_in_df(df_na):
     with pytest.raises(ValueError):
         transformer = CyclicalTransformer()
         transformer.fit(df_na)
-
-

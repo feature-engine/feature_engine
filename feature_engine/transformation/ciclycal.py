@@ -1,7 +1,7 @@
 from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
-import scipy.stats as stats
+
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
@@ -89,8 +89,9 @@ class CyclicalTransformer(BaseNumericalTransformer):
         self.max_values_ = {}
         for variable in self.variables:
             if X[variable].isna().sum() > 0:
-                raise ValueError(f'The transformer CiclycalTransformer does not allow to have NaN values,'
-                                 f'please check the column {variable}')
+                raise ValueError(f'The transformer CiclycalTransformer '
+                                 f'does not allow to have NaN values, please '
+                                 f'check the column {variable}')
             self.max_values_[variable] = X[variable].max()
         return self
 
