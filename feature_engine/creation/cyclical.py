@@ -5,6 +5,7 @@ import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.dataframe_checks import _check_contains_na
 
 
 class CyclicalTransformer(BaseNumericalTransformer):
@@ -81,17 +82,12 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
         # check input dataframe
         X = super().fit(X)
+        _check_contains_na(X, self.variables)
 
         self.input_shape_ = X.shape
 
         # check for nans
-        self.max_values_ = {}
-        for variable in self.variables:
-            if X[variable].isna().sum() > 0:
-                raise ValueError(f'The transformer CiclycalTransformer '
-                                 f'does not allow to have NaN values, please '
-                                 f'check the column {variable}')
-            self.max_values_[variable] = X[variable].max()
+        self.max_values_ = X[self.variables].max().to_dict()
         return self
 
     def transform(self, X: pd.DataFrame):
