@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from feature_engine.transformation import CyclicalTransformer
+from feature_engine.creation import CyclicalTransformer
 
 
 def test_general_transformation(df_ciclycal_trans):
