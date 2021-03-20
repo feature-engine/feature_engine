@@ -5,7 +5,7 @@ variables in the dataframe.
 
 from .mathematical_combination import MathematicalCombination
 from .combine_with_reference_feature import CombineWithReferenceFeature
-from .ciclycal import CyclicalTransformer
+from .cyclical import CyclicalTransformer
 
 __all__ = [
     "MathematicalCombination",

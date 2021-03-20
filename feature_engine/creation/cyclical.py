@@ -56,8 +56,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        This transformer does not learn any parameter. But keeps a map of the max values
-        for every column
+        Learns the max_value of each of the numerical variables.
 
         Parameters
         ----------
