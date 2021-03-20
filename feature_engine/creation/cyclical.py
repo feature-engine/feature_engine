@@ -51,9 +51,11 @@ class CyclicalTransformer(BaseNumericalTransformer):
     """
 
     def __init__(
-            self, variables: Union[None, int, str, List[Union[str, int]]] = None
+            self, variables: Union[None, int, str, List[Union[str, int]]] = None,
+            drop_original: bool = False
     ) -> None:
         self.variables = _check_input_parameter_variables(variables)
+        self.drop_original = drop_original
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -112,6 +114,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
             max_value = self.max_values_[variable]
             X[f'{variable}_sin'] = np.sin(X[variable] * (2. * np.pi / max_value))
             X[f'{variable}_cos'] = np.cos(X[variable] * (2. * np.pi / max_value))
-            X.drop(columns=variable, inplace=True)
+            if self.drop_original:
+                X.drop(columns=variable, inplace=True)
 
         return X
