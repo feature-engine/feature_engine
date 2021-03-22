@@ -150,6 +150,15 @@ def test_fit_raises_error_if_na_in_df(df_na):
         transformer = CyclicalTransformer()
         transformer.fit(df_na)
 
+def test_fit_raises_error_if_mapping_key_not_in_variables(df_ciclycal_trans):
+    # test case 3: when dataset contains na, fit method
+    with pytest.raises(ValueError):
+        transformer = CyclicalTransformer(variables='day',
+                                          max_values={
+                                              'dayi':
+                                              31})
+        transformer.fit(df_ciclycal_trans)
+
 
 def test_max_values_mapping(df_ciclycal_trans):
     ciclycal = CyclicalTransformer(

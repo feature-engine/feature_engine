@@ -89,12 +89,15 @@ class CyclicalTransformer(BaseNumericalTransformer):
         X = super().fit(X)
         _check_contains_na(X, self.variables)
 
-        self.input_shape_ = X.shape
-
         if self.max_values is None:
             self.max_values_ = X[self.variables].max().to_dict()
         else:
+
+            for key in list(self.max_values.keys()):
+                if key not in self.variables:
+                    raise ValueError(f'The mapping key {key} is not present in variables')
             self.max_values_ = self.max_values
+        self.input_shape_ = X.shape
         return self
 
     def transform(self, X: pd.DataFrame):
