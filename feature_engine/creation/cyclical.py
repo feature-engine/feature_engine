@@ -36,6 +36,11 @@ class CyclicalTransformer(BaseNumericalTransformer):
         The list of numerical variables that will be transformed. If None, the
         transformer will automatically find and select all numerical variables.
     max_values: dict(str, Union)
+        A dictionary that maps the natural maximum or a variable. Useful when
+        the maximum value is not present in the dataset.
+    drop_original: bool, default=False
+        Use this if you want to drop the original columns from the output.
+
 
     Methods
     -------
@@ -48,7 +53,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     References
     ----------
-    ..
+    http://blog.davidkaleko.com/feature-engineering-cyclical-features.html
     """
 
     def __init__(
@@ -78,7 +83,8 @@ class CyclicalTransformer(BaseNumericalTransformer):
         TypeError
             If the input is not a Pandas DataFrame.
         ValueError:
-            If some of the columns contains NaNs
+            - If some of the columns contains NaNs.
+            - If some of the mapping keys are not present in variables.
 
         Returns
         -------
@@ -92,10 +98,10 @@ class CyclicalTransformer(BaseNumericalTransformer):
         if self.max_values is None:
             self.max_values_ = X[self.variables].max().to_dict()
         else:
-
             for key in list(self.max_values.keys()):
                 if key not in self.variables:
-                    raise ValueError(f'The mapping key {key} is not present in variables')
+                    raise ValueError(f'The mapping key {key} is not present'
+                                     f' in variables.')
             self.max_values_ = self.max_values
         self.input_shape_ = X.shape
         return self
@@ -113,8 +119,14 @@ class CyclicalTransformer(BaseNumericalTransformer):
         ------
         TypeError
             If the input is not Pandas DataFrame.
-        ValueError:
-            If some of the columns contains NaNs
+
+        Returns
+        -------
+        X : Pandas dataframe.
+            Depending if drop_original was set to True the dataframe will have
+            new columns which are twice the amount of columns in variables. If
+            set to False it will have twice the amount of columns in variables
+            and the original columns.
         """
         X = super().transform(X)
 
