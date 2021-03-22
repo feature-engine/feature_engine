@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 import numpy as np
 import pandas as pd
 
@@ -35,6 +35,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
     variables : list, default=None
         The list of numerical variables that will be transformed. If None, the
         transformer will automatically find and select all numerical variables.
+    max_values: dict(str, Union)
 
     Methods
     -------
@@ -52,9 +53,11 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     def __init__(
             self, variables: Union[None, int, str, List[Union[str, int]]] = None,
-            drop_original: bool = False
+            max_values: Optional[Dict[str, Union[int, float]]] = None,
+            drop_original: Optional[bool] = False
     ) -> None:
         self.variables = _check_input_parameter_variables(variables)
+        self.max_values = max_values
         self.drop_original = drop_original
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -88,8 +91,10 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
         self.input_shape_ = X.shape
 
-        # check for nans
-        self.max_values_ = X[self.variables].max().to_dict()
+        if self.max_values is None:
+            self.max_values_ = X[self.variables].max().to_dict()
+        else:
+            self.max_values_ = self.max_values
         return self
 
     def transform(self, X: pd.DataFrame):

@@ -85,7 +85,6 @@ def test_general_transformation_dropping_original_values(df_ciclycal_trans):
     pd.testing.assert_frame_equal(X, transf_df)
 
 
-
 def test_automatically_find_variables(df_ciclycal_trans):
     # test case 2: automatically select variables
     ciclycal = CyclicalTransformer(variables=None, drop_original=True)
@@ -150,3 +149,31 @@ def test_fit_raises_error_if_na_in_df(df_na):
     with pytest.raises(ValueError):
         transformer = CyclicalTransformer()
         transformer.fit(df_na)
+
+
+def test_max_values_mapping(df_ciclycal_trans):
+    ciclycal = CyclicalTransformer(
+        variables='day',
+        max_values={'day': 31}
+    )
+    X = ciclycal.fit_transform(df_ciclycal_trans)
+    transf_df = df_ciclycal_trans.copy()
+    transf_df['day_sin'] = [
+        0.937752,
+        0.988468,
+        0.848644,
+        0.571268,
+        0.201298,
+        0.394355,
+        0.724792,
+    ]
+    transf_df['day_cos'] = [
+        0.347305,
+        0.151428,
+        0.528964,
+        0.820763,
+        0.979530,
+        0.918958,
+        0.688967
+    ]
+    pd.testing.assert_frame_equal(X, transf_df)
