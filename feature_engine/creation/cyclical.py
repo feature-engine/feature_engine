@@ -62,6 +62,14 @@ class CyclicalTransformer(BaseNumericalTransformer):
             drop_original: Optional[bool] = False
     ) -> None:
         self.variables = _check_input_parameter_variables(variables)
+        if max_values:
+            if not isinstance(max_values, dict) or not all(
+                    isinstance(var, (int, float)) for var in list(max_values.values())):
+                raise TypeError(
+                    'max_values takes a dictionary of strings as keys, '
+                    'and numbers as items to be used as the reference for'
+                    'the max value of each column.'
+                )
         self.max_values = max_values
         self.drop_original = drop_original
 
