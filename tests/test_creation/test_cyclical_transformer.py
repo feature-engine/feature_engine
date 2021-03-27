@@ -166,9 +166,10 @@ def test_check_validation_of_init_parameters(df_ciclycal_trans):
     with pytest.raises(TypeError):
         transformer = CyclicalTransformer(variables='day',
                                           max_values=('dayi', 31))
-    with pytest.raises(TypeError):
         transformer = CyclicalTransformer(variables='day',
                                           max_values={'day': '31'})
+        transformer = CyclicalTransformer(variables='day',
+                                          drop_original='True')
 
 def test_max_values_mapping(df_ciclycal_trans):
     ciclycal = CyclicalTransformer(

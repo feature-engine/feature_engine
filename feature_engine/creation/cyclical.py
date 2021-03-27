@@ -70,6 +70,13 @@ class CyclicalTransformer(BaseNumericalTransformer):
                     'and numbers as items to be used as the reference for'
                     'the max value of each column.'
                 )
+        if drop_original:
+            if not isinstance(drop_original, bool):
+                raise TypeError(
+                    'drop_original takes a boolean value in order to know'
+                    'if the variable(s) are going to be deleted.'
+                )
+
         self.max_values = max_values
         self.drop_original = drop_original
 
