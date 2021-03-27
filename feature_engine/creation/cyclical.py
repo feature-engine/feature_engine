@@ -5,7 +5,6 @@ import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
-from feature_engine.dataframe_checks import _check_contains_na
 
 
 class CyclicalTransformer(BaseNumericalTransformer):
@@ -64,7 +63,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
         self.variables = _check_input_parameter_variables(variables)
         self.max_values = self._check_max_values(max_values)
         self.drop_original = self._check_drop_original(drop_original)
-        
+
     def _check_max_values(self, max_values):
         if max_values:
             if not isinstance(max_values, dict) or not all(

@@ -4,12 +4,39 @@ import pytest
 from feature_engine.creation import CyclicalTransformer
 
 
-def test_general_transformation_without_dropping_values(df_ciclycal_trans):
+@pytest.fixture
+def df_cyclical_trans():
+    df = {
+        'day': [
+            6,
+            7,
+            5,
+            3,
+            1,
+            2,
+            4,
+        ],
+        'months': [
+            3,
+            7,
+            9,
+            12,
+            4,
+            6,
+            12,
+        ]
+    }
+    df = pd.DataFrame(df)
+
+    return df
+
+
+def test_general_transformation_without_dropping_variables(df_cyclical_trans):
     # test case 1: just one variable.
     ciclycal = CyclicalTransformer(variables=['day'])
-    X = ciclycal.fit_transform(df_ciclycal_trans)
+    X = ciclycal.fit_transform(df_cyclical_trans)
 
-    transf_df = df_ciclycal_trans.copy()
+    transf_df = df_cyclical_trans.copy()
 
     # expected output
     transf_df['day_sin'] = [
@@ -44,12 +71,12 @@ def test_general_transformation_without_dropping_values(df_ciclycal_trans):
     pd.testing.assert_frame_equal(X, transf_df)
 
 
-def test_general_transformation_dropping_original_values(df_ciclycal_trans):
+def test_general_transformation_dropping_original_values(df_cyclical_trans):
     # test case 1: just one variable, but dropping the values
     ciclycal = CyclicalTransformer(variables=['day'], drop_original=True)
-    X = ciclycal.fit_transform(df_ciclycal_trans)
+    X = ciclycal.fit_transform(df_cyclical_trans)
 
-    transf_df = df_ciclycal_trans.copy()
+    transf_df = df_cyclical_trans.copy()
 
     # expected output
     transf_df['day_sin'] = [
@@ -85,11 +112,11 @@ def test_general_transformation_dropping_original_values(df_ciclycal_trans):
     pd.testing.assert_frame_equal(X, transf_df)
 
 
-def test_automatically_find_variables(df_ciclycal_trans):
+def test_automatically_find_variables(df_cyclical_trans):
     # test case 2: automatically select variables
     ciclycal = CyclicalTransformer(variables=None, drop_original=True)
-    X = ciclycal.fit_transform(df_ciclycal_trans)
-    transf_df = df_ciclycal_trans.copy()
+    X = ciclycal.fit_transform(df_cyclical_trans)
+    transf_df = df_cyclical_trans.copy()
 
     # expected output
     transf_df['day_sin'] = [
@@ -151,33 +178,38 @@ def test_fit_raises_error_if_na_in_df(df_na):
         transformer.fit(df_na)
 
 
-def test_fit_raises_error_if_mapping_key_not_in_variables(df_ciclycal_trans):
+def test_fit_raises_error_if_mapping_key_not_in_variables(df_cyclical_trans):
     # test case 3: when dataset contains na, fit method
     with pytest.raises(ValueError):
         transformer = CyclicalTransformer(variables='day',
                                           max_values={
                                               'dayi':
                                               31})
-        transformer.fit(df_ciclycal_trans)
+        transformer.fit(df_cyclical_trans)
 
 
-def test_check_validation_of_init_parameters(df_ciclycal_trans):
+def test_check_validation_of_init_parameters(df_cyclical_trans):
     # test case 3: when dataset contains na, fit method
     with pytest.raises(TypeError):
         transformer = CyclicalTransformer(variables='day',
                                           max_values=('dayi', 31))
+        transformer.fit(df_cyclical_trans)
         transformer = CyclicalTransformer(variables='day',
                                           max_values={'day': '31'})
+        transformer.fit(df_cyclical_trans)
+
         transformer = CyclicalTransformer(variables='day',
                                           drop_original='True')
+        transformer.fit(df_cyclical_trans)
 
-def test_max_values_mapping(df_ciclycal_trans):
+
+def test_max_values_mapping(df_cyclical_trans):
     ciclycal = CyclicalTransformer(
         variables='day',
         max_values={'day': 31}
     )
-    X = ciclycal.fit_transform(df_ciclycal_trans)
-    transf_df = df_ciclycal_trans.copy()
+    X = ciclycal.fit_transform(df_cyclical_trans)
+    transf_df = df_cyclical_trans.copy()
     transf_df['day_sin'] = [
         0.937752,
         0.988468,
