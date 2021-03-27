@@ -113,7 +113,6 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
         # check input dataframe
         X = super().fit(X)
-        _check_contains_na(X, self.variables)
 
         if self.max_values is None:
             self.max_values_ = X[self.variables].max().to_dict()
