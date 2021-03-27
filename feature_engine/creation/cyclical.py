@@ -62,6 +62,10 @@ class CyclicalTransformer(BaseNumericalTransformer):
             drop_original: Optional[bool] = False
     ) -> None:
         self.variables = _check_input_parameter_variables(variables)
+        self.max_values = self._check_max_values(max_values)
+        self.drop_original = self._check_drop_original(drop_original)
+        
+    def _check_max_values(self, max_values):
         if max_values:
             if not isinstance(max_values, dict) or not all(
                     isinstance(var, (int, float)) for var in list(max_values.values())):
@@ -70,15 +74,16 @@ class CyclicalTransformer(BaseNumericalTransformer):
                     'and numbers as items to be used as the reference for'
                     'the max value of each column.'
                 )
+        return max_values
+
+    def _check_drop_original(self, drop_original):
         if drop_original:
             if not isinstance(drop_original, bool):
                 raise TypeError(
                     'drop_original takes a boolean value in order to know'
                     'if the variable(s) are going to be deleted.'
                 )
-
-        self.max_values = max_values
-        self.drop_original = drop_original
+        return drop_original
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
