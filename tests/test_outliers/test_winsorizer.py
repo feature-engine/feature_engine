@@ -22,13 +22,15 @@ def test_gaussian_capping_right_tail_with_fold_1(df_normal_dist):
     assert transformer.tail == "right"
     assert transformer.fold == 1
     # test fit attr
-    assert transformer.right_tail_caps_ == {"var": 0.10727677848029868}
+    assert np.round(transformer.right_tail_caps_["var"], 3) == np.round(
+        0.10727677848029868, 3
+    )
     assert transformer.left_tail_caps_ == {}
     assert transformer.input_shape_ == (100, 1)
     # test transform outputs
     pd.testing.assert_frame_equal(X, df_transf)
-    assert X["var"].max() <= 0.10727677848029868
-    assert df_normal_dist["var"].max() > 0.10727677848029868
+    assert np.round(X["var"].max(), 3) <= np.round(0.10727677848029868, 3)
+    assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.10727677848029868, 3)
 
 
 def test_gaussian_capping_both_tails_with_fold_2(df_normal_dist):
@@ -46,14 +48,18 @@ def test_gaussian_capping_both_tails_with_fold_2(df_normal_dist):
     )
 
     # test fit params
-    assert transformer.right_tail_caps_ == {"var": 0.20857275540714884}
-    assert transformer.left_tail_caps_ == {"var": -0.19661115230025186}
+    assert np.round(transformer.right_tail_caps_["var"], 3) == np.round(
+        0.20857275540714884, 3
+    )
+    assert np.round(transformer.left_tail_caps_["var"], 3) == np.round(
+        -0.19661115230025186, 3
+    )
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
-    assert X["var"].max() <= 0.20857275540714884
-    assert X["var"].min() >= -0.19661115230025186
-    assert df_normal_dist["var"].max() > 0.20857275540714884
-    assert df_normal_dist["var"].min() < -0.19661115230025186
+    assert np.round(X["var"].max(), 3) <= np.round(0.20857275540714884, 3)
+    assert np.round(X["var"].min(), 3) >= np.round(-0.19661115230025186, 3)
+    assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.20857275540714884, 3)
+    assert np.round(df_normal_dist["var"].min(), 3) < np.round(-0.19661115230025186, 3)
 
 
 def test_iqr_capping_both_tails_with_fold_1(df_normal_dist):
@@ -71,14 +77,18 @@ def test_iqr_capping_both_tails_with_fold_1(df_normal_dist):
     )
 
     # test fit params
-    assert transformer.right_tail_caps_ == {"var": 0.21180113880445128}
-    assert transformer.left_tail_caps_ == {"var": -0.20247907173293223}
+    assert np.round(transformer.right_tail_caps_["var"], 3) == np.round(
+        0.21180113880445128, 3
+    )
+    assert np.round(transformer.left_tail_caps_["var"], 3) == np.round(
+        -0.20247907173293223, 3
+    )
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
-    assert X["var"].max() <= 0.21180113880445128
-    assert X["var"].min() >= -0.20247907173293223
-    assert df_normal_dist["var"].max() > 0.21180113880445128
-    assert df_normal_dist["var"].min() < -0.20247907173293223
+    assert np.round(X["var"].max(), 3) <= np.round(0.21180113880445128, 3)
+    assert np.round(X["var"].min(), 3) >= np.round(-0.20247907173293223, 3)
+    assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.21180113880445128, 3)
+    assert np.round(df_normal_dist["var"].min(), 3) < np.round(-0.20247907173293223, 3)
 
 
 def test_iqr_capping_left_tail_with_fold_2(df_normal_dist):
@@ -94,11 +104,13 @@ def test_iqr_capping_left_tail_with_fold_2(df_normal_dist):
 
     # test fit params
     assert transformer.right_tail_caps_ == {}
-    assert transformer.left_tail_caps_ == {"var": -0.17486039103044}
+    assert np.round(transformer.left_tail_caps_["var"], 3) == np.round(
+        -0.17486039103044, 3
+    )
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
-    assert X["var"].min() >= -0.17486039103044
-    assert df_normal_dist["var"].min() < -0.17486039103044
+    assert np.round(X["var"].min(), 3) >= np.round(-0.17486039103044, 3)
+    assert np.round(df_normal_dist["var"].min(), 3) < np.round(-0.17486039103044, 3)
 
 
 def test_quantile_capping_both_tails_with_fold_10_percent(df_normal_dist):
@@ -116,14 +128,18 @@ def test_quantile_capping_both_tails_with_fold_10_percent(df_normal_dist):
     )
 
     # test fit params
-    assert transformer.right_tail_caps_ == {"var": 0.14712481122898166}
-    assert transformer.left_tail_caps_ == {"var": -0.12366227743232801}
+    assert np.round(transformer.right_tail_caps_["var"], 3) == np.round(
+        0.14712481122898166, 3
+    )
+    assert np.round(transformer.left_tail_caps_["var"], 3) == np.round(
+        -0.12366227743232801, 3
+    )
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
-    assert X["var"].max() <= 0.14712481122898166
-    assert X["var"].min() >= -0.12366227743232801
-    assert df_normal_dist["var"].max() > 0.14712481122898166
-    assert df_normal_dist["var"].min() < -0.12366227743232801
+    assert np.round(X["var"].max(), 3) <= np.round(0.14712481122898166, 3)
+    assert np.round(X["var"].min(), 3) >= np.round(-0.12366227743232801, 3)
+    assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.14712481122898166, 3)
+    assert np.round(df_normal_dist["var"].min(), 3) < np.round(-0.12366227743232801, 3)
 
 
 def test_quantile_capping_both_tails_with_fold_15_percent(df_normal_dist):
@@ -138,12 +154,14 @@ def test_quantile_capping_both_tails_with_fold_15_percent(df_normal_dist):
     )
 
     # test fit params
-    assert transformer.right_tail_caps_ == {"var": 0.11823196128033647}
+    assert np.round(transformer.right_tail_caps_["var"], 3) == np.round(
+        0.11823196128033647, 3
+    )
     assert transformer.left_tail_caps_ == {}
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
-    assert X["var"].max() <= 0.11823196128033647
-    assert df_normal_dist["var"].max() > 0.11823196128033647
+    assert np.round(X["var"].max(), 3) <= np.round(0.11823196128033647, 3)
+    assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.11823196128033647, 3)
 
 
 def test_transformer_ignores_na_in_df(df_na):
@@ -179,8 +197,8 @@ def test_transformer_ignores_na_in_df(df_na):
     assert transformer.input_shape_ == (8, 6)
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
-    assert X["Age"].max() <= 38.79255087111844
-    assert df_na["Age"].max() > 38.79255087111844
+    assert np.round(X["Age"].max(), 3) <= np.round(38.79255087111844, 3)
+    assert np.round(df_na["Age"].max(), 3) > np.round(38.79255087111844, 3)
 
 
 def test_error_if_capping_method_not_permitted():

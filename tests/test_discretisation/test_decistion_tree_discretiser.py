@@ -30,7 +30,9 @@ def test_classification(df_normal_dist):
     assert transformer.input_shape_ == (100, 1)
     # transform params
     assert all(x for x in np.round(X["var"].unique(), 2) if x not in X_t)
-    assert transformer.scores_dict_ == {"var": 0.717391304347826}
+    assert np.round(transformer.scores_dict_["var"], 3) == np.round(
+        0.717391304347826, 3
+    )
 
 
 def test_regression(df_normal_dist):
@@ -72,7 +74,9 @@ def test_regression(df_normal_dist):
     assert transformer.regression is True
     # fit params
     assert transformer.input_shape_ == (100, 1)
-    assert transformer.scores_dict_ == {"var": -4.4373314584616444e-05}
+    assert np.round(transformer.scores_dict_["var"], 3) == np.round(
+        -4.4373314584616444e-05, 3
+    )
     # transform params
     assert all(x for x in np.round(X["var"].unique(), 2) if x not in X_t)
 
