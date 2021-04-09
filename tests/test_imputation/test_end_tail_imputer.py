@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pytest
 from sklearn.exceptions import NotFittedError
 
@@ -81,7 +82,10 @@ def test_user_enters_variables_and_iqr_imputation_on_left_tail(df_na):
         imputation_method="iqr", tail="left", fold=1.5, variables=["Age", "Marks"]
     )
     imputer.fit(df_na)
-    assert imputer.imputer_dict_ == {"Age": -6.5, "Marks": 0.36249999999999993}
+    assert imputer.imputer_dict_["Age"] == -6.5
+    assert np.round(imputer.imputer_dict_["Marks"], 3) == np.round(
+        0.36249999999999993, 3
+    )
 
 
 def test_error_when_imputation_method_is_not_permitted():

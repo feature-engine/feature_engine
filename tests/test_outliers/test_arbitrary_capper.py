@@ -20,17 +20,21 @@ def test_right_end_capping(df_normal_dist):
     )
 
     # test init params
-    assert transformer.max_capping_dict == {"var": 0.10727677848029868}
+    assert np.round(transformer.max_capping_dict["var"], 3) == np.round(
+        0.10727677848029868, 3
+    )
     assert transformer.min_capping_dict is None
     assert transformer.variables == ["var"]
     # test fit attrs
-    assert transformer.right_tail_caps_ == {"var": 0.10727677848029868}
+    assert np.round(transformer.right_tail_caps_["var"], 3) == np.round(
+        0.10727677848029868, 3
+    )
     assert transformer.left_tail_caps_ == {}
     assert transformer.input_shape_ == (100, 1)
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
-    assert X["var"].max() <= 0.10727677848029868
-    assert df_normal_dist["var"].max() > 0.10727677848029868
+    assert np.round(X["var"].max(), 3) <= np.round(0.10727677848029868, 3)
+    assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.10727677848029868, 3)
 
 
 def test_both_ends_capping(df_normal_dist):
@@ -51,14 +55,18 @@ def test_both_ends_capping(df_normal_dist):
     )
 
     # test fit params
-    assert transformer.right_tail_caps_ == {"var": 0.20857275540714884}
-    assert transformer.left_tail_caps_ == {"var": -0.19661115230025186}
+    assert np.round(transformer.right_tail_caps_["var"], 3) == np.round(
+        0.20857275540714884, 3
+    )
+    assert np.round(transformer.left_tail_caps_["var"], 3) == np.round(
+        -0.19661115230025186, 3
+    )
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
-    assert X["var"].max() <= 0.20857275540714884
-    assert X["var"].min() >= -0.19661115230025186
-    assert df_normal_dist["var"].max() > 0.20857275540714884
-    assert df_normal_dist["var"].min() < -0.19661115230025186
+    assert np.round(X["var"].max(), 3) <= np.round(0.20857275540714884, 3)
+    assert np.round(X["var"].min(), 3) >= np.round(-0.19661115230025186, 3)
+    assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.20857275540714884, 3)
+    assert np.round(df_normal_dist["var"].min(), 3) < np.round(-0.19661115230025186, 3)
 
 
 def test_left_tail_capping(df_normal_dist):
@@ -76,14 +84,18 @@ def test_left_tail_capping(df_normal_dist):
 
     # test init param
     assert transformer.max_capping_dict is None
-    assert transformer.min_capping_dict == {"var": -0.17486039103044}
+    assert np.round(transformer.min_capping_dict["var"], 3) == np.round(
+        -0.17486039103044, 3
+    )
     # test fit attr
     assert transformer.right_tail_caps_ == {}
-    assert transformer.left_tail_caps_ == {"var": -0.17486039103044}
+    assert np.round(transformer.left_tail_caps_["var"], 3) == np.round(
+        -0.17486039103044, 3
+    )
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
-    assert X["var"].min() >= -0.17486039103044
-    assert df_normal_dist["var"].min() < -0.17486039103044
+    assert np.round(X["var"].min(), 3) >= np.round(-0.17486039103044, 3)
+    assert np.round(df_normal_dist["var"].min(), 3) < np.round(-0.17486039103044, 3)
 
 
 def test_ignores_na_in_input_df(df_na):
