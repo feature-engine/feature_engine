@@ -181,7 +181,8 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         self.new_variables_names = new_variables_names
         self.math_operations = math_operations
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None,
+            skipna: Optional[bool] = True):
         """
         This transformer does not learn parameters.
 
@@ -197,13 +198,18 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         y : pandas Series, or np.array. Defaults to None.
             It is not needed in this transformer. You can pass y or None.
 
+        skipna: bool. Defaults to True.
+            Whether to raise Value error if variables contain null values.
+
+
         Raises
         ------
         TypeError
            - If the input is not a Pandas DataFrame
            - If any user provided variables in variables_to_combine are not numerical
         ValueError
-           If the variable(s) contain null values
+           If the variable(s) contain null values when the parameter
+           skipna is set to True
 
         Returns
         -------
@@ -219,7 +225,8 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         )
 
         # check if dataset contains na
-        _check_contains_na(X, self.variables_to_combine)
+        if not skipna:
+            _check_contains_na(X, self.variables_to_combine)
 
         if self.math_operations is None:
             self.math_operations_ = ["sum", "prod", "mean", "std", "max", "min"]
@@ -246,7 +253,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame, skipna: Optional[bool] = True) -> pd.DataFrame:
         """
         Combine the variables with the mathematical operations.
 
@@ -255,12 +262,16 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         X : pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
 
+        skipna: bool. Defaults to True.
+            Whether to raise Value error if the variables contains null values.
+
         Raises
         ------
         TypeError
            If the input is not a Pandas DataFrame
         ValueError
-           - If the variable(s) contain null values
+           - If the variable(s) contain null values when the parameter
+            skipna is set to True
            - If the dataframe is not of the same size as that used in fit()
 
         Returns
@@ -276,7 +287,8 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # check if dataset contains na
-        _check_contains_na(X, self.variables_to_combine)
+        if not skipna:
+            _check_contains_na(X, self.variables_to_combine)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_input_matches_training_df(X, self.input_shape_[1])
