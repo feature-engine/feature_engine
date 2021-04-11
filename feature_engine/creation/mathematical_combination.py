@@ -208,8 +208,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
            - If the input is not a Pandas DataFrame
            - If any user provided variables in variables_to_combine are not numerical
         ValueError
-           If the variable(s) contain null values when the parameter
-           skipna is set to True
+           If the variable(s) contain null values when skipna is set to True
 
         Returns
         -------
@@ -270,8 +269,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         TypeError
            If the input is not a Pandas DataFrame
         ValueError
-           - If the variable(s) contain null values when the parameter
-            skipna is set to True
+           - If the variable(s) contain null values when skipna is set to True
            - If the dataframe is not of the same size as that used in fit()
 
         Returns

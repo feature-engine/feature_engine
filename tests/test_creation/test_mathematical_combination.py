@@ -273,18 +273,18 @@ def test_variable_names_when_df_cols_are_integers(df_numeric_columns):
     pd.testing.assert_frame_equal(X, ref)
 
 
-def test_error_when_null_values_in_variable():
-    with pytest.raises(ValueError):
+    def test_error_when_null_values_in_variable():
+        with pytest.raises(ValueError):
 
-        math_combinator_mean = MathematicalCombination(
-            variables_to_combine=['fixed acidity', 'volatile acidity'],
-            math_operations=['mean'],
-            new_variables_names=['avg_acidity']
-        )
+            math_combinator_mean = MathematicalCombination(
+                variables_to_combine=['fixed acidity', 'volatile acidity'],
+                math_operations=['mean'],
+                new_variables_names=['avg_acidity']
+            )
 
-        ref = pd.DataFrame.from_dict({
-            "fixed acidity": None,
-            "volatile acidity": 0.7
-        })
-        math_combinator_mean.fit(ref)
-        math_combinator_mean.transform(ref)
+            ref = pd.DataFrame.from_dict({
+                "fixed acidity": None,
+                "volatile acidity": 0.7
+            })
+            math_combinator_mean.fit(ref)
+            math_combinator_mean.transform(ref)
