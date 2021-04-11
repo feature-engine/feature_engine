@@ -272,7 +272,6 @@ def test_variable_names_when_df_cols_are_integers(df_numeric_columns):
     # transform params
     pd.testing.assert_frame_equal(X, ref)
 
-
     def test_error_when_null_values_in_variable():
         with pytest.raises(ValueError):
 
