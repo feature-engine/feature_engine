@@ -6,11 +6,11 @@ Articles and videos about Feature-engine and feature engineering and selection i
 Blogs
 -----
 
-- `Feature-engine: A new open-source Python package for feature engineering <https://www.trainindatablog.com/feature-engine-a-new-open-source-python-package-for-feature-engineering/>`_.
-- `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://www.trainindatablog.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python/>`_.
+- `Feature-engine: A new open-source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c/>`_.
+- `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd>`_.
 - `Streamlining Feature Engineering Pipelines with Feature-engine <https://towardsdatascience.com/streamlining-feature-engineering-pipelines-with-feature-engine-e781d551f470?gi=e0fa6e5c0c1a/>`_.
-- `Feature Engineering for Machine Learning: A comprehensive Overview <https://www.trainindatablog.com/feature-engineering-for-machine-learning-comprehensive-overview/>`_.
-- `Feature Selection for Machine Learning: A comprehensive Overview <https://www.trainindatablog.com/feature-selection-for-machine-learning-comprehensive-overview/>`_.
+- `Feature Engineering for Machine Learning: A comprehensive Overview <https://trainindata.medium.com/feature-engineering-for-machine-learning-a-comprehensive-overview-a7ad04c896f8>`_.
+- `Feature Selection for Machine Learning: A comprehensive Overview <https://trainindata.medium.com/feature-selection-for-machine-learning-a-comprehensive-overview-bd571db5dd2d>`_.
 
 
 Videos

@@ -39,7 +39,7 @@ for an example.
 
 This article provides a nice summary:
 
-- `Feature-engine: A new open source Python package for feature engineering <https://www.trainindatablog.com/feature-engine-a-new-open-source-python-package-for-feature-engineering>`_.
+- `Feature-engine: A new open source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c>`_.
 
 
 Installation
@@ -77,10 +77,11 @@ Feature-engine features in the following resources
 ---------------------------------------------------
 
 - `Website <https://www.trainindata.com/feature-engine>`_.
-- `Feature Engineering for Machine Learning <https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO>`_, Online Course.
+- `Feature Engineering for Machine Learning <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_, Online Course.
+- `Feature Selection for Machine Learning <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_, Online Course.
 - `Python Feature Engineering Cookbook <https://www.packtpub.com/data/python-feature-engineering-cookbook>`_.
-- `Feature-engine: A new open-source Python package for feature engineering <https://www.trainindatablog.com/feature-engine-a-new-open-source-python-package-for-feature-engineering/>`_.
-- `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://www.trainindatablog.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python/>`_.
+- `Feature-engine: A new open-source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c/>`_.
+- `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd>`_.
 
 En Español:
 
@@ -173,9 +174,10 @@ Can't get something to work? Here are places where you can find help.
 
 1. The docs (you're here!).
 2. `Stack Overflow <https://stackoverflow.com/questions/tagged/feature-engine>`_. If you ask a question, please tag it with "feature-engine".
-3. If you are enrolled in the `Feature Engineering for Machine Learning course in Udemy <https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO>`_ , post a question in a relevant section.
-4. Join our `mailing list <https://groups.google.com/d/forum/feature-engine>`_.
-5. Ask a question in the repo by filing an `issue <https://github.com/solegalli/feature_engine/issues/>`_.
+3. If you are enrolled in the `Feature Engineering for Machine Learning course in Udemy <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_ , post a question in a relevant section.
+4. If you are enrolled in the `Feature Selection for Machine Learning course in Udemy <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_ , post a question in a relevant section.
+5. Join our `mailing list <https://groups.google.com/d/forum/feature-engine>`_.
+6. Ask a question in the repo by filing an `issue <https://github.com/solegalli/feature_engine/issues/>`_.
 
 
 Found a Bug or have a suggestion?
