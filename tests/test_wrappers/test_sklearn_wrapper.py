@@ -3,6 +3,14 @@ import pandas as pd
 import pytest
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.feature_selection import (
+    f_regression,
+    SelectKBest,
+    SelectFromModel,
+)
+
+from sklearn.linear_model import Lasso
+from sklearn.datasets import load_boston
 
 from feature_engine.wrappers import SklearnTransformerWrapper
 
@@ -100,7 +108,7 @@ def test_sklearn_standardscaler_numeric(df_vartypes):
     ref = df_vartypes.copy()
     ref[variables_to_scale] = (
         ref[variables_to_scale] - ref[variables_to_scale].mean()
-    ) / ref[variables_to_scale].std(ddof=0)
+        ) / ref[variables_to_scale].std(ddof=0)
 
     transformed_df = transformer.fit_transform(df_vartypes)
 
@@ -135,7 +143,7 @@ def test_sklearn_standardscaler_allfeatures(df_vartypes):
     variables_to_scale = list(ref.select_dtypes(include="number").columns)
     ref[variables_to_scale] = (
         ref[variables_to_scale] - ref[variables_to_scale].mean()
-    ) / ref[variables_to_scale].std(ddof=0)
+        ) / ref[variables_to_scale].std(ddof=0)
 
     transformed_df = transformer.fit_transform(df_vartypes)
 
@@ -285,3 +293,54 @@ def test_sklearn_ohe_all_features(df_vartypes):
 def test_sklearn_ohe_errors(df_vartypes):
     with pytest.raises(AttributeError):
         SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=True))
+
+
+def test_selectKBest_all_variables():
+    X, y = load_boston(return_X_y=True)
+    X = pd.DataFrame(X)
+
+    selector = SklearnTransformerWrapper(
+        transformer=SelectKBest(f_regression, k=5),
+    )
+
+    selector.fit(X, y)
+
+    X_train_t = selector.transform(X)
+
+    pd.testing.assert_frame_equal(X_train_t, X[[2, 5, 9, 10, 12]])
+
+
+def test_selectFromModel_all_variables():
+    X, y = load_boston(return_X_y=True)
+    X = pd.DataFrame(X)
+
+    lasso = Lasso(alpha=10, random_state=0)
+
+    sfm = SelectFromModel(lasso, prefit=False)
+
+    selector = SklearnTransformerWrapper(transformer=sfm)
+
+    selector.fit(X, y)
+
+    X_train_t = selector.transform(X)
+
+    pd.testing.assert_frame_equal(X_train_t, X[[1, 9, 11, 12]])
+
+
+def test_selectFromModel_selected_variables():
+    X, y = load_boston(return_X_y=True)
+    X = pd.DataFrame(X)
+
+    lasso = Lasso(alpha=10, random_state=0)
+
+    sfm = SelectFromModel(lasso, prefit=False)
+
+    selector = SklearnTransformerWrapper(
+        transformer=sfm, variables=[0, 1, 2, 3, 4, 5],
+    )
+
+    selector.fit(X, y)
+
+    X_train_t = selector.transform(X)
+
+    pd.testing.assert_frame_equal(X_train_t, X[[0, 1, 2, 6, 7, 8, 9, 10, 11, 12]])
