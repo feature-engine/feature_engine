@@ -1,5 +1,6 @@
 feature_engine>=1.0.0
+matplotlib>=3.2.1
+seaborn>=0.11.1
 jupyter>=1.0.0
 ipykernel>=5.2.1
-matplotlib>=3.2.1
 autopep8>=1.5.2
