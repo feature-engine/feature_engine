@@ -5,6 +5,11 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
+from sklearn.feature_selection import (
+    SelectKBest,
+    SelectPercentile,
+    SelectFromModel,
+)
 
 from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
@@ -101,7 +106,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         else:
             self.variables = _find_or_check_numerical_variables(X, self.variables)
 
-        self.transformer.fit(X[self.variables])
+        self.transformer.fit(X[self.variables], y)
 
         self.input_shape_ = X.shape
 
@@ -147,6 +152,19 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
                 columns=self.transformer.get_feature_names(self.variables),
             )
             X = pd.concat([X, ohe_results_as_df], axis=1)
+
+        elif isinstance(self.transformer,
+                        (SelectKBest, SelectPercentile, SelectFromModel)):
+
+            # the variables selected by the transformer
+            selected_variables = X.columns[self.transformer.get_support(indices=True)]
+
+            # the variables that were not examined, in case there are any
+            remaining_variables = [
+                var for var in X.columns if var not in self.variables
+            ]
+
+            X = X[list(selected_variables)+list(remaining_variables)]
 
         else:
             X[self.variables] = self.transformer.transform(X[self.variables])

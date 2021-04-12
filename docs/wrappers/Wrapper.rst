@@ -73,3 +73,37 @@ to standardize only the selected variables.
     # transform the data
     X_train = scaler.transform(X_train)
     X_test = scaler.transform(X_test)
+
+
+In the next snippet of code we show how to wrap the SelectKBest from Scikit-learn
+to select only a subset of the variables.
+
+.. code:: python
+
+    import pandas as pd
+    import numpy as np
+    from sklearn.model_selection import train_test_split
+    from sklearn.feature_selection import f_regression, SelectKBest
+    from feature_engine.wrappers import SklearnTransformerWrapper
+
+    # Load dataset
+    data = pd.read_csv('houseprice.csv')
+
+    # Separate into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(
+    	data.drop(['Id', 'SalePrice'], axis=1),
+    	data['SalePrice'], test_size=0.3, random_state=0)
+
+    cols = [var for var in X_train.columns if X_train[var].dtypes !='O']
+
+    # let's apply the standard scaler on the above variables
+
+    selector = SklearnTransformerWrapper(
+        transformer = SelectKBest(f_regression, k=5),
+        variables = cols)
+
+    selector.fit(X_train.fillna(0), y_train)
+
+    # transform the data
+    X_train_t = selector.transform(X_train.fillna(0))
+    X_test_t = selector.transform(X_test.fillna(0))
