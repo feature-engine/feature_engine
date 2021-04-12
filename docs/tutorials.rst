@@ -13,6 +13,8 @@ Kaggle Kernels
 - `Feature selection for bank customer satisfaction prediction <https://www.kaggle.com/solegalli/feature-selection-with-feature-engine>`_
 - `Feature engineering and selection for house price prediction <https://www.kaggle.com/solegalli/predict-house-price-with-feature-engine>`_
 - `Feature creation for wine quality prediction <https://www.kaggle.com/solegalli/create-new-features-with-feature-engine>`_
+- `Feature engineering and model stacking for house price modelling <https://www.kaggle.com/solegalli/feature-engineering-and-model-stacking>`_
+
 
 
 Video tutorials

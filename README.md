@@ -15,15 +15,17 @@ transforming parameters from data and then transform the data.
 
 ## Feature-engine features in the following resources:
 
-* [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO)
+* [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06)
+
+* [Feature Selection for Machine Learning, Online Course](https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71)
 
 * [Python Feature Engineering Cookbook](https://www.packtpub.com/data/python-feature-engineering-cookbook)
 
 ## Blogs about Feature-engine:
 
-* [Feature-engine: A new open-source Python package for feature engineering](https://www.trainindatablog.com/feature-engine-a-new-open-source-python-package-for-feature-engineering)
+* [Feature-engine: A new open-source Python package for feature engineering](https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c)
 
-* [Practical Code Implementations of Feature Engineering for Machine Learning with Python](https://www.trainindatablog.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python)
+* [Practical Code Implementations of Feature Engineering for Machine Learning with Python](https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd)
 
 ## Documentation
 
@@ -45,17 +47,18 @@ More resources will be added as they appear online!
 * Outlier Capping or Removal
 * Discretisation
 * Numerical Variable Transformation
-* Scikit-learn Wrappers
-* Variable Combination
+* Variable Creation
 * Variable Selection
+* Scikit-learn Wrappers
 
 ### Imputing Methods
 * MeanMedianImputer
 * RandomSampleImputer
 * EndTailImputer
-* AddNaNBinaryImputer
+* AddMissingIndicator
 * CategoricalImputer
 * ArbitraryNumberImputer
+* DropMissingData
 
 ### Encoding Methods
 * OneHotEncoder
@@ -76,7 +79,7 @@ More resources will be added as they appear online!
 * EqualFrequencyDiscretiser
 * EqualWidthDiscretiser
 * DecisionTreeDiscretiser
-* UserInputDiscreriser
+* ArbitraryDiscreriser
 
 ### Variable Transformation methods
 * LogTransformer
@@ -163,7 +166,7 @@ See more usage examples in the Jupyter Notebooks in the **example** folder of th
 
 ## Contributing
 
-Details about how to contribute can be found in the [Contributing Page](https://feature-engine.readthedocs.io/en/latest/contributing/index.html)
+Details about how to contribute can be found in the [Contributing Page](https://feature-engine.readthedocs.io/en/latest/contribute/index.html)
 
 In short:
 
@@ -173,7 +176,7 @@ In short:
 - cd into the repo ``cd feature_engine``
 - Install as a developer: ``pip install -e .``
 - Create and activate a virtual environment with any tool of choice
-- Install the dependencies as explained in the [Contributing Page](https://feature-engine.readthedocs.io/en/latest/contributing/index.html)
+- Install the dependencies as explained in the [Contributing Page](https://feature-engine.readthedocs.io/en/latest/contribute/index.html)
 - Create a feature branch with a meaningful name for your feature: ``git checkout -b myfeaturebranch``
 - Develop your feature, tests and documentation
 - Make sure the tests pass
@@ -194,7 +197,7 @@ We prefer tox. In your environment:
 
 If the tests pass, the code is functional.
 
-You can also run the tests in your environment (without tox). For guidelines on how to do so, check the [Contributing Page](https://feature-engine.readthedocs.io/en/latest/contributing/index.html).
+You can also run the tests in your environment (without tox). For guidelines on how to do so, check the [Contributing Page](https://feature-engine.readthedocs.io/en/latest/contribute/index.html).
 
 
 ### Documentation
