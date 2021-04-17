@@ -133,6 +133,7 @@ def df_enc_big():
 
     return df
 
+
 @pytest.fixture(scope="module")
 def df_enc_small():
     df = {
