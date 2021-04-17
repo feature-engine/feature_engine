@@ -169,17 +169,27 @@ class OneHotEncoder(BaseCategoricalTransformer):
                     category_ls = [x for x in X[var].unique()]
                     self.encoder_dict_[var] = category_ls[:-1]
                 else:
-                    self.encoder_dict_[var] = X[var].unique()
+                    self.encoder_dict_[var] = X[var].unique() if len(X[var].unique()) > 2 else X[var].unique()[0]
 
             else:
-                self.encoder_dict_[var] = [
-                    x
-                    for x in X[var]
-                    .value_counts()
-                    .sort_values(ascending=False)
-                    .head(self.top_categories)
-                    .index
-                ]
+                if self.top_categories > 2:
+                    self.encoder_dict_[var] = [
+                        x
+                        for x in X[var]
+                        .value_counts()
+                        .sort_values(ascending=False)
+                        .head(self.top_categories)
+                        .index
+                    ]
+                else:
+                    self.encoder_dict_[var] = [
+                        x
+                        for x in X[var]
+                            .value_counts()
+                            .sort_values(ascending=False)
+                            .head(1)
+                            .index
+                    ]
 
         self._check_encoding_dictionary()
 
