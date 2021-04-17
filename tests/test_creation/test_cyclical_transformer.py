@@ -33,8 +33,8 @@ def df_cyclical_trans():
 
 def test_general_transformation_without_dropping_variables(df_cyclical_trans):
     # test case 1: just one variable.
-    ciclycal = CyclicalTransformer(variables=['day'])
-    X = ciclycal.fit_transform(df_cyclical_trans)
+    cyclical = CyclicalTransformer(variables=['day'])
+    X = cyclical.fit_transform(df_cyclical_trans)
 
     transf_df = df_cyclical_trans.copy()
 
@@ -59,11 +59,11 @@ def test_general_transformation_without_dropping_variables(df_cyclical_trans):
     ]
 
     # test init params
-    assert ciclycal.variables == ['day']
+    assert cyclical.variables == ['day']
 
     # test fit attr
-    assert ciclycal.input_shape_ == (7, 2)
-    assert ciclycal.max_values_ == {
+    assert cyclical.input_shape_ == (7, 2)
+    assert cyclical.max_values_ == {
         'day': 7,
     }
 
@@ -73,8 +73,8 @@ def test_general_transformation_without_dropping_variables(df_cyclical_trans):
 
 def test_general_transformation_dropping_original_values(df_cyclical_trans):
     # test case 1: just one variable, but dropping the values
-    ciclycal = CyclicalTransformer(variables=['day'], drop_original=True)
-    X = ciclycal.fit_transform(df_cyclical_trans)
+    cyclical = CyclicalTransformer(variables=['day'], drop_original=True)
+    X = cyclical.fit_transform(df_cyclical_trans)
 
     transf_df = df_cyclical_trans.copy()
 
@@ -100,11 +100,11 @@ def test_general_transformation_dropping_original_values(df_cyclical_trans):
     transf_df = transf_df.drop(columns='day')
 
     # test init params
-    assert ciclycal.variables == ['day']
+    assert cyclical.variables == ['day']
 
     # test fit attr
-    assert ciclycal.input_shape_ == (7, 2)
-    assert ciclycal.max_values_ == {
+    assert cyclical.input_shape_ == (7, 2)
+    assert cyclical.max_values_ == {
         'day': 7,
     }
 
@@ -114,8 +114,8 @@ def test_general_transformation_dropping_original_values(df_cyclical_trans):
 
 def test_automatically_find_variables(df_cyclical_trans):
     # test case 2: automatically select variables
-    ciclycal = CyclicalTransformer(variables=None, drop_original=True)
-    X = ciclycal.fit_transform(df_cyclical_trans)
+    cyclical = CyclicalTransformer(variables=None, drop_original=True)
+    X = cyclical.fit_transform(df_cyclical_trans)
     transf_df = df_cyclical_trans.copy()
 
     # expected output
@@ -158,11 +158,11 @@ def test_automatically_find_variables(df_cyclical_trans):
     transf_df = transf_df.drop(columns=['day', 'months'])
 
     # test init params
-    assert ciclycal.variables == ['day', 'months']
+    assert cyclical.variables == ['day', 'months']
 
     # test fit attr
-    assert ciclycal.input_shape_ == (7, 2)
-    assert ciclycal.max_values_ == {
+    assert cyclical.input_shape_ == (7, 2)
+    assert cyclical.max_values_ == {
         'day': 7,
         'months': 12,
     }
@@ -204,11 +204,11 @@ def test_check_validation_of_init_parameters(df_cyclical_trans):
 
 
 def test_max_values_mapping(df_cyclical_trans):
-    ciclycal = CyclicalTransformer(
+    cyclical = CyclicalTransformer(
         variables='day',
         max_values={'day': 31}
     )
-    X = ciclycal.fit_transform(df_cyclical_trans)
+    X = cyclical.fit_transform(df_cyclical_trans)
     transf_df = df_cyclical_trans.copy()
     transf_df['day_sin'] = [
         0.937752,
