@@ -134,3 +134,41 @@ def test_transform_raises_error_if_df_contains_na(df_enc_big, df_enc_big_na):
         encoder = OneHotEncoder()
         encoder.fit(df_enc_big)
         encoder.transform(df_enc_big_na)
+
+
+def test_one_dummy_variable_for_two_categories(df_enc_small):
+    # test case 6: encode only the most popular categories
+    encoder = OneHotEncoder(top_categories=None, variables=None, drop_last=False)
+    X = encoder.fit_transform(df_enc_small)
+    # test fit attr
+    transf = {
+        "var_A_A": 6,
+        "var_B_A":6,
+        "var_B_C": 3,
+        "var_B_G": 1
+            }
+
+    assert encoder.input_shape_ == (10, 3)
+    # test transform output
+    for col in transf.keys():
+        assert X[col].sum() == transf[col]
+
+    encoder_top_cat = OneHotEncoder(top_categories=2, variables=None, drop_last=False)
+    X_top_cat = encoder_top_cat.fit_transform(df_enc_small)
+    # test fit attr
+    transf = {
+        "var_A_A": 6,
+        "var_B_A": 6,
+        "var_B_C": 3,
+        "var_C_A": 4,
+        "var_C_F": 2
+    }
+
+    assert encoder_top_cat.input_shape_ == (10, 3)
+    # test transform output
+    for col in transf.keys():
+        assert X_top_cat[col].sum() == transf[col]
+    assert "var_B_G" not in X_top_cat.columns
+    assert "var_C_C" not in X_top_cat.columns
+    assert "var_C_D" not in X_top_cat.columns
+    assert "var_C_E" not in X_top_cat.columns

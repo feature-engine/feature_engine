@@ -172,7 +172,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
                     self.encoder_dict_[var] = X[var].unique() if len(X[var].unique()) > 2 else X[var].unique()[0]
 
             else:
-                if self.top_categories > 2:
+                if self.top_categories >= 2 and len(X[var].unique()) > 2:
                     self.encoder_dict_[var] = [
                         x
                         for x in X[var]
@@ -181,7 +181,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
                         .head(self.top_categories)
                         .index
                     ]
-                else:
+                elif len(X[var].unique()) == 2:
                     self.encoder_dict_[var] = [
                         x
                         for x in X[var]
@@ -190,7 +190,6 @@ class OneHotEncoder(BaseCategoricalTransformer):
                             .head(1)
                             .index
                     ]
-
         self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape

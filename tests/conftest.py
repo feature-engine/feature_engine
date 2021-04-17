@@ -133,6 +133,24 @@ def df_enc_big():
 
     return df
 
+@pytest.fixture(scope="module")
+def df_enc_small():
+    df = {
+        "var_A": ["A"] * 6
+        + ["B"] * 4,
+        "var_B": ["A"] * 6
+        + ["C"] * 3
+        + ["G"] * 1,
+        "var_C": ["A"] * 4
+        + ["B"] * 1
+        + ["C"] * 1
+        + ["D"] * 1
+        + ["F"] * 2
+        + ["G"] * 1,
+    }
+    df = pd.DataFrame(df)
+    return df
+
 
 @pytest.fixture(scope="module")
 def df_enc_big_na():
