@@ -11,3 +11,4 @@ various mathematical and other methods.
 
    MathematicalCombination
    CombineWithReferenceFeature
+   CyclicalTransformer
