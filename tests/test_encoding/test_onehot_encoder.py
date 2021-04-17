@@ -143,10 +143,10 @@ def test_one_dummy_variable_for_two_categories(df_enc_small):
     # test fit attr
     transf = {
         "var_A_A": 6,
-        "var_B_A":6,
+        "var_B_A": 6,
         "var_B_C": 3,
         "var_B_G": 1
-            }
+    }
 
     assert encoder.input_shape_ == (10, 3)
     # test transform output

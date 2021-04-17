@@ -112,10 +112,10 @@ class OneHotEncoder(BaseCategoricalTransformer):
     """
 
     def __init__(
-        self,
-        top_categories: Optional[int] = None,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        drop_last: bool = False,
+            self,
+            top_categories: Optional[int] = None,
+            variables: Union[None, int, str, List[Union[str, int]]] = None,
+            drop_last: bool = False,
     ) -> None:
 
         if top_categories and not isinstance(top_categories, int):
@@ -176,10 +176,10 @@ class OneHotEncoder(BaseCategoricalTransformer):
                     self.encoder_dict_[var] = [
                         x
                         for x in X[var]
-                        .value_counts()
-                        .sort_values(ascending=False)
-                        .head(self.top_categories)
-                        .index
+                            .value_counts()
+                            .sort_values(ascending=False)
+                            .head(self.top_categories)
+                            .index
                     ]
                 elif len(X[var].unique()) == 2:
                     self.encoder_dict_[var] = [
