@@ -1,15 +1,15 @@
-Version 1.0.3
-=============
+Version TBD
+===========
 
-Deployed: 17th April 2021
+Deployed: TBD
 
 Contributors
-____________
+------------
     - Hector Patino
 
 New transformers
-________________
-    - **CyclicalTransformer**: applies a cyclical transformation for numerical variables (**Hector Patino**)
+----------------
+    - **CyclicalTransformer**: applies a cyclical transformation to numerical variables (**Hector Patino**)
 
 
 Version 1.0.2
