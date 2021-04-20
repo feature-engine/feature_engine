@@ -86,6 +86,11 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         If `new_variable_names = None`, the transformer will assign an arbitrary name
         to the newly created features starting by the name of the mathematical
         operation, followed by the variables combined separated by -.
+        
+    missing_values : string, default='raise'
+        Indicates if missing values should be ignored or raised. If
+        `missing_values='raise'` the transformer will return an error if the
+        training or the datasets to transform contain missing values.
 
     Attributes
     ----------
@@ -125,6 +130,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         variables_to_combine: List[Union[str, int]],
         math_operations: Optional[List[str]] = None,
         new_variables_names: Optional[List[str]] = None,
+        missing_values: str = "raise",
     ) -> None:
 
         # check input types
@@ -160,6 +166,9 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
                     "Choose one or more of ['sum', 'prod', 'mean', 'std', 'max', 'min']"
                 )
 
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError("missing_values takes only values 'raise' or 'ignore'")
+
         # check input logic
         if len(variables_to_combine) <= 1:
             raise KeyError(
@@ -180,9 +189,9 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         self.variables_to_combine = variables_to_combine
         self.new_variables_names = new_variables_names
         self.math_operations = math_operations
+        self.missing_values = missing_values
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None,
-            skipna: Optional[bool] = True):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         This transformer does not learn parameters.
 
@@ -197,10 +206,6 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
         y : pandas Series, or np.array. Defaults to None.
             It is not needed in this transformer. You can pass y or None.
-
-        skipna: bool. Defaults to True.
-            Whether to raise Value error if variables contain null values.
-
 
         Raises
         ------
@@ -224,7 +229,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         )
 
         # check if dataset contains na
-        if not skipna:
+        if self.missing_values == "raise":
             _check_contains_na(X, self.variables_to_combine)
 
         if self.math_operations is None:
@@ -252,7 +257,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X: pd.DataFrame, skipna: Optional[bool] = True) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Combine the variables with the mathematical operations.
 
@@ -260,9 +265,6 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
-
-        skipna: bool. Defaults to True.
-            Whether to raise Value error if the variables contains null values.
 
         Raises
         ------
@@ -285,7 +287,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # check if dataset contains na
-        if not skipna:
+        if self.missing_values == "raise":
             _check_contains_na(X, self.variables_to_combine)
 
         # Check if input data contains same number of columns as dataframe used to fit.
