@@ -86,7 +86,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         If `new_variable_names = None`, the transformer will assign an arbitrary name
         to the newly created features starting by the name of the mathematical
         operation, followed by the variables combined separated by -.
-        
+
     missing_values : string, default='raise'
         Indicates if missing values should be ignored or raised. If
         `missing_values='raise'` the transformer will return an error if the
