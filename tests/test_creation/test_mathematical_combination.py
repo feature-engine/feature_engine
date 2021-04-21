@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -273,35 +274,53 @@ def test_variable_names_when_df_cols_are_integers(df_numeric_columns):
     pd.testing.assert_frame_equal(X, ref)
 
 
-def test_error_when_null_values_in_variable():
+def test_error_when_null_values_in_variable(df_vartypes):
+
+    df_na = df_vartypes.copy()
+    df_na.loc[1, 'Age'] = np.nan
+
+    with pytest.raises(ValueError):
+        math_combinator = MathematicalCombination(
+            variables_to_combine=["Age", "Marks"],
+            math_operations=["sum", "mean"],
+            missing_values="raise",
+        )
+        math_combinator.fit(df_na)
+
     with pytest.raises(ValueError):
 
-        math_combinator_mean = MathematicalCombination(
-            variables_to_combine=['fixed acidity', 'volatile acidity'],
-            math_operations=['mean'],
-            new_variables_names=['avg_acidity']
+        math_combinator = MathematicalCombination(
+            variables_to_combine=["Age", "Marks"],
+            math_operations=["sum", "mean"],
+            missing_values="raise",
         )
-
-        ref = pd.DataFrame.from_dict({
-            "fixed acidity": None,
-            "volatile acidity": 0.7
-        })
-        math_combinator_mean.fit(ref)
-        math_combinator_mean.transform(ref)
+        math_combinator.fit(df_vartypes)
+        math_combinator.transform(df_na)
 
 
-def test_no_error_when_null_values_in_variable():
+def test_no_error_when_null_values_in_variable(df_vartypes):
 
-    math_combinator_mean = MathematicalCombination(
-        variables_to_combine=['fixed acidity', 'volatile acidity'],
-        math_operations=['mean'],
-        new_variables_names=['avg_acidity'],
-        missing_values="ignore"
+    df_na = df_vartypes.copy()
+    df_na.loc[1, 'Age'] = np.nan
+
+    transformer = MathematicalCombination(
+        variables_to_combine=["Age", "Marks"],
+        math_operations=["sum", "mean"],
+        missing_values="ignore",
     )
 
-    ref = pd.DataFrame.from_dict({
-        "fixed acidity": None,
-        "volatile acidity": 0.7
-    })
-    math_combinator_mean.fit(ref)
-    math_combinator_mean.transform(ref)
+    X = transformer.fit_transform(df_na)
+
+    ref = pd.DataFrame.from_dict(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, np.nan, 19, 18],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "sum(Age-Marks)": [20.9, 0.8, 19.7, 18.6],
+            "mean(Age-Marks)": [10.45, 0.8, 9.85, 9.3],
+        }
+    )
+    # transform params
+    pd.testing.assert_frame_equal(X, ref)

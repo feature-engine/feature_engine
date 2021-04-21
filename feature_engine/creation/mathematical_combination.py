@@ -49,6 +49,11 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
     **total_number_payments** and **mean_number_payments**, plus the original set of
     variables.
 
+    Attention, if some of the variables to combine have missing data and
+    missing_values = 'ignore', the value will be ignored in the computation. The
+    computation will be then performed using the remaining variables to combine, for
+    observations with NA.
+
     Parameters
     ----------
 
@@ -90,7 +95,8 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
     missing_values : string, default='raise'
         Indicates if missing values should be ignored or raised. If
         `missing_values='raise'` the transformer will return an error if the
-        training or the datasets to transform contain missing values.
+        the datasets to fit or transform contain missing values. Alternatively, use
+        'ignore'.
 
     Attributes
     ----------
@@ -213,7 +219,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
            - If the input is not a Pandas DataFrame
            - If any user provided variables in variables_to_combine are not numerical
         ValueError
-           If the variable(s) contain null values when skipna is set to True
+           If the variable(s) contain null values when missing_values = raise
 
         Returns
         -------
@@ -271,7 +277,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         TypeError
            If the input is not a Pandas DataFrame
         ValueError
-           - If the variable(s) contain null values when skipna is set to True
+           - If the variable(s) contain null values when missing_values = raise
            - If the dataframe is not of the same size as that used in fit()
 
         Returns
