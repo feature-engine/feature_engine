@@ -90,7 +90,8 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
     missing_values : string, default='raise'
         Indicates if missing values should be ignored or raised. If
         `missing_values='raise'` the transformer will return an error if the
-        training or the datasets to transform contain missing values.
+        the datasets to fit or transform contain missing values. If the value 
+        is set to 'ignore', operations will be carried out.
 
     Attributes
     ----------
@@ -213,7 +214,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
            - If the input is not a Pandas DataFrame
            - If any user provided variables in variables_to_combine are not numerical
         ValueError
-           If the variable(s) contain null values when skipna is set to True
+           If the variable(s) contain null values when missing_values = raise
 
         Returns
         -------
