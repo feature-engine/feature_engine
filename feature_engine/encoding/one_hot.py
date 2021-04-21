@@ -164,32 +164,42 @@ class OneHotEncoder(BaseCategoricalTransformer):
         self.encoder_dict_ = {}
 
         for var in self.variables:
-            if not self.top_categories:
-                if self.drop_last:
+            if not self.top_categories:  # If top categories are not selected
+                if self.drop_last:  # When drop last is True,
+                    # it automatically drops second category in binary variable
                     category_ls = [x for x in X[var].unique()]
                     self.encoder_dict_[var] = category_ls[:-1]
                 else:
+                    # When last column is not dropped,
+                    # We are making one dummy for binary variable
                     self.encoder_dict_[var] = X[var].unique() \
-                        if len(X[var].unique()) > 2 \
+                        if X[var].nunique() > 2 \
                         else X[var].unique()[0]
 
-            else:
-                if self.top_categories >= 2 and len(X[var].unique()) > 2:
-                    self.encoder_dict_[var] = [x
-                                               for x in X[var]
+            else:  # If top categories are selected
+                if ((X[var].nunique() > 2) and
+                        # The variable is non-binary
+                        (self.top_categories >= 2) and
+                        # The user selects more than two categories
+                        (X[var].nunique()) != self.top_categories):
+                    # The top categories = number of categories
+
+                    self.encoder_dict_[var] = [x for x in X[var]
                                                .value_counts()
                                                .sort_values(ascending=False)
                                                .head(self.top_categories)
                                                .index
-                                               ]
-                elif len(X[var].unique()) == 2:
-                    self.encoder_dict_[var] = [x
-                                               for x in X[var]
+                                               ] # Select as many dummy variables as number of categories
+                                                 #
+                elif ((X[var].nunique() <= 2) or
+                      # When the variable is binary
+                      (X[var].nunique() == self.top_categories)):
+                    # When the top categories selected is equal to number of categories
+                    self.encoder_dict_[var] = [x for x in X[var]
                                                .value_counts()
                                                .sort_values(ascending=False)
-                                               .head(1)
                                                .index
-                                               ]
+                                               ][:-1]
         self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
