@@ -164,7 +164,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
         self.encoder_dict_ = {}
 
         for var in self.variables:
-            if not self.top_categories:  # If top categories are not selected
+            if not self.top_categories:  # A) If top categories are not selected
                 if self.drop_last:  # When drop last is True,
                     # it automatically drops second category in binary variable
                     category_ls = [x for x in X[var].unique()]
@@ -182,7 +182,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
                         (self.top_categories >= 2) and
                         # 2) The user selects more than two categories
                         (X[var].nunique()) != self.top_categories):
-                    # 3) The top categories = number of categories
+                    # 3) The top categories != number of categories
                     # Then) Select as many dummy variables as number of categories
                     self.encoder_dict_[var] = [x for x in X[var]
                                                .value_counts()
@@ -199,6 +199,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
                                                .sort_values(ascending=False)
                                                .index
                                                ][:-1]
+
         self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
