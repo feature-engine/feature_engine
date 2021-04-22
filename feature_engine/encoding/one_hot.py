@@ -176,21 +176,20 @@ class OneHotEncoder(BaseCategoricalTransformer):
                         if X[var].nunique() > 2 \
                         else X[var].unique()[0]
 
-            else:  # If top categories are selected
+            else:  # If B) top categories are selected
                 if ((X[var].nunique() > 2) and
-                        # The variable is non-binary
+                        # 1) The variable is non-binary
                         (self.top_categories >= 2) and
-                        # The user selects more than two categories
+                        # 2) The user selects more than two categories
                         (X[var].nunique()) != self.top_categories):
-                    # The top categories = number of categories
-
+                    # 3) The top categories = number of categories
+                    # Then) Select as many dummy variables as number of categories
                     self.encoder_dict_[var] = [x for x in X[var]
                                                .value_counts()
                                                .sort_values(ascending=False)
                                                .head(self.top_categories)
                                                .index
-                                               ] # Select as many dummy variables as number of categories
-                                                 #
+                                               ]
                 elif ((X[var].nunique() <= 2) or
                       # When the variable is binary
                       (X[var].nunique() == self.top_categories)):
