@@ -2,14 +2,14 @@ CyclicalTransformer
 ===================
 
 API Reference
-_____________
+-------------
 
 .. autoclass:: feature_engine.creation.CyclicalTransformer
     :members:
 
 
 Example
-_______
+-------
 
 .. code:: python
 
@@ -17,12 +17,15 @@ _______
     import pandas as pd
     from sklearn.model_selection import train_test_split
 
-    from feature_engine.creation import CyclicalTransformation
+    from feature_engine.creation import CyclicalTransformer
+
     df = pd.DataFrame({
         'day': [6, 7, 5, 3, 1, 2, 4],
         'months': [3, 7, 9, 12, 4, 6, 12],
         }
+
     cyclical = CyclicalTransformer(variable=None, drop_original=True)
+
     X = cyclical.fit_transform(df)
 
 .. code:: python
