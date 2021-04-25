@@ -1,3 +1,17 @@
+Version TBD
+===========
+
+Deployed: TBD
+
+Contributors
+------------
+    - Hector Patino
+
+New transformers
+----------------
+    - **CyclicalTransformer**: applies a cyclical transformation to numerical variables (**Hector Patino**)
+
+
 Version 1.0.2
 =============
 
