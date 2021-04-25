@@ -46,7 +46,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
     fit:
         Learns the maximum values of the cyclical features.
     transform:
-        Apply the cyclical transformation transformation, crates 2 new features.
+        Applies the cyclical transformation, creates 2 new features.
     fit_transform:
         Fit to data, then transform it.
 
@@ -124,7 +124,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame):
         """
-        Crates new features using the cyiclical transformation.
+        Creates new features using the cyiclical transformation.
 
         Parameters
         ----------
