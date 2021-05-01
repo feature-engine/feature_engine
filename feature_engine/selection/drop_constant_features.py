@@ -1,6 +1,5 @@
 from typing import List, Union
 
-import numpy as np
 import pandas as pd
 
 from feature_engine.dataframe_checks import (
@@ -129,7 +128,7 @@ class DropConstantFeatures(BaseSelector):
             for feature in self.variables:
                 # find most frequent value / category in the variable
                 predominant = (
-                    (X[feature].value_counts() / np.float(len(X)))
+                    (X[feature].value_counts() / float(len(X)))
                     .sort_values(ascending=False)
                     .values[0]
                 )

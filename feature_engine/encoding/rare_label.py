@@ -141,7 +141,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
                 # if the variable has more than the indicated number of categories
                 # the encoder will learn the most frequent categories
-                t = pd.Series(X[var].value_counts() / np.float(len(X)))
+                t = pd.Series(X[var].value_counts() / float(len(X)))
 
                 # non-rare labels:
                 freq_idx = t[t >= self.tol].index
