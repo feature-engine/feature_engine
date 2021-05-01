@@ -1,6 +1,5 @@
 from typing import List, Union
 
-import numpy as np
 import pandas as pd
 
 from feature_engine.dataframe_checks import (

@@ -4,7 +4,6 @@
 from typing import Optional, List, Union
 
 import pandas as pd
-import numpy as np
 
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
