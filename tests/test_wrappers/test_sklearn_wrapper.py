@@ -38,6 +38,7 @@ def test_sklearn_imputer_numeric_with_constant(df_na):
     assert isinstance(transformer.transformer, SimpleImputer)
     assert transformer.variables == variables_to_impute
     # fit params
+    assert transformer.variables_ == variables_to_impute
     assert transformer.input_shape_ == (8, 6)
     # transformed output
     assert all(
@@ -117,8 +118,8 @@ def test_sklearn_standardscaler_numeric(df_vartypes):
     assert transformer.variables == variables_to_scale
     # fit params
     assert transformer.input_shape_ == (4, 5)
-    assert (transformer.transformer.mean_.round(6) == np.array([19.5, 0.75])).all()
-    assert all(transformer.transformer.scale_.round(6) == [1.118034, 0.111803])
+    assert (transformer.transformer_.mean_.round(6) == np.array([19.5, 0.75])).all()
+    assert all(transformer.transformer_.scale_.round(6) == [1.118034, 0.111803])
     pd.testing.assert_frame_equal(ref, transformed_df)
 
 
@@ -149,11 +150,12 @@ def test_sklearn_standardscaler_allfeatures(df_vartypes):
 
     # init params
     assert isinstance(transformer.transformer, StandardScaler)
-    assert transformer.variables == variables_to_scale
+    assert transformer.variables is None
     # fit params
+    assert transformer.variables_ == variables_to_scale
     assert transformer.input_shape_ == (4, 5)
-    assert (transformer.transformer.mean_.round(6) == np.array([19.5, 0.75])).all()
-    assert all(transformer.transformer.scale_.round(6) == [1.118034, 0.111803])
+    assert (transformer.transformer_.mean_.round(6) == np.array([19.5, 0.75])).all()
+    assert all(transformer.transformer_.scale_.round(6) == [1.118034, 0.111803])
     pd.testing.assert_frame_equal(ref, transformed_df)
 
 
@@ -292,7 +294,8 @@ def test_sklearn_ohe_all_features(df_vartypes):
 
 def test_sklearn_ohe_errors(df_vartypes):
     with pytest.raises(AttributeError):
-        SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=True))
+        SklearnTransformerWrapper(
+            transformer=OneHotEncoder(sparse=True)).fit(df_vartypes)
 
 
 def test_selectKBest_all_variables():

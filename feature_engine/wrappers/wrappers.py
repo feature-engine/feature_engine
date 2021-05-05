@@ -2,7 +2,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 from sklearn.feature_selection import (
@@ -25,21 +25,28 @@ from feature_engine.variable_manipulation import (
 
 class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     """
-    Wrapper for Scikit-learn pre-processing transformers like the SimpleImputer() or
-    OrdinalEncoder(), to allow the use of the transformer on a selected group of
-    variables.
+    Wrapper to apply Scikit-learn transformers to a selected group of variables. It
+    works with transformers like the SimpleImputer, OrdinalEncoder, OneHotEncoder, all
+    the scalers and also the transformers for feature selection.
 
     Parameters
     ----------
-    variables : list, default=None
-        The list of variables to be imputed.
-
-        If None, the wrapper will select all variables of type numeric for all
-        transformers except the SimpleImputer, OrdinalEncoder and OneHotEncoder, in
-        which case it will select all variables in the dataset.
-
     transformer : sklearn transformer, default=None
-        The desired Scikit-learn transformer.
+        The desired Scikit-learn transformer. If None, it defaults to SimpleImputer().
+
+    variables : list, default=None
+        The list of variables to be transformed. If None, the wrapper will select all
+        variables of type numeric for all transformers except the SimpleImputer,
+        OrdinalEncoder and OneHotEncoder, in which case it will select all variables in
+        the dataset.
+
+    Attributes
+    ----------
+    transformer_:
+        The fitted Scikit-learn transformer.
+
+    variables_:
+        The group of variables that will be transformed.
 
     Methods
     -------
@@ -52,40 +59,32 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-        self,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        transformer=None,
+            self,
+            transformer=None,
+            variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
         self.variables = _check_input_parameter_variables(variables)
         self.transformer = transformer
 
-        if isinstance(self.transformer, OneHotEncoder) and self.transformer.sparse:
-            raise AttributeError(
-                "The SklearnTransformerWrapper can only wrap the OneHotEncoder if you "
-                "set its sparse attribute to False"
-            )
-
     def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """
-        The `fit` method allows Scikit-learn transformers to learn the required
-        parameters from the training data set.
+        Fits the Scikit-learn transformers to the selected variables.
 
-        If transformer is OneHotEncoder, OrdinalEncoder or SimpleImputer,
-        all variables indicated in the ```variables``` parameter will be transformed.
-        When the variables parameter is None, the SklearnWrapper will automatically
-        select and transform all features in the dataset, numerical or otherwise.
+        If the user entered None in the variables parameter, all variables will be
+        automatically transformed by the OneHotEncoder, OrdinalEncoder or
+        SimpleImputer. For the rest of the transformers, only the numerical variables
+        will be selected and transformed.
 
-        For all other Scikit-learn transformers only numerical variables will be
-        transformed. The SklearnWrapper will check that the variables indicated in the
-        variables parameter are numerical, or alternatively, if variables is None, it
-        will automatically select the numerical variables in the data set.
+        If the user entered a list in the variables attribute, the SklearnWrapper will
+        check that those variables exist in the dataframe and are of type numerical,
+        for all transformers except OneHotEncoder, OrdinalEncoder or SimpleImputer.
 
         Parameters
         ----------
         X : Pandas DataFrame
             The dataset to fit the transformer
         y : pandas Series, default=None
-            This parameter exists only for compatibility with sklearn.pipeline.Pipeline.
+            This parameter exists only for compatibility with Pipeline.
 
         Raises
         ------
@@ -100,13 +99,25 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
-        if isinstance(self.transformer, (OneHotEncoder, OrdinalEncoder, SimpleImputer)):
-            self.variables = _find_all_variables(X, self.variables)
+        if self.transformer is None:
+            self.transformer_ = SimpleImputer()
+        else:
+            self.transformer_ = clone(self.transformer)
+
+        if isinstance(self.transformer_, OneHotEncoder) and self.transformer_.sparse:
+            raise AttributeError(
+                "The SklearnTransformerWrapper can only wrap the OneHotEncoder if you "
+                "set its sparse attribute to False"
+            )
+
+        if isinstance(self.transformer_,
+                      (OneHotEncoder, OrdinalEncoder, SimpleImputer)):
+            self.variables_ = _find_all_variables(X, self.variables)
 
         else:
-            self.variables = _find_or_check_numerical_variables(X, self.variables)
+            self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
-        self.transformer.fit(X[self.variables], y)
+        self.transformer_.fit(X[self.variables_], y)
 
         self.input_shape_ = X.shape
 
@@ -114,13 +125,13 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Apply the transformation to the dataframe. Only the selected features will be
+        Apply the transformation to the dataframe. Only the selected varriables will be
         modified.
 
-        If transformer is OneHotEncoder, dummy features are concatenated
-        to the source dataset. Note that the original categorical variables
-        will not be removed from the dataset after encoding. If this is the desired
-        effect, please use Feature-engine's OneHotEncoder instead.
+        If transformer is the OneHotEncoder, the dummy features will be concatenated
+        to the input dataset. Note that the original categorical variables will not be
+        removed from the dataset after encoding. If this is the desired effect, please
+        use Feature-engine's OneHotEncoder instead.
 
         Parameters
         ----------
@@ -146,27 +157,51 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         _check_input_matches_training_df(X, self.input_shape_[1])
 
-        if isinstance(self.transformer, OneHotEncoder):
+        if isinstance(self.transformer_, OneHotEncoder):
             ohe_results_as_df = pd.DataFrame(
-                data=self.transformer.transform(X[self.variables]),
-                columns=self.transformer.get_feature_names(self.variables),
+                data=self.transformer_.transform(X[self.variables_]),
+                columns=self.transformer_.get_feature_names(self.variables_),
             )
             X = pd.concat([X, ohe_results_as_df], axis=1)
 
-        elif isinstance(self.transformer,
+        elif isinstance(self.transformer_,
                         (SelectKBest, SelectPercentile, SelectFromModel)):
 
             # the variables selected by the transformer
-            selected_variables = X.columns[self.transformer.get_support(indices=True)]
+            selected_variables = X.columns[self.transformer_.get_support(indices=True)]
 
             # the variables that were not examined, in case there are any
             remaining_variables = [
-                var for var in X.columns if var not in self.variables
+                var for var in X.columns if var not in self.variables_
             ]
 
-            X = X[list(selected_variables)+list(remaining_variables)]
+            X = X[list(selected_variables) + list(remaining_variables)]
 
         else:
-            X[self.variables] = self.transformer.transform(X[self.variables])
+            X[self.variables_] = self.transformer_.transform(X[self.variables_])
 
         return X
+
+    # for the check_estimator tests
+    def _more_tags(self):
+        # to overcome the fact that sklearn does not allow nan in the input
+        # to overcome the error thrown when transformer can't handle sparse data
+        # to overcome tests that work only on numpy arrays and are thus not relevant
+        # for feature-engine transformers
+        return {
+            'allow_nan': True,
+            '_xfail_checks': {
+                'check_estimator_sparse_data':
+                    'Feature-engine transformers do not work with sparse data',
+                'check_transformer_data_not_an_array':
+                    'Not sure what this check is at the moment',
+                'check_transformer_preserve_dtypes':
+                    'Feature-engine transformers can change the types',
+                'check_methods_sample_order_invariance':
+                    'Test does not work on dataframes',
+                'check_fit_idempotent': 'Test does not work on dataframes',
+                'check_fit1d': 'Feature-engine transformers only work with dataframes',
+                'check_fit2d_predict1d':
+                    'Feature-engine transformers only work with dataframes',
+            }
+        }
