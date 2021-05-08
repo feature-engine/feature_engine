@@ -113,6 +113,6 @@ class PowerTransformer(BaseNumericalTransformer):
         X = super().transform(X)
 
         # transform
-        X.loc[:, self.variables] = np.power(X.loc[:, self.variables], self.exp)
+        X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], self.exp)
 
         return X

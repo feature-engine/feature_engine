@@ -90,9 +90,9 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         self.lambda_dict_ = {}
 
         # to avoid NumPy error
-        X[self.variables] = X[self.variables].astype("float")
+        X[self.variables_] = X[self.variables_].astype("float")
 
-        for var in self.variables:
+        for var in self.variables_:
             _, self.lambda_dict_[var] = stats.yeojohnson(X[var])
 
         self.input_shape_ = X.shape
@@ -125,7 +125,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         # check input dataframe and if class was fitted
 
         X = super().transform(X)
-        for feature in self.variables:
+        for feature in self.variables_:
             X[feature] = stats.yeojohnson(X[feature], lmbda=self.lambda_dict_[feature])
 
         return X

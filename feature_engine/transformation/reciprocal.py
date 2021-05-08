@@ -76,7 +76,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         X = super().fit(X)
 
         # check if the variables contain the value 0
-        if (X[self.variables] == 0).any().any():
+        if (X[self.variables_] == 0).any().any():
             raise ValueError(
                 "Some variables contain the value zero, can't apply reciprocal "
                 "transformation."
@@ -114,7 +114,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         X = super().transform(X)
 
         # check if the variables contain the value 0
-        if (X[self.variables] == 0).any().any():
+        if (X[self.variables_] == 0).any().any():
             raise ValueError(
                 "Some variables contain the value zero, can't apply reciprocal "
                 "transformation."
@@ -122,7 +122,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         # transform
         # for some reason reciprocal does not work with integers
-        X.loc[:, self.variables] = X.loc[:, self.variables].astype("float")
-        X.loc[:, self.variables] = np.reciprocal(X.loc[:, self.variables])
+        X.loc[:, self.variables_] = X.loc[:, self.variables_].astype("float")
+        X.loc[:, self.variables_] = np.reciprocal(X.loc[:, self.variables_])
 
         return X

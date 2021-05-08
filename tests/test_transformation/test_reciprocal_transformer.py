@@ -16,8 +16,9 @@ def test_automatically_find_variables(df_vartypes):
     transf_df["Marks"] = [1.11111, 1.25, 1.42857, 1.66667]
 
     # test init params
-    assert transformer.variables == ["Age", "Marks"]
+    assert transformer.variables is None
     # test fit attr
+    assert transformer.variables_ == ["Age", "Marks"]
     assert transformer.input_shape_ == (4, 5)
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)

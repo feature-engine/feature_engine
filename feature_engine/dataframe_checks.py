@@ -104,3 +104,26 @@ def _check_contains_na(X: pd.DataFrame, variables: List[Union[str, int]]) -> Non
             "Some of the variables to transform contain missing values. Check and "
             "remove those before using this transformer."
         )
+
+
+def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> None:
+    """
+    Checks if DataFrame contains inf values in the selected columns.
+
+    Parameters
+    ----------
+    X : Pandas DataFrame
+    variables : List
+        The selected group of variables in which null values will be examined.
+
+    Raises
+    ------
+    ValueError
+        If the variable(s) contain np.inf values
+    """
+
+    if np.isinf(X[variables]).values.any():
+        raise ValueError(
+            "Some of the variables to transform contain Inf values. Check and "
+            "remove those before using this transformer."
+        )

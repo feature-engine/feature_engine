@@ -89,7 +89,7 @@ class LogTransformer(BaseNumericalTransformer):
         X = super().fit(X)
 
         # check contains zero or negative values
-        if (X[self.variables] <= 0).any().any():
+        if (X[self.variables_] <= 0).any().any():
             raise ValueError(
                 "Some variables contain zero or negative values, can't apply log"
             )
@@ -126,15 +126,15 @@ class LogTransformer(BaseNumericalTransformer):
         X = super().transform(X)
 
         # check contains zero or negative values
-        if (X[self.variables] <= 0).any().any():
+        if (X[self.variables_] <= 0).any().any():
             raise ValueError(
                 "Some variables contain zero or negative values, can't apply log"
             )
 
         # transform
         if self.base == "e":
-            X.loc[:, self.variables] = np.log(X.loc[:, self.variables])
+            X.loc[:, self.variables_] = np.log(X.loc[:, self.variables_])
         elif self.base == "10":
-            X.loc[:, self.variables] = np.log10(X.loc[:, self.variables])
+            X.loc[:, self.variables_] = np.log10(X.loc[:, self.variables_])
 
         return X

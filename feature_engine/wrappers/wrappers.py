@@ -181,27 +181,3 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             X[self.variables_] = self.transformer_.transform(X[self.variables_])
 
         return X
-
-    # for the check_estimator tests
-    def _more_tags(self):
-        # to overcome the fact that sklearn does not allow nan in the input
-        # to overcome the error thrown when transformer can't handle sparse data
-        # to overcome tests that work only on numpy arrays and are thus not relevant
-        # for feature-engine transformers
-        return {
-            'allow_nan': True,
-            '_xfail_checks': {
-                'check_estimator_sparse_data':
-                    'Feature-engine transformers do not work with sparse data',
-                'check_transformer_data_not_an_array':
-                    'Not sure what this check is at the moment',
-                'check_transformer_preserve_dtypes':
-                    'Feature-engine transformers can change the types',
-                'check_methods_sample_order_invariance':
-                    'Test does not work on dataframes',
-                'check_fit_idempotent': 'Test does not work on dataframes',
-                'check_fit1d': 'Feature-engine transformers only work with dataframes',
-                'check_fit2d_predict1d':
-                    'Feature-engine transformers only work with dataframes',
-            }
-        }

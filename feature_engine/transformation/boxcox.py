@@ -99,7 +99,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         # check input dataframe
         X = super().fit(X)
 
-        if (X[self.variables] < 0).any().any():
+        if (X[self.variables_] < 0).any().any():
             raise ValueError(
                 "Some variables contain negative values, try Yeo-Johnson "
                 "transformation instead."
@@ -107,7 +107,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         self.lambda_dict_ = {}
 
-        for var in self.variables:
+        for var in self.variables_:
             _, self.lambda_dict_[var] = stats.boxcox(X[var])
 
         self.input_shape_ = X.shape
@@ -142,14 +142,14 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         X = super().transform(X)
 
         # check if variable contains negative numbers
-        if (X[self.variables] < 0).any().any():
+        if (X[self.variables_] < 0).any().any():
             raise ValueError(
                 "Some variables contain negative values, try Yeo-Johnson "
                 "transformation instead."
             )
 
         # transform
-        for feature in self.variables:
+        for feature in self.variables_:
             X[feature] = stats.boxcox(X[feature], lmbda=self.lambda_dict_[feature])
 
         return X

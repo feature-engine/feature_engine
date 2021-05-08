@@ -12,6 +12,7 @@ from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
     _check_contains_na,
+    _check_contains_inf,
     _check_input_matches_training_df,
     _is_dataframe,
 )
@@ -54,12 +55,13 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables: List[Union[str, int]] = _find_or_check_numerical_variables(
+        self.variables_: List[Union[str, int]] = _find_or_check_numerical_variables(
             X, self.variables
         )
 
         # check if dataset contains na
-        _check_contains_na(X, self.variables)
+        _check_contains_na(X, self.variables_)
+        _check_contains_inf(X, self.variables_)
 
         return X
 
@@ -93,9 +95,46 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # check if dataset contains na
-        _check_contains_na(X, self.variables)
+        _check_contains_na(X, self.variables_)
+        _check_contains_inf(X, self.variables_)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_input_matches_training_df(X, self.input_shape_[1])
 
         return X
+
+    # for the check_estimator tests
+    def _more_tags(self):
+        # to overcome the fact that sklearn does not allow nan in the input
+        # to overcome the error thrown when transformer can't handle sparse data
+        # to overcome tests that work only on numpy arrays and are thus not relevant
+        # for feature-engine transformers
+        return {
+            '_xfail_checks': {
+                # these are important checks that at the moment can't be run
+                # because the input arrays contain 0s as values, and some transformers
+                # return errors on those values, intentionally
+                'check_estimators_dtypes':
+                    'transformers raise errors when data contains zeroes',
+                'check_estimators_fit_returns_self':
+                    'transformers raise errors when data contains zeroes',
+                'check_pipeline_consistency':
+                    'transformers raise errors when data contains zeroes',
+                'check_complex_data':
+                    'I dont think we need this check',
+                'check_dtype_object':
+                    'Feature-engine uses dtypes to select variable types',
+                'check_estimator_sparse_data':
+                    'Feature-engine transformers do not work with sparse data',
+                'check_transformer_data_not_an_array':
+                    'Not sure what this check is at the moment',
+                'check_transformer_preserve_dtypes':
+                    'Feature-engine transformers can change the types',
+                'check_methods_sample_order_invariance':
+                    'Test does not work on dataframes',
+                'check_fit_idempotent': 'Test does not work on dataframes',
+                'check_fit1d': 'Feature-engine transformers only work with dataframes',
+                'check_fit2d_predict1d':
+                    'Feature-engine transformers only work with dataframes',
+            }
+        }
