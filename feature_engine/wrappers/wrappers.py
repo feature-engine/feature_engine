@@ -3,13 +3,6 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
-from sklearn.feature_selection import (
-    SelectKBest,
-    SelectPercentile,
-    SelectFromModel,
-)
 
 from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
@@ -31,14 +24,14 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    transformer : sklearn transformer, default=None
-        The desired Scikit-learn transformer. If None, it defaults to SimpleImputer().
+    transformer : sklearn transformer
+        The desired Scikit-learn transformer.
 
     variables : list, default=None
         The list of variables to be transformed. If None, the wrapper will select all
         variables of type numeric for all transformers except the SimpleImputer,
-        OrdinalEncoder and OneHotEncoder, in which case it will select all variables in
-        the dataset.
+        OrdinalEncoder and OneHotEncoder, in which case, it will select all variables
+        in the dataset.
 
     Attributes
     ----------
@@ -51,40 +44,48 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     Methods
     -------
     fit:
-        Fit Scikit-learn transformers
+        Fit Scikit-learn transformer
     transform:
-        Transforms with Scikit-learn transformers
+        Transform data with Scikit-learn transformer
     fit_transform:
         Fit to data, then transform it.
     """
 
     def __init__(
-            self,
-            transformer=None,
-            variables: Union[None, int, str, List[Union[str, int]]] = None,
+        self,
+        transformer,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
-        self.variables = _check_input_parameter_variables(variables)
+
+        if not issubclass(transformer.__class__, BaseEstimator):
+            raise TypeError(
+                "transformer expected a Scikit-learn transformer, "
+                f"got {transformer} instead."
+            )
+
         self.transformer = transformer
+        self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """
-        Fits the Scikit-learn transformers to the selected variables.
+        Fits the Scikit-learn transformer to the selected variables.
 
-        If the user entered None in the variables parameter, all variables will be
+        If you enter None in the variables parameter, all variables will be
         automatically transformed by the OneHotEncoder, OrdinalEncoder or
         SimpleImputer. For the rest of the transformers, only the numerical variables
         will be selected and transformed.
 
-        If the user entered a list in the variables attribute, the SklearnWrapper will
-        check that those variables exist in the dataframe and are of type numerical,
-        for all transformers except OneHotEncoder, OrdinalEncoder or SimpleImputer.
+        If you enter a list in the variables attribute, the SklearnTransformerWrapper
+        will check that those variables exist in the dataframe and are of type
+        numeric for all transformers except the OneHotEncoder, OrdinalEncoder or
+        SimpleImputer, which also accept categorical variables.
 
         Parameters
         ----------
         X : Pandas DataFrame
             The dataset to fit the transformer
         y : pandas Series, default=None
-            This parameter exists only for compatibility with Pipeline.
+            The target variable.
 
         Raises
         ------
@@ -99,19 +100,22 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
-        if self.transformer is None:
-            self.transformer_ = SimpleImputer()
-        else:
-            self.transformer_ = clone(self.transformer)
+        self.transformer_ = clone(self.transformer)
 
-        if isinstance(self.transformer_, OneHotEncoder) and self.transformer_.sparse:
+        if (
+            self.transformer_.__class__.__name__ == "OneHotEncoder"
+            and self.transformer_.sparse
+        ):
             raise AttributeError(
                 "The SklearnTransformerWrapper can only wrap the OneHotEncoder if you "
                 "set its sparse attribute to False"
             )
 
-        if isinstance(self.transformer_,
-                      (OneHotEncoder, OrdinalEncoder, SimpleImputer)):
+        if self.transformer_.__class__.__name__ in [
+            "OneHotEncoder",
+            "OrdinalEncoder",
+            "SimpleImputer",
+        ]:
             self.variables_ = _find_all_variables(X, self.variables)
 
         else:
@@ -125,7 +129,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Apply the transformation to the dataframe. Only the selected varriables will be
+        Apply the transformation to the dataframe. Only the selected variables will be
         modified.
 
         If transformer is the OneHotEncoder, the dummy features will be concatenated
@@ -157,15 +161,18 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         _check_input_matches_training_df(X, self.input_shape_[1])
 
-        if isinstance(self.transformer_, OneHotEncoder):
+        if self.transformer_.__class__.__name__ == "OneHotEncoder":
             ohe_results_as_df = pd.DataFrame(
                 data=self.transformer_.transform(X[self.variables_]),
                 columns=self.transformer_.get_feature_names(self.variables_),
             )
             X = pd.concat([X, ohe_results_as_df], axis=1)
 
-        elif isinstance(self.transformer_,
-                        (SelectKBest, SelectPercentile, SelectFromModel)):
+        elif self.transformer_.__class__.__name__ in [
+            "SelectKBest",
+            "SelectPercentile",
+            "SelectFromModel",
+        ]:
 
             # the variables selected by the transformer
             selected_variables = X.columns[self.transformer_.get_support(indices=True)]

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.feature_selection import (
@@ -8,7 +9,6 @@ from sklearn.feature_selection import (
     SelectKBest,
     SelectFromModel,
 )
-
 from sklearn.linear_model import Lasso
 from sklearn.datasets import load_boston
 
@@ -109,7 +109,7 @@ def test_sklearn_standardscaler_numeric(df_vartypes):
     ref = df_vartypes.copy()
     ref[variables_to_scale] = (
         ref[variables_to_scale] - ref[variables_to_scale].mean()
-        ) / ref[variables_to_scale].std(ddof=0)
+    ) / ref[variables_to_scale].std(ddof=0)
 
     transformed_df = transformer.fit_transform(df_vartypes)
 
@@ -144,7 +144,7 @@ def test_sklearn_standardscaler_allfeatures(df_vartypes):
     variables_to_scale = list(ref.select_dtypes(include="number").columns)
     ref[variables_to_scale] = (
         ref[variables_to_scale] - ref[variables_to_scale].mean()
-        ) / ref[variables_to_scale].std(ddof=0)
+    ) / ref[variables_to_scale].std(ddof=0)
 
     transformed_df = transformer.fit_transform(df_vartypes)
 
@@ -294,8 +294,9 @@ def test_sklearn_ohe_all_features(df_vartypes):
 
 def test_sklearn_ohe_errors(df_vartypes):
     with pytest.raises(AttributeError):
-        SklearnTransformerWrapper(
-            transformer=OneHotEncoder(sparse=True)).fit(df_vartypes)
+        SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=True)).fit(
+            df_vartypes
+        )
 
 
 def test_selectKBest_all_variables():
@@ -339,7 +340,8 @@ def test_selectFromModel_selected_variables():
     sfm = SelectFromModel(lasso, prefit=False)
 
     selector = SklearnTransformerWrapper(
-        transformer=sfm, variables=[0, 1, 2, 3, 4, 5],
+        transformer=sfm,
+        variables=[0, 1, 2, 3, 4, 5],
     )
 
     selector.fit(X, y)
