@@ -108,8 +108,8 @@ def test_sklearn_standardscaler_numeric(df_vartypes):
 
     ref = df_vartypes.copy()
     ref[variables_to_scale] = (
-        ref[variables_to_scale] - ref[variables_to_scale].mean()
-    ) / ref[variables_to_scale].std(ddof=0)
+                                      ref[variables_to_scale] - ref[variables_to_scale].mean()
+                              ) / ref[variables_to_scale].std(ddof=0)
 
     transformed_df = transformer.fit_transform(df_vartypes)
 
@@ -143,8 +143,8 @@ def test_sklearn_standardscaler_allfeatures(df_vartypes):
     ref = df_vartypes.copy()
     variables_to_scale = list(ref.select_dtypes(include="number").columns)
     ref[variables_to_scale] = (
-        ref[variables_to_scale] - ref[variables_to_scale].mean()
-    ) / ref[variables_to_scale].std(ddof=0)
+                                      ref[variables_to_scale] - ref[variables_to_scale].mean()
+                              ) / ref[variables_to_scale].std(ddof=0)
 
     transformed_df = transformer.fit_transform(df_vartypes)
 
@@ -349,3 +349,11 @@ def test_selectFromModel_selected_variables():
     X_train_t = selector.transform(X)
 
     pd.testing.assert_frame_equal(X_train_t, X[[0, 1, 2, 6, 7, 8, 9, 10, 11, 12]])
+
+
+def test_raise_error_if_transformer_wrong_type():
+    with pytest.raises(TypeError):
+        SklearnTransformerWrapper(
+            transformer='hola',
+            variables=[0, 1, 2, 3, 4, 5],
+        )
