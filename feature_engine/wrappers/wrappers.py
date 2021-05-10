@@ -198,19 +198,23 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             "_xfail_checks": {
                 # check_estimator checks that fail:
                 "check_estimators_nan_inf": "transformer allows NA",
-                "check_parameters_default_constructible": "transformer has 1 mandatory parameter",
+                "check_parameters_default_constructible":
+                    "transformer has 1 mandatory parameter",
                 "check_transformer_data_not_an_array": "Not sure what this check is",
-                "check_transformer_preserve_dtypes": "Test not relevant, Feature-engine transformers can change "
+                "check_transformer_preserve_dtypes":
+                    "Test not relevant, Feature-engine transformers can change "
                 "the types",
                 # TODO: we probably need the test below!!
-                "check_methods_sample_order_invariance": "Test does not work on dataframes",
+                "check_methods_sample_order_invariance":
+                    "Test does not work on dataframes",
                 # TODO: we probably need the test below!!
                 "check_fit_idempotent": "Test does not work on dataframes",
                 # the test above tests that a second fit overrides a first fit.
                 # the problem is that the test does not work with pandas df.
                 "check_fit1d": "Test not relevant, Feature-engine transformers only "
                 "work with dataframes",
-                "check_fit2d_predict1d": "Test not relevant, Feature-engine transformers only "
+                "check_fit2d_predict1d":
+                    "Test not relevant, Feature-engine transformers only "
                 "work with dataframes",
             }
         }

@@ -108,8 +108,8 @@ def test_sklearn_standardscaler_numeric(df_vartypes):
 
     ref = df_vartypes.copy()
     ref[variables_to_scale] = (
-                                      ref[variables_to_scale] - ref[variables_to_scale].mean()
-                              ) / ref[variables_to_scale].std(ddof=0)
+        ref[variables_to_scale] - ref[variables_to_scale].mean()
+    ) / ref[variables_to_scale].std(ddof=0)
 
     transformed_df = transformer.fit_transform(df_vartypes)
 
@@ -143,8 +143,8 @@ def test_sklearn_standardscaler_allfeatures(df_vartypes):
     ref = df_vartypes.copy()
     variables_to_scale = list(ref.select_dtypes(include="number").columns)
     ref[variables_to_scale] = (
-                                      ref[variables_to_scale] - ref[variables_to_scale].mean()
-                              ) / ref[variables_to_scale].std(ddof=0)
+          ref[variables_to_scale] - ref[variables_to_scale].mean()
+    ) / ref[variables_to_scale].std(ddof=0)
 
     transformed_df = transformer.fit_transform(df_vartypes)
 

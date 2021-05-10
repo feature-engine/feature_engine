@@ -5,5 +5,3 @@ from feature_engine.wrappers import SklearnTransformerWrapper
 
 def test_sklearn_transformer_wrapper():
     check_estimator(SklearnTransformerWrapper(transformer=SimpleImputer()))
-
-
