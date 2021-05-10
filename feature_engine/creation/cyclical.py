@@ -40,6 +40,12 @@ class CyclicalTransformer(BaseNumericalTransformer):
         The maximum value of the cylcical feature that will be used for the
         transformation.
 
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
+
 
     Methods
     -------
@@ -82,7 +88,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the maximmum value of each of the cyclical variables.
+        Learns the maximum value of each of the cyclical variables.
 
         Parameters
         ----------
@@ -110,15 +116,16 @@ class CyclicalTransformer(BaseNumericalTransformer):
         X = super().fit(X)
 
         if self.max_values is None:
-            self.max_values_ = X[self.variables].max().to_dict()
+            self.max_values_ = X[self.variables_].max().to_dict()
         else:
             for key in list(self.max_values.keys()):
-                if key not in self.variables:
+                if key not in self.variables_:
                     raise ValueError(f'The mapping key {key} is not present'
                                      f' in variables.')
             self.max_values_ = self.max_values
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -145,12 +152,12 @@ class CyclicalTransformer(BaseNumericalTransformer):
         """
         X = super().transform(X)
 
-        for variable in self.variables:
+        for variable in self.variables_:
             max_value = self.max_values_[variable]
             X[f'{variable}_sin'] = np.sin(X[variable] * (2. * np.pi / max_value))
             X[f'{variable}_cos'] = np.cos(X[variable] * (2. * np.pi / max_value))
 
         if self.drop_original:
-            X.drop(columns=self.variables, inplace=True)
+            X.drop(columns=self.variables_, inplace=True)
 
         return X

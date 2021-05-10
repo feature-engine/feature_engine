@@ -55,7 +55,6 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-
     variables_to_combine : list
         The list of numerical variables to be combined with the reference
         variables.
@@ -101,9 +100,14 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         transforming the data. If missing_values='raise' the transformer will return
         an error if the training or the datasets to transform contain missing values.
 
+
+    Attributes
+    ----------
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
-
     fit :
         This transformer does not learn parameters.
     transform :
@@ -197,15 +201,13 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        This transformer does not learn any parameter.
-        Performs dataframe checks.
+        This transformer does not learn any parameter. Performs dataframe checks.
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-        The training input samples.
-        Can be the entire dataframe, not just the variables to transform.
+            The training input samples. Can be the entire dataframe, not just the
+            variables to transform.
 
         y : pandas Series, or np.array. Defaults to None.
             It is not needed in this transformer. You can pass y or None.
@@ -246,11 +248,12 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         if "div" in self.operations:
             if X[self.reference_variables].isin([0]).any().any():
                 raise ValueError(
-                    "Some of the reference variables contain 0 values. Check and "
+                    "Some of the reference variables contain 0 as values. Check and "
                     "remove those before using this transformer with div."
                 )
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -260,15 +263,13 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-
         X : pandas dataframe of shape = [n_samples, n_features]
-        The data to transform.
+            The data to transform.
 
         Returns
         -------
-
         X : Pandas dataframe, shape = [n_samples, n_features + n_operations]
-        The dataframe with the operations results added as columns.
+            The dataframe with the operations results added as columns.
         """
 
         # Check method fit has been called
@@ -276,6 +277,9 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
         # check that input is a dataframe
         X = _is_dataframe(X)
+
+        # Check if input data contains same number of columns as dataframe used to fit.
+        _check_input_matches_training_df(X, self.n_features_in_)
 
         # check if dataset contains na
         if self.missing_values == "raise":
@@ -286,12 +290,9 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         if "div" in self.operations:
             if X[self.reference_variables].isin([0]).any().any():
                 raise ValueError(
-                    "Some of the reference variables contain 0 values. Check and "
+                    "Some of the reference variables contain 0 as values. Check and "
                     "remove those before using this transformer."
                 )
-
-        # Check if input data contains same number of columns as dataframe used to fit.
-        _check_input_matches_training_df(X, self.input_shape_[1])
 
         original_col_names = [var for var in X.columns]
         # Add new features and values into de data frame.
@@ -329,3 +330,58 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
             X.columns = original_col_names + self.new_variables_names
 
         return X
+
+    # for the check_estimator tests
+    def _more_tags(self):
+        return {
+            "_xfail_checks": {
+                "check_fit2d_1feature":
+                    "this transformer works with datasets that contain at least 2"
+                    "variables. Otherwise, there is nothing to combine",
+                "check_estimators_nan_inf": "transformer allows NA",
+                "check_parameters_default_constructible":
+                    "transformer has 1 mandatory parameter",
+                # Complex data in math terms, are values like 4i (imaginary numbers
+                # so to speak). I've never seen such a thing in the dfs I've
+                # worked with, so I do not need this test.
+                "check_complex_data": "I dont think we need this check, if users "
+                                      "disagree we can think how to introduce it "
+                                      "at a later stage.",
+
+                # check that estimators treat dtype object as numeric if possible
+                "check_dtype_object":
+                    "Transformers use dtypes to select between numerical and "
+                    "categorical variables. Feature-engine trusts the user cast the "
+                    "variables in they way they would like them treated.",
+
+                # Not sure what the aim of this check is, it fails because FE does not
+                # like the sklearn class _NotAnArray
+                "check_transformer_data_not_an_array": "Not sure what this check is",
+
+                # this test fails because the test uses dtype attribute of numpy, but
+                # in feature engine the array is converted to a df, and it does not
+                # have the dtype attribute.
+                # need to understand why this test is useful an potentially have one
+                # for the package. But some Feature-engine transformers DO change the
+                # types
+                "check_transformer_preserve_dtypes":
+                    "Test not relevant, Feature-engine transformers can change "
+                    "the types",
+
+                # TODO: we probably need the test below!!
+                "check_methods_sample_order_invariance":
+                    "Test does not work on dataframes",
+
+                # TODO: we probably need the test below!!
+                # the test below tests that a second fit overrides a first fit.
+                # the problem is that the test does not work with pandas df.
+                "check_fit_idempotent": "Test does not work on dataframes",
+
+                "check_fit1d": "Test not relevant, Feature-engine transformers only "
+                               "work with dataframes",
+
+                "check_fit2d_predict1d":
+                    "Test not relevant, Feature-engine transformers only "
+                    "work with dataframes",
+            }
+        }

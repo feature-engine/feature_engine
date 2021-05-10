@@ -62,6 +62,7 @@ def test_general_transformation_without_dropping_variables(df_cyclical):
     assert cyclical.variables == ['day']
 
     # test fit attr
+    assert cyclical.variables_ == ['day']
     assert cyclical.input_shape_ == (7, 2)
     assert cyclical.max_values_ == {
         'day': 7,
@@ -103,6 +104,7 @@ def test_general_transformation_dropping_original_variables(df_cyclical):
     assert cyclical.variables == ['day']
 
     # test fit attr
+    assert cyclical.variables_ == ['day']
     assert cyclical.input_shape_ == (7, 2)
     assert cyclical.max_values_ == {
         'day': 7,
@@ -158,9 +160,10 @@ def test_automatically_find_variables(df_cyclical):
     transf_df = transf_df.drop(columns=['day', 'months'])
 
     # test init params
-    assert cyclical.variables == ['day', 'months']
+    assert cyclical.variables is None
 
     # test fit attr
+    assert cyclical.variables_ == ['day', 'months']
     assert cyclical.input_shape_ == (7, 2)
     assert cyclical.max_values_ == {
         'day': 7,
