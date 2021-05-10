@@ -28,13 +28,19 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
     Parameters
     ----------
     variables : list, default=None
-        The list of numerical variables that will be transformed. If None, the
-        transformer will automatically find and select all numerical variables.
+        The list of numerical variables to transform. If None, the transformer will
+        automatically find and select all numerical variables.
 
     Attributes
     ----------
     lambda_dict_ :
         Dictionary containing the best lambda for the Yeo-Johnson per variable.
+
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
 
     Methods
     -------
@@ -96,6 +102,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
             _, self.lambda_dict_[var] = stats.yeojohnson(X[var])
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

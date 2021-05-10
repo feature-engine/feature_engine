@@ -24,11 +24,19 @@ class PowerTransformer(BaseNumericalTransformer):
     Parameters
     ----------
     variables : list, default=None
-        The list of numerical variables that will be transformed. If None, the
-        transformer will automatically find and select all numerical variables.
+        The list of numerical variables to transform. If None, the transformer will
+        automatically find and select all numerical variables.
 
     exp : float or int, default=0.5
         The power (or exponent).
+
+    Attributes
+    ----------
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
 
     Methods
     -------
@@ -83,6 +91,7 @@ class PowerTransformer(BaseNumericalTransformer):
         X = super().fit(X)
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

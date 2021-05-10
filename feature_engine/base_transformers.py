@@ -1,8 +1,6 @@
 """ The base transformer provides functionality that is shared by most transformer
-classes. This base transformer provides the base functionality within the fit() and
-transform() methods shared by most transformers, like checking that input is a df,
-the size, NA, etc.
-
+classes. TProvides the base functionality within the fit() and transform() methods
+shared by most transformers, like checking that input is a df, the size, NA, etc.
 """
 from typing import List, Optional, Union
 
@@ -34,12 +32,12 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         X : Pandas DataFrame
 
         y : Pandas Series, np.array. Default = None
-            Parameter is necessary for compatibility with sklearn.pipeline.Pipeline.
+            Parameter is necessary for compatibility with sklearn Pipeline.
 
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
+            If the input is not a Pandas DataFrame or a numpy array
             If any of the user provided variables are not numerical
         ValueError
             If there are no numerical variables in the df or the df is empty
@@ -59,7 +57,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
             X, self.variables
         )
 
-        # check if dataset contains na
+        # check if dataset contains na or inf
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
 
@@ -68,7 +66,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Checks that the input is a dataframe and of the same size than the one used
-        in the fit method. Checks absence of NA.
+        in the fit method. Checks absence of NA and Inf.
 
         Parameters
         ----------
@@ -94,47 +92,60 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         # check that input is a dataframe
         X = _is_dataframe(X)
 
-        # check if dataset contains na
+        # Check if input data contains same number of columns as dataframe used to fit.
+        _check_input_matches_training_df(X, self.n_features_in_)
+
+        # check if dataset contains na or inf
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
-
-        # Check if input data contains same number of columns as dataframe used to fit.
-        _check_input_matches_training_df(X, self.input_shape_[1])
 
         return X
 
     # for the check_estimator tests
     def _more_tags(self):
-        # to overcome the fact that sklearn does not allow nan in the input
-        # to overcome the error thrown when transformer can't handle sparse data
-        # to overcome tests that work only on numpy arrays and are thus not relevant
-        # for feature-engine transformers
         return {
-            '_xfail_checks': {
-                # these are important checks that at the moment can't be run
-                # because the input arrays contain 0s as values, and some transformers
-                # return errors on those values, intentionally
-                'check_estimators_dtypes':
-                    'transformers raise errors when data contains zeroes',
-                'check_estimators_fit_returns_self':
-                    'transformers raise errors when data contains zeroes',
-                'check_pipeline_consistency':
-                    'transformers raise errors when data contains zeroes',
-                'check_complex_data':
-                    'I dont think we need this check',
-                'check_dtype_object':
-                    'Feature-engine uses dtypes to select variable types',
-                'check_estimator_sparse_data':
-                    'Feature-engine transformers do not work with sparse data',
-                'check_transformer_data_not_an_array':
-                    'Not sure what this check is at the moment',
-                'check_transformer_preserve_dtypes':
-                    'Feature-engine transformers can change the types',
-                'check_methods_sample_order_invariance':
-                    'Test does not work on dataframes',
-                'check_fit_idempotent': 'Test does not work on dataframes',
-                'check_fit1d': 'Feature-engine transformers only work with dataframes',
-                'check_fit2d_predict1d':
-                    'Feature-engine transformers only work with dataframes',
+            "_xfail_checks": {
+                # Complex data in math terms, are values like 4i (imaginary numbers
+                # so to speak). I've never seen such a thing in the dfs I've
+                # worked with, so I do not need this test.
+                "check_complex_data": "I dont think we need this check, if users "
+                                      "disagree we can think how to introduce it "
+                                      "at a later stage.",
+
+                # check that estimators treat dtype object as numeric if possible
+                "check_dtype_object":
+                    "Transformers use dtypes to select between numerical and "
+                    "categorical variables. Feature-engine trusts the user cast the "
+                    "variables in they way they would like them treated.",
+
+                # Not sure what the aim of this check is, it fails because FE does not
+                # like the sklearn class _NotAnArray
+                "check_transformer_data_not_an_array": "Not sure what this check is",
+
+                # this test fails because the test uses dtype attribute of numpy, but
+                # in feature engine the array is converted to a df, and it does not
+                # have the dtype attribute.
+                # need to understand why this test is useful an potentially have one
+                # for the package. But some Feature-engine transformers DO change the
+                # types
+                "check_transformer_preserve_dtypes":
+                    "Test not relevant, Feature-engine transformers can change "
+                    "the types",
+
+                # TODO: we probably need the test below!!
+                "check_methods_sample_order_invariance":
+                    "Test does not work on dataframes",
+
+                # TODO: we probably need the test below!!
+                # the test below tests that a second fit overrides a first fit.
+                # the problem is that the test does not work with pandas df.
+                "check_fit_idempotent": "Test does not work on dataframes",
+
+                "check_fit1d": "Test not relevant, Feature-engine transformers only "
+                               "work with dataframes",
+
+                "check_fit2d_predict1d":
+                    "Test not relevant, Feature-engine transformers only "
+                    "work with dataframes",
             }
         }
