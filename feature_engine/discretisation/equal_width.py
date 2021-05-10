@@ -57,6 +57,12 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
     binner_dict_:
         Dictionary with the interval limits per variable.
 
+    variables_:
+         The variables to be discretised.
+
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -136,7 +142,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
         # fit
         self.binner_dict_ = {}
 
-        for var in self.variables:
+        for var in self.variables_:
             tmp, bins = pd.cut(
                 x=X[var], bins=self.bins, retbins=True, duplicates="drop"
             )
@@ -148,6 +154,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
             self.binner_dict_[var] = bins
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -179,17 +186,17 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
         # transform variables
         if self.return_boundaries:
-            for feature in self.variables:
+            for feature in self.variables_:
                 X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
 
         else:
-            for feature in self.variables:
+            for feature in self.variables_:
                 X[feature] = pd.cut(
                     X[feature], self.binner_dict_[feature], labels=False
                 )
 
             # return object
             if self.return_object:
-                X[self.variables] = X[self.variables].astype("O")
+                X[self.variables_] = X[self.variables_].astype("O")
 
         return X

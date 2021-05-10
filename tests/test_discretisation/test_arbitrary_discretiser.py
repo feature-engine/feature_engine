@@ -21,10 +21,10 @@ def test_arbitrary_discretiser():
     X = transformer.fit_transform(data)
 
     # init params
-    assert transformer.variables == ["LSTAT"]
     assert transformer.return_object is False
     assert transformer.return_boundaries is False
     # fit params
+    assert transformer.variables_ == ["LSTAT"]
     assert transformer.binner_dict_ == user_dict
     # transform params
     pd.testing.assert_frame_equal(X, data_t2)

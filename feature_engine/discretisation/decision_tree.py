@@ -7,7 +7,10 @@ import pandas as pd
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
 
-from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
+)
 from feature_engine.base_transformers import BaseNumericalTransformer
 
 
@@ -72,6 +75,15 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     scores_dict_ :
         Dictionary with the score of the best decision tree, over the train set.
 
+    param_grid_:
+        the grid with hyperparameters used in the grid search
+
+    variables_:
+         The variables to discretise.
+
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -103,9 +115,6 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         regression: bool = True,
         random_state: Optional[int] = None,
     ) -> None:
-
-        if param_grid is None:
-            param_grid = {"max_depth": [1, 2, 3, 4]}
 
         if not isinstance(cv, int) or cv < 0:
             raise ValueError("cv can only take only positive integers")
@@ -150,10 +159,17 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         # check input dataframe
         X = super().fit(X, y)
 
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+
+        if self.param_grid is None:
+            self.param_grid_ = {"max_depth": [1, 2, 3, 4]}
+        else:
+            self.param_grid_ = self.param_grid
+
         self.binner_dict_ = {}
         self.scores_dict_ = {}
 
-        for var in self.variables:
+        for var in self.variables_:
 
             if self.regression:
                 model = DecisionTreeRegressor(random_state=self.random_state)
@@ -161,7 +177,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
                 model = DecisionTreeClassifier(random_state=self.random_state)
 
             tree_model = GridSearchCV(
-                model, cv=self.cv, scoring=self.scoring, param_grid=self.param_grid
+                model, cv=self.cv, scoring=self.scoring, param_grid=self.param_grid_
             )
 
             # fit the model to the variable
@@ -171,6 +187,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
             self.scores_dict_[var] = tree_model.score(X[var].to_frame(), y)
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -202,7 +219,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         # check input dataframe and if class was fitted
         X = super().transform(X)
 
-        for feature in self.variables:
+        for feature in self.variables_:
             if self.regression:
                 X[feature] = self.binner_dict_[feature].predict(X[feature].to_frame())
             else:

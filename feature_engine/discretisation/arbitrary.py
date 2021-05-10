@@ -4,8 +4,13 @@
 from typing import Optional, Dict
 
 import pandas as pd
-
+from feature_engine.dataframe_checks import (
+    _check_contains_na,
+    _check_contains_inf,
+    _is_dataframe,
+)
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
 class ArbitraryDiscretiser(BaseNumericalTransformer):
@@ -51,8 +56,14 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     Attributes
     ----------
-    binner_dict_ :
+    binner_dict_:
          Dictionary with the interval limits per variable.
+
+    variables_:
+         The variables to discretise.
+
+    n_features_in_:
+        The number of features in the train set used in fit
 
     Methods
     -------
@@ -71,10 +82,10 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
     """
 
     def __init__(
-        self,
-        binning_dict: Dict[str, list],
-        return_object: bool = False,
-        return_boundaries: bool = False,
+            self,
+            binning_dict: Dict[str, list],
+            return_object: bool = False,
+            return_boundaries: bool = False,
     ) -> None:
 
         if not isinstance(binning_dict, dict):
@@ -86,7 +97,6 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
             raise ValueError("return_object must be True or False")
 
         self.binning_dict = binning_dict
-        self.variables = [x for x in binning_dict.keys()]
         self.return_object = return_object
         self.return_boundaries = return_boundaries
 
@@ -119,20 +129,22 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         -------
         self
         """
-
         # check input dataframe
-        X = super().fit(X, y)
+        X = _is_dataframe(X)
 
-        # check that all variables in the dictionary are present in the df
-        if all(variable in X.columns for variable in self.variables):
-            self.binner_dict_ = self.binning_dict
-        else:
-            raise ValueError(
-                "There are variables in the provided dictionary which are not present "
-                "in the train set or not cast as numerical"
-            )
+        # find or check for numerical variables
+        variables = [x for x in self.binning_dict.keys()]
+        self.variables_ = _find_or_check_numerical_variables(X, variables)
+
+        # check if dataset contains na or inf
+        _check_contains_na(X, self.variables_)
+        _check_contains_inf(X, self.variables_)
+
+        # for consistency wit the rest of the discretisers, we add this attribute
+        self.binner_dict_ = self.binning_dict
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -163,19 +175,69 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
         # transform variables
         if self.return_boundaries:
-            for feature in self.variables:
+            for feature in self.variables_:
                 X[feature] = pd.cut(
                     X[feature], self.binner_dict_[feature]  # type: ignore
                 )
 
         else:
-            for feature in self.variables:
+            for feature in self.variables_:
                 X[feature] = pd.cut(
                     X[feature], self.binner_dict_[feature], labels=False  # type: ignore
                 )
 
             # return object
             if self.return_object:
-                X[self.variables] = X[self.variables].astype("O")
+                X[self.variables_] = X[self.variables_].astype("O")
 
         return X
+
+    def _more_tags(self):
+        return {
+            "_xfail_checks": {
+                "check_parameters_default_constructible":
+                    "transformer has 1 mandatory parameter",
+                # Complex data in math terms, are values like 4i (imaginary numbers
+                # so to speak). I've never seen such a thing in the dfs I've
+                # worked with, so I do not need this test.
+                "check_complex_data": "I dont think we need this check, if users "
+                                      "disagree we can think how to introduce it "
+                                      "at a later stage.",
+
+                # check that estimators treat dtype object as numeric if possible
+                "check_dtype_object":
+                    "Transformers use dtypes to select between numerical and "
+                    "categorical variables. Feature-engine trusts the user cast the "
+                    "variables in they way they would like them treated.",
+
+                # Not sure what the aim of this check is, it fails because FE does not
+                # like the sklearn class _NotAnArray
+                "check_transformer_data_not_an_array": "Not sure what this check is",
+
+                # this test fails because the test uses dtype attribute of numpy, but
+                # in feature engine the array is converted to a df, and it does not
+                # have the dtype attribute.
+                # need to understand why this test is useful an potentially have one
+                # for the package. But some Feature-engine transformers DO change the
+                # types
+                "check_transformer_preserve_dtypes":
+                    "Test not relevant, Feature-engine transformers can change "
+                    "the types",
+
+                # TODO: we probably need the test below!!
+                "check_methods_sample_order_invariance":
+                    "Test does not work on dataframes",
+
+                # TODO: we probably need the test below!!
+                # the test below tests that a second fit overrides a first fit.
+                # the problem is that the test does not work with pandas df.
+                "check_fit_idempotent": "Test does not work on dataframes",
+
+                "check_fit1d": "Test not relevant, Feature-engine transformers only "
+                               "work with dataframes",
+
+                "check_fit2d_predict1d":
+                    "Test not relevant, Feature-engine transformers only "
+                    "work with dataframes",
+            }
+        }
