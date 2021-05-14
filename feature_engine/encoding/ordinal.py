@@ -48,6 +48,12 @@ class OrdinalEncoder(BaseCategoricalTransformer):
     encoder_dict_ :
         Dictionary with the ordinal number per category, per variable.
 
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -133,7 +139,7 @@ class OrdinalEncoder(BaseCategoricalTransformer):
         # find mappings
         self.encoder_dict_ = {}
 
-        for var in self.variables:
+        for var in self.variables_:
 
             if self.encoding_method == "ordered":
                 t = (
@@ -151,6 +157,7 @@ class OrdinalEncoder(BaseCategoricalTransformer):
         self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

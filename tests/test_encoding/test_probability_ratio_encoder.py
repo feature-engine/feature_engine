@@ -40,6 +40,7 @@ def test_ratio_with_one_variable(df_enc):
     assert encoder.encoding_method == "ratio"
     assert encoder.variables == ["var_A"]
     # fit params
+    assert encoder.variables_ == ["var_A"]
     assert encoder.encoder_dict_ == {
         "var_A": {"A": 0.49999999999999994, "B": 0.25, "C": 1.0}
     }
@@ -103,8 +104,9 @@ def test_logratio_and_automaticcally_select_variables(df_enc):
 
     # init params
     assert encoder.encoding_method == "log_ratio"
-    assert encoder.variables == ["var_A", "var_B"]
+    assert encoder.variables is None
     # fit params
+    assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {
         "var_A": {"A": -0.6931471805599454, "B": -1.3862943611198906, "C": 0.0},
         "var_B": {"A": -1.3862943611198906, "B": -0.6931471805599454, "C": 0.0},

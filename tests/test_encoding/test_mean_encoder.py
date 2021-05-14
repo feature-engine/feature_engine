@@ -39,6 +39,7 @@ def test_user_enters_1_variable(df_enc):
     # test init params
     assert encoder.variables == ["var_A"]
     # test fit attr
+    assert encoder.variables_ == ["var_A"]
     assert encoder.encoder_dict_ == {
         "var_A": {"A": 0.3333333333333333, "B": 0.2, "C": 0.5}
     }
@@ -101,8 +102,9 @@ def test_automatically_find_variables(df_enc):
     ]
 
     # test init params
-    assert encoder.variables == ["var_A", "var_B"]
+    assert encoder.variables is None
     # test fit attr
+    assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {
         "var_A": {"A": 0.3333333333333333, "B": 0.2, "C": 0.5},
         "var_B": {"A": 0.2, "B": 0.3333333333333333, "C": 0.5},

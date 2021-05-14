@@ -163,7 +163,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         self.encoder_dict_ = {}
 
-        for var in self.variables:
+        for var in self.variables_:
             if not self.top_categories:
                 if self.drop_last:
                     category_ls = [x for x in X[var].unique()]
@@ -184,6 +184,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
         self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -214,14 +215,14 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         X = self._check_transform_input_and_state(X)
 
-        for feature in self.variables:
+        for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
                 X[str(feature) + "_" + str(category)] = np.where(
                     X[feature] == category, 1, 0
                 )
 
         # drop the original non-encoded variables.
-        X.drop(labels=self.variables, axis=1, inplace=True)
+        X.drop(labels=self.variables_, axis=1, inplace=True)
 
         return X
 

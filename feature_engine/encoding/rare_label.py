@@ -64,6 +64,12 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         Dictionary with the frequent categories, i.e.., those that will be
         kept, per variable.
 
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -136,7 +142,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
         self.encoder_dict_ = {}
 
-        for var in self.variables:
+        for var in self.variables_:
             if len(X[var].unique()) > self.n_categories:
 
                 # if the variable has more than the indicated number of categories
@@ -164,6 +170,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -193,7 +200,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
         X = self._check_transform_input_and_state(X)
 
-        for feature in self.variables:
+        for feature in self.variables_:
             X[feature] = np.where(
                 X[feature].isin(self.encoder_dict_[feature]),
                 X[feature],

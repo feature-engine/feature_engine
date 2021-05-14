@@ -45,6 +45,12 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
     encoder_dict_:
         Dictionary with the count or frequency} per category, per variable.
 
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -113,7 +119,7 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
         self.encoder_dict_ = {}
 
         # learn encoding maps
-        for var in self.variables:
+        for var in self.variables_:
             if self.encoding_method == "count":
                 self.encoder_dict_[var] = X[var].value_counts().to_dict()
 
@@ -124,6 +130,7 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
         self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

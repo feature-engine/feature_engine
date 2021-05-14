@@ -38,8 +38,9 @@ def test_defo_params_plus_automatically_find_variables(df_enc_big):
     assert encoder.tol == 0.06
     assert encoder.n_categories == 5
     assert encoder.replace_with == "Rare"
-    assert encoder.variables == ["var_A", "var_B", "var_C"]
+    assert encoder.variables is None
     # test fit attr
+    assert encoder.variables_ == ["var_A", "var_B", "var_C"]
     assert encoder.input_shape_ == (40, 3)
     # test transform output
     pd.testing.assert_frame_equal(X, df)
@@ -82,6 +83,7 @@ def test_user_provides_grouping_label_name_and_variable_list(df_enc_big):
     assert encoder.replace_with == "Other"
     assert encoder.variables == ["var_A", "var_B"]
     # test fit attr
+    assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.input_shape_ == (40, 3)
     # test transform output
     pd.testing.assert_frame_equal(X, df)

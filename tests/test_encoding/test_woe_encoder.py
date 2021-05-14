@@ -60,8 +60,9 @@ def test_automatically_select_variables(df_enc):
     ]
 
     # init params
-    assert encoder.variables == ["var_A", "var_B"]
+    assert encoder.variables is None
     # fit params
+    assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {
         "var_A": {
             "A": 0.15415067982725836,

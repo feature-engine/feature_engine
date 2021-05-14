@@ -80,6 +80,12 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     encoder_ :
         sklearn Pipeline containing the ordinal encoder and the decision tree.
 
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -124,9 +130,6 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
-        if param_grid is None:
-            param_grid = {"max_depth": [1, 2, 3, 4]}
-
         self.encoding_method = encoding_method
         self.cv = cv
         self.scoring = scoring
@@ -166,17 +169,22 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         # check input dataframe
         X = self._check_fit_input_and_variables(X)
 
+        if self.param_grid is None:
+            param_grid = {"max_depth": [1, 2, 3, 4]}
+        else:
+            param_grid = self.param_grid
+
         # initialize categorical encoder
         cat_encoder = OrdinalEncoder(
-            encoding_method=self.encoding_method, variables=self.variables
+            encoding_method=self.encoding_method, variables=self.variables_
         )
 
         # initialize decision tree discretiser
         tree_discretiser = DecisionTreeDiscretiser(
             cv=self.cv,
             scoring=self.scoring,
-            variables=self.variables,
-            param_grid=self.param_grid,
+            variables=self.variables_,
+            param_grid=param_grid,
             regression=self.regression,
             random_state=self.random_state,
         )
@@ -192,6 +200,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         self.encoder_.fit(X, y)
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -227,5 +236,5 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         return X
 
     def inverse_transform(self, X: pd.DataFrame):
-        """inverse_transform is not implemented for this transformer yet."""
+        """inverse_transform is not implemented for this transformer."""
         return self

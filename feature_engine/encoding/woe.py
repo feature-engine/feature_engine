@@ -75,6 +75,12 @@ class WoEEncoder(BaseCategoricalTransformer):
     encoder_dict_ :
         Dictionary with the WoE per variable.
 
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -160,7 +166,7 @@ class WoEEncoder(BaseCategoricalTransformer):
         total_neg = len(temp) - total_pos
         temp["non_target"] = np.where(temp["target"] == 1, 0, 1)
 
-        for var in self.variables:
+        for var in self.variables_:
             pos = temp.groupby([var])["target"].sum() / total_pos
             neg = temp.groupby([var])["non_target"].sum() / total_neg
 
@@ -181,6 +187,7 @@ class WoEEncoder(BaseCategoricalTransformer):
         self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

@@ -39,6 +39,7 @@ def test_encode_1_variable_with_counts(df_enc):
     assert encoder.encoding_method == "count"
     assert encoder.variables == ["var_A"]
     # fit params
+    assert encoder.variables_ == ["var_A"]
     assert encoder.encoder_dict_ == {"var_A": {"A": 6, "B": 10, "C": 4}}
     assert encoder.input_shape_ == (20, 3)
     # transform params
@@ -99,8 +100,9 @@ def test_automatically_select_variables_encode_with_frequency(df_enc):
 
     # init params
     assert encoder.encoding_method == "frequency"
-    assert encoder.variables == ["var_A", "var_B"]
+    assert encoder.variables is None
     # fit params
+    assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {
         "var_A": {"A": 0.3, "B": 0.5, "C": 0.2},
         "var_B": {"A": 0.5, "B": 0.3, "C": 0.2},

@@ -65,6 +65,12 @@ class PRatioEncoder(BaseCategoricalTransformer):
     encoder_dict_ :
         Dictionary with the probability ratio per category per variable.
 
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -146,7 +152,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
         self.encoder_dict_ = {}
 
-        for var in self.variables:
+        for var in self.variables_:
 
             t = temp.groupby(var)["target"].mean()
             t = pd.concat([t, 1 - t], axis=1)
@@ -174,6 +180,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
         self._check_encoding_dictionary()
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
