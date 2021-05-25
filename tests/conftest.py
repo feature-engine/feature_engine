@@ -14,6 +14,7 @@ def df_vartypes():
     }
 
     df = pd.DataFrame(data)
+    df['City'] = df['City'].astype("category")
 
     return df
 
@@ -28,8 +29,9 @@ def df_numeric_columns():
         4: pd.date_range("2020-02-24", periods=4, freq="T"),
     }
 
+    cat_type = pd.CategoricalDtype(["London", "Manchester", "Liverpool", "Bristol"], ordered=False)
     df = pd.DataFrame(data)
-
+    df.loc[:, 1] = df.loc[:, 1].astype(cat_type)
     return df
 
 

@@ -113,7 +113,7 @@ def test_all_binary_operation(df_vartypes):
             "Age_mul_Marks": [18.0, 16.8, 13.299999999999999, 10.799999999999999],
         }
     )
-
+    ref['City'] = ref['City'].astype("category")
     # init params
     assert transformer.variables_to_combine == ["Age"]
     assert transformer.reference_variables == ["Marks"]
@@ -146,7 +146,7 @@ def test_operations_with_multiple_variables(df_vartypes):
             "Marks_sub_Marks": [0.0, 0.0, 0.0, 0.0],
         }
     )
-
+    ref['City'] = ref['City'].astype("category")
     # init params
     assert transformer.variables_to_combine == ["Age", "Marks"]
     assert transformer.reference_variables == ["Age", "Marks"]
@@ -181,7 +181,7 @@ def test_user_enters_output_variable_names(df_vartypes):
             "GranAmigo": [0.0, 0.0, 0.0, 0.0],
         }
     )
-
+    ref['City'] = ref['City'].astype("category")
     # init params
     assert transformer.variables_to_combine == ["Age", "Marks"]
     assert transformer.reference_variables == ["Age", "Marks"]

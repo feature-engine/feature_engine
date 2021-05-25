@@ -110,7 +110,7 @@ def _find_or_check_categorical_variables(
         variables = [variables]
 
     elif not variables:
-        variables = list(X.select_dtypes(include="O").columns)
+        variables = list(X.select_dtypes(include=["O", "category"]).columns)
         if len(variables) == 0:
             raise ValueError(
                 "No categorical variables in this dataframe. Please check variable "
@@ -118,9 +118,9 @@ def _find_or_check_categorical_variables(
             )
 
     else:
-        if any(X[variables].select_dtypes(exclude="O").columns):
+        if any(X[variables].select_dtypes(exclude=["O", "category"]).columns):
             raise TypeError(
-                "Some of the variables are not categorical. Please cast them as object "
+                "Some of the variables are not categorical. Please cast them as object or category "
                 "before calling this transformer"
             )
 

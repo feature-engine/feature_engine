@@ -207,7 +207,7 @@ def test_sklearn_ohe_object_many_features(df_vartypes):
             "City_Manchester": [0, 1, 0, 0],
         }
     )
-
+    ref['City'] = ref['City'].astype("category")
     transformed_df = transformer.fit_transform(df_vartypes[variables_to_encode])
 
     # init params
@@ -280,7 +280,7 @@ def test_sklearn_ohe_all_features(df_vartypes):
             "dob_2020-02-24T00:03:00.000000000": [0, 0, 0, 1],
         }
     )
-
+    ref['City'] = ref['City'].astype("category")
     transformed_df = transformer.fit_transform(df_vartypes)
 
     # init params

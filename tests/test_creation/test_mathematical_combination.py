@@ -100,7 +100,7 @@ def test_default_parameters(df_vartypes):
             "min(Age-Marks)": [0.9, 0.8, 0.7, 0.6],
         }
     )
-
+    ref['City'] = ref['City'].astype("category")
     # init params
     assert transformer.variables_to_combine == ["Age", "Marks"]
     assert transformer.math_operations is None
@@ -151,7 +151,7 @@ def test_user_enters_two_operations(df_vartypes):
             "mean(Age-Marks)": [10.45, 10.9, 9.85, 9.3],
         }
     )
-
+    ref['City'] = ref['City'].astype("category")
     # init params
     assert transformer.variables_to_combine == ["Age", "Marks"]
     assert transformer.math_operations == ["sum", "mean"]
@@ -186,7 +186,7 @@ def test_user_enters_output_variable_names(df_vartypes):
             "mean_of_two_vars": [10.45, 10.9, 9.85, 9.3],
         }
     )
-
+    ref['City'] = ref['City'].astype("category")
     # init params
     assert transformer.variables_to_combine == ["Age", "Marks"]
     assert transformer.math_operations == ["sum", "mean"]
@@ -219,7 +219,7 @@ def test_one_mathematical_operation(df_vartypes):
             "sum(Age-Marks)": [20.9, 21.8, 19.7, 18.6],
         }
     )
-
+    ref['City'] = ref['City'].astype("category")
     # init params
     assert transformer.variables_to_combine == ["Age", "Marks"]
     assert transformer.math_operations == ["sum"]
@@ -255,6 +255,8 @@ def test_variable_names_when_df_cols_are_integers(df_numeric_columns):
             "min(2-3)": [0.9, 0.8, 0.7, 0.6],
         }
     )
+    cat_type = pd.CategoricalDtype(["London", "Manchester", "Liverpool", "Bristol"], ordered=False)
+    ref.loc[:, 1] = ref.loc[:, 1].astype(cat_type)
 
     # init params
     assert transformer.variables_to_combine == [2, 3]
@@ -322,5 +324,6 @@ def test_no_error_when_null_values_in_variable(df_vartypes):
             "mean(Age-Marks)": [10.45, 0.8, 9.85, 9.3],
         }
     )
+    ref['City'] = ref['City'].astype("category")
     # transform params
     pd.testing.assert_frame_equal(X, ref)
