@@ -50,7 +50,7 @@ class AddMissingIndicator(BaseImputer):
         List of variables for which the missing indicators will be created.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
