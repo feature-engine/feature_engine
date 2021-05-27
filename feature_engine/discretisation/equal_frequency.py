@@ -30,13 +30,13 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
 
     Parameters
     ----------
-    q: int, default=10
-        Desired number of equal frequency intervals / bins. In other words the
-        number of quantiles in which the variables should be divided.
-
     variables: list, default=None
         The list of numerical variables that will be discretised. If None, the
         EqualFrequencyDiscretiser() will select all numerical variables.
+
+    q: int, default=10
+        Desired number of equal frequency intervals / bins. In other words the
+        number of quantiles in which the variables should be divided.
 
     return_object: bool, default=False
         Whether the the discrete variable should be returned casted as numeric or as
@@ -86,8 +86,8 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
 
     def __init__(
         self,
-        q: int = 10,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        q: int = 10,
         return_object: bool = False,
         return_boundaries: bool = False,
     ) -> None:

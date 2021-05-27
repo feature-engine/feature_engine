@@ -53,10 +53,6 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    regression: boolean, default=True
-        Indicates whether the encoder should train a regression or a classification
-        decision tree.
-
     param_grid: dictionary, default=None
         The list of parameters over which the decision tree should be optimised
         during the grid search. The param_grid can contain any of the permitted
@@ -64,6 +60,10 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         DecisionTreeClassifier().
 
         If None, then param_grid = {'max_depth': [1, 2, 3, 4]}.
+
+    regression: boolean, default=True
+        Indicates whether the encoder should train a regression or a classification
+        decision tree.
 
     random_state: int, default=None
         The random_state to initialise the training of the decision tree. It is one

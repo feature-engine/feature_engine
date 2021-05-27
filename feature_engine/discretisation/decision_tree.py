@@ -35,6 +35,10 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
     Parameters
     ----------
+    variables: list, default=None
+        The list of numerical variables to transform. If None, the discretiser will
+        automatically select all numerical variables.
+
     cv: int, default=3
         Desired number of cross-validation fold to be used to fit the decision
         tree.
@@ -45,14 +49,6 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    variables: list, default=None
-        The list of numerical variables to transform. If None, the discretiser will
-        automatically select all numerical variables.
-
-    regression: boolean, default=True
-        Indicates whether the discretiser should train a regression or a classification
-        decision tree.
-
     param_grid: dictionary, default=None
         The list of parameters over which the decision tree should be optimised
         during the grid search. The param_grid can contain any of the permitted
@@ -60,6 +56,10 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         DecisionTreeClassifier().
 
         If None, then param_grid = {'max_depth': [1, 2, 3, 4]}
+
+    regression: boolean, default=True
+        Indicates whether the discretiser should train a regression or a classification
+        decision tree.
 
     random_state : int, default=None
         The random_state to initialise the training of the decision tree. It is one
@@ -105,9 +105,9 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
     def __init__(
         self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
         cv: int = 3,
         scoring: str = "neg_mean_squared_error",
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
         param_grid: Optional[Dict[str, Union[str, int, float, List[int]]]] = None,
         regression: bool = True,
         random_state: Optional[int] = None,

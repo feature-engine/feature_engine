@@ -119,10 +119,10 @@ class RandomSampleImputer(BaseImputer):
 
     def __init__(
         self,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
         random_state: Union[None, int, str, List[Union[str, int]]] = None,
         seed: str = "general",
         seeding_method: str = "add",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if seed not in ["general", "observation"]:

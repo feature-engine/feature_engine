@@ -35,12 +35,12 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
     Parameters
     ----------
-    bins: int, default=10
-        Desired number of equal width intervals / bins.
-
     variables: list, default=None
         The list of numerical variables to transform. If None, the
         discretiser will automatically select all numerical type variables.
+
+    bins: int, default=10
+        Desired number of equal width intervals / bins.
 
     return_object: bool, default=False
         Whether the the discrete variable should be returned casted as numeric or as
@@ -91,8 +91,8 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
     def __init__(
         self,
-        bins: int = 10,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        bins: int = 10,
         return_object: bool = False,
         return_boundaries: bool = False,
     ) -> None:
