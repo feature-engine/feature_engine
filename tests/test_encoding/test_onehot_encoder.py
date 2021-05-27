@@ -39,7 +39,7 @@ def test_encode_categories_in_k_binary_plus_select_vars_automatically(df_enc_big
     }
 
     assert encoder.variables_ == ["var_A", "var_B", "var_C"]
-    assert encoder.input_shape_ == (40, 3)
+    assert encoder.n_features_in_ == 3
     # test transform output
     assert X.sum().to_dict() == transf
     assert "var_A" not in X.columns
@@ -74,7 +74,7 @@ def test_encode_categories_in_k_minus_1_binary_plus_list_of_variables(df_enc_big
     }
 
     assert encoder.variables_ == ["var_A", "var_B"]
-    assert encoder.input_shape_ == (40, 3)
+    assert encoder.n_features_in_ == 3
     # test transform output
     for col in transf.keys():
         assert X[col].sum() == transf[col]
@@ -106,7 +106,7 @@ def test_encode_top_categories(df_enc_big):
         "var_C_B": 6,
     }
 
-    assert encoder.input_shape_ == (40, 3)
+    assert encoder.n_features_in_ == 3
     # test transform output
     for col in transf.keys():
         assert X[col].sum() == transf[col]

@@ -235,7 +235,6 @@ class Winsorizer(BaseOutlier):
             elif self.capping_method == "quantiles":
                 self.left_tail_caps_ = X[self.variables_].quantile(self.fold).to_dict()
 
-        self.input_shape_ = X.shape
         self.n_features_in_ = X.shape[1]
 
         return self

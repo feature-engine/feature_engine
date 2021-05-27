@@ -185,7 +185,6 @@ class SelectByTargetMeanPerformance(BaseSelector):
         # check if df contains na
         _check_contains_na(X, self.variables_)
 
-        self.input_shape_ = X.shape
         self.n_features_in_ = X.shape[1]
 
         # limit df to variables to smooth code below

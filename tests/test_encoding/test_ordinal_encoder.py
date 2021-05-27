@@ -21,7 +21,7 @@ def test_ordered_encoding_1_variable(df_enc):
     # test fit attr
     assert encoder.variables_ == ["var_A"]
     assert encoder.encoder_dict_ == {"var_A": {"A": 1, "B": 0, "C": 2}}
-    assert encoder.input_shape_ == (20, 2)
+    assert encoder.n_features_in_ == 2
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
@@ -45,7 +45,7 @@ def test_arbitrary_encoding_automatically_find_variables(df_enc):
         "var_A": {"A": 0, "B": 1, "C": 2},
         "var_B": {"A": 0, "B": 1, "C": 2},
     }
-    assert encoder.input_shape_ == (20, 3)
+    assert encoder.n_features_in_ == 3
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 

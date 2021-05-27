@@ -58,7 +58,7 @@ def test_drop_constant_features(df_constant_features):
         "quasi_feat_cat",
     ]
     assert transformer.features_to_drop_ == ["const_feat_num", "const_feat_cat"]
-    assert transformer.input_shape_ == (4, 9)
+    assert transformer.n_features_in_ == 9
 
     # transform output
     pd.testing.assert_frame_equal(X, df)
@@ -101,7 +101,7 @@ def test_drop_constant_and_quasiconstant_features(df_constant_features):
         "quasi_feat_num",
         "quasi_feat_cat",
     ]
-    assert transformer.input_shape_ == (4, 9)
+    assert transformer.n_features_in_ == 9
 
     # transform params
     pd.testing.assert_frame_equal(X, df)
@@ -133,7 +133,7 @@ def test_drop_constant_features_with_list_of_variables(df_constant_features):
 
     # fit attr
     assert transformer.features_to_drop_ == ["const_feat_num", "quasi_feat_num"]
-    assert transformer.input_shape_ == (4, 9)
+    assert transformer.n_features_in_ == 9
 
     # transform params
     pd.testing.assert_frame_equal(X, df)

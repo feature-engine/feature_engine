@@ -173,7 +173,6 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         if len(self.features_to_drop_) == len(X.columns):
             warnings.warn("All features will be dropped, try changing the threshold.")
 
-        self.input_shape_ = X.shape
         self.n_features_in_ = X.shape[1]
 
         return self

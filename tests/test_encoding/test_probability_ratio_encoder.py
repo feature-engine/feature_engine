@@ -44,7 +44,7 @@ def test_ratio_with_one_variable(df_enc):
     assert encoder.encoder_dict_ == {
         "var_A": {"A": 0.49999999999999994, "B": 0.25, "C": 1.0}
     }
-    assert encoder.input_shape_ == (20, 2)
+    assert encoder.n_features_in_ == 2
     # transform params
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
@@ -111,7 +111,7 @@ def test_logratio_and_automaticcally_select_variables(df_enc):
         "var_A": {"A": -0.6931471805599454, "B": -1.3862943611198906, "C": 0.0},
         "var_B": {"A": -1.3862943611198906, "B": -0.6931471805599454, "C": 0.0},
     }
-    assert encoder.input_shape_ == (20, 2)
+    assert encoder.n_features_in_ == 2
     # transform params
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 

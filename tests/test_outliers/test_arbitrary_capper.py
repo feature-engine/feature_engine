@@ -30,7 +30,7 @@ def test_right_end_capping(df_normal_dist):
         0.10727677848029868, 3
     )
     assert transformer.left_tail_caps_ == {}
-    assert transformer.input_shape_ == (100, 1)
+    assert transformer.n_features_in_ == 1
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
     assert np.round(X["var"].max(), 3) <= np.round(0.10727677848029868, 3)
@@ -112,7 +112,7 @@ def test_ignores_na_in_input_df(df_na):
     # test fit params
     assert transformer.max_capping_dict is None
     assert transformer.min_capping_dict == {"Age": 20}
-    assert transformer.input_shape_ == (8, 6)
+    assert transformer.n_features_in_ == 6
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
     assert X["Age"].min() >= 20

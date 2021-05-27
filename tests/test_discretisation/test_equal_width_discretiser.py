@@ -25,7 +25,7 @@ def test_automatically_find_variables_and_return_as_numeric(df_normal_dist):
     assert transformer.return_object is False
     # fit params
     assert transformer.variables_ == ["var"]
-    assert transformer.input_shape_ == (100, 1)
+    assert transformer.n_features_in_ == 1
     # transform params
     assert (transformer.binner_dict_["var"] == bins).all()
     assert all(x for x in X["var"].unique() if x not in X_t)

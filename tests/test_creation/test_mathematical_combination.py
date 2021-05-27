@@ -106,7 +106,7 @@ def test_default_parameters(df_vartypes):
     assert transformer.math_operations is None
     # fit params
     assert transformer.math_operations_ == ["sum", "prod", "mean", "std", "max", "min"]
-    assert transformer.input_shape_ == (4, 5)
+    assert transformer.n_features_in_ == 5
     assert transformer.combination_dict_ == {
         "sum(Age-Marks)": "sum",
         "prod(Age-Marks)": "prod",
@@ -157,7 +157,7 @@ def test_user_enters_two_operations(df_vartypes):
     assert transformer.math_operations == ["sum", "mean"]
     # fit params
     assert transformer.math_operations_ == ["sum", "mean"]
-    assert transformer.input_shape_ == (4, 5)
+    assert transformer.n_features_in_ == 5
     assert transformer.combination_dict_ == {
         "sum(Age-Marks)": "sum",
         "mean(Age-Marks)": "mean",
@@ -192,7 +192,7 @@ def test_user_enters_output_variable_names(df_vartypes):
     assert transformer.math_operations == ["sum", "mean"]
     assert transformer.new_variables_names == ["sum_of_two_vars", "mean_of_two_vars"]
     # fit params
-    assert transformer.input_shape_ == (4, 5)
+    assert transformer.n_features_in_ == 5
     assert transformer.combination_dict_ == {
         "sum_of_two_vars": "sum",
         "mean_of_two_vars": "mean",
@@ -224,7 +224,7 @@ def test_one_mathematical_operation(df_vartypes):
     assert transformer.variables_to_combine == ["Age", "Marks"]
     assert transformer.math_operations == ["sum"]
     # fit params
-    assert transformer.input_shape_ == (4, 5)
+    assert transformer.n_features_in_ == 5
     assert transformer.combination_dict_ == {"sum(Age-Marks)": "sum"}
     # transform params
     pd.testing.assert_frame_equal(X, ref)
@@ -261,7 +261,7 @@ def test_variable_names_when_df_cols_are_integers(df_numeric_columns):
     assert transformer.math_operations is None
     # fit params
     assert transformer.math_operations_ == ["sum", "prod", "mean", "std", "max", "min"]
-    assert transformer.input_shape_ == (4, 5)
+    assert transformer.n_features_in_ == 5
     assert transformer.combination_dict_ == {
         "sum(2-3)": "sum",
         "prod(2-3)": "prod",

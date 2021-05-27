@@ -101,7 +101,6 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         for var in self.variables_:
             _, self.lambda_dict_[var] = stats.yeojohnson(X[var])
 
-        self.input_shape_ = X.shape
         self.n_features_in_ = X.shape[1]
 
         return self

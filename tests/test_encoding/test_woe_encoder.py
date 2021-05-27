@@ -75,7 +75,7 @@ def test_automatically_select_variables(df_enc):
             "C": 0.8472978603872037,
         },
     }
-    assert encoder.input_shape_ == (20, 2)
+    assert encoder.n_features_in_ == 2
     # transform params
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 

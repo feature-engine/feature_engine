@@ -131,7 +131,6 @@ class CyclicalTransformer(BaseNumericalTransformer):
                     )
             self.max_values_ = self.max_values
 
-        self.input_shape_ = X.shape
         self.n_features_in_ = X.shape[1]
 
         return self

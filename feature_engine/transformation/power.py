@@ -90,7 +90,6 @@ class PowerTransformer(BaseNumericalTransformer):
         # check input dataframe
         X = super().fit(X)
 
-        self.input_shape_ = X.shape
         self.n_features_in_ = X.shape[1]
 
         return self

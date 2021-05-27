@@ -20,7 +20,7 @@ def test_defo_params_plus_automatically_find_variables(df_vartypes):
     assert transformer.variables is None
     # test fit attr
     assert transformer.variables_ == ["Age", "Marks"]
-    assert transformer.input_shape_ == (4, 5)
+    assert transformer.n_features_in_ == 5
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 

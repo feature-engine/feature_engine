@@ -234,7 +234,6 @@ class RecursiveFeatureElimination(BaseSelector):
             f for f in self.variables_ if f not in _selected_features
         ]
 
-        self.input_shape_ = X.shape
         self.n_features_in_ = X.shape[1]
 
         return self

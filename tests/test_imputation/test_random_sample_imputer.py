@@ -60,7 +60,7 @@ def test_general_seed_plus_automatically_select_variables(df_na):
 
     # test fit attr
     assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks", "dob"]
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.n_features_in_ == 6
     pd.testing.assert_frame_equal(imputer.X_, df_na)
 
     # test transform output

@@ -198,7 +198,7 @@ class RandomSampleImputer(BaseImputer):
                     "There are variables assigned as random state which are not part "
                     "of the training dataframe."
                 )
-        self.input_shape_ = X.shape
+
         self.n_features_in_ = X.shape[1]
 
         return self

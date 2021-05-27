@@ -43,7 +43,7 @@ def test_user_enters_1_variable(df_enc):
     assert encoder.encoder_dict_ == {
         "var_A": {"A": 0.3333333333333333, "B": 0.2, "C": 0.5}
     }
-    assert encoder.input_shape_ == (20, 2)
+    assert encoder.n_features_in_ == 2
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
@@ -109,7 +109,7 @@ def test_automatically_find_variables(df_enc):
         "var_A": {"A": 0.3333333333333333, "B": 0.2, "C": 0.5},
         "var_B": {"A": 0.2, "B": 0.3333333333333333, "C": 0.5},
     }
-    assert encoder.input_shape_ == (20, 2)
+    assert encoder.n_features_in_ == 2
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 

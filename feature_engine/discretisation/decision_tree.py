@@ -183,7 +183,6 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
             self.binner_dict_[var] = tree_model
             self.scores_dict_[var] = tree_model.score(X[var].to_frame(), y)
 
-        self.input_shape_ = X.shape
         self.n_features_in_ = X.shape[1]
 
         return self

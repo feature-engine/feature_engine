@@ -22,7 +22,7 @@ def test_impute_with_string_missing_and_automatically_find_variables(df_na):
 
     # tes fit attributes
     assert imputer.variables_ == ["Name", "City", "Studies"]
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.n_features_in_ == 6
     assert imputer.imputer_dict_ == {
         "Name": "Missing",
         "City": "Missing",
@@ -57,7 +57,7 @@ def test_user_defined_string_and_automatically_find_variables(df_na):
 
     # tes fit attributes
     assert imputer.variables_ == ["Name", "City", "Studies"]
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.n_features_in_ == 6
     assert imputer.imputer_dict_ == {
         "Name": "Unknown",
         "City": "Unknown",
@@ -83,7 +83,7 @@ def test_mode_imputation_and_single_variable(df_na):
     assert imputer.imputation_method == "frequent"
     assert imputer.variables == "City"
     assert imputer.variables_ == ["City"]
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.n_features_in_ == 6
     assert imputer.imputer_dict_ == {"City": "London"}
     assert X_transformed["City"].isnull().sum() == 0
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() > 0

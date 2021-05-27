@@ -148,7 +148,6 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
             bins[len(bins) - 1] = float("inf")
             self.binner_dict_[var] = bins
 
-        self.input_shape_ = X.shape
         self.n_features_in_ = X.shape[1]
 
         return self
