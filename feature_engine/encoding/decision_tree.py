@@ -169,10 +169,10 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         # check input dataframe
         X = self._check_fit_input_and_variables(X)
 
-        if self.param_grid is None:
-            param_grid = {"max_depth": [1, 2, 3, 4]}
-        else:
+        if self.param_grid:
             param_grid = self.param_grid
+        else:
+            param_grid = {"max_depth": [1, 2, 3, 4]}
 
         # initialize categorical encoder
         cat_encoder = OrdinalEncoder(

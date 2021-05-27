@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 
@@ -84,7 +84,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     def __init__(
         self,
-        binning_dict: Dict[str, list],
+        binning_dict: Dict[Union[str, int], List[Union[str, int]]],
         return_object: bool = False,
         return_boundaries: bool = False,
     ) -> None:
@@ -177,14 +177,12 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         # transform variables
         if self.return_boundaries:
             for feature in self.variables_:
-                X[feature] = pd.cut(
-                    X[feature], self.binner_dict_[feature]  # type: ignore
-                )
+                X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
 
         else:
             for feature in self.variables_:
                 X[feature] = pd.cut(
-                    X[feature], self.binner_dict_[feature], labels=False  # type: ignore
+                    X[feature], self.binner_dict_[feature], labels=False
                 )
 
             # return object

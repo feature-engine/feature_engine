@@ -2,7 +2,7 @@ import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.estimator_checks import check_estimator
 
-from feature_engine.selection import (
+from feature_engine.selection import (  # SelectByTargetMeanPerformance,
     DropConstantFeatures,
     DropCorrelatedFeatures,
     DropDuplicateFeatures,
@@ -11,7 +11,6 @@ from feature_engine.selection import (
     RecursiveFeatureElimination,
     SelectByShuffling,
     SelectBySingleFeaturePerformance,
-    # SelectByTargetMeanPerformance,
     SmartCorrelatedSelection,
 )
 

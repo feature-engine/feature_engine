@@ -101,19 +101,21 @@ def test_sklearn_compatible_transformer(estimator, check):
 
 @parametrize_with_checks(
     [
-        DropFeatures(features_to_drop=['0']),
+        DropFeatures(features_to_drop=["0"]),
         DropConstantFeatures(),
         DropDuplicateFeatures(),
         DropCorrelatedFeatures(),
         SmartCorrelatedSelection(),
         SelectByShuffling(RandomForestClassifier(random_state=1), scoring="accuracy"),
         SelectBySingleFeaturePerformance(
-            RandomForestClassifier(random_state=1), scoring="accuracy"),
+            RandomForestClassifier(random_state=1), scoring="accuracy"
+        ),
         RecursiveFeatureAddition(
             RandomForestClassifier(random_state=1), scoring="accuracy"
         ),
         RecursiveFeatureElimination(
-            RandomForestClassifier(random_state=1), scoring="accuracy"),
+            RandomForestClassifier(random_state=1), scoring="accuracy"
+        ),
         SelectByTargetMeanPerformance(),
     ]
 )

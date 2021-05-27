@@ -158,10 +158,10 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
-        if self.param_grid is None:
-            param_grid = {"max_depth": [1, 2, 3, 4]}
-        else:
+        if self.param_grid:
             param_grid = self.param_grid
+        else:
+            param_grid = {"max_depth": [1, 2, 3, 4]}
 
         self.binner_dict_ = {}
         self.scores_dict_ = {}
