@@ -44,7 +44,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
 
     Methods

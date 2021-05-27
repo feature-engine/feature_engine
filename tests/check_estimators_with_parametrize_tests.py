@@ -21,13 +21,11 @@ from feature_engine.encoding import (
     WoEEncoder,
     PRatioEncoder,
 )
-
 from feature_engine.outliers import (
     ArbitraryOutlierCapper,
     OutlierTrimmer,
     Winsorizer,
 )
-
 from feature_engine.transformation import (
     BoxCoxTransformer,
     LogTransformer,

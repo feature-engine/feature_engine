@@ -83,6 +83,12 @@ class OneHotEncoder(BaseCategoricalTransformer):
     encoder_dict_ :
         Dictionary with the categories for which dummy variables will be created.
 
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
+
     Methods
     -------
     fit:

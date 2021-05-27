@@ -2,7 +2,6 @@ from typing import List, Union
 import warnings
 
 import pandas as pd
-from sklearn.base import clone
 from sklearn.model_selection import cross_validate
 
 from feature_engine.dataframe_checks import _is_dataframe
@@ -71,9 +70,6 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
     variables_:
         The variables that were be evaluated
-
-    estimator_;
-        a clone of the estimator
 
     n_features_in:
         The number of features in the train set used in fit
@@ -148,12 +144,10 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
         self.feature_performance_ = {}
 
-        self.estimator_ = clone(self.estimator)
-
         # train a model for every feature and store the performance
         for feature in self.variables_:
             model = cross_validate(
-                self.estimator_,
+                self.estimator,
                 X[feature].to_frame(),
                 y,
                 cv=self.cv,

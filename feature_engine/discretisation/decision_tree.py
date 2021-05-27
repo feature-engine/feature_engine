@@ -75,14 +75,11 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     scores_dict_ :
         Dictionary with the score of the best decision tree, over the train set.
 
-    param_grid_:
-        the grid with hyperparameters used in the grid search
-
     variables_:
          The variables to discretise.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -162,9 +159,9 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         if self.param_grid is None:
-            self.param_grid_ = {"max_depth": [1, 2, 3, 4]}
+            param_grid = {"max_depth": [1, 2, 3, 4]}
         else:
-            self.param_grid_ = self.param_grid
+            param_grid = self.param_grid
 
         self.binner_dict_ = {}
         self.scores_dict_ = {}
@@ -177,7 +174,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
                 model = DecisionTreeClassifier(random_state=self.random_state)
 
             tree_model = GridSearchCV(
-                model, cv=self.cv, scoring=self.scoring, param_grid=self.param_grid_
+                model, cv=self.cv, scoring=self.scoring, param_grid=param_grid
             )
 
             # fit the model to the variable

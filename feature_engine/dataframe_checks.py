@@ -23,7 +23,7 @@ def _is_dataframe(X: pd.DataFrame) -> pd.DataFrame:
     Raises
     ------
     TypeError
-        If the input is not the Pandas DataFrame or a numpy array
+        If the input is not a Pandas DataFrame or a numpy array
 
     Returns
     -------
@@ -42,7 +42,7 @@ def _is_dataframe(X: pd.DataFrame) -> pd.DataFrame:
 
     if not isinstance(X, pd.DataFrame):
         raise TypeError(
-            "X is not a pandas dataframe. The dataset should be a " "pandas dataframe."
+            "X is not a pandas dataframe. The dataset should be a pandas dataframe."
         )
 
     if X.empty:
