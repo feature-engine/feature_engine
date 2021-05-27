@@ -17,9 +17,10 @@ def test_mean_imputation_and_automatically_select_variables(df_na):
 
     # test init params
     assert imputer.imputation_method == "mean"
-    assert imputer.variables == ["Age", "Marks"]
+    assert imputer.variables is None
 
     # test fit attributes
+    assert imputer.variables_ == ["Age", "Marks"]
     imputer.imputer_dict_ = {
         key: round(value, 3) for (key, value) in imputer.imputer_dict_.items()
     }

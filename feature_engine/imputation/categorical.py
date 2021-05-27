@@ -58,6 +58,12 @@ class CategoricalImputer(BaseImputer):
     imputer_dict_:
         Dictionary with most frequent category or string per variable.
 
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -118,15 +124,15 @@ class CategoricalImputer(BaseImputer):
         X = _is_dataframe(X)
 
         # find or check for categorical variables
-        self.variables = _find_or_check_categorical_variables(X, self.variables)
+        self.variables_ = _find_or_check_categorical_variables(X, self.variables)
 
         if self.imputation_method == "missing":
-            self.imputer_dict_ = {var: self.fill_value for var in self.variables}
+            self.imputer_dict_ = {var: self.fill_value for var in self.variables_}
 
         elif self.imputation_method == "frequent":
             self.imputer_dict_ = {}
 
-            for var in self.variables:
+            for var in self.variables_:
                 mode_vals = X[var].mode()
 
                 # careful: some variables contain multiple modes
@@ -138,6 +144,7 @@ class CategoricalImputer(BaseImputer):
                     )
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -147,7 +154,7 @@ class CategoricalImputer(BaseImputer):
 
         # add additional step to return variables cast as object
         if self.return_object:
-            X[self.variables] = X[self.variables].astype("O")
+            X[self.variables_] = X[self.variables_].astype("O")
 
         return X
 

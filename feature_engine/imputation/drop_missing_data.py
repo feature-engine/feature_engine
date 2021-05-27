@@ -42,6 +42,9 @@ class DropMissingData(BaseImputer):
     variables_:
         List of variables for which the rows with NA will be deleted.
 
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -109,6 +112,7 @@ class DropMissingData(BaseImputer):
                 self.variables_ = self.variables
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

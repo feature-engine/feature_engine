@@ -42,6 +42,12 @@ class MeanMedianImputer(BaseImputer):
     imputer_dict_ :
         Dictionary with the mean or median values per variable.
 
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -93,16 +99,17 @@ class MeanMedianImputer(BaseImputer):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # find imputation parameters: mean or median
         if self.imputation_method == "mean":
-            self.imputer_dict_ = X[self.variables].mean().to_dict()
+            self.imputer_dict_ = X[self.variables_].mean().to_dict()
 
         elif self.imputation_method == "median":
-            self.imputer_dict_ = X[self.variables].median().to_dict()
+            self.imputer_dict_ = X[self.variables_].median().to_dict()
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

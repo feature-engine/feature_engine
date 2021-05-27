@@ -18,9 +18,10 @@ def test_impute_with_string_missing_and_automatically_find_variables(df_na):
 
     # test init params
     assert imputer.imputation_method == "missing"
-    assert imputer.variables == ["Name", "City", "Studies"]
+    assert imputer.variables is None
 
     # tes fit attributes
+    assert imputer.variables_ == ["Name", "City", "Studies"]
     assert imputer.input_shape_ == (8, 6)
     assert imputer.imputer_dict_ == {
         "Name": "Missing",
@@ -52,9 +53,10 @@ def test_user_defined_string_and_automatically_find_variables(df_na):
     # test init params
     assert imputer.imputation_method == "missing"
     assert imputer.fill_value == "Unknown"
-    assert imputer.variables == ["Name", "City", "Studies"]
+    assert imputer.variables is None
 
     # tes fit attributes
+    assert imputer.variables_ == ["Name", "City", "Studies"]
     assert imputer.input_shape_ == (8, 6)
     assert imputer.imputer_dict_ == {
         "Name": "Unknown",
@@ -79,7 +81,8 @@ def test_mode_imputation_and_single_variable(df_na):
 
     # test init, fit and transform params, attr and output
     assert imputer.imputation_method == "frequent"
-    assert imputer.variables == ["City"]
+    assert imputer.variables == "City"
+    assert imputer.variables_ == ["City"]
     assert imputer.input_shape_ == (8, 6)
     assert imputer.imputer_dict_ == {"City": "London"}
     assert X_transformed["City"].isnull().sum() == 0
@@ -117,6 +120,7 @@ def test_imputation_of_numerical_vars_cast_as_object_and_returned_as_numerical(d
     X_reference["City"] = X_reference["City"].fillna("London")
     X_reference["Studies"] = X_reference["Studies"].fillna("Bachelor")
     assert imputer.variables == ["City", "Studies", "Marks"]
+    assert imputer.variables_ == ["City", "Studies", "Marks"]
     assert imputer.imputer_dict_ == {
         "Studies": "Bachelor",
         "City": "London",

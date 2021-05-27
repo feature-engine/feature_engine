@@ -54,11 +54,12 @@ def test_general_seed_plus_automatically_select_variables(df_na):
     ref = pd.DataFrame(ref)
 
     # test init params
-    assert imputer.variables == ["Name", "City", "Studies", "Age", "Marks", "dob"]
+    assert imputer.variables is None
     assert imputer.random_state == 5
     assert imputer.seed == "general"
 
     # test fit attr
+    assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks", "dob"]
     assert imputer.input_shape_ == (8, 6)
     pd.testing.assert_frame_equal(imputer.X_, df_na)
 

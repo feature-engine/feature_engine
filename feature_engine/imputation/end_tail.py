@@ -78,6 +78,11 @@ class EndTailImputer(BaseImputer):
     imputer_dict_:
         Dictionary with the values at the end of the distribution per variable.
 
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
     Methods
     -------
     fit:
@@ -140,34 +145,35 @@ class EndTailImputer(BaseImputer):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # estimate imputation values
         if self.imputation_method == "max":
-            self.imputer_dict_ = (X[self.variables].max() * self.fold).to_dict()
+            self.imputer_dict_ = (X[self.variables_].max() * self.fold).to_dict()
 
         elif self.imputation_method == "gaussian":
             if self.tail == "right":
                 self.imputer_dict_ = (
-                    X[self.variables].mean() + self.fold * X[self.variables].std()
+                    X[self.variables_].mean() + self.fold * X[self.variables_].std()
                 ).to_dict()
             elif self.tail == "left":
                 self.imputer_dict_ = (
-                    X[self.variables].mean() - self.fold * X[self.variables].std()
+                    X[self.variables_].mean() - self.fold * X[self.variables_].std()
                 ).to_dict()
 
         elif self.imputation_method == "iqr":
-            IQR = X[self.variables].quantile(0.75) - X[self.variables].quantile(0.25)
+            IQR = X[self.variables_].quantile(0.75) - X[self.variables_].quantile(0.25)
             if self.tail == "right":
                 self.imputer_dict_ = (
-                    X[self.variables].quantile(0.75) + (IQR * self.fold)
+                    X[self.variables_].quantile(0.75) + (IQR * self.fold)
                 ).to_dict()
             elif self.tail == "left":
                 self.imputer_dict_ = (
-                    X[self.variables].quantile(0.25) - (IQR * self.fold)
+                    X[self.variables_].quantile(0.25) - (IQR * self.fold)
                 ).to_dict()
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

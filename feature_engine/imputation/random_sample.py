@@ -101,6 +101,12 @@ class RandomSampleImputer(BaseImputer):
     X_ :
         Copy of the training dataframe from which to extract the random samples.
 
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -173,12 +179,12 @@ class RandomSampleImputer(BaseImputer):
 
         # find variables to impute
         if not self.variables:
-            self.variables = [var for var in X.columns]
+            self.variables_ = [var for var in X.columns]
         else:
-            self.variables = self.variables
+            self.variables_ = self.variables
 
         # take a copy of the selected variables
-        self.X_ = X[self.variables].copy()
+        self.X_ = X[self.variables_].copy()
 
         # check the variables assigned to the random state
         if self.seed == "observation":
@@ -193,6 +199,7 @@ class RandomSampleImputer(BaseImputer):
                     "of the training dataframe."
                 )
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -221,7 +228,7 @@ class RandomSampleImputer(BaseImputer):
 
         # random sampling with a general seed
         if self.seed == "general":
-            for feature in self.variables:
+            for feature in self.variables_:
                 if X[feature].isnull().sum() > 0:
                     # determine number of data points to extract at random
                     n_samples = X[feature].isnull().sum()
@@ -241,7 +248,7 @@ class RandomSampleImputer(BaseImputer):
 
         # random sampling observation per observation
         elif self.seed == "observation" and self.random_state:
-            for feature in self.variables:
+            for feature in self.variables_:
                 if X[feature].isnull().sum() > 0:
 
                     # loop over each observation with missing data
