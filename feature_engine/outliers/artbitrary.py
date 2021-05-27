@@ -6,10 +6,15 @@ from typing import Optional
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import _is_dataframe, _check_contains_na
+from feature_engine.dataframe_checks import (
+    _is_dataframe,
+    _check_contains_na,
+    _check_contains_inf,
+)
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.parameter_checks import _define_numerical_dict
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
+from feature_engine.validation import _return_tags
 
 
 class ArbitraryOutlierCapper(BaseOutlier):
@@ -42,6 +47,12 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
     left_tail_caps_ :
         Dictionary with the minimum values at which variables will be capped.
+
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit
 
     Methods
     -------
@@ -97,20 +108,21 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
         # find variables to be capped
         if self.min_capping_dict is None and self.max_capping_dict:
-            self.variables = [x for x in self.max_capping_dict.keys()]
+            self.variables_ = [x for x in self.max_capping_dict.keys()]
         elif self.max_capping_dict is None and self.min_capping_dict:
-            self.variables = [x for x in self.min_capping_dict.keys()]
+            self.variables_ = [x for x in self.min_capping_dict.keys()]
         elif self.min_capping_dict and self.max_capping_dict:
             tmp = self.min_capping_dict.copy()
             tmp.update(self.max_capping_dict)
-            self.variables = [x for x in tmp.keys()]
+            self.variables_ = [x for x in tmp.keys()]
 
         if self.missing_values == "raise":
             # check if dataset contains na
-            _check_contains_na(X, self.variables)
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
         # find or check for numerical variables
-        self.variables = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         if self.max_capping_dict is not None:
             self.right_tail_caps_ = self.max_capping_dict
@@ -123,6 +135,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
             self.left_tail_caps_ = {}
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -133,3 +146,9 @@ class ArbitraryOutlierCapper(BaseOutlier):
         return X
 
     transform.__doc__ = BaseOutlier.transform.__doc__
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = "transformer has 1 mandatory parameter"
+        return tags_dict

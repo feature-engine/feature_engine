@@ -24,7 +24,7 @@ def test_right_end_capping(df_normal_dist):
         0.10727677848029868, 3
     )
     assert transformer.min_capping_dict is None
-    assert transformer.variables == ["var"]
+    assert transformer.variables_ == ["var"]
     # test fit attrs
     assert np.round(transformer.right_tail_caps_["var"], 3) == np.round(
         0.10727677848029868, 3

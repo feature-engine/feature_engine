@@ -7,8 +7,10 @@ from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_input_matches_training_df,
     _check_contains_na,
+    _check_contains_inf,
 )
 from feature_engine.validation import _return_tags
+
 
 class BaseOutlier(BaseEstimator, TransformerMixin):
     """shared set-up checks and methods across outlier transformers"""
@@ -39,13 +41,14 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
         # check that input is a dataframe
         X = _is_dataframe(X)
 
-        if self.missing_values == "raise":
-            # check if dataset contains na
-            _check_contains_na(X, self.variables)
-
         # Check that the dataframe contains the same number of columns
         # than the dataframe used to fit the imputer.
-        _check_input_matches_training_df(X, self.input_shape_[1])
+        _check_input_matches_training_df(X, self.n_features_in_)
+
+        if self.missing_values == "raise":
+            # check if dataset contains na
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
         return X
 
