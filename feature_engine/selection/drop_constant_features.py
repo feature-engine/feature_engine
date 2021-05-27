@@ -32,15 +32,15 @@ class DropConstantFeatures(BaseSelector):
 
     Parameters
     ----------
+    variables: list, default=None
+        The list of variables to evaluate. If None, the transformer will evaluate all
+        variables in the dataset.
+
     tol: float,int,  default=1
         Threshold to detect constant/quasi-constant features. Variables showing the
         same value in a percentage of observations greater than tol will be considered
         constant / quasi-constant and dropped. If tol=1, the transformer removes
         constant variables. Else, it will remove quasi-constant variables.
-
-    variables: list, default=None
-        The list of variables to evaluate. If None, the transformer will evaluate all
-        variables in the dataset.
 
     missing_values: str, default=raises
         Whether the missing values should be raised as error, ignored or included as an
@@ -78,7 +78,7 @@ class DropConstantFeatures(BaseSelector):
     """
 
     def __init__(
-        self, tol: float = 1, variables: Variables = None, missing_values: str = "raise"
+        self, variables: Variables = None, tol: float = 1, missing_values: str = "raise"
     ):
 
         if not isinstance(tol, (float, int)) or tol < 0 or tol > 1:

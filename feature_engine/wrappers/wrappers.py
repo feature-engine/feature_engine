@@ -25,10 +25,10 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    transformer : sklearn transformer
+    transformer: sklearn transformer
         The desired Scikit-learn transformer.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be transformed. If None, the wrapper will select all
         variables of type numeric for all transformers, except the SimpleImputer,
         OrdinalEncoder and OneHotEncoder, in which case, it will select all variables
@@ -43,7 +43,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -86,9 +86,9 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
             The dataset to fit the transformer
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             The target variable.
 
         Raises
@@ -144,7 +144,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
             The data to transform
 
         Raises
@@ -154,7 +154,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
             The transformed dataset.
         """
 
