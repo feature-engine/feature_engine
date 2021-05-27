@@ -31,7 +31,7 @@ class OrdinalEncoder(BaseCategoricalTransformer):
 
     Parameters
     ----------
-    encoding_method : str, default='ordered'
+    encoding_method: str, default='ordered'
         Desired method of encoding.
 
         'ordered': the categories are numbered in ascending order according to
@@ -39,20 +39,20 @@ class OrdinalEncoder(BaseCategoricalTransformer):
 
         'arbitrary' : categories are numbered arbitrarily.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
         encoder will find and select all object type variables.
 
     Attributes
     ----------
-    encoder_dict_ :
+    encoder_dict_:
         Dictionary with the ordinal number per category, per variable.
 
     variables_:
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -104,11 +104,11 @@ class OrdinalEncoder(BaseCategoricalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to be encoded.
 
-        y : pandas series, default=None
+        y: pandas series, default=None
             The Target. Can be None if encoding_method = 'arbitrary'.
             Otherwise, y needs to be passed when fitting the transformer.
 

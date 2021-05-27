@@ -49,27 +49,27 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
     Parameters
     ----------
-    encoding_method : str, default=woe
+    encoding_method: str, default='ratio'
         Desired method of encoding.
 
         'ratio' : probability ratio
 
         'log_ratio' : log probability ratio
 
-    variables : list, default=None
+    variables: list, default=None
         The list of categorical variables to encode. If None, the encoder will find and
         select all object type variables.
 
     Attributes
     ----------
-    encoder_dict_ :
+    encoder_dict_:
         Dictionary with the probability ratio per category per variable.
 
     variables_:
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -114,11 +114,11 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             categorical variables.
 
-        y : pandas series.
+        y: pandas series.
             Target, must be binary [0,1].
 
         Raises

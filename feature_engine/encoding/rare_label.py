@@ -37,7 +37,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
     Parameters
     ----------
-    tol : float, default=0.05
+    tol: float, default=0.05
         The minimum frequency a label should have to be considered frequent.
         Categories with frequencies lower than tol will be grouped.
 
@@ -51,11 +51,11 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         If None, all categories with frequency above the tolerance (tol) will be
         considered frequent.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of categorical variables to encode. If None, the encoder will
         find and select all object type variables.
 
-    replace_with : string, default='Rare'
+    replace_with: string, default='Rare'
         The category name that will be used to replace infrequent categories.
 
     Attributes
@@ -68,7 +68,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -114,11 +114,11 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just selected
             variables
 
-        y : None
+        y: None
             y is not required. You can pass y or None.
 
         Raises
@@ -181,7 +181,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Raises
@@ -194,7 +194,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe where rare categories have been grouped.
         """
 

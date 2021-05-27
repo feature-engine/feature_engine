@@ -13,6 +13,7 @@ from feature_engine.dataframe_checks import (
 from feature_engine.variable_manipulation import _find_or_check_categorical_variables
 from feature_engine.validation import _return_tags
 
+
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
     """shared set-up checks and methods across categorical transformers"""
 
@@ -24,7 +25,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
 
         Raises
         ------
@@ -37,7 +38,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
             The same dataframe entered as parameter
         variables : list
             list of categorical variables
@@ -63,7 +64,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
 
         Raises
         ------
@@ -75,7 +76,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
             The same dataframe entered by the user.
         """
 
@@ -111,7 +112,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
+        X: pandas dataframe of shape = [n_samples, n_features].
             The dataset to transform.
 
         Raises
@@ -126,7 +127,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features].
+        X: pandas dataframe of shape = [n_samples, n_features].
             The dataframe containing the categories replaced by numbers.
         """
 
@@ -154,7 +155,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
+        X: pandas dataframe of shape = [n_samples, n_features].
             The transformed dataframe.
 
         Raises
@@ -167,7 +168,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features].
+        X: pandas dataframe of shape = [n_samples, n_features].
             The un-transformed dataframe, with the categorical variables containing the
             original values.
         """

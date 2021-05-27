@@ -34,7 +34,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     Parameters
     ----------
-    encoding_method : str, default='arbitrary'
+    encoding_method: str, default='arbitrary'
         The categorical encoding method that will be used to encode the original
         categories to numerical values.
 
@@ -43,21 +43,21 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
         'arbitrary' : categories are numbered arbitrarily.
 
-    cv : int, default=3
+    cv: int, default=3
         Desired number of cross-validation fold to be used to fit the decision
         tree.
 
-    scoring : str, default='neg_mean_squared_error'
+    scoring: str, default='neg_mean_squared_error'
         Desired metric to optimise the performance for the decision tree. Comes from
         sklearn.metrics. See the DecisionTreeRegressor or DecisionTreeClassifier
         model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    regression : boolean, default=True
+    regression: boolean, default=True
         Indicates whether the encoder should train a regression or a classification
         decision tree.
 
-    param_grid : dictionary, default=None
+    param_grid: dictionary, default=None
         The list of parameters over which the decision tree should be optimised
         during the grid search. The param_grid can contain any of the permitted
         parameters for Scikit-learn's DecisionTreeRegressor() or
@@ -65,26 +65,26 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
         If None, then param_grid = {'max_depth': [1, 2, 3, 4]}.
 
-    random_state : int, default=None
+    random_state: int, default=None
         The random_state to initialise the training of the decision tree. It is one
         of the parameters of the Scikit-learn's DecisionTreeRegressor() or
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
         encoder will find and select all object type variables.
 
     Attributes
     ----------
-    encoder_ :
+    encoder_:
         sklearn Pipeline containing the ordinal encoder and the decision tree.
 
     variables_:
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------

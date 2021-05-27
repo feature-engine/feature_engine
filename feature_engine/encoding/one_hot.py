@@ -62,25 +62,25 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
     Parameters
     ----------
-    top_categories : int, default=None
+    top_categories: int, default=None
         If None, a dummy variable will be created for each category of the variable.
         Alternatively, we can indicate in `top_categories` the number of most frequent
         categories to encode. In this case, dummy variables will be created only for
         those popular categories and the rest will be ignored, i.e., they will show the
         value 0 in all the binary variables.
 
-    variables : list
+    variables: list. default=None
         The list of categorical variables to encode. If None, the encoder will find and
         select all object type variables in the train set.
 
-    drop_last : boolean, default=False
+    drop_last: boolean, default=False
         Only used if `top_categories = None`. It indicates whether to create dummy
         variables for all the categories (k dummies), or if set to `True`, it will
         ignore the last binary variable of the list (k-1 dummies).
 
     Attributes
     ----------
-    encoder_dict_ :
+    encoder_dict_:
         Dictionary with the categories for which dummy variables will be created.
 
     variables_:
@@ -143,11 +143,11 @@ class OneHotEncoder(BaseCategoricalTransformer):
         Parameters
         ----------
 
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just seleted variables.
 
-        y : pandas series, default=None
+        y: pandas series, default=None
             Target. It is not needed in this encoded. You can pass y or
             None.
 
@@ -200,7 +200,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Raises
@@ -213,7 +213,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         Returns
         -------
-        X : pandas dataframe.
+        X: pandas dataframe.
             The transformed dataframe. The shape of the dataframe will be different from
             the original as it includes the dummy variables in place of the of the
             original categorical ones.

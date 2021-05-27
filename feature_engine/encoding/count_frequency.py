@@ -29,27 +29,27 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
 
     Parameters
     ----------
-    encoding_method : str, default='count'
+    encoding_method: str, default='count'
         Desired method of encoding.
 
         'count': number of observations per category
 
         'frequency': percentage of observations per category
 
-    variables : list
+    variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
         encoder will find and transform all object type variables.
 
     Attributes
     ----------
     encoder_dict_:
-        Dictionary with the count or frequency} per category, per variable.
+        Dictionary with the count or frequency per category, per variable.
 
     variables_:
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -93,11 +93,11 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the
             variables to be transformed.
 
-        y : pandas Series, default = None
+        y: pandas Series, default = None
             y is not needed in this encoder. You can pass y or None.
 
         Raises
