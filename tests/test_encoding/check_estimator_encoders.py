@@ -14,17 +14,17 @@ from feature_engine.encoding import (
 )
 
 
-@pytest.mark.parametrize(
-    "Estimator", [
-        CountFrequencyEncoder(),
-        DecisionTreeEncoder(),
-        MeanEncoder(),
-        OneHotEncoder(),
-        OrdinalEncoder(),
-        RareLabelEncoder(),
-        WoEEncoder(),
-        PRatioEncoder(),
-    ]
-)
-def test_all_transformers(Estimator):
-    return check_estimator(Estimator)
+# @pytest.mark.parametrize(
+#     "Estimator", [
+#         CountFrequencyEncoder(),
+#         DecisionTreeEncoder(),
+#         MeanEncoder(),
+#         OneHotEncoder(),
+#         OrdinalEncoder(),
+#         RareLabelEncoder(),
+#         WoEEncoder(),
+#         PRatioEncoder(),
+#     ]
+# )
+# def test_all_transformers(Estimator):
+#     return check_estimator(Estimator)

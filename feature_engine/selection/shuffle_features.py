@@ -3,7 +3,6 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
-from sklearn.base import clone
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import cross_validate
 from sklearn.utils.validation import check_random_state
@@ -85,9 +84,6 @@ class SelectByShuffling(BaseSelector):
     variables_:
         The variables that were be evaluated
 
-    estimator_;
-        a clone of the estimator
-
     n_features_in:
         The number of features in the train set used in fit
 
@@ -152,11 +148,9 @@ class SelectByShuffling(BaseSelector):
         # find numerical variables or check variables entered by user
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
-        self.estimator_ = clone(self.estimator)
-
         # train model with all features and cross-validation
         model = cross_validate(
-            self.estimator_,
+            self.estimator,
             X[self.variables_],
             y,
             cv=self.cv,

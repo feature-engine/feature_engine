@@ -1,7 +1,6 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.base import clone
 from sklearn.model_selection import cross_validate
 
 from feature_engine.dataframe_checks import _is_dataframe
@@ -85,9 +84,6 @@ class RecursiveFeatureElimination(BaseSelector):
     variables_:
         The variables that were be evaluated
 
-    estimator_;
-        a clone of the estimator
-
     n_features_in:
         The number of features in the train set used in fit
 
@@ -146,11 +142,9 @@ class RecursiveFeatureElimination(BaseSelector):
         # find numerical variables or check variables entered by user
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
-        self.estimator_ = clone(self.estimator)
-
         # train model with all features and cross-validation
         model = cross_validate(
-            self.estimator_,
+            self.estimator,
             X[self.variables_],
             y,
             cv=self.cv,
@@ -200,7 +194,7 @@ class RecursiveFeatureElimination(BaseSelector):
 
             # remove feature and train new model
             model_tmp = cross_validate(
-                self.estimator_,
+                self.estimator,
                 X_tmp.drop(columns=feature),
                 y,
                 cv=self.cv,
@@ -226,7 +220,7 @@ class RecursiveFeatureElimination(BaseSelector):
                 X_tmp = X_tmp.drop(columns=feature)
 
                 baseline_model = cross_validate(
-                    self.estimator_,
+                    self.estimator,
                     X_tmp,
                     y,
                     cv=self.cv,

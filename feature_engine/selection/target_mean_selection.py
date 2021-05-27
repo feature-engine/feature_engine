@@ -8,7 +8,6 @@ from sklearn.pipeline import Pipeline
 from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_contains_na,
-    _check_contains_inf,
 )
 
 from feature_engine.discretisation import (
@@ -192,7 +191,6 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
         # check if df contains na
         _check_contains_na(X, self.variables_)
-        _check_contains_inf(X, self.variables_)
 
         self.input_shape_ = X.shape
         self.n_features_in_ = X.shape[1]

@@ -17,6 +17,7 @@ from feature_engine.dataframe_checks import (
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 from feature_engine.validation import _return_tags
 
+
 class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
     """shared set-up procedures across numerical transformers, i.e.,
     variable transformers, discretisers, math combination.
