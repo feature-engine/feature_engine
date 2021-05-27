@@ -58,8 +58,7 @@ class OutlierTrimmer(Winsorizer):
 
     Parameters
     ----------
-
-    capping_method : str, default=gaussian
+    capping_method: str, default=gaussian
         Desired capping method. Can take 'gaussian', 'iqr' or 'quantiles'.
 
         'gaussian': the transformer will find the maximum and / or minimum values to
@@ -69,7 +68,7 @@ class OutlierTrimmer(Winsorizer):
 
         'quantiles': the limits are given by the percentiles.
 
-    tail : str, default=right
+    tail: str, default=right
         Whether to cap outliers on the right, left or both tails of the distribution.
         Can take 'left', 'right' or 'both'.
 
@@ -85,7 +84,7 @@ class OutlierTrimmer(Winsorizer):
         both sides. Thus, when capping_method='quantile', then 'fold' takes values
         between 0 and 0.20.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables for which the outliers will be removed If None,
         the transformer will find and select all numerical variables.
 
@@ -100,16 +99,16 @@ class OutlierTrimmer(Winsorizer):
     Attributes
     ----------
     right_tail_caps_:
-        Dictionary with the maximum values above which values will be removed
+        Dictionary with the maximum values above which values will be removed.
 
     left_tail_caps_ :
-        Dictionary with the minimum values below which values will be removed
+        Dictionary with the minimum values below which values will be removed.
 
     variables_:
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------

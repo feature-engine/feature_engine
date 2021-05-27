@@ -22,16 +22,16 @@ class ArbitraryOutlierCapper(BaseOutlier):
     The ArbitraryOutlierCapper() caps the maximum or minimum values of a variable
     at an arbitrary value indicated by the user.
 
-    The user must provide the maximum or minimum values that will be used
-    to cap each variable in a dictionary {feature:capping value}
+    You must provide the maximum or minimum values that will be used to cap each
+    variable in a dictionary {feature:capping value}
 
     Parameters
     ----------
-    max_capping_dict : dictionary, default=None
+    max_capping_dict: dictionary, default=None
         Dictionary containing the user specified capping values for the right tail of
         the distribution of each variable (maximum values).
 
-    min_capping_dict : dictionary, default=None
+    min_capping_dict: dictionary, default=None
         Dictionary containing user specified capping values for the eft tail of the
         distribution of each variable (minimum values).
 
@@ -45,14 +45,14 @@ class ArbitraryOutlierCapper(BaseOutlier):
     right_tail_caps_:
         Dictionary with the maximum values at which variables will be capped.
 
-    left_tail_caps_ :
+    left_tail_caps_:
         Dictionary with the minimum values at which variables will be capped.
 
     variables_:
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -89,10 +89,10 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
 
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             y is not needed in this transformer. You can pass y or None.
 
         Raises

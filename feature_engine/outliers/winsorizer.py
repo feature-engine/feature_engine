@@ -65,7 +65,7 @@ class Winsorizer(BaseOutlier):
 
     Parameters
     ----------
-    capping_method : str, default=gaussian
+    capping_method: str, default=gaussian
         Desired capping method. Can take 'gaussian', 'iqr' or 'quantiles'.
 
         'gaussian': the transformer will find the maximum and / or minimum values to
@@ -75,7 +75,7 @@ class Winsorizer(BaseOutlier):
 
         'quantiles': the limits are given by the percentiles.
 
-    tail : str, default=right
+    tail: str, default=right
         Whether to cap outliers on the right, left or both tails of the distribution.
         Can take 'left', 'right' or 'both'.
 
@@ -115,7 +115,7 @@ class Winsorizer(BaseOutlier):
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
