@@ -34,7 +34,7 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
         Desired number of equal frequency intervals / bins. In other words the
         number of quantiles in which the variables should be divided.
 
-    variables: list
+    variables: list, default=None
         The list of numerical variables that will be discretised. If None, the
         EqualFrequencyDiscretiser() will select all numerical variables.
 

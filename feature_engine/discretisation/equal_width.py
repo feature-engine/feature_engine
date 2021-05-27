@@ -35,18 +35,20 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
     Parameters
     ----------
-    bins : int, default=10
+    bins: int, default=10
         Desired number of equal width intervals / bins.
 
-    variables : list
+    variables: list, default=None
         The list of numerical variables to transform. If None, the
         discretiser will automatically select all numerical type variables.
 
-    return_object : bool, default=False
-        Whether the numbers in the discrete variable should be returned as
-        numeric or as object. The decision should be made by the user based on
-        whether they would like to proceed the engineering of the variable as
-        if it was numerical or categorical.
+    return_object: bool, default=False
+        Whether the the discrete variable should be returned casted as numeric or as
+        object. If you would like to proceed with the engineering of the variable as if
+        it was categorical, use True. Alternatively, keep the default to False.
+
+        Categorical encoders in Feature-engine work only with variables of type object,
+        thus, if you wish to encode the returned bins, set return_object to True.
 
     return_boundaries : bool, default=False
         whether the output should be the interval boundaries. If True, it returns
@@ -61,7 +63,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
          The variables to be discretised.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -116,10 +118,10 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the variables
             to be transformed.
-        y : None
+        y: None
             y is not needed in this encoder. You can pass y or None.
 
         Raises
@@ -164,7 +166,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Raises
@@ -177,7 +179,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The transformed data with the discrete variables.
         """
 

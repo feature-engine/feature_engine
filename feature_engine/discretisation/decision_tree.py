@@ -45,7 +45,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    variables: list
+    variables: list, default=None
         The list of numerical variables to transform. If None, the discretiser will
         automatically select all numerical variables.
 
