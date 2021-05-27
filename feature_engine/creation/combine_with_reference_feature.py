@@ -6,10 +6,12 @@ from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
     _check_contains_na,
+    _check_contains_inf,
     _check_input_matches_training_df,
     _is_dataframe,
 )
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
+from feature_engine.validation import _return_tags
 
 
 class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
@@ -244,6 +246,9 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
             _check_contains_na(X, self.reference_variables)
             _check_contains_na(X, self.variables_to_combine)
 
+            _check_contains_inf(X, self.reference_variables)
+            _check_contains_inf(X, self.variables_to_combine)
+
         # cannot divide by 0, as will result in error
         if "div" in self.operations:
             if X[self.reference_variables].isin([0]).any().any():
@@ -285,6 +290,9 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         if self.missing_values == "raise":
             _check_contains_na(X, self.reference_variables)
             _check_contains_na(X, self.variables_to_combine)
+
+            _check_contains_inf(X, self.reference_variables)
+            _check_contains_inf(X, self.variables_to_combine)
 
         # cannot divide by 0, as will result in error
         if "div" in self.operations:
@@ -331,57 +339,10 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
         return X
 
-    # for the check_estimator tests
     def _more_tags(self):
-        return {
-            "_xfail_checks": {
-                "check_fit2d_1feature":
-                    "this transformer works with datasets that contain at least 2"
-                    "variables. Otherwise, there is nothing to combine",
-                "check_estimators_nan_inf": "transformer allows NA",
-                "check_parameters_default_constructible":
-                    "transformer has 1 mandatory parameter",
-                # Complex data in math terms, are values like 4i (imaginary numbers
-                # so to speak). I've never seen such a thing in the dfs I've
-                # worked with, so I do not need this test.
-                "check_complex_data": "I dont think we need this check, if users "
-                                      "disagree we can think how to introduce it "
-                                      "at a later stage.",
-
-                # check that estimators treat dtype object as numeric if possible
-                "check_dtype_object":
-                    "Transformers use dtypes to select between numerical and "
-                    "categorical variables. Feature-engine trusts the user cast the "
-                    "variables in they way they would like them treated.",
-
-                # Not sure what the aim of this check is, it fails because FE does not
-                # like the sklearn class _NotAnArray
-                "check_transformer_data_not_an_array": "Not sure what this check is",
-
-                # this test fails because the test uses dtype attribute of numpy, but
-                # in feature engine the array is converted to a df, and it does not
-                # have the dtype attribute.
-                # need to understand why this test is useful an potentially have one
-                # for the package. But some Feature-engine transformers DO change the
-                # types
-                "check_transformer_preserve_dtypes":
-                    "Test not relevant, Feature-engine transformers can change "
-                    "the types",
-
-                # TODO: we probably need the test below!!
-                "check_methods_sample_order_invariance":
-                    "Test does not work on dataframes",
-
-                # TODO: we probably need the test below!!
-                # the test below tests that a second fit overrides a first fit.
-                # the problem is that the test does not work with pandas df.
-                "check_fit_idempotent": "Test does not work on dataframes",
-
-                "check_fit1d": "Test not relevant, Feature-engine transformers only "
-                               "work with dataframes",
-
-                "check_fit2d_predict1d":
-                    "Test not relevant, Feature-engine transformers only "
-                    "work with dataframes",
-            }
-        }
+        tags_dict = _return_tags()
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = "this transformer works with datasets that contain at least 2 variables. Otherwise, there is nothing to combine"
+        return tags_dict
