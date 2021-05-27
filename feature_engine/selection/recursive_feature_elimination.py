@@ -4,13 +4,12 @@ import pandas as pd
 from sklearn.model_selection import cross_validate
 
 from feature_engine.dataframe_checks import _is_dataframe
-from feature_engine.selection.base_selector import get_feature_importances
+from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
+from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
-from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.validation import _return_tags
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -252,5 +251,7 @@ class RecursiveFeatureElimination(BaseSelector):
         tags_dict = _return_tags()
         # add additional test that fails
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
-        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
         return tags_dict

@@ -7,8 +7,9 @@ import pandas as pd
 import scipy.stats as stats
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
 from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import _check_input_parameter_variables
+
 
 class BoxCoxTransformer(BaseNumericalTransformer):
     """
@@ -69,7 +70,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     """
 
     def __init__(
-            self, variables: Union[None, int, str, List[Union[str, int]]] = None
+        self, variables: Union[None, int, str, List[Union[str, int]]] = None
     ) -> None:
 
         self.variables = _check_input_parameter_variables(variables)
@@ -153,7 +154,9 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         # =======  this tests fail because the transformers throw an error
         # when the values are 0. Nothing to do with the test itself but
         # mostly with the data created and used in the test
-        msg = "transformers raise errors when data contains zeroes, thus this check fails"
+        msg = (
+            "transformers raise errors when data contains zeroes, thus this check fails"
+        )
         tags_dict["_xfail_checks"]["check_estimators_dtypes"] = msg
         tags_dict["_xfail_checks"]["check_estimators_fit_returns_self"] = msg
         tags_dict["_xfail_checks"]["check_pipeline_consistency"] = msg

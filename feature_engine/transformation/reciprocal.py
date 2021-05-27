@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
 from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class ReciprocalTransformer(BaseNumericalTransformer):
@@ -142,7 +142,9 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         # =======  this tests fail because the transformers throw an error
         # when the values are 0. Nothing to do with the test itself but
         # mostly with the data created and used in the test
-        msg = "transformers raise errors when data contains zeroes, thus this check fails"
+        msg = (
+            "transformers raise errors when data contains zeroes, thus this check fails"
+        )
         tags_dict["_xfail_checks"]["check_estimators_dtypes"] = msg
         tags_dict["_xfail_checks"]["check_estimators_fit_returns_self"] = msg
         tags_dict["_xfail_checks"]["check_pipeline_consistency"] = msg

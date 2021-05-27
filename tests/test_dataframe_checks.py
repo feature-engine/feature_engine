@@ -1,5 +1,5 @@
-from pandas.testing import assert_frame_equal
 import pytest
+from pandas.testing import assert_frame_equal
 
 from feature_engine.dataframe_checks import (
     _check_contains_na,

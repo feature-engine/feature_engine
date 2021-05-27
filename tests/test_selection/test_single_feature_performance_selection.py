@@ -171,20 +171,23 @@ def test_raises_cv_error():
 def test_raises_threshold_error():
     with pytest.raises(ValueError):
         SelectBySingleFeaturePerformance(
-            RandomForestClassifier(random_state=1), threshold="hola",
+            RandomForestClassifier(random_state=1),
+            threshold="hola",
         )
 
 
 def test_raises_error_when_roc_threshold_not_allowed():
     with pytest.raises(ValueError):
         SelectBySingleFeaturePerformance(
-            RandomForestClassifier(random_state=1), scoring="roc_auc", threshold=0.4)
+            RandomForestClassifier(random_state=1), scoring="roc_auc", threshold=0.4
+        )
 
 
 def test_raises_error_when_r2_threshold_not_allowed():
     with pytest.raises(ValueError):
         SelectBySingleFeaturePerformance(
-            RandomForestClassifier(random_state=1), scoring="r2", threshold=4)
+            RandomForestClassifier(random_state=1), scoring="r2", threshold=4
+        )
 
 
 def test_automatic_variable_selection(df_test):

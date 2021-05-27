@@ -3,15 +3,15 @@ from typing import List, Union
 import pandas as pd
 
 from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_contains_na,
     _check_contains_inf,
-)
-from feature_engine.variable_manipulation import (
-    _find_or_check_numerical_variables,
-    _check_input_parameter_variables,
+    _check_contains_na,
+    _is_dataframe,
 )
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 

@@ -1,12 +1,12 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 
-from feature_engine.imputation.random_sample import _define_seed
 from feature_engine.imputation import RandomSampleImputer
+from feature_engine.imputation.random_sample import _define_seed
 
 
 def test_define_seed(df_vartypes):

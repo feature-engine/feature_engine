@@ -1,4 +1,5 @@
 import pathlib
+
 import feature_engine
 
 PACKAGE_ROOT = pathlib.Path(feature_engine.__file__).resolve().parent

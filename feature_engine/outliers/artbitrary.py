@@ -7,14 +7,14 @@ from typing import Optional
 import pandas as pd
 
 from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_contains_na,
     _check_contains_inf,
+    _check_contains_na,
+    _is_dataframe,
 )
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.parameter_checks import _define_numerical_dict
-from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
 class ArbitraryOutlierCapper(BaseOutlier):
@@ -150,5 +150,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
     def _more_tags(self):
         tags_dict = _return_tags()
         # add additional test that fails
-        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
         return tags_dict

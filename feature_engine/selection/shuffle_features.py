@@ -2,18 +2,17 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
-
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import cross_validate
 from sklearn.utils.validation import check_random_state
 
 from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
-from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.validation import _return_tags
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -143,7 +142,7 @@ class SelectByShuffling(BaseSelector):
         X = X.reset_index(drop=True)
 
         if isinstance(y, pd.Series):
-           y = y.reset_index(drop=True)
+            y = y.reset_index(drop=True)
 
         # find numerical variables or check variables entered by user
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
@@ -227,5 +226,7 @@ class SelectByShuffling(BaseSelector):
         tags_dict = _return_tags()
         # add additional test that fails
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
-        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
         return tags_dict

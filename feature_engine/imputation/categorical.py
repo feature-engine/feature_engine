@@ -1,15 +1,15 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
-    _find_or_check_categorical_variables,
     _check_input_parameter_variables,
+    _find_or_check_categorical_variables,
 )
 
 

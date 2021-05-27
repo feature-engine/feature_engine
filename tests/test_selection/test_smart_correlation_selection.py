@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.exceptions import NotFittedError
 
 from feature_engine.selection import SmartCorrelatedSelection
 

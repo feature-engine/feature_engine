@@ -1,7 +1,7 @@
 # Authors: Nicolas Galli <nicolas.galli@yahoo.com>
 # License: BSD 3 clause
 
-from typing import Union, List
+from typing import List, Union
 
 import numpy as np
 import pandas as pd

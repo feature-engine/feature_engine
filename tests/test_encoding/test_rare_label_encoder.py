@@ -1,5 +1,5 @@
-import pytest
 import pandas as pd
+import pytest
 
 from feature_engine.encoding import RareLabelEncoder
 

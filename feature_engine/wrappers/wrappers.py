@@ -1,20 +1,18 @@
 from typing import List, Optional, Union
 
 import pandas as pd
-
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 
 from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
     _is_dataframe,
 )
-
+from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
     _find_or_check_numerical_variables,
 )
-from feature_engine.validation import _return_tags
 
 
 class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
@@ -198,7 +196,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         tags_dict = _return_tags()
         # add additional test that fails
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
-        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
         return tags_dict
-
-

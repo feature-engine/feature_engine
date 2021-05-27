@@ -1,14 +1,14 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.pipeline import Pipeline
 
+from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 from feature_engine.encoding.ordinal import OrdinalEncoder
-from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 

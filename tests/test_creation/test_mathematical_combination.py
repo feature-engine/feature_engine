@@ -277,7 +277,7 @@ def test_variable_names_when_df_cols_are_integers(df_numeric_columns):
 def test_error_when_null_values_in_variable(df_vartypes):
 
     df_na = df_vartypes.copy()
-    df_na.loc[1, 'Age'] = np.nan
+    df_na.loc[1, "Age"] = np.nan
 
     with pytest.raises(ValueError):
         math_combinator = MathematicalCombination(
@@ -301,7 +301,7 @@ def test_error_when_null_values_in_variable(df_vartypes):
 def test_no_error_when_null_values_in_variable(df_vartypes):
 
     df_na = df_vartypes.copy()
-    df_na.loc[1, 'Age'] = np.nan
+    df_na.loc[1, "Age"] = np.nan
 
     transformer = MathematicalCombination(
         variables_to_combine=["Age", "Marks"],

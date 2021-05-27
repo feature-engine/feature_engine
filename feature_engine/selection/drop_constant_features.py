@@ -2,16 +2,13 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_contains_na,
-)
+from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
+from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
 )
-from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.validation import _return_tags
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -167,6 +164,10 @@ class DropConstantFeatures(BaseSelector):
         tags_dict = _return_tags()
         # add additional test that fails
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
-        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = "the transformer needs at least 2 columns to compare, ok to fail"
-        tags_dict["_xfail_checks"][ "check_fit2d_1sample"] = "the transformer raises an error when dropping all columns, ok to fail"
+        tags_dict["_xfail_checks"][
+            "check_fit2d_1feature"
+        ] = "the transformer needs at least 2 columns to compare, ok to fail"
+        tags_dict["_xfail_checks"][
+            "check_fit2d_1sample"
+        ] = "the transformer raises an error when dropping all columns, ok to fail"
         return tags_dict

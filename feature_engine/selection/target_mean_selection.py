@@ -1,28 +1,21 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.metrics import roc_auc_score, r2_score
+from sklearn.metrics import r2_score, roc_auc_score
 from sklearn.model_selection import KFold
 from sklearn.pipeline import Pipeline
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_contains_na,
-)
-
+from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
 from feature_engine.discretisation import (
-    EqualWidthDiscretiser,
     EqualFrequencyDiscretiser,
+    EqualWidthDiscretiser,
 )
-
 from feature_engine.encoding import MeanEncoder
-
+from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
 )
-
-from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -205,9 +198,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         )
 
         # obtain cross-validation indeces
-        skf = KFold(
-            n_splits=self.cv, shuffle=True, random_state=self.random_state
-        )
+        skf = KFold(n_splits=self.cv, shuffle=True, random_state=self.random_state)
         skf.get_n_splits(X, y)
 
         if self.variables_categorical_ and self.variables_numerical_:
@@ -252,9 +243,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
             threshold = self.threshold
 
         self.features_to_drop_ = [
-            f
-            for f in self.variables_
-            if self.feature_performance_[f] < threshold
+            f for f in self.variables_ if self.feature_performance_[f] < threshold
         ]
 
         return self

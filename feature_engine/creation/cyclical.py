@@ -1,4 +1,5 @@
-from typing import List, Optional, Union, Dict
+from typing import Dict, List, Optional, Union
+
 import numpy as np
 import pandas as pd
 
@@ -68,24 +69,24 @@ class CyclicalTransformer(BaseNumericalTransformer):
     """
 
     def __init__(
-            self, variables: Union[None, int, str, List[Union[str, int]]] = None,
-            max_values: Optional[Dict[str, Union[int, float]]] = None,
-            drop_original: Optional[bool] = False
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        max_values: Optional[Dict[str, Union[int, float]]] = None,
+        drop_original: Optional[bool] = False,
     ) -> None:
 
         if max_values:
             if not isinstance(max_values, dict) or not all(
-                    isinstance(var, (int, float)) for var in list(max_values.values())):
+                isinstance(var, (int, float)) for var in list(max_values.values())
+            ):
                 raise TypeError(
-                    'max_values takes a dictionary of strings as keys, '
-                    'and numbers as items to be used as the reference for'
-                    'the max value of each column.'
+                    "max_values takes a dictionary of strings as keys, "
+                    "and numbers as items to be used as the reference for"
+                    "the max value of each column."
                 )
 
         if not isinstance(drop_original, bool):
-            raise TypeError(
-                'drop_original takes only boolean values True and False.'
-            )
+            raise TypeError("drop_original takes only boolean values True and False.")
 
         self.variables = _check_input_parameter_variables(variables)
         self.max_values = max_values
@@ -125,8 +126,9 @@ class CyclicalTransformer(BaseNumericalTransformer):
         else:
             for key in list(self.max_values.keys()):
                 if key not in self.variables_:
-                    raise ValueError(f'The mapping key {key} is not present'
-                                     f' in variables.')
+                    raise ValueError(
+                        f"The mapping key {key} is not present" f" in variables."
+                    )
             self.max_values_ = self.max_values
 
         self.input_shape_ = X.shape
@@ -158,8 +160,8 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
         for variable in self.variables_:
             max_value = self.max_values_[variable]
-            X[f'{variable}_sin'] = np.sin(X[variable] * (2. * np.pi / max_value))
-            X[f'{variable}_cos'] = np.cos(X[variable] * (2. * np.pi / max_value))
+            X[f"{variable}_sin"] = np.sin(X[variable] * (2.0 * np.pi / max_value))
+            X[f"{variable}_cos"] = np.cos(X[variable] * (2.0 * np.pi / max_value))
 
         if self.drop_original:
             X.drop(columns=self.variables_, inplace=True)

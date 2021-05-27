@@ -5,13 +5,13 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
-    _check_contains_na,
     _check_contains_inf,
+    _check_contains_na,
     _check_input_matches_training_df,
     _is_dataframe,
 )
-from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
 class MathematicalCombination(BaseEstimator, TransformerMixin):
@@ -315,6 +315,11 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
     def _more_tags(self):
         tags_dict = _return_tags()
         # add additional test that fails
-        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = "transformer has 1 mandatory parameter"
-        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = "this transformer works with datasets that contain at least 2 variables. Otherwise, there is nothing to combine"
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"][
+            "check_fit2d_1feature"
+        ] = "this transformer works with datasets that contain at least 2 variables. \
+        Otherwise, there is nothing to combine"
         return tags_dict

@@ -147,7 +147,9 @@ def test_raises_cv_error():
 
 def test_raises_threshold_error():
     with pytest.raises(ValueError):
-        RecursiveFeatureElimination(RandomForestClassifier(random_state=1), threshold=None)
+        RecursiveFeatureElimination(
+            RandomForestClassifier(random_state=1), threshold=None
+        )
 
 
 def test_automatic_variable_selection(load_diabetes_dataset):

@@ -1,16 +1,11 @@
 import numpy as np
 import pandas as pd
 import pytest
-
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.feature_selection import (
-    f_regression,
-    SelectKBest,
-    SelectFromModel,
-)
-from sklearn.linear_model import Lasso
 from sklearn.datasets import load_boston
+from sklearn.feature_selection import SelectFromModel, SelectKBest, f_regression
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import Lasso
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from feature_engine.wrappers import SklearnTransformerWrapper
 
@@ -143,7 +138,7 @@ def test_sklearn_standardscaler_allfeatures(df_vartypes):
     ref = df_vartypes.copy()
     variables_to_scale = list(ref.select_dtypes(include="number").columns)
     ref[variables_to_scale] = (
-          ref[variables_to_scale] - ref[variables_to_scale].mean()
+        ref[variables_to_scale] - ref[variables_to_scale].mean()
     ) / ref[variables_to_scale].std(ddof=0)
 
     transformed_df = transformer.fit_transform(df_vartypes)
@@ -354,6 +349,6 @@ def test_selectFromModel_selected_variables():
 def test_raise_error_if_transformer_wrong_type():
     with pytest.raises(TypeError):
         SklearnTransformerWrapper(
-            transformer='hola',
+            transformer="hola",
             variables=[0, 1, 2, 3, 4, 5],
         )

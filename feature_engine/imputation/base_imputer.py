@@ -3,8 +3,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
-    _is_dataframe,
     _check_input_matches_training_df,
+    _is_dataframe,
 )
 from feature_engine.validation import _return_tags
 

@@ -1,17 +1,17 @@
-from typing import List, Union
 import warnings
+from typing import List, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
-    _is_dataframe,
     _check_contains_na,
     _check_input_matches_training_df,
+    _is_dataframe,
 )
-from feature_engine.variable_manipulation import _find_or_check_categorical_variables
 from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import _find_or_check_categorical_variables
 
 
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):

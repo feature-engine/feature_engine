@@ -2,6 +2,7 @@
 pytest>=5.4.1
 
 # repo maintenance tooling
-black>=19.10b0
-flake8>=3.7.9
+black>=21.5b1
+flake8>=3.9.2
 mypy>=0.740
+isort>=5.8.0

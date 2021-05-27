@@ -1,9 +1,11 @@
 from typing import List, Union
+
 import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.validation import _return_tags
+
 
 class DropFeatures(BaseSelector):
     """
@@ -98,6 +100,10 @@ class DropFeatures(BaseSelector):
         tags_dict = _return_tags()
         # add additional test that fails
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
-        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = "transformer has 1 mandatory parameter"
-        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = "the transformer raises an error when removing the only column, ok to fail"
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"][
+            "check_fit2d_1feature"
+        ] = "the transformer raises an error when removing the only column, ok to fail"
         return tags_dict

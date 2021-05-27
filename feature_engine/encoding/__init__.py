@@ -7,9 +7,9 @@ from .decision_tree import DecisionTreeEncoder
 from .mean_encoding import MeanEncoder
 from .one_hot import OneHotEncoder
 from .ordinal import OrdinalEncoder
+from .probability_ratio import PRatioEncoder
 from .rare_label import RareLabelEncoder
 from .woe import WoEEncoder
-from .probability_ratio import PRatioEncoder
 
 __all__ = [
     "CountFrequencyEncoder",
