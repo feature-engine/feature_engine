@@ -26,7 +26,7 @@ class EndTailImputer(BaseImputer):
     the Gaussian limits, the the IQR proximity rule limits, or a factor of the maximum
     value:
 
-    Gaussian limits
+    Gaussian limits:
         - right tail: mean + 3*std
         - left tail: mean - 3*std
 
@@ -47,7 +47,7 @@ class EndTailImputer(BaseImputer):
 
     Parameters
     ----------
-    imputation_method : str, default=gaussian
+    imputation_method: str, default=gaussian
         Method to be used to find the replacement values. Can take 'gaussian',
         'iqr' or 'max'.
 
@@ -60,16 +60,16 @@ class EndTailImputer(BaseImputer):
         **max**: the imputer will use the maximum values to replace missing data. Note
         that if 'max' is passed, the parameter 'tail' is ignored.
 
-    tail : str, default=right
+    tail: str, default=right
         Indicates if the values to replace missing data should be selected from the
         right or left tail of the variable distribution. Can take values 'left' or
         'right'.
 
-    fold : int, default=3
+    fold: int, default=3
         Factor to multiply the std, the IQR or the Max values. Recommended values
         are 2 or 3 for Gaussian, or 1.5 or 3 for IQR.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be imputed. If None, the imputer will find and
         select all variables of type numeric.
 
@@ -82,7 +82,8 @@ class EndTailImputer(BaseImputer):
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
+
     Methods
     -------
     fit:
@@ -123,10 +124,10 @@ class EndTailImputer(BaseImputer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
 
         Raises

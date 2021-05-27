@@ -23,12 +23,12 @@ class DropMissingData(BaseImputer):
 
     Parameters
     ----------
-    missing_only : bool, default=True
+    missing_only: bool, default=True
         If true, missing observations will be dropped only for the variables that were
         seen to have NA in the train set, during fit. If False, observations with NA
         will be dropped from all variables.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be imputed. If None, the imputer will find and
         select all variables with missing data.
 
@@ -43,7 +43,7 @@ class DropMissingData(BaseImputer):
         List of variables for which the rows with NA will be deleted.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -75,10 +75,10 @@ class DropMissingData(BaseImputer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
 
         Raises
@@ -122,12 +122,12 @@ class DropMissingData(BaseImputer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe to be transformed.
 
         Returns
         -------
-        X_transformed : pandas dataframe
+        X_transformed: pandas dataframe
             The complete case dataframe for the selected variables, of shape
             [n_samples - rows_with_na, n_features]
         """
@@ -146,7 +146,7 @@ class DropMissingData(BaseImputer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataset to from which rows containing NA should be retained.
 
         Raises
@@ -156,7 +156,7 @@ class DropMissingData(BaseImputer):
 
         Returns
         -------
-        X : pandas dataframe of shape = [obs_with_na, features]
+        X: pandas dataframe of shape = [obs_with_na, features]
             The cdataframe portion that contains only the rows with missing values.
         """
 

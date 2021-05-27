@@ -47,21 +47,27 @@ class ArbitraryNumberImputer(BaseImputer):
 
     Parameters
     ----------
-    arbitrary_number : int or float, default=999
+    arbitrary_number: int or float, default=999
         The number to be used to replace missing data.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be imputed. If None, the imputer will find and
         select all numerical type variables. This parameter is used only if
         `imputer_dict` is None.
 
-    imputer_dict : dict, default=None
+    imputer_dict: dict, default=None
         The dictionary of variables and the arbitrary numbers for their imputation.
 
     Attributes
     ----------
-    imputer_dict_ :
+    imputer_dict_:
         Dictionary with the values to replace NAs in each variable.
+
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -100,10 +106,10 @@ class ArbitraryNumberImputer(BaseImputer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : None
+        y: None
             y is not needed in this imputation. You can pass None or y.
 
         Raises

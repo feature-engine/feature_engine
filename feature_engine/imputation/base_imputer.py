@@ -19,7 +19,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
 
         Raises
         ------
@@ -30,7 +30,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
             The same dataframe entered by the user.
         """
         # Check method fit has been called
@@ -50,7 +50,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Raises
@@ -62,7 +62,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe without missing values in the selected variables.
         """
 

@@ -76,7 +76,7 @@ class RandomSampleImputer(BaseImputer):
         variables, which values will be used to determine the seed observation per
         observation.
 
-    seed : str, default='general'
+    seed: str, default='general'
         Indicates whether the seed should be set for each observation with missing
         values, or if one seed should be used to impute all variables in one go.
 
@@ -87,18 +87,18 @@ class RandomSampleImputer(BaseImputer):
         of the variables indicated in the random_state for that particular
         observation.
 
-    seeding_method : str, default='add'
+    seeding_method: str, default='add'
         If more than one variable are indicated to seed the random sampling per
         observation, you can choose to combine those values as an addition or a
         multiplication. Can take the values 'add' or 'multiply'.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be imputed. If None, the imputer will select
         all variables in the train set.
 
     Attributes
     ----------
-    X_ :
+    X_:
         Copy of the training dataframe from which to extract the random samples.
 
     variables_:
@@ -157,11 +157,11 @@ class RandomSampleImputer(BaseImputer):
         Parameters
         ----------
 
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset. Only a copy of the indicated variables will be stored
             in the transformer.
 
-        y : None
+        y: None
             y is not needed in this imputation. You can pass None or y.
 
         Raises
@@ -210,7 +210,7 @@ class RandomSampleImputer(BaseImputer):
         Parameters
         ----------
 
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe to be transformed.
 
         Raises
@@ -220,7 +220,7 @@ class RandomSampleImputer(BaseImputer):
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe without missing values in the transformed variables.
         """
 

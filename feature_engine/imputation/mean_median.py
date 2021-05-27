@@ -30,23 +30,23 @@ class MeanMedianImputer(BaseImputer):
 
     Parameters
     ----------
-    imputation_method : str, default=median
+    imputation_method: str, default=median
         Desired method of imputation. Can take 'mean' or 'median'.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be imputed. If None, the imputer will select
         all variables of type numeric.
 
     Attributes
     ----------
-    imputer_dict_ :
+    imputer_dict_:
         Dictionary with the mean or median values per variable.
 
     variables_:
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -76,10 +76,10 @@ class MeanMedianImputer(BaseImputer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : pandas series or None, default=None
+        y: pandas series or None, default=None
             y is not needed in this imputation. You can pass None or y.
 
         Raises

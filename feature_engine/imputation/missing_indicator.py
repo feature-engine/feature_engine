@@ -26,7 +26,7 @@ class AddMissingIndicator(BaseImputer):
 
     Parameters
     ----------
-    missing_only : bool, defatult=True
+    missing_only: bool, defatult=True
         Indicates if missing indicators should be added to variables with missing
         data or to all variables.
 
@@ -35,7 +35,7 @@ class AddMissingIndicator(BaseImputer):
 
         False: indicators will be created for all variables
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be imputed. If None, the imputer will find and
         select all variables with missing data.
 
@@ -80,10 +80,10 @@ class AddMissingIndicator(BaseImputer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
 
         Raises

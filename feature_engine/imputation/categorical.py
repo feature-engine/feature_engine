@@ -36,14 +36,14 @@ class CategoricalImputer(BaseImputer):
 
     Parameters
     ----------
-    imputation_method : str, default=missing
+    imputation_method: str, default='missing'
         Desired method of imputation. Can be 'frequent' or 'missing'.
 
     fill_value : str, default='Missing'
         Only used when `imputation_method='missing'`. Can be used to set a
         user-defined value to replace the missing data.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be imputed. If None, the imputer will find and
         select all object type variables.
 
@@ -62,7 +62,7 @@ class CategoricalImputer(BaseImputer):
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -101,10 +101,10 @@ class CategoricalImputer(BaseImputer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
 
         Raises
