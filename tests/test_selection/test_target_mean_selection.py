@@ -38,7 +38,7 @@ def test_numerical_variables_roc_auc(df_test):
     # }
 
     # test init params
-    assert sel.variables == list(X.columns)
+    assert sel.variables is None
     assert sel.scoring == "roc_auc_score"
     assert sel.threshold == 0.6
     assert sel.bins == 5
@@ -47,6 +47,7 @@ def test_numerical_variables_roc_auc(df_test):
     assert sel.random_state == 1
 
     # test fit attrs
+    assert sel.variables_ == list(X.columns)
     assert sel.variables_categorical_ == []
     assert sel.variables_numerical_ == list(X.columns)
     assert sel.features_to_drop_ == [
@@ -85,13 +86,14 @@ def test_categorical_variables_roc_auc(df_test_num_cat):
     # performance_dict = {"var_A": 0.841, "var_B": 0.776}
 
     # test init params
-    assert sel.variables == list(X.columns)
+    assert sel.variables is None
     assert sel.scoring == "roc_auc_score"
     assert sel.threshold == 0.78
     assert sel.cv == 2
     assert sel.random_state == 1
 
     # test fit attrs
+    assert sel.variables_ == list(X.columns)
     assert sel.variables_categorical_ == list(X.columns)
     assert sel.variables_numerical_ == []
     assert sel.features_to_drop_ == ["var_B"]
@@ -124,13 +126,14 @@ def test_df_cat_and_num_variables_roc_auc(df_test_num_cat):
     # "var_C": 0.481, "var_D": 0.496}
 
     # test init params
-    assert sel.variables == list(X.columns)
+    assert sel.variables is None
     assert sel.scoring == "roc_auc_score"
     assert sel.threshold == 0.60
     assert sel.cv == 2
     assert sel.random_state == 1
 
     # test fit attrs
+    assert sel.variables_ == list(X.columns)
     assert sel.variables_categorical_ == ["var_A", "var_B"]
     assert sel.variables_numerical_ == ["var_C", "var_D"]
     assert sel.features_to_drop_ == ["var_C", "var_D"]
@@ -167,7 +170,7 @@ def test_df_cat_and_num_variables_r2(df_test_num_cat):
     # }
 
     # test init params
-    assert sel.variables == list(X.columns)
+    assert sel.variables is None
     assert sel.scoring == "r2_score"
     assert sel.threshold == 0.1
     assert sel.cv == 2
@@ -176,6 +179,7 @@ def test_df_cat_and_num_variables_r2(df_test_num_cat):
     assert sel.random_state == 1
 
     # test fit attrs
+    assert sel.variables_ == list(X.columns)
     assert sel.variables_categorical_ == ["var_A", "var_B"]
     assert sel.variables_numerical_ == ["var_C", "var_D"]
     assert sel.features_to_drop_ == ["var_C", "var_D"]

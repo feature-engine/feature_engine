@@ -2,7 +2,7 @@ from typing import List, Union
 import warnings
 
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.base import clone
 from sklearn.model_selection import cross_validate
 
 from feature_engine.dataframe_checks import _is_dataframe
@@ -11,6 +11,7 @@ from feature_engine.variable_manipulation import (
     _find_or_check_numerical_variables,
 )
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.validation import _return_tags
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -68,6 +69,15 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     feature_performance_:
         Dictionary with the single feature model performance per feature.
 
+    variables_:
+        The variables that were be evaluated
+
+    estimator_;
+        a clone of the estimator
+
+    n_features_in:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -80,7 +90,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
     def __init__(
         self,
-        estimator=RandomForestClassifier(),
+        estimator,
         scoring: str = "roc_auc",
         cv: int = 3,
         threshold: Union[int, float] = None,
@@ -134,14 +144,16 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         X = _is_dataframe(X)
 
         # find numerical variables or check variables entered by user
-        self.variables = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         self.feature_performance_ = {}
 
+        self.estimator_ = clone(self.estimator)
+
         # train a model for every feature and store the performance
-        for feature in self.variables:
+        for feature in self.variables_:
             model = cross_validate(
-                self.estimator,
+                self.estimator_,
                 X[feature].to_frame(),
                 y,
                 cv=self.cv,
@@ -168,6 +180,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
             warnings.warn("All features will be dropped, try changing the threshold.")
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -178,3 +191,10 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         return X
 
     transform.__doc__ = BaseSelector.transform.__doc__
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = "transformer has 1 mandatory parameter"
+        return tags_dict

@@ -8,6 +8,7 @@ from sklearn.pipeline import Pipeline
 from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_contains_na,
+    _check_contains_inf,
 )
 
 from feature_engine.discretisation import (
@@ -103,6 +104,12 @@ class SelectByTargetMeanPerformance(BaseSelector):
     feature_performance_:
         Dictionary with the performance proxy per feature.
 
+    variables_:
+        The variables that were be evaluated
+
+    n_features_in:
+        The number of features in the train set used in fit
+
     Methods
     -------
     fit:
@@ -177,16 +184,21 @@ class SelectByTargetMeanPerformance(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
         # check variables
-        self.variables = _find_all_variables(X, self.variables)
+        self.variables_ = _find_all_variables(X, self.variables)
 
         # check if df contains na
-        _check_contains_na(X, self.variables)
+        _check_contains_na(X, self.variables_)
+        _check_contains_inf(X, self.variables_)
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         # limit df to variables to smooth code below
-        X = X[self.variables].copy()
+        X = X[self.variables_].copy()
 
         # find categorical and numerical variables
         self.variables_categorical_ = list(X.select_dtypes(include="O").columns)
@@ -222,10 +234,10 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
             if self.scoring == "roc_auc_score":
                 tmp_split = {
-                    f: roc_auc_score(y_test, X_test[f]) for f in self.variables
+                    f: roc_auc_score(y_test, X_test[f]) for f in self.variables_
                 }
             else:
-                tmp_split = {f: r2_score(y_test, X_test[f]) for f in self.variables}
+                tmp_split = {f: r2_score(y_test, X_test[f]) for f in self.variables_}
 
             feature_importances_cv.append(pd.Series(tmp_split))
 
@@ -243,7 +255,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
         self.features_to_drop_ = [
             f
-            for f in self.variables
+            for f in self.variables_
             if self.feature_performance_[f] < threshold
         ]
 

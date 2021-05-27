@@ -5,6 +5,7 @@ import pandas as pd
 from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_contains_na,
+    _check_contains_inf,
 )
 from feature_engine.variable_manipulation import (
     _find_or_check_numerical_variables,
@@ -116,11 +117,12 @@ class DropCorrelatedFeatures(BaseSelector):
         X = _is_dataframe(X)
 
         # find all numerical variables or check those entered are in the dataframe
-        self.variables = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         if self.missing_values == "raise":
             # check if dataset contains na
-            _check_contains_na(X, self.variables)
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
         # set to collect features that are correlated
         self.features_to_drop_ = set()
@@ -129,7 +131,7 @@ class DropCorrelatedFeatures(BaseSelector):
         self.correlated_feature_sets_ = []
 
         # the correlation matrix
-        _correlated_matrix = X[self.variables].corr(method=self.method)
+        _correlated_matrix = X[self.variables_].corr(method=self.method)
 
         # create set of examined features, helps to determine feature combinations
         # to evaluate below
@@ -170,6 +172,7 @@ class DropCorrelatedFeatures(BaseSelector):
                     self.correlated_feature_sets_.append(_temp_set)
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

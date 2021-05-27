@@ -3,7 +3,7 @@ import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.selection.base_selector import BaseSelector
-
+from feature_engine.validation import _return_tags
 
 class DropFeatures(BaseSelector):
     """
@@ -21,6 +21,10 @@ class DropFeatures(BaseSelector):
     ----------
     features_to_drop : str or list, default=None
         Variable(s) to be dropped from the dataframe
+
+    n_features_in:
+        The number of features in the train set used in fit
+
 
     Methods
     -------
@@ -78,6 +82,7 @@ class DropFeatures(BaseSelector):
 
         # add input shape
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -88,3 +93,11 @@ class DropFeatures(BaseSelector):
         return X
 
     transform.__doc__ = BaseSelector.transform.__doc__
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = "the transformer raises an error when removing the only column, ok to fail"
+        return tags_dict

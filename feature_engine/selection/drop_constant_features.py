@@ -11,6 +11,7 @@ from feature_engine.variable_manipulation import (
     _find_all_variables,
 )
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.validation import _return_tags
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -50,6 +51,12 @@ class DropConstantFeatures(BaseSelector):
     ----------
     features_to_drop_:
         List with constant and quasi-constant features.
+
+    variables_:
+        The variables that will be evaluated
+
+    n_features_in:
+        The number of features in the train set used in fit
 
     Methods
     -------
@@ -106,26 +113,26 @@ class DropConstantFeatures(BaseSelector):
         X = _is_dataframe(X)
 
         # find all variables or check those entered are present in the dataframe
-        self.variables = _find_all_variables(X, self.variables)
+        self.variables_ = _find_all_variables(X, self.variables)
 
         if self.missing_values == "raise":
             # check if dataset contains na
-            _check_contains_na(X, self.variables)
+            _check_contains_na(X, self.variables_)
 
         if self.missing_values == "include":
-            X[self.variables] = X[self.variables].fillna("missing_values")
+            X[self.variables_] = X[self.variables_].fillna("missing_values")
 
         # find constant features
         if self.tol == 1:
             self.features_to_drop_ = [
-                feature for feature in self.variables if X[feature].nunique() == 1
+                feature for feature in self.variables_ if X[feature].nunique() == 1
             ]
 
         # find constant and quasi-constant features
         else:
             self.features_to_drop_ = []
 
-            for feature in self.variables:
+            for feature in self.variables_:
                 # find most frequent value / category in the variable
                 predominant = (
                     (X[feature].value_counts() / float(len(X)))
@@ -144,6 +151,7 @@ class DropConstantFeatures(BaseSelector):
             )
 
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -154,3 +162,11 @@ class DropConstantFeatures(BaseSelector):
         return X
 
     transform.__doc__ = BaseSelector.transform.__doc__
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = "the transformer needs at least 2 columns to compare, ok to fail"
+        tags_dict["_xfail_checks"][ "check_fit2d_1sample"] = "the transformer raises an error when dropping all columns, ok to fail"
+        return tags_dict

@@ -63,10 +63,9 @@ def test_drop_duplicates_features(df_duplicate_features):
 
 def test_variables_assigned_correctly(df_duplicate_features):
     transformer = DropDuplicateFeatures()
-    assert transformer.variables is None
-
     transformer.fit(df_duplicate_features)
-    assert transformer.variables == (list(df_duplicate_features.columns))
+    assert transformer.variables is None
+    assert transformer.variables_ == (list(df_duplicate_features.columns))
 
 
 def test_fit_attributes(df_duplicate_features):

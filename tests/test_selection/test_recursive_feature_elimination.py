@@ -36,7 +36,12 @@ def test_classification_threshold_parameters(df_test):
     ]
 
     # test init params
-    assert sel.variables == [
+    assert sel.variables is None
+    assert sel.threshold == 0.001
+    assert sel.cv == 3
+    assert sel.scoring == "roc_auc"
+    # test fit attrs
+    assert sel.variables_ == [
         "var_0",
         "var_1",
         "var_2",
@@ -50,10 +55,6 @@ def test_classification_threshold_parameters(df_test):
         "var_10",
         "var_11",
     ]
-    assert sel.threshold == 0.001
-    assert sel.cv == 3
-    assert sel.scoring == "roc_auc"
-    # test fit attrs
     assert np.round(sel.initial_model_performance_, 3) == 0.997
     assert sel.features_to_drop_ == [
         "var_1",
@@ -86,10 +87,11 @@ def test_regression_cv_3_and_r2(load_diabetes_dataset):
 
     # test init params
     assert sel.cv == 3
-    assert sel.variables == list(X.columns)
+    assert sel.variables is None
     assert sel.scoring == "r2"
     assert sel.threshold == 0.01
     # fit params
+    assert sel.variables_ == list(X.columns)
     assert np.round(sel.initial_model_performance_, 3) == 0.489
     assert sel.features_to_drop_ == [0, 6, 7, 9]
     assert list(sel.performance_drifts_.keys()) == ordered_features
@@ -119,10 +121,11 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
 
     # test init params
     assert sel.cv == 2
-    assert sel.variables == list(X.columns)
+    assert sel.variables is None
     assert sel.scoring == "neg_mean_squared_error"
     assert sel.threshold == 10
     # fit params
+    assert sel.variables_ == list(X.columns)
     assert np.round(sel.initial_model_performance_, 0) == -5836.0
     assert sel.features_to_drop_ == [1, 4]
     assert list(sel.performance_drifts_.keys()) == ordered_features
@@ -133,18 +136,18 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
 def test_non_fitted_error(df_test):
     # when fit is not called prior to transform
     with pytest.raises(NotFittedError):
-        sel = RecursiveFeatureElimination()
+        sel = RecursiveFeatureElimination(RandomForestClassifier(random_state=1))
         sel.transform(df_test)
 
 
 def test_raises_cv_error():
     with pytest.raises(ValueError):
-        RecursiveFeatureElimination(cv=0)
+        RecursiveFeatureElimination(RandomForestClassifier(random_state=1), cv=0)
 
 
 def test_raises_threshold_error():
     with pytest.raises(ValueError):
-        RecursiveFeatureElimination(threshold=None)
+        RecursiveFeatureElimination(RandomForestClassifier(random_state=1), threshold=None)
 
 
 def test_automatic_variable_selection(load_diabetes_dataset):
@@ -171,8 +174,9 @@ def test_automatic_variable_selection(load_diabetes_dataset):
     ordered_features = [1, 0, 4, 6, 9, 3, 7, 5, 8, 2]
 
     # test init params
-    assert sel.variables == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    assert sel.variables is None
     # fit params
+    assert sel.variables_ == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     assert np.round(sel.initial_model_performance_, 0) == -5836.0
     assert sel.features_to_drop_ == [1, 4]
     assert list(sel.performance_drifts_.keys()) == ordered_features

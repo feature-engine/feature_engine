@@ -20,7 +20,12 @@ def test_default_parameters(df_test):
     Xtransformed = pd.DataFrame(X["var_7"].copy())
 
     # test init params
-    assert sel.variables == [
+    assert sel.variables is None
+    assert sel.threshold == 0.01
+    assert sel.cv == 3
+    assert sel.scoring == "roc_auc"
+    # test fit attrs
+    assert sel.variables_ == [
         "var_0",
         "var_1",
         "var_2",
@@ -34,10 +39,6 @@ def test_default_parameters(df_test):
         "var_10",
         "var_11",
     ]
-    assert sel.threshold == 0.01
-    assert sel.cv == 3
-    assert sel.scoring == "roc_auc"
-    # test fit attrs
     assert np.round(sel.initial_model_performance_, 3) == 0.997
     assert sel.features_to_drop_ == [
         "var_0",
@@ -69,10 +70,11 @@ def test_regression_cv_3_and_r2(load_diabetes_dataset):
 
     # test init params
     assert sel.cv == 3
-    assert sel.variables == list(X.columns)
+    assert sel.variables is None
     assert sel.scoring == "r2"
     assert sel.threshold == 0.01
     # fit params
+    assert sel.variables_ == list(X.columns)
     assert np.round(sel.initial_model_performance_, 3) == 0.489
     assert sel.features_to_drop_ == [0, 6, 7, 9]
     # test transform output
@@ -99,10 +101,11 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
 
     # test init params
     assert sel.cv == 2
-    assert sel.variables == list(X.columns)
+    assert sel.variables is None
     assert sel.scoring == "neg_mean_squared_error"
     assert sel.threshold == 5
     # fit params
+    assert sel.variables_ == list(X.columns)
     assert np.round(sel.initial_model_performance_, 0) == -5836.0
     assert sel.features_to_drop_ == [0, 1, 3, 4, 5, 6, 7, 9]
     # test transform output
@@ -112,18 +115,18 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
 def test_non_fitted_error(df_test):
     # when fit is not called prior to transform
     with pytest.raises(NotFittedError):
-        sel = SelectByShuffling()
+        sel = SelectByShuffling(RandomForestClassifier(random_state=1))
         sel.transform(df_test)
 
 
 def test_raises_cv_error():
     with pytest.raises(ValueError):
-        SelectByShuffling(cv=0)
+        SelectByShuffling(RandomForestClassifier(random_state=1), cv=0)
 
 
 def test_raises_threshold_error():
     with pytest.raises(ValueError):
-        SelectByShuffling(threshold="hello")
+        SelectByShuffling(RandomForestClassifier(random_state=1), threshold="hello")
 
 
 def test_automatic_variable_selection(df_test):
@@ -142,7 +145,12 @@ def test_automatic_variable_selection(df_test):
     Xtransformed = X[["var_7", "cat_1", "cat_2"]].copy()
 
     # test init params
-    assert sel.variables == [
+    assert sel.variables is None
+    assert sel.threshold == 0.01
+    assert sel.cv == 3
+    assert sel.scoring == "roc_auc"
+    # test fit attrs
+    assert sel.variables_ == [
         "var_0",
         "var_1",
         "var_2",
@@ -156,10 +164,6 @@ def test_automatic_variable_selection(df_test):
         "var_10",
         "var_11",
     ]
-    assert sel.threshold == 0.01
-    assert sel.cv == 3
-    assert sel.scoring == "roc_auc"
-    # test fit attrs
     assert np.round(sel.initial_model_performance_, 3) == 0.997
     assert sel.features_to_drop_ == [
         "var_0",

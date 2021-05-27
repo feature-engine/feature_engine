@@ -69,7 +69,14 @@ def test_model_performance_single_corr_group(df_single):
     # test init params
     assert transformer.method == "pearson"
     assert transformer.threshold == 0.8
-    assert transformer.variables == [
+    assert transformer.variables is None
+    assert transformer.missing_values == "raise"
+    assert transformer.selection_method == "model_performance"
+    assert transformer.scoring == "roc_auc"
+    assert transformer.cv == 3
+
+    # test fit attrs
+    assert transformer.variables_ == [
         "var_0",
         "var_1",
         "var_2",
@@ -77,12 +84,6 @@ def test_model_performance_single_corr_group(df_single):
         "var_4",
         "var_5",
     ]
-    assert transformer.missing_values == "raise"
-    assert transformer.selection_method == "model_performance"
-    assert transformer.scoring == "roc_auc"
-    assert transformer.cv == 3
-
-    # test fit attrs
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
     assert transformer.features_to_drop_ == ["var_1"]
     # test transform output

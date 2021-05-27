@@ -44,7 +44,9 @@ def test_drop_constant_features(df_constant_features):
 
     # init params
     assert transformer.tol == 1
-    assert transformer.variables == [
+    assert transformer.variables is None
+    # fit attributes
+    assert transformer.variables_ == [
         "Name",
         "City",
         "Age",
@@ -55,7 +57,6 @@ def test_drop_constant_features(df_constant_features):
         "quasi_feat_num",
         "quasi_feat_cat",
     ]
-    # fit attributes
     assert transformer.features_to_drop_ == ["const_feat_num", "const_feat_cat"]
     assert transformer.input_shape_ == (4, 9)
 
@@ -80,7 +81,10 @@ def test_drop_constant_and_quasiconstant_features(df_constant_features):
 
     # init params
     assert transformer.tol == 0.7
-    assert transformer.variables == [
+    assert transformer.variables is None
+
+    # fit attr
+    assert transformer.variables_ == [
         "Name",
         "City",
         "Age",
@@ -91,8 +95,6 @@ def test_drop_constant_and_quasiconstant_features(df_constant_features):
         "quasi_feat_num",
         "quasi_feat_cat",
     ]
-
-    # fit attr
     assert transformer.features_to_drop_ == [
         "const_feat_num",
         "const_feat_cat",

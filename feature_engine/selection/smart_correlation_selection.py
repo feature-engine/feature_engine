@@ -6,6 +6,7 @@ from sklearn.model_selection import cross_validate
 from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_contains_na,
+    _check_contains_inf,
 )
 from feature_engine.variable_manipulation import (
     _find_or_check_numerical_variables,
@@ -92,6 +93,12 @@ class SmartCorrelatedSelection(BaseSelector):
 
     features_to_drop_:
         The correlated features to remove from the dataset.
+
+    variables_:
+        The variables that were be evaluated
+
+    n_features_in:
+        The number of features in the train set used in fit
 
     Methods
     -------
@@ -190,11 +197,12 @@ class SmartCorrelatedSelection(BaseSelector):
         X = _is_dataframe(X)
 
         # find all numerical variables or check those entered are in the dataframe
-        self.variables = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         if self.missing_values == "raise":
             # check if dataset contains na
-            _check_contains_na(X, self.variables)
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
         if self.selection_method == "model_performance" and y is None:
             raise ValueError("y is needed to fit the transformer")
@@ -205,7 +213,7 @@ class SmartCorrelatedSelection(BaseSelector):
         self.correlated_feature_sets_ = []
 
         # the correlation matrix
-        _correlated_matrix = X[self.variables].corr(method=self.method)
+        _correlated_matrix = X[self.variables_].corr(method=self.method)
 
         # create set of examined features, helps to determine feature combinations
         # to evaluate below
@@ -296,9 +304,10 @@ class SmartCorrelatedSelection(BaseSelector):
                 _selected_features.append(f)
 
         self.features_to_drop_ = [
-            f for f in self.variables if f not in _selected_features
+            f for f in self.variables_ if f not in _selected_features
         ]
         self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
