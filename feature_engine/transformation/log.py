@@ -24,13 +24,13 @@ class LogTransformer(BaseNumericalTransformer):
 
     Parameters
     ----------
+    variables: list, default=None
+        The list of numerical variables to transform. If None, the transformer
+        will find and select all numerical variables.
+
     base: string, default='e'
         Indicates if the natural or base 10 logarithm should be applied. Can take
         values 'e' or '10'.
-
-    variables : list, default=None
-        The list of numerical variables to transform. If None, the transformer
-        will find and select all numerical variables.
 
     Attributes
     ----------
@@ -38,7 +38,7 @@ class LogTransformer(BaseNumericalTransformer):
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -52,8 +52,8 @@ class LogTransformer(BaseNumericalTransformer):
 
     def __init__(
         self,
-        base: str = "e",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        base: str = "e",
     ) -> None:
 
         if base not in ["e", "10"]:
@@ -72,11 +72,11 @@ class LogTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : Pandas DataFrame of shape = [n_samples, n_features].
+        X: Pandas DataFrame of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             It is not needed in this transformer. You can pass y or None.
 
         Raises
@@ -114,7 +114,7 @@ class LogTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : Pandas DataFrame of shape = [n_samples, n_features]
+        X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Raises
@@ -128,7 +128,7 @@ class LogTransformer(BaseNumericalTransformer):
 
         Returns
         -------
-        X : pandas dataframe
+        X: pandas dataframe
             The dataframe with the transformed variables.
         """
 

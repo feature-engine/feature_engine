@@ -27,20 +27,20 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
     Parameters
     ----------
-    variables : list, default=None
+    variables: list, default=None
         The list of numerical variables to transform. If None, the transformer will
         automatically find and select all numerical variables.
 
     Attributes
     ----------
-    lambda_dict_ :
+    lambda_dict_
         Dictionary containing the best lambda for the Yeo-Johnson per variable.
 
     variables_:
         The group of variables that will be transformed.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -69,11 +69,11 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             It is not needed in this transformer. You can pass y or None.
 
         Raises
@@ -112,7 +112,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : Pandas DataFrame of shape = [n_samples, n_features]
+        X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Raises
@@ -125,7 +125,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
         Returns
         -------
-        X : pandas dataframe
+        X: pandas dataframe
             The dataframe with the transformed variables.
         """
 
