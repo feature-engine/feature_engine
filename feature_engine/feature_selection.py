@@ -100,7 +100,7 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
     def __init__(self):
         self.col = None
 
-    def fit(self, df, y=None, **fit_params):
+    def fit(self, X: pd.DataFrame, y: pd.Series=None, **fit_params):
         """  Fit columns schema
 
         Parameters
@@ -113,11 +113,13 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
             y is not needed for this transformer. You can pass y or None.
 
         """
+        # check input dataframe
+        X = _is_dataframe(X)
 
-        self.col = df.columns
+        self.col = X.columns
         return self
 
-    def transform(self, X, **transform_params):
+    def transform(self, X: pd.DataFrame, **transform_params) -> pd.DataFrame:
         """  Drops the variable that are not in the fited dataframe and returns a new dataframe with the remaining subset of variables.
 
         If a column is in train but not in test, then the column will be created in
@@ -136,6 +138,8 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
             The transformed dataframe with the same columns (in same order) than the fitted dataframe
 
         """
+        # check input dataframe
+        X = _is_dataframe(X)
 
         for col in self.col:
             if col not in X.columns:
