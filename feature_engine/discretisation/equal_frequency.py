@@ -30,21 +30,23 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
 
     Parameters
     ----------
-    q : int, default=10
+    q: int, default=10
         Desired number of equal frequency intervals / bins. In other words the
         number of quantiles in which the variables should be divided.
 
-    variables : list
+    variables: list
         The list of numerical variables that will be discretised. If None, the
         EqualFrequencyDiscretiser() will select all numerical variables.
 
-    return_object : bool, default=False
-        Whether the numbers in the discrete variable should be returned as
-        numeric or as object. The decision is made by the user based on
-        whether they would like to proceed the engineering of the variable as
-        if it was numerical or categorical.
+    return_object: bool, default=False
+        Whether the the discrete variable should be returned casted as numeric or as
+        object. If you would like to proceed with the engineering of the variable as if
+        it was categorical, use True. Alternatively, keep the default to False.
 
-    return_boundaries : bool, default=False
+        Categorical encoders in Feature-engine work only with variables of type object,
+        thus, if you wish to encode the returned bins, set return_object to True.
+
+    return_boundaries: bool, default=False
         whether the output should be the interval boundaries. If True, it returns
         the interval boundaries. If False, it returns integers.
 
@@ -57,7 +59,7 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
          The variables to discretise.
 
     n_features_in_:
-        The number of features in the train set used in fit
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -111,10 +113,10 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the variables
             to be transformed.
-        y : None
+        y: None
             y is not needed in this encoder. You can pass y or None.
 
         Raises
@@ -155,7 +157,7 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Raises
@@ -168,7 +170,7 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The transformed data with the discrete variables.
         """
 
