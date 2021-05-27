@@ -35,7 +35,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
     Parameters
     ----------
-    cv : int, default=3
+    cv: int, default=3
         Desired number of cross-validation fold to be used to fit the decision
         tree.
 
@@ -45,15 +45,15 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    variables : list
-        The list of numerical variables that will be transformed. If None, the
-        discretiser will automatically select all numerical variables.
+    variables: list
+        The list of numerical variables to transform. If None, the discretiser will
+        automatically select all numerical variables.
 
-    regression : boolean, default=True
+    regression: boolean, default=True
         Indicates whether the discretiser should train a regression or a classification
         decision tree.
 
-    param_grid : dictionary, default=None
+    param_grid: dictionary, default=None
         The list of parameters over which the decision tree should be optimised
         during the grid search. The param_grid can contain any of the permitted
         parameters for Scikit-learn's DecisionTreeRegressor() or
@@ -72,7 +72,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     binner_dict_:
         Dictionary containing the fitted tree per variable.
 
-    scores_dict_ :
+    scores_dict_:
         Dictionary with the score of the best decision tree, over the train set.
 
     variables_:
@@ -133,10 +133,10 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         Parameters
         ----------
 
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the
             variables to be transformed.
-        y : pandas series.
+        y: pandas series.
             Target variable. Required to train the decision tree.
 
         Raises
@@ -195,8 +195,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
         Parameters
         ----------
-
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Raises
@@ -209,7 +208,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
         Returns
         -------
-        X_transformed : pandas dataframe of shape = [n_samples, n_features]
+        X_transformed: pandas dataframe of shape = [n_samples, n_features]
             The dataframe with transformed variables.
         """
 
