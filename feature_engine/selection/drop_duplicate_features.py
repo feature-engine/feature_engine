@@ -29,7 +29,7 @@ class DropDuplicateFeatures(BaseSelector):
 
     Parameters
     ----------
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         variables in the dataset.
 
@@ -46,10 +46,10 @@ class DropDuplicateFeatures(BaseSelector):
         Groups of duplicated features. Each list is a group of duplicated features.
 
     variables_:
-        The variables that were be evaluated
+        The variables to consider for the feature selection.
 
-    n_features_in:
-        The number of features in the train set used in fit
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -75,9 +75,9 @@ class DropDuplicateFeatures(BaseSelector):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The input dataframe.
-        y : None
+        y: None
             y is not needed for this transformer. You can pass y or None.
 
         Returns

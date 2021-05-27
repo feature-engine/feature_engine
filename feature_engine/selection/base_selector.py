@@ -37,7 +37,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
+        X: pandas dataframe of shape = [n_samples, n_features].
             The input dataframe.
 
         Returns

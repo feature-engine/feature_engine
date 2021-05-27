@@ -39,11 +39,11 @@ class SmartCorrelatedSelection(BaseSelector):
 
     Parameters
     ----------
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         numerical variables in the dataset.
 
-    method : string, default='pearson'
+    method: string, default='pearson'
         Can take 'pearson', 'spearman' or'kendall'. It refers to the correlation method
         to be used to identify the correlated features.
 
@@ -51,15 +51,15 @@ class SmartCorrelatedSelection(BaseSelector):
         - kendall : Kendall Tau correlation coefficient
         - spearman : Spearman rank correlation
 
-    threshold : float, default=0.8
+    threshold: float, default=0.8
         The correlation threshold above which a feature will be deemed correlated with
         another one and removed from the dataset.
 
-    missing_values : str, default=ignore
+    missing_values: str, default=ignore
         Takes values 'raise' and 'ignore'. Whether the missing values should be raised
         as error or ignored when determining correlation.
 
-    selection_method : str, default= "missing_values"
+    selection_method: str, default= "missing_values"
         Takes the values "missing_values", "cardinality", "variance" and
         "model_performance".
 
@@ -75,15 +75,15 @@ class SmartCorrelatedSelection(BaseSelector):
         "model_performance": trains a machine learning model using the correlated
         feature group and retains the feature with the highest importance.
 
-    estimator : object, default = None
+    estimator: object, default = None
         A Scikit-learn estimator for regression or classification.
 
-    scoring : str, default='roc_auc'
+    scoring: str, default='roc_auc'
         Desired metric to optimise the performance of the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    cv : int, default=3
+    cv: int, default=3
         Cross-validation fold to be used to fit the estimator.
 
     Attributes
@@ -95,10 +95,10 @@ class SmartCorrelatedSelection(BaseSelector):
         The correlated features to remove from the dataset.
 
     variables_:
-        The variables that were be evaluated
+        The variables to consider for the feature selection.
 
-    n_features_in:
-        The number of features in the train set used in fit
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -182,10 +182,10 @@ class SmartCorrelatedSelection(BaseSelector):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : pandas series. Default = None
+        y: pandas series. Default = None
             y is needed if selection_method == 'model_performance'.
 
         Returns

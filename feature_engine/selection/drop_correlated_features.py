@@ -29,11 +29,11 @@ class DropCorrelatedFeatures(BaseSelector):
 
     Parameters
     ----------
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         numerical variables in the dataset.
 
-    method : string, default='pearson'
+    method: string, default='pearson'
         Can take 'pearson', 'spearman' or'kendall'. It refers to the correlation method
         to be used to identify the correlated features.
 
@@ -41,11 +41,11 @@ class DropCorrelatedFeatures(BaseSelector):
         - kendall : Kendall Tau correlation coefficient
         - spearman : Spearman rank correlation
 
-    threshold : float, default=0.8
+    threshold: float, default=0.8
         The correlation threshold above which a feature will be deemed correlated with
         another one and removed from the dataset.
 
-    missing_values : str, default=ignore
+    missing_values: str, default=ignore
         Takes values 'raise' and 'ignore'. Whether the missing values should be raised
         as error or ignored when determining correlation.
 
@@ -56,6 +56,12 @@ class DropCorrelatedFeatures(BaseSelector):
 
     correlated_feature_sets_:
         Groups of correlated features. Each list is a group of correlated features.
+
+    variables_:
+        The variables to consider for the feature selection.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------

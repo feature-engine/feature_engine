@@ -70,29 +70,29 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
     Parameters
     ----------
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         variables in the dataset.
 
-    scoring : string, default='roc_auc_score'
+    scoring: string, default='roc_auc_score'
         This indicates the metrics score to perform the feature selection.
         The current implementation supports 'roc_auc_score' and 'r2_score'.
 
-    threshold : float, default = None
+    threshold: float, default = None
         The performance threshold above which a feature will be selected.
 
-    bins : int, default = 5
+    bins: int, default = 5
         If the dataset contains numerical variables, the number of bins into which
         the values will be sorted.
 
-    strategy : str, default = equal_width
+    strategy: str, default = equal_width
         whether to create the bins for discretization of numerical variables of
         equal width or equal frequency.
 
-    cv : int, default=3
+    cv: int, default=3
         Desired number of cross-validation fold to be used to fit the estimator.
 
-    random_state : int, default=0
+    random_state: int, default=0
         The random state setting in the train_test_split method.
 
     Attributes
@@ -104,10 +104,10 @@ class SelectByTargetMeanPerformance(BaseSelector):
         Dictionary with the performance proxy per feature.
 
     variables_:
-        The variables that were be evaluated
+        The variables to consider for the feature selection.
 
-    n_features_in:
-        The number of features in the train set used in fit
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -170,10 +170,10 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
 
-        y : array-like of shape (n_samples)
+        y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
 
         Returns

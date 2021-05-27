@@ -43,19 +43,19 @@ class SelectByShuffling(BaseSelector):
 
     Parameters
     ----------
-    variables : str or list, default=None
+    estimator: object
+        A Scikit-learn estimator for regression or classification.
+
+    variables: str or list, default=None
         The list of variable(s) to be shuffled from the dataframe.
         If None, the transformer will shuffle all numerical variables in the dataset.
 
-    estimator : object, default = RandomForestClassifier()
-        A Scikit-learn estimator for regression or classification.
-
-    scoring : str, default='roc_auc'
+    scoring: str, default='roc_auc'
         Desired metric to optimise the performance for the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold : float, int, default = None
+    threshold: float, int, default = None
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
@@ -64,7 +64,7 @@ class SelectByShuffling(BaseSelector):
         performance drift is smaller than the mean performance drift across all
         features.
 
-    cv : int, default=3
+    cv: int, default=3
         Desired number of cross-validation fold to be used to fit the estimator.
 
     random_state: int, default=None
@@ -82,10 +82,10 @@ class SelectByShuffling(BaseSelector):
         List with the features to remove from the dataset.
 
     variables_:
-        The variables that were be evaluated
+        The variables to consider for the feature selection.
 
-    n_features_in:
-        The number of features in the train set used in fit
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -126,9 +126,9 @@ class SelectByShuffling(BaseSelector):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
-        y : array-like of shape (n_samples)
+        y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
 
         Returns

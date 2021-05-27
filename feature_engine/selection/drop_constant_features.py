@@ -32,17 +32,17 @@ class DropConstantFeatures(BaseSelector):
 
     Parameters
     ----------
-    tol : float,int,  default=1
+    tol: float,int,  default=1
         Threshold to detect constant/quasi-constant features. Variables showing the
         same value in a percentage of observations greater than tol will be considered
         constant / quasi-constant and dropped. If tol=1, the transformer removes
         constant variables. Else, it will remove quasi-constant variables.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         variables in the dataset.
 
-    missing_values : str, default=raises
+    missing_values: str, default=raises
         Whether the missing values should be raised as error, ignored or included as an
         additional value of the variable, when considering if the feature is constant
         or quasi-constant. Takes values 'raise', 'ignore', 'include'.
@@ -53,10 +53,10 @@ class DropConstantFeatures(BaseSelector):
         List with constant and quasi-constant features.
 
     variables_:
-        The variables that will be evaluated
+        The variables to consider for the feature selection.
 
-    n_features_in:
-        The number of features in the train set used in fit
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -99,9 +99,9 @@ class DropConstantFeatures(BaseSelector):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The input dataframe.
-        y : None
+        y: None
             y is not needed for this transformer. You can pass y or None.
 
         Returns

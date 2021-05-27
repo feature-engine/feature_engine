@@ -19,11 +19,11 @@ class DropFeatures(BaseSelector):
 
     Parameters
     ----------
-    features_to_drop : str or list, default=None
+    features_to_drop: str or list
         Variable(s) to be dropped from the dataframe
 
-    n_features_in:
-        The number of features in the train set used in fit
+    n_features_in_:
+        The number of features in the train set used in fit.
 
 
     Methods

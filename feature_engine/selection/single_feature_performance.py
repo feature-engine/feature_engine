@@ -30,19 +30,19 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
     Parameters
     ----------
-    variables : str or list, default=None
+    estimator : object
+        A Scikit-learn estimator for regression or classification.
+
+    variables: str or list, default=None
         The list of variable(s) to be evaluated.
         If None, the transformer will evaluate all numerical variables in the dataset.
 
-    estimator : object, default = RandomForestClassifier()
-        A Scikit-learn estimator for regression or classification.
-
-    scoring : str, default='roc_auc'
+    scoring: str, default='roc_auc'
         Desired metric to optimise the performance for the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold : float, int, default = None
+    threshold: float, int, default = None
         The value that defines if a feature will be kept or removed.
 
         The r2varies between 0 and 1. So a threshold needs to be set-up within
@@ -57,7 +57,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         The threshold can be specified by the user. If None, it will be automatically
         set to the mean performance value of all features.
 
-    cv : int, default=3
+    cv: int, default=3
         Desired number of cross-validation fold to be used to fit the estimator.
 
     Attributes
@@ -69,10 +69,10 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         Dictionary with the single feature model performance per feature.
 
     variables_:
-        The variables that were be evaluated
+        The variables to consider for the feature selection.
 
-    n_features_in:
-        The number of features in the train set used in fit
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -125,10 +125,10 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
 
-        y : array-like of shape (n_samples)
+        y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
 
         Returns

@@ -42,21 +42,21 @@ class RecursiveFeatureElimination(BaseSelector):
 
     Parameters
     ----------
-    variables : str or list, default=None
-        The list of variable to be evaluated. If None, the transformer will evaluate
-        all numerical features in the dataset.
-
-    estimator : object, default = RandomForestClassifier()
+    estimator: object
         A Scikit-learn estimator for regression or classification.
         The estimator must have either a `feature_importances` or `coef_` attribute
         after fitting.
 
-    scoring : str, default='roc_auc'
+    variables: str or list, default=None
+        The list of variable to be evaluated. If None, the transformer will evaluate
+        all numerical features in the dataset.
+
+    scoring: str, default='roc_auc'
         Desired metric to optimise the performance of the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold : float, int, default = 0.01
+    threshold: float, int, default = 0.01
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
@@ -64,7 +64,7 @@ class RecursiveFeatureElimination(BaseSelector):
         The threshold must be defined by the user. Bigger thresholds will select less
         features.
 
-    cv : int, default=3
+    cv: int, default=3
         Cross-validation fold to be used to fit the estimator.
 
     Attributes
@@ -82,10 +82,10 @@ class RecursiveFeatureElimination(BaseSelector):
         List with the features to remove from the dataset.
 
     variables_:
-        The variables that were be evaluated
+        The variables to consider for the feature selection.
 
-    n_features_in:
-        The number of features in the train set used in fit
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -125,9 +125,9 @@ class RecursiveFeatureElimination(BaseSelector):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
-        y : array-like of shape (n_samples)
+        y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
 
 
