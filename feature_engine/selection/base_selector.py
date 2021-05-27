@@ -7,7 +7,7 @@ from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_input_matches_training_df,
 )
-
+from feature_engine.validation import _return_tags
 
 def get_feature_importances(estimator):
     """Retrieve feature importances from a fitted estimator"""
@@ -56,3 +56,6 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         # return the dataframe with the selected features
         return X.drop(columns=self.features_to_drop_)
+
+    def _more_tags(self):
+        return _return_tags()

@@ -6,6 +6,7 @@ from feature_engine.dataframe_checks import (
     _is_dataframe,
     _check_input_matches_training_df,
 )
+from feature_engine.validation import _return_tags
 
 
 class BaseImputer(BaseEstimator, TransformerMixin):
@@ -39,7 +40,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # Check that input df contains same number of columns as df used to fit
-        _check_input_matches_training_df(X, self.n_features_in_ )
+        _check_input_matches_training_df(X, self.n_features_in_)
 
         return X
 
@@ -74,52 +75,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         return X
 
     def _more_tags(self):
-        return {
-            "_xfail_checks": {
-                # check_estimator checks that fail:
-                "check_estimators_nan_inf": "transformer allows NA",
-
-                # Complex data in math terms, are values like 4i (imaginary numbers
-                # so to speak). I've never seen such a thing in the dfs I've
-                # worked with, so I do not need this test.
-                "check_complex_data": "I dont think we need this check, if users "
-                                      "disagree we can think how to introduce it "
-                                      "at a later stage.",
-
-                # check that estimators treat dtype object as numeric if possible
-                "check_dtype_object":
-                    "Transformers use dtypes to select between numerical and "
-                    "categorical variables. Feature-engine trusts the user cast the "
-                    "variables in they way they would like them treated.",
-
-                # Not sure what the aim of this check is, it fails because FE does not
-                # like the sklearn class _NotAnArray
-                "check_transformer_data_not_an_array": "Not sure what this check is",
-
-                # this test fails because the test uses dtype attribute of numpy, but
-                # in feature engine the array is converted to a df, and it does not
-                # have the dtype attribute.
-                # need to understand why this test is useful an potentially have one
-                # for the package. But some Feature-engine transformers DO change the
-                # types
-                "check_transformer_preserve_dtypes":
-                    "Test not relevant, Feature-engine transformers can change "
-                    "the types",
-
-                # TODO: we probably need the test below!!
-                "check_methods_sample_order_invariance":
-                    "Test does not work on dataframes",
-
-                # TODO: we probably need the test below!!
-                # the test below tests that a second fit overrides a first fit.
-                # the problem is that the test does not work with pandas df.
-                "check_fit_idempotent": "Test does not work on dataframes",
-
-                "check_fit1d": "Test not relevant, Feature-engine transformers only "
-                               "work with dataframes",
-
-                "check_fit2d_predict1d":
-                    "Test not relevant, Feature-engine transformers only "
-                    "work with dataframes",
-            }
-        }
+        tags_dict = _return_tags()
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        return tags_dict

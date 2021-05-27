@@ -8,7 +8,7 @@ from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
     _check_contains_na,
 )
-
+from feature_engine.validation import _return_tags
 
 class BaseOutlier(BaseEstimator, TransformerMixin):
     """shared set-up checks and methods across outlier transformers"""
@@ -90,3 +90,6 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
             )
 
         return X
+
+    def _more_tags(self):
+        return _return_tags()

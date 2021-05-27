@@ -11,7 +11,7 @@ from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
 )
 from feature_engine.variable_manipulation import _find_or_check_categorical_variables
-
+from feature_engine.validation import _return_tags
 
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
     """shared set-up checks and methods across categorical transformers"""
@@ -182,28 +182,4 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         return X
 
     def _more_tags(self):
-        return {
-            "_xfail_checks": {
-                # check_estimator checks that fail:
-                # the following test hecks that check_X_y has been implemented
-                # thus is not relevant for feature-engine transformers
-                "check_transformer_data_not_an_array":
-                    "Test not relevant, Feature-engine transformers only "
-                    "work with dataframes",
-                "check_transformer_preserve_dtypes":
-                    "Test not relevant, Feature-engine transformers can change "
-                "the types",
-                # TODO: we probably need the test below!!
-                "check_methods_sample_order_invariance":
-                    "Test does not work on dataframes",
-                # TODO: we probably need the test below!!
-                "check_fit_idempotent": "Test does not work on dataframes",
-                # the test above tests that a second fit overrides a first fit.
-                # the problem is that the test does not work with pandas df.
-                "check_fit1d": "Test not relevant, Feature-engine transformers only "
-                "work with dataframes",
-                "check_fit2d_predict1d":
-                    "Test not relevant, Feature-engine transformers only "
-                "work with dataframes",
-            }
-        }
+        return _return_tags()
