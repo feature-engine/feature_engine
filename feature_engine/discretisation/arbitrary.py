@@ -19,9 +19,9 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
     The ArbitraryDiscretiser() divides continuous numerical variables into contiguous
     intervals which limits are determined arbitrarily by the user.
 
-    The user needs to enter a dictionary with variable names as keys, and a list of
-    the limits of the intervals as values. For example {'var1':[0, 10, 100, 1000],
-    'var2':[5, 10, 15, 20]}.
+    You need to enter a dictionary with variable names as keys, and a list of
+    the limits of the intervals as values. For example `{'var1':[0, 10, 100, 1000],
+    'var2':[5, 10, 15, 20]}`.
 
     ArbitraryDiscretiser() will then sort var1 values into the intervals 0-10, 10-100
     100-1000, and var2 into 5-10, 10-15 and 15-20. Similar to `pandas.cut`.
@@ -35,22 +35,21 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     Parameters
     ----------
-    binning_dict : dict
-        The dictionary with the variable : interval limits pairs, provided by the user.
-        A valid dictionary looks like this:
+    binning_dict: dict
+        The dictionary with the variable to interval limits pairs. A valid dictionary
+        looks like this:
 
-        binning_dict = {'var1':[0, 10, 100, 1000], 'var2':[5, 10, 15, 20]}.
+        `binning_dict = {'var1':[0, 10, 100, 1000], 'var2':[5, 10, 15, 20]}`
 
-    return_object : bool, default=False
-        Whether the numbers in the discrete variable should be returned as
-        numeric or as object. The decision is made by the user based on
-        whether they would like to proceed the engineering of the variable as
-        if it was numerical or categorical.
+    return_object: bool, default=False
+        Whether the the discrete variable should be returned casted as numeric or as
+        object. If you would like to proceed with the engineering of the variable as if
+        it was categorical, use True. Alternatively, keep the default to False.
 
         Categorical encoders in Feature-engine work only with variables of type object,
         thus, if you wish to encode the returned bins, set return_object to True.
 
-    return_boundaries : bool, default=False
+    return_boundaries: bool, default=False
         whether the output, that is the bin names / values, should be the interval
         boundaries. If True, it returns the interval boundaries. If False, it returns
         integers.
@@ -77,7 +76,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     See Also
     --------
-    pandas.cut :
+    pandas.cut:
         https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.cut.html
 
     """
@@ -110,12 +109,12 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the
             variables to be transformed.
 
-        y : None
-            y is not needed in this encoder. You can pass y or None.
+        y: None
+            y is not needed in this transformer. You can pass y or None.
 
         Raises
         ------
@@ -154,7 +153,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe to be transformed.
 
         Raises
@@ -167,7 +166,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The transformed data with the discrete variables.
         """
 
