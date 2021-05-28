@@ -160,3 +160,79 @@ def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
     with pytest.raises(ValueError):
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         encoder.transform(df_enc_na)
+
+
+def test_on_numerical_variables(df_enc_numeric):
+
+    # ignore_format=True
+    encoder = WoEEncoder(variables=None, ignore_format=True)
+    encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
+    X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
+
+    # transformed dataframe
+    transf_df = df_enc_numeric.copy()
+    transf_df["var_A"] = [
+        0.15415067982725836,
+        0.15415067982725836,
+        0.15415067982725836,
+        0.15415067982725836,
+        0.15415067982725836,
+        0.15415067982725836,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        0.8472978603872037,
+        0.8472978603872037,
+        0.8472978603872037,
+        0.8472978603872037,
+    ]
+    transf_df["var_B"] = [
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        -0.5389965007326869,
+        0.15415067982725836,
+        0.15415067982725836,
+        0.15415067982725836,
+        0.15415067982725836,
+        0.15415067982725836,
+        0.15415067982725836,
+        0.8472978603872037,
+        0.8472978603872037,
+        0.8472978603872037,
+        0.8472978603872037,
+    ]
+
+    # init params
+    assert encoder.variables is None
+    # fit params
+    assert encoder.variables_ == ["var_A", "var_B"]
+    assert encoder.encoder_dict_ == {
+        "var_A": {
+            1: 0.15415067982725836,
+            2: -0.5389965007326869,
+            3: 0.8472978603872037,
+        },
+        "var_B": {
+            1: -0.5389965007326869,
+            2: 0.15415067982725836,
+            3: 0.8472978603872037,
+        },
+    }
+    assert encoder.n_features_in_ == 2
+    # transform params
+    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+
