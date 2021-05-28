@@ -61,14 +61,14 @@ def test_sklearn_compatible_imputer(estimator, check):
 
 @parametrize_with_checks(
     [
-        CountFrequencyEncoder(),
-        DecisionTreeEncoder(),
-        MeanEncoder(),
-        OneHotEncoder(),
-        OrdinalEncoder(),
-        RareLabelEncoder(),
-        WoEEncoder(),
-        PRatioEncoder(),
+        CountFrequencyEncoder(ignore_format=True),
+        DecisionTreeEncoder(ignore_format=True),
+        MeanEncoder(ignore_format=True),
+        OneHotEncoder(ignore_format=True),
+        OrdinalEncoder(ignore_format=True),
+        RareLabelEncoder(ignore_format=True),
+        WoEEncoder(ignore_format=True),
+        PRatioEncoder(ignore_format=True),
     ]
 )
 def test_sklearn_compatible_encoder(estimator, check):

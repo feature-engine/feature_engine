@@ -146,9 +146,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
             raise ValueError("drop_last takes only True or False")
 
         if not isinstance(ignore_format, bool):
-            raise ValueError(
-                "ignore_format takes only booleans True and False"
-            )
+            raise ValueError("ignore_format takes only booleans True and False")
 
         self.top_categories = top_categories
         self.drop_last = drop_last

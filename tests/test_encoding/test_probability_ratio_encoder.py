@@ -184,7 +184,8 @@ def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
 def test_logratio_on_numerical_variables(df_enc_numeric):
     # test ignore_format
     encoder = PRatioEncoder(
-        encoding_method="log_ratio", variables=None, ignore_format=True)
+        encoding_method="log_ratio", variables=None, ignore_format=True
+    )
 
     encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
     X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
@@ -252,4 +253,3 @@ def test_logratio_on_numerical_variables(df_enc_numeric):
     # test error raise
     with pytest.raises(ValueError):
         PRatioEncoder(encoding_method="other")
-

@@ -235,4 +235,3 @@ def test_on_numerical_variables(df_enc_numeric):
     assert encoder.n_features_in_ == 2
     # transform params
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
-

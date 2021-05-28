@@ -43,7 +43,7 @@ def test_regression(df_enc):
 
     transf_df = df_enc.copy()
     transf_df["var_A"] = (
-            [0.034348] * 6 + [-0.024679] * 10 + [-0.075473] * 4
+        [0.034348] * 6 + [-0.024679] * 10 + [-0.075473] * 4
     )  # Tree: var_A <= 1.5 -> 0.25 else 0.5
     transf_df["var_B"] = [0.044806] * 10 + [-0.079066] * 10
     pd.testing.assert_frame_equal(X.round(6), transf_df[["var_A", "var_B"]])
@@ -85,13 +85,14 @@ def test_regression_ignore_format(df_enc_numeric):
     random = np.random.RandomState(42)
     y = random.normal(0, 0.1, len(df_enc_numeric))
     encoder = DecisionTreeEncoder(
-        regression=True, random_state=random, ignore_format=True)
+        regression=True, random_state=random, ignore_format=True
+    )
     encoder.fit(df_enc_numeric[["var_A", "var_B"]], y)
     X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
 
     transf_df = df_enc_numeric.copy()
     transf_df["var_A"] = (
-            [0.034348] * 6 + [-0.024679] * 10 + [-0.075473] * 4
+        [0.034348] * 6 + [-0.024679] * 10 + [-0.075473] * 4
     )  # Tree: var_A <= 1.5 -> 0.25 else 0.5
     transf_df["var_B"] = [0.044806] * 10 + [-0.079066] * 10
     pd.testing.assert_frame_equal(X.round(6), transf_df[["var_A", "var_B"]])

@@ -188,9 +188,7 @@ def test_user_enters_1_variable_ignore_format(df_enc_numeric):
     assert encoder.variables == ["var_A"]
     # test fit attr
     assert encoder.variables_ == ["var_A"]
-    assert encoder.encoder_dict_ == {
-        "var_A": {1: 0.3333333333333333, 2: 0.2, 3: 0.5}
-    }
+    assert encoder.encoder_dict_ == {"var_A": {1: 0.3333333333333333, 2: 0.2, 3: 0.5}}
     assert encoder.n_features_in_ == 2
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])

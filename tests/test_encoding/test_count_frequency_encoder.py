@@ -118,7 +118,7 @@ def test_error_if_encoding_method_not_permitted_value():
 
 
 def test_error_if_input_df_contains_categories_not_present_in_fit_df(
-        df_enc, df_enc_rare
+    df_enc, df_enc_rare
 ):
     # test case 3: when dataset to be transformed contains categories not present in
     # training dataset
@@ -151,7 +151,8 @@ def test_raises_non_fitted_error(df_enc):
 
 def test_ignore_variable_format_with_frequency(df_vartypes):
     encoder = CountFrequencyEncoder(
-        encoding_method="frequency", variables=None, ignore_format=True)
+        encoding_method="frequency", variables=None, ignore_format=True
+    )
     X = encoder.fit_transform(df_vartypes)
 
     # expected output
@@ -177,7 +178,8 @@ def test_ignore_variable_format_with_frequency(df_vartypes):
 
 def test_column_names_are_numbers(df_numeric_columns):
     encoder = CountFrequencyEncoder(
-        encoding_method="frequency", variables=[0, 1, 2, 3], ignore_format=True)
+        encoding_method="frequency", variables=[0, 1, 2, 3], ignore_format=True
+    )
     X = encoder.fit_transform(df_numeric_columns)
 
     # expected output

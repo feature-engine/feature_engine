@@ -134,9 +134,7 @@ class WoEEncoder(BaseCategoricalTransformer):
     ) -> None:
 
         if not isinstance(ignore_format, bool):
-            raise ValueError(
-                "ignore_format takes only booleans True and False"
-            )
+            raise ValueError("ignore_format takes only booleans True and False")
 
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format

@@ -97,7 +97,8 @@ def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
 def test_ordered_encoding_1_variable_ignore_format(df_enc_numeric):
 
     encoder = OrdinalEncoder(
-        encoding_method="ordered", variables=["var_A"], ignore_format=True)
+        encoding_method="ordered", variables=["var_A"], ignore_format=True
+    )
     encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
     X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
 
@@ -119,7 +120,8 @@ def test_ordered_encoding_1_variable_ignore_format(df_enc_numeric):
 def test_arbitrary_encoding_automatically_find_variables_ignore_format(df_enc_numeric):
 
     encoder = OrdinalEncoder(
-        encoding_method="arbitrary", variables=None, ignore_format=True)
+        encoding_method="arbitrary", variables=None, ignore_format=True
+    )
     X = encoder.fit_transform(df_enc_numeric[["var_A", "var_B"]])
 
     # expected output

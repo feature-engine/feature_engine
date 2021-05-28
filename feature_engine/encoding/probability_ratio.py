@@ -120,9 +120,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
             )
 
         if not isinstance(ignore_format, bool):
-            raise ValueError(
-                "ignore_format takes only booleans True and False"
-            )
+            raise ValueError("ignore_format takes only booleans True and False")
 
         self.encoding_method = encoding_method
         self.variables = _check_input_parameter_variables(variables)

@@ -117,9 +117,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
             raise ValueError("replace_with takes only strings as values.")
 
         if not isinstance(ignore_format, bool):
-            raise ValueError(
-                "ignore_format takes only booleans True and False"
-            )
+            raise ValueError("ignore_format takes only booleans True and False")
 
         self.tol = tol
         self.n_categories = n_categories
