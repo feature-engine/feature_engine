@@ -18,13 +18,17 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
     be replaced by 10. Alternatively, if 10% of the observations are blue, blue
     will be replaced by 0.1.
 
-    The CountFrequencyEncoder() will encode only categorical variables
-    (type 'object'). A list of variables to encode can be passed as argument.
+    The CountFrequencyEncoder() will encode only categorical variables by default
+    (type 'object' or 'categorical'). You can pass a list of variables to encode.
     Alternatively, the encoder will find and encode all categorical variables
-    (object type).
+    (type 'object' or 'categorical').
+
+    With `ignore_format=True` you have the option to encode numerical variables as well.
+    The procedure is identical, you can either enter the list of variables to encode, or
+    the transformer will automatically select all variables.
 
     The encoder first maps the categories to the counts or frequencies for each
-    variable (fit). The encoder then replaces the categories by those mapped numbers
+    variable (fit). The encoder then replaces the categories with those numbers
     (transform).
 
     Parameters
@@ -38,7 +42,16 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
 
     variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all object type variables.
+        encoder will find and transform all variables of type object or categorical by
+        default. You can also make the transformer accept numerical variables, see the
+        next parameter.
+
+    ignore_format: bool, default=False
+        Whether the format in which the categorical variables are cast should be
+        ignored. If false, the encoder will automatically select variables of type
+        object or categorical, or check that the variables entered by the user are of
+        type object or categorical. If True, the encoder will select all variables or
+        accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
@@ -77,15 +90,21 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
         self,
         encoding_method: str = "count",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        ignore_format: bool = False,
     ) -> None:
 
         if encoding_method not in ["count", "frequency"]:
             raise ValueError(
                 "encoding_method takes only values 'count' and 'frequency'"
             )
+        if not isinstance(ignore_format, bool):
+            raise ValueError(
+                "ignore_format takes only booleans True and False"
+            )
 
         self.encoding_method = encoding_method
         self.variables = _check_input_parameter_variables(variables)
+        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

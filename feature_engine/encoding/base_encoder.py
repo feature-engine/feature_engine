@@ -11,7 +11,10 @@ from feature_engine.dataframe_checks import (
     _is_dataframe,
 )
 from feature_engine.validation import _return_tags
-from feature_engine.variable_manipulation import _find_or_check_categorical_variables
+from feature_engine.variable_manipulation import (
+    _find_or_check_categorical_variables,
+    _find_all_variables,
+)
 
 
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
@@ -47,11 +50,16 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # find categorical variables or check variables entered by user are object
-        self.variables_: List[Union[str, int]] = _find_or_check_categorical_variables(
-            X, self.variables
-        )
-
+        if not self.ignore_format:
+            # find categorical variables or check variables entered by user are object
+            self.variables_: List[Union[str, int]] = _find_or_check_categorical_variables(
+                X, self.variables
+            )
+        else:
+            # select all variables or check variables entered by the user
+            self.variables_: List[Union[str, int]] = _find_all_variables(
+                X, self.variables
+            )
         # check if dataset contains na
         _check_contains_na(X, self.variables_)
 

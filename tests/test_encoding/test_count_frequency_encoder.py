@@ -118,7 +118,7 @@ def test_error_if_encoding_method_not_permitted_value():
 
 
 def test_error_if_input_df_contains_categories_not_present_in_fit_df(
-    df_enc, df_enc_rare
+        df_enc, df_enc_rare
 ):
     # test case 3: when dataset to be transformed contains categories not present in
     # training dataset
@@ -147,3 +147,55 @@ def test_raises_non_fitted_error(df_enc):
     with pytest.raises(NotFittedError):
         encoder = CountFrequencyEncoder()
         encoder.transform(df_enc)
+
+
+def test_ignore_variable_format_with_frequency(df_vartypes):
+    encoder = CountFrequencyEncoder(
+        encoding_method="frequency", variables=None, ignore_format=True)
+    X = encoder.fit_transform(df_vartypes)
+
+    # expected output
+    transf_df = {
+        "Name": [0.25, 0.25, 0.25, 0.25],
+        "City": [0.25, 0.25, 0.25, 0.25],
+        "Age": [0.25, 0.25, 0.25, 0.25],
+        "Marks": [0.25, 0.25, 0.25, 0.25],
+        "dob": [0.25, 0.25, 0.25, 0.25],
+    }
+
+    transf_df = pd.DataFrame(transf_df)
+
+    # init params
+    assert encoder.encoding_method == "frequency"
+    assert encoder.variables is None
+    # fit params
+    assert encoder.variables_ == ["Name", "City", "Age", "Marks", "dob"]
+    assert encoder.n_features_in_ == 5
+    # transform params
+    pd.testing.assert_frame_equal(X, transf_df)
+
+
+def test_column_names_are_numbers(df_numeric_columns):
+    encoder = CountFrequencyEncoder(
+        encoding_method="frequency", variables=[0, 1, 2, 3], ignore_format=True)
+    X = encoder.fit_transform(df_numeric_columns)
+
+    # expected output
+    transf_df = {
+        0: [0.25, 0.25, 0.25, 0.25],
+        1: [0.25, 0.25, 0.25, 0.25],
+        2: [0.25, 0.25, 0.25, 0.25],
+        3: [0.25, 0.25, 0.25, 0.25],
+        4: pd.date_range("2020-02-24", periods=4, freq="T"),
+    }
+
+    transf_df = pd.DataFrame(transf_df)
+
+    # init params
+    assert encoder.encoding_method == "frequency"
+    assert encoder.variables == [0, 1, 2, 3]
+    # fit params
+    assert encoder.variables_ == [0, 1, 2, 3]
+    assert encoder.n_features_in_ == 5
+    # transform params
+    pd.testing.assert_frame_equal(X, transf_df)
