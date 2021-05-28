@@ -151,3 +151,112 @@ def test_raises_non_fitted_error(df_enc):
     with pytest.raises(NotFittedError):
         imputer = OrdinalEncoder()
         imputer.transform(df_enc)
+
+
+def test_user_enters_1_variable_ignore_format(df_enc_numeric):
+    # test case 1: 1 variable
+    encoder = MeanEncoder(variables=["var_A"], ignore_format=True)
+    encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
+    X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
+
+    # expected output
+    transf_df = df_enc_numeric.copy()
+    transf_df["var_A"] = [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+    ]
+
+    # test init params
+    assert encoder.variables == ["var_A"]
+    # test fit attr
+    assert encoder.variables_ == ["var_A"]
+    assert encoder.encoder_dict_ == {
+        "var_A": {1: 0.3333333333333333, 2: 0.2, 3: 0.5}
+    }
+    assert encoder.n_features_in_ == 2
+    # test transform output
+    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+
+
+def test_automatically_find_variables_ignore_format(df_enc_numeric):
+    # test case 2: automatically select variables
+    encoder = MeanEncoder(variables=None, ignore_format=True)
+    encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
+    X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
+
+    # expected output
+    transf_df = df_enc_numeric.copy()
+    transf_df["var_A"] = [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+    ]
+    transf_df["var_B"] = [
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333,
+        0.5,
+        0.5,
+        0.5,
+        0.5,
+    ]
+
+    # test init params
+    assert encoder.variables is None
+    # test fit attr
+    assert encoder.variables_ == ["var_A", "var_B"]
+    assert encoder.encoder_dict_ == {
+        "var_A": {1: 0.3333333333333333, 2: 0.2, 3: 0.5},
+        "var_B": {1: 0.2, 2: 0.3333333333333333, 3: 0.5},
+    }
+    assert encoder.n_features_in_ == 2
+    # test transform output
+    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])

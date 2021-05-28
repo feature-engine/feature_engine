@@ -129,6 +129,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     sklearn.ensemble.DecisionTreeClassifier
     feature_engine.discretisation.DecisionTreeDiscretiser
     feature_engine.encoding.RareLabelEncoder
+    feature_engine.encoding.OrdinalEncoder
 
     References
     ----------
