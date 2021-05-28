@@ -15,22 +15,31 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 class DecisionTreeEncoder(BaseCategoricalTransformer):
     """
     The DecisionTreeEncoder() encodes categorical variables with predictions
-    of a decision tree model.
+    of a decision tree.
 
-    Each categorical feature is recoded by training a decision tree, typically of
-    limited depth (2, 3 or 4) using that feature alone, and let the tree directly
-    predict the target. The probabilistic predictions of this decision tree are used as
-    the new values of the original categorical feature, that now is linearly (or at
-    least monotonically) correlated with the target.
+    The encoder first fits a decision tree using a single feature and the target (fit).
+    And  then replaces the values of the original feature by the predictions of the
+    tree (transform). The trainsformer will train a Decision tree per every feature to
+    encode.
 
-    In practice, the categorical variable will be first encoded into integers with the
-    OrdinalCategoricalEncoder(). The integers can be assigned arbitrarily to the
+    The motivation is to try and create monotonic relationships between the categorical
+    variables and the target.
+
+    Under the hood, the categorical variable will be first encoded into integers with
+    the OrdinalCategoricalEncoder(). The integers can be assigned arbitrarily to the
     categories or following the mean value of the target in each category. Then a
     decision tree will fit the resulting numerical variable to predict the target
     variable. Finally, the original categorical variable values will be replaced by the
     predictions of the decision tree.
 
     Note that a decision tree is fit per every single categorical variable to encode.
+
+    The DecisionTreeEncoder() will encode only categorical variables by default
+    (type 'object' or 'categorical'). You can pass a list of variables to encode or the
+    encoder will find and encode all categorical variables. But with
+    `ignore_format=True` you have the option to encode numerical variables as well. In
+    this case, you can either enter the list of variables to encode, or the transformer
+    will automatically select all variables.
 
     Parameters
     ----------
@@ -73,7 +82,16 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
-        encoder will find and select all object type variables.
+        encoder will find and transform all variables of type object or categorical by
+        default. You can also make the transformer accept numerical variables, see the
+        next parameter.
+
+    ignore_format: bool, default=False
+        Whether the format in which the categorical variables are cast should be
+        ignored. If false, the encoder will automatically select variables of type
+        object or categorical, or check that the variables entered by the user are of
+        type object or categorical. If True, the encoder will select all variables or
+        accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
@@ -128,6 +146,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         regression: bool = True,
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        ignore_format: bool = False,
     ) -> None:
 
         self.encoding_method = encoding_method
@@ -137,6 +156,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         self.param_grid = param_grid
         self.random_state = random_state
         self.variables = _check_input_parameter_variables(variables)
+        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -176,7 +196,9 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
         # initialize categorical encoder
         cat_encoder = OrdinalEncoder(
-            encoding_method=self.encoding_method, variables=self.variables_
+            encoding_method=self.encoding_method,
+            variables=self.variables_,
+            ignore_format=self.ignore_format,
         )
 
         # initialize decision tree discretiser
