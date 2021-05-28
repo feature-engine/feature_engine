@@ -40,9 +40,14 @@ class PRatioEncoder(BaseCategoricalTransformer):
     Thus, if p(0) = 0 for the ratio encoder, or either p(0) = 0 or p(1) = 0 for
     log_ratio, in any of the variables, the encoder will return an error.
 
-    The encoder will encode only categorical variables (type 'object'). A list
-    of variables can be passed as an argument. If no variables are passed the encoder
-    will find and encode all categorical variables (object type).
+    The encoder will encode only categorical variables by default (type 'object' or
+    'categorical'). You can pass a list of variables to encode. Alternatively, the
+    encoder will find and encode all categorical variables (type 'object' or
+    'categorical').
+
+    With `ignore_format=True` you have the option to encode numerical variables as well.
+    The procedure is identical, you can either enter the list of variables to encode, or
+    the transformer will automatically select all variables.
 
     The encoder first maps the categories to the numbers for each variable (fit). The
     encoder then transforms the categories into the mapped numbers (transform).
@@ -57,8 +62,17 @@ class PRatioEncoder(BaseCategoricalTransformer):
         'log_ratio' : log probability ratio
 
     variables: list, default=None
-        The list of categorical variables to encode. If None, the encoder will find and
-        select all object type variables.
+        The list of categorical variables that will be encoded. If None, the
+        encoder will find and transform all variables of type object or categorical by
+        default. You can also make the transformer accept numerical variables, see the
+        next parameter.
+
+    ignore_format: bool, default=False
+        Whether the format in which the categorical variables are cast should be
+        ignored. If false, the encoder will automatically select variables of type
+        object or categorical, or check that the variables entered by the user are of
+        type object or categorical. If True, the encoder will select all variables or
+        accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
@@ -97,6 +111,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
         self,
         encoding_method: str = "ratio",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        ignore_format: bool = False,
     ) -> None:
 
         if encoding_method not in ["ratio", "log_ratio"]:
@@ -104,8 +119,14 @@ class PRatioEncoder(BaseCategoricalTransformer):
                 "encoding_method takes only values 'ratio' and 'log_ratio'"
             )
 
+        if not isinstance(ignore_format, bool):
+            raise ValueError(
+                "ignore_format takes only booleans True and False"
+            )
+
         self.encoding_method = encoding_method
         self.variables = _check_input_parameter_variables(variables)
+        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """

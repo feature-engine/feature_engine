@@ -179,3 +179,77 @@ def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
         encoder = PRatioEncoder(encoding_method="ratio")
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         encoder.transform(df_enc_na)
+
+
+def test_logratio_on_numerical_variables(df_enc_numeric):
+    # test ignore_format
+    encoder = PRatioEncoder(
+        encoding_method="log_ratio", variables=None, ignore_format=True)
+
+    encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
+    X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
+
+    # transformed dataframe
+    transf_df = df_enc_numeric.copy()
+    transf_df["var_A"] = [
+        -0.6931471805599454,
+        -0.6931471805599454,
+        -0.6931471805599454,
+        -0.6931471805599454,
+        -0.6931471805599454,
+        -0.6931471805599454,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ]
+    transf_df["var_B"] = [
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -1.3862943611198906,
+        -0.6931471805599454,
+        -0.6931471805599454,
+        -0.6931471805599454,
+        -0.6931471805599454,
+        -0.6931471805599454,
+        -0.6931471805599454,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ]
+
+    # init params
+    assert encoder.encoding_method == "log_ratio"
+    assert encoder.variables is None
+    # fit params
+    assert encoder.variables_ == ["var_A", "var_B"]
+    assert encoder.encoder_dict_ == {
+        "var_A": {1: -0.6931471805599454, 2: -1.3862943611198906, 3: 0.0},
+        "var_B": {1: -1.3862943611198906, 2: -0.6931471805599454, 3: 0.0},
+    }
+    assert encoder.n_features_in_ == 2
+    # transform params
+    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+
+    # test error raise
+    with pytest.raises(ValueError):
+        PRatioEncoder(encoding_method="other")
+
