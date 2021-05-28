@@ -40,9 +40,14 @@ class OneHotEncoder(BaseCategoricalTransformer):
     Observations that do not show any of these popular categories, will have 0 in all
     the binary variables.
 
-    The encoder will encode only categorical variables (type 'object'). A list
-    of variables can be passed as an argument. If no variables are passed as
-    argument, the encoder will find and encode categorical variables (object type).
+    The encoder will encode only categorical variables by default (type 'object' or
+    'categorical'). You can pass a list of variables to encode. Alternatively, the
+    encoder will find and encode all categorical variables (type 'object' or
+    'categorical').
+
+    With `ignore_format=True` you have the option to encode numerical variables as well.
+    The procedure is identical, you can either enter the list of variables to encode, or
+    the transformer will automatically select all variables.
 
     The encoder first finds the categories to be encoded for each variable (fit). The
     encoder then creates one dummy variable per category for each variable
@@ -69,14 +74,23 @@ class OneHotEncoder(BaseCategoricalTransformer):
         those popular categories and the rest will be ignored, i.e., they will show the
         value 0 in all the binary variables.
 
-    variables: list. default=None
-        The list of categorical variables to encode. If None, the encoder will find and
-        select all object type variables in the train set.
-
     drop_last: boolean, default=False
         Only used if `top_categories = None`. It indicates whether to create dummy
         variables for all the categories (k dummies), or if set to `True`, it will
         ignore the last binary variable of the list (k-1 dummies).
+
+    variables: list, default=None
+        The list of categorical variables that will be encoded. If None, the
+        encoder will find and transform all variables of type object or categorical by
+        default. You can also make the transformer accept numerical variables, see the
+        next parameter.
+
+    ignore_format: bool, default=False
+        Whether the format in which the categorical variables are cast should be
+        ignored. If false, the encoder will automatically select variables of type
+        object or categorical, or check that the variables entered by the user are of
+        type object or categorical. If True, the encoder will select all variables or
+        accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
@@ -120,8 +134,9 @@ class OneHotEncoder(BaseCategoricalTransformer):
     def __init__(
         self,
         top_categories: Optional[int] = None,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
         drop_last: bool = False,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        ignore_format: bool = False,
     ) -> None:
 
         if top_categories and not isinstance(top_categories, int):
@@ -130,9 +145,15 @@ class OneHotEncoder(BaseCategoricalTransformer):
         if not isinstance(drop_last, bool):
             raise ValueError("drop_last takes only True or False")
 
+        if not isinstance(ignore_format, bool):
+            raise ValueError(
+                "ignore_format takes only booleans True and False"
+            )
+
         self.top_categories = top_categories
         self.drop_last = drop_last
         self.variables = _check_input_parameter_variables(variables)
+        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
