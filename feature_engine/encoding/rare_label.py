@@ -55,8 +55,8 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         If None, all categories with frequency above the tolerance (tol) will be
         considered frequent.
 
-    replace_with: string, default='Rare'
-        The category name that will be used to replace infrequent categories.
+    replace_with: string, intege or float, default='Rare'
+        The value that will be used to replace infrequent categories.
 
     variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
@@ -98,7 +98,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         tol: float = 0.05,
         n_categories: int = 10,
         max_n_categories: Optional[int] = None,
-        replace_with: str = "Rare",
+        replace_with: Union[str, int, float] = "Rare",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
     ) -> None:
@@ -112,9 +112,6 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         if max_n_categories is not None:
             if max_n_categories < 0 or not isinstance(max_n_categories, int):
                 raise ValueError("max_n_categories takes only positive integer numbers")
-
-        if not isinstance(replace_with, str):
-            raise ValueError("replace_with takes only strings as values.")
 
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")

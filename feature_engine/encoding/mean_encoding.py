@@ -125,6 +125,9 @@ class MeanEncoder(BaseCategoricalTransformer):
 
         X = self._check_fit_input_and_variables(X)
 
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
         temp = pd.concat([X, y], axis=1)
         temp.columns = list(X.columns) + ["target"]
 

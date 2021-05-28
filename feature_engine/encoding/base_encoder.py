@@ -93,11 +93,11 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # check that input is a dataframe
         X = _is_dataframe(X)
 
-        # check if dataset contains na
-        _check_contains_na(X, self.variables_)
-
         # Check input data contains same number of columns as df used to fit
         _check_input_matches_training_df(X, self.n_features_in_)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables_)
 
         return X
 
@@ -190,4 +190,9 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         return X
 
     def _more_tags(self):
-        return _return_tags()
+        tags_dict = _return_tags()
+        # the below test will fail because sklearn requires to check for inf, but
+        # you can't check inf of categorical data, numpy returns and error.
+        # so we need to leave without this test
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        return tags_dict

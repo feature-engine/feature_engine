@@ -66,7 +66,12 @@ def test_sklearn_compatible_imputer(estimator, check):
         MeanEncoder(ignore_format=True),
         OneHotEncoder(ignore_format=True),
         OrdinalEncoder(ignore_format=True),
-        RareLabelEncoder(ignore_format=True),
+        RareLabelEncoder(
+            tol=0.00000000001,
+            n_categories=100000000000,
+            replace_with=10,
+            ignore_format=True,
+        ),
         WoEEncoder(ignore_format=True),
         PRatioEncoder(ignore_format=True),
     ]

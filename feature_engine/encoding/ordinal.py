@@ -152,6 +152,9 @@ class OrdinalEncoder(BaseCategoricalTransformer):
             if y is None:
                 raise ValueError("Please provide a target y for this encoding method")
 
+            if not isinstance(y, pd.Series):
+                y = pd.Series(y)
+
             temp = pd.concat([X, y], axis=1)
             temp.columns = list(X.columns) + ["target"]
 
