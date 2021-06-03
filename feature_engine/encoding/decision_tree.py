@@ -19,7 +19,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     The encoder first fits a decision tree using a single feature and the target (fit).
     And  then replaces the values of the original feature by the predictions of the
-    tree (transform). The trainsformer will train a Decision tree per every feature to
+    tree (transform). The transformer will train a Decision tree per every feature to
     encode.
 
     The motivation is to try and create monotonic relationships between the categorical
@@ -31,8 +31,6 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     decision tree will fit the resulting numerical variable to predict the target
     variable. Finally, the original categorical variable values will be replaced by the
     predictions of the decision tree.
-
-    Note that a decision tree is fit per every single categorical variable to encode.
 
     The DecisionTreeEncoder() will encode only categorical variables by default
     (type 'object' or 'categorical'). You can pass a list of variables to encode or the
@@ -177,8 +175,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         ------
         TypeError
             - If the input is not a Pandas DataFrame.
-            - If any user provided variable is not categorical (unless ignore_format is
-        True)
+            - f user enters non-categorical variables (unless ignore_format is True)
         ValueError
             - If there are no categorical variables in the df or the df is empty
             - If the variable(s) contain null values

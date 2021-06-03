@@ -174,8 +174,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
         ------
         TypeError
             - If the input is not a Pandas DataFrame.
-            - If any user provided variable is not categorical (unless ignore_format is
-        True)
+            - f user enters non-categorical variables (unless ignore_format is True)
         ValueError
             - If there are no categorical variables in the df or the df is empty
             - If the variable(s) contain null values
@@ -228,7 +227,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
             If the input is not a Pandas DataFrame
         ValueError
             - If the variable(s) contain null values.
-            - If the dataframe is not of same size as that used in fit()
+            - If dataframe has different number of features than the df used in fit()
 
         Returns
         -------

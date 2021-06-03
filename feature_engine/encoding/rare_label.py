@@ -53,7 +53,8 @@ class RareLabelEncoder(BaseCategoricalTransformer):
     max_n_categories: int, default=None
         The maximum number of categories that should be considered frequent.
         If None, all categories with frequency above the tolerance (tol) will be
-        considered frequent.
+        considered frequent. If you enter 5, only the 5 most frequent categories will
+        be retained and the rest grouped.
 
     replace_with: string, intege or float, default='Rare'
         The value that will be used to replace infrequent categories.
@@ -74,11 +75,11 @@ class RareLabelEncoder(BaseCategoricalTransformer):
     Attributes
     ----------
     encoder_dict_:
-        Dictionary with the frequent categories, i.e.., those that will be
-        kept, per variable.
+        Dictionary with the frequent categories, i.e., those that will be kept, per
+        variable.
 
     variables_:
-        The group of variables that will be transformed.
+        The variables that will be transformed.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -140,8 +141,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         ------
         TypeError
             - If the input is not a Pandas DataFrame.
-            - If any user provided variable is not categorical (unless ignore_format is
-        True)
+            - If user enters non-categorical variables (unless ignore_format is True)
         ValueError
             - If there are no categorical variables in the df or the df is empty
             - If the variable(s) contain null values
@@ -205,7 +205,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
             If the input is not a Pandas DataFrame
         ValueError
             - If the variable(s) contain null values
-            - If dataframe is not of same size as that used in fit()
+            - If user enters non-categorical variables (unless ignore_format is True)
 
         Returns
         -------

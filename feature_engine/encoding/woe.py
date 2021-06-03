@@ -142,7 +142,7 @@ class WoEEncoder(BaseCategoricalTransformer):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Learn the the WoE.
+        Learn the WoE.
 
         Parameters
         ----------
@@ -151,14 +151,13 @@ class WoEEncoder(BaseCategoricalTransformer):
             Can be the entire dataframe, not just the categorical variables.
 
         y: pandas series.
-            Target, must be binary [0,1].
+            Target, must be binary.
 
         Raises
         ------
         TypeError
             - If the input is not the Pandas DataFrame.
-            - If any user provided variables are not categorical (unless ignore_format
-        is True)
+            - If user enters non-categorical variables (unless ignore_format is True)
         ValueError
             - If there are no categorical variables in df or df is empty
             - If variable(s) contain null values.
