@@ -162,6 +162,7 @@ def test_encode_numerical_variables(df_enc_numeric):
     }
 
     transf = pd.DataFrame(transf).astype("int32")
+    X = pd.DataFrame(X).astype("int32")
 
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.n_features_in_ == 2
