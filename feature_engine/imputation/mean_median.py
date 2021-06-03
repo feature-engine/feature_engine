@@ -18,7 +18,7 @@ class MeanMedianImputer(BaseImputer):
     The MeanMedianImputer() replaces missing data by the mean or median value of the
     variable. It works only with numerical variables.
 
-    We can pass a list of variables to be imputed. Alternatively, the
+    You can pass a list of variables to be imputed. Alternatively, the
     MeanMedianImputer() will automatically select all variables of type numeric in the
     training set.
 

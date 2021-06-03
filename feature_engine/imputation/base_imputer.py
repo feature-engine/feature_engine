@@ -58,7 +58,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            If the dataframe is not of same size as that used in fit()
+            If the dataframe has different number of features than the df used in fit()
 
         Returns
         -------

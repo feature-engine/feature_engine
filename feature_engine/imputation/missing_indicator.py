@@ -13,20 +13,24 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class AddMissingIndicator(BaseImputer):
     """
-    The AddMissingIndicator() adds an additional column or binary variable that
-    indicates if data is missing.
+    The AddMissingIndicator() adds additional binary variables that indicate if data is
+    missing. It will add as many missing indicators as variables indicated by the user.
 
-    AddMissingIndicator() will add as many missing indicators as variables
-    indicated by the user, or variables with missing data in the train set.
+    Binary variables are named with the original variable name plus ‘_na’.
 
-    The AddMissingIndicator() works for both numerical and categorical variables.
-    The user can pass a list with the variables for which the missing indicators
-    should be added as a list. Alternatively, the imputer will select and add missing
-    indicators to all variables in the training set that show missing data.
+    The AddMissingIndicator() works for both numerical and categorical variables. You
+    can pass a list with the variables for which the missing indicators should be
+    added. Alternatively, the imputer will select and add missing indicators to all
+    variables in the training set.
+
+    **Note**
+    If `how=missing_only`, the imputer will add missing indicators only to those
+    variables that show missing data in during fit. These may be a subset of the
+    variables you indicated.
 
     Parameters
     ----------
-    missing_only: bool, defatult=True
+    missing_only: bool, default=True
         Indicates if missing indicators should be added to variables with missing
         data or to all variables.
 
@@ -37,12 +41,8 @@ class AddMissingIndicator(BaseImputer):
 
     variables: list, default=None
         The list of variables to be imputed. If None, the imputer will find and
-        select all variables with missing data.
+        select all variables.
 
-    **Note**
-    The transformer will first select all variables or all user entered
-    variables and if how=missing_only, it will re-select from the original group
-    only those that show missing data in during fit.
 
     Attributes
     ----------

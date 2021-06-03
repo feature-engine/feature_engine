@@ -12,36 +12,34 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class DropMissingData(BaseImputer):
     """
-    DropMissingData() will delete rows containing missing values. The DropMissingData()
-    works for both numerical and categorical variables. DropMissingData can
-    automatically select all the variables, or alternatively, all the variables with
-    missing data in the train set. Then the observations with NA will be dropped for
-    these variable groups.
+    The DropMissingData() will delete rows containing missing values. It provides
+    similar functionality to pandas.drop_na().
 
-    The user has the option to indicate for which variables the observations with NA
-    should be removed.
-
-    Parameters
-    ----------
-    missing_only: bool, default=True
-        If true, missing observations will be dropped only for the variables that were
-        seen to have NA in the train set, during fit. If False, observations with NA
-        will be dropped from all variables.
-
-    variables: list, default=None
-        The list of variables to be imputed. If None, the imputer will find and
-        select all variables with missing data.
+    It works for both numerical and categorical variables. You can enter the list of
+    variables for which missing values should be removed from the dataframe.
+    Alternatively, the imputer will automatically select all variables in the dataframe.
 
     **Note**
     The transformer will first select all variables or all user entered
     variables and if `missing_only=True`, it will re-select from the original group
     only those that show missing data in during fit, that is in the train set.
 
+    Parameters
+    ----------
+    missing_only: bool, default=True
+        If true, missing observations will be dropped only for the variables that have
+        missing data in the train set, during fit. If False, observations with NA
+        will be dropped from all variables indicated by the user.
+
+    variables: list, default=None
+        The list of variables to be imputed. If None, the imputer will find and
+        select all variables in the dataframe.
+
+
     Attributes
     ----------
     variables_:
         List of variables for which the rows with NA will be deleted.
-
     n_features_in_:
         The number of features in the train set used in fit.
 
@@ -146,7 +144,7 @@ class DropMissingData(BaseImputer):
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
-            The dataset to from which rows containing NA should be retained.
+            The dataframe to be transformed.
 
         Raises
         ------
@@ -156,7 +154,7 @@ class DropMissingData(BaseImputer):
         Returns
         -------
         X: pandas dataframe of shape = [obs_with_na, features]
-            The cdataframe portion that contains only the rows with missing values.
+            The dataframe containing only the rows with missing values.
         """
 
         X = self._check_transform_input_and_state(X)

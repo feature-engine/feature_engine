@@ -29,17 +29,18 @@ def _define_seed(
 
 class RandomSampleImputer(BaseImputer):
     """
-    The RandomSampleImputer() replaces missing data in each feature with a random
-    sample extracted from the variables in the training set.
+    The RandomSampleImputer() replaces missing data with a random sample extracted from
+    the variables in the training set.
+
     The RandomSampleImputer() works with both numerical and categorical variables.
 
     **Note**
 
-    Random samples will vary from execution to execution. This may affect
-    the results of your work. Remember to set a seed before running the
-    RandomSampleImputer().
+    The Random samples used to replace missing values may vary from execution to
+    execution. This may affect the results of your work. This, it is advisable to set a
+    seed.
 
-    There are 2 ways in which the seed can be set with the RandomSampleImputer():
+    There are 2 ways in which the seed can be set in the RandomSampleImputer():
 
     If seed = 'general' then the random_state can be either None or an integer.
     The seed will be used as the random_state and all observations will be
@@ -70,7 +71,7 @@ class RandomSampleImputer(BaseImputer):
 
     Parameters
     ----------
-    random_state : int, str or list, default=None
+    random_state: int, str or list, default=None
         The random_state can take an integer to set the seed when extracting the
         random samples. Alternatively, it can take a variable name or a list of
         variables, which values will be used to determine the seed observation per
@@ -78,7 +79,7 @@ class RandomSampleImputer(BaseImputer):
 
     seed: str, default='general'
         Indicates whether the seed should be set for each observation with missing
-        values, or if one seed should be used to impute all variables in one go.
+        values, or if one seed should be used to impute all observations in one go.
 
         **general**: one seed will be used to impute the entire dataframe. This is
         equivalent to setting the seed in pandas.sample(random_state).

@@ -15,10 +15,10 @@ from feature_engine.variable_manipulation import (
 
 class EndTailImputer(BaseImputer):
     """
-    The EndTailImputer() transforms features by replacing missing data by a value at
-    either tail of the distribution. Ti works only with numerical variables.
+    The EndTailImputer() replaces missing data by a value at either tail of the
+    distribution. It works only with numerical variables.
 
-    The user can indicate the variables to be imputed in a list. Alternatively, the
+    You can indicate the variables to be imputed in a list. Alternatively, the
     EndTailImputer() will automatically find and select all variables of type numeric.
 
     The imputer first calculates the values at the end of the distribution for each
@@ -41,7 +41,7 @@ class EndTailImputer(BaseImputer):
         - left tail: not applicable
 
     You can change the factor that multiplies the std, IQR or the maximum value
-    using the parameter 'fold'.
+    using the parameter 'fold' (we used fold=3 in the examples above).
 
     The imputer then replaces the missing data with the estimated values (transform).
 

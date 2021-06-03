@@ -39,7 +39,7 @@ class CategoricalImputer(BaseImputer):
         Desired method of imputation. Can be 'frequent' for frequent category imputation
         or 'missing' to impute with an arbitrary value.
 
-    fill_value : str, int, float, default='Missing'
+    fill_value: str, int, float, default='Missing'
         Only used when `imputation_method='missing'`. User-defined value to replace the
         missing data.
 
@@ -53,7 +53,7 @@ class CategoricalImputer(BaseImputer):
         If working with numerical variables cast as object, decide
         whether to return the variables as numeric or re-cast them as object.
         Note that pandas will re-cast them automatically as numeric after the
-        transformation with the mode.
+        transformation with the mode or with an arbitrary number.
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
@@ -122,8 +122,7 @@ class CategoricalImputer(BaseImputer):
         ------
         TypeError
             - If the input is not a Pandas DataFrame.
-            - If any user provided variable is not categorical (unless ignore_format is
-        True)
+            - If user enters non-categorical variables (unless ignore_format is True)
         ValueError
             If there are no categorical variables in the df or the df is empty
 

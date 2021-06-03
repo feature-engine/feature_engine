@@ -10,11 +10,8 @@ API Reference
 Example
 -------
 
-The CategoricalImputer() replaces missing data in categorical variables with the string
-'Missing' or by the most frequent category.
-
-It works only with categorical variables. A list of variables can be indicated, or the
-imputer will automatically select all categorical variables in the train set.
+The CategoricalImputer() replaces missing data in categorical variables with an
+arbitrary value, like the string 'Missing' or by the most frequent category.
 
 .. code:: python
 
