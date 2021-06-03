@@ -109,9 +109,9 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            - If the variable(s) contain null values.
-            - If the dataframe not of the same size as that used in fit().
-            - If some variables contain zero values.
+            - If the variable(s) contain null values
+            - If the df has different number of features than the df used in fit()
+            - If some variables contain zero values
 
         Returns
         -------

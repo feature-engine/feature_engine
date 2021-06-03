@@ -29,8 +29,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     SciPy.stats:
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.boxcox.html
 
-    The BoxCoxTransformer() works only with numerical positive variables (>=0,
-    the transformer also works for zero values).
+    The BoxCoxTransformer() works only with numerical positive variables (>=0).
 
     A list of variables can be passed as an argument. Alternatively, the
     transformer will automatically select and transform all numerical
@@ -129,9 +128,9 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            - If the variable(s) contain null values.
-            - If the dataframe not of the same size as that used in fit().
-            - If some variables contain negative values.
+            - If the variable(s) contain null values
+            - If the df has different number of features than the df used in fit()
+            - If some variables contain negative values
 
         Returns
         -------
