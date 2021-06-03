@@ -2,7 +2,8 @@ import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.estimator_checks import check_estimator
 
-from feature_engine.selection import (  # SelectByTargetMeanPerformance,
+from feature_engine.selection import (
+    SelectByTargetMeanPerformance,
     DropConstantFeatures,
     DropCorrelatedFeatures,
     DropDuplicateFeatures,
@@ -33,7 +34,7 @@ from feature_engine.selection import (  # SelectByTargetMeanPerformance,
         RecursiveFeatureElimination(
             RandomForestClassifier(random_state=1), scoring="accuracy"
         ),
-        # SelectByTargetMeanPerformance(),
+        SelectByTargetMeanPerformance(scoring="r2_score", bins=3),
     ],
 )
 def test_all_transformers(Estimator):

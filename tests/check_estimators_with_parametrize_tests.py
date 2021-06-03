@@ -122,7 +122,7 @@ def test_sklearn_compatible_transformer(estimator, check):
         RecursiveFeatureElimination(
             RandomForestClassifier(random_state=1), scoring="accuracy"
         ),
-        SelectByTargetMeanPerformance(),
+        SelectByTargetMeanPerformance(scoring="r2_score", bins=3),
     ]
 )
 def test_sklearn_compatible_selectors(estimator, check):

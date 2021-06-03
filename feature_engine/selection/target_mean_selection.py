@@ -22,11 +22,12 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class SelectByTargetMeanPerformance(BaseSelector):
     """
-    SelectByTargetMeanPerformance() selects features by using the mean value of the
-    target per category or bin, if the variable is numerical, as proxy of target
-    estimation, by determining its performance.
+    SelectByTargetMeanPerformance() uses the mean value of the target per category, or
+    interval if the variable is numerical, as proxy for target estimation. With this
+    proxy and the real target, the selector determines a performance metric for each
+    feature, and then selects them based on this performance metric.
 
-    Works with both numerical and categorical variables.
+    SelectByTargetMeanPerformance() works with numerical and categorical variables.
 
     The transformer works as follows:
 
@@ -34,29 +35,27 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
     Then, for each categorical variable:
 
-    2. Determine the mean value of the target for each category of the variable using
-    the train set (equivalent of Target mean encoding)
+    2. Determines the mean target value per category per variable using the train set
+    (equivalent of Target mean encoding)
 
-    3. Replaces the categories in the test set, by the target mean values determined
-    from the train set
+    3. Replaces the categories in the test set by the target mean values
 
-    4. Using the encoded variable calculates the roc-auc or r2
+    4. Using the encoded variables and the real target calculates the roc-auc or r2
 
     5. Selects the features which roc-auc or r2 is bigger than the indicated
     threshold
 
     For each numerical variable:
 
-    2. Discretize the variable into intervals of equal width or equal frequency
+    2. Discretizes the variable into intervals of equal width or equal frequency
     (uses the discretizers of Feature-engine)
 
-    3. Determine the mean value of the target for each interval of the
-    variable using the train set (equivalent of Target mean encoding)
+    3. Determines the mean value of the target per interval per variable using the
+    train set
 
     4. Replaces the intervals in the test set, by the target mean values
-    determined from the train set
 
-    5. Using the encoded variable calculates the roc-auc or r2
+    5. Using the encoded variable and the real target calculates the roc-auc or r2
 
     6. Selects the features which roc-auc or r2 is bigger than the indicated
     threshold
