@@ -20,7 +20,7 @@ def test_impute_with_string_missing_and_automatically_find_variables(df_na):
     assert imputer.imputation_method == "missing"
     assert imputer.variables is None
 
-    # tes fit attributes
+    # test fit attributes
     assert imputer.variables_ == ["Name", "City", "Studies"]
     assert imputer.n_features_in_ == 6
     assert imputer.imputer_dict_ == {
@@ -158,3 +158,60 @@ def test_non_fitted_error(df_na):
     with pytest.raises(NotFittedError):
         imputer = CategoricalImputer()
         imputer.transform(df_na)
+
+
+def test_impute_numerical_variables(df_na):
+    # set up transformer
+    imputer = CategoricalImputer(
+        imputation_method="missing",
+        fill_value=0,
+        variables=["Name", "City", "Studies", "Age", "Marks"],
+        ignore_format= True,
+    )
+    X_transformed = imputer.fit_transform(df_na)
+
+    # set up expected output
+    X_reference = df_na.copy()
+    X_reference = X_reference.fillna(0)
+
+    # test init params
+    assert imputer.imputation_method == "missing"
+    assert imputer.variables == ["Name", "City", "Studies", "Age", "Marks"]
+
+    # test fit attributes
+    assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks"]
+    assert imputer.n_features_in_ == 6
+
+    # test transform params
+    pd.testing.assert_frame_equal(X_transformed, X_reference)
+
+
+def test_impute_numerical_variables_with_mode(df_na):
+    # set up transformer
+    imputer = CategoricalImputer(
+        imputation_method="frequent",
+        variables=["City", "Studies", "Marks"],
+        ignore_format= True,
+    )
+    X_transformed = imputer.fit_transform(df_na)
+
+    # set up expected output
+    X_reference = df_na.copy()
+    X_reference["City"] = X_reference["City"].fillna("London")
+    X_reference["Studies"] = X_reference["Studies"].fillna("Bachelor")
+    X_reference["Marks"] = X_reference["Marks"].fillna(0.8)
+
+    # test init params
+    assert imputer.variables == ["City", "Studies", "Marks"]
+
+    # test fit attributes
+    assert imputer.variables_ == ["City", "Studies", "Marks"]
+    assert imputer.n_features_in_ == 6
+    assert imputer.imputer_dict_ == {
+        "City": "London",
+        "Studies": "Bachelor",
+        "Marks": 0.8,
+    }
+
+    # test transform output
+    pd.testing.assert_frame_equal(X_transformed, X_reference)

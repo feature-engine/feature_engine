@@ -44,11 +44,12 @@ from feature_engine.transformation import (
 from feature_engine.wrappers import SklearnTransformerWrapper
 
 
+# imputation
 @parametrize_with_checks(
     [
         MeanMedianImputer(),
         ArbitraryNumberImputer(),
-        CategoricalImputer(),
+        CategoricalImputer(ignore_format=True),
         EndTailImputer(),
         AddMissingIndicator(),
         RandomSampleImputer(),

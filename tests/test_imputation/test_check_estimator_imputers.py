@@ -1,9 +1,10 @@
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
-from feature_engine.imputation import (  # CategoricalImputer,
+from feature_engine.imputation import (
     AddMissingIndicator,
     ArbitraryNumberImputer,
+    CategoricalImputer,
     DropMissingData,
     EndTailImputer,
     MeanMedianImputer,
@@ -16,7 +17,7 @@ from feature_engine.imputation import (  # CategoricalImputer,
     [
         MeanMedianImputer(),
         ArbitraryNumberImputer(),
-        # CategoricalImputer(),
+        CategoricalImputer(ignore_format=True),
         EndTailImputer(),
         AddMissingIndicator(),
         RandomSampleImputer(),
