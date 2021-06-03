@@ -141,7 +141,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         TypeError
             - If the input is not a Pandas DataFrame.
             - If any user provided variable is not categorical (unless ignore_format is
-            True)
+        True)
         ValueError
             - If there are no categorical variables in the df or the df is empty
             - If the variable(s) contain null values

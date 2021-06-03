@@ -9,8 +9,8 @@ from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
-    _find_or_check_categorical_variables,
     _find_all_variables,
+    _find_or_check_categorical_variables,
 )
 
 
@@ -84,12 +84,12 @@ class CategoricalImputer(BaseImputer):
     """
 
     def __init__(
-            self,
-            imputation_method: str = "missing",
-            fill_value: Union[str, int, float] = "Missing",
-            variables: Union[None, int, str, List[Union[str, int]]] = None,
-            return_object: bool = False,
-            ignore_format: bool = False,
+        self,
+        imputation_method: str = "missing",
+        fill_value: Union[str, int, float] = "Missing",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_object: bool = False,
+        ignore_format: bool = False,
     ) -> None:
 
         if imputation_method not in ["missing", "frequent"]:
@@ -123,7 +123,7 @@ class CategoricalImputer(BaseImputer):
         TypeError
             - If the input is not a Pandas DataFrame.
             - If any user provided variable is not categorical (unless ignore_format is
-            True)
+        True)
         ValueError
             If there are no categorical variables in the df or the df is empty
 

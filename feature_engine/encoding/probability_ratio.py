@@ -146,7 +146,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
         TypeError
             - If the input is not the Pandas DataFrame.
             - If any user provided variables are not categorical (unless ignore_format
-            is True)
+        is True)
         ValueError
             - If there are no categorical variables in df or df is empty
             - If variable(s) contain null values.

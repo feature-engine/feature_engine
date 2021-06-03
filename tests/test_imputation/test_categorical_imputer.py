@@ -166,7 +166,7 @@ def test_impute_numerical_variables(df_na):
         imputation_method="missing",
         fill_value=0,
         variables=["Name", "City", "Studies", "Age", "Marks"],
-        ignore_format= True,
+        ignore_format=True,
     )
     X_transformed = imputer.fit_transform(df_na)
 
@@ -191,7 +191,7 @@ def test_impute_numerical_variables_with_mode(df_na):
     imputer = CategoricalImputer(
         imputation_method="frequent",
         variables=["City", "Studies", "Marks"],
-        ignore_format= True,
+        ignore_format=True,
     )
     X_transformed = imputer.fit_transform(df_na)
 
