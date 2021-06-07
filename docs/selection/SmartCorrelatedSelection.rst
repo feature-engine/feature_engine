@@ -56,11 +56,11 @@ Example
 
 ..  code:: python
 
-    tr.selected_features_
+    tr.features_to_drop_
 
 .. code:: python
 
-   ['var_1', 'var_2', 'var_3', 'var_5', 'var_10', 'var_11', 'var_8', 'var_7']
+   ['var_0', 'var_4', 'var_6', 'var_9']
 
 .. code:: python
 

@@ -78,7 +78,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         the values will be sorted.
 
     strategy: str, default = equal_width
-        whether to create the bins for discretization of numerical variables of
+        Whether to create the bins for discretization of numerical variables of
         equal width or equal frequency.
 
     cv: int, default=3

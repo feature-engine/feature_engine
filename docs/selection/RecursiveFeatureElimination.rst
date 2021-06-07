@@ -59,12 +59,12 @@ Example
      
 ..  code:: python
 
-    # get the selected features
-    tr.selected_features_
+    # the features to remove
+    tr.features_to_drop_
 
 ..  code:: python
 
-    [1, 3, 5, 2, 8, 4]
+    [0, 6, 7, 9]
     
 ..  code:: python
 

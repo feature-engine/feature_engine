@@ -41,6 +41,18 @@ dropped.
                 data.drop(['survived', 'name'], axis=1),
                 data['survived'], test_size=0.3, random_state=0)
 
+    # original columns
+    X_train.columns
+
+.. code:: python
+
+    Index(['pclass', 'sex', 'age', 'sibsp', 'parch', 'ticket', 'fare', 'cabin',
+           'embarked', 'boat', 'body', 'home.dest'],
+          dtype='object')
+
+
+.. code:: python
+
     # set up the transformer
     transformer = DropFeatures(
         features_to_drop=['sibsp', 'parch', 'ticket', 'fare', 'body', 'home.dest']

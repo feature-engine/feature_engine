@@ -24,8 +24,7 @@ class RecursiveFeatureElimination(BaseSelector):
 
     2. Rank the features according to their importance, derived from the estimator.
 
-    3. Remove one feature -the least important- and fit a new estimator with the
-    remaining features.
+    3. Remove the least important and fit a new estimator with the remaining variables.
 
     4. Calculate the performance of the new estimator.
 
@@ -72,7 +71,7 @@ class RecursiveFeatureElimination(BaseSelector):
         Performance of the model trained using the original dataset.
 
     feature_importances_ :
-        Pandas Series with the feature importance
+        Pandas Series with the feature importance (comes from step 2)
 
     performance_drifts_:
         Dictionary with the performance drift per examined feature.

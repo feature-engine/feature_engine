@@ -18,7 +18,7 @@ at random produces a decrease in the initial model performance.
     import pandas as pd
     from sklearn.datasets import load_diabetes
     from sklearn.linear_model import LinearRegression
-    from feature_engine.selection import ShuffleFeaturesSelector
+    from feature_engine.selection import SelectByShuffling
 
     # load dataset
     diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
@@ -60,11 +60,11 @@ at random produces a decrease in the initial model performance.
 
 .. code:: python
 
-    tr.selected_features_
+    tr.features_to_drop_
 
 .. code:: python
 
-    [1, 2, 3, 4, 5, 7, 8]
+    [0, 1, 3, 6, 7, 9]
 
 .. code:: python
 
