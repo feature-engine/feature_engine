@@ -128,7 +128,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
             If the input is not a Pandas DataFrame
         ValueError
             - If the variable(s) contain null values
-            - If the dataframe has different number of features than the df used in fit()
+            - If the df has different number of features than the df used in fit()
         Warning
             If after encoding, NAN were introduced.
 

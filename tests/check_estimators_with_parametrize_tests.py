@@ -1,3 +1,7 @@
+"""
+This file is only intended to help understand check_estimator tests on Feature-engine
+transformers. It is not run as part of the battery of acceptance tests.
+"""
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.utils.estimator_checks import parametrize_with_checks
