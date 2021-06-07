@@ -12,12 +12,12 @@ class CyclicalTransformer(BaseNumericalTransformer):
     The CyclicalTransformer() applies cyclical transformations to numerical
     variables. The transformations returns 2 new features per variable, according to:
 
-    var_sin = sin(variable * (2. * pi / max_value))
-    var_cos = cos(variable * (2. * pi / max_value))
+    - var_sin = sin(variable * (2. * pi / max_value))
+    - var_cos = cos(variable * (2. * pi / max_value))
 
     where max_value is the maximum value in the variable, and pi is 3.14...
 
-    **Motivation**: There are some features that are cyclic by nature. For examples the
+    **Motivation**: There are some features that are cyclic by nature. For example the
     hours of a day or the months in a year. In these cases, the higher values of
     the variable are closer to the lower values. For example, December (12) is closer
     to January (1) than to June (6). By applying a cyclical transformation we capture
