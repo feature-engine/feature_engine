@@ -76,7 +76,7 @@ See the API Reference for more details.
 
 .. code:: python
 
-	{'age': 72.03416424092518, 'fare': 174.78162171790427}
+	{'age': 67.49048447470315, 'fare': 174.78162171790441}
 
 .. code:: python
 
