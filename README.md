@@ -1,5 +1,7 @@
 # Feature Engine
 
+[![Join the chat at https://gitter.im/feature_engine/community](https://badges.gitter.im/feature_engine/community.svg)](https://gitter.im/feature_engine/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ![Python 3.6](https://img.shields.io/badge/python-3.6-success.svg)
 ![Python 3.7](https://img.shields.io/badge/python-3.7-success.svg)
 ![Python 3.8](https://img.shields.io/badge/python-3.8-success.svg)
