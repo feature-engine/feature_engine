@@ -51,7 +51,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         thus, if you wish to encode the returned bins, set return_object to True.
 
     return_boundaries: bool, default=False
-        whether the output, that is the bin names / values, should be the interval
+        Whether the output, that is the bin names / values, should be the interval
         boundaries. If True, it returns the interval boundaries. If False, it returns
         integers.
 

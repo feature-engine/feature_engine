@@ -52,7 +52,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
         thus, if you wish to encode the returned bins, set return_object to True.
 
     return_boundaries : bool, default=False
-        whether the output should be the interval boundaries. If True, it returns
+        Whether the output should be the interval boundaries. If True, it returns
         the interval boundaries. If False, it returns integers.
 
     Attributes
