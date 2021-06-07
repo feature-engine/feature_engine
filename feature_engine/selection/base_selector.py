@@ -1,12 +1,13 @@
 import numpy as np
 import pandas as pd
-from sklearn.base import TransformerMixin, BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
-    _is_dataframe,
     _check_input_matches_training_df,
+    _is_dataframe,
 )
+from feature_engine.validation import _return_tags
 
 
 def get_feature_importances(estimator):
@@ -36,7 +37,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
+        X: pandas dataframe of shape = [n_samples, n_features].
             The input dataframe.
 
         Returns
@@ -52,7 +53,13 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.input_shape_[1])
+        _check_input_matches_training_df(X, self.n_features_in_)
 
         # return the dataframe with the selected features
         return X.drop(columns=self.features_to_drop_)
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        return tags_dict

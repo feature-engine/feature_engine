@@ -26,7 +26,7 @@ def test_gaussian_capping_right_tail_with_fold_1(df_normal_dist):
         0.10727677848029868, 3
     )
     assert transformer.left_tail_caps_ == {}
-    assert transformer.input_shape_ == (100, 1)
+    assert transformer.n_features_in_ == 1
     # test transform outputs
     pd.testing.assert_frame_equal(X, df_transf)
     assert np.round(X["var"].max(), 3) <= np.round(0.10727677848029868, 3)
@@ -194,7 +194,7 @@ def test_transformer_ignores_na_in_df(df_na):
         "Marks": 0.897,
     }
     assert transformer.left_tail_caps_ == {}
-    assert transformer.input_shape_ == (8, 6)
+    assert transformer.n_features_in_ == 6
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
     assert np.round(X["Age"].max(), 3) <= np.round(38.79255087111844, 3)

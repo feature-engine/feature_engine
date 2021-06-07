@@ -2,15 +2,13 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_contains_na,
-)
+from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
+from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
 )
-from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -31,17 +29,17 @@ class DropConstantFeatures(BaseSelector):
 
     Parameters
     ----------
-    tol : float,int,  default=1
+    variables: list, default=None
+        The list of variables to evaluate. If None, the transformer will evaluate all
+        variables in the dataset.
+
+    tol: float,int,  default=1
         Threshold to detect constant/quasi-constant features. Variables showing the
         same value in a percentage of observations greater than tol will be considered
         constant / quasi-constant and dropped. If tol=1, the transformer removes
         constant variables. Else, it will remove quasi-constant variables.
 
-    variables : list, default=None
-        The list of variables to evaluate. If None, the transformer will evaluate all
-        variables in the dataset.
-
-    missing_values : str, default=raises
+    missing_values: str, default=raises
         Whether the missing values should be raised as error, ignored or included as an
         additional value of the variable, when considering if the feature is constant
         or quasi-constant. Takes values 'raise', 'ignore', 'include'.
@@ -50,6 +48,12 @@ class DropConstantFeatures(BaseSelector):
     ----------
     features_to_drop_:
         List with constant and quasi-constant features.
+
+    variables_:
+        The variables to consider for the feature selection.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -71,7 +75,7 @@ class DropConstantFeatures(BaseSelector):
     """
 
     def __init__(
-        self, tol: float = 1, variables: Variables = None, missing_values: str = "raise"
+        self, variables: Variables = None, tol: float = 1, missing_values: str = "raise"
     ):
 
         if not isinstance(tol, (float, int)) or tol < 0 or tol > 1:
@@ -92,9 +96,9 @@ class DropConstantFeatures(BaseSelector):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The input dataframe.
-        y : None
+        y: None
             y is not needed for this transformer. You can pass y or None.
 
         Returns
@@ -106,26 +110,26 @@ class DropConstantFeatures(BaseSelector):
         X = _is_dataframe(X)
 
         # find all variables or check those entered are present in the dataframe
-        self.variables = _find_all_variables(X, self.variables)
+        self.variables_ = _find_all_variables(X, self.variables)
 
         if self.missing_values == "raise":
             # check if dataset contains na
-            _check_contains_na(X, self.variables)
+            _check_contains_na(X, self.variables_)
 
         if self.missing_values == "include":
-            X[self.variables] = X[self.variables].fillna("missing_values")
+            X[self.variables_] = X[self.variables_].fillna("missing_values")
 
         # find constant features
         if self.tol == 1:
             self.features_to_drop_ = [
-                feature for feature in self.variables if X[feature].nunique() == 1
+                feature for feature in self.variables_ if X[feature].nunique() == 1
             ]
 
         # find constant and quasi-constant features
         else:
             self.features_to_drop_ = []
 
-            for feature in self.variables:
+            for feature in self.variables_:
                 # find most frequent value / category in the variable
                 predominant = (
                     (X[feature].value_counts() / float(len(X)))
@@ -143,7 +147,7 @@ class DropConstantFeatures(BaseSelector):
                 "constant or quasi-constant features. Try changing the tol value."
             )
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -154,3 +158,15 @@ class DropConstantFeatures(BaseSelector):
         return X
 
     transform.__doc__ = BaseSelector.transform.__doc__
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        tags_dict["_xfail_checks"][
+            "check_fit2d_1feature"
+        ] = "the transformer needs at least 2 columns to compare, ok to fail"
+        tags_dict["_xfail_checks"][
+            "check_fit2d_1sample"
+        ] = "the transformer raises an error when dropping all columns, ok to fail"
+        return tags_dict

@@ -1,11 +1,12 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
 import pandas as pd
-from feature_engine.variable_manipulation import _check_input_parameter_variables
+
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class EqualWidthDiscretiser(BaseNumericalTransformer):
@@ -35,27 +36,35 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
     Parameters
     ----------
-    bins : int, default=10
-        Desired number of equal width intervals / bins.
-
-    variables : list
+    variables: list, default=None
         The list of numerical variables to transform. If None, the
         discretiser will automatically select all numerical type variables.
 
-    return_object : bool, default=False
-        Whether the numbers in the discrete variable should be returned as
-        numeric or as object. The decision should be made by the user based on
-        whether they would like to proceed the engineering of the variable as
-        if it was numerical or categorical.
+    bins: int, default=10
+        Desired number of equal width intervals / bins.
+
+    return_object: bool, default=False
+        Whether the the discrete variable should be returned casted as numeric or as
+        object. If you would like to proceed with the engineering of the variable as if
+        it was categorical, use True. Alternatively, keep the default to False.
+
+        Categorical encoders in Feature-engine work only with variables of type object,
+        thus, if you wish to encode the returned bins, set return_object to True.
 
     return_boundaries : bool, default=False
-        whether the output should be the interval boundaries. If True, it returns
+        Whether the output should be the interval boundaries. If True, it returns
         the interval boundaries. If False, it returns integers.
 
     Attributes
     ----------
     binner_dict_:
         Dictionary with the interval limits per variable.
+
+    variables_:
+         The variables to be discretised.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -83,8 +92,8 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
     def __init__(
         self,
-        bins: int = 10,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        bins: int = 10,
         return_object: bool = False,
         return_boundaries: bool = False,
     ) -> None:
@@ -110,10 +119,10 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the variables
             to be transformed.
-        y : None
+        y: None
             y is not needed in this encoder. You can pass y or None.
 
         Raises
@@ -136,7 +145,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
         # fit
         self.binner_dict_ = {}
 
-        for var in self.variables:
+        for var in self.variables_:
             tmp, bins = pd.cut(
                 x=X[var], bins=self.bins, retbins=True, duplicates="drop"
             )
@@ -147,7 +156,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
             bins[len(bins) - 1] = float("inf")
             self.binner_dict_[var] = bins
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -157,7 +166,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Raises
@@ -170,7 +179,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The transformed data with the discrete variables.
         """
 
@@ -179,17 +188,17 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
         # transform variables
         if self.return_boundaries:
-            for feature in self.variables:
+            for feature in self.variables_:
                 X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
 
         else:
-            for feature in self.variables:
+            for feature in self.variables_:
                 X[feature] = pd.cut(
                     X[feature], self.binner_dict_[feature], labels=False
                 )
 
             # return object
             if self.return_object:
-                X[self.variables] = X[self.variables].astype("O")
+                X[self.variables_] = X[self.variables_].astype("O")
 
         return X

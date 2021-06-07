@@ -1,10 +1,10 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -29,17 +29,18 @@ def _define_seed(
 
 class RandomSampleImputer(BaseImputer):
     """
-    The RandomSampleImputer() replaces missing data in each feature with a random
-    sample extracted from the variables in the training set.
+    The RandomSampleImputer() replaces missing data with a random sample extracted from
+    the variables in the training set.
+
     The RandomSampleImputer() works with both numerical and categorical variables.
 
     **Note**
 
-    Random samples will vary from execution to execution. This may affect
-    the results of your work. Remember to set a seed before running the
-    RandomSampleImputer().
+    The Random samples used to replace missing values may vary from execution to
+    execution. This may affect the results of your work. This, it is advisable to set a
+    seed.
 
-    There are 2 ways in which the seed can be set with the RandomSampleImputer():
+    There are 2 ways in which the seed can be set in the RandomSampleImputer():
 
     If seed = 'general' then the random_state can be either None or an integer.
     The seed will be used as the random_state and all observations will be
@@ -70,15 +71,15 @@ class RandomSampleImputer(BaseImputer):
 
     Parameters
     ----------
-    random_state : int, str or list, default=None
+    random_state: int, str or list, default=None
         The random_state can take an integer to set the seed when extracting the
         random samples. Alternatively, it can take a variable name or a list of
         variables, which values will be used to determine the seed observation per
         observation.
 
-    seed : str, default='general'
+    seed: str, default='general'
         Indicates whether the seed should be set for each observation with missing
-        values, or if one seed should be used to impute all variables in one go.
+        values, or if one seed should be used to impute all observations in one go.
 
         **general**: one seed will be used to impute the entire dataframe. This is
         equivalent to setting the seed in pandas.sample(random_state).
@@ -87,19 +88,25 @@ class RandomSampleImputer(BaseImputer):
         of the variables indicated in the random_state for that particular
         observation.
 
-    seeding_method : str, default='add'
+    seeding_method: str, default='add'
         If more than one variable are indicated to seed the random sampling per
         observation, you can choose to combine those values as an addition or a
         multiplication. Can take the values 'add' or 'multiply'.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be imputed. If None, the imputer will select
         all variables in the train set.
 
     Attributes
     ----------
-    X_ :
+    X_:
         Copy of the training dataframe from which to extract the random samples.
+
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -113,10 +120,10 @@ class RandomSampleImputer(BaseImputer):
 
     def __init__(
         self,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
         random_state: Union[None, int, str, List[Union[str, int]]] = None,
         seed: str = "general",
         seeding_method: str = "add",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if seed not in ["general", "observation"]:
@@ -151,11 +158,11 @@ class RandomSampleImputer(BaseImputer):
         Parameters
         ----------
 
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset. Only a copy of the indicated variables will be stored
             in the transformer.
 
-        y : None
+        y: None
             y is not needed in this imputation. You can pass None or y.
 
         Raises
@@ -173,12 +180,12 @@ class RandomSampleImputer(BaseImputer):
 
         # find variables to impute
         if not self.variables:
-            self.variables = [var for var in X.columns]
+            self.variables_ = [var for var in X.columns]
         else:
-            self.variables = self.variables
+            self.variables_ = self.variables
 
         # take a copy of the selected variables
-        self.X_ = X[self.variables].copy()
+        self.X_ = X[self.variables_].copy()
 
         # check the variables assigned to the random state
         if self.seed == "observation":
@@ -192,7 +199,8 @@ class RandomSampleImputer(BaseImputer):
                     "There are variables assigned as random state which are not part "
                     "of the training dataframe."
                 )
-        self.input_shape_ = X.shape
+
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -203,7 +211,7 @@ class RandomSampleImputer(BaseImputer):
         Parameters
         ----------
 
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe to be transformed.
 
         Raises
@@ -213,7 +221,7 @@ class RandomSampleImputer(BaseImputer):
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe without missing values in the transformed variables.
         """
 
@@ -221,7 +229,7 @@ class RandomSampleImputer(BaseImputer):
 
         # random sampling with a general seed
         if self.seed == "general":
-            for feature in self.variables:
+            for feature in self.variables_:
                 if X[feature].isnull().sum() > 0:
                     # determine number of data points to extract at random
                     n_samples = X[feature].isnull().sum()
@@ -241,7 +249,7 @@ class RandomSampleImputer(BaseImputer):
 
         # random sampling observation per observation
         elif self.seed == "observation" and self.random_state:
-            for feature in self.variables:
+            for feature in self.variables_:
                 if X[feature].isnull().sum() > 0:
 
                     # loop over each observation with missing data

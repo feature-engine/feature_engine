@@ -50,7 +50,7 @@ examine all numerical variables in the data set.
 
 ..  code:: python
 
-    tr.correlated_features_
+    tr.features_to_drop_
 
 .. code:: python
 

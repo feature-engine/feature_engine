@@ -4,14 +4,15 @@ import pandas as pd
 from sklearn.model_selection import cross_validate
 
 from feature_engine.dataframe_checks import (
-    _is_dataframe,
+    _check_contains_inf,
     _check_contains_na,
-)
-from feature_engine.variable_manipulation import (
-    _find_or_check_numerical_variables,
-    _check_input_parameter_variables,
+    _is_dataframe,
 )
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -38,11 +39,11 @@ class SmartCorrelatedSelection(BaseSelector):
 
     Parameters
     ----------
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         numerical variables in the dataset.
 
-    method : string, default='pearson'
+    method: string, default='pearson'
         Can take 'pearson', 'spearman' or'kendall'. It refers to the correlation method
         to be used to identify the correlated features.
 
@@ -50,15 +51,15 @@ class SmartCorrelatedSelection(BaseSelector):
         - kendall : Kendall Tau correlation coefficient
         - spearman : Spearman rank correlation
 
-    threshold : float, default=0.8
+    threshold: float, default=0.8
         The correlation threshold above which a feature will be deemed correlated with
         another one and removed from the dataset.
 
-    missing_values : str, default=ignore
+    missing_values: str, default=ignore
         Takes values 'raise' and 'ignore'. Whether the missing values should be raised
         as error or ignored when determining correlation.
 
-    selection_method : str, default= "missing_values"
+    selection_method: str, default= "missing_values"
         Takes the values "missing_values", "cardinality", "variance" and
         "model_performance".
 
@@ -74,15 +75,15 @@ class SmartCorrelatedSelection(BaseSelector):
         "model_performance": trains a machine learning model using the correlated
         feature group and retains the feature with the highest importance.
 
-    estimator : object, default = None
+    estimator: object, default = None
         A Scikit-learn estimator for regression or classification.
 
-    scoring : str, default='roc_auc'
+    scoring: str, default='roc_auc'
         Desired metric to optimise the performance of the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    cv : int, default=3
+    cv: int, default=3
         Cross-validation fold to be used to fit the estimator.
 
     Attributes
@@ -92,6 +93,12 @@ class SmartCorrelatedSelection(BaseSelector):
 
     features_to_drop_:
         The correlated features to remove from the dataset.
+
+    variables_:
+        The variables to consider for the feature selection.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -175,10 +182,10 @@ class SmartCorrelatedSelection(BaseSelector):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : pandas series. Default = None
+        y: pandas series. Default = None
             y is needed if selection_method == 'model_performance'.
 
         Returns
@@ -190,11 +197,12 @@ class SmartCorrelatedSelection(BaseSelector):
         X = _is_dataframe(X)
 
         # find all numerical variables or check those entered are in the dataframe
-        self.variables = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         if self.missing_values == "raise":
             # check if dataset contains na
-            _check_contains_na(X, self.variables)
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
         if self.selection_method == "model_performance" and y is None:
             raise ValueError("y is needed to fit the transformer")
@@ -205,7 +213,7 @@ class SmartCorrelatedSelection(BaseSelector):
         self.correlated_feature_sets_ = []
 
         # the correlation matrix
-        _correlated_matrix = X[self.variables].corr(method=self.method)
+        _correlated_matrix = X[self.variables_].corr(method=self.method)
 
         # create set of examined features, helps to determine feature combinations
         # to evaluate below
@@ -296,9 +304,10 @@ class SmartCorrelatedSelection(BaseSelector):
                 _selected_features.append(f)
 
         self.features_to_drop_ = [
-            f for f in self.variables if f not in _selected_features
+            f for f in self.variables_ if f not in _selected_features
         ]
-        self.input_shape_ = X.shape
+
+        self.n_features_in_ = X.shape[1]
 
         return self
 

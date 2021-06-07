@@ -13,7 +13,6 @@ Example
 
 .. code:: python
 
-    import numpy as np
     import pandas as pd
     from sklearn.model_selection import train_test_split
 
@@ -22,9 +21,9 @@ Example
     df = pd.DataFrame({
         'day': [6, 7, 5, 3, 1, 2, 4],
         'months': [3, 7, 9, 12, 4, 6, 12],
-        }
+        })
 
-    cyclical = CyclicalTransformer(variable=None, drop_original=True)
+    cyclical = CyclicalTransformer(variables=None, drop_original=True)
 
     X = cyclical.fit_transform(df)
 
@@ -38,7 +37,7 @@ Example
 
 .. code:: python
 
-    print(df.loc[:, ['day_sin', 'day_cos', 'months_sin', 'months_cos']].head())
+    print(X.head())
 
 .. code:: python
 

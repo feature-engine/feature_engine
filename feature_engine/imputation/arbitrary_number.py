@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 
@@ -19,12 +19,12 @@ class ArbitraryNumberImputer(BaseImputer):
     The ArbitraryNumberImputer() replaces missing data in each variable by an arbitrary
     value determined by the user. It works only with numerical variables.
 
-    We can impute all variables with the same number, in which case we need to define
+    You can impute all variables with the same number, in which case you need to define
     the variables to impute in `variables` and the imputation number in
-    `arbitrary_number`. Alternatively, we can pass a dictionary of variable and numbers
-    to use for their imputation.
+    `arbitrary_number`. You can pass a dictionary of variable and numbers to use for
+    their imputation.
 
-    For example, we can impute varA and varB with 99 like this:
+    For example, you can impute varA and varB with 99 like this:
 
     .. code-block:: python
 
@@ -35,7 +35,7 @@ class ArbitraryNumberImputer(BaseImputer):
 
         Xt = transformer.fit_transform(X)
 
-    Alternatively, we can impute varA with 1 and varB with 99 like this:
+    Alternatively, you can impute varA with 1 and varB with 99 like this:
 
     .. code-block:: python
 
@@ -47,21 +47,27 @@ class ArbitraryNumberImputer(BaseImputer):
 
     Parameters
     ----------
-    arbitrary_number : int or float, default=999
+    arbitrary_number: int or float, default=999
         The number to be used to replace missing data.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be imputed. If None, the imputer will find and
-        select all numerical type variables. This parameter is used only if
-        `imputer_dict` is None.
+        select all numerical variables. This parameter is used only if `imputer_dict`
+        is None.
 
-    imputer_dict : dict, default=None
+    imputer_dict: dict, default=None
         The dictionary of variables and the arbitrary numbers for their imputation.
 
     Attributes
     ----------
-    imputer_dict_ :
+    imputer_dict_:
         Dictionary with the values to replace NAs in each variable.
+
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -100,10 +106,10 @@ class ArbitraryNumberImputer(BaseImputer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : None
+        y: None
             y is not needed in this imputation. You can pass None or y.
 
         Raises
@@ -124,19 +130,19 @@ class ArbitraryNumberImputer(BaseImputer):
 
         # find or check for numerical variables
         if self.imputer_dict:
-            self.variables = _find_or_check_numerical_variables(
+            self.variables_ = _find_or_check_numerical_variables(
                 X, self.imputer_dict.keys()  # type: ignore
             )
         else:
-            self.variables = _find_or_check_numerical_variables(X, self.variables)
+            self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # create the imputer dictionary
         if self.imputer_dict:
             self.imputer_dict_ = self.imputer_dict
         else:
-            self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables}
+            self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables_}
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

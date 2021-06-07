@@ -13,7 +13,7 @@ def test_detect_variables_with_na(df_na):
     assert imputer.variables is None
     # fit params
     assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks"]
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.n_features_in_ == 6
     # transform outputs
     assert X_transformed.shape == (5, 6)
     assert X_transformed["Name"].shape[0] == 5
@@ -23,7 +23,7 @@ def test_detect_variables_with_na(df_na):
 def test_selelct_all_variables_with_na_when_variables_is_none(df_na):
     imputer = DropMissingData(missing_only=False, variables=None)
     X_transformed = imputer.fit_transform(df_na)
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.n_features_in_ == 6
     assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks", "dob"]
     assert X_transformed.shape == (5, 6)
     assert X_transformed[imputer.variables_].isna().sum().sum() == 0

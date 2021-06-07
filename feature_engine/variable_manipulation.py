@@ -1,6 +1,6 @@
 """Functions to select certain types of variables."""
 
-from typing import List, Union, Any
+from typing import Any, List, Union
 
 import pandas as pd
 

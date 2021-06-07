@@ -1,16 +1,20 @@
-from typing import List, Union
 import warnings
+from typing import List, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
-    _is_dataframe,
     _check_contains_na,
     _check_input_matches_training_df,
+    _is_dataframe,
 )
-from feature_engine.variable_manipulation import _find_or_check_categorical_variables
+from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import (
+    _find_all_variables,
+    _find_or_check_categorical_variables,
+)
 
 
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
@@ -24,7 +28,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
 
         Raises
         ------
@@ -37,7 +41,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
             The same dataframe entered as parameter
         variables : list
             list of categorical variables
@@ -46,13 +50,17 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # find categorical variables or check variables entered by user are object
-        self.variables: List[Union[str, int]] = _find_or_check_categorical_variables(
-            X, self.variables
-        )
+        if not self.ignore_format:
+            # find categorical variables or check variables entered by user are object
+            self.variables_: List[
+                Union[str, int]
+            ] = _find_or_check_categorical_variables(X, self.variables)
+        else:
+            # select all variables or check variables entered by the user
+            self.variables_ = _find_all_variables(X, self.variables)
 
         # check if dataset contains na
-        _check_contains_na(X, self.variables)
+        _check_contains_na(X, self.variables_)
 
         return X
 
@@ -63,19 +71,19 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
 
         Raises
         ------
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            If the variable(s) contain null values.
-            If the dataframe is not of same size as that used in fit()
+            - If the variable(s) contain null values.
+            - If the df has different number of features than the df used in fit()
 
         Returns
         -------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
             The same dataframe entered by the user.
         """
 
@@ -85,11 +93,11 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # check that input is a dataframe
         X = _is_dataframe(X)
 
-        # check if dataset contains na
-        _check_contains_na(X, self.variables)
-
         # Check input data contains same number of columns as df used to fit
-        _check_input_matches_training_df(X, self.input_shape_[1])
+        _check_input_matches_training_df(X, self.n_features_in_)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables_)
 
         return X
 
@@ -111,7 +119,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
+        X: pandas dataframe of shape = [n_samples, n_features].
             The dataset to transform.
 
         Raises
@@ -120,13 +128,13 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
             If the input is not a Pandas DataFrame
         ValueError
             - If the variable(s) contain null values
-            - If dataframe is not of same size as that used in fit()
+            - If the df has different number of features than the df used in fit()
         Warning
             If after encoding, NAN were introduced.
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features].
+        X: pandas dataframe of shape = [n_samples, n_features].
             The dataframe containing the categories replaced by numbers.
         """
 
@@ -154,20 +162,20 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features].
+        X: pandas dataframe of shape = [n_samples, n_features].
             The transformed dataframe.
 
         Raises
         ------
         TypeError
-            - If the input is not a Pandas DataFrame
+            If the input is not a Pandas DataFrame
         ValueError
             - If the variable(s) contain null values
-            - If the dataframe is not of same size as that used in fit()
+            - If the df has different number of features than the df used in fit()
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features].
+        X: pandas dataframe of shape = [n_samples, n_features].
             The un-transformed dataframe, with the categorical variables containing the
             original values.
         """
@@ -180,3 +188,11 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
             X[feature] = X[feature].map(inv_map)
 
         return X
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # the below test will fail because sklearn requires to check for inf, but
+        # you can't check inf of categorical data, numpy returns and error.
+        # so we need to leave without this test
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        return tags_dict

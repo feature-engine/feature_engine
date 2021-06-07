@@ -17,10 +17,11 @@ def test_impute_with_99_and_automatically_select_variables(df_na):
 
     # test init params
     assert imputer.arbitrary_number == 99
-    assert imputer.variables == ["Age", "Marks"]
+    assert imputer.variables is None
 
     # test fit attributes
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.variables_ == ["Age", "Marks"]
+    assert imputer.n_features_in_ == 6
     assert imputer.imputer_dict_ == {"Age": 99, "Marks": 99}
 
     # test transform output
@@ -45,7 +46,8 @@ def test_impute_with_1_and_single_variable_entered_by_user(df_na):
     assert imputer.variables == ["Age"]
 
     # test fit attributes
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.variables_ == ["Age"]
+    assert imputer.n_features_in_ == 6
     assert imputer.imputer_dict_ == {"Age": -1}
 
     # test transform output
@@ -75,7 +77,7 @@ def test_dictionary_of_imputation_values(df_na):
     X_reference["Marks"] = X_reference["Marks"].fillna(-999)
 
     # test fit params
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.n_features_in_ == 6
     assert imputer.imputer_dict_ == {"Age": -42, "Marks": -999}
 
     # test transform params

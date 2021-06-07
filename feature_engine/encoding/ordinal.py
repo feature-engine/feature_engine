@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 
@@ -22,16 +22,21 @@ class OrdinalEncoder(BaseCategoricalTransformer):
     **Arbitrary ordinal encoding**: the numbers will be assigned arbitrarily to the
     categories, on a first seen first served basis.
 
-    The encoder will encode only categorical variables (type 'object'). A list
-    of variables can be passed as an argument. If no variables are passed, the
-    encoder will find and encode all categorical variables (type 'object').
+    The encoder will encode only categorical variables by default (type 'object' or
+    'categorical'). You can pass a list of variables to encode. Alternatively, the
+    encoder will find and encode all categorical variables (type 'object' or
+    'categorical').
+
+    With `ignore_format=True` you have the option to encode numerical variables as well.
+    The procedure is identical, you can either enter the list of variables to encode, or
+    the transformer will automatically select all variables.
 
     The encoder first maps the categories to the numbers for each variable (fit). The
     encoder then transforms the categories to the mapped numbers (transform).
 
     Parameters
     ----------
-    encoding_method : str, default='ordered'
+    encoding_method: str, default='ordered'
         Desired method of encoding.
 
         'ordered': the categories are numbered in ascending order according to
@@ -39,14 +44,29 @@ class OrdinalEncoder(BaseCategoricalTransformer):
 
         'arbitrary' : categories are numbered arbitrarily.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
-        encoder will find and select all object type variables.
+        encoder will find and transform all variables of type object or categorical by
+        default. You can also make the transformer accept numerical variables, see the
+        next parameter.
+
+    ignore_format: bool, default=False
+        Whether the format in which the categorical variables are cast should be
+        ignored. If false, the encoder will automatically select variables of type
+        object or categorical, or check that the variables entered by the user are of
+        type object or categorical. If True, the encoder will select all variables or
+        accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
-    encoder_dict_ :
+    encoder_dict_:
         Dictionary with the ordinal number per category, per variable.
+
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -82,6 +102,7 @@ class OrdinalEncoder(BaseCategoricalTransformer):
         self,
         encoding_method: str = "ordered",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        ignore_format: bool = False,
     ) -> None:
 
         if encoding_method not in ["ordered", "arbitrary"]:
@@ -89,8 +110,12 @@ class OrdinalEncoder(BaseCategoricalTransformer):
                 "encoding_method takes only values 'ordered' and 'arbitrary'"
             )
 
+        if not isinstance(ignore_format, bool):
+            raise ValueError("ignore_format takes only booleans True and False")
+
         self.encoding_method = encoding_method
         self.variables = _check_input_parameter_variables(variables)
+        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Learn the numbers to be used to replace the categories in each
@@ -98,11 +123,11 @@ class OrdinalEncoder(BaseCategoricalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to be encoded.
 
-        y : pandas series, default=None
+        y: pandas series, default=None
             The Target. Can be None if encoding_method = 'arbitrary'.
             Otherwise, y needs to be passed when fitting the transformer.
 
@@ -110,7 +135,7 @@ class OrdinalEncoder(BaseCategoricalTransformer):
         ------
         TypeError
             - If the input is not a Pandas DataFrame.
-            - If any user provided variable is not categorical
+            - If user enters non-categorical variables (unless ignore_format is True)
         ValueError
             - If there are no categorical variables in the df or the df is empty
             - If the variable(s) contain null values
@@ -127,13 +152,16 @@ class OrdinalEncoder(BaseCategoricalTransformer):
             if y is None:
                 raise ValueError("Please provide a target y for this encoding method")
 
+            if not isinstance(y, pd.Series):
+                y = pd.Series(y)
+
             temp = pd.concat([X, y], axis=1)
             temp.columns = list(X.columns) + ["target"]
 
         # find mappings
         self.encoder_dict_ = {}
 
-        for var in self.variables:
+        for var in self.variables_:
 
             if self.encoding_method == "ordered":
                 t = (
@@ -150,7 +178,7 @@ class OrdinalEncoder(BaseCategoricalTransformer):
 
         self._check_encoding_dictionary()
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

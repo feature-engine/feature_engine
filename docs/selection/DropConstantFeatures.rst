@@ -41,7 +41,7 @@ with both numerical and categorical variables.
                 data['survived'], test_size=0.3, random_state=0)
 
     # set up the transformer
-    transformer = DropConstantFeatures(tol=0.7)
+    transformer = DropConstantFeatures(tol=0.7, missing_values='ignore')
 
     # fit the transformer
     transformer.fit(X_train)
@@ -55,6 +55,10 @@ with both numerical and categorical variables.
 
     ['parch', 'cabin', 'embarked']
 
+
+We see in the following code snippets that for the variables parch and embarked, more
+than 70% of the observations displayed the same value:
+
 .. code:: python
 
     X_train['embarked'].value_counts() / len(X_train)
@@ -65,6 +69,9 @@ with both numerical and categorical variables.
     C    0.197598
     Q    0.090611
     Name: embarked, dtype: float64
+
+
+71% of the passengers embarked in S.
 
 .. code:: python
 
@@ -81,3 +88,6 @@ with both numerical and categorical variables.
     6    0.002183
     9    0.001092
     Name: parch, dtype: float64
+
+77% of the passengers had 0 parent or child. Because of this, these features were
+deemed constant and removed.

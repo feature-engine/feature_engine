@@ -3,9 +3,10 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
-    _is_dataframe,
     _check_input_matches_training_df,
+    _is_dataframe,
 )
+from feature_engine.validation import _return_tags
 
 
 class BaseImputer(BaseEstimator, TransformerMixin):
@@ -18,7 +19,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
 
         Raises
         ------
@@ -29,7 +30,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
             The same dataframe entered by the user.
         """
         # Check method fit has been called
@@ -39,7 +40,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # Check that input df contains same number of columns as df used to fit
-        _check_input_matches_training_df(X, self.input_shape_[1])
+        _check_input_matches_training_df(X, self.n_features_in_)
 
         return X
 
@@ -49,7 +50,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Raises
@@ -57,11 +58,11 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            If the dataframe is not of same size as that used in fit()
+            If the dataframe has different number of features than the df used in fit()
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe without missing values in the selected variables.
         """
 
@@ -72,3 +73,9 @@ class BaseImputer(BaseEstimator, TransformerMixin):
             X[variable].fillna(self.imputer_dict_[variable], inplace=True)
 
         return X
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        return tags_dict

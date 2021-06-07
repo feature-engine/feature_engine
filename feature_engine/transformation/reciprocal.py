@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
@@ -24,9 +25,17 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
     Parameters
     ----------
-    variables : list, default=None
-        The list of numerical variables that will be transformed. If None, the
-        transformer will automatically find and select all numerical variables.
+    variables: list, default=None
+        The list of numerical variables to transform. If None, the transformer will
+        automatically find and select all numerical variables.
+
+    Attributes
+    ----------
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -50,11 +59,11 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : Pandas DataFrame of shape = [n_samples, n_features].
+        X: Pandas DataFrame of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             It is not needed in this transformer. You can pass y or None.
 
         Raises
@@ -76,13 +85,13 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         X = super().fit(X)
 
         # check if the variables contain the value 0
-        if (X[self.variables] == 0).any().any():
+        if (X[self.variables_] == 0).any().any():
             raise ValueError(
                 "Some variables contain the value zero, can't apply reciprocal "
                 "transformation."
             )
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -92,7 +101,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : Pandas DataFrame of shape = [n_samples, n_features]
+        X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Raises
@@ -100,13 +109,13 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            - If the variable(s) contain null values.
-            - If the dataframe not of the same size as that used in fit().
-            - If some variables contain zero values.
+            - If the variable(s) contain null values
+            - If the df has different number of features than the df used in fit()
+            - If some variables contain zero values
 
         Returns
         -------
-        X : pandas dataframe
+        X: pandas dataframe
             The dataframe with the transformed variables.
         """
 
@@ -114,7 +123,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         X = super().transform(X)
 
         # check if the variables contain the value 0
-        if (X[self.variables] == 0).any().any():
+        if (X[self.variables_] == 0).any().any():
             raise ValueError(
                 "Some variables contain the value zero, can't apply reciprocal "
                 "transformation."
@@ -122,7 +131,24 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         # transform
         # for some reason reciprocal does not work with integers
-        X.loc[:, self.variables] = X.loc[:, self.variables].astype("float")
-        X.loc[:, self.variables] = np.reciprocal(X.loc[:, self.variables])
+        X.loc[:, self.variables_] = X.loc[:, self.variables_].astype("float")
+        X.loc[:, self.variables_] = np.reciprocal(X.loc[:, self.variables_])
 
         return X
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # =======  this tests fail because the transformers throw an error
+        # when the values are 0. Nothing to do with the test itself but
+        # mostly with the data created and used in the test
+        msg = (
+            "transformers raise errors when data contains zeroes, thus this check fails"
+        )
+        tags_dict["_xfail_checks"]["check_estimators_dtypes"] = msg
+        tags_dict["_xfail_checks"]["check_estimators_fit_returns_self"] = msg
+        tags_dict["_xfail_checks"]["check_pipeline_consistency"] = msg
+        tags_dict["_xfail_checks"]["check_estimators_overwrite_params"] = msg
+        tags_dict["_xfail_checks"]["check_estimators_pickle"] = msg
+        tags_dict["_xfail_checks"]["check_transformer_general"] = msg
+
+        return tags_dict

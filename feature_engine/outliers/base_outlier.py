@@ -4,10 +4,12 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_input_matches_training_df,
+    _check_contains_inf,
     _check_contains_na,
+    _check_input_matches_training_df,
+    _is_dataframe,
 )
+from feature_engine.validation import _return_tags
 
 
 class BaseOutlier(BaseEstimator, TransformerMixin):
@@ -19,7 +21,7 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
 
         Raises
         ------
@@ -30,7 +32,7 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X : Pandas DataFrame
+        X: Pandas DataFrame
             The same dataframe entered by the user.
         """
         # check if class was fitted
@@ -39,13 +41,14 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
         # check that input is a dataframe
         X = _is_dataframe(X)
 
-        if self.missing_values == "raise":
-            # check if dataset contains na
-            _check_contains_na(X, self.variables)
-
         # Check that the dataframe contains the same number of columns
         # than the dataframe used to fit the imputer.
-        _check_input_matches_training_df(X, self.input_shape_[1])
+        _check_input_matches_training_df(X, self.n_features_in_)
+
+        if self.missing_values == "raise":
+            # check if dataset contains na
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
         return X
 
@@ -55,7 +58,7 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Raises
@@ -67,7 +70,7 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe with the capped variables.
         """
 
@@ -90,3 +93,6 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
             )
 
         return X
+
+    def _more_tags(self):
+        return _return_tags()

@@ -1,11 +1,18 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, Dict
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na,
+    _is_dataframe,
+)
+from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
 class ArbitraryDiscretiser(BaseNumericalTransformer):
@@ -13,9 +20,9 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
     The ArbitraryDiscretiser() divides continuous numerical variables into contiguous
     intervals which limits are determined arbitrarily by the user.
 
-    The user needs to enter a dictionary with variable names as keys, and a list of
-    the limits of the intervals as values. For example {'var1':[0, 10, 100, 1000],
-    'var2':[5, 10, 15, 20]}.
+    You need to enter a dictionary with variable names as keys, and a list of
+    the limits of the intervals as values. For example `{'var1':[0, 10, 100, 1000],
+    'var2':[5, 10, 15, 20]}`.
 
     ArbitraryDiscretiser() will then sort var1 values into the intervals 0-10, 10-100
     100-1000, and var2 into 5-10, 10-15 and 15-20. Similar to `pandas.cut`.
@@ -29,30 +36,35 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     Parameters
     ----------
-    binning_dict : dict
-        The dictionary with the variable : interval limits pairs, provided by the user.
-        A valid dictionary looks like this:
+    binning_dict: dict
+        The dictionary with the variable to interval limits pairs. A valid dictionary
+        looks like this:
 
-        binning_dict = {'var1':[0, 10, 100, 1000], 'var2':[5, 10, 15, 20]}.
+        `binning_dict = {'var1':[0, 10, 100, 1000], 'var2':[5, 10, 15, 20]}`
 
-    return_object : bool, default=False
-        Whether the numbers in the discrete variable should be returned as
-        numeric or as object. The decision is made by the user based on
-        whether they would like to proceed the engineering of the variable as
-        if it was numerical or categorical.
+    return_object: bool, default=False
+        Whether the the discrete variable should be returned casted as numeric or as
+        object. If you would like to proceed with the engineering of the variable as if
+        it was categorical, use True. Alternatively, keep the default to False.
 
         Categorical encoders in Feature-engine work only with variables of type object,
         thus, if you wish to encode the returned bins, set return_object to True.
 
-    return_boundaries : bool, default=False
-        whether the output, that is the bin names / values, should be the interval
+    return_boundaries: bool, default=False
+        Whether the output, that is the bin names / values, should be the interval
         boundaries. If True, it returns the interval boundaries. If False, it returns
         integers.
 
     Attributes
     ----------
-    binner_dict_ :
+    binner_dict_:
          Dictionary with the interval limits per variable.
+
+    variables_:
+         The variables to discretise.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -65,14 +77,14 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     See Also
     --------
-    pandas.cut :
+    pandas.cut:
         https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.cut.html
 
     """
 
     def __init__(
         self,
-        binning_dict: Dict[str, list],
+        binning_dict: Dict[Union[str, int], List[Union[str, int]]],
         return_object: bool = False,
         return_boundaries: bool = False,
     ) -> None:
@@ -86,7 +98,6 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
             raise ValueError("return_object must be True or False")
 
         self.binning_dict = binning_dict
-        self.variables = [x for x in binning_dict.keys()]
         self.return_object = return_object
         self.return_boundaries = return_boundaries
 
@@ -99,12 +110,12 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the
             variables to be transformed.
 
-        y : None
-            y is not needed in this encoder. You can pass y or None.
+        y: None
+            y is not needed in this transformer. You can pass y or None.
 
         Raises
         ------
@@ -119,20 +130,21 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         -------
         self
         """
-
         # check input dataframe
-        X = super().fit(X, y)
+        X = _is_dataframe(X)
 
-        # check that all variables in the dictionary are present in the df
-        if all(variable in X.columns for variable in self.variables):
-            self.binner_dict_ = self.binning_dict
-        else:
-            raise ValueError(
-                "There are variables in the provided dictionary which are not present "
-                "in the train set or not cast as numerical"
-            )
+        # find or check for numerical variables
+        variables = [x for x in self.binning_dict.keys()]
+        self.variables_ = _find_or_check_numerical_variables(X, variables)
 
-        self.input_shape_ = X.shape
+        # check if dataset contains na or inf
+        _check_contains_na(X, self.variables_)
+        _check_contains_inf(X, self.variables_)
+
+        # for consistency wit the rest of the discretisers, we add this attribute
+        self.binner_dict_ = self.binning_dict
+
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -141,7 +153,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe to be transformed.
 
         Raises
@@ -154,7 +166,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The transformed data with the discrete variables.
         """
 
@@ -163,19 +175,25 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
         # transform variables
         if self.return_boundaries:
-            for feature in self.variables:
-                X[feature] = pd.cut(
-                    X[feature], self.binner_dict_[feature]  # type: ignore
-                )
+            for feature in self.variables_:
+                X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
 
         else:
-            for feature in self.variables:
+            for feature in self.variables_:
                 X[feature] = pd.cut(
-                    X[feature], self.binner_dict_[feature], labels=False  # type: ignore
+                    X[feature], self.binner_dict_[feature], labels=False
                 )
 
             # return object
             if self.return_object:
-                X[self.variables] = X[self.variables].astype("O")
+                X[self.variables_] = X[self.variables_].astype("O")
 
         return X
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # add additional test that fails
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
+        return tags_dict

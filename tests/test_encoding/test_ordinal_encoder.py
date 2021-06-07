@@ -19,8 +19,9 @@ def test_ordered_encoding_1_variable(df_enc):
     assert encoder.encoding_method == "ordered"
     assert encoder.variables == ["var_A"]
     # test fit attr
+    assert encoder.variables_ == ["var_A"]
     assert encoder.encoder_dict_ == {"var_A": {"A": 1, "B": 0, "C": 2}}
-    assert encoder.input_shape_ == (20, 2)
+    assert encoder.n_features_in_ == 2
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
@@ -37,13 +38,14 @@ def test_arbitrary_encoding_automatically_find_variables(df_enc):
 
     # test init params
     assert encoder.encoding_method == "arbitrary"
-    assert encoder.variables == ["var_A", "var_B"]
+    assert encoder.variables is None
     # test fit attr
+    assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {
         "var_A": {"A": 0, "B": 1, "C": 2},
         "var_B": {"A": 0, "B": 1, "C": 2},
     }
-    assert encoder.input_shape_ == (20, 3)
+    assert encoder.n_features_in_ == 3
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 
@@ -90,3 +92,52 @@ def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
         encoder = OrdinalEncoder(encoding_method="arbitrary")
         encoder.fit(df_enc)
         encoder.transform(df_enc_na)
+
+
+def test_ordered_encoding_1_variable_ignore_format(df_enc_numeric):
+
+    encoder = OrdinalEncoder(
+        encoding_method="ordered", variables=["var_A"], ignore_format=True
+    )
+    encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
+    X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
+
+    # expected output
+    transf_df = df_enc_numeric.copy()
+    transf_df["var_A"] = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2]
+
+    # test init params
+    assert encoder.encoding_method == "ordered"
+    assert encoder.variables == ["var_A"]
+    # test fit attr
+    assert encoder.variables_ == ["var_A"]
+    assert encoder.encoder_dict_ == {"var_A": {1: 1, 2: 0, 3: 2}}
+    assert encoder.n_features_in_ == 2
+    # test transform output
+    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+
+
+def test_arbitrary_encoding_automatically_find_variables_ignore_format(df_enc_numeric):
+
+    encoder = OrdinalEncoder(
+        encoding_method="arbitrary", variables=None, ignore_format=True
+    )
+    X = encoder.fit_transform(df_enc_numeric[["var_A", "var_B"]])
+
+    # expected output
+    transf_df = df_enc_numeric[["var_A", "var_B"]].copy()
+    transf_df["var_A"] = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
+    transf_df["var_B"] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
+
+    # test init params
+    assert encoder.encoding_method == "arbitrary"
+    assert encoder.variables is None
+    # test fit attr
+    assert encoder.variables_ == ["var_A", "var_B"]
+    assert encoder.encoder_dict_ == {
+        "var_A": {1: 0, 2: 1, 3: 2},
+        "var_B": {1: 0, 2: 1, 3: 2},
+    }
+    assert encoder.n_features_in_ == 2
+    # test transform output
+    pd.testing.assert_frame_equal(X, transf_df)

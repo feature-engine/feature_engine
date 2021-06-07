@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 
@@ -18,7 +18,7 @@ class MeanMedianImputer(BaseImputer):
     The MeanMedianImputer() replaces missing data by the mean or median value of the
     variable. It works only with numerical variables.
 
-    We can pass a list of variables to be imputed. Alternatively, the
+    You can pass a list of variables to be imputed. Alternatively, the
     MeanMedianImputer() will automatically select all variables of type numeric in the
     training set.
 
@@ -30,17 +30,23 @@ class MeanMedianImputer(BaseImputer):
 
     Parameters
     ----------
-    imputation_method : str, default=median
+    imputation_method: str, default=median
         Desired method of imputation. Can take 'mean' or 'median'.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be imputed. If None, the imputer will select
         all variables of type numeric.
 
     Attributes
     ----------
-    imputer_dict_ :
+    imputer_dict_:
         Dictionary with the mean or median values per variable.
+
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -70,10 +76,10 @@ class MeanMedianImputer(BaseImputer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : pandas series or None, default=None
+        y: pandas series or None, default=None
             y is not needed in this imputation. You can pass None or y.
 
         Raises
@@ -93,16 +99,16 @@ class MeanMedianImputer(BaseImputer):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # find imputation parameters: mean or median
         if self.imputation_method == "mean":
-            self.imputer_dict_ = X[self.variables].mean().to_dict()
+            self.imputer_dict_ = X[self.variables_].mean().to_dict()
 
         elif self.imputation_method == "median":
-            self.imputer_dict_ = X[self.variables].median().to_dict()
+            self.imputer_dict_ = X[self.variables_].median().to_dict()
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

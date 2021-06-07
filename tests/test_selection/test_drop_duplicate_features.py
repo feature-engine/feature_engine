@@ -63,10 +63,9 @@ def test_drop_duplicates_features(df_duplicate_features):
 
 def test_variables_assigned_correctly(df_duplicate_features):
     transformer = DropDuplicateFeatures()
-    assert transformer.variables is None
-
     transformer.fit(df_duplicate_features)
-    assert transformer.variables == (list(df_duplicate_features.columns))
+    assert transformer.variables is None
+    assert transformer.variables_ == (list(df_duplicate_features.columns))
 
 
 def test_fit_attributes(df_duplicate_features):
@@ -79,7 +78,7 @@ def test_fit_attributes(df_duplicate_features):
         {"City", "City2"},
         {"Age", "Age2"},
     ]
-    assert transformer.input_shape_ == (4, 9)
+    assert transformer.n_features_in_ == 9
 
 
 def test_with_df_with_na(df_duplicate_features_with_na):
@@ -104,7 +103,7 @@ def test_with_df_with_na(df_duplicate_features_with_na):
         {"City", "City2"},
         {"Age", "Age2"},
     ]
-    assert transformer.input_shape_ == (5, 9)
+    assert transformer.n_features_in_ == 9
 
 
 def test_error_if_fit_input_not_dataframe():

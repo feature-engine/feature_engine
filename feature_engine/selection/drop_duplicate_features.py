@@ -2,15 +2,13 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_contains_na,
-)
-from feature_engine.variable_manipulation import (
-    _find_all_variables,
-    _check_input_parameter_variables,
-)
+from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_all_variables,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -28,7 +26,7 @@ class DropDuplicateFeatures(BaseSelector):
 
     Parameters
     ----------
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         variables in the dataset.
 
@@ -43,6 +41,12 @@ class DropDuplicateFeatures(BaseSelector):
 
     duplicated_feature_sets_:
         Groups of duplicated features. Each list is a group of duplicated features.
+
+    variables_:
+        The variables to consider for the feature selection.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -68,9 +72,9 @@ class DropDuplicateFeatures(BaseSelector):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The input dataframe.
-        y : None
+        y: None
             y is not needed for this transformer. You can pass y or None.
 
         Returns
@@ -82,11 +86,11 @@ class DropDuplicateFeatures(BaseSelector):
         X = _is_dataframe(X)
 
         # find all variables or check those entered are in the dataframe
-        self.variables = _find_all_variables(X, self.variables)
+        self.variables_ = _find_all_variables(X, self.variables)
 
         if self.missing_values == "raise":
             # check if dataset contains na
-            _check_contains_na(X, self.variables)
+            _check_contains_na(X, self.variables_)
 
         # create tuples of duplicated feature groups
         self.duplicated_feature_sets_ = []
@@ -97,7 +101,7 @@ class DropDuplicateFeatures(BaseSelector):
         # create set of examined features
         _examined_features = set()
 
-        for feature in self.variables:
+        for feature in self.variables_:
 
             # append so we can remove when we create the combinations
             _examined_features.add(feature)
@@ -110,7 +114,7 @@ class DropDuplicateFeatures(BaseSelector):
                 # were not found duplicates
                 _features_to_compare = [
                     f
-                    for f in self.variables
+                    for f in self.variables_
                     if f not in _examined_features.union(self.features_to_drop_)
                 ]
 
@@ -125,7 +129,7 @@ class DropDuplicateFeatures(BaseSelector):
                 if len(_temp_set) > 1:
                     self.duplicated_feature_sets_.append(_temp_set)
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -136,3 +140,9 @@ class DropDuplicateFeatures(BaseSelector):
         return X
 
     transform.__doc__ = BaseSelector.transform.__doc__
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        return tags_dict

@@ -23,11 +23,12 @@ def test_classification(df_normal_dist):
 
     # init params
     assert transformer.cv == 3
-    assert transformer.variables == ["var"]
+    assert transformer.variables is None
     assert transformer.scoring == "roc_auc"
     assert transformer.regression is False
     # fit params
-    assert transformer.input_shape_ == (100, 1)
+    assert transformer.variables_ == ["var"]
+    assert transformer.n_features_in_ == 1
     # transform params
     assert all(x for x in np.round(X["var"].unique(), 2) if x not in X_t)
     assert np.round(transformer.scores_dict_["var"], 3) == np.round(
@@ -69,11 +70,12 @@ def test_regression(df_normal_dist):
 
     # init params
     assert transformer.cv == 3
-    assert transformer.variables == ["var"]
+    assert transformer.variables is None
     assert transformer.scoring == "neg_mean_squared_error"
     assert transformer.regression is True
     # fit params
-    assert transformer.input_shape_ == (100, 1)
+    assert transformer.variables_ == ["var"]
+    assert transformer.n_features_in_ == 1
     assert np.round(transformer.scores_dict_["var"], 3) == np.round(
         -4.4373314584616444e-05, 3
     )

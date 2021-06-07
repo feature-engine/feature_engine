@@ -119,7 +119,7 @@ def test_all_binary_operation(df_vartypes):
     assert transformer.reference_variables == ["Marks"]
     assert transformer.operations == ["sub", "div", "add", "mul"]
     # fit params
-    assert transformer.input_shape_ == (4, 5)
+    assert transformer.n_features_in_ == 5
     # transform params
     pd.testing.assert_frame_equal(X, ref)
 
@@ -152,7 +152,7 @@ def test_operations_with_multiple_variables(df_vartypes):
     assert transformer.reference_variables == ["Age", "Marks"]
     # fit params
     assert transformer.operations == ["sub"]
-    assert transformer.input_shape_ == (4, 5)
+    assert transformer.n_features_in_ == 5
 
     # transform params
     pd.testing.assert_frame_equal(X, ref)
@@ -187,7 +187,7 @@ def test_user_enters_output_variable_names(df_vartypes):
     assert transformer.reference_variables == ["Age", "Marks"]
     # fit params
     assert transformer.operations == ["sub"]
-    assert transformer.input_shape_ == (4, 5)
+    assert transformer.n_features_in_ == 5
 
     # transform params
     pd.testing.assert_frame_equal(X, ref)

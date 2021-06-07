@@ -39,7 +39,7 @@ We prefer to handle most contributions through the github repository. You can al
 our mailing list.
 
 1. `Open issues <https://github.com/solegalli/feature_engine/issues/>`_.
-2. `Mailing list <https://groups.google.com/d/forum/feature-engine>`_.
+2. `Gitter community <https://gitter.im/feature_engine/community>`_.
 
 
 Contributing Guide

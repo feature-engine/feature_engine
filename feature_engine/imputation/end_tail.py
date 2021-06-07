@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 
@@ -15,10 +15,10 @@ from feature_engine.variable_manipulation import (
 
 class EndTailImputer(BaseImputer):
     """
-    The EndTailImputer() transforms features by replacing missing data by a value at
-    either tail of the distribution. Ti works only with numerical variables.
+    The EndTailImputer() replaces missing data by a value at either tail of the
+    distribution. It works only with numerical variables.
 
-    The user can indicate the variables to be imputed in a list. Alternatively, the
+    You can indicate the variables to be imputed in a list. Alternatively, the
     EndTailImputer() will automatically find and select all variables of type numeric.
 
     The imputer first calculates the values at the end of the distribution for each
@@ -26,7 +26,7 @@ class EndTailImputer(BaseImputer):
     the Gaussian limits, the the IQR proximity rule limits, or a factor of the maximum
     value:
 
-    Gaussian limits
+    Gaussian limits:
         - right tail: mean + 3*std
         - left tail: mean - 3*std
 
@@ -41,13 +41,13 @@ class EndTailImputer(BaseImputer):
         - left tail: not applicable
 
     You can change the factor that multiplies the std, IQR or the maximum value
-    using the parameter 'fold'.
+    using the parameter 'fold' (we used fold=3 in the examples above).
 
     The imputer then replaces the missing data with the estimated values (transform).
 
     Parameters
     ----------
-    imputation_method : str, default=gaussian
+    imputation_method: str, default=gaussian
         Method to be used to find the replacement values. Can take 'gaussian',
         'iqr' or 'max'.
 
@@ -60,16 +60,16 @@ class EndTailImputer(BaseImputer):
         **max**: the imputer will use the maximum values to replace missing data. Note
         that if 'max' is passed, the parameter 'tail' is ignored.
 
-    tail : str, default=right
+    tail: str, default=right
         Indicates if the values to replace missing data should be selected from the
         right or left tail of the variable distribution. Can take values 'left' or
         'right'.
 
-    fold : int, default=3
+    fold: int, default=3
         Factor to multiply the std, the IQR or the Max values. Recommended values
         are 2 or 3 for Gaussian, or 1.5 or 3 for IQR.
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be imputed. If None, the imputer will find and
         select all variables of type numeric.
 
@@ -77,6 +77,12 @@ class EndTailImputer(BaseImputer):
     ----------
     imputer_dict_:
         Dictionary with the values at the end of the distribution per variable.
+
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -118,10 +124,10 @@ class EndTailImputer(BaseImputer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
 
         Raises
@@ -140,34 +146,34 @@ class EndTailImputer(BaseImputer):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # estimate imputation values
         if self.imputation_method == "max":
-            self.imputer_dict_ = (X[self.variables].max() * self.fold).to_dict()
+            self.imputer_dict_ = (X[self.variables_].max() * self.fold).to_dict()
 
         elif self.imputation_method == "gaussian":
             if self.tail == "right":
                 self.imputer_dict_ = (
-                    X[self.variables].mean() + self.fold * X[self.variables].std()
+                    X[self.variables_].mean() + self.fold * X[self.variables_].std()
                 ).to_dict()
             elif self.tail == "left":
                 self.imputer_dict_ = (
-                    X[self.variables].mean() - self.fold * X[self.variables].std()
+                    X[self.variables_].mean() - self.fold * X[self.variables_].std()
                 ).to_dict()
 
         elif self.imputation_method == "iqr":
-            IQR = X[self.variables].quantile(0.75) - X[self.variables].quantile(0.25)
+            IQR = X[self.variables_].quantile(0.75) - X[self.variables_].quantile(0.25)
             if self.tail == "right":
                 self.imputer_dict_ = (
-                    X[self.variables].quantile(0.75) + (IQR * self.fold)
+                    X[self.variables_].quantile(0.75) + (IQR * self.fold)
                 ).to_dict()
             elif self.tail == "left":
                 self.imputer_dict_ = (
-                    X[self.variables].quantile(0.25) - (IQR * self.fold)
+                    X[self.variables_].quantile(0.25) - (IQR * self.fold)
                 ).to_dict()
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

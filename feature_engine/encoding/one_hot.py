@@ -1,10 +1,10 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
@@ -40,9 +40,14 @@ class OneHotEncoder(BaseCategoricalTransformer):
     Observations that do not show any of these popular categories, will have 0 in all
     the binary variables.
 
-    The encoder will encode only categorical variables (type 'object'). A list
-    of variables can be passed as an argument. If no variables are passed as
-    argument, the encoder will find and encode categorical variables (object type).
+    The encoder will encode only categorical variables by default (type 'object' or
+    'categorical'). You can pass a list of variables to encode. Alternatively, the
+    encoder will find and encode all categorical variables (type 'object' or
+    'categorical').
+
+    With `ignore_format=True` you have the option to encode numerical variables as well.
+    The procedure is identical, you can either enter the list of variables to encode, or
+    the transformer will automatically select all variables.
 
     The encoder first finds the categories to be encoded for each variable (fit). The
     encoder then creates one dummy variable per category for each variable
@@ -62,26 +67,41 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
     Parameters
     ----------
-    top_categories : int, default=None
+    top_categories: int, default=None
         If None, a dummy variable will be created for each category of the variable.
         Alternatively, we can indicate in `top_categories` the number of most frequent
         categories to encode. In this case, dummy variables will be created only for
         those popular categories and the rest will be ignored, i.e., they will show the
         value 0 in all the binary variables.
 
-    variables : list
-        The list of categorical variables to encode. If None, the encoder will find and
-        select all object type variables in the train set.
-
-    drop_last : boolean, default=False
+    drop_last: boolean, default=False
         Only used if `top_categories = None`. It indicates whether to create dummy
         variables for all the categories (k dummies), or if set to `True`, it will
         ignore the last binary variable of the list (k-1 dummies).
 
+    variables: list, default=None
+        The list of categorical variables that will be encoded. If None, the
+        encoder will find and transform all variables of type object or categorical by
+        default. You can also make the transformer accept numerical variables, see the
+        next parameter.
+
+    ignore_format: bool, default=False
+        Whether the format in which the categorical variables are cast should be
+        ignored. If false, the encoder will automatically select variables of type
+        object or categorical, or check that the variables entered by the user are of
+        type object or categorical. If True, the encoder will select all variables or
+        accept all variables entered by the user, including those cast as numeric.
+
     Attributes
     ----------
-    encoder_dict_ :
+    encoder_dict_:
         Dictionary with the categories for which dummy variables will be created.
+
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -114,8 +134,9 @@ class OneHotEncoder(BaseCategoricalTransformer):
     def __init__(
         self,
         top_categories: Optional[int] = None,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
         drop_last: bool = False,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        ignore_format: bool = False,
     ) -> None:
 
         if top_categories and not isinstance(top_categories, int):
@@ -124,9 +145,13 @@ class OneHotEncoder(BaseCategoricalTransformer):
         if not isinstance(drop_last, bool):
             raise ValueError("drop_last takes only True or False")
 
+        if not isinstance(ignore_format, bool):
+            raise ValueError("ignore_format takes only booleans True and False")
+
         self.top_categories = top_categories
         self.drop_last = drop_last
         self.variables = _check_input_parameter_variables(variables)
+        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -137,11 +162,11 @@ class OneHotEncoder(BaseCategoricalTransformer):
         Parameters
         ----------
 
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just seleted variables.
 
-        y : pandas series, default=None
+        y: pandas series, default=None
             Target. It is not needed in this encoded. You can pass y or
             None.
 
@@ -149,7 +174,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
         ------
         TypeError
             - If the input is not a Pandas DataFrame.
-            - If any user provided variable is not categorical
+            - f user enters non-categorical variables (unless ignore_format is True)
         ValueError
             - If there are no categorical variables in the df or the df is empty
             - If the variable(s) contain null values
@@ -163,7 +188,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         self.encoder_dict_ = {}
 
-        for var in self.variables:
+        for var in self.variables_:
             if not self.top_categories:
                 if self.drop_last:
                     category_ls = [x for x in X[var].unique()]
@@ -183,7 +208,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         self._check_encoding_dictionary()
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -193,7 +218,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Raises
@@ -202,11 +227,11 @@ class OneHotEncoder(BaseCategoricalTransformer):
             If the input is not a Pandas DataFrame
         ValueError
             - If the variable(s) contain null values.
-            - If the dataframe is not of same size as that used in fit()
+            - If dataframe has different number of features than the df used in fit()
 
         Returns
         -------
-        X : pandas dataframe.
+        X: pandas dataframe.
             The transformed dataframe. The shape of the dataframe will be different from
             the original as it includes the dummy variables in place of the of the
             original categorical ones.
@@ -214,14 +239,14 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         X = self._check_transform_input_and_state(X)
 
-        for feature in self.variables:
+        for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
                 X[str(feature) + "_" + str(category)] = np.where(
                     X[feature] == category, 1, 0
                 )
 
         # drop the original non-encoded variables.
-        X.drop(labels=self.variables, axis=1, inplace=True)
+        X.drop(labels=self.variables_, axis=1, inplace=True)
 
         return X
 

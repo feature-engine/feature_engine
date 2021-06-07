@@ -60,7 +60,7 @@ examine all variables in the data set.
 
 ..  code:: python
 
-    transformer.duplicated_features_
+    transformer.features_to_drop_
 
 .. code:: python
 

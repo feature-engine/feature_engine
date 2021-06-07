@@ -17,9 +17,10 @@ def test_defo_params_plus_automatically_find_variables(df_vartypes):
 
     # test init params
     assert transformer.exp == 0.5
-    assert transformer.variables == ["Age", "Marks"]
+    assert transformer.variables is None
     # test fit attr
-    assert transformer.input_shape_ == (4, 5)
+    assert transformer.variables_ == ["Age", "Marks"]
+    assert transformer.n_features_in_ == 5
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 

@@ -23,12 +23,20 @@ class PowerTransformer(BaseNumericalTransformer):
 
     Parameters
     ----------
-    variables : list, default=None
-        The list of numerical variables that will be transformed. If None, the
-        transformer will automatically find and select all numerical variables.
+    variables: list, default=None
+        The list of numerical variables to transform. If None, the transformer will
+        automatically find and select all numerical variables.
 
-    exp : float or int, default=0.5
+    exp: float or int, default=0.5
         The power (or exponent).
+
+    Attributes
+    ----------
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -42,8 +50,8 @@ class PowerTransformer(BaseNumericalTransformer):
 
     def __init__(
         self,
-        exp: Union[float, int] = 0.5,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        exp: Union[float, int] = 0.5,
     ):
 
         if not isinstance(exp, (float, int)):
@@ -58,11 +66,11 @@ class PowerTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to transform.
 
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             It is not needed in this transformer. You can pass y or None.
 
         Raises
@@ -82,7 +90,7 @@ class PowerTransformer(BaseNumericalTransformer):
         # check input dataframe
         X = super().fit(X)
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -92,7 +100,7 @@ class PowerTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X : Pandas DataFrame of shape = [n_samples, n_features]
+        X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Raises
@@ -100,12 +108,12 @@ class PowerTransformer(BaseNumericalTransformer):
         TypeError
             If the input is not a Pandas DataFrame
         ValueError
-            - If the variable(s) contain null values.
-            - If the dataframe not of the same size as that used in fit().
+            - If the variable(s) contain null values
+            - If the df has different number of features than the df used in fit()
 
         Returns
         -------
-        X : pandas Dataframe
+        X: pandas Dataframe
             The dataframe with the power transformed variables.
         """
 
@@ -113,6 +121,6 @@ class PowerTransformer(BaseNumericalTransformer):
         X = super().transform(X)
 
         # transform
-        X.loc[:, self.variables] = np.power(X.loc[:, self.variables], self.exp)
+        X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], self.exp)
 
         return X

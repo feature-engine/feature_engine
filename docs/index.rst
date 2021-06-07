@@ -21,7 +21,7 @@ Feature-engine includes transformers for:
 - Discretisation
 - Variable transformation
 - Outlier capping or removal
-- Variable creation
+- Variable combination
 - Variable selection
 
 Feature-engine allows you to select the variables you want to transform within each
@@ -30,10 +30,8 @@ different feature subsets.
 
 Feature-engine transformers can be assembled within the Scikit-learn pipeline,
 therefore making it possible to save and deploy one single object (.pkl) with the
-entire machine learning pipeline. That is, one object with the entire sequence of
-variable transformations to leave the raw data ready to be consumed by a machine
-learning algorithm, and the machine learning model at the back. Check the **quickstart**
-for an example.
+entire machine learning pipeline. Check **Quick Start** for an example, on the
+navigation panel on the left.
 
 **Would you like to know more about what is unique about Feature-engine?**
 
@@ -100,10 +98,10 @@ Missing Data Imputation: Imputers
 - :doc:`imputation/MeanMedianImputer`: replaces missing data in numerical variables by the mean or median
 - :doc:`imputation/ArbitraryNumberImputer`: replaces missing data in numerical variables by an arbitrary value
 - :doc:`imputation/EndTailImputer`: replaces missing data in numerical variables by numbers at the distribution tails
-- :doc:`imputation/CategoricalImputer`: replaces missing data in categorical variables with the string 'Missing' or by the most frequent category
+- :doc:`imputation/CategoricalImputer`: replaces missing data in categorical variables with an arbitrary value or by the most frequent category
 - :doc:`imputation/RandomSampleImputer`: replaces missing data with random samples of the variable
 - :doc:`imputation/AddMissingIndicator`: adds a binary missing indicator to flag observations with missing data
-- :doc:`imputation/DropMissingData`: removes rows containing NA values from dataframe
+- :doc:`imputation/DropMissingData`: removes rows containing missing values from dataframe
 
 Categorical Variable Encoders: Encoders
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -144,19 +142,19 @@ Outlier Capping or Removal
 Scikit-learn Wrapper:
 ~~~~~~~~~~~~~~~~~~~~~
 
--  :doc:`wrappers/Wrapper`: executes Scikit-learn various transformers only on the selected subset of features
+-  :doc:`wrappers/Wrapper`: applies Scikit-learn transformers to a selected subset of features
 
 Mathematical Combination:
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  :doc:`creation/MathematicalCombination`: creates new variables by combining features with mathematical operations
--  :doc:`creation/CombineWithReferenceFeature`: creates variables with reference features through mathematical operations
+-  :doc:`creation/CombineWithReferenceFeature`: combines variables with reference features through mathematical operations
 -  :doc:`creation/CyclicalTransformer`: creates variables using sine and cosine, suitable for cyclical features
 
 Feature Selection:
 ~~~~~~~~~~~~~~~~~~
 
-- :doc:`selection/DropFeatures`: drops a subset of variables from a dataframe
+- :doc:`selection/DropFeatures`: drops an arbitrary subset of variables from a dataframe
 - :doc:`selection/DropConstantFeatures`: drops constant and quasi-constant variables from a dataframe
 - :doc:`selection/DropDuplicateFeatures`: drops duplicated variables from a dataframe
 - :doc:`selection/DropCorrelatedFeatures`: drops correlated variables from a dataframe
@@ -174,10 +172,10 @@ Getting Help
 Can't get something to work? Here are places where you can find help.
 
 1. The docs (you're here!).
-2. `Stack Overflow <https://stackoverflow.com/questions/tagged/feature-engine>`_. If you ask a question, please tag it with "feature-engine".
+2. `Stack Overflow <https://stackoverflow.com/questions/tagged/feature-engine>`_. If you ask a question, please mention "feature_engine" in it.
 3. If you are enrolled in the `Feature Engineering for Machine Learning course in Udemy <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_ , post a question in a relevant section.
 4. If you are enrolled in the `Feature Selection for Machine Learning course in Udemy <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_ , post a question in a relevant section.
-5. Join our `mailing list <https://groups.google.com/d/forum/feature-engine>`_.
+5. Join our `gitter community <https://gitter.im/feature_engine/community>`_. You an ask questions here as well.
 6. Ask a question in the repo by filing an `issue <https://github.com/solegalli/feature_engine/issues/>`_.
 
 

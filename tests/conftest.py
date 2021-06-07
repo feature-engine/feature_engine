@@ -80,6 +80,18 @@ def df_enc():
 
 
 @pytest.fixture(scope="module")
+def df_enc_numeric():
+    df = {
+        "var_A": [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3],
+        "var_B": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3],
+        "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+    }
+    df = pd.DataFrame(df)
+
+    return df
+
+
+@pytest.fixture(scope="module")
 def df_enc_rare():
     df = {
         "var_A": ["B"] * 9 + ["A"] * 6 + ["C"] * 4 + ["D"] * 1,

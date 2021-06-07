@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
@@ -22,9 +22,10 @@ def test_automatically_find_variables_and_gaussian_imputation_on_right_tail(df_n
     assert imputer.imputation_method == "gaussian"
     assert imputer.tail == "right"
     assert imputer.fold == 3
-    assert imputer.variables == ["Age", "Marks"]
+    assert imputer.variables is None
     # test fit attr
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.variables_ == ["Age", "Marks"]
+    assert imputer.n_features_in_ == 6
     imputer.imputer_dict_ = {
         key: round(value, 3) for (key, value) in imputer.imputer_dict_.items()
     }

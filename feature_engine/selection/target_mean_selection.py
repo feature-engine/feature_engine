@@ -1,39 +1,33 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.metrics import roc_auc_score, r2_score
+from sklearn.metrics import r2_score, roc_auc_score
 from sklearn.model_selection import KFold
 from sklearn.pipeline import Pipeline
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-    _check_contains_na,
-)
-
+from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
 from feature_engine.discretisation import (
-    EqualWidthDiscretiser,
     EqualFrequencyDiscretiser,
+    EqualWidthDiscretiser,
 )
-
 from feature_engine.encoding import MeanEncoder
-
+from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
 )
-
-from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 class SelectByTargetMeanPerformance(BaseSelector):
     """
-    SelectByTargetMeanPerformance() selects features by using the mean value of the
-    target per category or bin, if the variable is numerical, as proxy of target
-    estimation, by determining its performance.
+    SelectByTargetMeanPerformance() uses the mean value of the target per category, or
+    interval if the variable is numerical, as proxy for target estimation. With this
+    proxy and the real target, the selector determines a performance metric for each
+    feature, and then selects them based on this performance metric.
 
-    Works with both numerical and categorical variables.
+    SelectByTargetMeanPerformance() works with numerical and categorical variables.
 
     The transformer works as follows:
 
@@ -41,58 +35,56 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
     Then, for each categorical variable:
 
-    2. Determine the mean value of the target for each category of the variable using
-    the train set (equivalent of Target mean encoding)
+    2. Determines the mean target value per category per variable using the train set
+    (equivalent of Target mean encoding)
 
-    3. Replaces the categories in the test set, by the target mean values determined
-    from the train set
+    3. Replaces the categories in the test set by the target mean values
 
-    4. Using the encoded variable calculates the roc-auc or r2
+    4. Using the encoded variables and the real target calculates the roc-auc or r2
 
     5. Selects the features which roc-auc or r2 is bigger than the indicated
     threshold
 
     For each numerical variable:
 
-    2. Discretize the variable into intervals of equal width or equal frequency
+    2. Discretizes the variable into intervals of equal width or equal frequency
     (uses the discretizers of Feature-engine)
 
-    3. Determine the mean value of the target for each interval of the
-    variable using the train set (equivalent of Target mean encoding)
+    3. Determines the mean value of the target per interval per variable using the
+    train set
 
     4. Replaces the intervals in the test set, by the target mean values
-    determined from the train set
 
-    5. Using the encoded variable calculates the roc-auc or r2
+    5. Using the encoded variable and the real target calculates the roc-auc or r2
 
     6. Selects the features which roc-auc or r2 is bigger than the indicated
     threshold
 
     Parameters
     ----------
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         variables in the dataset.
 
-    scoring : string, default='roc_auc_score'
+    scoring: string, default='roc_auc_score'
         This indicates the metrics score to perform the feature selection.
         The current implementation supports 'roc_auc_score' and 'r2_score'.
 
-    threshold : float, default = None
+    threshold: float, default = None
         The performance threshold above which a feature will be selected.
 
-    bins : int, default = 5
+    bins: int, default = 5
         If the dataset contains numerical variables, the number of bins into which
         the values will be sorted.
 
-    strategy : str, default = equal_width
-        whether to create the bins for discretization of numerical variables of
+    strategy: str, default = equal_width
+        Whether to create the bins for discretization of numerical variables of
         equal width or equal frequency.
 
-    cv : int, default=3
+    cv: int, default=3
         Desired number of cross-validation fold to be used to fit the estimator.
 
-    random_state : int, default=0
+    random_state: int, default=0
         The random state setting in the train_test_split method.
 
     Attributes
@@ -102,6 +94,12 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
     feature_performance_:
         Dictionary with the performance proxy per feature.
+
+    variables_:
+        The variables to consider for the feature selection.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -164,10 +162,10 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
 
-        y : array-like of shape (n_samples)
+        y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
 
         Returns
@@ -177,16 +175,19 @@ class SelectByTargetMeanPerformance(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
         # check variables
-        self.variables = _find_all_variables(X, self.variables)
+        self.variables_ = _find_all_variables(X, self.variables)
 
         # check if df contains na
-        _check_contains_na(X, self.variables)
+        _check_contains_na(X, self.variables_)
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         # limit df to variables to smooth code below
-        X = X[self.variables].copy()
+        X = X[self.variables_].copy()
 
         # find categorical and numerical variables
         self.variables_categorical_ = list(X.select_dtypes(include="O").columns)
@@ -195,9 +196,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         )
 
         # obtain cross-validation indeces
-        skf = KFold(
-            n_splits=self.cv, shuffle=True, random_state=self.random_state
-        )
+        skf = KFold(n_splits=self.cv, shuffle=True, random_state=self.random_state)
         skf.get_n_splits(X, y)
 
         if self.variables_categorical_ and self.variables_numerical_:
@@ -222,10 +221,10 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
             if self.scoring == "roc_auc_score":
                 tmp_split = {
-                    f: roc_auc_score(y_test, X_test[f]) for f in self.variables
+                    f: roc_auc_score(y_test, X_test[f]) for f in self.variables_
                 }
             else:
-                tmp_split = {f: r2_score(y_test, X_test[f]) for f in self.variables}
+                tmp_split = {f: r2_score(y_test, X_test[f]) for f in self.variables_}
 
             feature_importances_cv.append(pd.Series(tmp_split))
 
@@ -242,9 +241,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
             threshold = self.threshold
 
         self.features_to_drop_ = [
-            f
-            for f in self.variables
-            if self.feature_performance_[f] < threshold
+            f for f in self.variables_ if self.feature_performance_[f] < threshold
         ]
 
         return self

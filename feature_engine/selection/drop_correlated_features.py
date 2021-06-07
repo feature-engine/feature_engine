@@ -3,14 +3,15 @@ from typing import List, Union
 import pandas as pd
 
 from feature_engine.dataframe_checks import (
-    _is_dataframe,
+    _check_contains_inf,
     _check_contains_na,
-)
-from feature_engine.variable_manipulation import (
-    _find_or_check_numerical_variables,
-    _check_input_parameter_variables,
+    _is_dataframe,
 )
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -28,11 +29,11 @@ class DropCorrelatedFeatures(BaseSelector):
 
     Parameters
     ----------
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         numerical variables in the dataset.
 
-    method : string, default='pearson'
+    method: string, default='pearson'
         Can take 'pearson', 'spearman' or'kendall'. It refers to the correlation method
         to be used to identify the correlated features.
 
@@ -40,11 +41,11 @@ class DropCorrelatedFeatures(BaseSelector):
         - kendall : Kendall Tau correlation coefficient
         - spearman : Spearman rank correlation
 
-    threshold : float, default=0.8
+    threshold: float, default=0.8
         The correlation threshold above which a feature will be deemed correlated with
         another one and removed from the dataset.
 
-    missing_values : str, default=ignore
+    missing_values: str, default=ignore
         Takes values 'raise' and 'ignore'. Whether the missing values should be raised
         as error or ignored when determining correlation.
 
@@ -55,6 +56,12 @@ class DropCorrelatedFeatures(BaseSelector):
 
     correlated_feature_sets_:
         Groups of correlated features. Each list is a group of correlated features.
+
+    variables_:
+        The variables to consider for the feature selection.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -116,11 +123,12 @@ class DropCorrelatedFeatures(BaseSelector):
         X = _is_dataframe(X)
 
         # find all numerical variables or check those entered are in the dataframe
-        self.variables = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         if self.missing_values == "raise":
             # check if dataset contains na
-            _check_contains_na(X, self.variables)
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
         # set to collect features that are correlated
         self.features_to_drop_ = set()
@@ -129,7 +137,7 @@ class DropCorrelatedFeatures(BaseSelector):
         self.correlated_feature_sets_ = []
 
         # the correlation matrix
-        _correlated_matrix = X[self.variables].corr(method=self.method)
+        _correlated_matrix = X[self.variables_].corr(method=self.method)
 
         # create set of examined features, helps to determine feature combinations
         # to evaluate below
@@ -169,7 +177,7 @@ class DropCorrelatedFeatures(BaseSelector):
                 if len(_temp_set) > 1:
                     self.correlated_feature_sets_.append(_temp_set)
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

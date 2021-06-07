@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Union, List
+from typing import List, Union
 
 import pandas as pd
 
@@ -18,24 +18,43 @@ class MeanEncoder(BaseCategoricalTransformer):
     and grey is 0.5, 0.8 and 0.1 respectively, blue is replaced by 0.5, red by 0.8
     and grey by 0.1.
 
-    The encoder will encode only categorical variables (type 'object'). A list
-    of variables can be passed as an argument. If no variables are passed as
-    argument, the encoder will find and encode all categorical variables
-    (object type).
+    The encoder will encode only categorical variables by default (type 'object' or
+    'categorical'). You can pass a list of variables to encode. Alternatively, the
+    encoder will find and encode all categorical variables (type 'object' or
+    'categorical').
+
+    With `ignore_format=True` you have the option to encode numerical variables as well.
+    The procedure is identical, you can either enter the list of variables to encode, or
+    the transformer will automatically select all variables.
 
     The encoder first maps the categories to the numbers for each variable (fit). The
-    encoder then replaces the categories with the mapped numbers (transform).
+    encoder then replaces the categories with those numbers (transform).
 
     Parameters
     ----------
-    variables : list, default=None
-        The list of categorical variables to encode. If None, the encoder will find and
-        select all object type variables.
+    variables: list, default=None
+        The list of categorical variables that will be encoded. If None, the
+        encoder will find and transform all variables of type object or categorical by
+        default. You can also make the transformer accept numerical variables, see the
+        next parameter.
+
+    ignore_format: bool, default=False
+        Whether the format in which the categorical variables are cast should be
+        ignored. If false, the encoder will automatically select variables of type
+        object or categorical, or check that the variables entered by the user are of
+        type object or categorical. If True, the encoder will select all variables or
+        accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
-    encoder_dict_ :
+    encoder_dict_:
         Dictionary with the target mean value per category per variable.
+
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -66,9 +85,16 @@ class MeanEncoder(BaseCategoricalTransformer):
     """
 
     def __init__(
-        self, variables: Union[None, int, str, List[Union[str, int]]] = None
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        ignore_format: bool = False,
     ) -> None:
+
+        if not isinstance(ignore_format, bool):
+            raise ValueError("ignore_format takes only booleans True and False")
+
         self.variables = _check_input_parameter_variables(variables)
+        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -76,18 +102,18 @@ class MeanEncoder(BaseCategoricalTransformer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to be encoded.
 
-        y : pandas series
+        y: pandas series
             The target.
 
         Raises
         ------
         TypeError
             - If the input is not a Pandas DataFrame.
-            - If any user provided variable is not categorical
+            - f user enters non-categorical variables (unless ignore_format is True)
         ValueError
             - If there are no categorical variables in the df or the df is empty
             - If the variable(s) contain null values
@@ -99,17 +125,20 @@ class MeanEncoder(BaseCategoricalTransformer):
 
         X = self._check_fit_input_and_variables(X)
 
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
         temp = pd.concat([X, y], axis=1)
         temp.columns = list(X.columns) + ["target"]
 
         self.encoder_dict_ = {}
 
-        for var in self.variables:
+        for var in self.variables_:
             self.encoder_dict_[var] = temp.groupby(var)["target"].mean().to_dict()
 
         self._check_encoding_dictionary()
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 

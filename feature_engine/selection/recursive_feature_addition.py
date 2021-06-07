@@ -1,23 +1,22 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_validate
 
 from feature_engine.dataframe_checks import _is_dataframe
-from feature_engine.selection.base_selector import get_feature_importances
+from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
+from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
-from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 class RecursiveFeatureAddition(BaseSelector):
     """
-     RecursiveFeatureAddition selects features following a recursive process.
+    RecursiveFeatureAddition selects features following a recursive process.
 
     The process is as follows:
 
@@ -33,29 +32,29 @@ class RecursiveFeatureAddition(BaseSelector):
     previous one.
 
     6. If the performance increases beyond the threshold, then that feature is important
-    and will be kept. Otherwise, that feature is removed
-    .
+    and will be kept. Otherwise, that feature is removed.
+
     7. Repeat steps 4-6 until all features have been evaluated.
 
     Model training and performance calculation are done with cross-validation.
 
     Parameters
     ----------
-    variables : str or list, default=None
-        The list of variable to be evaluated. If None, the transformer will evaluate
-        all numerical features in the dataset.
-
-    estimator : object, default = RandomForestClassifier()
+    estimator: object
         A Scikit-learn estimator for regression or classification.
         The estimator must have either a `feature_importances` or `coef_` attribute
         after fitting.
 
-    scoring : str, default='roc_auc'
+    variables: str or list, default=None
+        The list of variable to be evaluated. If None, the transformer will evaluate
+        all numerical features in the dataset.
+
+    scoring: str, default='roc_auc'
         Desired metric to optimise the performance of the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
-    threshold : float, int, default = 0.01
+    threshold: float, int, default = 0.01
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
@@ -63,7 +62,7 @@ class RecursiveFeatureAddition(BaseSelector):
         The threshold must be defined by the user. Bigger thresholds will select less
         features.
 
-    cv : int, default=3
+    cv: int, default=3
         Cross-validation fold to be used to fit the estimator.
 
     Attributes
@@ -72,13 +71,20 @@ class RecursiveFeatureAddition(BaseSelector):
         Performance of the model trained using the original dataset.
 
     feature_importances_ :
-        Pandas Series with the feature importance.
+        Pandas Series with the feature importance (comes from step 2)
 
     performance_drifts_:
         Dictionary with the performance drift per examined feature.
 
     features_to_drop_:
         List with the features to remove from the dataset.
+
+    variables_:
+        The variables to consider for the feature selection.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
+
 
     Methods
     -------
@@ -92,7 +98,7 @@ class RecursiveFeatureAddition(BaseSelector):
 
     def __init__(
         self,
-        estimator=RandomForestClassifier(),
+        estimator,
         scoring: str = "roc_auc",
         cv: int = 3,
         threshold: Union[int, float] = 0.01,
@@ -118,10 +124,10 @@ class RecursiveFeatureAddition(BaseSelector):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
            The input dataframe
 
-        y : array-like of shape (n_samples)
+        y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
 
         Returns
@@ -133,12 +139,12 @@ class RecursiveFeatureAddition(BaseSelector):
         X = _is_dataframe(X)
 
         # find numerical variables or check variables entered by user
-        self.variables = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # train model with all features and cross-validation
         model = cross_validate(
             self.estimator,
-            X[self.variables],
+            X[self.variables_],
             y,
             cv=self.cv,
             scoring=self.scoring,
@@ -161,7 +167,7 @@ class RecursiveFeatureAddition(BaseSelector):
             feature_importances_cv[m] = get_feature_importances(m)
 
         # Add the variables as index to feature_importances_cv
-        feature_importances_cv.index = self.variables
+        feature_importances_cv.index = self.variables_
 
         # Aggregate the feature importance returned in each fold
         self.feature_importances_ = feature_importances_cv.mean(axis=1)
@@ -227,10 +233,10 @@ class RecursiveFeatureAddition(BaseSelector):
                 baseline_model_performance = model_tmp_performance
 
         self.features_to_drop_ = [
-            f for f in self.variables if f not in _selected_features
+            f for f in self.variables_ if f not in _selected_features
         ]
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -241,3 +247,12 @@ class RecursiveFeatureAddition(BaseSelector):
         return X
 
     transform.__doc__ = BaseSelector.transform.__doc__
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
+        return tags_dict

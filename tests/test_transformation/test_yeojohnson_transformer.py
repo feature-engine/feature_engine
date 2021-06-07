@@ -16,9 +16,10 @@ def test_automatically_select_variables(df_vartypes):
     transf_df["Marks"] = [0.804449, 0.722367, 0.638807, 0.553652]
 
     # test init params
-    assert transformer.variables == ["Age", "Marks"]
+    assert transformer.variables is None
     # test fit attr
-    assert transformer.input_shape_ == (4, 5)
+    assert transformer.variables_ == ["Age", "Marks"]
+    assert transformer.n_features_in_ == 5
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 

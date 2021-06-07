@@ -17,9 +17,10 @@ def test_mean_imputation_and_automatically_select_variables(df_na):
 
     # test init params
     assert imputer.imputation_method == "mean"
-    assert imputer.variables == ["Age", "Marks"]
+    assert imputer.variables is None
 
     # test fit attributes
+    assert imputer.variables_ == ["Age", "Marks"]
     imputer.imputer_dict_ = {
         key: round(value, 3) for (key, value) in imputer.imputer_dict_.items()
     }
@@ -27,7 +28,7 @@ def test_mean_imputation_and_automatically_select_variables(df_na):
         "Age": 28.714,
         "Marks": 0.683,
     }
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.n_features_in_ == 6
 
     # test transform output:
     # selected variables should have no NA
@@ -51,7 +52,7 @@ def test_median_imputation_when_user_enters_single_variables(df_na):
     assert imputer.variables == ["Age"]
 
     # test fit attributes
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.n_features_in_ == 6
     assert imputer.imputer_dict_ == {"Age": 23.0}
 
     # test transform output

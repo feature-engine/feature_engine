@@ -14,7 +14,7 @@ def test_detect_variables_with_missing_data_and_variables_is_none(df_na):
     assert imputer.variables is None
     # fit params
     assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks"]
-    assert imputer.input_shape_ == (8, 6)
+    assert imputer.n_features_in_ == 6
     # transform outputs
     assert X_transformed.shape == (8, 11)
     assert "Name_na" in X_transformed.columns

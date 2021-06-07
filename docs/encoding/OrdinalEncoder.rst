@@ -11,8 +11,8 @@ Example
 -------
 
 The OrdinalEncoder() replaces the categories by digits, starting from 0 to k-1, where k
-is the number of different categories. If we select "arbitrary", then the encoder will
-assign numbers as the labels appear in the variable (first come first served). If we
+is the number of different categories. If you select "arbitrary", then the encoder will
+assign numbers as the labels appear in the variable (first come first served). If you
 select "ordered", the encoder will assign numbers following the mean of the target
 value for that label. So labels for which the mean of the target is higher will get the
 number 0, and those where the mean of the target is smallest will get the number k-1.

@@ -1,4 +1,5 @@
-from typing import List, Optional, Union, Dict
+from typing import Dict, List, Optional, Union
+
 import numpy as np
 import pandas as pd
 
@@ -8,13 +9,19 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class CyclicalTransformer(BaseNumericalTransformer):
     """
-    The CyclicalTransformer() applies a cyclical transformation to numerical
-    variables.
+    The CyclicalTransformer() applies cyclical transformations to numerical
+    variables. The transformations returns 2 new features per variable, according to:
 
-    There are some features that are cyclic by nature. Examples of this are
-    the hours of a day or the months of a year. In both cases, the higher values of
-    a set of data are closer to the lower values of that set. For example, December
-    (12) is closer to January (1) than to June (6).
+    - var_sin = sin(variable * (2. * pi / max_value))
+    - var_cos = cos(variable * (2. * pi / max_value))
+
+    where max_value is the maximum value in the variable, and pi is 3.14...
+
+    **Motivation**: There are some features that are cyclic by nature. For example the
+    hours of a day or the months in a year. In these cases, the higher values of
+    the variable are closer to the lower values. For example, December (12) is closer
+    to January (1) than to June (6). By applying a cyclical transformation we capture
+    this cycle or proximity between values.
 
     The CyclicalTransformer() works only with numerical variables. Missing data should
     be imputed before applying this transformer.
@@ -24,21 +31,26 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     Parameters
     ----------
-    variables : list, default=None
-        The list of numerical variables that will be transformed. If None, the
-        transformer will automatically find and select all numerical variables.
+    variables: list, default=None
+        The list of numerical variables to transform. If None, the transformer will
+        automatically find and select all numerical variables.
     max_values: dict, default=None
-        A dictionary that maps the natural maximum or a variable. Useful when
-        the maximum value is not present in the dataset.
+        A dictionary with the maximum value of each variable to transform. Useful when
+        the maximum value is not present in the dataset. If None, the transformer will
+        automatically find the maximum value of each variable.
     drop_original: bool, default=False
-        Use this if you want to drop the original variables from the output.
-
+        If True, the original variables to transform will be dropped from the dataframe.
 
     Attributes
     ----------
-    max_values_ :
-        The maximum value of the cylcical feature that will be used for the
-        transformation.
+    max_values_:
+        The maximum value of the cyclical feature.
+
+    variables_:
+        The group of variables that will be transformed.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
 
     Methods
@@ -57,24 +69,24 @@ class CyclicalTransformer(BaseNumericalTransformer):
     """
 
     def __init__(
-            self, variables: Union[None, int, str, List[Union[str, int]]] = None,
-            max_values: Optional[Dict[str, Union[int, float]]] = None,
-            drop_original: Optional[bool] = False
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        max_values: Optional[Dict[str, Union[int, float]]] = None,
+        drop_original: Optional[bool] = False,
     ) -> None:
 
         if max_values:
             if not isinstance(max_values, dict) or not all(
-                    isinstance(var, (int, float)) for var in list(max_values.values())):
+                isinstance(var, (int, float)) for var in list(max_values.values())
+            ):
                 raise TypeError(
-                    'max_values takes a dictionary of strings as keys, '
-                    'and numbers as items to be used as the reference for'
-                    'the max value of each column.'
+                    "max_values takes a dictionary of strings as keys, "
+                    "and numbers as items to be used as the reference for"
+                    "the max value of each column."
                 )
 
         if not isinstance(drop_original, bool):
-            raise TypeError(
-                'drop_original takes only boolean values True and False.'
-            )
+            raise TypeError("drop_original takes only boolean values True and False.")
 
         self.variables = _check_input_parameter_variables(variables)
         self.max_values = max_values
@@ -82,15 +94,15 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the maximmum value of each of the cyclical variables.
+        Learns the maximum value of each of the cyclical variables.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             It is not needed in this transformer. You can pass y or None.
 
         Raises
@@ -110,25 +122,26 @@ class CyclicalTransformer(BaseNumericalTransformer):
         X = super().fit(X)
 
         if self.max_values is None:
-            self.max_values_ = X[self.variables].max().to_dict()
+            self.max_values_ = X[self.variables_].max().to_dict()
         else:
             for key in list(self.max_values.keys()):
-                if key not in self.variables:
-                    raise ValueError(f'The mapping key {key} is not present'
-                                     f' in variables.')
+                if key not in self.variables_:
+                    raise ValueError(
+                        f"The mapping key {key} is not present" f" in variables."
+                    )
             self.max_values_ = self.max_values
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
     def transform(self, X: pd.DataFrame):
         """
-        Creates new features using the cyiclical transformation.
+        Creates new features using the cyclical transformation.
 
         Parameters
         ----------
-        X : Pandas DataFrame of shame = [n_samples, n_features]
+        X: Pandas DataFrame of shame = [n_samples, n_features]
             The data to be transformed.
 
         Raises
@@ -138,19 +151,18 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
         Returns
         -------
-        X : Pandas dataframe.
-            The dataframe with the original variables plus the new variables if
-            drop_originals was False, alternatively, the original variables are
-            removed from the dataset.
+        X: Pandas dataframe.
+            The dataframe with the additional new features. The original variables will
+            be dropped if drop_originals is False, or retained otherwise.
         """
         X = super().transform(X)
 
-        for variable in self.variables:
+        for variable in self.variables_:
             max_value = self.max_values_[variable]
-            X[f'{variable}_sin'] = np.sin(X[variable] * (2. * np.pi / max_value))
-            X[f'{variable}_cos'] = np.cos(X[variable] * (2. * np.pi / max_value))
+            X[f"{variable}_sin"] = np.sin(X[variable] * (2.0 * np.pi / max_value))
+            X[f"{variable}_cos"] = np.cos(X[variable] * (2.0 * np.pi / max_value))
 
         if self.drop_original:
-            X.drop(columns=self.variables, inplace=True)
+            X.drop(columns=self.variables_, inplace=True)
 
         return X

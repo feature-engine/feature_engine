@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 from feature_engine.encoding import OneHotEncoder
@@ -11,7 +12,7 @@ def test_encode_categories_in_k_binary_plus_select_vars_automatically(df_enc_big
 
     # test init params
     assert encoder.top_categories is None
-    assert encoder.variables == ["var_A", "var_B", "var_C"]
+    assert encoder.variables is None
     assert encoder.drop_last is False
     # test fit attr
     transf = {
@@ -38,7 +39,8 @@ def test_encode_categories_in_k_binary_plus_select_vars_automatically(df_enc_big
         "var_C_G": 6,
     }
 
-    assert encoder.input_shape_ == (40, 3)
+    assert encoder.variables_ == ["var_A", "var_B", "var_C"]
+    assert encoder.n_features_in_ == 3
     # test transform output
     assert X.sum().to_dict() == transf
     assert "var_A" not in X.columns
@@ -71,7 +73,9 @@ def test_encode_categories_in_k_minus_1_binary_plus_list_of_variables(df_enc_big
         "var_B_E": 2,
         "var_B_F": 2,
     }
-    assert encoder.input_shape_ == (40, 3)
+
+    assert encoder.variables_ == ["var_A", "var_B"]
+    assert encoder.n_features_in_ == 3
     # test transform output
     for col in transf.keys():
         assert X[col].sum() == transf[col]
@@ -103,7 +107,7 @@ def test_encode_top_categories(df_enc_big):
         "var_C_B": 6,
     }
 
-    assert encoder.input_shape_ == (40, 3)
+    assert encoder.n_features_in_ == 3
     # test transform output
     for col in transf.keys():
         assert X[col].sum() == transf[col]
@@ -134,3 +138,33 @@ def test_transform_raises_error_if_df_contains_na(df_enc_big, df_enc_big_na):
         encoder = OneHotEncoder()
         encoder.fit(df_enc_big)
         encoder.transform(df_enc_big_na)
+
+
+def test_encode_numerical_variables(df_enc_numeric):
+
+    encoder = OneHotEncoder(
+        top_categories=None,
+        variables=None,
+        drop_last=False,
+        ignore_format=True,
+    )
+
+    X = encoder.fit_transform(df_enc_numeric[["var_A", "var_B"]])
+
+    # test fit attr
+    transf = {
+        "var_A_1": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_A_2": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+        "var_A_3": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+        "var_B_1": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_B_2": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+        "var_B_3": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    }
+
+    transf = pd.DataFrame(transf).astype("int32")
+    X = pd.DataFrame(X).astype("int32")
+
+    assert encoder.variables_ == ["var_A", "var_B"]
+    assert encoder.n_features_in_ == 2
+    # test transform output
+    pd.testing.assert_frame_equal(X, transf)

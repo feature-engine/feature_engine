@@ -1,10 +1,10 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -13,20 +13,24 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class AddMissingIndicator(BaseImputer):
     """
-    The AddMissingIndicator() adds an additional column or binary variable that
-    indicates if data is missing.
+    The AddMissingIndicator() adds additional binary variables that indicate if data is
+    missing. It will add as many missing indicators as variables indicated by the user.
 
-    AddMissingIndicator() will add as many missing indicators as variables
-    indicated by the user, or variables with missing data in the train set.
+    Binary variables are named with the original variable name plus ‘_na’.
 
-    The AddMissingIndicator() works for both numerical and categorical variables.
-    The user can pass a list with the variables for which the missing indicators
-    should be added as a list. Alternatively, the imputer will select and add missing
-    indicators to all variables in the training set that show missing data.
+    The AddMissingIndicator() works for both numerical and categorical variables. You
+    can pass a list with the variables for which the missing indicators should be
+    added. Alternatively, the imputer will select and add missing indicators to all
+    variables in the training set.
+
+    **Note**
+    If `how=missing_only`, the imputer will add missing indicators only to those
+    variables that show missing data in during fit. These may be a subset of the
+    variables you indicated.
 
     Parameters
     ----------
-    missing_only : bool, defatult=True
+    missing_only: bool, default=True
         Indicates if missing indicators should be added to variables with missing
         data or to all variables.
 
@@ -35,19 +39,18 @@ class AddMissingIndicator(BaseImputer):
 
         False: indicators will be created for all variables
 
-    variables : list, default=None
+    variables: list, default=None
         The list of variables to be imputed. If None, the imputer will find and
-        select all variables with missing data.
+        select all variables.
 
-    **Note**
-    The transformer will first select all variables or all user entered
-    variables and if how=missing_only, it will re-select from the original group
-    only those that show missing data in during fit.
 
     Attributes
     ----------
     variables_:
         List of variables for which the missing indicators will be created.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -77,10 +80,10 @@ class AddMissingIndicator(BaseImputer):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : pandas Series, default=None
+        y: pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
 
         Raises
@@ -114,7 +117,7 @@ class AddMissingIndicator(BaseImputer):
             else:
                 self.variables_ = self.variables
 
-        self.input_shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
