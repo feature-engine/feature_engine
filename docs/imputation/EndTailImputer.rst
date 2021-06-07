@@ -16,7 +16,7 @@ deviation, or using the inter-quartile range proximity rule. The value can also 
 determined as a factor of the maximum value. See the API Reference above for more
 details.
 
-You decides whether the missing data should be placed at the right or left tail of
+You decide whether the missing data should be placed at the right or left tail of
 the variable distribution.
 
 It works only with numerical variables. A list of variables can be indicated, or the
