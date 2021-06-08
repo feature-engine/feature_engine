@@ -1,14 +1,18 @@
 # Feature Engine
 
-![Python 3.6](https://img.shields.io/badge/python-3.6-success.svg)
-![Python 3.7](https://img.shields.io/badge/python-3.7-success.svg)
-![Python 3.8](https://img.shields.io/badge/python-3.8-success.svg)
-![License](https://img.shields.io/badge/license-BSD-success.svg)
-![CircleCI](https://img.shields.io/circleci/build/github/solegalli/feature_engine/master.svg?token=5a1c2accc2c97450e52d2cb1b47c333ab495d2c2)
-![Documentation Status](https://readthedocs.org/projects/feature-engine/badge/?version=latest)
+![PythonVersion](https://img.shields.io/badge/python-3.6%20|3.7%20|%203.8%20|%203.9-success)
+[![PyPI version](https://badge.fury.io/py/feature-engine.svg)](https://badge.fury.io/py/feature-engine)
+[![License https://github.com/solegalli/feature_engine/blob/master/LICENSE.md](https://img.shields.io/badge/license-BSD-success.svg)](https://github.com/solegalli/feature_engine/blob/master/LICENSE.md)
+[![CircleCI https://app.circleci.com/pipelines/github/solegalli/feature_engine?branch=master](https://img.shields.io/circleci/build/github/solegalli/feature_engine/master.svg?token=5a1c2accc2c97450e52d2cb1b47c333ab495d2c2)](https://app.circleci.com/pipelines/github/solegalli/feature_engine?branch=master)
+[![Documentation Status https://feature-engine.readthedocs.io/en/latest/index.html](https://readthedocs.org/projects/feature-engine/badge/?version=latest)](https://feature-engine.readthedocs.io/en/latest/index.html)
+[![Join the chat at https://gitter.im/feature_engine/community](https://badges.gitter.im/feature_engine/community.svg)](https://gitter.im/feature_engine/community)
+[![Sponsorship https://www.trainindata.com/](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/)
+[![Downloads](https://pepy.tech/badge/feature-engine)](https://pepy.tech/project/feature-engine)
+[![Downloads](https://pepy.tech/badge/feature-engine/month)](https://pepy.tech/project/feature-engine)
+[![Conda https://anaconda.org/conda-forge/feature_engine](https://anaconda.org/conda-forge/feature_engine/badges/installer/conda.svg)](https://anaconda.org/conda-forge/feature_engine)
 
 
-Feature-engine is a Python library with multiple transformers to engineer features for use in machine learning models. 
+Feature-engine is a Python library with multiple transformers to engineer and select features for use in machine learning models. 
 Feature-engine's transformers follow scikit-learn's functionality with fit() and transform() methods to first learn the 
 transforming parameters from data and then transform the data.
 
@@ -20,6 +24,8 @@ transforming parameters from data and then transform the data.
 * [Feature Selection for Machine Learning, Online Course](https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71)
 
 * [Python Feature Engineering Cookbook](https://www.packtpub.com/data/python-feature-engineering-cookbook)
+
+* [Deployment of Machine Learning Models, Online Course](https://www.udemy.com/course/deployment-of-machine-learning-models/?referralCode=D4FE5EA129FFD203CFF4)
 
 ## Blogs about Feature-engine:
 
@@ -91,9 +97,10 @@ More resources will be added as they appear online!
 ### Scikit-learn Wrapper:
  * SklearnTransformerWrapper
 
-### Variable Combinations:
+### Variable Creation:
  * MathematicalCombination
  * CombineWithReferenceFeature
+ * CyclicalTransformer
 
 ### Feature Selection:
  * DropFeatures
