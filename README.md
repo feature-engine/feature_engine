@@ -12,7 +12,7 @@
 [![Conda https://anaconda.org/conda-forge/feature_engine](https://anaconda.org/conda-forge/feature_engine/badges/installer/conda.svg)](https://anaconda.org/conda-forge/feature_engine)
 
 
-Feature-engine is a Python library with multiple transformers to engineer features for use in machine learning models. 
+Feature-engine is a Python library with multiple transformers to engineer and select features for use in machine learning models. 
 Feature-engine's transformers follow scikit-learn's functionality with fit() and transform() methods to first learn the 
 transforming parameters from data and then transform the data.
 
@@ -24,6 +24,8 @@ transforming parameters from data and then transform the data.
 * [Feature Selection for Machine Learning, Online Course](https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71)
 
 * [Python Feature Engineering Cookbook](https://www.packtpub.com/data/python-feature-engineering-cookbook)
+
+* [Deployment of Machine Learning Models, Online Course](https://www.udemy.com/course/deployment-of-machine-learning-models/?referralCode=D4FE5EA129FFD203CFF4)
 
 ## Blogs about Feature-engine:
 
@@ -95,9 +97,10 @@ More resources will be added as they appear online!
 ### Scikit-learn Wrapper:
  * SklearnTransformerWrapper
 
-### Variable Combinations:
+### Variable Creation:
  * MathematicalCombination
  * CombineWithReferenceFeature
+ * CyclicalTransformer
 
 ### Feature Selection:
  * DropFeatures
