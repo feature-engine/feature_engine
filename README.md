@@ -9,7 +9,7 @@
 [![Sponsorship https://www.trainindata.com/](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/)
 [![Downloads](https://pepy.tech/badge/feature-engine)](https://pepy.tech/project/feature-engine)
 [![Downloads](https://pepy.tech/badge/feature-engine/month)](https://pepy.tech/project/feature-engine)
-[![Conda](https://anaconda.org/conda-forge/feature_engine/badges/installer/conda.svg)]
+[![Conda https://anaconda.org/conda-forge/feature_engine](https://anaconda.org/conda-forge/feature_engine/badges/installer/conda.svg)](https://anaconda.org/conda-forge/feature_engine)
 
 
 Feature-engine is a Python library with multiple transformers to engineer features for use in machine learning models. 
