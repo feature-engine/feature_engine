@@ -6,6 +6,7 @@
 [![CircleCI at https://app.circleci.com/pipelines/github/solegalli/feature_engine?branch=master](https://img.shields.io/circleci/build/github/solegalli/feature_engine/master.svg?token=5a1c2accc2c97450e52d2cb1b47c333ab495d2c2)](https://app.circleci.com/pipelines/github/solegalli/feature_engine?branch=master)
 [![Documentation Status at https://feature-engine.readthedocs.io/en/latest/index.html](https://readthedocs.org/projects/feature-engine/badge/?version=latest)](https://feature-engine.readthedocs.io/en/latest/index.html)
 [![Join the chat at https://gitter.im/feature_engine/community](https://badges.gitter.im/feature_engine/community.svg)](https://gitter.im/feature_engine/community)
+[![Sponsorship https://www.trainindata.com/](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/)
 
 
 Feature-engine is a Python library with multiple transformers to engineer features for use in machine learning models. 
