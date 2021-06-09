@@ -9,7 +9,7 @@ from data or arbitrary values pre-defined by the user.
 .. figure::  ../images/imputersSummary.png
    :align:   center
 
-   Summary of Feature-engine's imputers main characteristics
+
 
 .. toctree::
    :maxdepth: 2
