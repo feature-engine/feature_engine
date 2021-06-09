@@ -1,6 +1,7 @@
 import warnings
 from typing import List, Union
 
+import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -143,6 +144,15 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # replace categories by the learned parameters
         for feature in self.encoder_dict_.keys():
             X[feature] = X[feature].map(self.encoder_dict_[feature])
+
+            # if original variables are cast as categorical, they will remain
+            # categorical after the encoding, and this is probably not desired
+            if pd.api.types.is_categorical_dtype(X[feature]):
+                # if np.array_equal(X[feature], X[feature].astype("int")):
+                if all(isinstance(x, int) for x in X[feature]):
+                    X[feature] = X[feature].astype("int")
+                else:
+                    X[feature]=X[feature].astype("float")
 
         # check if NaN values were introduced by the encoding
         if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:

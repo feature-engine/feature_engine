@@ -86,8 +86,8 @@ def _find_or_check_categorical_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
-    Checks that variables provided by the user are of type object. If None, finds all
-    the categorical (object type) variables in the DataFrame.
+    Checks that variables provided by the user are of type object or categorical.
+    If None, finds all the categorical and object type variables in the DataFrame.
 
     Parameters
     ----------
@@ -103,25 +103,25 @@ def _find_or_check_categorical_variables(
 
     Returns
     -------
-    variables : List of numerical variables
+    variables : List of categorical variables
     """
 
     if isinstance(variables, (str, int)):
         variables = [variables]
 
     elif not variables:
-        variables = list(X.select_dtypes(include="O").columns)
+        variables = list(X.select_dtypes(include=["O", "category"]).columns)
         if len(variables) == 0:
             raise ValueError(
-                "No categorical variables in this dataframe. Please check variable "
-                "format with pandas dtypes"
+                "No categorical variables in this dataframe. Please check the "
+                "variables format with pandas dtypes"
             )
 
     else:
-        if any(X[variables].select_dtypes(exclude="O").columns):
+        if any(X[variables].select_dtypes(exclude=["O", "category"]).columns):
             raise TypeError(
                 "Some of the variables are not categorical. Please cast them as object "
-                "before calling this transformer"
+                "or category before calling this transformer"
             )
 
     return variables
