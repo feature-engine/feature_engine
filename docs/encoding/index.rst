@@ -6,9 +6,14 @@ Categorical Variable Encoding
 Feature-engine's categorical encoders replace variable strings by estimated or
 arbitrary numbers.
 
-Feature-engine's categorical encoders work only with categorical variables. A list of
-variables can be indicated, or the encoders will automatically select and encode all
-categorical variables in the train set.
+.. figure::  ../images/categoricalSummary.png
+   :align:   center
+
+   Summary of Feature-engine's encoders main characteristics
+
+Feature-engine's categorical encoders work only with categorical variables by default.
+From version 1.1.0, you have the option to set the parameter ignore_format to False,
+and make the transformers also accept numerical variables as input.
 
 
 .. toctree::
