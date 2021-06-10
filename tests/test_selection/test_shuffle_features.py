@@ -4,6 +4,7 @@ import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.tree import DecisionTreeRegressor
 
 from feature_engine.selection import SelectByShuffling
@@ -119,11 +120,6 @@ def test_non_fitted_error(df_test):
         sel.transform(df_test)
 
 
-def test_raises_cv_error():
-    with pytest.raises(ValueError):
-        SelectByShuffling(RandomForestClassifier(random_state=1), cv=0)
-
-
 def test_raises_threshold_error():
     with pytest.raises(ValueError):
         SelectByShuffling(RandomForestClassifier(random_state=1), threshold="hello")
@@ -180,3 +176,86 @@ def test_automatic_variable_selection(df_test):
     ]
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_KFold_generators(df_test):
+
+    X, y = df_test
+
+    # Kfold
+    sel = SelectByShuffling(
+        RandomForestClassifier(random_state=1),
+        threshold=0.01,
+        random_state=1,
+        cv=KFold(n_splits=3),
+    )
+    sel.fit(X, y)
+    Xtransformed = sel.transform(X)
+
+    # test fit attrs
+    assert sel.initial_model_performance_ > 0.995
+    assert isinstance(sel.features_to_drop_, list)
+    assert all([x for x in sel.features_to_drop_ if x in X.columns])
+    assert len(sel.features_to_drop_) < X.shape[1]
+    assert not Xtransformed.empty
+    assert all([x for x in Xtransformed.columns if x not in sel.features_to_drop_])
+    assert isinstance(sel.performance_drifts_, dict)
+    assert all([x for x in X.columns if x in sel.performance_drifts_.keys()])
+    assert all(
+        [
+            isinstance(sel.performance_drifts_[var], (int, float))
+            for var in sel.performance_drifts_.keys()
+        ]
+    )
+
+    # Stratfied
+    sel = SelectByShuffling(
+        RandomForestClassifier(random_state=1),
+        threshold=0.01,
+        random_state=1,
+        cv=StratifiedKFold(n_splits=3),
+    )
+    sel.fit(X, y)
+    Xtransformed = sel.transform(X)
+
+    # test fit attrs
+    assert sel.initial_model_performance_ > 0.995
+    assert isinstance(sel.features_to_drop_, list)
+    assert all([x for x in sel.features_to_drop_ if x in X.columns])
+    assert len(sel.features_to_drop_) < X.shape[1]
+    assert not Xtransformed.empty
+    assert all([x for x in Xtransformed.columns if x not in sel.features_to_drop_])
+    assert isinstance(sel.performance_drifts_, dict)
+    assert all([x for x in X.columns if x in sel.performance_drifts_.keys()])
+    assert all(
+        [
+            isinstance(sel.performance_drifts_[var], (int, float))
+            for var in sel.performance_drifts_.keys()
+        ]
+    )
+
+    # None
+    sel = SelectByShuffling(
+        RandomForestClassifier(random_state=1),
+        threshold=0.01,
+        random_state=1,
+        cv=None,
+    )
+    sel.fit(X, y)
+    Xtransformed = sel.transform(X)
+
+    # test fit attrs
+    assert sel.initial_model_performance_ > 0.995
+    assert isinstance(sel.features_to_drop_, list)
+    assert all([x for x in sel.features_to_drop_ if x in X.columns])
+    assert len(sel.features_to_drop_) < X.shape[1]
+    assert not Xtransformed.empty
+    assert all([x for x in Xtransformed.columns if x not in sel.features_to_drop_])
+    assert isinstance(sel.performance_drifts_, dict)
+    assert all([x for x in X.columns if x in sel.performance_drifts_.keys()])
+    assert all(
+        [
+            isinstance(sel.performance_drifts_[var], (int, float))
+            for var in sel.performance_drifts_.keys()
+        ]
+    )

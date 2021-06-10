@@ -6,6 +6,7 @@ import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.tree import DecisionTreeRegressor
 
 from feature_engine.selection import SelectBySingleFeaturePerformance
@@ -163,11 +164,6 @@ def test_non_fitted_error(df_test):
         sel.transform(df_test)
 
 
-def test_raises_cv_error():
-    with pytest.raises(ValueError):
-        SelectBySingleFeaturePerformance(RandomForestClassifier(random_state=1), cv=0)
-
-
 def test_raises_threshold_error():
     with pytest.raises(ValueError):
         SelectBySingleFeaturePerformance(
@@ -243,3 +239,80 @@ def test_automatic_variable_selection(df_test):
     }
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_KFold_generators(df_test):
+
+    X, y = df_test
+
+    # Kfold
+    sel = SelectBySingleFeaturePerformance(
+        RandomForestClassifier(random_state=1),
+        threshold=0.5,
+        cv=KFold(n_splits=3),
+    )
+    sel.fit(X, y)
+    Xtransformed = sel.transform(X)
+
+    # test fit attrs
+    assert isinstance(sel.features_to_drop_, list)
+    assert all([x for x in sel.features_to_drop_ if x in X.columns])
+    assert len(sel.features_to_drop_) < X.shape[1]
+    assert not Xtransformed.empty
+    assert all([x for x in Xtransformed.columns if x not in sel.features_to_drop_])
+    assert isinstance(sel.feature_performance_, dict)
+    assert all([x for x in X.columns if x in sel.feature_performance_.keys()])
+    assert all(
+        [
+            isinstance(sel.feature_performance_[var], float)
+            for var in sel.feature_performance_.keys()
+        ]
+    )
+
+    # Stratfied
+    sel = SelectBySingleFeaturePerformance(
+        RandomForestClassifier(random_state=1),
+        threshold=0.5,
+        cv=StratifiedKFold(n_splits=3),
+    )
+    sel.fit(X, y)
+    Xtransformed = sel.transform(X)
+
+    # test fit attrs
+    assert isinstance(sel.features_to_drop_, list)
+    assert all([x for x in sel.features_to_drop_ if x in X.columns])
+    assert len(sel.features_to_drop_) < X.shape[1]
+    assert not Xtransformed.empty
+    assert all([x for x in Xtransformed.columns if x not in sel.features_to_drop_])
+    assert isinstance(sel.feature_performance_, dict)
+    assert all([x for x in X.columns if x in sel.feature_performance_.keys()])
+    assert all(
+        [
+            isinstance(sel.feature_performance_[var], float)
+            for var in sel.feature_performance_.keys()
+        ]
+    )
+
+    # None
+    sel = SelectBySingleFeaturePerformance(
+        RandomForestClassifier(random_state=1),
+        threshold=0.5,
+        cv=None,
+    )
+    sel.fit(X, y)
+    Xtransformed = sel.transform(X)
+
+    # test fit attrs
+    assert isinstance(sel.features_to_drop_, list)
+    assert all([x for x in sel.features_to_drop_ if x in X.columns])
+    assert len(sel.features_to_drop_) < X.shape[1]
+    assert not Xtransformed.empty
+    assert all([x for x in Xtransformed.columns if x not in sel.features_to_drop_])
+    assert isinstance(sel.feature_performance_, dict)
+    assert all([x for x in X.columns if x in sel.feature_performance_.keys()])
+    assert all(
+        [
+            isinstance(sel.feature_performance_[var], float)
+            for var in sel.feature_performance_.keys()
+        ]
+    )
