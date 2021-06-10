@@ -77,7 +77,10 @@ class OneHotEncoder(BaseCategoricalTransformer):
     drop_last: boolean, default=False
         Only used if `top_categories = None`. It indicates whether to create dummy
         variables for all the categories (k dummies), or if set to `True`, it will
-        ignore the last binary variable of the list (k-1 dummies).
+        ignore the last binary variable and return k-1 dummies.
+
+    drop_last_binary: boolean, default=False
+        Only used if `drop_last=False`.
 
     variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
@@ -188,15 +191,9 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         self.encoder_dict_ = {}
 
-        for var in self.variables_:
-            if not self.top_categories:
-                if self.drop_last:
-                    category_ls = [x for x in X[var].unique()]
-                    self.encoder_dict_[var] = category_ls[:-1]
-                else:
-                    self.encoder_dict_[var] = X[var].unique()
-
-            else:
+        # make dummies only for the most popular categories
+        if self.top_categories:
+            for var in self.variables_:
                 self.encoder_dict_[var] = [
                     x
                     for x in X[var]
@@ -205,6 +202,18 @@ class OneHotEncoder(BaseCategoricalTransformer):
                     .head(self.top_categories)
                     .index
                 ]
+
+        else:
+            # return k-1 dummies
+            if self.drop_last:
+                for var in self.variables_:
+                    category_ls = [x for x in X[var].unique()]
+                    self.encoder_dict_[var] = category_ls[:-1]
+
+            # return k dummies
+            else:
+                for var in self.variables_:
+                    self.encoder_dict_[var] = X[var].unique()
 
         self._check_encoding_dictionary()
 
