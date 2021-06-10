@@ -63,8 +63,24 @@ class SelectByShuffling(BaseSelector):
         performance drift is smaller than the mean performance drift across all
         features.
 
-    cv: int, default=3
-        Desired number of cross-validation fold to be used to fit the estimator.
+    cv: int, cross-validation generator or an iterable, default=3
+        Determines the cross-validation splitting strategy. Possible inputs for cv are:
+
+            - None, to use cross_validate's default 5-fold cross validation
+
+            - int, to specify the number of folds in a (Stratified)KFold,
+
+            - CV splitter
+                - (https://scikit-learn.org/stable/glossary.html#term-CV-splitter)
+
+            - An iterable yielding (train, test) splits as arrays of indices.
+
+        For int/None inputs, if the estimator is a classifier and y is either binary or
+        multiclass, StratifiedKFold is used. In all other cases, Fold is used. These
+        splitters are instantiated with shuffle=False so the splits will be the same
+        across calls.
+
+        For more details check Scikit-learn's cross_validate documentation
 
     random_state: int, default=None
         Controls the randomness when shuffling features.
@@ -100,14 +116,11 @@ class SelectByShuffling(BaseSelector):
         self,
         estimator,
         scoring: str = "roc_auc",
-        cv: int = 3,
+        cv=3,
         threshold: Union[float, int] = None,
         variables: Variables = None,
         random_state: int = None,
     ):
-
-        if not isinstance(cv, int) or cv < 1:
-            raise ValueError("cv can only take positive integers bigger than 1")
 
         if threshold and not isinstance(threshold, (int, float)):
             raise ValueError("threshold can only be integer or float or None")
