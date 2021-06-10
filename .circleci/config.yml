@@ -61,6 +61,19 @@ jobs:
           command: |
             tox -e py38
 
+  test_feature_engine_py39:
+    docker:
+      - image: circleci/python:3.9.0
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run tests with Python 3.9
+          command: |
+            tox -e py39
+
   test_style:
     docker:
       - image: circleci/python:3.8.0
@@ -124,6 +137,7 @@ workflows:
       - test_feature_engine_py36
       - test_feature_engine_py37
       - test_feature_engine_py38
+      - test_feature_engine_py39
       - test_style
       - test_docs
       - test_type
@@ -132,6 +146,7 @@ workflows:
             - test_feature_engine_py36
             - test_feature_engine_py37
             - test_feature_engine_py38
+            - test_feature_engine_py39
             - test_style
             - test_docs
             - test_type
