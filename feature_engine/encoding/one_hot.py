@@ -77,7 +77,14 @@ class OneHotEncoder(BaseCategoricalTransformer):
     drop_last: boolean, default=False
         Only used if `top_categories = None`. It indicates whether to create dummy
         variables for all the categories (k dummies), or if set to `True`, it will
-        ignore the last binary variable of the list (k-1 dummies).
+        ignore the last binary variable and return k-1 dummies.
+
+    drop_last_binary: boolean, default=False
+        Whether to return 1 or 2 dummy variables for binary categorical variables. When
+        a categorical variable has only 2 categories, then the second dummy variable
+        created by one hot encoding can be completely redundant. Setting this parameter
+        to `True`, will ensure that for every binary variable in the dataset, only 1
+        dummy is created.
 
     variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
@@ -99,6 +106,10 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
     variables_:
         The group of variables that will be transformed.
+
+    variables_binary_:
+        A list with binary variables identified from the data. That is, variables with
+        only 2 categories.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -135,6 +146,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
         self,
         top_categories: Optional[int] = None,
         drop_last: bool = False,
+        drop_last_binary: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
     ) -> None:
@@ -145,11 +157,15 @@ class OneHotEncoder(BaseCategoricalTransformer):
         if not isinstance(drop_last, bool):
             raise ValueError("drop_last takes only True or False")
 
+        if not isinstance(drop_last_binary, bool):
+            raise ValueError("drop_last_binary takes only True or False")
+
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
 
         self.top_categories = top_categories
         self.drop_last = drop_last
+        self.drop_last_binary = drop_last_binary
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
 
@@ -188,15 +204,9 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         self.encoder_dict_ = {}
 
-        for var in self.variables_:
-            if not self.top_categories:
-                if self.drop_last:
-                    category_ls = [x for x in X[var].unique()]
-                    self.encoder_dict_[var] = category_ls[:-1]
-                else:
-                    self.encoder_dict_[var] = X[var].unique()
-
-            else:
+        # make dummies only for the most popular categories
+        if self.top_categories:
+            for var in self.variables_:
                 self.encoder_dict_[var] = [
                     x
                     for x in X[var]
@@ -205,6 +215,27 @@ class OneHotEncoder(BaseCategoricalTransformer):
                     .head(self.top_categories)
                     .index
                 ]
+
+        else:
+            # return k-1 dummies
+            if self.drop_last:
+                for var in self.variables_:
+                    category_ls = [x for x in X[var].unique()]
+                    self.encoder_dict_[var] = category_ls[:-1]
+
+            # return k dummies
+            else:
+                for var in self.variables_:
+                    self.encoder_dict_[var] = X[var].unique()
+
+        self.variables_binary_ = [
+            var for var in self.variables_ if X[var].nunique() == 2
+        ]
+
+        # automatically encode binary variables as 1 dummy
+        if self.drop_last_binary:
+            for var in self.variables_binary_:
+                self.encoder_dict_[var] = X[var].unique()[0]
 
         self._check_encoding_dictionary()
 
