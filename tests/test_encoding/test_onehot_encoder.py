@@ -215,7 +215,9 @@ def df_enc_binary():
 
 
 def test_encode_into_k_binary_plus_drop_binary(df_enc_binary):
-    encoder = OneHotEncoder(top_categories=None, variables=None, drop_last=False, drop_last_binary=True)
+    encoder = OneHotEncoder(
+        top_categories=None, variables=None, drop_last=False, drop_last_binary=True
+    )
     X = encoder.fit_transform(df_enc_binary)
 
     # test fit attr
@@ -241,7 +243,9 @@ def test_encode_into_k_binary_plus_drop_binary(df_enc_binary):
 
 
 def test_encode_into_kminus1_binary_plus_drop_binary(df_enc_binary):
-    encoder = OneHotEncoder(top_categories=None, variables=None, drop_last=True, drop_last_binary=True)
+    encoder = OneHotEncoder(
+        top_categories=None, variables=None, drop_last=True, drop_last_binary=True
+    )
     X = encoder.fit_transform(df_enc_binary)
 
     # test fit attr
@@ -267,7 +271,9 @@ def test_encode_into_kminus1_binary_plus_drop_binary(df_enc_binary):
 def test_encode_into_top_categories_plus_drop_binary(df_enc_binary):
 
     # top_categories = 1
-    encoder = OneHotEncoder(top_categories=1, variables=None, drop_last=False, drop_last_binary=True)
+    encoder = OneHotEncoder(
+        top_categories=1, variables=None, drop_last=False, drop_last_binary=True
+    )
     X = encoder.fit_transform(df_enc_binary)
 
     # test fit attr
@@ -288,7 +294,9 @@ def test_encode_into_top_categories_plus_drop_binary(df_enc_binary):
     assert "var_C_B" not in X.columns
 
     # top_categories = 2
-    encoder = OneHotEncoder(top_categories=2, variables=None, drop_last=False, drop_last_binary=True)
+    encoder = OneHotEncoder(
+        top_categories=2, variables=None, drop_last=False, drop_last_binary=True
+    )
     X = encoder.fit_transform(df_enc_binary)
 
     # test fit attr

@@ -80,7 +80,11 @@ class OneHotEncoder(BaseCategoricalTransformer):
         ignore the last binary variable and return k-1 dummies.
 
     drop_last_binary: boolean, default=False
-        Only used if `drop_last=False`.
+        Whether to return 1 or 2 dummy variables for binary categorical variables. When
+        a categorical variable has only 2 categories, then the second dummy variable
+        created by one hot encoding can be completely redundant. Setting this parameter
+        to `True`, will ensure that for every binary variable in the dataset, only 1
+        dummy will be created.
 
     variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
@@ -102,6 +106,10 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
     variables_:
         The group of variables that will be transformed.
+
+    variables_binary_:
+        A list with binary variables identified from the data. That is, variables with
+        only 2 categories.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -220,7 +228,9 @@ class OneHotEncoder(BaseCategoricalTransformer):
                 for var in self.variables_:
                     self.encoder_dict_[var] = X[var].unique()
 
-        self.variables_binary_ = [var for var in self.variables_ if X[var].nunique() == 2]
+        self.variables_binary_ = [
+            var for var in self.variables_ if X[var].nunique() == 2
+        ]
 
         # automatically encode binary variables as 1 dummy
         if self.drop_last_binary:
