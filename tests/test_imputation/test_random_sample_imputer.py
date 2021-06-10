@@ -70,11 +70,14 @@ def test_general_seed_plus_automatically_select_variables(df_na):
 def test_seed_per_observation_and_multiple_variables_in_random_state(df_na):
     # test case 2: imputer seed per observation using multiple variables to determine
     # the random_state
-    # Note the variables used as seed should not have missing data
+    # Note the variables used as seed should not have missing data, this I fill
+    df_na = df_na.copy()
+    df_na[["Marks", "Age"]] = df_na[["Marks", "Age"]].fillna(1)
+
     imputer = RandomSampleImputer(
         variables=["City", "Studies"], random_state=["Marks", "Age"], seed="observation"
     )
-    df_na[["Marks", "Age"]] = df_na[["Marks", "Age"]].fillna(1)
+
     X_transformed = imputer.fit_transform(df_na)
 
     # expected output
@@ -120,13 +123,17 @@ def test_seed_per_observation_and_multiple_variables_in_random_state(df_na):
 
 def test_seed_per_observation_plus_product_of_seeding_variables(df_na):
     # test case 3: observation seed, 2 variables as seed, product of seed variables
+    # need to fill variables used as seed
+    df_na = df_na.copy()
+    df_na[["Marks", "Age"]] = df_na[["Marks", "Age"]].fillna(1)
+
     imputer = RandomSampleImputer(
         variables=["City", "Studies"],
         random_state=["Marks", "Age"],
         seed="observation",
         seeding_method="multiply",
     )
-    df_na[["Marks", "Age"]] = df_na[["Marks", "Age"]].fillna(1)
+
     X_transformed = imputer.fit_transform(df_na)
 
     # expected output
@@ -176,10 +183,13 @@ def test_seed_per_observation_plus_product_of_seeding_variables(df_na):
 def test_seed_per_observation_with_only_1_variable_as_seed(df_na):
     # test case 4: observation seed, only variable indicated as seed, method: addition
     # Note the variable used as seed should not have missing data
+    df_na = df_na.copy()
+    df_na["Age"] = df_na["Age"].fillna(1)
+
     imputer = RandomSampleImputer(
         variables=["City", "Studies"], random_state="Age", seed="observation"
     )
-    df_na["Age"] = df_na["Age"].fillna(1)
+
     X_transformed = imputer.fit_transform(df_na)
 
     # expected output
@@ -248,3 +258,52 @@ def test_error_if_random_state_is_string(df_na):
     with pytest.raises(ValueError):
         imputer = RandomSampleImputer(seed="observation", random_state="arbitrary")
         imputer.fit(df_na)
+
+
+def test_variables_cast_as_category(df_na):
+
+    df_na = df_na.copy()
+    df_na["City"] = df_na["City"].astype("category")
+
+    # set up transformer
+    imputer = RandomSampleImputer(variables=None, random_state=5, seed="general")
+    X_transformed = imputer.fit_transform(df_na)
+
+    # expected output:
+    # fillna based on seed used (found experimenting on Jupyter notebook)
+    ref = {
+        "Name": ["tom", "nick", "krish", "peter", "peter", "sam", "fred", "sam"],
+        "City": [
+            "London",
+            "Manchester",
+            "London",
+            "Manchester",
+            "London",
+            "London",
+            "Bristol",
+            "Manchester",
+        ],
+        "Studies": [
+            "Bachelor",
+            "Bachelor",
+            "PhD",
+            "Masters",
+            "Bachelor",
+            "PhD",
+            "None",
+            "Masters",
+        ],
+        "Age": [20, 21, 19, 23, 23, 40, 41, 37],
+        "Marks": [0.9, 0.8, 0.7, 0.3, 0.3, 0.6, 0.8, 0.6],
+        "dob": pd.date_range("2020-02-24", periods=8, freq="T"),
+    }
+    ref = pd.DataFrame(ref)
+    ref["City"] = ref["City"].astype("category")
+
+    # test fit attr
+    assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks", "dob"]
+    assert imputer.n_features_in_ == 6
+    pd.testing.assert_frame_equal(imputer.X_, df_na)
+
+    # test transform output
+    pd.testing.assert_frame_equal(X_transformed, ref, check_dtype=False)

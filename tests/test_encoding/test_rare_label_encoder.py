@@ -171,3 +171,44 @@ def test_max_n_categories_with_numeric_var(df_enc_numeric):
     for i in range(len(df)):
         assert str(list(X["var_A"])[i]) == str(list(df["var_A"])[i])
         assert str(list(X["var_B"])[i]) == str(list(df["var_B"])[i])
+
+
+def test_variables_cast_as_category(df_enc_big):
+    # test case 1: defo params, automatically select variables
+    encoder = RareLabelEncoder(
+        tol=0.06, n_categories=5, variables=None, replace_with="Rare"
+    )
+
+    df_enc_big = df_enc_big.copy()
+    df_enc_big["var_B"] = df_enc_big["var_B"].astype("category")
+
+    X = encoder.fit_transform(df_enc_big)
+
+    # expected output
+    df = {
+        "var_A": ["A"] * 6
+        + ["B"] * 10
+        + ["C"] * 4
+        + ["D"] * 10
+        + ["Rare"] * 4
+        + ["G"] * 6,
+        "var_B": ["A"] * 10
+        + ["B"] * 6
+        + ["C"] * 4
+        + ["D"] * 10
+        + ["Rare"] * 4
+        + ["G"] * 6,
+        "var_C": ["A"] * 4
+        + ["B"] * 6
+        + ["C"] * 10
+        + ["D"] * 10
+        + ["Rare"] * 4
+        + ["G"] * 6,
+    }
+    df = pd.DataFrame(df)
+
+    # test fit attr
+    assert encoder.variables_ == ["var_A", "var_B", "var_C"]
+    assert encoder.n_features_in_ == 3
+    # test transform output
+    pd.testing.assert_frame_equal(X, df)

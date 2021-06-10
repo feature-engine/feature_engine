@@ -80,6 +80,19 @@ def df_enc():
 
 
 @pytest.fixture(scope="module")
+def df_enc_category_dtypes():
+    df = {
+        "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
+        "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
+        "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+    }
+    df = pd.DataFrame(df)
+    df[["var_A", "var_B"]] = df[["var_A", "var_B"]].astype("category")
+
+    return df
+
+
+@pytest.fixture(scope="module")
 def df_enc_numeric():
     df = {
         "var_A": [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3],

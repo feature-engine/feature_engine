@@ -144,6 +144,14 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         for feature in self.encoder_dict_.keys():
             X[feature] = X[feature].map(self.encoder_dict_[feature])
 
+            # if original variables are cast as categorical, they will remain
+            # categorical after the encoding, and this is probably not desired
+            if pd.api.types.is_categorical_dtype(X[feature]):
+                if all(isinstance(x, int) for x in X[feature]):
+                    X[feature] = X[feature].astype("int")
+                else:
+                    X[feature] = X[feature].astype("float")
+
         # check if NaN values were introduced by the encoding
         if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
             warnings.warn(

@@ -201,3 +201,40 @@ def test_column_names_are_numbers(df_numeric_columns):
     assert encoder.n_features_in_ == 5
     # transform params
     pd.testing.assert_frame_equal(X, transf_df)
+
+
+def test_variables_cast_as_category(df_enc_category_dtypes):
+    encoder = CountFrequencyEncoder(encoding_method="count", variables=["var_A"])
+    X = encoder.fit_transform(df_enc_category_dtypes)
+
+    # expected result
+    transf_df = df_enc_category_dtypes.copy()
+    transf_df["var_A"] = [
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        4,
+        4,
+        4,
+        4,
+    ]
+    # transform params
+    pd.testing.assert_frame_equal(X, transf_df, check_dtype=False)
+    assert X["var_A"].dtypes == int
+
+    encoder = CountFrequencyEncoder(encoding_method="frequency", variables=["var_A"])
+    X = encoder.fit_transform(df_enc_category_dtypes)
+    assert X["var_A"].dtypes == float

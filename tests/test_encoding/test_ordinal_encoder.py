@@ -141,3 +141,18 @@ def test_arbitrary_encoding_automatically_find_variables_ignore_format(df_enc_nu
     assert encoder.n_features_in_ == 2
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
+
+
+def test_variables_cast_as_category(df_enc_category_dtypes):
+    df = df_enc_category_dtypes.copy()
+    encoder = OrdinalEncoder(encoding_method="ordered", variables=["var_A"])
+    encoder.fit(df[["var_A", "var_B"]], df["target"])
+    X = encoder.transform(df[["var_A", "var_B"]])
+
+    # expected output
+    transf_df = df.copy()
+    transf_df["var_A"] = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2]
+
+    # test transform output
+    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]], check_dtype=False)
+    assert X["var_A"].dtypes == int
