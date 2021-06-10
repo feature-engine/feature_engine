@@ -84,7 +84,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
         a categorical variable has only 2 categories, then the second dummy variable
         created by one hot encoding can be completely redundant. Setting this parameter
         to `True`, will ensure that for every binary variable in the dataset, only 1
-        dummy will be created.
+        dummy is created.
 
     variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
