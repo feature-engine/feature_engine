@@ -212,4 +212,3 @@ def test_variables_cast_as_category(df_enc_big):
     assert encoder.n_features_in_ == 3
     # test transform output
     pd.testing.assert_frame_equal(X, df)
-
