@@ -138,6 +138,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
         self,
         top_categories: Optional[int] = None,
         drop_last: bool = False,
+        drop_last_binary: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
     ) -> None:
@@ -148,11 +149,15 @@ class OneHotEncoder(BaseCategoricalTransformer):
         if not isinstance(drop_last, bool):
             raise ValueError("drop_last takes only True or False")
 
+        if not isinstance(drop_last_binary, bool):
+            raise ValueError("drop_last_binary takes only True or False")
+
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
 
         self.top_categories = top_categories
         self.drop_last = drop_last
+        self.drop_last_binary = drop_last_binary
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
 
@@ -214,6 +219,13 @@ class OneHotEncoder(BaseCategoricalTransformer):
             else:
                 for var in self.variables_:
                     self.encoder_dict_[var] = X[var].unique()
+
+        self.variables_binary_ = [var for var in self.variables_ if X[var].nunique() == 2]
+
+        # automatically encode binary variables as 1 dummy
+        if self.drop_last_binary:
+            for var in self.variables_binary_:
+                self.encoder_dict_[var] = X[var].unique()[0]
 
         self._check_encoding_dictionary()
 
