@@ -168,3 +168,36 @@ def test_encode_numerical_variables(df_enc_numeric):
     assert encoder.n_features_in_ == 2
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
+
+
+def test_variables_cast_as_category(df_enc_numeric):
+
+    encoder = OneHotEncoder(
+        top_categories=None,
+        variables=None,
+        drop_last=False,
+        ignore_format=True,
+    )
+
+    df = df_enc_numeric.copy()
+    df[["var_A", "var_B"]] = df[["var_A", "var_B"]].astype("category")
+
+    X = encoder.fit_transform(df[["var_A", "var_B"]])
+
+    # test fit attr
+    transf = {
+        "var_A_1": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_A_2": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+        "var_A_3": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+        "var_B_1": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_B_2": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+        "var_B_3": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    }
+
+    transf = pd.DataFrame(transf).astype("int32")
+    X = pd.DataFrame(X).astype("int32")
+
+    assert encoder.variables_ == ["var_A", "var_B"]
+    assert encoder.n_features_in_ == 2
+    # test transform output
+    pd.testing.assert_frame_equal(X, transf)

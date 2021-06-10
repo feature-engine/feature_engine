@@ -238,5 +238,3 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     encoder = CountFrequencyEncoder(encoding_method="frequency", variables=["var_A"])
     X = encoder.fit_transform(df_enc_category_dtypes)
     assert X["var_A"].dtypes == float
-
-

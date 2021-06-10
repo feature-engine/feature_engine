@@ -109,6 +109,7 @@ def test_mode_imputation_with_multiple_variables(df_na):
 
 def test_imputation_of_numerical_vars_cast_as_object_and_returned_as_numerical(df_na):
     # test case: imputing of numerical variables cast as object + return numeric
+    df_na = df_na.copy()
     df_na["Marks"] = df_na["Marks"].astype("O")
     imputer = CategoricalImputer(
         imputation_method="frequent", variables=["City", "Studies", "Marks"]
@@ -133,6 +134,7 @@ def test_imputation_of_numerical_vars_cast_as_object_and_returned_as_numerical(d
 def test_imputation_of_numerical_vars_cast_as_object_and_returned_as_object(df_na):
     # test case 6: imputing of numerical variables cast as object + return as object
     # after imputation
+    df_na = df_na.copy()
     df_na["Marks"] = df_na["Marks"].astype("O")
     imputer = CategoricalImputer(
         imputation_method="frequent",
@@ -214,4 +216,67 @@ def test_impute_numerical_variables_with_mode(df_na):
     }
 
     # test transform output
+    pd.testing.assert_frame_equal(X_transformed, X_reference)
+
+
+def test_variables_cast_as_category_missing(df_na):
+    # string missing
+    df_na = df_na.copy()
+    df_na["City"] = df_na["City"].astype("category")
+
+    imputer = CategoricalImputer(imputation_method="missing", variables=None)
+    X_transformed = imputer.fit_transform(df_na)
+
+    # set up expected output
+    X_reference = df_na.copy()
+    X_reference["Name"] = X_reference["Name"].fillna("Missing")
+    X_reference["Studies"] = X_reference["Studies"].fillna("Missing")
+
+    X_reference["City"].cat.add_categories("Missing", inplace=True)
+    X_reference["City"] = X_reference["City"].fillna("Missing")
+
+    # test fit attributes
+    assert imputer.variables_ == ["Name", "City", "Studies"]
+    assert imputer.imputer_dict_ == {
+        "Name": "Missing",
+        "City": "Missing",
+        "Studies": "Missing",
+    }
+
+    # test transform output
+    # selected columns should have no NA
+    # non selected columns should still have NA
+    assert X_transformed[["Name", "City", "Studies"]].isnull().sum().sum() == 0
+    assert X_transformed[["Age", "Marks"]].isnull().sum().sum() > 0
+    pd.testing.assert_frame_equal(X_transformed, X_reference)
+
+
+def test_variables_cast_as_category_frequent(df_na):
+
+    df_na = df_na.copy()
+    df_na["City"] = df_na["City"].astype("category")
+
+    # this variable does not have a mode, so drop
+    df_na.drop(labels=["Name"], axis=1, inplace=True)
+
+    imputer = CategoricalImputer(imputation_method="frequent", variables=None)
+    X_transformed = imputer.fit_transform(df_na)
+
+    # set up expected output
+    X_reference = df_na.copy()
+    X_reference["Studies"] = X_reference["Studies"].fillna("Bachelor")
+    X_reference["City"] = X_reference["City"].fillna("London")
+
+    # test fit attributes
+    assert imputer.variables_ == ["City", "Studies"]
+    assert imputer.imputer_dict_ == {
+        "City": "London",
+        "Studies": "Bachelor",
+    }
+
+    # test transform output
+    # selected columns should have no NA
+    # non selected columns should still have NA
+    assert X_transformed[["City", "Studies"]].isnull().sum().sum() == 0
+    assert X_transformed[["Age", "Marks"]].isnull().sum().sum() > 0
     pd.testing.assert_frame_equal(X_transformed, X_reference)

@@ -71,8 +71,11 @@ def test_find_or_check_categorical_variables(df_vartypes, df_numeric_columns):
     assert _find_or_check_categorical_variables(df_numeric_columns, 1) == [1]
 
     df_vartypes["Age"] = df_vartypes["Age"].astype("category")
-    assert _find_or_check_categorical_variables(df_vartypes, None) == vars_cat+["Age"]
-    assert _find_or_check_categorical_variables(df_vartypes, ["Name", "Age"]) == ["Name", "Age"]
+    assert _find_or_check_categorical_variables(df_vartypes, None) == vars_cat + ["Age"]
+    assert _find_or_check_categorical_variables(df_vartypes, ["Name", "Age"]) == [
+        "Name",
+        "Age",
+    ]
 
 
 def test_find_all_variables(df_vartypes):

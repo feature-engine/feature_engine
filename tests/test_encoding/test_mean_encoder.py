@@ -293,4 +293,3 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]], check_dtype=False)
     assert X["var_A"].dtypes == float
-
