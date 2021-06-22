@@ -26,7 +26,7 @@ Mayor changes
 -------------
     - Most transformers have now the additional attribute `variables_` containing the variables that will be modified. The former attribute `variables` is retained. `variables_` will almost always be identical to `variables` except when the transformer is initialised with `variables=None`.
     - The parameter `transformer` in the SklearnTransformerWrapper and the parameter `estimator` in the SelectBySingleFeaturePerformance, SelectByShuffling, RecursiveFeatureElimination and RecursiveFeatureAddition need a compulsory entry, and cannot be left blank when initialising the transformers.
-    - Categorical encoders support now variables cast as `category` as well as `object` (**bitsbuffer and Soledad Galli**)
+    - Categorical encoders support now variables cast as `category` as well as `object` (**Shubhmay Potdar and Soledad Galli**)
     - Categorical encoders have now the parameter `ignore_format` to allow the transformer to work with any variable type, and not just object or categorical.
     - `CategoricalImputer` has now the parameter `ignore_format` to allow the transformer to work with any variable type, and not just object or categorical.
     - All transformers have now the new attribute `n_features_in` with captures the number of features in the dataset used to train the transformer (during fit()).
@@ -35,7 +35,7 @@ Minor changes
 -------------
     - Feature selection transformers support now all cross-validation schemes in the `cv` parameter, and not just an integer. That is, you can initialize the transformer with LOOCV, or StratifiedCV for example.
     - The OneHotEncoder includes additional functionality to return just 1 dummy variable for categorical variables that contain only 2 categories. In the new attribute `variables_binary_` you can identify the original binary variables.
-    - MathematicalCombinator now supports use of dataframes with null values (**AgustinFi**).
+    - MathematicalCombinator now supports use of dataframes with null values (**Agustin Firpo**).
 
 New transformer
 ---------------
