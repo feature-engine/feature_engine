@@ -45,6 +45,8 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         Apply the reciprocal 1 / x transformation.
     fit_transform:
         Fit to data, then transform it.
+    inverse_transform:
+        Apply the inverse reciprocal 1 / x transformation.
     """
 
     def __init__(
@@ -135,6 +137,33 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         X.loc[:, self.variables_] = np.reciprocal(X.loc[:, self.variables_])
 
         return X
+    
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Apply the inverse reciprocal 1 / x transformation.
+
+        Parameters
+        ----------
+        X: Pandas DataFrame of shape = [n_samples, n_features]
+            The data to be transformed.
+
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            - If the variable(s) contain null values
+            - If the df has different number of features than the df used in fit()
+            - If some variables contain zero values
+
+        Returns
+        -------
+        X: pandas dataframe
+            The dataframe with the transformed variables.
+        """
+        # inverse_transform
+        return  super().transform(X)
+
 
     def _more_tags(self):
         tags_dict = _return_tags()

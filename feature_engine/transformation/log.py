@@ -13,7 +13,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class LogTransformer(BaseNumericalTransformer):
     """
-    The LogTransformer() applies the natural logarithm or the base 10 logarithm to
+    The LogTransformer() applies the natural logarithm, the base 10 logarithm or exponetial function to
     numerical variables. The natural logarithm is logarithm in base e.
 
     The LogTransformer() only works with numerical non-negative values. If the variable
@@ -48,6 +48,8 @@ class LogTransformer(BaseNumericalTransformer):
         Transforms the variables using log transformation.
     fit_transform:
         Fit to data, then transform it.
+    inverse_transform:
+        Transforms the variables using exp transformation.
     """
 
     def __init__(
@@ -145,6 +147,45 @@ class LogTransformer(BaseNumericalTransformer):
             X.loc[:, self.variables_] = np.log(X.loc[:, self.variables_])
         elif self.base == "10":
             X.loc[:, self.variables_] = np.log10(X.loc[:, self.variables_])
+
+        return X
+    
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Transforms the variables using exp transformation.
+
+        Parameters
+        ----------
+        X: Pandas DataFrame of shape = [n_samples, n_features]
+            The data to be transformed.
+
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            - If the variable(s) contain null values
+            - If the df has different number of features than the df used in fit()
+            - If some variables contains zero or negative values
+
+        Returns
+        -------
+        X: pandas dataframe
+            The dataframe with the transformed variables.
+        """
+
+        # check input dataframe and if class was fitted
+        X = super().transform(X)
+
+        # check contains zero or negative values
+        if (X[self.variables_] <= 0).any().any():
+            raise ValueError(
+                "Some variables contain zero or negative values, can't apply log"
+            )
+
+        # inverse_transform
+        X.loc[:, self.variables_] = np.exp(X.loc[:, self.variables_])
+
 
         return X
 

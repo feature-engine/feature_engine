@@ -124,3 +124,34 @@ class PowerTransformer(BaseNumericalTransformer):
         X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], self.exp)
 
         return X
+    
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Apply the power inverse transformation to the variables.
+
+        Parameters
+        ----------
+        X: Pandas DataFrame of shape = [n_samples, n_features]
+            The data to be transformed.
+
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            - If the variable(s) contain null values
+            - If the df has different number of features than the df used in fit()
+
+        Returns
+        -------
+        X: pandas Dataframe
+            The dataframe with the power transformed variables.
+        """
+
+        # check input dataframe and if class was fitted
+        X = super().transform(X)
+
+        # inverse_transform
+        X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], 1/self.exp)
+
+        return X
