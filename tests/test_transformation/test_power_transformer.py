@@ -49,3 +49,23 @@ def test_non_fitted_error(df_vartypes):
     with pytest.raises(NotFittedError):
         transformer = PowerTransformer()
         transformer.transform(df_vartypes)
+
+
+
+def test_inverse_transform(df_vartypes):
+    # test case 6: automatically select variables
+    transformer = PowerTransformer(variables=None)
+    Xt = transformer.fit_transform(df_vartypes)
+    X = transformer.inverse_transform(Xt)
+
+    # convert numbers to original format.
+    X["Age"] = X["Age"].round().astype('int64')
+    X["Marks"] = X["Marks"].round(1)
+
+    # test init params
+    assert transformer.variables is None
+    # test fit attr
+    assert transformer.variables_ == ["Age","Marks"]
+    assert transformer.n_features_in_ == 5
+    # test transform output
+    pd.testing.assert_frame_equal(X, df_vartypes)
