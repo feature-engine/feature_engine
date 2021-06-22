@@ -162,7 +162,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
         # inverse_transform
-        return  super().transform(X)
+        return self.transform(X)
 
 
     def _more_tags(self):
