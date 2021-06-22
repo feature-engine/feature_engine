@@ -7,8 +7,8 @@ Contributors
 ------------
     - Hector Patino
     - Andrew Tan
-    - bitsbuffer
-    - AgustinFi
+    - Shubhmay Potdar
+    - Agustin Firpo
     - Indy Navarro Vidal
     - Ashok Kumar
     - Chris Samiullah
