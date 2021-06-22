@@ -1,15 +1,64 @@
-Version TBD
-===========
+Version 1.1.0
+=============
 
-Deployed: TBD
+Deployed: 22st June 2021
 
 Contributors
 ------------
     - Hector Patino
+    - Andrew Tan
+    - Shubhmay Potdar
+    - Agustin Firpo
+    - Indy Navarro Vidal
+    - Ashok Kumar
+    - Chris Samiullah
+    - Soledad Galli
 
-New transformers
-----------------
+In this release, we enforce compatibility with Scikit-learn by adding the
+`check_estimator <https://scikit-learn.org/stable/developers/develop.html>`_ tests to
+**all transformers** in the package.
+
+In order to pass the tests, we needed to modify some of the internal functionality of
+Feature-engine transformers and create new attributes. We tried not to break backwards
+compatibility as much as possible.
+
+Mayor changes
+-------------
+    - Most transformers have now the additional attribute `variables_` containing the variables that will be modified. The former attribute `variables` is retained. `variables_` will almost always be identical to `variables` except when the transformer is initialised with `variables=None`.
+    - The parameter `transformer` in the SklearnTransformerWrapper and the parameter `estimator` in the SelectBySingleFeaturePerformance, SelectByShuffling, RecursiveFeatureElimination and RecursiveFeatureAddition need a compulsory entry, and cannot be left blank when initialising the transformers.
+    - Categorical encoders support now variables cast as `category` as well as `object` (**Shubhmay Potdar and Soledad Galli**)
+    - Categorical encoders have now the parameter `ignore_format` to allow the transformer to work with any variable type, and not just object or categorical.
+    - `CategoricalImputer` has now the parameter `ignore_format` to allow the transformer to work with any variable type, and not just object or categorical.
+    - All transformers have now the new attribute `n_features_in` with captures the number of features in the dataset used to train the transformer (during fit()).
+
+Minor changes
+-------------
+    - Feature selection transformers support now all cross-validation schemes in the `cv` parameter, and not just an integer. That is, you can initialize the transformer with LOOCV, or StratifiedCV for example.
+    - The OneHotEncoder includes additional functionality to return just 1 dummy variable for categorical variables that contain only 2 categories. In the new attribute `variables_binary_` you can identify the original binary variables.
+    - MathematicalCombinator now supports use of dataframes with null values (**Agustin Firpo**).
+
+New transformer
+---------------
     - **CyclicalTransformer**: applies a cyclical transformation to numerical variables (**Hector Patino**)
+
+Code improvement
+----------------
+    - Tests from check_estimator added to all transformers
+    - Test for compatibility with Python 3.9 added to circleCI (**Chris Samiullah and Soledad Galli**)
+    - Automatic black8 and linting added to tox
+    - Additional code fixes (**Andrew Tan and Indy Navarro Vidal**).
+
+Documentation
+-------------
+    - Additional comparison tables for imputers and encoders.
+    - Updates Readme with new badges and resources.
+    - Expanded SklearnWrapper demos in Jupyter notebooks.
+    - Expanded outlier transformer demos in Jupyter notebooks (**Ashok Kumar**)
+    - Expanded Pipeline demos in Jupyter notebooks.
+
+Community
+---------
+    - Created Gitter community to support users and foster knowledge exchange
 
 
 Version 1.0.2
