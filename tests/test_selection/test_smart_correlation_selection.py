@@ -254,8 +254,27 @@ def test_automatic_variable_selection(df_double):
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
 
+def test_callable_method(df_double, dummy_method):
+    X, _ = df_double
 
-def test_raises_param_errors():
+    transformer = SmartCorrelatedSelection(
+        variables=None,
+        method=dummy_method,
+        threshold=0.8,
+        missing_values="raise",
+        selection_method="variance",
+    )
+
+    Xt = transformer.fit_transform(X)
+
+    # test fit attrs
+    assert len(transformer.correlated_feature_sets_) > 0
+    assert len(transformer.features_to_drop_) > 0
+    assert len(transformer.variables_) > 0
+    assert transformer.n_features_in_ == len(X.columns)
+    
+
+def test_raises_param_errors(single_argument_method):
     with pytest.raises(ValueError):
         SmartCorrelatedSelection(threshold=None)
 
@@ -272,6 +291,9 @@ def test_raises_param_errors():
         SmartCorrelatedSelection(
             selection_method="missing_values", missing_values="raise"
         )
+
+    with pytest.raises(TypeError):
+        SmartCorrelatedSelection(method=single_argument_method)
 
 
 def test_error_if_fit_input_not_dataframe():

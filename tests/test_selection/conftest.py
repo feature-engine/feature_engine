@@ -55,3 +55,23 @@ def df_test_num_cat():
     X = df[["var_A", "var_B", "var_C", "var_D"]]
     y = df["target"]
     return X, y
+
+
+@pytest.fixture(scope="module", name='dummy_method')
+def wrap_dummy_method():
+    def wrapper(): 
+        import random
+        def dummy_method(x, y):
+            return random.uniform(0.5, 1)  
+        return dummy_method
+    return wrapper()
+
+
+@pytest.fixture(scope="module", name='single_argument_method')
+def wrap_single_argument_method():
+    def wrapper(): 
+        def single_argument_method(x):
+            return 1   
+        return single_argument_method
+    return wrapper()
+    
