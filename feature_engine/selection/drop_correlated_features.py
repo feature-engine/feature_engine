@@ -97,8 +97,11 @@ class DropCorrelatedFeatures(BaseSelector):
         # check callable method takes two input arguments
         if callable(method):
             sig = signature(method)
-            if len(sig.parameters) != 2:
-                raise TypeError("callable method takes only two input arguments.")
+            positional_or_keyword_args = sum(
+                [1 for param in sig.parameters.values() if param.kind == param.POSITIONAL_OR_KEYWORD]
+            )
+            if positional_or_keyword_args != 2:
+                raise TypeError("callable method takes only two positional_or_keyword arguments.")
 
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError("threshold must be a float between 0 and 1")
