@@ -254,6 +254,7 @@ def test_automatic_variable_selection(df_double):
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
 
+
 def test_callable_method(df_double, dummy_method):
     X, _ = df_double
 
@@ -267,12 +268,15 @@ def test_callable_method(df_double, dummy_method):
 
     Xt = transformer.fit_transform(X)
 
+    # test no empty dataframe
+    assert not Xt.empty
+
     # test fit attrs
     assert len(transformer.correlated_feature_sets_) > 0
     assert len(transformer.features_to_drop_) > 0
     assert len(transformer.variables_) > 0
     assert transformer.n_features_in_ == len(X.columns)
-    
+
 
 def test_raises_param_errors(single_argument_method):
     with pytest.raises(ValueError):

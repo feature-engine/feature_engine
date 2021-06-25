@@ -1,8 +1,8 @@
+from inspect import signature
 from typing import List, Union
 
 import pandas as pd
 
-from inspect import signature
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -35,8 +35,8 @@ class DropCorrelatedFeatures(BaseSelector):
         numerical variables in the dataset.
 
     method: string or callable, default='pearson'
-        Can take 'pearson', 'spearman', 'kendall' or callable. It refers to the correlation method
-        to be used to identify the correlated features.
+        Can take 'pearson', 'spearman', 'kendall' or callable. It refers to the
+        correlation method to be used to identify the correlated features.
 
         - pearson : standard correlation coefficient
         - kendall : Kendall Tau correlation coefficient
@@ -91,17 +91,24 @@ class DropCorrelatedFeatures(BaseSelector):
 
         if method not in ["pearson", "spearman", "kendall"] and not callable(method):
             raise ValueError(
-                "correlation method takes only values 'pearson', 'spearman', 'kendall' or callable."
+                "correlation method takes only values 'pearson', 'spearman', "
+                + "'kendall' or callable."
             )
 
         # check callable method takes two input arguments
         if callable(method):
             sig = signature(method)
             positional_or_keyword_args = sum(
-                [1 for param in sig.parameters.values() if param.kind == param.POSITIONAL_OR_KEYWORD]
+                [
+                    1
+                    for param in sig.parameters.values()
+                    if param.kind == param.POSITIONAL_OR_KEYWORD
+                ]
             )
             if positional_or_keyword_args != 2:
-                raise TypeError("callable method takes only two positional_or_keyword arguments.")
+                raise TypeError(
+                    "callable method takes only two positional_or_keyword arguments."
+                )
 
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError("threshold must be a float between 0 and 1")

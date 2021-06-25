@@ -132,6 +132,9 @@ def test_callable_method(df_correlated_double, dummy_method):
 
     Xt = transformer.fit_transform(X)
 
+    # test no empty dataframe
+    assert not Xt.empty
+
     # test fit attrs
     assert len(transformer.correlated_feature_sets_) > 0
     assert len(transformer.features_to_drop_) > 0
@@ -150,6 +153,7 @@ def test_non_fitted_error(df_correlated_single):
     with pytest.raises(NotFittedError):
         transformer = DropCorrelatedFeatures()
         transformer.transform(df_correlated_single)
+
 
 def test_error_single_argument_method(single_argument_method):
     with pytest.raises(TypeError):

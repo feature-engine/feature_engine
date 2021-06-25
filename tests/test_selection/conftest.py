@@ -57,21 +57,25 @@ def df_test_num_cat():
     return X, y
 
 
-@pytest.fixture(scope="module", name='dummy_method')
+@pytest.fixture(scope="module", name="dummy_method")
 def wrap_dummy_method():
-    def wrapper(): 
+    def wrapper():
         import random
+
         def dummy_method(x, y):
-            return random.uniform(0.5, 1)  
+            return random.uniform(0.5, 1)
+
         return dummy_method
+
     return wrapper()
 
 
-@pytest.fixture(scope="module", name='single_argument_method')
+@pytest.fixture(scope="module", name="single_argument_method")
 def wrap_single_argument_method():
-    def wrapper(): 
+    def wrapper():
         def single_argument_method(x):
-            return 1   
+            return 1
+
         return single_argument_method
+
     return wrapper()
-    
