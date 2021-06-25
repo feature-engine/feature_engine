@@ -123,6 +123,22 @@ def test_more_than_1_correlated_group(df_correlated_double):
     pd.testing.assert_frame_equal(X, df)
 
 
+def test_callable_method(df_correlated_double, dummy_method):
+    X = df_correlated_double
+
+    transformer = DropCorrelatedFeatures(
+        variables=None, method=dummy_method, threshold=0.6
+    )
+
+    Xt = transformer.fit_transform(X)
+
+    # test fit attrs
+    assert len(transformer.correlated_feature_sets_) > 0
+    assert len(transformer.features_to_drop_) > 0
+    assert len(transformer.variables_) > 0
+    assert transformer.n_features_in_ == len(X.columns)
+
+
 def test_error_if_fit_input_not_dataframe():
     with pytest.raises(TypeError):
         # Next line needs review
@@ -134,3 +150,7 @@ def test_non_fitted_error(df_correlated_single):
     with pytest.raises(NotFittedError):
         transformer = DropCorrelatedFeatures()
         transformer.transform(df_correlated_single)
+
+def test_error_single_argument_method(single_argument_method):
+    with pytest.raises(TypeError):
+        DropCorrelatedFeatures(method=single_argument_method)

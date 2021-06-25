@@ -2,6 +2,7 @@ from typing import List, Union
 
 import pandas as pd
 
+from inspect import signature
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -92,6 +93,12 @@ class DropCorrelatedFeatures(BaseSelector):
             raise ValueError(
                 "correlation method takes only values 'pearson', 'spearman', 'kendall' or callable."
             )
+
+        # check callable method takes two input arguments
+        if callable(method):
+            sig = signature(method)
+            if len(sig.parameters) != 2:
+                raise TypeError("callable method takes only two input arguments.")
 
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError("threshold must be a float between 0 and 1")

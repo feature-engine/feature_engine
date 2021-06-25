@@ -150,7 +150,7 @@ class SmartCorrelatedSelection(BaseSelector):
                 "correlation method takes only values 'pearson', 'spearman', 'kendall' or callable."
             )
 
-        # check callable method accepts two input arguments
+        # check callable method takes two input arguments
         if callable(method):
             sig = signature(method)
             if len(sig.parameters) != 2:
