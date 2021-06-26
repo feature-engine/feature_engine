@@ -59,12 +59,9 @@ def df_test_num_cat():
 
 @pytest.fixture(scope="module", name="dummy_method")
 def wrap_dummy_method():
-    def wrapper():
-        import random
+    import random
 
-        def dummy_method(x, y):
-            return random.uniform(0.5, 1)
+    def _dummy_method(x, y):
+        return random.uniform(0.5, 1)
 
-        return dummy_method
-
-    return wrapper()
+    return _dummy_method
