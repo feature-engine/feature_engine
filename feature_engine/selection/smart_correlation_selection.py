@@ -1,4 +1,3 @@
-from inspect import signature
 from typing import List, Union
 
 import pandas as pd
@@ -51,8 +50,9 @@ class SmartCorrelatedSelection(BaseSelector):
         - pearson : standard correlation coefficient
         - kendall : Kendall Tau correlation coefficient
         - spearman : Spearman rank correlation
-        - callable : callable with input two 1d ndarrays
-            and returning a float.
+        - callable: callable with input two 1d ndarrays and returning a float.\n
+            Note that the returned matrix from corr will have 1 along the diagonals
+            and will be symmetric regardless of the callable's behavior.
 
     threshold: float, default=0.8
         The correlation threshold above which a feature will be deemed correlated with
@@ -151,21 +151,6 @@ class SmartCorrelatedSelection(BaseSelector):
                 "correlation method takes only values 'pearson', 'spearman', "
                 + "'kendall' or callable."
             )
-
-        # check callable method takes two input arguments
-        if callable(method):
-            sig = signature(method)
-            positional_or_keyword_args = sum(
-                [
-                    1
-                    for param in sig.parameters.values()
-                    if param.kind == param.POSITIONAL_OR_KEYWORD
-                ]
-            )
-            if positional_or_keyword_args != 2:
-                raise TypeError(
-                    "callable method takes only two positional_or_keyword arguments."
-                )
 
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError("threshold must be a float between 0 and 1")

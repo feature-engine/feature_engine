@@ -68,14 +68,3 @@ def wrap_dummy_method():
         return dummy_method
 
     return wrapper()
-
-
-@pytest.fixture(scope="module", name="single_argument_method")
-def wrap_single_argument_method():
-    def wrapper():
-        def single_argument_method(x):
-            return 1
-
-        return single_argument_method
-
-    return wrapper()

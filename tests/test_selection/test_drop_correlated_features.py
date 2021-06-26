@@ -153,8 +153,3 @@ def test_non_fitted_error(df_correlated_single):
     with pytest.raises(NotFittedError):
         transformer = DropCorrelatedFeatures()
         transformer.transform(df_correlated_single)
-
-
-def test_error_single_argument_method(single_argument_method):
-    with pytest.raises(TypeError):
-        DropCorrelatedFeatures(method=single_argument_method)

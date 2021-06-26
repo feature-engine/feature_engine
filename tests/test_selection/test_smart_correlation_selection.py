@@ -278,7 +278,7 @@ def test_callable_method(df_double, dummy_method):
     assert transformer.n_features_in_ == len(X.columns)
 
 
-def test_raises_param_errors(single_argument_method):
+def test_raises_param_errors():
     with pytest.raises(ValueError):
         SmartCorrelatedSelection(threshold=None)
 
@@ -295,9 +295,6 @@ def test_raises_param_errors(single_argument_method):
         SmartCorrelatedSelection(
             selection_method="missing_values", missing_values="raise"
         )
-
-    with pytest.raises(TypeError):
-        SmartCorrelatedSelection(method=single_argument_method)
 
 
 def test_error_if_fit_input_not_dataframe():
