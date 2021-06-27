@@ -4,7 +4,7 @@ functions.
 """
 
 from .boxcox import BoxCoxTransformer
-from .log import LogTransformer, LogCpTransformer
+from .log import LogCpTransformer, LogTransformer
 from .power import PowerTransformer
 from .reciprocal import ReciprocalTransformer
 from .yeojohnson import YeoJohnsonTransformer

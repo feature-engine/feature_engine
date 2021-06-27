@@ -206,11 +206,11 @@ class LogTransformer(BaseNumericalTransformer):
 class LogCpTransformer(BaseNumericalTransformer):
     """
     The LogCpTransformer() applies the transformation log(x + C), where C is a positive
-    constant, to the input variable. It applies the natural logarithm or the base 10 
+    constant, to the input variable. It applies the natural logarithm or the base 10
     logarithm, where the natural logarithm is logarithm in base e.
 
-    The LogCpTransformer() only works with numerical non-negative values. If the 
-    variable contains a zero or a negative value after adding a constant C, the 
+    The LogCpTransformer() only works with numerical non-negative values. If the
+    variable contains a zero or a negative value after adding a constant C, the
     transformer will return an error.
 
     A list of variables can be passed as an argument. Alternatively, the transformer
@@ -254,7 +254,7 @@ class LogCpTransformer(BaseNumericalTransformer):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         base: str = "e",
-        C: Union[int, str] = "auto"
+        C: Union[int, str] = "auto",
     ) -> None:
 
         if base not in ["e", "10"]:
@@ -309,8 +309,8 @@ class LogCpTransformer(BaseNumericalTransformer):
         # check contains zero or negative values
         if (X[self.variables_] + self.C <= 0).any().any():
             raise ValueError(
-                "Some variables contain zero or negative values after suming" +
-                "constant C, can't apply log"
+                "Some variables contain zero or negative values after suming"
+                + "constant C, can't apply log"
             )
 
         self.n_features_in_ = X.shape[1]
@@ -348,8 +348,8 @@ class LogCpTransformer(BaseNumericalTransformer):
         # check contains zero or negative values
         if (X[self.variables_] + self.C <= 0).any().any():
             raise ValueError(
-                "Some variables contain zero or negative values after suming" +
-                "constant C, can't apply log"
+                "Some variables contain zero or negative values after suming"
+                + "constant C, can't apply log"
             )
 
         # transform
