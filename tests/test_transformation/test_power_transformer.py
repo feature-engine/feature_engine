@@ -51,7 +51,6 @@ def test_non_fitted_error(df_vartypes):
         transformer.transform(df_vartypes)
 
 
-
 def test_inverse_transform(df_vartypes):
     # test case 6: automatically select variables
     transformer = PowerTransformer(variables=None)
@@ -65,7 +64,27 @@ def test_inverse_transform(df_vartypes):
     # test init params
     assert transformer.variables is None
     # test fit attr
-    assert transformer.variables_ == ["Age","Marks"]
+    assert transformer.variables_ == ["Age", "Marks"]
+    assert transformer.n_features_in_ == 5
+    # test transform output
+    pd.testing.assert_frame_equal(X, df_vartypes)
+
+
+def test_inverse_transform_exp_no_default(df_vartypes):
+    # test case 7: automatically select variables
+    transformer = PowerTransformer(exp=100)
+    Xt = transformer.fit_transform(df_vartypes)
+    X = transformer.inverse_transform(Xt)
+
+    # convert numbers to original format.
+    X["Age"] = X["Age"].round().astype('int64')
+    X["Marks"] = X["Marks"].round(1)
+
+    # test init params
+    assert transformer.exp == 100
+    assert transformer.variables is None
+    # test fit attr
+    assert transformer.variables_ == ["Age", "Marks"]
     assert transformer.n_features_in_ == 5
     # test transform output
     pd.testing.assert_frame_equal(X, df_vartypes)

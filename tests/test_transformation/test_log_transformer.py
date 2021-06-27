@@ -42,7 +42,7 @@ def test_log_base_10_plus_user_passes_var_list(df_vartypes):
     assert transformer.n_features_in_ == 5
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
-    
+
 
 def test_error_if_base_value_not_allowed():
     with pytest.raises(ValueError):
@@ -85,18 +85,38 @@ def test_non_fitted_error(df_vartypes):
     with pytest.raises(NotFittedError):
         transformer = LogTransformer()
         transformer.transform(df_vartypes)
-        
-        
+
+
 def test_inverse_log_plus_user_passes_var_list(df_vartypes):
+    # test case 7: inverse log, user passes variables
+    transformer = LogTransformer(base="10", variables="Age")
+    Xt = transformer.fit_transform(df_vartypes)
+    X = transformer.inverse_transform(Xt)
+
+    # convert floats to int
+    X["Age"] = X["Age"].round().astype('int64')
+
+    # test init params
+    assert transformer.base == "10"
+    assert transformer.variables == "Age"
+    # test fit attr
+    assert transformer.variables_ == ["Age"]
+    assert transformer.n_features_in_ == 5
+    # test transform output
+    pd.testing.assert_frame_equal(X, df_vartypes)
+
+
+def test_inverse_e_plus_user_passes_var_list(df_vartypes):
     # test case 7: inverse log, user passes variables
     transformer = LogTransformer(variables="Age")
     Xt = transformer.fit_transform(df_vartypes)
     X = transformer.inverse_transform(Xt)
-    
+
     # convert floats to int
     X["Age"] = X["Age"].round().astype('int64')
-    
+
     # test init params
+    assert transformer.base == "e"
     assert transformer.variables == "Age"
     # test fit attr
     assert transformer.variables_ == ["Age"]
