@@ -13,8 +13,9 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class LogTransformer(BaseNumericalTransformer):
     """
-    The LogTransformer() applies the natural logarithm, the base 10 logarithm or exponetial function to
-    numerical variables. The natural logarithm is logarithm in base e.
+    The LogTransformer() applies the natural logarithm, the base 10 logarithm or
+    exponetial function to numerical variables.
+    The natural logarithm is logarithm in base e.
 
     The LogTransformer() only works with numerical non-negative values. If the variable
     contains a zero or a negative value, the transformer will return an error.
@@ -49,7 +50,7 @@ class LogTransformer(BaseNumericalTransformer):
     fit_transform:
         Fit to data, then transform it.
     inverse_transform:
-        Transforms the variables using exp transformation.
+        Transforms the variables using exponential transformation.
     """
 
     def __init__(
@@ -149,10 +150,10 @@ class LogTransformer(BaseNumericalTransformer):
             X.loc[:, self.variables_] = np.log10(X.loc[:, self.variables_])
 
         return X
-    
+
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Transforms the variables using exp transformation.
+        Transforms the variables using exponential transformation.
 
         Parameters
         ----------
@@ -184,8 +185,10 @@ class LogTransformer(BaseNumericalTransformer):
             )
 
         # inverse_transform
-        X.loc[:, self.variables_] = np.exp(X.loc[:, self.variables_])
-
+        if self.base == "e":
+            X.loc[:, self.variables_] = np.exp(X.loc[:, self.variables_])
+        elif self.base == "10":
+            X.loc[:, self.variables_] = np.array(10 ** X.loc[:, self.variables_])
 
         return X
 

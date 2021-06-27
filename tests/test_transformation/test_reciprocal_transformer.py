@@ -22,8 +22,8 @@ def test_automatically_find_variables(df_vartypes):
     assert transformer.n_features_in_ == 5
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
-    
-    
+
+
 def test_fit_raises_error_if_na_in_df(df_na):
     # test case 2: when dataset contains na, fit method
     with pytest.raises(ValueError):
@@ -60,7 +60,7 @@ def test_non_fitted_error(df_vartypes):
     with pytest.raises(NotFittedError):
         transformer = ReciprocalTransformer()
         transformer.transform(df_vartypes)
-        
+
 
 def test_inverse_transform(df_vartypes):
     # test case 6: automatically select variables
@@ -75,7 +75,7 @@ def test_inverse_transform(df_vartypes):
     # test init params
     assert transformer.variables is None
     # test fit attr
-    assert transformer.variables_ == ["Age","Marks"]
+    assert transformer.variables_ == ["Age", "Marks"]
     assert transformer.n_features_in_ == 5
     # test transform output
     pd.testing.assert_frame_equal(X, df_vartypes)

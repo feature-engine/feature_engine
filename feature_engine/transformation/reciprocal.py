@@ -137,10 +137,10 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         X.loc[:, self.variables_] = np.reciprocal(X.loc[:, self.variables_])
 
         return X
-    
+
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Apply the inverse reciprocal 1 / x transformation.
+        Reverses reciprocal transformation.
 
         Parameters
         ----------
@@ -163,7 +163,6 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         """
         # inverse_transform
         return self.transform(X)
-
 
     def _more_tags(self):
         tags_dict = _return_tags()

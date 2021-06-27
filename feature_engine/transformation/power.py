@@ -124,7 +124,7 @@ class PowerTransformer(BaseNumericalTransformer):
         X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], self.exp)
 
         return X
-    
+
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Apply the power inverse transformation to the variables.
