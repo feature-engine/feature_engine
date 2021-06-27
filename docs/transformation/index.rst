@@ -10,6 +10,7 @@ mathematical transformations.
    :maxdepth: 2
 
    LogTransformer
+   LogCpTransformer
    ReciprocalTransformer
    PowerTransformer
    BoxCoxTransformer
