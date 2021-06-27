@@ -304,7 +304,7 @@ class LogCpTransformer(BaseNumericalTransformer):
 
         # calculate C to add to each variable
         if self.C == "auto":
-            self.C = X.min(axis=0).abs() + 1
+            self.C = X[self.variables_].min(axis=0).abs() + 1
 
         # check contains zero or negative values
         if (X[self.variables_] + self.C <= 0).any().any():
