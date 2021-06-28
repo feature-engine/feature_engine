@@ -3,6 +3,7 @@ from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.transformation import (
     BoxCoxTransformer,
+    LogCpTransformer,
     LogTransformer,
     PowerTransformer,
     ReciprocalTransformer,
@@ -15,6 +16,7 @@ from feature_engine.transformation import (
     [
         BoxCoxTransformer(),
         LogTransformer(),
+        LogCpTransformer(),
         PowerTransformer(),
         ReciprocalTransformer(),
         YeoJohnsonTransformer(),
