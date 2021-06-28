@@ -24,6 +24,16 @@ def test_defo_params_plus_automatically_find_variables(df_vartypes):
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 
+    # inverse transform
+    Xit = transformer.inverse_transform(X)
+
+    # convert numbers to original format.
+    Xit["Age"] = Xit["Age"].round().astype("int64")
+    Xit["Marks"] = Xit["Marks"].round(1)
+
+    # test
+    pd.testing.assert_frame_equal(Xit, df_vartypes)
+
 
 def test_error_if_exp_value_not_allowed():
     with pytest.raises(ValueError):
@@ -51,37 +61,21 @@ def test_non_fitted_error(df_vartypes):
         transformer.transform(df_vartypes)
 
 
-def test_inverse_transform(df_vartypes):
-    # test case 6: automatically select variables
-    transformer = PowerTransformer(variables=None)
+_exp_ls = [0.001, 0.1, 2, 3, 4, 10]
+
+
+@pytest.mark.parametrize("exp_base", _exp_ls)
+def test_inverse_transform_exp_no_default(exp_base, df_vartypes):
+    transformer = PowerTransformer(exp=exp_base)
     Xt = transformer.fit_transform(df_vartypes)
     X = transformer.inverse_transform(Xt)
 
     # convert numbers to original format.
-    X["Age"] = X["Age"].round().astype('int64')
+    X["Age"] = X["Age"].round().astype("int64")
     X["Marks"] = X["Marks"].round(1)
 
     # test init params
-    assert transformer.variables is None
-    # test fit attr
-    assert transformer.variables_ == ["Age", "Marks"]
-    assert transformer.n_features_in_ == 5
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_vartypes)
-
-
-def test_inverse_transform_exp_no_default(df_vartypes):
-    # test case 7: automatically select variables
-    transformer = PowerTransformer(exp=100)
-    Xt = transformer.fit_transform(df_vartypes)
-    X = transformer.inverse_transform(Xt)
-
-    # convert numbers to original format.
-    X["Age"] = X["Age"].round().astype('int64')
-    X["Marks"] = X["Marks"].round(1)
-
-    # test init params
-    assert transformer.exp == 100
+    # assert transformer.exp == 100
     assert transformer.variables is None
     # test fit attr
     assert transformer.variables_ == ["Age", "Marks"]

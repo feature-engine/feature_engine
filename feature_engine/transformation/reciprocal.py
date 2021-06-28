@@ -46,7 +46,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
     fit_transform:
         Fit to data, then transform it.
     inverse_transform:
-        Apply the inverse reciprocal 1 / x transformation.
+        Convert the data back to the original representation.
     """
 
     def __init__(
@@ -140,7 +140,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Reverses reciprocal transformation.
+        Convert the data back to the original representation.
 
         Parameters
         ----------

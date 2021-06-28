@@ -13,11 +13,10 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class LogTransformer(BaseNumericalTransformer):
     """
-    The LogTransformer() applies the natural logarithm, the base 10 logarithm or
-    exponetial function to numerical variables.
-    The natural logarithm is logarithm in base e.
+    The LogTransformer() applies the natural logarithm or the base 10 logarithm to
+    numerical variables. The natural logarithm is logarithm in base e.
 
-    The LogTransformer() only works with numerical non-negative values. If the variable
+    The LogTransformer() only works with positive values. If the variable
     contains a zero or a negative value, the transformer will return an error.
 
     A list of variables can be passed as an argument. Alternatively, the transformer
@@ -46,11 +45,11 @@ class LogTransformer(BaseNumericalTransformer):
     fit:
         This transformer does not learn parameters.
     transform:
-        Transforms the variables using log transformation.
+        Transform the variables using log transformation.
     fit_transform:
         Fit to data, then transform it.
     inverse_transform:
-        Transforms the variables using exponential transformation.
+        Convert the data back to the original representation.
     """
 
     def __init__(
@@ -69,7 +68,7 @@ class LogTransformer(BaseNumericalTransformer):
         """
         This transformer does not learn parameters.
 
-        Select the numerical variables and determines whether the logarithm
+        Selects the numerical variables and determines whether the logarithm
         can be applied on the selected variables (it checks if the variables
         are all positive).
 
@@ -112,7 +111,7 @@ class LogTransformer(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Transforms the variables using log transformation.
+        Transform the variables using log transformation.
 
         Parameters
         ----------
@@ -153,7 +152,7 @@ class LogTransformer(BaseNumericalTransformer):
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Transforms the variables using exponential transformation.
+        Convert the data back to the original representation.
 
         Parameters
         ----------
@@ -177,12 +176,6 @@ class LogTransformer(BaseNumericalTransformer):
 
         # check input dataframe and if class was fitted
         X = super().transform(X)
-
-        # check contains zero or negative values
-        if (X[self.variables_] <= 0).any().any():
-            raise ValueError(
-                "Some variables contain zero or negative values, can't apply log"
-            )
 
         # inverse_transform
         if self.base == "e":

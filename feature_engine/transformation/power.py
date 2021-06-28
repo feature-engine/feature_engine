@@ -46,6 +46,8 @@ class PowerTransformer(BaseNumericalTransformer):
         Apply the power transformation to the variables.
     fit_transform:
         Fit to data, then transform it.
+    inverse_transform:
+        Convert the data back to the original representation.
     """
 
     def __init__(
@@ -127,7 +129,7 @@ class PowerTransformer(BaseNumericalTransformer):
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Apply the power inverse transformation to the variables.
+        Convert the data back to the original representation.
 
         Parameters
         ----------
@@ -152,6 +154,6 @@ class PowerTransformer(BaseNumericalTransformer):
         X = super().transform(X)
 
         # inverse_transform
-        X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], 1/self.exp)
+        X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], 1 / self.exp)
 
         return X

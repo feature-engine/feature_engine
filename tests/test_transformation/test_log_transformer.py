@@ -24,6 +24,16 @@ def test_log_base_e_plus_automatically_find_variables(df_vartypes):
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 
+    # test inverse_transform
+    Xit = transformer.inverse_transform(X)
+
+    # convert numbers to original format.
+    Xit["Age"] = Xit["Age"].round().astype("int64")
+    Xit["Marks"] = Xit["Marks"].round(1)
+
+    # test
+    pd.testing.assert_frame_equal(Xit, df_vartypes)
+
 
 def test_log_base_10_plus_user_passes_var_list(df_vartypes):
     # test case 2: log base 10, user passes variables
@@ -42,6 +52,15 @@ def test_log_base_10_plus_user_passes_var_list(df_vartypes):
     assert transformer.n_features_in_ == 5
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
+
+    # test inverse_transform
+    Xit = transformer.inverse_transform(X)
+
+    # convert numbers to original format.
+    Xit["Age"] = Xit["Age"].round().astype("int64")
+
+    # test
+    pd.testing.assert_frame_equal(Xit, df_vartypes)
 
 
 def test_error_if_base_value_not_allowed():
@@ -87,25 +106,6 @@ def test_non_fitted_error(df_vartypes):
         transformer.transform(df_vartypes)
 
 
-def test_inverse_log_plus_user_passes_var_list(df_vartypes):
-    # test case 7: inverse log, user passes variables
-    transformer = LogTransformer(base="10", variables="Age")
-    Xt = transformer.fit_transform(df_vartypes)
-    X = transformer.inverse_transform(Xt)
-
-    # convert floats to int
-    X["Age"] = X["Age"].round().astype('int64')
-
-    # test init params
-    assert transformer.base == "10"
-    assert transformer.variables == "Age"
-    # test fit attr
-    assert transformer.variables_ == ["Age"]
-    assert transformer.n_features_in_ == 5
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_vartypes)
-
-
 def test_inverse_e_plus_user_passes_var_list(df_vartypes):
     # test case 7: inverse log, user passes variables
     transformer = LogTransformer(variables="Age")
@@ -113,7 +113,7 @@ def test_inverse_e_plus_user_passes_var_list(df_vartypes):
     X = transformer.inverse_transform(Xt)
 
     # convert floats to int
-    X["Age"] = X["Age"].round().astype('int64')
+    X["Age"] = X["Age"].round().astype("int64")
 
     # test init params
     assert transformer.base == "e"
