@@ -28,7 +28,7 @@ Example
     X_train, X_test, y_train, y_test =  train_test_split(X, y, test_size=0.3, random_state=0)
 
     # set up the variable transformer
-    tf = vt.LogCpTransformer(variables = [7, 12])
+    tf = vt.LogCpTransformer(variables = [7, 12], C="auto")
 
     # fit the transformer
     tf.fit(X_train)
@@ -36,6 +36,13 @@ Example
     # transform the data
     train_t= tf.transform(X_train)
     test_t= tf.transform(X_test)
+
+    # learned constant C
+    tf.C_
+    >>>
+    7     2.1742
+    12    2.7300
+    dtype: float64
 
 	# un-transformed variable
     X_train[12].hist()
