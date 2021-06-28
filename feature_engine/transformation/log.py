@@ -240,10 +240,13 @@ class LogCpTransformer(BaseNumericalTransformer):
     n_features_in_:
         The number of features in the train set used in fit.
 
+    C_:
+        The constant C to transform data.
+
     Methods
     -------
     fit:
-        This transformer does not learn parameters.
+        This transformer learns the constant C to add to log transformation.
     transform:
         Transforms the variables using log transformation.
     fit_transform:
@@ -269,11 +272,11 @@ class LogCpTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        This transformer does not learn parameters.
+        This transformer learns the constant C to add to log transformation.
 
         Select the numerical variables and determines whether the logarithm
         can be applied on the selected variables (it checks if the variables
-        are all positive).
+        are all positive after the addition of C).
 
         Parameters
         ----------
@@ -304,10 +307,12 @@ class LogCpTransformer(BaseNumericalTransformer):
 
         # calculate C to add to each variable
         if self.C == "auto":
-            self.C = X[self.variables_].min(axis=0).abs() + 1
+            self.C_ = X[self.variables_].min(axis=0).abs() + 1
+        else:
+            self.C_ = self.C
 
         # check contains zero or negative values
-        if (X[self.variables_] + self.C <= 0).any().any():
+        if (X[self.variables_] + self.C_ <= 0).any().any():
             raise ValueError(
                 "Some variables contain zero or negative values after suming"
                 + "constant C, can't apply log"
@@ -340,13 +345,12 @@ class LogCpTransformer(BaseNumericalTransformer):
         X: pandas dataframe
             The dataframe with the transformed variables.
         """
-        # TO DO: check X is pandas DataFrame
 
         # check input dataframe and if class was fitted
         X = super().transform(X)
 
         # check contains zero or negative values
-        if (X[self.variables_] + self.C <= 0).any().any():
+        if (X[self.variables_] + self.C_ <= 0).any().any():
             raise ValueError(
                 "Some variables contain zero or negative values after suming"
                 + "constant C, can't apply log"
@@ -354,8 +358,49 @@ class LogCpTransformer(BaseNumericalTransformer):
 
         # transform
         if self.base == "e":
-            X.loc[:, self.variables_] = np.log(X.loc[:, self.variables_] + self.C)
+            X.loc[:, self.variables_] = np.log(X.loc[:, self.variables_] + self.C_)
         elif self.base == "10":
-            X.loc[:, self.variables_] = np.log10(X.loc[:, self.variables_] + self.C)
+            X.loc[:, self.variables_] = np.log10(X.loc[:, self.variables_] + self.C_)
+
+        return X
+
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Transforms the variables using exponential transformation.
+
+        Parameters
+        ----------
+        X: Pandas DataFrame of shape = [n_samples, n_features]
+            The data to be detransformed.
+
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            - If the variable(s) contain null values
+            - If X has different number of features than X used in fit()
+            - If some variables contains zero or negative values
+
+        Returns
+        -------
+        X: Pandas dataframe
+            The dataframe with the transformed variables.
+        """
+
+        # check input dataframe and if class was fitted
+        X = super().transform(X)
+
+        # check contains zero or negative values
+        if (X[self.variables_] <= 0).any().any():
+            raise ValueError(
+                "Some variables contain zero or negative values, can't apply log"
+            )
+
+        # inverse transform
+        if self.base == "e":
+            X.loc[:, self.variables_] = np.exp(X.loc[:, self.variables_]) - self.C_
+        elif self.base == "10":
+            X.loc[:, self.variables_] = 10 ** X.loc[:, self.variables_] - self.C_
 
         return X
