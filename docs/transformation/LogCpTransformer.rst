@@ -13,7 +13,7 @@ Example
 
 .. code:: python
 
-	import pandas as pd
+    import pandas as pd
     import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
     from sklearn.datasets import load_boston
@@ -44,15 +44,14 @@ Example
     12    2.7300
     dtype: float64
 
-	# un-transformed variable
+    # un-transformed variable
     X_train[12].hist()
 
 .. image:: ../images/logcpraw.png
 
 .. code:: python
 
-	# transformed variable
+    # transformed variable
     train_t[12].hist()
-
 
 .. image:: ../images/logcptransform.png
