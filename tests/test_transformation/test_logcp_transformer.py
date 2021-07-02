@@ -6,7 +6,7 @@ from feature_engine.transformation import LogCpTransformer
 
 _age_inverse_transform = [20.0, 21.0, 19.0, 18.0]
 
-_learned_C = {"Age": 19.0, "Marks": 1.6}  # [19, 1.6]
+_learned_C = {"Age": 19.0, "Marks": 1.6}
 
 _params_test_automatic_find_variables = [
     (
