@@ -4,9 +4,7 @@ import pandas as pd
 from feature_engine.sanity_check import SimilarColumns
 
 
-def test_similar_columns_when_more_columns_in_train_than_test(
-    df_vartypes, df_na
-):
+def test_similar_columns_when_more_columns_in_train_than_test(df_vartypes, df_na):
 
     # When columns are the same
     train = df_na.copy()
@@ -31,9 +29,7 @@ def test_similar_columns_when_more_columns_in_train_than_test(
     pd.testing.assert_frame_equal(expected_result, transformed_df)
 
 
-def test_similar_columns_when_more_columns_in_test_than_train(
-    df_vartypes, df_na
-):
+def test_similar_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
 
     # When columns are the same
     train = df_vartypes

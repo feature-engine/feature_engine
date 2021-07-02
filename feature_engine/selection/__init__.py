@@ -22,5 +22,5 @@ __all__ = [
     "SelectBySingleFeaturePerformance",
     "RecursiveFeatureAddition",
     "RecursiveFeatureElimination",
-    "SelectByTargetMeanPerformance"
+    "SelectByTargetMeanPerformance",
 ]
