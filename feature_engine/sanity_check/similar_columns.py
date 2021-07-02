@@ -5,6 +5,7 @@ import pandas as pd
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
+
 class SimilarColumns(BaseEstimator, TransformerMixin):
     """Ensure that similar columns are in test and train dataset.
 
@@ -37,7 +38,8 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: pd.DataFrame, **transform_params) -> pd.DataFrame:
-        """Drops the variable that are not in the fitted dataframe and returns a new dataframe with the remaining subset of variables.
+        """Drops the variable that are not in the fitted dataframe and returns 
+        a new dataframe with the remaining subset of variables.
 
         If a column is in train but not in test, then the column will be created in
         test dataset with missing value everywhere.
@@ -51,8 +53,11 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X_transformed: pandas dataframe of shape = [n_samples, n_features - len(features_to_drop)]
-            The transformed dataframe with the same columns (in same order) than the fitted dataframe
+        X_transformed: pandas dataframe of shape =
+             [n_samples, n_features - len(features_to_drop)]
+
+                The transformed dataframe with the same columns 
+                (in same order) than the fitted dataframe
 
         """
 
