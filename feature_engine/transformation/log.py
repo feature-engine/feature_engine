@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -189,11 +189,13 @@ class LogCpTransformer(BaseNumericalTransformer):
         Indicates if the natural or base 10 logarithm should be applied. Can take
         values 'e' or '10'.
 
-    C: "auto" or int, default="auto"
+    C: "auto", int or dict, default="auto"
         The constant C to apply the transfomation log(x + C).
 
         - If int, then log(x + C)
         - If "auto", then C = abs(min(x)) + 1
+        - If dict, dictionary mapping the constant C to apply
+          to each variable.
 
     Attributes
     ----------
@@ -223,7 +225,7 @@ class LogCpTransformer(BaseNumericalTransformer):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         base: str = "e",
-        C: Union[int, str] = "auto",
+        C: Union[int, str, Dict] = "auto",
     ) -> None:
 
         if base not in ["e", "10"]:
@@ -272,11 +274,11 @@ class LogCpTransformer(BaseNumericalTransformer):
         # check input dataframe
         X = super().fit(X)
 
+        self.C_ = self.C
+
         # calculate C to add to each variable
         if self.C == "auto":
             self.C_ = dict(X[self.variables_].min(axis=0).abs() + 1)
-        else:
-            self.C_ = self.C
 
         # check contains zero or negative values
         if (X[self.variables_] + self.C_ <= 0).any().any():
