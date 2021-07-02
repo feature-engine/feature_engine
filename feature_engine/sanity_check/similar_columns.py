@@ -3,10 +3,9 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from feature_engine.selection.base_selector import BaseSelector
+from sklearn.base import BaseEstimator, TransformerMixin
 
-
-class SimilarColumns(BaseSelector):
+class SimilarColumns(BaseEstimator, TransformerMixin):
     """Ensure that similar columns are in test and train dataset.
 
 
