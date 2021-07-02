@@ -237,11 +237,12 @@ class LogCpTransformer(BaseNumericalTransformer):
     variables_:
         The group of variables that will be transformed.
 
+    C_:
+        The constant C to transform data. If C = "auto" a dictionary
+        storing the constant C for each variable.
+
     n_features_in_:
         The number of features in the train set used in fit.
-
-    C_:
-        The constant C to transform data.
 
     Methods
     -------
@@ -251,6 +252,8 @@ class LogCpTransformer(BaseNumericalTransformer):
         Transforms the variables using log transformation.
     fit_transform:
         Fit to data, then transform it.
+    inverse_transform:
+        Convert the data back to the original representation.
     """
 
     def __init__(
@@ -272,7 +275,8 @@ class LogCpTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        This transformer learns the constant C to add to log transformation.
+        This transformer learns the constant C to add to log transformation
+        when C="auto".
 
         Select the numerical variables and determines whether the logarithm
         can be applied on the selected variables (it checks if the variables
@@ -295,7 +299,7 @@ class LogCpTransformer(BaseNumericalTransformer):
         ValueError
             - If there are no numerical variables in the df or the df is empty
             - If the variable(s) contain null values
-            - If some variables contain zero or negative values after suming constant C
+            - If some variables contain zero or negative values after adding constant C
 
         Returns
         -------
@@ -307,14 +311,14 @@ class LogCpTransformer(BaseNumericalTransformer):
 
         # calculate C to add to each variable
         if self.C == "auto":
-            self.C_ = X[self.variables_].min(axis=0).abs() + 1
+            self.C_ = dict(X[self.variables_].min(axis=0).abs() + 1)
         else:
             self.C_ = self.C
 
         # check contains zero or negative values
         if (X[self.variables_] + self.C_ <= 0).any().any():
             raise ValueError(
-                "Some variables contain zero or negative values after suming"
+                "Some variables contain zero or negative values after adding"
                 + "constant C, can't apply log"
             )
 
@@ -338,7 +342,7 @@ class LogCpTransformer(BaseNumericalTransformer):
         ValueError
             - If the variable(s) contain null values
             - If the df has different number of features than the df used in fit()
-            - If some variables contains zero or negative values after suming constant C
+            - If some variables contains zero or negative values after adding constant C
 
         Returns
         -------
@@ -352,7 +356,7 @@ class LogCpTransformer(BaseNumericalTransformer):
         # check contains zero or negative values
         if (X[self.variables_] + self.C_ <= 0).any().any():
             raise ValueError(
-                "Some variables contain zero or negative values after suming"
+                "Some variables contain zero or negative values after adding"
                 + "constant C, can't apply log"
             )
 
@@ -380,7 +384,6 @@ class LogCpTransformer(BaseNumericalTransformer):
         ValueError
             - If the variable(s) contain null values
             - If X has different number of features than X used in fit()
-            - If some variables contains zero or negative values
 
         Returns
         -------
@@ -390,12 +393,6 @@ class LogCpTransformer(BaseNumericalTransformer):
 
         # check input dataframe and if class was fitted
         X = super().transform(X)
-
-        # check contains zero or negative values
-        if (X[self.variables_] <= 0).any().any():
-            raise ValueError(
-                "Some variables contain zero or negative values, can't apply log"
-            )
 
         # inverse transform
         if self.base == "e":
