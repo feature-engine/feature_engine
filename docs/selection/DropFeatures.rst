@@ -1,7 +1,19 @@
 DropFeatures
 =============
-The DropFeatures() drops a list of variables from the original dataframe. The user can pass a single variable as
-a string or list of variables to be dropped.
+
+API Reference
+-------------
+
+.. autoclass:: feature_engine.selection.DropFeatures
+    :members:
+
+
+Example
+-------
+
+The DropFeatures() drops a list of variables indicated by the user from the original
+dataframe. The user can pass a single variable as a string or list of variables to be
+dropped.
 
 .. code:: python
 
@@ -10,7 +22,7 @@ a string or list of variables to be dropped.
     import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
 
-    from feature_engine.feature_selection import DropFeatures
+    from feature_engine.selection import DropFeatures
 
     # Load dataset
     def load_titanic():
@@ -26,13 +38,24 @@ a string or list of variables to be dropped.
 
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-                data.drop(['survived', 'name', 'ticket'], axis=1),
+                data.drop(['survived', 'name'], axis=1),
                 data['survived'], test_size=0.3, random_state=0)
+
+    # original columns
+    X_train.columns
+
+.. code:: python
+
+    Index(['pclass', 'sex', 'age', 'sibsp', 'parch', 'ticket', 'fare', 'cabin',
+           'embarked', 'boat', 'body', 'home.dest'],
+          dtype='object')
+
+
+.. code:: python
 
     # set up the transformer
     transformer = DropFeatures(
-        features_to_drop=['survived', 'name', 'sibsp', 'parch',
-                          'ticket', 'fare', 'body', 'home.dest']
+        features_to_drop=['sibsp', 'parch', 'ticket', 'fare', 'body', 'home.dest']
     )
 
     # fit the transformer
@@ -49,8 +72,3 @@ a string or list of variables to be dropped.
           dtype='object')
 
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.feature_selection.DropFeatures
-    :members:

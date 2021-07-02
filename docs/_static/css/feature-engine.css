@@ -1,0 +1,20 @@
+@import url("theme.css");
+
+.highlight a {
+    text-decoration: underline;
+}
+
+.wy-nav-content {
+    max-width: 1200px !important;
+}
+
+
+.wy-table-responsive {
+    overflow: visible !important;
+}
+
+.classifier:before {
+    font-style: normal;
+    margin: 0.5em;
+    content: ":";
+}
