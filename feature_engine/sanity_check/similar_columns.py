@@ -1,8 +1,7 @@
-from typing import Any
+from typing import Any, List
 
 import numpy as np
 import pandas as pd
-
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
@@ -18,7 +17,7 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
 
     def __init__(self, impute_with: Any = np.nan):
         self.impute_with = impute_with
-        self.col = None
+        self.col: List[str] = []
 
     def fit(self, df: pd.DataFrame, y: pd.Series = None, **fit_params):
         """Fit columns schema
@@ -38,7 +37,7 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: pd.DataFrame, **transform_params) -> pd.DataFrame:
-        """Drops the variable that are not in the fitted dataframe and returns 
+        """Drops the variable that are not in the fitted dataframe and returns
         a new dataframe with the remaining subset of variables.
 
         If a column is in train but not in test, then the column will be created in
@@ -56,7 +55,7 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
         X_transformed: pandas dataframe of shape =
              [n_samples, n_features - len(features_to_drop)]
 
-                The transformed dataframe with the same columns 
+                The transformed dataframe with the same columns
                 (in same order) than the fitted dataframe
 
         """
