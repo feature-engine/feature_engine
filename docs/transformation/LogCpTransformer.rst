@@ -40,9 +40,7 @@ Example
     # learned constant C
     tf.C_
     >>>
-    7     2.1742
-    12    2.7300
-    dtype: float64
+    {7: 2.1742, 12: 2.73}
 
     # un-transformed variable
     X_train[12].hist()

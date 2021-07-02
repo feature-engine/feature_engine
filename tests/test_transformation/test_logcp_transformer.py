@@ -6,7 +6,7 @@ from feature_engine.transformation import LogCpTransformer
 
 _age_inverse_transform = [20.0, 21.0, 19.0, 18.0]
 
-_learned_C = [19, 1.6]
+_learned_C = {"Age": 19.0, "Marks": 1.6}  # [19, 1.6]
 
 _params_test_automatic_find_variables = [
     (
@@ -39,8 +39,8 @@ _params_test_automatic_find_variables = [
 ]
 
 _params_test_inverse_transform = [
-    ("e", _age_inverse_transform, _learned_C[0]),
-    ("10", _age_inverse_transform, _learned_C[0]),
+    ("e", _age_inverse_transform, _learned_C["Age"]),
+    ("10", _age_inverse_transform, _learned_C["Age"]),
 ]
 
 
@@ -65,7 +65,7 @@ def test_logcp_base_plus_automatically_find_variables(
     # test fit attr
     assert transformer.variables_ == ["Age", "Marks"]
     assert transformer.n_features_in_ == 5
-    assert all(transformer.C_ == learned_c)
+    assert transformer.C_ == learned_c
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 
@@ -76,21 +76,22 @@ def test_logcp_base_plus_automatically_find_variables(
 def test_log_base_plus_user_passes_var_list(
     log_base, exp_age, exp_marks, learned_c, df_vartypes
 ):
-    transformer = LogCpTransformer(base=log_base, variables="Age")
+    user_var = "Age"
+    transformer = LogCpTransformer(base=log_base, variables=user_var)
     X = transformer.fit_transform(df_vartypes)
 
     # expected output
     transf_df = df_vartypes.copy()
-    transf_df["Age"] = exp_age
+    transf_df[user_var] = exp_age
 
     # test init params
     assert transformer.base == log_base
-    assert transformer.variables == "Age"
+    assert transformer.variables == user_var
     assert transformer.C == "auto"
     # test fit attr
-    assert transformer.variables_ == ["Age"]
+    assert transformer.variables_ == [user_var]
     assert transformer.n_features_in_ == 5
-    assert all(transformer.C_ == learned_c[0])
+    assert transformer.C_ == {user_var: learned_c["Age"]}
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 
@@ -98,21 +99,22 @@ def test_log_base_plus_user_passes_var_list(
 @pytest.mark.parametrize("log_base, exp_age, c_age", _params_test_inverse_transform)
 def test_inverse_transform(log_base, exp_age, c_age, df_vartypes):
 
-    transformer = LogCpTransformer(base=log_base, variables="Age")
+    user_var = "Age"
+    transformer = LogCpTransformer(base=log_base, variables=user_var)
     X_t = transformer.fit_transform(df_vartypes)
     X_dt = transformer.inverse_transform(X_t)
 
     # expected output
     transf_df = df_vartypes.copy()
-    transf_df["Age"] = exp_age
+    transf_df[user_var] = exp_age
 
     # test init params
     assert transformer.base == log_base
     assert transformer.C == "auto"
     # test fit attr
-    assert transformer.variables_ == ["Age"]
+    assert transformer.variables_ == [user_var]
     assert transformer.n_features_in_ == 5
-    assert all(transformer.C_ == c_age)
+    assert transformer.C_ == {user_var: c_age}
     # test transform output
     pd.testing.assert_frame_equal(X_dt, transf_df)
 
@@ -129,6 +131,25 @@ def test_fit_raises_error_if_na_in_df(df_na):
         transformer.fit(df_na)
 
 
+def test_fit_raises_error_if_negative_values(df_vartypes):
+    # test error: when variable + C contain negative values
+    user_var = "Age"
+    df_neg = df_vartypes.copy()
+    df_neg.loc[2, user_var] = -7
+
+    with pytest.raises(ValueError) as errmsg:
+        transformer = LogCpTransformer(base="e", variables=user_var, C=1)
+        transformer.fit(df_neg)
+
+    exceptionmsg = errmsg.value.args[0]
+
+    assert (
+        exceptionmsg
+        == "Some variables contain zero or negative values after addingconstant C, "
+        + "can't apply log"
+    )
+
+
 def test_transform_raises_error_if_na_in_df(df_vartypes, df_na):
     # test case 4: when dataset contains na, transform method
     with pytest.raises(ValueError):
@@ -139,8 +160,9 @@ def test_transform_raises_error_if_na_in_df(df_vartypes, df_na):
 
 def test_error_if_df_contains_negative_values(df_vartypes):
     # test error when data contains negative values
+    user_var = "Age"
     df_neg = df_vartypes.copy()
-    df_neg.loc[1, "Age"] = -df_vartypes["Age"].min() - 2
+    df_neg.loc[1, user_var] = -df_vartypes[user_var].min() - 2
 
     # when variable contains negative value, transform
     with pytest.raises(ValueError):
