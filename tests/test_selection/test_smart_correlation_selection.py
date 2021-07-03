@@ -283,9 +283,6 @@ def test_raises_param_errors():
         SmartCorrelatedSelection(threshold=None)
 
     with pytest.raises(ValueError):
-        SmartCorrelatedSelection(method="hola")
-
-    with pytest.raises(ValueError):
         SmartCorrelatedSelection(missing_values=None)
 
     with pytest.raises(ValueError):
@@ -295,6 +292,30 @@ def test_raises_param_errors():
         SmartCorrelatedSelection(
             selection_method="missing_values", missing_values="raise"
         )
+
+
+def test_error_method_supplied(df_double):
+
+    X, _ = df_double
+
+    transformer = SmartCorrelatedSelection(
+        variables=None,
+        method="hola",
+        threshold=0.8,
+        missing_values="raise",
+        selection_method="variance",
+    )
+
+    with pytest.raises(ValueError) as errmsg:
+        Xt = transformer.fit_transform(X)
+
+    exceptionmsg = errmsg.value.args[0]
+
+    assert (
+        exceptionmsg
+        == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
+        + f" 'hola' was supplied"
+    )
 
 
 def test_error_if_fit_input_not_dataframe():

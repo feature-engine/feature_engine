@@ -145,13 +145,6 @@ class SmartCorrelatedSelection(BaseSelector):
         scoring: str = "roc_auc",
         cv=3,
     ):
-
-        if method not in ["pearson", "spearman", "kendall"] and not callable(method):
-            raise ValueError(
-                "correlation method takes only values 'pearson', 'spearman', "
-                + "'kendall' or callable."
-            )
-
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError("threshold must be a float between 0 and 1")
 
