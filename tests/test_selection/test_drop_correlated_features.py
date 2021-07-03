@@ -155,23 +155,20 @@ def test_non_fitted_error(df_correlated_single):
         transformer.transform(df_correlated_single)
 
 
-def test_error_method(df_correlated_double):
+def test_error_method_supplied(df_correlated_double):
 
     X = df_correlated_double
+    method = "hola"
 
-    transformer = DropCorrelatedFeatures(
-        variables=None, 
-        method='hola', 
-        threshold=0.8
-    )
+    transformer = DropCorrelatedFeatures(variables=None, method=method, threshold=0.8)
 
     with pytest.raises(ValueError) as errmsg:
-        Xt = transformer.fit_transform(X)
+        _ = transformer.fit_transform(X)
 
     exceptionmsg = errmsg.value.args[0]
 
     assert (
         exceptionmsg
         == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
-        + f" 'hola' was supplied"
+        + f" '{method}' was supplied"
     )
