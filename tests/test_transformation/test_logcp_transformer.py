@@ -43,7 +43,7 @@ _params_test_automatic_find_variables = [
 def test_params_C_is_auto_variables_is_none_all_possible_bases(
     log_base, exp_age, exp_marks, learned_c, df_vartypes
 ):
-    transformer = LogCpTransformer(base=log_base, variables=None, C='auto')
+    transformer = LogCpTransformer(base=log_base, variables=None, C="auto")
     X = transformer.fit_transform(df_vartypes)
 
     # expected output
@@ -74,27 +74,22 @@ def test_params_C_is_auto_variables_is_none_all_possible_bases(
 @pytest.mark.parametrize(
     "log_base, exp_age, exp_marks, learned_c", _params_test_automatic_find_variables
 )
-def test_param_C_is_dict_user_indicates_variable(
-    log_base, exp_age, exp_marks, learned_c, df_vartypes
-):
-    user_var = "Age"
-    transformer = LogCpTransformer(
-        base=log_base, variables=user_var, C={user_var: 19.0}
-    )
+def test_param_C_is_dict_user(log_base, exp_age, exp_marks, learned_c, df_vartypes):
+    transformer = LogCpTransformer(base=log_base, C={"Age": 19.0})
     X = transformer.fit_transform(df_vartypes)
 
     # expected output
     transf_df = df_vartypes.copy()
-    transf_df[user_var] = exp_age
+    transf_df["Age"] = exp_age
 
     # test init params
     assert transformer.base == log_base
-    assert transformer.variables == user_var
-    assert transformer.C == {user_var: 19.0}
+    assert transformer.variables is None
+    assert transformer.C == {"Age": 19.0}
     # test fit attr
-    assert transformer.variables_ == [user_var]
+    assert transformer.variables_ == ["Age"]
     assert transformer.n_features_in_ == 5
-    assert transformer.C_ == {user_var: learned_c["Age"]}
+    assert transformer.C_ == {"Age": learned_c["Age"]}
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 
@@ -107,12 +102,9 @@ def test_param_C_is_dict_user_indicates_variable(
     pd.testing.assert_frame_equal(Xit, df_vartypes)
 
     # TODO:
-    # we need to modify the test above, because if user enters dictionary, variables
-    # is not needed.
-    # add a test when user enteres a variable name or variable list in variables
-
-    # add test when user inputs integer in C and when user inputs float in c
-    # can combine with the above to create 2 in 1
+    # test when c is single int
+    # test when C is float
+    # test when user passes variables
 
 
 def test_error_if_base_value_not_allowed():

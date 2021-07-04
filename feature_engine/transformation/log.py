@@ -220,7 +220,9 @@ class LogCpTransformer(BaseNumericalTransformer):
     ----------
     variables: list, default=None
         The list of numerical variables to transform. If None, the transformer
-        will find and select all numerical variables.
+        will find and select all numerical variables. If C is a dictionary, then this
+        parameter is ignored and the variables to transform are selected from the
+        dictionary keys.
 
     base: string, default='e'
         Indicates if the natural or base 10 logarithm should be applied. Can take
@@ -232,6 +234,8 @@ class LogCpTransformer(BaseNumericalTransformer):
         - If int, then log(x + C)
         - If "auto", then C = abs(min(x)) + 1
         - If dict, dictionary mapping the constant C to apply to each variable.
+
+        Note, when C is a dictionary, the parameter `variables` is ignored.
 
     Attributes
     ----------
@@ -261,14 +265,14 @@ class LogCpTransformer(BaseNumericalTransformer):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         base: str = "e",
-        C: Union[int, str, Dict] = "auto",
+        C: Union[int, float, str, Dict[Union[str, int], Union[float, int]]] = "auto",
     ) -> None:
 
         if base not in ["e", "10"]:
             raise ValueError("base can take only '10' or 'e' as values")
 
         if not isinstance(C, (int, float, dict)) and not C == "auto":
-            raise ValueError("C can take only 'auto' or int")
+            raise ValueError("C can take only 'auto', integers or floats")
 
         self.variables = _check_input_parameter_variables(variables)
         self.base = base
@@ -307,14 +311,12 @@ class LogCpTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        if isinstance(self.C, dict):
+            X = super()._select_variables_from_dict(X, self.C)
+        else:
+            X = super().fit(X)
 
         self.C_ = self.C
-
-        # TODO:
-        # now that we allow user to pass a dictionary, when a dicionary is passed in C
-        # then self.variables_ should be the dictionary keys, and the argument in
-        # variables should be ignored
 
         # calculate C to add to each variable
         if self.C == "auto":

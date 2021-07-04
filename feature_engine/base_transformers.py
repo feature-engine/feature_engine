@@ -2,7 +2,7 @@
 classes. Provides the base functionality within the fit() and transform() methods
 shared by most transformers, like checking that input is a df, the size, NA, etc.
 """
-from typing import Dict, List, Optional, Union
+from typing import Dict, Optional
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -95,9 +95,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables_ = _find_or_check_numerical_variables(
-            X, self.variables
-        )
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # check if dataset contains na or inf
         _check_contains_na(X, self.variables_)
