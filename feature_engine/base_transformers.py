@@ -23,7 +23,9 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
     variable transformers, discretisers, math combination.
     """
 
-    def _select_variables_from_dict(self, X: pd.DataFrame, user_dict_: Dict) -> pd.DataFrame:
+    def _select_variables_from_dict(
+        self, X: pd.DataFrame, user_dict_: Dict
+    ) -> pd.DataFrame:
         """
         Checks that input is a dataframe, checks that variables in the dictionary
         entered by the user are of type numerical.
@@ -93,7 +95,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # find or check for numerical variables
-        self.variables_: List[Union[str, int]] = _find_or_check_numerical_variables(
+        self.variables_ = _find_or_check_numerical_variables(
             X, self.variables
         )
 
