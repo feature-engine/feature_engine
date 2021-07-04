@@ -14,10 +14,10 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 class LogTransformer(BaseNumericalTransformer):
     """
     The LogTransformer() applies the natural logarithm or the base 10 logarithm to
-    numerical variables. The natural logarithm is logarithm in base e.
+    numerical variables. The natural logarithm is the logarithm in base e.
 
     The LogTransformer() only works with positive values. If the variable
-    contains a zero or a negative value, the transformer will return an error.
+    contains a zero or a negative value the transformer will return an error.
 
     A list of variables can be passed as an argument. Alternatively, the transformer
     will automatically select and transform all variables of type numeric.
@@ -45,7 +45,7 @@ class LogTransformer(BaseNumericalTransformer):
     fit:
         This transformer does not learn parameters.
     transform:
-        Transform the variables using log transformation.
+        Transform the variables using the logarithm.
     fit_transform:
         Fit to data, then transform it.
     inverse_transform:
@@ -69,8 +69,8 @@ class LogTransformer(BaseNumericalTransformer):
         This transformer does not learn parameters.
 
         Selects the numerical variables and determines whether the logarithm
-        can be applied on the selected variables (it checks if the variables
-        are all positive).
+        can be applied on the selected variables, i.e., it checks that the variables
+        are positive.
 
         Parameters
         ----------
