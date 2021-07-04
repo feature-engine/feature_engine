@@ -6,13 +6,7 @@ from typing import Dict, List, Optional, Union
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.dataframe_checks import (
-    _check_contains_inf,
-    _check_contains_na,
-    _is_dataframe,
-)
 from feature_engine.validation import _return_tags
-from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
 class ArbitraryDiscretiser(BaseNumericalTransformer):
@@ -131,15 +125,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         self
         """
         # check input dataframe
-        X = _is_dataframe(X)
-
-        # find or check for numerical variables
-        variables = [x for x in self.binning_dict.keys()]
-        self.variables_ = _find_or_check_numerical_variables(X, variables)
-
-        # check if dataset contains na or inf
-        _check_contains_na(X, self.variables_)
-        _check_contains_inf(X, self.variables_)
+        X = super()._select_variables_from_dict(X, self.binning_dict)
 
         # for consistency wit the rest of the discretisers, we add this attribute
         self.binner_dict_ = self.binning_dict
