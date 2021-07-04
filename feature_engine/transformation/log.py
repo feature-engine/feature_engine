@@ -227,12 +227,11 @@ class LogCpTransformer(BaseNumericalTransformer):
         values 'e' or '10'.
 
     C: "auto", int or dict, default="auto"
-        The constant C to apply the transfomation log(x + C).
+        The constant C to add to the variable before the logarithm, i.e., log(x + C).
 
         - If int, then log(x + C)
         - If "auto", then C = abs(min(x)) + 1
-        - If dict, dictionary mapping the constant C to apply
-          to each variable.
+        - If dict, dictionary mapping the constant C to apply to each variable.
 
     Attributes
     ----------
@@ -240,8 +239,8 @@ class LogCpTransformer(BaseNumericalTransformer):
         The group of variables that will be transformed.
 
     C_:
-        The constant C to transform data. If C = "auto" a dictionary
-        storing the constant C for each variable.
+        The constant C to add to each variable. If C = "auto" a dictionary with
+        C = abs(min(variable)) + 1.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -249,9 +248,9 @@ class LogCpTransformer(BaseNumericalTransformer):
     Methods
     -------
     fit:
-        This transformer learns the constant C to add to log transformation.
+        learn the constant C.
     transform:
-        Transforms the variables with the logarithm of x plus a constant C.
+        Transform the variables with the logarithm of x plus C.
     fit_transform:
         Fit to data, then transform it.
     inverse_transform:
@@ -268,7 +267,7 @@ class LogCpTransformer(BaseNumericalTransformer):
         if base not in ["e", "10"]:
             raise ValueError("base can take only '10' or 'e' as values")
 
-        if not isinstance(C, int) and not C == "auto":
+        if not isinstance(C, (int, float, dict)) and not C == "auto":
             raise ValueError("C can take only 'auto' or int")
 
         self.variables = _check_input_parameter_variables(variables)
@@ -277,12 +276,11 @@ class LogCpTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        This transformer learns the constant C to add to log transformation
-        when C="auto".
+        Learn the constant C to add to the variable before the logarithm transformation
+        if C="auto".
 
-        Select the numerical variables and determines whether the logarithm
-        can be applied on the selected variables (it checks if the variables
-        are all positive after the addition of C).
+        Select the numerical variables or check that variables entered by user are
+        numerical. Then check that selected variables are positive after addition of C.
 
         Parameters
         ----------
@@ -301,7 +299,7 @@ class LogCpTransformer(BaseNumericalTransformer):
         ValueError
             - If there are no numerical variables in the df or the df is empty
             - If the variable(s) contain null values
-            - If some variables contain zero or negative values after adding constant C
+            - If some variables contain zero or negative values after adding C
 
         Returns
         -------
@@ -313,11 +311,16 @@ class LogCpTransformer(BaseNumericalTransformer):
 
         self.C_ = self.C
 
+        # TODO:
+        # now that we allow user to pass a dictionary, when a dicionary is passed in C
+        # then self.variables_ should be the dictionary keys, and the argument in
+        # variables should be ignored
+
         # calculate C to add to each variable
         if self.C == "auto":
             self.C_ = dict(X[self.variables_].min(axis=0).abs() + 1)
 
-        # check contains zero or negative values
+        # check variables are positive after adding C
         if (X[self.variables_] + self.C_ <= 0).any().any():
             raise ValueError(
                 "Some variables contain zero or negative values after adding"
@@ -330,7 +333,7 @@ class LogCpTransformer(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Transforms the variables with the logarithm of x plus a constant C.
+        Transform the variables with the logarithm of x plus a constant C.
 
         Parameters
         ----------
@@ -344,7 +347,7 @@ class LogCpTransformer(BaseNumericalTransformer):
         ValueError
             - If the variable(s) contain null values
             - If the df has different number of features than the df used in fit()
-            - If some variables contains zero or negative values after adding constant C
+            - If some variables contains zero or negative values after adding C
 
         Returns
         -------
@@ -355,7 +358,7 @@ class LogCpTransformer(BaseNumericalTransformer):
         # check input dataframe and if class was fitted
         X = super().transform(X)
 
-        # check contains zero or negative values
+        # check variable is positive after adding c
         if (X[self.variables_] + self.C_ <= 0).any().any():
             raise ValueError(
                 "Some variables contain zero or negative values after adding"
@@ -372,12 +375,12 @@ class LogCpTransformer(BaseNumericalTransformer):
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Transforms the variables using the exponential transformation.
+        Convert the data back to the original representation.
 
         Parameters
         ----------
         X: Pandas DataFrame of shape = [n_samples, n_features]
-            The data to be detransformed.
+            The data to be transformed.
 
         Raises
         ------
@@ -385,7 +388,7 @@ class LogCpTransformer(BaseNumericalTransformer):
             If the input is not a Pandas DataFrame
         ValueError
             - If the variable(s) contain null values
-            - If X has different number of features than X used in fit()
+            - If the df has different number of features than the df used in fit()
 
         Returns
         -------
