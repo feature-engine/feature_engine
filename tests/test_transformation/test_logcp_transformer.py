@@ -4,8 +4,6 @@ from sklearn.exceptions import NotFittedError
 
 from feature_engine.transformation import LogCpTransformer
 
-_age_inverse_transform = [20.0, 21.0, 19.0, 18.0]
-
 _learned_C = {"Age": 19.0, "Marks": 1.6}
 
 _params_test_automatic_find_variables = [
@@ -38,19 +36,42 @@ _params_test_automatic_find_variables = [
     ),
 ]
 
-_params_test_inverse_transform = [
-    ("e", _age_inverse_transform, _learned_C["Age"]),
-    ("10", _age_inverse_transform, _learned_C["Age"]),
+_params_test_c_is_numerical = [
+    (
+        "e",
+        [3.044522437723423, 3.091042453358316, 2.995732273553991, 2.9444389791664403],
+        [
+            0.6418538861723947,
+            0.5877866649021191,
+            0.5306282510621704,
+            0.47000362924573563,
+        ],
+    ),
+    (
+        "10",
+        [
+            1.3222192947339193,
+            1.3424226808222062,
+            1.3010299956639813,
+            1.2787536009528289,
+        ],
+        [
+            0.2787536009528289,
+            0.25527250510330607,
+            0.2304489213782739,
+            0.20411998265592482,
+        ],
+    ),
 ]
 
 
 @pytest.mark.parametrize(
     "log_base, exp_age, exp_marks, learned_c", _params_test_automatic_find_variables
 )
-def test_logcp_base_plus_automatically_find_variables(
+def test_params_C_is_auto_variables_is_none_all_possible_bases(
     log_base, exp_age, exp_marks, learned_c, df_vartypes
 ):
-    transformer = LogCpTransformer(base=log_base, variables=None)
+    transformer = LogCpTransformer(base=log_base, variables=None, C="auto")
     X = transformer.fit_transform(df_vartypes)
 
     # expected output
@@ -69,54 +90,139 @@ def test_logcp_base_plus_automatically_find_variables(
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 
+    # test inverse_transform output
+    Xit = transformer.inverse_transform(X)
+    # convert numbers to original format.
+    Xit["Age"] = Xit["Age"].round().astype("int64")
+    Xit["Marks"] = Xit["Marks"].round(1)
+
+    pd.testing.assert_frame_equal(Xit, df_vartypes)
+
 
 @pytest.mark.parametrize(
     "log_base, exp_age, exp_marks, learned_c", _params_test_automatic_find_variables
 )
-def test_log_base_plus_user_passes_var_list(
-    log_base, exp_age, exp_marks, learned_c, df_vartypes
-):
-    user_var = "Age"
-    transformer = LogCpTransformer(base=log_base, variables=user_var)
+def test_param_C_is_dict_user(log_base, exp_age, exp_marks, learned_c, df_vartypes):
+    transformer = LogCpTransformer(base=log_base, C={"Age": 19.0})
     X = transformer.fit_transform(df_vartypes)
 
     # expected output
     transf_df = df_vartypes.copy()
-    transf_df[user_var] = exp_age
+    transf_df["Age"] = exp_age
 
     # test init params
     assert transformer.base == log_base
-    assert transformer.variables == user_var
-    assert transformer.C == "auto"
+    assert transformer.variables is None
+    assert transformer.C == {"Age": 19.0}
     # test fit attr
-    assert transformer.variables_ == [user_var]
+    assert transformer.variables_ == ["Age"]
     assert transformer.n_features_in_ == 5
-    assert transformer.C_ == {user_var: learned_c["Age"]}
+    assert transformer.C_ == {"Age": learned_c["Age"]}
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 
+    # test inverse_transform output
+    Xit = transformer.inverse_transform(X)
+    # convert numbers to original format.
+    Xit["Age"] = Xit["Age"].round().astype("int64")
+    Xit["Marks"] = Xit["Marks"].round(1)
 
-@pytest.mark.parametrize("log_base, exp_age, c_age", _params_test_inverse_transform)
-def test_inverse_transform(log_base, exp_age, c_age, df_vartypes):
+    pd.testing.assert_frame_equal(Xit, df_vartypes)
 
-    user_var = "Age"
-    transformer = LogCpTransformer(base=log_base, variables=user_var)
-    X_t = transformer.fit_transform(df_vartypes)
-    X_dt = transformer.inverse_transform(X_t)
+
+@pytest.mark.parametrize("log_base, exp_age, exp_marks", _params_test_c_is_numerical)
+def test_param_C_is_int_variables_is_none(log_base, exp_age, exp_marks, df_vartypes):
+    int_constant = 1
+    transformer = LogCpTransformer(base=log_base, C=int_constant)
+    X = transformer.fit_transform(df_vartypes)
 
     # expected output
     transf_df = df_vartypes.copy()
-    transf_df[user_var] = exp_age
+    transf_df["Age"] = exp_age
+    transf_df["Marks"] = exp_marks
 
     # test init params
     assert transformer.base == log_base
+    assert transformer.variables is None
+    assert transformer.C == int_constant
+    # test fit attr
+    assert transformer.variables_ == ["Age", "Marks"]
+    assert transformer.n_features_in_ == 5
+    assert transformer.C_ == int_constant
+    # test transform output
+    pd.testing.assert_frame_equal(X, transf_df)
+
+    # test inverse_transform output
+    Xit = transformer.inverse_transform(X)
+    # convert numbers to original format.
+    Xit["Age"] = Xit["Age"].round().astype("int64")
+    Xit["Marks"] = Xit["Marks"].round(1)
+
+    pd.testing.assert_frame_equal(Xit, df_vartypes)
+
+
+@pytest.mark.parametrize("log_base, exp_age, exp_marks", _params_test_c_is_numerical)
+def test_param_C_is_float_variables_is_none(log_base, exp_age, exp_marks, df_vartypes):
+    float_constant = 1.0
+    transformer = LogCpTransformer(base=log_base, C=float_constant)
+    X = transformer.fit_transform(df_vartypes)
+
+    # expected output
+    transf_df = df_vartypes.copy()
+    transf_df["Age"] = exp_age
+    transf_df["Marks"] = exp_marks
+
+    # test init params
+    assert transformer.base == log_base
+    assert transformer.variables is None
+    assert transformer.C == float_constant
+    # test fit attr
+    assert transformer.variables_ == ["Age", "Marks"]
+    assert transformer.n_features_in_ == 5
+    assert transformer.C_ == float_constant
+    # test transform output
+    pd.testing.assert_frame_equal(X, transf_df)
+
+    # test inverse_transform output
+    Xit = transformer.inverse_transform(X)
+    # convert numbers to original format.
+    Xit["Age"] = Xit["Age"].round().astype("int64")
+    Xit["Marks"] = Xit["Marks"].round(1)
+
+    pd.testing.assert_frame_equal(Xit, df_vartypes)
+
+
+@pytest.mark.parametrize(
+    "log_base, exp_age, exp_marks, learned_c", _params_test_automatic_find_variables
+)
+def test_user_pass_variables(log_base, exp_age, exp_marks, learned_c, df_vartypes):
+    user_vars = ["Age", "Marks"]
+    transformer = LogCpTransformer(base=log_base, variables=user_vars)
+    X = transformer.fit_transform(df_vartypes)
+
+    # expected output
+    transf_df = df_vartypes.copy()
+    transf_df["Age"] = exp_age
+    transf_df["Marks"] = exp_marks
+
+    # test init params
+    assert transformer.base == log_base
+    assert transformer.variables == user_vars
     assert transformer.C == "auto"
     # test fit attr
-    assert transformer.variables_ == [user_var]
+    assert transformer.variables_ == user_vars
     assert transformer.n_features_in_ == 5
-    assert transformer.C_ == {user_var: c_age}
+    assert transformer.C_ == learned_c
     # test transform output
-    pd.testing.assert_frame_equal(X_dt, transf_df)
+    pd.testing.assert_frame_equal(X, transf_df)
+
+    # test inverse_transform output
+    Xit = transformer.inverse_transform(X)
+    # convert numbers to original format.
+    Xit["Age"] = Xit["Age"].round().astype("int64")
+    Xit["Marks"] = Xit["Marks"].round(1)
+
+    pd.testing.assert_frame_equal(Xit, df_vartypes)
 
 
 def test_error_if_base_value_not_allowed():
@@ -124,15 +230,20 @@ def test_error_if_base_value_not_allowed():
         LogCpTransformer(base="other")
 
 
-def test_fit_raises_error_if_na_in_df(df_na):
-    # test case 3: when dataset contains na, fit method
+def test_raises_error_if_na_in_df(df_na, df_vartypes):
+    # when dataset contains na, fit method
     with pytest.raises(ValueError):
         transformer = LogCpTransformer()
         transformer.fit(df_na)
 
+    # when dataset contains na, transform method
+    with pytest.raises(ValueError):
+        transformer = LogCpTransformer()
+        transformer.fit(df_vartypes)
+        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
-def test_fit_raises_error_if_negative_values(df_vartypes):
-    # test error: when variable + C contain negative values
+
+def test_raises_error_if_negative_values_after_adding_C(df_vartypes):
     user_var = "Age"
     df_neg = df_vartypes.copy()
     df_neg.loc[2, user_var] = -7
@@ -149,26 +260,17 @@ def test_fit_raises_error_if_negative_values(df_vartypes):
         + "can't apply log"
     )
 
-
-def test_transform_raises_error_if_na_in_df(df_vartypes, df_na):
-    # test case 4: when dataset contains na, transform method
-    with pytest.raises(ValueError):
-        transformer = LogCpTransformer()
-        transformer.fit(df_vartypes)
-        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
-
-
-def test_error_if_df_contains_negative_values(df_vartypes):
-    # test error when data contains negative values
-    user_var = "Age"
-    df_neg = df_vartypes.copy()
-    df_neg.loc[1, user_var] = -df_vartypes[user_var].min() - 2
-
     # when variable contains negative value, transform
     with pytest.raises(ValueError):
-        transformer = LogCpTransformer()
+        transformer = LogCpTransformer(base="e", variables=user_var, C=1)
         transformer.fit(df_vartypes)
         transformer.transform(df_neg)
+
+    assert (
+        exceptionmsg
+        == "Some variables contain zero or negative values after addingconstant C, "
+        + "can't apply log"
+    )
 
 
 def test_non_fitted_error(df_vartypes):

@@ -23,6 +23,16 @@ def test_automatically_find_variables(df_vartypes):
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
 
+    # test inverse_transform
+    Xit = transformer.inverse_transform(X)
+
+    # convert numbers to original format.
+    Xit["Age"] = Xit["Age"].round().astype("int64")
+    Xit["Marks"] = Xit["Marks"].round(1)
+
+    # test
+    pd.testing.assert_frame_equal(Xit, df_vartypes)
+
 
 def test_fit_raises_error_if_na_in_df(df_na):
     # test case 2: when dataset contains na, fit method
