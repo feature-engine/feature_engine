@@ -45,7 +45,7 @@ class LogTransformer(BaseNumericalTransformer):
     fit:
         This transformer does not learn parameters.
     transform:
-        Transforms the variables with the logarithm.
+        Transform the variables using the logarithm.
     fit_transform:
         Fit to data, then transform it.
     inverse_transform:
@@ -111,7 +111,7 @@ class LogTransformer(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Transforms the variables with the logarithm.
+        Transform the variables using log transformation.
 
         Parameters
         ----------
