@@ -111,7 +111,7 @@ class LogTransformer(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Transform the variables using log transformation.
+        Transform the variables with the logarithm.
 
         Parameters
         ----------
@@ -125,7 +125,7 @@ class LogTransformer(BaseNumericalTransformer):
         ValueError
             - If the variable(s) contain null values
             - If the df has different number of features than the df used in fit()
-            - If some variables contains zero or negative values
+            - If some variables contain zero or negative values
 
         Returns
         -------
@@ -166,7 +166,7 @@ class LogTransformer(BaseNumericalTransformer):
         ValueError
             - If the variable(s) contain null values
             - If the df has different number of features than the df used in fit()
-            - If some variables contains zero or negative values
+            - If some variables contain zero or negative values
 
         Returns
         -------
@@ -209,7 +209,7 @@ class LogCpTransformer(BaseNumericalTransformer):
     constant, to the input variable. It applies the natural logarithm or the base 10
     logarithm, where the natural logarithm is logarithm in base e.
 
-    The LogCpTransformer() only works with numerical non-negative values. If the
+    The logarithm can only be applied to numerical non-negative values. If the
     variable contains a zero or a negative value after adding a constant C, the
     transformer will return an error.
 
@@ -252,7 +252,7 @@ class LogCpTransformer(BaseNumericalTransformer):
     Methods
     -------
     fit:
-        learn the constant C.
+        Learn the constant C.
     transform:
         Transform the variables with the logarithm of x plus C.
     fit_transform:
@@ -283,8 +283,9 @@ class LogCpTransformer(BaseNumericalTransformer):
         Learn the constant C to add to the variable before the logarithm transformation
         if C="auto".
 
-        Select the numerical variables or check that variables entered by user are
-        numerical. Then check that selected variables are positive after addition of C.
+        Select the numerical variables or check that the variables entered by the user
+        are numerical. Then check that the selected variables are positive after
+        addition of C.
 
         Parameters
         ----------

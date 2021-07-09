@@ -89,6 +89,7 @@ More resources will be added as they appear online!
 
 ### Variable Transformation methods
 * LogTransformer
+* LogCpTransformer
 * ReciprocalTransformer
 * PowerTransformer
 * BoxCoxTransformer
