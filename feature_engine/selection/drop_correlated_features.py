@@ -40,8 +40,9 @@ class DropCorrelatedFeatures(BaseSelector):
         - pearson : standard correlation coefficient
         - kendall : Kendall Tau correlation coefficient
         - spearman : Spearman rank correlation
-        - callable: callable with input two 1d ndarrays and returning a float. See\n
-          `pandas.corr()` method for reference.
+        - callable: callable with input two 1d ndarrays and returning a float.
+
+        For more details on this parameter visit the  `pandas.corr()` documentation.
 
     threshold: float, default=0.8
         The correlation threshold above which a feature will be deemed correlated with
