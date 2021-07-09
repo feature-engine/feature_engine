@@ -28,26 +28,6 @@ def df_single():
     return X, y
 
 
-@pytest.fixture(scope="module")
-def df_double():
-    # create array with 8 correlated features and 4 independent ones
-    X, y = make_classification(
-        n_samples=1000,
-        n_features=12,
-        n_redundant=4,
-        n_clusters_per_class=1,
-        weights=[0.50],
-        class_sep=2,
-        random_state=1,
-    )
-
-    # transform array into pandas df
-    colnames = ["var_" + str(i) for i in range(12)]
-    X = pd.DataFrame(X, columns=colnames)
-
-    return X, y
-
-
 def test_model_performance_single_corr_group(df_single):
     X, y = df_single
 
@@ -91,8 +71,8 @@ def test_model_performance_single_corr_group(df_single):
     pd.testing.assert_frame_equal(Xt, df)
 
 
-def test_model_performance_2_correlated_groups(df_double):
-    X, y = df_double
+def test_model_performance_2_correlated_groups(df_test):
+    X, y = df_test
 
     transformer = SmartCorrelatedSelection(
         variables=None,
@@ -145,8 +125,8 @@ def test_error_if_select_model_performance_and_y_is_none(df_single):
         transformer.fit(X)
 
 
-def test_variance_2_correlated_groups(df_double):
-    X, y = df_double
+def test_variance_2_correlated_groups(df_test):
+    X, y = df_test
 
     transformer = SmartCorrelatedSelection(
         variables=None,
@@ -174,8 +154,8 @@ def test_variance_2_correlated_groups(df_double):
     pd.testing.assert_frame_equal(Xt, df)
 
 
-def test_cardinality_2_correlated_groups(df_double):
-    X, y = df_double
+def test_cardinality_2_correlated_groups(df_test):
+    X, y = df_test
     X[["var_0", "var_6", "var_7", "var_9"]] = X[
         ["var_0", "var_6", "var_7", "var_9"]
     ].astype(int)
@@ -206,8 +186,8 @@ def test_cardinality_2_correlated_groups(df_double):
     pd.testing.assert_frame_equal(Xt, df)
 
 
-def test_automatic_variable_selection(df_double):
-    X, y = df_double
+def test_automatic_variable_selection(df_test):
+    X, y = df_test
 
     X[["var_0", "var_6", "var_7", "var_9"]] = X[
         ["var_0", "var_6", "var_7", "var_9"]
@@ -255,8 +235,8 @@ def test_automatic_variable_selection(df_double):
     pd.testing.assert_frame_equal(Xt, df)
 
 
-def test_callable_method(df_double, dummy_method):
-    X, _ = df_double
+def test_callable_method(df_test, dummy_method):
+    X, _ = df_test
 
     transformer = SmartCorrelatedSelection(
         variables=None,
@@ -294,9 +274,9 @@ def test_raises_param_errors():
         )
 
 
-def test_error_method_supplied(df_double):
+def test_error_method_supplied(df_test):
 
-    X, _ = df_double
+    X, _ = df_test
     method = "hola"
 
     transformer = SmartCorrelatedSelection(
