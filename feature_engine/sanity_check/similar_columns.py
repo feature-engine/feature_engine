@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -36,7 +36,7 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
             # check if dataset contains na
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
-        
+
         return X
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
