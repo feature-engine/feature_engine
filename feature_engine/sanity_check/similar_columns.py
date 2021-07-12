@@ -107,7 +107,7 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
         if (
                 not self.drop_if_more_columns
                 and (set(X.columns) != set(self.variables_))
-            ):
+                ):
 
             raise ValueError("drop_if_more_columns is set to False and columns are "
                              "different between the dataframe"
