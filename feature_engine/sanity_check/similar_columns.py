@@ -3,6 +3,13 @@ from typing import Any, List
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils.validation import check_is_fitted
+
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na,
+    _is_dataframe,
+)
 
 
 class SimilarColumns(BaseEstimator, TransformerMixin):
@@ -15,11 +22,24 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
 
     """
 
-    def __init__(self, impute_with: Any = np.nan):
-        self.impute_with = impute_with
-        self.col: List[str] = []
+    def __init__(self, impute_with: Any = np.nan, missing_values: str = "ignore"):
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
 
-    def fit(self, df: pd.DataFrame, y: pd.Series = None, **fit_params):
+        self.impute_with = impute_with
+        self.missing_values = missing_values
+
+    def _check_input(self, X: pd.DataFrame):
+        X = _is_dataframe(X)
+
+        if self.missing_values == "raise":
+            # check if dataset contains na
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
+        
+        return X
+
+    def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """Fit columns schema
 
         Parameters
@@ -32,8 +52,9 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
             y is not needed for this transformer. You can pass y or None.
 
         """
+        X = self._check_input(X)
 
-        self.col = df.columns
+        self.variables_ = X.columns
         return self
 
     def transform(self, X: pd.DataFrame, **transform_params) -> pd.DataFrame:
@@ -59,10 +80,13 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
                 (in same order) than the fitted dataframe
 
         """
+        check_is_fitted(self)
 
-        for col in self.col:
+        X = self._check_input(X)
+
+        for col in self.variables_:
             if col not in X.columns:
                 X[col] = self.impute_with
         # reorder columns
-        X = X.loc[:, self.col]
+        X = X.loc[:, self.variables_]
         return X
