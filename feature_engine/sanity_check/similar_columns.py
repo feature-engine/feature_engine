@@ -143,15 +143,17 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
                     f"  dataframe with value {self.impute_with}"
                 )
 
-            X = X.reindex(columns=list(X.columns) + _columns_to_add,
-             fill_value=self.impute_with)
+            X = X.reindex(
+                    columns=list(X.columns) + _columns_to_add,
+                    fill_value=self.impute_with
+                )
 
-        if self.drop_if_more_columns:    
+        if self.drop_if_more_columns:
             if self.verbose:
-                    logging.warning(
-                        f"Columns ({_columns_to_drop}) are in transform df"
-                        " but not in fit, they will be dropped"
-                    )
+                logging.warning(
+                    f"Columns ({_columns_to_drop}) are in transform df"
+                    " but not in fit, they will be dropped"
+                )
 
             X = X.drop(_columns_to_drop, axis=1)
 
