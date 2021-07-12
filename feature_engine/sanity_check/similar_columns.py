@@ -1,4 +1,5 @@
 from typing import Any
+import logging
 
 import numpy as np
 import pandas as pd
@@ -27,7 +28,8 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
         impute_with: Any = np.nan,
         missing_values: str = "ignore",
         drop_if_more_columns: bool = True,
-        add_if_less_columns: bool = True
+        add_if_less_columns: bool = True,
+        verbose: bool = False
     ):
 
         if missing_values not in ["raise", "ignore"]:
@@ -43,6 +45,7 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
         self.missing_values = missing_values
         self.drop_if_more_columns = drop_if_more_columns
         self.add_if_less_columns = add_if_less_columns
+        self.verbose = verbose
 
     def _check_input(self, X: pd.DataFrame):
         X = _is_dataframe(X)
@@ -100,9 +103,8 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
         X = self._check_input(X)
 
         if self.add_if_less_columns:
-            for col in self.variables_:
-                if col not in X.columns:
-                    X[col] = self.impute_with
+            _new_variables_ = list(set(self.variables_) - set(X.columns))
+            X = X.reindex(columns=list(X.columns) + _new_variables_, fill_value=self.impute_with)
 
         if (not self.drop_if_more_columns
                 and (set(X.columns) != set(self.variables_))):
