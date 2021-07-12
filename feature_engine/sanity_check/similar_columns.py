@@ -22,13 +22,20 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
 
     """
 
-    def __init__(self, impute_with: Any = np.nan, missing_values: str = "ignore", drop_if_more_columns: bool = True, add_if_less_columns: bool = True):
+    def __init__(
+        self,
+        impute_with: Any = np.nan,
+        missing_values: str = "ignore",
+        drop_if_more_columns: bool = True,
+        add_if_less_columns: bool = True
+    ):
+
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
 
         if not isinstance(drop_if_more_columns, bool):
             raise ValueError("drop_if_more_columns takes only booleans True and False")
-        
+
         if not isinstance(add_if_less_columns, bool):
             raise ValueError("add_if_less_columns takes only booleans True and False")
 
@@ -36,7 +43,6 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
         self.missing_values = missing_values
         self.drop_if_more_columns = drop_if_more_columns
         self.add_if_less_columns = add_if_less_columns
-
 
     def _check_input(self, X: pd.DataFrame):
         X = _is_dataframe(X)
@@ -98,7 +104,9 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
                 if col not in X.columns:
                     X[col] = self.impute_with
 
-        if not self.drop_if_more_columns and (set(X.columns) != set(self.variables_)):
+        if (not self.drop_if_more_columns 
+            and (set(X.columns) != set(self.variables_))):
+
             raise ValueError("drop_if_more_columns is set to False and columns are "
                              "different between the dataframe"
                              " used in fit and the one used in transform "
