@@ -62,6 +62,7 @@ def test_similar_columns_when_more_columns_in_test_than_train(df_vartypes, df_na
 
     pd.testing.assert_frame_equal(expected_result, transformed_df)
 
+
 def test_similar_columns_raise_error(df_vartypes, df_na):
 
     # When columns are the same
@@ -72,8 +73,6 @@ def test_similar_columns_raise_error(df_vartypes, df_na):
     similar_columns.fit(train)
 
     with pytest.raises(ValueError) as excinfo:
-        transformed_df = similar_columns.transform(test)
+        similar_columns.transform(test)
 
     assert "'dob'" in str(excinfo.value) and "'Studies'" in str(excinfo.value)
-
-    
