@@ -39,8 +39,12 @@ Example
 
     # learned constant C
     tf.C_
-    >>>
+
+.. code:: python
+
     {7: 2.1742, 12: 2.73}
+
+.. code:: python
 
     # un-transformed variable
     X_train[12].hist()
