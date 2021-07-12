@@ -40,7 +40,7 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
 
         if not isinstance(add_if_less_columns, bool):
             raise ValueError("add_if_less_columns takes only booleans True and False")
-        
+
         if not isinstance(verbose, bool):
             raise ValueError("verbose takes only booleans True and False")
 
@@ -78,21 +78,30 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
         self.variables_ = X.columns
         return self
 
-    def _raise_errors_if_needed(self, _columns_to_drop: List[str], _columns_to_add: List[str], X: pd.DataFrame):
-        if not self.drop_if_more_columns and len(_columns_to_drop) > 0:
-            raise ValueError("drop_if_more_columns is set to False"
-                            " and transform df contain more columns "
-                            "than the df used in fit "
-                            f"(found {set(X.columns)}, "
-                            f"expected ({set(self.variables_)})).")
-        
-        if not self.add_if_less_columns and len(_columns_to_add) > 0:
-            raise ValueError("add_if_less_columns is set to False"
-                            " and transform df contain less columns "
-                            "than the df used in fit "
-                            f"(found {set(X.columns)}, "
-                            f"expected ({set(self.variables_)})).")
+    def _raise_errors_if_needed(
+        self,
+        _columns_to_drop: List[str],
+        _columns_to_add: List[str],
+        X: pd.DataFrame
+    ):
 
+        if not self.drop_if_more_columns and len(_columns_to_drop) > 0:
+            raise ValueError(
+                "drop_if_more_columns is set to False"
+                " and transform df contain more columns "
+                "than the df used in fit "
+                f"(found {set(X.columns)}, "
+                f"expected ({set(self.variables_)}))."
+            )
+
+        if not self.add_if_less_columns and len(_columns_to_add) > 0:
+            raise ValueError(
+                "add_if_less_columns is set to False"
+                " and transform df contain less columns "
+                "than the df used in fit "
+                f"(found {set(X.columns)}, "
+                f"expected ({set(self.variables_)}))."
+            )
 
     def transform(self, X: pd.DataFrame, **transform_params) -> pd.DataFrame:
         """Drops the variable that are not in the fitted dataframe and returns
@@ -132,7 +141,7 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
                     f"Columns : {_columns_to_add} are in fit but not"
                     " in transform, they will be added to the transform"
                     f"  dataframe with value {self.impute_with}"
-                    )
+                )
 
             X = X.reindex(columns=list(X.columns) + _columns_to_add,
              fill_value=self.impute_with)
@@ -142,10 +151,10 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
                     logging.warning(
                         f"Columns ({_columns_to_drop}) are in transform df"
                         " but not in fit, they will be dropped"
-                        )
-            
+                    )
+
             X = X.drop(_columns_to_drop, axis=1)
 
-        # reorder columns          
+        # reorder columns
         X = X.loc[:, self.variables_]
         return X
