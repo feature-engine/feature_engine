@@ -4,7 +4,7 @@ functions.
 """
 
 from .boxcox import BoxCoxTransformer
-from .log import LogTransformer
+from .log import LogCpTransformer, LogTransformer
 from .power import PowerTransformer
 from .reciprocal import ReciprocalTransformer
 from .yeojohnson import YeoJohnsonTransformer
@@ -12,6 +12,7 @@ from .yeojohnson import YeoJohnsonTransformer
 __all__ = [
     "BoxCoxTransformer",
     "LogTransformer",
+    "LogCpTransformer",
     "PowerTransformer",
     "ReciprocalTransformer",
     "YeoJohnsonTransformer",

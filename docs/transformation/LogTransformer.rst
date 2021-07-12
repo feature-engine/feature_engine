@@ -21,7 +21,7 @@ Example
 	from feature_engine import transformation as vt
 
 	# Load dataset
-	data = data = pd.read_csv('houseprice.csv')
+	data = pd.read_csv('houseprice.csv')
 
 	# Separate into train and test sets
 	X_train, X_test, y_train, y_test =  train_test_split(

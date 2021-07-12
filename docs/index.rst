@@ -119,6 +119,7 @@ Numerical Variable Transformation: Transformers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - :doc:`transformation/LogTransformer`: performs logarithmic transformation of numerical variables
+- :doc:`transformation/LogCpTransformer`: adds the variables a constant value and then applies the logarithm
 - :doc:`transformation/ReciprocalTransformer`: performs reciprocal transformation of numerical variables
 - :doc:`transformation/PowerTransformer`: performs power transformation of numerical variables
 - :doc:`transformation/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables
