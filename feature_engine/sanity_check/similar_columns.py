@@ -104,13 +104,16 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
                 if col not in X.columns:
                     X[col] = self.impute_with
 
-        if (not self.drop_if_more_columns 
-            and (set(X.columns) != set(self.variables_))):
+        if (
+                not self.drop_if_more_columns
+                and (set(X.columns) != set(self.variables_))
+            ):
 
             raise ValueError("drop_if_more_columns is set to False and columns are "
                              "different between the dataframe"
                              " used in fit and the one used in transform "
-                             f"(found {set(X.columns)}, expected ({set(self.variables_)})).")
+                             f"(found {set(X.columns)}, "
+                             f"expected ({set(self.variables_)})).")
 
         # reorder columns
         X = X.loc[:, self.variables_]
