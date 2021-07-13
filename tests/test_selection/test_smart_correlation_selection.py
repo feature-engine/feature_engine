@@ -235,12 +235,12 @@ def test_automatic_variable_selection(df_test):
     pd.testing.assert_frame_equal(Xt, df)
 
 
-def test_callable_method(df_test, dummy_method):
+def test_callable_method(df_test, random_uniform_method):
     X, _ = df_test
 
     transformer = SmartCorrelatedSelection(
         variables=None,
-        method=dummy_method,
+        method=random_uniform_method,
         threshold=0.8,
         missing_values="raise",
         selection_method="variance",

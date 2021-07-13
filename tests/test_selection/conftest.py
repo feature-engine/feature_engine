@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -57,11 +59,9 @@ def df_test_num_cat():
     return X, y
 
 
-@pytest.fixture(scope="module", name="dummy_method")
-def wrap_dummy_method():
-    import random
-
-    def _dummy_method(x, y):
+@pytest.fixture(scope="module", name="random_uniform_method")
+def wrap_random_uniform_method():
+    def _random_uniform(x, y):
         return random.uniform(0.5, 1)
 
-    return _dummy_method
+    return _random_uniform

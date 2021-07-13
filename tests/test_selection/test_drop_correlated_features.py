@@ -123,11 +123,11 @@ def test_more_than_1_correlated_group(df_correlated_double):
     pd.testing.assert_frame_equal(X, df)
 
 
-def test_callable_method(df_correlated_double, dummy_method):
+def test_callable_method(df_correlated_double, random_uniform_method):
     X = df_correlated_double
 
     transformer = DropCorrelatedFeatures(
-        variables=None, method=dummy_method, threshold=0.6
+        variables=None, method=random_uniform_method, threshold=0.6
     )
 
     Xt = transformer.fit_transform(X)
