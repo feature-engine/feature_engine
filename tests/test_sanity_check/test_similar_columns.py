@@ -34,8 +34,6 @@ def test_similar_columns_when_more_columns_in_train_than_test(df_vartypes, df_na
     assert similar_columns.fill_value is np.nan
     assert similar_columns.verbose is True
     assert similar_columns.missing_values == "ignore"
-    assert similar_columns.drop_extra_variables is True
-    assert similar_columns.add_missing_variables is True
 
 
 def test_similar_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
@@ -73,20 +71,3 @@ def test_similar_columns_when_more_columns_in_test_than_train(df_vartypes, df_na
     assert similar_columns.fill_value is np.nan
     assert similar_columns.verbose is True
     assert similar_columns.missing_values == "ignore"
-    assert similar_columns.drop_extra_variables is True
-    assert similar_columns.add_missing_variables is True
-
-
-def test_similar_columns_raise_error(df_vartypes, df_na):
-
-    # When columns are the same
-    train = df_vartypes
-    test = df_na
-
-    similar_columns = SimilarColumns(missing_values="ignore", drop_extra_variables=False)
-    similar_columns.fit(train)
-
-    with pytest.raises(ValueError) as excinfo:
-        similar_columns.transform(test)
-
-    assert "'dob'" in str(excinfo.value) and "'Studies'" in str(excinfo.value)
