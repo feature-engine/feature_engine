@@ -123,6 +123,25 @@ def test_more_than_1_correlated_group(df_correlated_double):
     pd.testing.assert_frame_equal(X, df)
 
 
+def test_callable_method(df_correlated_double, random_uniform_method):
+    X = df_correlated_double
+
+    transformer = DropCorrelatedFeatures(
+        variables=None, method=random_uniform_method, threshold=0.6
+    )
+
+    Xt = transformer.fit_transform(X)
+
+    # test no empty dataframe
+    assert not Xt.empty
+
+    # test fit attrs
+    assert len(transformer.correlated_feature_sets_) > 0
+    assert len(transformer.features_to_drop_) > 0
+    assert len(transformer.variables_) > 0
+    assert transformer.n_features_in_ == len(X.columns)
+
+
 def test_error_if_fit_input_not_dataframe():
     with pytest.raises(TypeError):
         # Next line needs review
@@ -134,3 +153,22 @@ def test_non_fitted_error(df_correlated_single):
     with pytest.raises(NotFittedError):
         transformer = DropCorrelatedFeatures()
         transformer.transform(df_correlated_single)
+
+
+def test_error_method_supplied(df_correlated_double):
+
+    X = df_correlated_double
+    method = "hola"
+
+    transformer = DropCorrelatedFeatures(variables=None, method=method, threshold=0.8)
+
+    with pytest.raises(ValueError) as errmsg:
+        _ = transformer.fit_transform(X)
+
+    exceptionmsg = errmsg.value.args[0]
+
+    assert (
+        exceptionmsg
+        == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
+        + f" '{method}' was supplied"
+    )

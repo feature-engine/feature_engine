@@ -33,13 +33,16 @@ class DropCorrelatedFeatures(BaseSelector):
         The list of variables to evaluate. If None, the transformer will evaluate all
         numerical variables in the dataset.
 
-    method: string, default='pearson'
-        Can take 'pearson', 'spearman' or'kendall'. It refers to the correlation method
-        to be used to identify the correlated features.
+    method: string or callable, default='pearson'
+        Can take 'pearson', 'spearman', 'kendall' or callable. It refers to the
+        correlation method to be used to identify the correlated features.
 
         - pearson : standard correlation coefficient
         - kendall : Kendall Tau correlation coefficient
         - spearman : Spearman rank correlation
+        - callable: callable with input two 1d ndarrays and returning a float.
+
+        For more details on this parameter visit the  `pandas.corr()` documentation.
 
     threshold: float, default=0.8
         The correlation threshold above which a feature will be deemed correlated with
@@ -85,11 +88,6 @@ class DropCorrelatedFeatures(BaseSelector):
         threshold: float = 0.8,
         missing_values: str = "ignore",
     ):
-
-        if method not in ["pearson", "spearman", "kendall"]:
-            raise ValueError(
-                "correlation method takes only values 'pearson', 'spearman', 'kendall'"
-            )
 
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError("threshold must be a float between 0 and 1")

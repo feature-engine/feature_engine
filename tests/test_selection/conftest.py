@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -55,3 +57,11 @@ def df_test_num_cat():
     X = df[["var_A", "var_B", "var_C", "var_D"]]
     y = df["target"]
     return X, y
+
+
+@pytest.fixture(scope="module", name="random_uniform_method")
+def wrap_random_uniform_method():
+    def _random_uniform(x, y):
+        return random.uniform(0.5, 1)
+
+    return _random_uniform
