@@ -1,6 +1,6 @@
 import pytest
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.estimator_checks import check_estimator, parametrize_with_checks
 
 from feature_engine.sanity_check import (
     SimilarColumns
