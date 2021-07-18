@@ -129,25 +129,3 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
             "Some of the variables to transform contain inf values. Check and "
             "remove those before using this transformer."
         )
-
-def _check_contains_complex(X: pd.DataFrame, variables: List[Union[str, int]]) -> None:
-    """
-    Checks if DataFrame contains complex values in the selected columns.
-
-    Parameters
-    ----------
-    X : Pandas DataFrame
-    variables : List
-        The selected group of variables in which null values will be examined.
-
-    Raises
-    ------
-    ValueError
-        If the variable(s) contain np.inf values
-    """
-
-    if np.iscomplex(X[variables]).any():
-        raise ValueError(
-            "Complex data not supported."
-        )
-

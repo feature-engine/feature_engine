@@ -1,5 +1,4 @@
-from typing import Any, List
-import logging
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -11,14 +10,13 @@ from feature_engine.validation import _return_tags
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
-    _check_contains_complex,
     _is_dataframe,
 )
 from feature_engine.variable_manipulation import _find_all_variables
 
+
 class SimilarColumns(BaseEstimator, TransformerMixin):
     """Ensure that similar columns are in test and train dataset.
-
 
     Parameters
     ----
@@ -72,8 +70,6 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
 
         self.variables_ = _find_all_variables(X, list(X.columns))
 
-        _check_contains_complex(X, self.variables_)
-
         X = self._check_input(X)
 
         return self
@@ -113,15 +109,15 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
                 fill_value=self.fill_value
             )
 
-
         X = X.drop(_columns_to_drop, axis=1)
 
         # reorder columns
         X = X.loc[:, self.variables_]
         return X
-    
+
     # for the check_estimator tests
     def _more_tags(self):
         tags_dict = _return_tags()
-        tags_dict["_xfail_checks"]["check_transformer_general"] = "Transformer accept transform input shape to be different than fit input shape"
+        tags_dict["_xfail_checks"]["check_transformer_general"] =\
+            "Transformer accept transform input shape to be different than fit input shape"
         return tags_dict
