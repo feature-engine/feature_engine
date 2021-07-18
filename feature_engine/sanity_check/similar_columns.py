@@ -118,6 +118,8 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
     # for the check_estimator tests
     def _more_tags(self):
         tags_dict = _return_tags()
-        tags_dict["_xfail_checks"]["check_transformer_general"] = ("Transformer "
-            "accept transform input shape to be different than fit input shape")
+        tags_dict["_xfail_checks"]["check_transformer_general"] = (
+            "Transformer accept transform input shape to "
+            "be different than fit input shape"
+            )
         return tags_dict
