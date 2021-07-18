@@ -6,6 +6,8 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine.validation import _return_tags
+
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -117,3 +119,9 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
         # reorder columns
         X = X.loc[:, self.variables_]
         return X
+    
+    # for the check_estimator tests
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["_xfail_checks"]["check_transformer_general"] = "Transformer accept transform input shape to be different than fit input shape"
+        return tags_dict
