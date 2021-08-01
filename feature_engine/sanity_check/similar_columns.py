@@ -74,7 +74,7 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X: pd.DataFrame, **transform_params) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Drops the variable that are not in the fitted dataframe and returns
         a new dataframe with the remaining subset of variables.
 
