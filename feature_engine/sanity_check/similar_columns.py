@@ -41,7 +41,7 @@ class SimilarColumns(BaseEstimator, TransformerMixin):
         self.missing_values = missing_values
         self.verbose = verbose
 
-    def _check_input(self, X: pd.DataFrame):
+    def _check_input(self, X: pd.DataFrame) -> pd.DataFrame:
         X = _is_dataframe(X)
 
         if self.missing_values == "raise":
