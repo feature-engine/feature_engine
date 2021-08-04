@@ -6,6 +6,8 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
+from sklearn.utils.validation import check_is_fitted
+
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
@@ -284,3 +286,31 @@ class OneHotEncoder(BaseCategoricalTransformer):
     def inverse_transform(self, X: pd.DataFrame):
         """inverse_transform is not implemented for this transformer."""
         return self
+
+    def get_feature_names(
+        self,
+        input_features: List[str] = None,
+    ) -> List[str]:
+        """
+        Return feature names for output features.
+
+        Parameters
+        ----------
+        input_features : list of str of shape (n_features,)
+            String names for input features if available. By default,
+            self.variables_ is used
+
+        -------
+        feature_names : list of str of shape (n_output_features,) of feature names
+        """
+        check_is_fitted(self)
+
+        if input_features is None:
+            input_features = self.variables_
+
+        feature_names = []
+        for feature in input_features:
+            for category in self.encoder_dict_[feature]:
+                feature_names.append(str(feature) + "_" + str(category))
+
+        return feature_names

@@ -78,6 +78,8 @@ def test_automatically_select_variables(df_enc):
     assert encoder.n_features_in_ == 2
     # transform params
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    assert encoder.get_feature_names() == ["var_A", "var_B"]
+    assert encoder.get_feature_names() == X.columns.tolist()
 
 
 def test_error_target_is_not_passed(df_enc):
@@ -235,6 +237,8 @@ def test_on_numerical_variables(df_enc_numeric):
     assert encoder.n_features_in_ == 2
     # transform params
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    assert encoder.get_feature_names() == ["var_A", "var_B"]
+    assert encoder.get_feature_names() == X.columns.tolist()
 
 
 def test_variables_cast_as_category(df_enc_category_dtypes):
@@ -291,4 +295,6 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     ]
 
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]], check_dtype=False)
+    assert encoder.get_feature_names() == ["var_A", "var_B"]
+    assert encoder.get_feature_names() == X.columns.tolist()
     assert X["var_A"].dtypes == float

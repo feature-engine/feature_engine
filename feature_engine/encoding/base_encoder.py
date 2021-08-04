@@ -204,3 +204,26 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # so we need to leave without this test
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
         return tags_dict
+
+    def get_feature_names(
+        self,
+        input_features: List[str] = None,
+    ) -> List:
+        """
+        Return feature names for output features.
+
+        Parameters
+        ----------
+        input_features : list of str of shape (n_features,)
+            String names for input features if available. By default,
+            self.variables_ is used
+
+        -------
+        feature_names : list of str of shape (n_output_features,) of feature names
+        """
+        check_is_fitted(self)
+
+        if input_features is None:
+            input_features = self.variables_
+
+        return [feature for feature in input_features if feature in self.encoder_dict_]
