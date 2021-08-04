@@ -6,6 +6,7 @@ from typing import List, Optional, Union
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.docstrings import (
@@ -245,3 +246,25 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     def inverse_transform(self, X: pd.DataFrame):
         """inverse_transform is not implemented for this transformer."""
         return self
+
+    def get_feature_names(
+        self,
+        input_features: List[str] = None,
+    ) -> List:
+        """
+        Return feature names for output features.
+
+        Parameters
+        ----------
+        input_features : list of str of shape (n_features,)
+            String names for input features if available. By default,
+            self.variables_ is used
+
+        -------
+        feature_names : list of str of shape (n_output_features,) of feature names
+        """
+        check_is_fitted(self)
+
+        return self.encoder_.named_steps.tree_discretiser.get_feature_names(
+            input_features
+        )
