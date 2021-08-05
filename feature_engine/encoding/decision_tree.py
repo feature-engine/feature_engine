@@ -262,7 +262,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     def get_feature_names(
         self,
-        input_features: List[str] = None,
+        input_features: Optional[List[Union[str, int]]] = None,
     ) -> List:
         """
         Return feature names for output features.

@@ -1,5 +1,5 @@
 import warnings
-from typing import List, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -207,7 +207,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
     def get_feature_names(
         self,
-        input_features: List[str] = None,
+        input_features: Optional[List[Union[str, int]]] = None,
     ) -> List:
         """
         Return feature names for output features.
