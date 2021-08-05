@@ -2,7 +2,7 @@
 classes. Provides the base functionality within the fit() and transform() methods
 shared by most transformers, like checking that input is a df, the size, NA, etc.
 """
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -147,7 +147,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
 
     def get_feature_names(
         self,
-        input_features: List[str] = None,
+        input_features: Optional[List[Union[str, int]]] = None,
     ) -> List:
         """
         Return feature names for output features.
