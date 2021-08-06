@@ -43,7 +43,7 @@ environment:
 2. Set up an ``upstream`` remote from where you can pull the latest code changes
 occurring in the main Feature-engine repository::
 
-    $ git remote add upstream https://github.com/solegalli/feature_engine.git
+    $ git remote add upstream https://github.com/feature-engine/feature_engine.git
     $ git remote -v
     origin    https://github.com/YOUR_USERNAME/feature_engine.git (fetch)
     origin    https://github.com/YOUR_USERNAMEfeature_engine.git (push)

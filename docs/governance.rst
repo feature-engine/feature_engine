@@ -52,5 +52,5 @@ interested, please get in touch.
 If you want to Contribute to the project in any other way, get in touch using our Github
 issues page or through Gitter:
 
-1. `Github issues <https://github.com/solegalli/feature_engine/issues/>`_.
+1. `Github issues <https://github.com/feature-engine/feature_engine/issues/>`_.
 2. `Gitter community <https://gitter.im/feature_engine/community>`_.

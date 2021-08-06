@@ -274,7 +274,7 @@ intersphinx_mapping = {"https://docs.python.org/": None}
 # The following is used by sphinx.ext.linkcode to provide links to github
 linkcode_resolve = make_linkcode_resolve(
     "feature_engine",
-    "https://github.com/solegalli/feature_engine/"
+    "https://github.com/feature-engine/feature_engine/"
     "blob/master/"
     "{package}/{path}#L{lineno}",
 )
