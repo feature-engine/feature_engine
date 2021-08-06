@@ -8,4 +8,4 @@ Can't get something to work? Here are places where you can find help.
 3. If you are enrolled in the `Feature Engineering for Machine Learning course in Udemy <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_ , post a question in a relevant section.
 4. If you are enrolled in the `Feature Selection for Machine Learning course in Udemy <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_ , post a question in a relevant section.
 5. Join our `Gitter community <https://gitter.im/feature_engine/community>`_. You can ask questions here as well.
-6. Ask a question in the repo by filing an `issue <https://github.com/solegalli/feature_engine/issues/>`_.
+6. Ask a question in the repo by filing an `issue <https://github.com/feature-engine/feature_engine/issues/>`_.

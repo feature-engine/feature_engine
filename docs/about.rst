@@ -36,7 +36,7 @@ Contributors
 ------------
 
 You can learn more about Feature-engine's Contributors in the
-`GitHub contributors page <https://github.com/solegalli/feature_engine/graphs/contributors>`_.
+`GitHub contributors page <https://github.com/feature-engine/feature_engine/graphs/contributors>`_.
 
 Citing Feature-engine
 ---------------------

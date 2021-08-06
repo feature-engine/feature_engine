@@ -177,14 +177,14 @@ Can't get something to work? Here are places where you can find help.
 3. If you are enrolled in the `Feature Engineering for Machine Learning course in Udemy <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_ , post a question in a relevant section.
 4. If you are enrolled in the `Feature Selection for Machine Learning course in Udemy <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_ , post a question in a relevant section.
 5. Join our `gitter community <https://gitter.im/feature_engine/community>`_. You an ask questions here as well.
-6. Ask a question in the repo by filing an `issue <https://github.com/solegalli/feature_engine/issues/>`_.
+6. Ask a question in the repo by filing an `issue <https://github.com/feature-engine/feature_engine/issues/>`_.
 
 
 Found a Bug or have a suggestion?
 ---------------------------------
 
-Check if there's already an open `issue <https://github.com/solegalli/feature_engine/issues/>`_
-on the topic. If not, open a new `issue <https://github.com/solegalli/feature_engine/issues/>`_
+Check if there's already an open `issue <https://github.com/feature-engine/feature_engine/issues/>`_
+on the topic. If not, open a new `issue <https://github.com/feature-engine/feature_engine/issues/>`_
 with your bug report, suggestion or new feature request.
 
 Contributing
@@ -208,12 +208,12 @@ For more details on how to contribute check the contributing page. Click on the
 Open Source
 -----------
 
-Feature-engine's `license <https://github.com/solegalli/feature_engine/blob/master/LICENSE.md>`_
+Feature-engine's `license <https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md>`_
 is an open source BSD 3-Clause.
 
-Feature-engine is hosted on `GitHub <https://github.com/solegalli/feature_engine/>`_.
-The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
-`pull requests <https://github.com/solegalli/feature_engine/pulls>`_ are tracked there.
+Feature-engine is hosted on `GitHub <https://github.com/feature-engine/feature_engine/>`_.
+The `issues <https://github.com/feature-engine/feature_engine/issues/>`_ and
+`pull requests <https://github.com/feature-engine/feature_engine/pulls>`_ are tracked there.
 
 
 
