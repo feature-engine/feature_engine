@@ -1,3 +1,38 @@
+Version 1.1.1
+=============
+
+Deployed: 6th August 2021
+
+Contributors
+------------
+
+    - Miguel Trema Marrufo
+    - Nicolas Galli
+    - Soledad Galli
+
+In this release, we add a new transformer, expand the functionality of 2 other
+transformers and migrate the repo to its own organisation!
+
+Mayor changes
+-------------
+    - Feature-engine is now hosted in its `own Github organisation <https://github.com/feature-engine/feature_engine>`_
+
+New transformer
+---------------
+    - **LogCpTransformer**: applies the logarithm transformation after adding a constant (**Miguel Trema Marrufo**)
+
+Minor changes
+-------------
+    - Expands functionality of `DropCorrelatedFeatures` and `SmartCorrelationSelectionFeature` to accept callables as a correlation function (**Miguel Trema Marrufo**)
+    - Adds `inverse_transform` to all transformers from the transformation module (**Nicolas Galli**).
+
+Documentation
+-------------
+    - Migrates main repo to `Feature-engine's Github organisation <https://github.com/feature-engine/feature_engine>`_
+    - Migrates example jupyter notebooks to `separate repo <https://github.com/feature-engine/feature-engine-examples>`_
+    - Adds Roadmap
+
+
 Version 1.1.0
 =============
 

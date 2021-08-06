@@ -3,12 +3,12 @@
 Getting Started with Feature-engine on GitHub
 =============================================
 
-Feature-engine is hosted on `GitHub <https://github.com/solegalli/feature_engine>`_.
+Feature-engine is hosted on `GitHub <https://github.com/feature-engine/feature_engine>`_.
 
 A typical contributing workflow goes like this:
 
 1. **Find** a bug while using Feature-engine, **suggest** new functionality, or **pick
-up** an issue from our `repo <https://github.com/solegalli/feature_engine/issues/>`_.
+up** an issue from our `repo <https://github.com/feature-engine/feature_engine/issues/>`_.
 
 2. **Discuss** with us your approach to resolve the issue.
 3. Then, **fork** the repository into your GitHub account.
@@ -43,12 +43,12 @@ environment:
 2. Set up an ``upstream`` remote from where you can pull the latest code changes
 occurring in the main Feature-engine repository::
 
-    $ git remote add upstream https://github.com/solegalli/feature_engine.git
+    $ git remote add upstream https://github.com/feature-engine/feature_engine.git
     $ git remote -v
     origin    https://github.com/YOUR_USERNAME/feature_engine.git (fetch)
     origin    https://github.com/YOUR_USERNAMEfeature_engine.git (push)
-    upstream  https://github.com/solegalli/feature_engine.git (fetch)
-    upstream  https://github.com/solegalli/feature_engine.git (push)
+    upstream  https://github.com/feature-engine/feature_engine.git (fetch)
+    upstream  https://github.com/feature-engine/feature_engine.git (push)
 
 Keep in mind that Feature-engine is being actively developed, so you may need to update
 your fork regularly. See below for tips on **Keeping your fork up to date**.

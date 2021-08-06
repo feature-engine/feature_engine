@@ -107,6 +107,6 @@ Our main goals are:
 - Expand the documentation with more detail on how to contribute to the package
 - Expand the library's functionality as per the precedent paragraphs
 
-For more fine-grained goals and current and lined-up issues please visit the `issue <https://github.com/solegalli/feature_engine/issues/>`_
+For more fine-grained goals and current and lined-up issues please visit the `issue <https://github.com/feature-engine/feature_engine/issues/>`_
 section in our repo.
 

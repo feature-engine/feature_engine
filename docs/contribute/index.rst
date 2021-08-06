@@ -19,8 +19,8 @@ There are many ways to contribute to Feature-engine:
 - Create a new variable transformer
 - Add additional functionality to current transformers
 - Fix a bug
-- Submit a bug report or feature request on `GitHub issues <https://github.com/solegalli/feature_engine/issues/>`_.
-- Add a Jupyter notebook to our `Jupyter notebooks example gallery <https://github.com/solegalli/feature_engine/tree/master/examples>`_.
+- Submit a bug report or feature request on `GitHub issues <https://github.com/feature-engine/feature_engine/issues/>`_.
+- Add a Jupyter notebook to our `Jupyter notebooks example gallery <https://github.com/feature-engine/feature_engine/tree/master/examples>`_.
 - Improve our documentation.
 - Write unit tests.
 - Write a blog, tweet, or share our project with others.
@@ -38,7 +38,7 @@ Getting in touch
 We prefer to handle most contributions through the github repository. You can also join
 our mailing list.
 
-1. `Open issues <https://github.com/solegalli/feature_engine/issues/>`_.
+1. `Open issues <https://github.com/feature-engine/feature_engine/issues/>`_.
 2. `Gitter community <https://gitter.im/feature_engine/community>`_.
 
 
