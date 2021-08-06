@@ -224,7 +224,6 @@ The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
    quickstart
    installation
    getting_help
-   about
    datasets
 
 .. toctree::
@@ -254,6 +253,8 @@ The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
    :maxdepth: 1
    :caption: Contribute
 
+   roadmap
+   about
    contribute/index
    code_of_conduct
    governance

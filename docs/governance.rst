@@ -23,12 +23,9 @@ Core Contributors
 
 Core Contributors are community members who are dedicated to the continued development
 of the project through ongoing engagement with the community. Core Contributors are
-expected to review code contributions, can aprove and merge pull requests, can decide
+expected to review code contributions, can approve and merge pull requests, can decide
 on the fate of pull requests, and can be involved in deciding major changes to the
-Feature-engine API. Core Contributors together with the Founder (see below) and input
-from the community can decide on the fate of the Feature-engine project.
-
-Core Contributors determine who can join as a Core Contributor.
+Feature-engine API. Core Contributors determine who can join as a Core Contributor.
 
 
 Founder and Leadership
@@ -49,10 +46,11 @@ vote for new Core Contributors.
 Join the community
 ------------------
 
-Feature-engine welcomes contributors who would like to take on the role of additional
-Core Contributors and Contributors.
+Feature-engine is currently looking to expand the team of Core Contributors, if you are
+interested, please get in touch.
 
-Get in touch using our Github issues page or through our mailing list:
+If you want to Contribute to the project in any other way, get in touch using our Github
+issues page or through Gitter:
 
 1. `Github issues <https://github.com/solegalli/feature_engine/issues/>`_.
-2. `Mailing list <https://groups.google.com/d/forum/feature-engine>`_.
+2. `Gitter community <https://gitter.im/feature_engine/community>`_.
