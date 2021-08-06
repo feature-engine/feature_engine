@@ -3,7 +3,7 @@
 ![PythonVersion](https://img.shields.io/badge/python-3.6%20|3.7%20|%203.8%20|%203.9-success)
 [![PyPI version](https://badge.fury.io/py/feature-engine.svg)](https://badge.fury.io/py/feature-engine)
 [![License https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md](https://img.shields.io/badge/license-BSD-success.svg)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md)
-[![CircleCI https://app.circleci.com/pipelines/github/feature-engine/feature_engine?branch=master](https://img.shields.io/circleci/build/github/feature-engine/feature_engine/master.svg?token=5a1c2accc2c97450e52d2cb1b47c333ab495d2c2)](https://app.circleci.com/pipelines/github/feature_engine/feature_engine?branch=master)
+[![CircleCI https://app.circleci.com/pipelines/github/feature-engine/feature_engine?branch=master](https://img.shields.io/circleci/build/github/feature-engine/feature_engine/master.svg?token=5a1c2accc2c97450e52d2cb1b47c333ab495d2c2)](https://circleci.com/gh/feature-engine/feature_engine/tree/master)
 [![Documentation Status https://feature-engine.readthedocs.io/en/latest/index.html](https://readthedocs.org/projects/feature-engine/badge/?version=latest)](https://feature-engine.readthedocs.io/en/latest/index.html)
 [![Join the chat at https://gitter.im/feature_engine/community](https://badges.gitter.im/feature_engine/community.svg)](https://gitter.im/feature_engine/community)
 [![Sponsorship https://www.trainindata.com/](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/)
