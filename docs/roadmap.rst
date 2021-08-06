@@ -15,10 +15,12 @@ feature engineering pipelines. It aims to help users both during the research ph
 while putting a model in production.
 
 Feature-engine makes data engineering easy by allowing the selection of feature subsets
-directly within its transformers. It also interlaces well with EDA by returning
-dataframes for easy data exploration. Feature-engine’s transformers preserve
-Scikit-learn functionality with the methods fit() and transform() and can be integrated
-into a Pipeline to simplify putting the model in production.
+directly within its transformers. It also interlaces well with exploratory data analysis
+(EDA) by returning dataframes for easy data exploration.
+
+Feature-engine’s transformers preserve Scikit-learn functionality with the methods fit()
+and transform() and can be integrated into a Pipeline to simplify putting the model in
+production.
 
 Feature-engine was designed to be used in real settings. Each transformer has a concrete
 aim, and is tailored to certain variables and certain data. Transformers raise errors
@@ -53,10 +55,20 @@ in the package:
 
    Transformers for cross-sectional data
 
+The current transformations supported by Feature-engine return features that are easy
+to interpret, and the effects of the transformations are clear and easy to understand.
+The original aim of Feature-engine was to provide technology that is suitable to create
+models that will be used in real settings, and return understandable variables.
+
+Having said this, more and more, users are requesting features to combine or transform
+variables in ways that would return features that are not human readable, in an attempt
+to improve model performance and perhaps have an edge in data science competitions. We
+are currently contemplating the incorporation of this functionality to the package.
+
 Wanted functionality
 --------------------
 
-We are interested in adding a module that creates date and time related feature from
+We are interested in adding a module that creates date and time related features from
 datetime variables. This module would include transformers to extract all possible date
 and time related features, like hr, min, sec, day, year, is_weekend, etc. And it would
 also include transformers to capture elapsed time between 2 or more variables.
@@ -75,7 +87,8 @@ detail into these new modules.
 
 In addition, we are evaluating whether including a module to extract features from time
 series is possible, within the current design of the package, and if it adds real value
-compared to the functionality already existing in pandas and Scipy. The transformations
+compared to the functionality already existing in pandas and Scipy, and in other well
+established open source projects like tsfresh and featuretools. The transformations
 we are considering are shown in this image:
 
 .. figure::  images/FeatureEnginePackageStructureTimeseries.png
