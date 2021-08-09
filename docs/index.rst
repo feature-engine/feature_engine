@@ -5,7 +5,7 @@
 
 Feature-engine: A Python library for Feature Engineering for Machine Learning
 =============================================================================
-.. figure::  images/FeatureEngine.png
+.. figure::  images/logo/FeatureEngine.png
    :align:   center
 
    Feature-engine rocks!

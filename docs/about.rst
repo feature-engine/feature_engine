@@ -41,5 +41,46 @@ You can learn more about Feature-engine's Contributors in the
 Citing Feature-engine
 ---------------------
 
-Coming soon
+.. image:: https://zenodo.org/badge/163630824.svg
+   :target: https://zenodo.org/badge/latestdoi/163630824
 
+.. image:: coming soon
+   :target: coming soon
+
+If you use Feature-engine in a scientific publication, you can cite the following paper:
+`Feature-engine: A Python package for feature engineering <url>`_,
+Galli S, journal vol, pp. 2825-2830, 2021.
+
+Bibtex entry:
+
+.. code-block:: bibtex
+    coming soon
+
+
+You can also find a DOI (digital object identifier) for every version of Feature-engine
+on `zenodo.org <https://zenodo.org/badge/latestdoi/163630824>`_; use the BibTeX on this
+site to reference specific versions of the software.
+
+
+Artwork
+-------
+
+High quality PNG and SVG logos are available in the `docs/images/ <https://github.com/feature-engine/feature_engine/tree/main/docs/images/logo>`_
+source directory of the repository.
+
+.. figure::  images/logo/FeatureEngine.png
+   :align:   center
+
+
+Sponsors
+--------
+
+Feature-engine is a community driven project, however institutional and private grants
+help to assure its sustainability.
+
+The project would like to thank the following sponsors:
+
+Soledad Galli spends a big part of her time at Train in Data maintaining the project.
+
+.. image:: images/sponsors/trainindata.png
+   :target: https://www.trainindata.com/
