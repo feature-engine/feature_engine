@@ -28,7 +28,7 @@ selection.
 The primary goal of Feature-engine is to make commonly used data transformation procedures 
 accessible to researchers and data scientists, focusing on creating user-friendly and 
 intuitive classes, compatible with existing machine learning libraries, like Scikit-learn 
-[@sklearn:2011] and Pandas [@pandas:2010].
+[@sklearn] and Pandas [@pandas].
 
 Many feature transformation techniques learn parameters from data, like the values for 
 imputation or the mappings for encoding. Feature-engine classes learn these parameters 
@@ -47,10 +47,10 @@ thus, users can continue to leverage the power of Pandas for data analysis and v
 after transforming the data set.
 
 In summary, Feature engine supports a large variety of commonly used data transformation 
-techniques [@data_prep:2006; @boxcox:1964; @yeojohnson:2000; @kdd_2009_competition:2009; 
-@beatingkaggle:2015; @micci_mean_encoder:2001], as well as, techniques that were developed 
-in data science competitions [@niculescu09_kdd:2009], including those for feature selection 
-[@miller09_kdd:2009]. Thus, Feature-engine builds upon and extends the capabilities of the 
+techniques [@data_prep; @boxcox; @yeojohnson; @kdd_2009_competition; 
+@beatingkaggle; @micci_mean_encoder], as well as, techniques that were developed 
+in data science competitions [@niculescu09_kdd], including those for feature selection 
+[@miller09_kdd]. Thus, Feature-engine builds upon and extends the capabilities of the 
 current Python’s scientific computing stack and makes accessible transformations that are 
 otherwise not easy to find, understand or code, to data scientist and data practitioners.
 
@@ -59,7 +59,7 @@ otherwise not easy to find, understand or code, to data scientist and data pract
 # Statement of need
 
 Data scientists spend an enormous amount of time on data pre-processing and transformation 
-ahead of training machine learning models [@domingos:2012]. While some feature engineering 
+ahead of training machine learning models [@domingos]. While some feature engineering 
 processes can be domain-specific, a large variety of transformations are commonly applied 
 across datasets. For example, data scientists need to impute or remove missing values or 
 transform categories into numbers, to train machine learning models using Scikit-learn, 
@@ -78,12 +78,12 @@ environments through version control.
 In the last few years, a number of open source Python libraries that support feature 
 engineering techniques have emerged, highlighting the importance of making feature 
 engineering and creation accessible and, as much as possible, automated. Among these, 
-Featuretools [@kanter2015deep:2015] creates features from temporal and relational datasets, 
-tsfresh [@christ_tsfresh:2016] extracts features from time series, Category encoders 
-[@category_encoders:2018] supports a comprehensive list of methods to encode categorical 
-variables, and Scikit-learn [@sklearn:2011] implements a number of data transformation 
+Featuretools [@kanter2015deep] creates features from temporal and relational datasets, 
+tsfresh [@christ_tsfresh] extracts features from time series, Category encoders 
+[@category_encoders] supports a comprehensive list of methods to encode categorical 
+variables, and Scikit-learn [@sklearn] implements a number of data transformation 
 techniques, with the caveat that the transformations are applied to the entire dataset, 
-and the output are NumPy arrays. Feature-engine [@feature_engine_zenodo:2021] extends the 
+and the output are NumPy arrays. Feature-engine [@feature_engine_zenodo] extends the 
 capabilities of the current Python’s scientific computing stack by allowing the application 
 of the transformations to subsets of variables in the dataset, returning dataframes for 
 data exploration, and supporting transformations not currently available in other 
