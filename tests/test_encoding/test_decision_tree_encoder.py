@@ -32,8 +32,6 @@ def test_classification(df_enc):
     transf_df["var_A"] = [0.25] * 16 + [0.5] * 4  # Tree: var_A <= 1.5 -> 0.25 else 0.5
     transf_df["var_B"] = [0.2] * 10 + [0.4] * 10  # Tree: var_B <= 0.5 -> 0.2 else 0.4
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
-
-    assert encoder.get_feature_names() == ["var_A", "var_B"]
     assert encoder.get_feature_names() == X.columns.tolist()
 
 
@@ -53,7 +51,6 @@ def test_regression(df_enc):
     )  # Tree: var_A <= 1.5 -> 0.25 else 0.5
     transf_df["var_B"] = [0.044806] * 10 + [-0.079066] * 10
     pd.testing.assert_frame_equal(X.round(6), transf_df[["var_A", "var_B"]])
-    assert encoder.get_feature_names() == ["var_A", "var_B"]
     assert encoder.get_feature_names() == X.columns.tolist()
 
 
@@ -90,7 +87,6 @@ def test_classification_ignore_format(df_enc_numeric):
     transf_df["var_A"] = [0.25] * 16 + [0.5] * 4  # Tree: var_A <= 1.5 -> 0.25 else 0.5
     transf_df["var_B"] = [0.2] * 10 + [0.4] * 10  # Tree: var_B <= 0.5 -> 0.2 else 0.4
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
-    assert encoder.get_feature_names() == ["var_A", "var_B"]
     assert encoder.get_feature_names() == X.columns.tolist()
 
 
@@ -111,7 +107,6 @@ def test_regression_ignore_format(df_enc_numeric):
     )  # Tree: var_A <= 1.5 -> 0.25 else 0.5
     transf_df["var_B"] = [0.044806] * 10 + [-0.079066] * 10
     pd.testing.assert_frame_equal(X.round(6), transf_df[["var_A", "var_B"]])
-    assert encoder.get_feature_names() == ["var_A", "var_B"]
     assert encoder.get_feature_names() == X.columns.tolist()
 
 
@@ -125,7 +120,6 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     transf_df["var_A"] = [0.25] * 16 + [0.5] * 4  # Tree: var_A <= 1.5 -> 0.25 else 0.5
     transf_df["var_B"] = [0.2] * 10 + [0.4] * 10  # Tree: var_B <= 0.5 -> 0.2 else 0.4
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]], check_dtype=False)
-    assert encoder.get_feature_names() == ["var_A", "var_B"]
     assert encoder.get_feature_names() == X.columns.tolist()
     assert X["var_A"].dtypes == float
 

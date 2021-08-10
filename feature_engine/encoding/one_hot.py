@@ -255,30 +255,21 @@ class OneHotEncoder(BaseCategoricalTransformer):
         """inverse_transform is not implemented for this transformer."""
         return self
 
-    def get_feature_names(
-        self,
-        input_features: Optional[List[Union[str, int]]] = None,
-    ) -> List[str]:
+    def get_feature_names(self) -> List[str]:
         """
         Return feature names for output features.
-
-        Parameters
-        ----------
-        input_features : list of str of shape (n_features,)
-            String names for input features if available. By default,
-            self.variables_ is used
 
         -------
         feature_names : list of str of shape (n_output_features,) of feature names
         """
         check_is_fitted(self)
 
-        if input_features is None:
-            input_features = self.variables_
-
         feature_names = []
-        for feature in input_features:
-            for category in self.encoder_dict_[feature]:
-                feature_names.append(str(feature) + "_" + str(category))
+        for feature in self.input_features_:
+            if feature in self.encoder_dict_:
+                for category in self.encoder_dict_[feature]:
+                    feature_names.append(str(feature) + "_" + str(category))
+            else:
+                feature_names.append(feature)
 
         return feature_names
