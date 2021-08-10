@@ -122,6 +122,9 @@ class ArbitraryDiscretiser(BaseDiscretiser):
 
         self.n_features_in_ = X.shape[1]
 
+        # save input features
+        self.input_features_: List[Union[str, int]] = X.columns.tolist()
+
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:

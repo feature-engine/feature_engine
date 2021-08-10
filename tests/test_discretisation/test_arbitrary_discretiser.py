@@ -110,6 +110,7 @@ def test_error_when_nan_introduced_during_transform():
 
     # check that error message matches
     assert str(record.value) == msg
+    assert transformer.get_feature_names() == X.columns.tolist()
 
 
 def test_error_if_not_permitted_value_is_errors():
