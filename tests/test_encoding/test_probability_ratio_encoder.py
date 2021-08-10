@@ -47,7 +47,7 @@ def test_ratio_with_one_variable(df_enc):
     assert encoder.n_features_in_ == 2
     # transform params
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
-    assert encoder.get_feature_names() == ["var_A"]
+    assert encoder.get_feature_names() == X.columns.tolist()
 
 
 def test_logratio_and_automaticcally_select_variables(df_enc):
@@ -115,7 +115,6 @@ def test_logratio_and_automaticcally_select_variables(df_enc):
     assert encoder.n_features_in_ == 2
     # transform params
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
-    assert encoder.get_feature_names() == ["var_A", "var_B"]
     assert encoder.get_feature_names() == X.columns.tolist()
 
     # test error raise
@@ -252,7 +251,6 @@ def test_logratio_on_numerical_variables(df_enc_numeric):
     assert encoder.n_features_in_ == 2
     # transform params
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
-    assert encoder.get_feature_names() == ["var_A", "var_B"]
     assert encoder.get_feature_names() == X.columns.tolist()
 
     # test error raise

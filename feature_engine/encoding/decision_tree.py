@@ -260,24 +260,13 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         """inverse_transform is not implemented for this transformer."""
         return self
 
-    def get_feature_names(
-        self,
-        input_features: Optional[List[Union[str, int]]] = None,
-    ) -> List:
+    def get_feature_names(self) -> List:
         """
         Return feature names for output features.
-
-        Parameters
-        ----------
-        input_features : list of str of shape (n_features,)
-            String names for input features if available. By default,
-            self.variables_ is used
 
         -------
         feature_names : list of str of shape (n_output_features,) of feature names
         """
         check_is_fitted(self)
 
-        return self.encoder_.named_steps.tree_discretiser.get_feature_names(
-            input_features
-        )
+        return self.encoder_.named_steps.tree_discretiser.get_feature_names()
