@@ -81,6 +81,7 @@ def test_regression(df_normal_dist):
     )
     # transform params
     assert all(x for x in np.round(X["var"].unique(), 2) if x not in X_t)
+    assert transformer.get_feature_names() == X.columns.tolist()
 
 
 def test_error_when_cv_is_string():

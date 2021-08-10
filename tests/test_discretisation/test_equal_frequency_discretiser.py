@@ -28,6 +28,7 @@ def test_automatically_find_variables_and_return_as_numeric(df_normal_dist):
     # test transform output
     assert (transformer.binner_dict_["var"] == bins).all()
     assert all(x for x in X["var"].unique() if x not in X_t)
+    assert transformer.get_feature_names() == X.columns.tolist()
     # in equal frequency discretisation, all intervals get same proportion of values
     assert len((X["var"].value_counts()).unique()) == 1
 

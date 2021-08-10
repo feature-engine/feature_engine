@@ -34,3 +34,4 @@ def test_arbitrary_discretiser():
     )
     X = transformer.fit_transform(data)
     pd.testing.assert_frame_equal(X, data_t1)
+    assert transformer.get_feature_names() == X.columns.tolist()

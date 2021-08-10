@@ -97,6 +97,9 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         # find or check for numerical variables
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
+        # save input features
+        self.input_features_: List[Union[str, int]] = X.columns.tolist()
+
         # check if dataset contains na or inf
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
@@ -145,25 +148,13 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
     def _more_tags(self):
         return _return_tags()
 
-    def get_feature_names(
-        self,
-        input_features: Optional[List[Union[str, int]]] = None,
-    ) -> List:
+    def get_feature_names(self) -> List:
         """
         Return feature names for output features.
-
-        Parameters
-        ----------
-        input_features : list of str of shape (n_features,)
-            String names for input features if available. By default,
-            self.variables_ is used
 
         -------
         feature_names : list of str of shape (n_output_features,) of feature names
         """
         check_is_fitted(self)
 
-        if input_features is None:
-            input_features = self.variables_
-
-        return [feature for feature in input_features if feature in self.variables_]
+        return self.input_features_
