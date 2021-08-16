@@ -15,7 +15,7 @@ from feature_engine.dataframe_checks import (
 from feature_engine.variable_manipulation import _find_all_variables
 
 
-class SimilarColumns(BaseEstimator, TransformerMixin):
+class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
     """Ensure that similar columns are in test and train dataset.
 
     Parameters
