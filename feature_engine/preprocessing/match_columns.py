@@ -36,6 +36,9 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
 
         if not isinstance(verbose, bool):
             raise ValueError("verbose takes only booleans True and False")
+        
+        if not (isinstance(fill_value, int) or np.isnan(fill_value)):
+            raise ValueError("fill_value takes only int or np.nan")
 
         self.fill_value = fill_value
         self.missing_values = missing_values
