@@ -4,16 +4,16 @@ import pandas as pd
 from feature_engine.preprocessing import SimilarColumns
 
 
-def test_similar_columns_when_more_columns_in_train_than_test(df_vartypes, df_na):
+def test_match_columns_when_more_columns_in_train_than_test(df_vartypes, df_na):
 
     # When columns are the same
     train = df_na.copy()
     test = df_vartypes.copy()
 
-    similar_columns = SimilarColumns(missing_values="ignore")
-    similar_columns.fit(train)
+    match_columns = SimilarColumns(missing_values="ignore")
+    match_columns.fit(train)
 
-    transformed_df = similar_columns.transform(test)
+    transformed_df = match_columns.transform(test)
 
     expected_result = pd.DataFrame(
         {
@@ -27,22 +27,22 @@ def test_similar_columns_when_more_columns_in_train_than_test(df_vartypes, df_na
     )
 
     pd.testing.assert_frame_equal(expected_result, transformed_df)
-    assert list(similar_columns.variables_) == list(train.columns)
-    assert similar_columns.fill_value is np.nan
-    assert similar_columns.verbose is True
-    assert similar_columns.missing_values == "ignore"
+    assert list(match_columns.variables_) == list(train.columns)
+    assert match_columns.fill_value is np.nan
+    assert match_columns.verbose is True
+    assert match_columns.missing_values == "ignore"
 
 
-def test_similar_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
+def test_match_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
 
     # When columns are the same
     train = df_vartypes
     test = df_na
 
-    similar_columns = SimilarColumns(missing_values="ignore")
-    similar_columns.fit(train)
+    match_columns = SimilarColumns(missing_values="ignore")
+    match_columns.fit(train)
 
-    transformed_df = similar_columns.transform(test)
+    transformed_df = match_columns.transform(test)
 
     expected_result = pd.DataFrame(
         {
@@ -64,7 +64,7 @@ def test_similar_columns_when_more_columns_in_test_than_train(df_vartypes, df_na
     )
 
     pd.testing.assert_frame_equal(expected_result, transformed_df)
-    assert list(similar_columns.variables_) == list(train.columns)
-    assert similar_columns.fill_value is np.nan
-    assert similar_columns.verbose is True
-    assert similar_columns.missing_values == "ignore"
+    assert list(match_columns.variables_) == list(train.columns)
+    assert match_columns.fill_value is np.nan
+    assert match_columns.verbose is True
+    assert match_columns.missing_values == "ignore"
