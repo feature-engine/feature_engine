@@ -1,7 +1,7 @@
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
-from feature_engine.sanity_check import (
+from feature_engine.preprocessing import (
     SimilarColumns
 )
 
