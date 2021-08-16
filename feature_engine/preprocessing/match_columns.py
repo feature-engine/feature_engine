@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -26,7 +26,7 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        fill_value: Any = np.nan,
+        fill_value: Union[np.nan, int] = np.nan,
         missing_values: str = "raise",
         verbose: bool = True
     ):
