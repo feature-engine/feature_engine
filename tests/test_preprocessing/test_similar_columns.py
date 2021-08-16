@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from feature_engine.sanity_check import SimilarColumns
+from feature_engine.preprocessing import SimilarColumns
 
 
 def test_similar_columns_when_more_columns_in_train_than_test(df_vartypes, df_na):
