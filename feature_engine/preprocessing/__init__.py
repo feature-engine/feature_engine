@@ -2,8 +2,8 @@
 The module preprocessing includes classes to check that train and tests are similar.
 """
 
-from .match_columns import SimilarColumns
+from .match_columns import MatchColumnsToTrainSet
 
 __all__ = [
-    "SimilarColumns",
+    "MatchColumnsToTrainSet",
 ]

@@ -2,14 +2,14 @@ import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.preprocessing import (
-    SimilarColumns
+    MatchColumnsToTrainSet
 )
 
 
 @pytest.mark.parametrize(
     "Estimator",
     [
-        SimilarColumns(),
+        MatchColumnsToTrainSet(),
     ],
 )
 def test_all_transformers(Estimator):

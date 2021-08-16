@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from feature_engine.preprocessing import SimilarColumns
+from feature_engine.preprocessing import MatchColumnsToTrainSet
 
 
 def test_match_columns_when_more_columns_in_train_than_test(df_vartypes, df_na):
@@ -10,7 +10,7 @@ def test_match_columns_when_more_columns_in_train_than_test(df_vartypes, df_na):
     train = df_na.copy()
     test = df_vartypes.copy()
 
-    match_columns = SimilarColumns(missing_values="ignore")
+    match_columns = MatchColumnsToTrainSet(missing_values="ignore")
     match_columns.fit(train)
 
     transformed_df = match_columns.transform(test)
@@ -39,7 +39,7 @@ def test_match_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
     train = df_vartypes
     test = df_na
 
-    match_columns = SimilarColumns(missing_values="ignore")
+    match_columns = MatchColumnsToTrainSet(missing_values="ignore")
     match_columns.fit(train)
 
     transformed_df = match_columns.transform(test)
