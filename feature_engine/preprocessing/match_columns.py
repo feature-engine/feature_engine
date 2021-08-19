@@ -16,17 +16,50 @@ from feature_engine.variable_manipulation import _find_all_variables
 
 
 class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
-    """Ensure that similar columns are in test and train dataset.
+    """
+    MatchColumnsToTrainSet() ensure that similar columns are in test and train dataset.
 
     Parameters
-    ----
-    None
+    ----------
+    fill_value: Union[int, float], default=np.NaN
+        The value that will be used to replace missing values
+
+    missing_values: string, default="raise"
+        Can take "raise", "ignore". If errors should be 
+        raised in case of missing value
+
+        - raise : raise errors if there is missing value.
+        - ignore : doesn't raise errors if there is missing value.
+
+    verbose: bool, default=True
+        If the output should be verbose.
+
+    Attributes
+    ----------
+    fill_value:
+        The value that will be used to replace missing values
+
+    missing_values:
+        - raise : raise errors if there is missing value.
+        - ignore : doesn't raise errors if there is missing value.
+
+    verbose:
+        If the output should be verbose.
+
+    Methods
+    -------
+    fit:
+        Find columns that are in the train set.
+    transform:
+        Add or delete columns to match train set that was called in fit.
+    fit_transform:
+        Fit to the data. Then transform it.
 
     """
 
     def __init__(
         self,
-        fill_value: Union[np.nan, int] = np.nan,
+        fill_value: Union[int, float] = np.NaN,
         missing_values: str = "raise",
         verbose: bool = True
     ):
@@ -69,11 +102,11 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
         """
         X = _is_dataframe(X)
 
-        self.n_features_in_ = X.shape[1]
-
-        self.variables_ = _find_all_variables(X, list(X.columns))
+        self.variables_ = list(X.columns)
 
         X = self._check_input(X)
+
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -104,18 +137,21 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
 
         X = self._check_input(X)
 
+        
         _columns_to_drop = list(set(X.columns) - set(self.variables_))
-        _columns_to_add = list(set(self.variables_) - set(X.columns))
 
-        X = X.reindex(
-                columns=list(X.columns) + _columns_to_add,
-                fill_value=self.fill_value
-            )
+        if self.verbose:
+            _columns_to_add = list(set(self.variables_) - set(X.columns))
+            print(f"{_columns_to_add} are added to the DataFrame")
+            print(f"{_columns_to_drop} are dropped from the DataFrame")
 
         X = X.drop(_columns_to_drop, axis=1)
 
-        # reorder columns
-        X = X.loc[:, self.variables_]
+        X = X.reindex(
+                columns=self.variables_,
+                fill_value=self.fill_value
+            )
+
         return X
 
     # for the check_estimator tests
