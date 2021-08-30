@@ -8,11 +8,9 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine.validation import _return_tags
 
 from feature_engine.dataframe_checks import (
-    _check_contains_inf,
     _check_contains_na,
     _is_dataframe,
 )
-from feature_engine.variable_manipulation import _find_all_variables
 
 
 class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
@@ -25,7 +23,7 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
         The value that will be used to replace missing values
 
     missing_values: string, default="raise"
-        Can take "raise", "ignore". If errors should be 
+        Can take "raise", "ignore". If errors should be
         raised in case of missing value
 
         - raise : raise errors if there is missing value.
@@ -59,33 +57,32 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        fill_value: Union[int, float] = np.NaN,
+        fill_value: Union[str, int, float] = np.nan,
         missing_values: str = "raise",
-        verbose: bool = True
+        verbose: bool = True,
     ):
 
         if missing_values not in ["raise", "ignore"]:
-            raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
+            raise ValueError(
+                "missing_values takes only values 'raise' or 'ignore'."
+                f"Got '{missing_values} instead."
+            )
 
         if not isinstance(verbose, bool):
-            raise ValueError("verbose takes only booleans True and False")
-        
-        if not (isinstance(fill_value, int) or np.isnan(fill_value)):
-            raise ValueError("fill_value takes only int or np.nan")
+            raise ValueError(
+                "verbose takes only booleans True and False." f"Got '{verbose} instead."
+            )
+
+        # note: np.nan is an instance of float!!!
+        if not isinstance(fill_value, (str, int, float)):
+            raise ValueError(
+                "fill_value takes integers, floats or strings."
+                f"Got '{fill_value} instead."
+            )
 
         self.fill_value = fill_value
         self.missing_values = missing_values
         self.verbose = verbose
-
-    def _check_input(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = _is_dataframe(X)
-
-        if self.missing_values == "raise":
-            # check if dataset contains na
-            _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.variables_)
-
-        return X
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """Fit columns schema
@@ -102,9 +99,11 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
         """
         X = _is_dataframe(X)
 
-        self.variables_ = list(X.columns)
+        if self.missing_values == "raise":
+            # check if dataset contains na or inf
+            _check_contains_na(X, X.columns)
 
-        X = self._check_input(X)
+        self.variables_ = list(X.columns)
 
         self.n_features_in_ = X.shape[1]
 
@@ -135,30 +134,44 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self)
 
-        X = self._check_input(X)
+        X = _is_dataframe(X)
 
-        
+        if self.missing_values == "raise":
+            # check if dataset contains na or inf
+            _check_contains_na(X, self.variables_)
+
         _columns_to_drop = list(set(X.columns) - set(self.variables_))
+        _columns_to_add = list(set(self.variables_) - set(X.columns))
 
         if self.verbose:
-            _columns_to_add = list(set(self.variables_) - set(X.columns))
-            print(f"{_columns_to_add} are added to the DataFrame")
-            print(f"{_columns_to_drop} are dropped from the DataFrame")
+            if len(_columns_to_add) > 0:
+                print(
+                    "The following variables are added to the DataFrame: "
+                    f"{_columns_to_add}"
+                )
+            if len(_columns_to_drop) > 0:
+                print(
+                    "The following variables are dropped from the DataFrame: "
+                    f"{_columns_to_drop}"
+                )
 
         X = X.drop(_columns_to_drop, axis=1)
 
-        X = X.reindex(
-                columns=self.variables_,
-                fill_value=self.fill_value
-            )
+        X = X.reindex(columns=self.variables_, fill_value=self.fill_value)
 
         return X
 
     # for the check_estimator tests
     def _more_tags(self):
         tags_dict = _return_tags()
-        tags_dict["_xfail_checks"]["check_transformer_general"] = (
-            "Transformer accept transform input shape to "
-            "be different than fit input shape"
-            )
+
+        msg = "input shape of dataframes in fit and transform can differ"
+        tags_dict["_xfail_checks"]["check_transformer_general"] = msg
+
+        msg = (
+            "transformer takes categorical varriables, and inf cannot be determined"
+            "on these variables. Thus, check is not implemented"
+        )
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = msg
+
         return tags_dict
