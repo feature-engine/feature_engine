@@ -40,7 +40,13 @@ def test_encode_categories_in_k_binary_plus_select_vars_automatically(df_enc_big
     }
 
     assert encoder.variables_ == ["var_A", "var_B", "var_C"]
+    assert encoder.variables_binary_ == []
     assert encoder.n_features_in_ == 3
+    assert encoder.encoder_dict_ == {
+        "var_A": ["A", "B", "C", "D", "E", "F", "G"],
+        "var_B": ["A", "B", "C", "D", "E", "F", "G"],
+        "var_C": ["A", "B", "C", "D", "E", "F", "G"],
+    }
     # test transform output
     assert X.sum().to_dict() == transf
     assert "var_A" not in X.columns
@@ -75,7 +81,12 @@ def test_encode_categories_in_k_minus_1_binary_plus_list_of_variables(df_enc_big
     }
 
     assert encoder.variables_ == ["var_A", "var_B"]
+    assert encoder.variables_binary_ == []
     assert encoder.n_features_in_ == 3
+    assert encoder.encoder_dict_ == {
+        "var_A": ["A", "B", "C", "D", "E", "F"],
+        "var_B": ["A", "B", "C", "D", "E", "F"],
+    }
     # test transform output
     for col in transf.keys():
         assert X[col].sum() == transf[col]
@@ -84,30 +95,65 @@ def test_encode_categories_in_k_minus_1_binary_plus_list_of_variables(df_enc_big
     assert "var_C" in X.columns
 
 
-def test_encode_top_categories(df_enc_big):
+def test_encode_top_categories():
     # test case 3: encode only the most popular categories
+
+    df = pd.DataFrame(
+        {
+            "var_A": ["A"] * 5
+            + ["B"] * 11
+            + ["C"] * 4
+            + ["D"] * 9
+            + ["E"] * 2
+            + ["F"] * 2
+            + ["G"] * 7,
+            "var_B": ["A"] * 11
+            + ["B"] * 7
+            + ["C"] * 4
+            + ["D"] * 9
+            + ["E"] * 2
+            + ["F"] * 2
+            + ["G"] * 5,
+            "var_C": ["A"] * 4
+            + ["B"] * 5
+            + ["C"] * 11
+            + ["D"] * 9
+            + ["E"] * 2
+            + ["F"] * 2
+            + ["G"] * 7,
+        }
+    )
+
     encoder = OneHotEncoder(top_categories=4, variables=None, drop_last=False)
-    X = encoder.fit_transform(df_enc_big)
+    X = encoder.fit_transform(df)
 
     # test init params
     assert encoder.top_categories == 4
     # test fit attr
     transf = {
-        "var_A_D": 10,
-        "var_A_B": 10,
-        "var_A_A": 6,
-        "var_A_G": 6,
-        "var_B_A": 10,
-        "var_B_D": 10,
-        "var_B_G": 6,
-        "var_B_B": 6,
-        "var_C_D": 10,
-        "var_C_C": 10,
-        "var_C_G": 6,
-        "var_C_B": 6,
+        "var_A_D": 9,
+        "var_A_B": 11,
+        "var_A_A": 5,
+        "var_A_G": 7,
+        "var_B_A": 11,
+        "var_B_D": 9,
+        "var_B_G": 5,
+        "var_B_B": 7,
+        "var_C_D": 9,
+        "var_C_C": 11,
+        "var_C_G": 7,
+        "var_C_B": 5,
     }
 
+    # test fit attr
+    assert encoder.variables_ == ["var_A", "var_B", "var_C"]
+    assert encoder.variables_binary_ == []
     assert encoder.n_features_in_ == 3
+    assert encoder.encoder_dict_ == {
+        "var_A": ["B", "D", "G", "A"],
+        "var_B": ["A", "D", "B", "G"],
+        "var_C": ["C", "D", "G", "B"],
+    }
     # test transform output
     for col in transf.keys():
         assert X[col].sum() == transf[col]
@@ -125,14 +171,12 @@ def test_error_if_drop_last_not_bool():
         OneHotEncoder(drop_last=0.5)
 
 
-def test_fit_raises_error_if_df_contains_na(df_enc_big_na):
+def test_raises_error_if_df_contains_na(df_enc_big, df_enc_big_na):
     # test case 4: when dataset contains na, fit method
     with pytest.raises(ValueError):
         encoder = OneHotEncoder()
         encoder.fit(df_enc_big_na)
 
-
-def test_transform_raises_error_if_df_contains_na(df_enc_big, df_enc_big_na):
     # test case 4: when dataset contains na, transform method
     with pytest.raises(ValueError):
         encoder = OneHotEncoder()
@@ -164,7 +208,9 @@ def test_encode_numerical_variables(df_enc_numeric):
     X = pd.DataFrame(X).astype("int32")
 
     assert encoder.variables_ == ["var_A", "var_B"]
+    assert encoder.variables_binary_ == []
     assert encoder.n_features_in_ == 2
+    assert encoder.encoder_dict_ == {"var_A": [1, 2, 3], "var_B": [1, 2, 3]}
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
 
@@ -197,6 +243,7 @@ def test_variables_cast_as_category(df_enc_numeric):
 
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.n_features_in_ == 2
+    assert encoder.encoder_dict_ == {"var_A": [1, 2, 3], "var_B": [1, 2, 3]}
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
 
@@ -206,89 +253,110 @@ def df_enc_binary():
     df = {
         "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
         "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-        "var_C": ["A"] * 10 + ["B"] * 10,
-        "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+        "var_C": ["AHA"] * 12 + ["UHU"] * 8,
+        "var_D": ["OHO"] * 5 + ["EHE"] * 15,
+        "var_num": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
     }
     df = pd.DataFrame(df)
 
     return df
 
 
-def test_encode_into_k_binary_plus_drop_binary(df_enc_binary):
+def test_encode_into_k_dummy_plus_drop_binary(df_enc_binary):
     encoder = OneHotEncoder(
         top_categories=None, variables=None, drop_last=False, drop_last_binary=True
     )
     X = encoder.fit_transform(df_enc_binary)
+    X = X.astype("int32")
 
     # test fit attr
     transf = {
-        "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+        "var_num": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
         "var_A_A": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         "var_A_B": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
         "var_A_C": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
         "var_B_A": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         "var_B_B": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
         "var_B_C": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-        "var_C_A": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_C_AHA": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_D_OHO": [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     }
-
     transf = pd.DataFrame(transf).astype("int32")
-    X = pd.DataFrame(X).astype("int32")
 
-    assert encoder.variables_ == ["var_A", "var_B", "var_C"]
-    assert encoder.n_features_in_ == 4
+    assert encoder.variables_ == ["var_A", "var_B", "var_C", "var_D"]
+    assert encoder.variables_binary_ == ["var_C", "var_D"]
+    assert encoder.n_features_in_ == 5
+    assert encoder.encoder_dict_ == {
+        "var_A": ["A", "B", "C"],
+        "var_B": ["A", "B", "C"],
+        "var_C": ["AHA"],
+        "var_D": ["OHO"],
+    }
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
     assert "var_C_B" not in X.columns
 
 
-def test_encode_into_kminus1_binary_plus_drop_binary(df_enc_binary):
+def test_encode_into_kminus1_dummyy_plus_drop_binary(df_enc_binary):
     encoder = OneHotEncoder(
         top_categories=None, variables=None, drop_last=True, drop_last_binary=True
     )
     X = encoder.fit_transform(df_enc_binary)
+    X = X.astype("int32")
 
     # test fit attr
     transf = {
-        "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+        "var_num": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
         "var_A_A": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         "var_A_B": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
         "var_B_A": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         "var_B_B": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_C_A": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_C_AHA": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_D_OHO": [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     }
-
     transf = pd.DataFrame(transf).astype("int32")
-    X = pd.DataFrame(X).astype("int32")
 
-    assert encoder.variables_ == ["var_A", "var_B", "var_C"]
-    assert encoder.n_features_in_ == 4
+    assert encoder.variables_ == ["var_A", "var_B", "var_C", "var_D"]
+    assert encoder.variables_binary_ == ["var_C", "var_D"]
+    assert encoder.n_features_in_ == 5
+    assert encoder.encoder_dict_ == {
+        "var_A": ["A", "B"],
+        "var_B": ["A", "B"],
+        "var_C": ["AHA"],
+        "var_D": ["OHO"],
+    }
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
     assert "var_C_B" not in X.columns
 
 
 def test_encode_into_top_categories_plus_drop_binary(df_enc_binary):
-
     # top_categories = 1
     encoder = OneHotEncoder(
         top_categories=1, variables=None, drop_last=False, drop_last_binary=True
     )
     X = encoder.fit_transform(df_enc_binary)
+    X = X.astype("int32")
 
     # test fit attr
     transf = {
-        "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+        "var_num": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
         "var_A_B": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
         "var_B_A": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_C_A": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_C_AHA": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_D_OHO": [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     }
-
     transf = pd.DataFrame(transf).astype("int32")
-    X = pd.DataFrame(X).astype("int32")
 
-    assert encoder.variables_ == ["var_A", "var_B", "var_C"]
-    assert encoder.n_features_in_ == 4
+    assert encoder.variables_ == ["var_A", "var_B", "var_C", "var_D"]
+    assert encoder.variables_binary_ == ["var_C", "var_D"]
+    assert encoder.n_features_in_ == 5
+    assert encoder.encoder_dict_ == {
+        "var_A": ["B"],
+        "var_B": ["A"],
+        "var_C": ["AHA"],
+        "var_D": ["OHO"],
+    }
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
     assert "var_C_B" not in X.columns
@@ -298,22 +366,29 @@ def test_encode_into_top_categories_plus_drop_binary(df_enc_binary):
         top_categories=2, variables=None, drop_last=False, drop_last_binary=True
     )
     X = encoder.fit_transform(df_enc_binary)
+    X = X.astype("int32")
 
     # test fit attr
     transf = {
-        "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+        "var_num": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
         "var_A_B": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
         "var_A_A": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         "var_B_A": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         "var_B_B": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_C_A": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_C_AHA": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_D_OHO": [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     }
-
     transf = pd.DataFrame(transf).astype("int32")
-    X = pd.DataFrame(X).astype("int32")
 
-    assert encoder.variables_ == ["var_A", "var_B", "var_C"]
-    assert encoder.n_features_in_ == 4
+    assert encoder.variables_ == ["var_A", "var_B", "var_C", "var_D"]
+    assert encoder.variables_binary_ == ["var_C", "var_D"]
+    assert encoder.n_features_in_ == 5
+    assert encoder.encoder_dict_ == {
+        "var_A": ["B", "A"],
+        "var_B": ["A", "B"],
+        "var_C": ["AHA"],
+        "var_D": ["OHO"],
+    }
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
     assert "var_C_B" not in X.columns
