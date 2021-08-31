@@ -53,7 +53,7 @@ def test_columns_addition_when_more_columns_in_train_than_test(
     assert match_columns.verbose is True
     assert match_columns.missing_values == "ignore"
     # test fit attrs
-    assert list(match_columns.variables_) == list(train.columns)
+    assert list(match_columns.input_features_) == list(train.columns)
     assert match_columns.n_features_in_ == 6
     # test transform output
     pd.testing.assert_frame_equal(expected_result, transformed_df)
@@ -75,7 +75,7 @@ def test_drop_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
     assert match_columns.verbose is True
     assert match_columns.missing_values == "ignore"
     # test fit attrs
-    assert list(match_columns.variables_) == list(train.columns)
+    assert list(match_columns.input_features_) == list(train.columns)
     assert match_columns.n_features_in_ == 5
     # test transform output
     pd.testing.assert_frame_equal(expected_result, transformed_df)

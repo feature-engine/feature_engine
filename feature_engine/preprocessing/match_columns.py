@@ -1,4 +1,4 @@
-from typing import Union
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -67,7 +67,7 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    variables_:
+    input_features_:
         The variables present in the train set, in the order observed during fit.
 
     n_features_in_:
@@ -139,7 +139,8 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
             # check if dataset contains na or inf
             _check_contains_na(X, X.columns)
 
-        self.variables_ = list(X.columns)
+        # save input features
+        self.input_features_: List[Union[str, int]] = X.columns.tolist()
 
         self.n_features_in_ = X.shape[1]
 
@@ -165,10 +166,10 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
 
         if self.missing_values == "raise":
             # check if dataset contains na or inf
-            _check_contains_na(X, self.variables_)
+            _check_contains_na(X, self.input_features_)
 
-        _columns_to_drop = list(set(X.columns) - set(self.variables_))
-        _columns_to_add = list(set(self.variables_) - set(X.columns))
+        _columns_to_drop = list(set(X.columns) - set(self.input_features_))
+        _columns_to_add = list(set(self.input_features_) - set(X.columns))
 
         if self.verbose:
             if len(_columns_to_add) > 0:
@@ -184,7 +185,7 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
 
         X = X.drop(_columns_to_drop, axis=1)
 
-        X = X.reindex(columns=self.variables_, fill_value=self.fill_value)
+        X = X.reindex(columns=self.input_features_, fill_value=self.fill_value)
 
         return X
 
