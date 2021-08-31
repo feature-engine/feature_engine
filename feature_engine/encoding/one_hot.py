@@ -226,7 +226,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
             # return k dummies
             else:
                 for var in self.variables_:
-                    self.encoder_dict_[var] = X[var].unique()
+                    self.encoder_dict_[var] = [x for x in X[var].unique()]
 
         self.variables_binary_ = [
             var for var in self.variables_ if X[var].nunique() == 2
@@ -235,7 +235,8 @@ class OneHotEncoder(BaseCategoricalTransformer):
         # automatically encode binary variables as 1 dummy
         if self.drop_last_binary:
             for var in self.variables_binary_:
-                self.encoder_dict_[var] = X[var].unique()[0]
+                category = X[var].unique()[0]
+                self.encoder_dict_[var] = [category]
 
         self._check_encoding_dictionary()
 
