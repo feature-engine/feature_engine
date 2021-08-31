@@ -1,3 +1,22 @@
+Version 1.1.2
+=============
+
+Deployed: 31th August 2021
+
+Contributors
+------------
+
+    - Soledad Galli
+
+This small release fixes a Bug in how the OneHotEncoder handles binary categorical variables
+when the parameter `drop_last_binary` is set to True. It also ensures that the values in the
+`OneHotEncoder.encoder_dict_` are lists of categories and not arrays. These bugs were
+introduced in v1.1.0.
+
+Bug fix
+-------
+    - **OneHotEncoder**: drop_last_binary now outputs 1 dummy variable per binary variable when set to true
+
 Version 1.1.1
 =============
 
