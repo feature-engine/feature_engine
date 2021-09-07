@@ -1,9 +1,7 @@
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
-from feature_engine.preprocessing import (
-    MatchColumnsToTrainSet
-)
+from feature_engine.preprocessing import MatchColumnsToTrainSet
 
 
 @pytest.mark.parametrize(

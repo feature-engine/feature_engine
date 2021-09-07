@@ -1,5 +1,6 @@
 """
-The module preprocessing includes classes to check that train and tests are similar.
+The module preprocessing includes classes and functions for general data pre-processing
+and transformation.
 """
 
 from .match_columns import MatchColumnsToTrainSet
