@@ -18,14 +18,56 @@ _params_allowed = [
     ("nan", "ignore", "hallo"),
 ]
 
-
-@pytest.mark.parametrize("fill_value, expected_studies, expected_cities", _params_fill_value)
-def test_columns_addition_when_more_columns_in_train_than_test(
-    fill_value, expected_studies, expected_cities, df_vartypes, df_na
+@pytest.mark.parametrize("fill_value, expected_studies, expected_age", _params_fill_value)
+def test_drop_and_add_columns(
+    fill_value, expected_studies, expected_age, df_vartypes, df_na
 ):
     train = df_na.copy()
     test = df_vartypes.copy()
-    test = test.drop("City", axis=1) # to add more than one column
+    test = test.drop("Age", axis=1) # to add more than one column
+    for new_col in ["test1", "test2"]: # adding columns to test if they are removed
+        test.loc[:, new_col] = new_col 
+    
+    match_columns = MatchColumnsToTrainSet(
+        fill_value=fill_value,
+        missing_values="ignore",
+    )
+    match_columns.fit(train)
+
+    transformed_df = match_columns.transform(test)
+
+    expected_result = pd.DataFrame(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Studies": expected_studies,
+            "Age": expected_age,
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+        }
+    )
+
+    # test init params
+    if fill_value is np.nan:
+        assert match_columns.fill_value is np.nan
+    else:
+        assert match_columns.fill_value == fill_value
+    assert match_columns.verbose is True
+    assert match_columns.missing_values == "ignore"
+    # test fit attrs
+    assert list(match_columns.input_features_) == list(train.columns)
+    assert match_columns.n_features_in_ == 6
+    # test transform output
+    pd.testing.assert_frame_equal(expected_result, transformed_df)
+
+
+@pytest.mark.parametrize("fill_value, expected_studies, expected_age", _params_fill_value)
+def test_columns_addition_when_more_columns_in_train_than_test(
+    fill_value, expected_studies, expected_age, df_vartypes, df_na
+):
+    train = df_na.copy()
+    test = df_vartypes.copy()
+    test = test.drop("Age", axis=1) # to add more than one column
 
     match_columns = MatchColumnsToTrainSet(
         fill_value=fill_value,
@@ -38,9 +80,9 @@ def test_columns_addition_when_more_columns_in_train_than_test(
     expected_result = pd.DataFrame(
         {
             "Name": ["tom", "nick", "krish", "jack"],
-            "City": expected_cities,
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Studies": expected_studies,
-            "Age": [20, 21, 19, 18],
+            "Age": expected_age,
             "Marks": [0.9, 0.8, 0.7, 0.6],
             "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
         }
