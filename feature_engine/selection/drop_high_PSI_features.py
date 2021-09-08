@@ -167,8 +167,6 @@ class DropHighPSIFeatures(BaseSelector):
 
 import pandas as pd
 import numpy as np
-from abc import abstractmethod
-
 
 class LinearBucketer():
     """
@@ -191,8 +189,8 @@ class LinearBucketer():
         """
         self.bin_count = bin_count
 
-    @staticmethod
-    def simple_bins(x, bin_count, inf_edges=True):
+
+    def _linear_bins(self, x, bin_count):
         """
         Simple bins.
         """
@@ -229,7 +227,7 @@ class LinearBucketer():
             y: (np.array) ignored. For sklearn-compatibility
         Returns: fitted bucketer object
         """
-        self.counts_, self.boundaries_ = self.simple_bins(x, self.bin_count)
+        self.counts_, self.boundaries_ = self._linear_bins(x, self.bin_count)
         return self
 
     def compute(self, X, y=None):
@@ -240,8 +238,6 @@ class LinearBucketer():
             y: (np.array) ignored, for sklearn compatibility
         Returns: counts of the elements in X using the bucketing that was obtained by fitting the Bucketer instance
         """
-        check_is_fitted(self)
-
         return self._compute_counts_per_bin(X, self.boundaries_)
 
     def fit_compute(self, X, y=None):
@@ -277,8 +273,7 @@ class LinearBucketer():
             float: Measure of the similarity between d1 & d2. (range 0-inf, with 0 indicating identical
             distributions and > 0.25 indicating significantly different distributions)
             float: p-value for rejecting null hypothesis (that the two distributions are identical)
-        """
-        # Number of bins/buckets
+        """ # Number of bins/buckets
         b = len(d1)
 
         # Calculate the number of samples in each distribution
