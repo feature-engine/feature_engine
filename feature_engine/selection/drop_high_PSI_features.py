@@ -58,6 +58,7 @@ class DropHighPSIFeatures(BaseSelector):
         date_cut_off: object = None,
         threshold: float = 0.2, 
         bucketer: object = LinearBucketer(n_bins=10),
+        min_value: float = 0.0001,
         missing_values: str = "raise"
     ):
 
@@ -68,6 +69,7 @@ class DropHighPSIFeatures(BaseSelector):
             raise ValueError(
                 "missing_values takes only values 'raise', 'ignore' or " "'include'."
             )
+        self.min_value = min_value
         self.date_column = date_column
         self.date_cut_off = date_cut_off
         self.bucketer = bucketer
@@ -141,6 +143,20 @@ class DropHighPSIFeatures(BaseSelector):
         bincounts_comp = bucketer.compute(series_comp)
 
         psi_value = self._psi(bincounts_ref, bincounts_comp)
+
+        return psi_value
+
+    def _psi(self, d1, d2):
+        # Calculate the ratio of samples in each bin
+        ref_ratio = d1 / d1.sum()
+        comp_ratio = d2 / d2.sum()
+
+        # Necessary to avoid divide by zero and ln(0). Should have minor impact on PSI value.
+        ref_ratio = np.where(ref_ratio <=0, self.min_value, ref_ratio)
+        comp_ratio = np.where(comp_ratio <=0, self.min_value, comp_ratio)
+
+        # Calculate the PSI value
+        psi_value = np.sum((comp_ratio - ref_ratio) * np.log(comp_ratio / ref_ratio))
 
         return psi_value
 
@@ -252,48 +268,4 @@ class LinearBucketer():
         self.fit(X, y)
         return self.compute(X, y)
 
-    def _psi(self, d1, d2, verbose=False):
-        """
-        Calculates the Population Stability Index.
-        A simple statistical test that quantifies the similarity of two distributions.
-        Commonly used in the banking / risk modeling industry.
-        Only works on categorical data or bucketed numerical data.
-        Distributions must be binned/bucketed before passing them to this function.
-        Bin boundaries should be the same for both distributions.
-        Distributions must have the same number of buckets.
-        Note that the PSI varies with number of buckets chosen (typically 10-20 bins are used).
-        Quantile bucketing is typically recommended.
-        References:
-        - [Statistical Properties of Population Stability Index](https://scholarworks.wmich.edu/cgi/viewcontent.cgi?article=4249&context=dissertations)
-        Args:
-            d1 (np.ndarray or pandas.Series): First distribution ("expected").
-            d2 (np.ndarray or pandas.Series): Second distribution ("actual").
-            verbose (bool): If True, useful interpretation info is printed to stdout.
-        Returns:
-            float: Measure of the similarity between d1 & d2. (range 0-inf, with 0 indicating identical
-            distributions and > 0.25 indicating significantly different distributions)
-            float: p-value for rejecting null hypothesis (that the two distributions are identical)
-        """ # Number of bins/buckets
-        b = len(d1)
-
-        # Calculate the number of samples in each distribution
-        n = d1.sum()
-        m = d2.sum()
-
-        # Calculate the ratio of samples in each bin
-        expected_ratio = d1 / n
-        actual_ratio = d2 / m
-
-        # Necessary to avoid divide by zero and ln(0). Should have minor impact on PSI value.
-        for i in range(b):
-            if expected_ratio[i] == 0:
-                expected_ratio[i] = 0.0001
-
-            if actual_ratio[i] == 0:
-                actual_ratio[i] = 0.0001
-
-
-        # Calculate the PSI value
-        psi_value = np.sum((actual_ratio - expected_ratio) * np.log(actual_ratio / expected_ratio))
-
-        return psi_value
+    
