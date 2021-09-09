@@ -1,16 +1,140 @@
 from typing import List, Union
 
 import pandas as pd
+import numpy as np
 
 from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.discretisation.equal_frequency import EqualFrequencyDiscretiser
+from feature_engine.discretisation.equal_width import EqualWidthDiscretiser
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
+    _find_or_check_numerical_variables,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
+
+class dvl():
+
+    def __init__(self, compare, variables: Variables = None, missing_values: str = "raise",
+    threshold: int = 0.25,n_bins = 10, method = 'equal_frequency'):
+
+        if not isinstance(threshold, (float, int)) or threshold < 0:
+            raise ValueError("threshold must be a float larger than 0")
+
+        if missing_values not in ["raise", "ignore", "include"]:
+            raise ValueError(
+                "missing_values takes only values 'raise', 'ignore' or " "'include'."
+            )
+        
+        self._min_value = 0.0001
+        self._compare = compare
+        self.threshold = threshold
+        self.variables = _check_input_parameter_variables(variables)
+        self.missing_values = missing_values
+
+        if method.lower() in ["equalwidth", 'equal_width', "equal width"]:
+            self.bucketer = EqualWidthDiscretiser(bins=n_bins)
+        elif method.lower() in  ["equalfrequency", 'equal_frequency', "equal frequency"]:
+            self.bucketer = EqualFrequencyDiscretiser(q=n_bins)
+        else:
+            raise ValueError("Incorrect name for the method, should be either equal_width or equal_frequency")
+        
+    def fit(self, X: pd.DataFrame, y: pd.Series = None):
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # find all variables or check those entered are present in the dataframe
+        self.variables_ =  _find_or_check_numerical_variables(X, self.variables)
+
+        if self.missing_values == "raise":
+            # check if dataset contains na
+            _check_contains_na(X, self.variables_)
+
+        if self.missing_values == "include":
+            X[self.variables_] = X[self.variables_].fillna("missing_values")
+
+        # Split the dataframe into a reference and a comparison
+        reference_df, comparison_df = self._split_dataframe(X, self._compare)
+        # Compute the PSI
+        self.psi = self._compute_PSI(reference_df, comparison_df, self.bucketer)
+        
+        # Select features below the threshold
+        self.features_to_drop_ = self.psi[self.psi.value >= self.threshold].index.to_list()
+
+        return self
+
+    def _compute_PSI(self,df_ref, df_comp, bucketer):
+
+        ref = bucketer.fit_transform(df_ref)
+        comp = bucketer.transform(df_comp)
+
+        results = {}
+        
+        print(self.variables_)
+        for feature in self.variables_:
+            results[feature] = [self._compute_feature_psi(
+                ref[[feature]].value_counts(), 
+                comp[[feature]].value_counts(), bucketer)]
+
+        results_df = pd.DataFrame.from_dict(results).T
+        results_df.columns = ['value']
+
+        return results_df
+
+
+    def _compute_feature_psi(self, series_ref, series_comp, bucketer):
+
+        binning = pd.DataFrame(series_ref).merge(pd.DataFrame(series_comp), 
+        right_index=True, left_index=True, how="outer"
+        ).fillna(0)
+        binning.columns = ['ref', 'comp']
+
+        psi_value = self._psi(binning.ref.to_numpy(), binning.comp.to_numpy())
+
+        return psi_value
+
+    def _psi(self, d1, d2):
+        # Calculate the ratio of samples in each bin
+        ref_ratio = d1 / d1.sum()
+        comp_ratio = d2 / d2.sum()
+
+        # Necessary to avoid divide by zero and ln(0). Should have minor impact on PSI value.
+        ref_ratio = np.where(ref_ratio <=0, self._min_value, ref_ratio)
+        comp_ratio = np.where(comp_ratio <=0, self._min_value, comp_ratio)
+
+        # Calculate the PSI value
+        psi_value = np.sum((comp_ratio - ref_ratio) * np.log(comp_ratio / ref_ratio))
+
+        return psi_value
+
+    def _split_dataframe(self, X, compare):
+
+        if isinstance(compare, pd.DataFrame):
+            return X, compare
+        elif isinstance(compare, dict):
+            date_col = compare["date_col"]
+            value = compare['cut_off']
+            below_value = X[X[column] <= value]
+            above_value = X[X[column] > value]
+            
+            return below_value, above_value
+
+        else:
+            raise ValueError ("compare should be either a pd.dataframe or a dictionary")
+
+    def transform(self, X: pd.DataFrame):
+        # check if input is a dataframe
+        X = _is_dataframe(X)
+        # return the dataframe with the selected features
+        return X.drop(columns=self.features_to_drop_)
+
+    def fit_transform(self, X):
+
+        return self.fit(X).transform(X)
+
 
 
 class DropHighPSIFeatures(BaseSelector):
@@ -54,13 +178,12 @@ class DropHighPSIFeatures(BaseSelector):
     def __init__(
         self, 
         variables: Variables = None, 
-        date_column: string = None,
-        date_cut_off: object = None,
-        threshold: float = 0.2, 
-        bucketer: object = LinearBucketer(n_bins=10),
-        min_value: float = 0.0001,
-        missing_values: str = "raise"
+        missing_values: str = "raise",
+        threshold: int = 0.25,
+        n_bins = 10,
     ):
+
+        assert n_bins == 10
 
         if not isinstance(threshold, (float, int)) or threshold < 0:
             raise ValueError("threshold must be a float larger than 0")
@@ -69,13 +192,24 @@ class DropHighPSIFeatures(BaseSelector):
             raise ValueError(
                 "missing_values takes only values 'raise', 'ignore' or " "'include'."
             )
-        self.min_value = min_value
-        self.date_column = date_column
-        self.date_cut_off = date_cut_off
-        self.bucketer = bucketer
+
+        
+        self._min_value = 0.0001
+        self._compare = None
         self.threshold = threshold
         self.variables = _check_input_parameter_variables(variables)
         self.missing_values = missing_values
+
+        method = 'equal_width'
+
+        if method.lower() in ["equalwidth", 'equal_width', "equal width"]:
+            self.bucketer = EqualWidthDiscretiser(10)
+        elif method.lower() in  ["equalfrequency", 'equal_frequency', "equal frequency"]:
+            self.bucketer = EqualFrequencyDiscretiser(10)
+        else:
+            raise ValueError("Incorrect name for the method, should be either equal_width or equal_frequency")
+
+        return
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -97,7 +231,7 @@ class DropHighPSIFeatures(BaseSelector):
         X = _is_dataframe(X)
 
         # find all variables or check those entered are present in the dataframe
-        self.variables_ = _find_all_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         if self.missing_values == "raise":
             # check if dataset contains na
@@ -107,7 +241,7 @@ class DropHighPSIFeatures(BaseSelector):
             X[self.variables_] = X[self.variables_].fillna("missing_values")
 
         # Split the dataframe into a reference and a comparison
-        reference_df, comparison_df = self._split_dataframe(X, self.date_column, self.date_cut_off)
+        reference_df, comparison_df = self._split_dataframe(X, self._compare)
         # Compute the PSI
         self.psi = self.compute_PSI(reference_df, comparison_df, self.bucketer)
         
@@ -129,7 +263,7 @@ class DropHighPSIFeatures(BaseSelector):
         results = {}
         
         for feature in self.variables:
-            results{feature: self._compute_feature_psi(df_ref[feature], df_comp[feature], bucketer)}
+            results['feature'] = self._compute_feature_psi(df_ref[feature], df_comp[feature], bucketer)
 
         results_df = pd.DataFrame(results).T
         results_df.columns = ['value']
@@ -138,11 +272,12 @@ class DropHighPSIFeatures(BaseSelector):
 
 
     def _compute_feature_psi(self, series_ref, series_comp, bucketer):
-        bucketer.fit(series_ref)
-        bincounts_ref = bucketer.fit_compute(series_ref)
-        bincounts_comp = bucketer.compute(series_comp)
+        ref = bucketer.fit_transform(series_ref).value_counts()
+        comp = bucketer.transform(series_comp)
+        binning = ref.merge(comp).fillna(0)
+        binning.columns = ['ref', 'comp']
 
-        psi_value = self._psi(bincounts_ref, bincounts_comp)
+        psi_value = self._psi(binning.ref.to_numpy(), binning.ref.to_numpy())
 
         return psi_value
 
@@ -152,20 +287,30 @@ class DropHighPSIFeatures(BaseSelector):
         comp_ratio = d2 / d2.sum()
 
         # Necessary to avoid divide by zero and ln(0). Should have minor impact on PSI value.
-        ref_ratio = np.where(ref_ratio <=0, self.min_value, ref_ratio)
-        comp_ratio = np.where(comp_ratio <=0, self.min_value, comp_ratio)
+        ref_ratio = np.where(ref_ratio <=0, self._min_value, ref_ratio)
+        comp_ratio = np.where(comp_ratio <=0, self._min_value, comp_ratio)
 
         # Calculate the PSI value
         psi_value = np.sum((comp_ratio - ref_ratio) * np.log(comp_ratio / ref_ratio))
 
         return psi_value
 
-    def _split_dataframe(self, X, column, value):
+    def _split_dataframe(self, X, compare):
 
-        below_value = X[X[column] <= value]
-        above_value = X[X[column] > value]
+        if isinstance(compare, pd.DataFrame):
+            return X, compare
+        elif isinstance(compare, dict):
+            date_col = compare["date_col"]
+            value = compare['cut_off']
+            below_value = X[X[column] <= value]
+            above_value = X[X[column] > value]
+            
+            return below_value, above_value
 
-        return below_value, above_value
+        else:
+            raise ValueError ("compare should be either a pd.dataframe or a dictionary")
+
+        
 
 
     def _more_tags(self):
@@ -179,93 +324,4 @@ class DropHighPSIFeatures(BaseSelector):
             "check_fit2d_1sample"
         ] = "the transformer raises an error when dropping all columns, ok to fail"
         return tags_dict
-
-
-import pandas as pd
-import numpy as np
-
-class LinearBucketer():
-    """
-    Create equally spaced bins using numpy.histogram function.
-    Example:
-    ```python
-    from probatus.binning import SimpleBucketer
-    x = [1, 2, 1]
-    bins = 3
-    myBucketer = SimpleBucketer(bin_count=bins)
-    myBucketer.fit(x)
-    ```
-    myBucketer.counts gives the number of elements per bucket
-    myBucketer.boundaries gives the boundaries of the buckets
-    """
-
-    def __init__(self, bin_count):
-        """
-        Init.
-        """
-        self.bin_count = bin_count
-
-
-    def _linear_bins(self, x, bin_count):
-        """
-        Simple bins.
-        """
-        _, boundaries = np.histogram(x, bins=bin_count)
-        # Ensure all cases are included in the lower and upper bound
-        boundaries[0] = -np.inf
-        boundaries[-1] = np.inf
-        counts = self._compute_counts_per_bin(x, boundaries)
-        return counts, boundaries
-
-    def _compute_counts_per_bin(X, boundaries):
-        """
-        Computes the counts per bin.
-        Args:
-            X (np.array): data to be bucketed
-            boundaries (np.array): boundaries of the bins.
-        Returns (np.array): Counts per bin.
-        """
-        # np.digitize returns the indices of the bins to which each value in input array belongs
-        # the smallest value of the `boundaries` attribute equals the lowest value in the set the instance was
-        # fitted on, to prevent the smallest value of x_new to be in his own bucket, we ignore the first boundary
-        # value
-        bins = len(boundaries) - 1
-        digitize_result = np.digitize(X, boundaries[1:], right=True)
-        result = pd.DataFrame({"bucket": digitize_result}).groupby("bucket")["bucket"].count()
-        # reindex the dataframe such that also empty buckets are included in the result
-        return result.reindex(np.arange(bins), fill_value=0).to_numpy()
-
-    def fit(self, x, y=None):
-        """
-        Fit bucketing on x.
-        Args:
-            x: (np.array) Input array on which the boundaries of bins are fitted
-            y: (np.array) ignored. For sklearn-compatibility
-        Returns: fitted bucketer object
-        """
-        self.counts_, self.boundaries_ = self._linear_bins(x, self.bin_count)
-        return self
-
-    def compute(self, X, y=None):
-        """
-        Applies fitted bucketing algorithm on input data and counts number of samples per bin.
-        Args:
-            X: (np.array) data to be bucketed
-            y: (np.array) ignored, for sklearn compatibility
-        Returns: counts of the elements in X using the bucketing that was obtained by fitting the Bucketer instance
-        """
-        return self._compute_counts_per_bin(X, self.boundaries_)
-
-    def fit_compute(self, X, y=None):
-        """
-        Apply bucketing to new data and return number of samples per bin.
-        Args:
-            X: (np.array) data to be bucketed
-            y: (np.array) One dimensional array, used if the target is needed for the bucketing. By default is set to
-            None
-        Returns: counts of the elements in x_new using the bucketing that was obtained by fitting the Bucketer instance
-        """
-        self.fit(X, y)
-        return self.compute(X, y)
-
     
