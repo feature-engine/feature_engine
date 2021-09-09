@@ -14,7 +14,7 @@ Example
 The MatchColumnsToTrainSet() ensure that columns in test dataset are similar 
 to train dataset. 
 If needed it drops columns that are in test but not in the train dataset
- and add columns that are missing 
+and add columns that are missing 
 in test dataset (but are in train).
 
 .. code:: python
