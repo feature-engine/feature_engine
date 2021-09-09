@@ -153,12 +153,10 @@ def test_verbose_print_out(capfd, df_vartypes, df_na):
     match_columns.transform(df_vartypes)
 
     out, err = capfd.readouterr()
-    assert (
-        out ==
-        "The following variables are added to the DataFrame: ['new_variable', 'Studies']\n"
-        or out ==
-        "The following variables are added to the DataFrame: ['Studies', 'new_variable']\n"
-    )
+    assert (out == "The following variables are added to the DataFrame: "
+            "['new_variable', 'Studies']\n"
+            or out == "The following variables are added to the DataFrame: "
+            "['Studies', 'new_variable']\n")
 
     match_columns.fit(df_vartypes)
     match_columns.transform(train)
