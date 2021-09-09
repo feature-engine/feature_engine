@@ -23,6 +23,7 @@ Feature-engine includes transformers for:
 - Outlier capping or removal
 - Variable combination
 - Variable selection
+- Preprocessing
 
 Feature-engine allows you to select the variables you want to transform within each
 transformer. This way, different engineering procedures can be easily applied to
