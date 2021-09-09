@@ -82,7 +82,6 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
     fit_transform:
         Fit to the data. Then transform it.
     """
-
     def __init__(
         self,
         fill_value: Union[str, int, float] = np.nan,
@@ -93,20 +92,16 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
                 "missing_values takes only values 'raise' or 'ignore'."
-                f"Got '{missing_values} instead."
-            )
+                f"Got '{missing_values} instead.")
 
         if not isinstance(verbose, bool):
-            raise ValueError(
-                "verbose takes only booleans True and False." f"Got '{verbose} instead."
-            )
+            raise ValueError("verbose takes only booleans True and False."
+                             f"Got '{verbose} instead.")
 
         # note: np.nan is an instance of float!!!
         if not isinstance(fill_value, (str, int, float)):
-            raise ValueError(
-                "fill_value takes integers, floats or strings."
-                f"Got '{fill_value} instead."
-            )
+            raise ValueError("fill_value takes integers, floats or strings."
+                             f"Got '{fill_value} instead.")
 
         self.fill_value = fill_value
         self.missing_values = missing_values
@@ -173,15 +168,12 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
 
         if self.verbose:
             if len(_columns_to_add) > 0:
-                print(
-                    "The following variables are added to the DataFrame: "
-                    f"{_columns_to_add}"
-                )
+                print("The following variables are added to the DataFrame: "
+                      f"{_columns_to_add}")
             if len(_columns_to_drop) > 0:
                 print(
                     "The following variables are dropped from the DataFrame: "
-                    f"{_columns_to_drop}"
-                )
+                    f"{_columns_to_drop}")
 
         X = X.drop(_columns_to_drop, axis=1)
 
@@ -198,8 +190,7 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
 
         msg = (
             "transformer takes categorical varriables, and inf cannot be determined"
-            "on these variables. Thus, check is not implemented"
-        )
+            "on these variables. Thus, check is not implemented")
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = msg
 
         return tags_dict
