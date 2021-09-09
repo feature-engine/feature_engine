@@ -18,16 +18,20 @@ _params_allowed = [
     ("nan", "ignore", "hallo"),
 ]
 
-@pytest.mark.parametrize("fill_value, expected_studies, expected_age", _params_fill_value)
+
+@pytest.mark.parametrize(
+    "fill_value, expected_studies, expected_age",
+    _params_fill_value
+)
 def test_drop_and_add_columns(
     fill_value, expected_studies, expected_age, df_vartypes, df_na
 ):
     train = df_na.copy()
     test = df_vartypes.copy()
-    test = test.drop("Age", axis=1) # to add more than one column
-    for new_col in ["test1", "test2"]: # adding columns to test if they are removed
-        test.loc[:, new_col] = new_col 
-    
+    test = test.drop("Age", axis=1)  # to add more than one column
+    for new_col in ["test1", "test2"]:  # adding columns to test if they are removed
+        test.loc[:, new_col] = new_col
+
     match_columns = MatchColumnsToTrainSet(
         fill_value=fill_value,
         missing_values="ignore",
@@ -61,13 +65,16 @@ def test_drop_and_add_columns(
     pd.testing.assert_frame_equal(expected_result, transformed_df)
 
 
-@pytest.mark.parametrize("fill_value, expected_studies, expected_age", _params_fill_value)
+@pytest.mark.parametrize(
+    "fill_value, expected_studies, expected_age",
+    _params_fill_value
+)
 def test_columns_addition_when_more_columns_in_train_than_test(
     fill_value, expected_studies, expected_age, df_vartypes, df_na
 ):
     train = df_na.copy()
     test = df_vartypes.copy()
-    test = test.drop("Age", axis=1) # to add more than one column
+    test = test.drop("Age", axis=1)  # to add more than one column
 
     match_columns = MatchColumnsToTrainSet(
         fill_value=fill_value,
@@ -101,9 +108,10 @@ def test_columns_addition_when_more_columns_in_train_than_test(
     # test transform output
     pd.testing.assert_frame_equal(expected_result, transformed_df)
 
+
 def test_drop_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
     train = df_vartypes.copy()
-    train = train.drop("City", axis=1) # to remove more than one column
+    train = train.drop("City", axis=1)  # to remove more than one column
     test = df_na.copy()
 
     match_columns = MatchColumnsToTrainSet(missing_values="ignore")
