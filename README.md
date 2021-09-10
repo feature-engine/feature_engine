@@ -114,6 +114,8 @@ More resources will be added as they appear online!
  * RecursiveFeatureElimination
  * RecursiveFeatureAddition
 
+### Preprocessing
+ * MatchCVariables
 
 ## Installing
 
