@@ -1,17 +1,17 @@
-MatchColumnsToTrainSet
-======================
+MatchVariables
+==============
 
 API Reference
 -------------
 
-.. autoclass:: feature_engine.preprocessing.MatchColumnsToTrainSet
+.. autoclass:: feature_engine.preprocessing.MatchVariables
     :members:
 
 
 Example
 -------
 
-MatchColumnsToTrainSet() ensures that the columns in the test set are identical to those
+MatchVariables() ensures that the columns in the test set are identical to those
 in the train set.
 
 If the test set contains additional columns, they are dropped. Alternatively, if the
@@ -24,7 +24,7 @@ value determined by the user, for example np.nan.
     import numpy as np
     import pandas as pd
 
-    from feature_engine.preprocessing import MatchColumnsToTrainSet
+    from feature_engine.preprocessing import MatchVariables
 
 
     # Load dataset
@@ -50,7 +50,7 @@ value determined by the user, for example np.nan.
     test = data.iloc[1000:, :]
 
     # set up the transformer
-    match_cols = MatchColumnsToTrainSet(missing_values="ignore")
+    match_cols = MatchVariables(missing_values="ignore")
 
     # learn the variables in the train set
     match_cols.fit(train)
@@ -163,7 +163,6 @@ While creating these modelling datasets, a lot of meta data e.g., "scenario numb
 "time scenario was generated", etc, could be added to the data. Then we need to pass
 these data over to the model to obtain the modelled prediction.
 
-The MatchColumnsToTrainSet() provides an easy an elegant way to remove the additional
-metadeta, while returning datasets with the input features in the correct order,
-allowing the different scenarios to be modelled directly inside a machine learning
-pipeline.
+MatchVariables() provides an easy an elegant way to remove the additional metadeta,
+while returning datasets with the input features in the correct order, allowing the
+different scenarios to be modelled directly inside a machine learning pipeline.
