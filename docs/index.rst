@@ -167,9 +167,9 @@ Feature Selection:
 - :doc:`selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
 
 Preprocessing:
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
-- :doc:`preprocessing/MatchColumnsToTrainSet`: ensure than columns in test dataset are identicals to train
+- :doc:`preprocessing/MatchVariables`: ensures that columns in test set match those in train set
 
 Getting Help
 ------------
@@ -242,6 +242,7 @@ The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
    outliers/index
    creation/index
    selection/index
+   preprocessing/index
    wrappers/index
    preprocessing/index
 

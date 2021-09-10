@@ -9,9 +9,9 @@ from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
 from feature_engine.validation import _return_tags
 
 
-class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
+class MatchVariables(BaseEstimator, TransformerMixin):
     """
-    MatchColumnsToTrainSet() ensures that the same variables observed in the train set
+    MatchVariables() ensures that the same variables observed in the train set
     are present in the test set. If the dataset to transform contains variables that
     were not present in the train set, they are dropped. If the dataset to transform
     lacks variables that were present in the train set, these variables are added to
@@ -33,7 +33,7 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
             "Hobbies": ["tennis", "rugby", "football"]
         })
 
-        match_columns = MatchColumnsToTrainSet()
+        match_columns = MatchVariables()
 
         match_columns.fit(train)
 
@@ -82,6 +82,7 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
     fit_transform:
         Fit to the data. Then transform it.
     """
+
     def __init__(
         self,
         fill_value: Union[str, int, float] = np.nan,
@@ -131,7 +132,7 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         if self.missing_values == "raise":
-            # check if dataset contains na or inf
+            # check if dataset contains na
             _check_contains_na(X, X.columns)
 
         # save input features
@@ -160,7 +161,7 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         if self.missing_values == "raise":
-            # check if dataset contains na or inf
+            # check if dataset contains na
             _check_contains_na(X, self.input_features_)
 
         _columns_to_drop = list(set(X.columns) - set(self.input_features_))
@@ -189,7 +190,7 @@ class MatchColumnsToTrainSet(BaseEstimator, TransformerMixin):
         tags_dict["_xfail_checks"]["check_transformer_general"] = msg
 
         msg = (
-            "transformer takes categorical varriables, and inf cannot be determined"
+            "transformer takes categorical variables, and inf cannot be determined"
             "on these variables. Thus, check is not implemented")
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = msg
 

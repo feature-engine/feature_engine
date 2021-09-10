@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.preprocessing import MatchColumnsToTrainSet
+from feature_engine.preprocessing import MatchVariables
 
 _params_fill_value = [
     (1, [1, 1, 1, 1], [1, 1, 1, 1]),
@@ -28,11 +28,12 @@ def test_drop_and_add_columns(fill_value, expected_studies, expected_age,
     train = df_na.copy()
     test = df_vartypes.copy()
     test = test.drop("Age", axis=1)  # to add more than one column
-    for new_col in ["test1",
-                    "test2"]:  # adding columns to test if they are removed
+
+    # adding columns to test if they are removed
+    for new_col in ["test1", "test2"]:
         test.loc[:, new_col] = new_col
 
-    match_columns = MatchColumnsToTrainSet(
+    match_columns = MatchVariables(
         fill_value=fill_value,
         missing_values="ignore",
     )
@@ -43,13 +44,10 @@ def test_drop_and_add_columns(fill_value, expected_studies, expected_age,
     expected_result = pd.DataFrame({
         "Name": ["tom", "nick", "krish", "jack"],
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
-        "Studies":
-        expected_studies,
-        "Age":
-        expected_age,
+        "Studies": expected_studies,
+        "Age": expected_age,
         "Marks": [0.9, 0.8, 0.7, 0.6],
-        "dob":
-        pd.date_range("2020-02-24", periods=4, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
     })
 
     # test init params
@@ -70,11 +68,12 @@ def test_drop_and_add_columns(fill_value, expected_studies, expected_age,
                          _params_fill_value)
 def test_columns_addition_when_more_columns_in_train_than_test(
         fill_value, expected_studies, expected_age, df_vartypes, df_na):
+
     train = df_na.copy()
     test = df_vartypes.copy()
     test = test.drop("Age", axis=1)  # to add more than one column
 
-    match_columns = MatchColumnsToTrainSet(
+    match_columns = MatchVariables(
         fill_value=fill_value,
         missing_values="ignore",
     )
@@ -85,13 +84,10 @@ def test_columns_addition_when_more_columns_in_train_than_test(
     expected_result = pd.DataFrame({
         "Name": ["tom", "nick", "krish", "jack"],
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
-        "Studies":
-        expected_studies,
-        "Age":
-        expected_age,
+        "Studies": expected_studies,
+        "Age": expected_age,
         "Marks": [0.9, 0.8, 0.7, 0.6],
-        "dob":
-        pd.date_range("2020-02-24", periods=4, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
     })
 
     # test init params
@@ -113,7 +109,7 @@ def test_drop_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
     train = train.drop("City", axis=1)  # to remove more than one column
     test = df_na.copy()
 
-    match_columns = MatchColumnsToTrainSet(missing_values="ignore")
+    match_columns = MatchVariables(missing_values="ignore")
     match_columns.fit(train)
 
     transformed_df = match_columns.transform(test)
@@ -136,15 +132,15 @@ def test_drop_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
 def test_error_if_param_values_not_allowed(fill_value, missing_values,
                                            verbose):
     with pytest.raises(ValueError):
-        MatchColumnsToTrainSet(fill_value=fill_value,
-                               missing_values=missing_values,
-                               verbose=verbose)
+        MatchVariables(fill_value=fill_value,
+                       missing_values=missing_values,
+                       verbose=verbose)
 
 
 def test_verbose_print_out(capfd, df_vartypes, df_na):
 
-    match_columns = MatchColumnsToTrainSet(missing_values="ignore",
-                                           verbose=True)
+    match_columns = MatchVariables(missing_values="ignore",
+                                   verbose=True)
 
     train = df_na.copy()
     train.loc[:, "new_variable"] = 5
@@ -171,17 +167,17 @@ def test_verbose_print_out(capfd, df_vartypes, df_na):
 def test_raises_error_if_na_in_df(df_na, df_vartypes):
     # when dataset contains na, fit method
     with pytest.raises(ValueError):
-        transformer = MatchColumnsToTrainSet()
+        transformer = MatchVariables()
         transformer.fit(df_na)
 
     # when dataset contains na, transform method
     with pytest.raises(ValueError):
-        transformer = MatchColumnsToTrainSet()
+        transformer = MatchVariables()
         transformer.fit(df_vartypes)
         transformer.transform(df_na)
 
 
 def test_non_fitted_error(df_vartypes):
     with pytest.raises(NotFittedError):
-        transformer = MatchColumnsToTrainSet()
+        transformer = MatchVariables()
         transformer.transform(df_vartypes)

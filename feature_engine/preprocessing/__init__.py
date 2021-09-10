@@ -3,8 +3,8 @@ The module preprocessing includes classes and functions for general data pre-pro
 and transformation.
 """
 
-from .match_columns import MatchColumnsToTrainSet
+from .match_columns import MatchVariables
 
 __all__ = [
-    "MatchColumnsToTrainSet",
+    "MatchVariables",
 ]
