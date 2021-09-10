@@ -18,8 +18,8 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class dvl():
 
-    def __init__(self, compare, variables: Variables = None, missing_values: str = "raise",
-    threshold: int = 0.25,n_bins = 10, method = 'equal_frequency'):
+    def __init__(self, basis, variables: Variables = None, missing_values: str = "raise",
+    switch_basis=False, threshold: int = 0.25,n_bins = 10, method = 'equal_frequency'):
 
         if not isinstance(threshold, (float, int)) or threshold < 0:
             raise ValueError("threshold must be a float larger than 0")
@@ -30,7 +30,8 @@ class dvl():
             )
         
         self._min_value = 0.0001
-        self._compare = compare
+        self._basis = basis
+        self.switch_basis = switch_basis
         self.threshold = threshold
         self.variables = _check_input_parameter_variables(variables)
         self.missing_values = missing_values
@@ -56,10 +57,16 @@ class dvl():
         if self.missing_values == "include":
             X[self.variables_] = X[self.variables_].fillna("missing_values")
 
-        # Split the dataframe into a reference and a comparison
-        reference_df, comparison_df = self._split_dataframe(X, self._compare)
+        # Split the dataframe into a reference and a comparison if required.
+        measurement_df, basis_df = self._split_dataframe(X, self._basis)
+
+        # Switch base and measurement dataframe if required. Remind that PSI
+        # if not symmetric so PSI(a, b) != PSI(b, a) except if a and b have the
+        # same binning.
+        if self.switch_basis:
+            measurement_df, basis_df = basis_df, measurement_df
         # Compute the PSI
-        self.psi = self._compute_PSI(reference_df, comparison_df, self.bucketer)
+        self.psi = self._compute_PSI(basis_df, measurement_df, self.bucketer)
         
         # Select features below the threshold
         self.features_to_drop_ = self.psi[self.psi.value >= self.threshold].index.to_list()
@@ -68,12 +75,11 @@ class dvl():
 
     def _compute_PSI(self,df_ref, df_comp, bucketer):
 
-        ref = bucketer.fit_transform(df_ref)
-        comp = bucketer.transform(df_comp)
+        ref = bucketer.fit_transform(df_ref).fillna(0)
+        comp = bucketer.transform(df_comp).fillna(0)
 
         results = {}
-        
-        print(self.variables_)
+
         for feature in self.variables_:
             results[feature] = [self._compute_feature_psi(
                 ref[[feature]].value_counts(), 
@@ -110,13 +116,13 @@ class dvl():
 
         return psi_value
 
-    def _split_dataframe(self, X, compare):
+    def _split_dataframe(self, X, basis):
 
-        if isinstance(compare, pd.DataFrame):
-            return X, compare
-        elif isinstance(compare, dict):
-            date_col = compare["date_col"]
-            value = compare['cut_off']
+        if isinstance(basis, pd.DataFrame):
+            return X, basis
+        elif isinstance(basis, dict):
+            date_col = basis["date_col"]
+            value = basis['cut_off']
             below_value = X[X[column] <= value]
             above_value = X[X[column] > value]
             
