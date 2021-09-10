@@ -167,9 +167,9 @@ Feature Selection:
 - :doc:`selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
 
 Preprocessing:
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
-- :doc:`preprocessing/MatchColumnsToTrainSet`: ensure than columns in test dataset are identicals to train
+- :doc:`preprocessing/MatchColumnsToTrainSet`: ensures that columns in test set match those in train set
 
 Getting Help
 ------------

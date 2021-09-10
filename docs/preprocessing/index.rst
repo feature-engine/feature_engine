@@ -3,12 +3,8 @@
 Preprocessing
 =============
 
-Feature-engine's preprocessing transformers are used to apply general preprocessing steps.
-
-.. figure::  ../images/selectionSummary.png
-   :align:   center
-
-   Summary of Feature-engine's preprocessing main characteristics
+Feature-engine's preprocessing transformers apply general data pre-processing
+and transformation procedures.
 
 .. toctree::
    :maxdepth: 2
