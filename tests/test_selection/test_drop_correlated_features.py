@@ -19,7 +19,7 @@ def df_correlated_single():
         random_state=1,
     )
 
-    # trasform array into pandas df
+    # transform array into pandas df
     colnames = ["var_" + str(i) for i in range(6)]
     X = pd.DataFrame(X, columns=colnames)
 
@@ -39,7 +39,7 @@ def df_correlated_double():
         random_state=1,
     )
 
-    # trasform array into pandas df
+    # transform array into pandas df
     colnames = ["var_" + str(i) for i in range(12)]
     X = pd.DataFrame(X, columns=colnames)
 
