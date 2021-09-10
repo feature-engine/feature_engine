@@ -128,10 +128,9 @@ class DropHighPSIFeatures(BaseSelector):
     _check_init_values:
         Perform a series of check on the attributes.
     """
-    # TODO: Check impact of "missing_values"!
     # TODO: Implement the check on the types of the cut-off dates and the date column that 
     # need ot be the same.
-    def __init__(self, basis, variables: Variables = None, missing_values: str = "raise",
+    def __init__(self, basis, variables: Variables = None, missing_values: str = "include",
     switch_basis=False, threshold: int = 0.25,n_bins = 10, method = 'equal_frequency',
     min_pct_empty_buckets = 0.0001):
 
@@ -210,18 +209,12 @@ class DropHighPSIFeatures(BaseSelector):
         results_df: pandas dataframe.
             Dataframe containing the PSI for each feature.
         """
-        # Perform the binning for all features.
-        basis_binned = bucketer.fit_transform(df_basis).fillna(0)
-        meas_binned = bucketer.transform(df_meas).fillna(0)
-
         # Initialize a container for the results.
         results = {}
 
         # Compute the PSI for each feature.
         for feature in self.variables_:
-            results[feature] = [self._compute_feature_psi(
-                basis_binned[[feature]].value_counts(), 
-                meas_binned[[feature]].value_counts())]
+            results[feature] = [self._compute_feature_psi(df_basis[[feature]], df_meas[[feature]])]
 
         # Transform the result container in a user friendly format.
         results_df = pd.DataFrame.from_dict(results).T
@@ -246,8 +239,21 @@ class DropHighPSIFeatures(BaseSelector):
         psi_value: float.
             PSI value.
         """
+        # Perform the binning for all features.
+        basis_binned = (
+            self.bucketer
+            .fit_transform(series_basis.dropna())
+            .value_counts()
+            .fillna(0))
+
+        meas_binned = (
+            self.bucketer
+            .transform(series_meas.dropna())
+            .value_counts()
+            .fillna(0))
+
         # Combine the two distributions by merging the buckets (bins)
-        binning = pd.DataFrame(series_basis).merge(pd.DataFrame(series_meas), 
+        binning = pd.DataFrame(basis_binned).merge(pd.DataFrame(meas_binned), 
         right_index=True, left_index=True, how="outer"
         ).fillna(0)
         binning.columns = ['basis', 'meas']
@@ -397,4 +403,4 @@ class DropHighPSIFeatures(BaseSelector):
         elif method.lower() in  ["equalfrequency", 'equal_frequency', "equal frequency"]:
             self.bucketer = EqualFrequencyDiscretiser(q=n_bins)
         else:
-            raise ValueError("Incorrect name for the method, should be either equal_width or equal_frequency")
+            raise ValueError("Method must be either equal_width or equal_frequency")
