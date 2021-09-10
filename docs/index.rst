@@ -244,7 +244,6 @@ The `issues <https://github.com/feature-engine/feature_engine/issues/>`_ and
    selection/index
    preprocessing/index
    wrappers/index
-   preprocessing/index
 
 .. toctree::
    :maxdepth: 1
