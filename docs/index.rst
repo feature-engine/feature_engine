@@ -242,6 +242,7 @@ The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
    outliers/index
    creation/index
    selection/index
+   preprocessing/index
    wrappers/index
 
 .. toctree::
