@@ -243,6 +243,7 @@ The `issues <https://github.com/solegalli/feature_engine/issues/>`_ and
    creation/index
    selection/index
    wrappers/index
+   preprocessing/index
 
 .. toctree::
    :maxdepth: 1
