@@ -221,7 +221,7 @@ class DropHighPSIFeatures(BaseSelector):
         for feature in self.variables_:
             results[feature] = [self._compute_feature_psi(
                 basis_binned[[feature]].value_counts(), 
-                meas_binned[[feature]].value_counts(), bucketer)]
+                meas_binned[[feature]].value_counts())]
 
         # Transform the result container in a user friendly format.
         results_df = pd.DataFrame.from_dict(results).T
@@ -276,7 +276,7 @@ class DropHighPSIFeatures(BaseSelector):
         """
         # Calculate the ratio of samples in each bin
         basis_ratio = d_basis / d_basis.sum()
-        comp_ratio = d_meas / d_meas.sum()
+        meas_ratio = d_meas / d_meas.sum()
 
         # Necessary to avoid divide by zero and ln(0). Should have minor impact on PSI value.
         basis_ratio = np.where(basis_ratio <=0, self.min_pct_empty_buckets, basis_ratio)
@@ -369,8 +369,6 @@ class DropHighPSIFeatures(BaseSelector):
             None
 
         """
-        
-
         if not isinstance(n_bins, int) or n_bins <= 1:
             raise ValueError("n_bins must be an integer larger than 1.")
 
