@@ -116,9 +116,8 @@ More resources will be added as they appear online!
  * RecursiveFeatureElimination
  * RecursiveFeatureAddition
 
-### Preprocessing:
- * MatchColumnsToTrainSet
-
+### Preprocessing
+ * MatchVariables
 
 ## Installing
 
