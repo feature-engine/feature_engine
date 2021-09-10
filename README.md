@@ -56,6 +56,7 @@ More resources will be added as they appear online!
 * Variable Creation
 * Variable Selection
 * Scikit-learn Wrappers
+* Preprocessing
 
 ### Imputing Methods
 * MeanMedianImputer
@@ -114,6 +115,9 @@ More resources will be added as they appear online!
  * SelectByTargetMeanPerformance
  * RecursiveFeatureElimination
  * RecursiveFeatureAddition
+
+### Preprocessing:
+ * MatchColumnsToTrainSet
 
 
 ## Installing
