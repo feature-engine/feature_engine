@@ -46,8 +46,91 @@ class DropHighPSIFeatures(BaseSelector):
     References:
     - [Statistical Properties of Population Stability Index](https://scholarworks.wmich.edu/cgi/viewcontent.cgi?article=4249&context=dissertations)
 
-    """
+    DropHighPSIFeatures() works only with numerical variables. Categorical variables
+    will need to be encoded to numerical or will be excluded from the analysis.
 
+    Parameters
+    ----------
+
+    basis: pd.DataFrame or dictionary.
+        Information required to define the basis for the PSI calculations. It is either a
+        dataframe in the case of direct comparison or the label of the column containing the
+        date and the cut-off-date in case a single dataframe is provided. In the latter case,
+        the dataframe will be split on two parts that are non-overlapping over time. 
+
+    variables: list, default=None
+        The list of variables to evaluate. If None, the transformer will evaluate all
+        numerical variables in the dataset.
+
+    switch_basis: boolean, default=False.
+        If set to true the role of the two matrices involved in the PSI calculations
+        (basis and measurement) will be switch. This is an important option as the 
+        PSI value is not symmetric (i.e. PSI(a, b) != PSI(b, a)).
+
+    threshold: float, default = 0.25.
+        Threshold above which the distribution of a feature has changed so much that the
+        feature will be dropped. The most common values are 0.25 (large shift) and 0.10
+        (medium shift). 
+
+    method: string or callable, default='equal_frequency'
+        Type of binning used to represent the distribution of the feature. In can be either
+        "equal_width" for equally spaced bins or "equal_frequency" for bins based on quantiles.
+
+    n_nbins, int, default = 10
+        Number of bins used in the binning. For numerical feature a value of 10 is considered 
+        as appropriate. For features with lower cardinality lower values are usually used.
+
+    min_pct_empty_buckets, float, default = 0.0001
+        Value to add to empty bucket (when considering percentages). If a bin is empty the 
+        PSI value may jump to infinity. By adding a small number to empty bins, this issue 
+        is avoided. If the value added is too large, it may disturb the calculations.
+
+    missing_values: str, default=ignore
+        Takes values 'raise' and 'ignore'. Whether the missing values should be raised
+        as error or ignored when determining correlation.
+
+    Attributes
+    ----------
+    features_to_drop_:
+        Set with the correlated features that will be dropped.
+
+    correlated_feature_sets_:
+        Groups of correlated features. Each list is a group of correlated features.
+
+    variables_:
+        The variables to consider for the feature selection.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
+
+    psi: 
+        Dataframe containing the PSI values for all features considered.
+
+    features_to_drop_:
+        List of features that are dropped because of PSI values above threshold.
+
+    Methods
+    -------
+    fit:
+        Find correlated features.
+    transform:
+        Remove correlated features.
+    fit_transform:
+        Fit to the data. Then transform it.
+    _compute_psi:
+        Perform binning and compute the PSI for all features
+    _compute_feature_psi:
+        Combine information and call psi calculation 
+    _psi
+        Compute the PSI value
+    _split_dataframe:
+        returns the basis and the measurement dataframes needed for PSI calculations
+    _check_init_values:
+        Perform a series of check on the attributes.
+    """
+    # TODO: Check impact of "missing_values"!
+    # TODO: Implement the check on the types of the cut-off dates and the date column that 
+    # need ot be the same.
     def __init__(self, basis, variables: Variables = None, missing_values: str = "raise",
     switch_basis=False, threshold: int = 0.25,n_bins = 10, method = 'equal_frequency',
     min_pct_empty_buckets = 0.0001):
@@ -55,12 +138,28 @@ class DropHighPSIFeatures(BaseSelector):
         # Set all arguments (except self and variables as attributes)
         [setattr(self,name,value) for name,value in vars().items() if name not in ("self", 'variables')]
         
+        # Check the input is in the correct format.
         self.variables = _check_input_parameter_variables(variables)
-
         self._check_init_values(basis, variables, missing_values, switch_basis, 
         threshold, n_bins, method, min_pct_empty_buckets)
 
+
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
+        """
+        Perform all steps needed for the the PSI calculations of all features.
+
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The training dataset.
+
+        y : pandas series. Default = None
+            y is not needed in this transformer. You can pass y or None.
+
+        Returns
+        -------
+        self
+        """
         # check input dataframe
         X = _is_dataframe(X)
 
@@ -71,17 +170,15 @@ class DropHighPSIFeatures(BaseSelector):
             # check if dataset contains na
             _check_contains_na(X, self.variables_)
 
-        if self.missing_values == "include":
-            X[self.variables_] = X[self.variables_].fillna("missing_values")
+        # TODO: Test missing values do not lead to an error and have no impact.
 
-        # Split the dataframe into a reference and a comparison if required.
+        # Split the dataframe into a basis and a measurement dataframe.
         measurement_df, basis_df = self._split_dataframe(X, self.basis)
 
-        # Switch base and measurement dataframe if required. Remind that PSI
-        # if not symmetric so PSI(a, b) != PSI(b, a) except if a and b have the
-        # same binning.
+        # Switch base and measurement dataframe if required. 
         if self.switch_basis:
             measurement_df, basis_df = basis_df, measurement_df
+
         # Compute the PSI
         self.psi = self._compute_PSI(basis_df, measurement_df, self.bucketer)
         
@@ -92,53 +189,127 @@ class DropHighPSIFeatures(BaseSelector):
 
         return self
 
-    def _compute_PSI(self,df_ref, df_comp, bucketer):
+    def _compute_PSI(self,df_basis, df_meas, bucketer):
+        """
+        Compute the PSI by first bucketing (=binning) and then call the psi calculator
+        for each feature.
 
-        ref = bucketer.fit_transform(df_ref).fillna(0)
-        comp = bucketer.transform(df_comp).fillna(0)
+        Parameters
+        ----------
+        df_basis : pandas dataframe of shape = [n_1, n_features]
+            Serve as reference for the features distribution.
 
+        df_meas : pandas dataframe of shape = [n_2, n_features]
+            Matrix for which the feature distributions will be compared to the basis.
+
+        bucketer : EqualFrequencyDiscretiser or EqualWidthDiscretiser. Default = EqualFrequencyDiscretiser
+            Class used to bucket (bin) the features in order to approximate the distribution.
+
+        Returns
+        -------
+        results_df: pandas dataframe.
+            Dataframe containing the PSI for each feature.
+        """
+        # Perform the binning for all features.
+        basis_binned = bucketer.fit_transform(df_basis).fillna(0)
+        meas_binned = bucketer.transform(df_meas).fillna(0)
+
+        # Initialize a container for the results.
         results = {}
 
+        # Compute the PSI for each feature.
         for feature in self.variables_:
             results[feature] = [self._compute_feature_psi(
-                ref[[feature]].value_counts(), 
-                comp[[feature]].value_counts(), bucketer)]
+                basis_binned[[feature]].value_counts(), 
+                meas_binned[[feature]].value_counts(), bucketer)]
 
+        # Transform the result container in a user friendly format.
         results_df = pd.DataFrame.from_dict(results).T
         results_df.columns = ['value']
 
         return results_df
 
+    def _compute_feature_psi(self, series_basis, series_meas):
+        """
+        Call the PSI calculator for two distributions
 
-    def _compute_feature_psi(self, series_ref, series_comp, bucketer):
+        Parameters
+        ----------
+        series_basis : pandas series
+            Proxy for the reference distribution.
 
-        binning = pd.DataFrame(series_ref).merge(pd.DataFrame(series_comp), 
+        series_meas : pandas series
+            Proxy for the measurement distribution.
+
+        Returns
+        -------
+        psi_value: float.
+            PSI value.
+        """
+        # Combine the two distributions by merging the buckets (bins)
+        binning = pd.DataFrame(series_basis).merge(pd.DataFrame(series_meas), 
         right_index=True, left_index=True, how="outer"
         ).fillna(0)
-        binning.columns = ['ref', 'comp']
+        binning.columns = ['basis', 'meas']
 
-        psi_value = self._psi(binning.ref.to_numpy(), binning.comp.to_numpy())
+        # Compute the PSI value.
+        psi_value = self._psi(binning.basis.to_numpy(), binning.meas.to_numpy())
 
         return psi_value
 
-    def _psi(self, d1, d2):
+    def _psi(self, d_basis, d_meas):
+        """
+        Compute the PSI value
+
+        Parameters
+        ----------
+        d_basis : np.array.
+            Proxy for the basis distribution.
+
+        d_meas: np.array.
+            Proxy for the measurement distribution.
+
+        Returns
+        -------
+        psi_value: float.
+            PSI value.
+        """
         # Calculate the ratio of samples in each bin
-        ref_ratio = d1 / d1.sum()
-        comp_ratio = d2 / d2.sum()
+        basis_ratio = d_basis / d_basis.sum()
+        comp_ratio = d_meas / d_meas.sum()
 
         # Necessary to avoid divide by zero and ln(0). Should have minor impact on PSI value.
-        ref_ratio = np.where(ref_ratio <=0, self.min_pct_empty_buckets, ref_ratio)
-        comp_ratio = np.where(comp_ratio <=0, self.min_pct_empty_buckets, comp_ratio)
+        basis_ratio = np.where(basis_ratio <=0, self.min_pct_empty_buckets, basis_ratio)
+        meas_ratio = np.where(meas_ratio <=0, self.min_pct_empty_buckets, meas_ratio)
 
         # Calculate the PSI value
-        psi_value = np.sum((comp_ratio - ref_ratio) * np.log(comp_ratio / ref_ratio))
+        psi_value = np.sum((meas_ratio - basis_ratio) * np.log(meas_ratio / basis_ratio))
 
         return psi_value
 
     def _split_dataframe(self, X, basis):
+        """
+        Split a dataframe according to a cut-off date in case only a single dataframe is provided.
+        Otherwise return the two original dataframes.
 
+        Parameters
+        ----------
+        X : pandas dataframe
+            The original dataset. Correspond either to the measurement dataset or will be spit
+            into a measurement and a basis dataframe.
+        basis : pandas dataframe or dict
+            If it is a dict, it must contain a reference to a date column and the cut-off date.
+
+        Returns
+        -------
+        measurement pandas dataframe
+        basis pandas dataframe 
+        """
+        # In case a dataframe is passed do nothing.
         if isinstance(basis, pd.DataFrame):
             return X, basis
+
+        # In case a dictionary is passed, split the dataframe according to time.
         elif isinstance(basis, dict):
             date_col = basis["date_col"]
             value = basis['cut_off_date']
@@ -148,11 +319,57 @@ class DropHighPSIFeatures(BaseSelector):
             
             return above_value, below_value
 
+        # In any other cases raise an error.
         else:
             raise ValueError("compare should be either a pd.dataframe or a dictionary")
 
     def _check_init_values(self, basis, variables, missing_values, switch_basis, threshold, 
     n_bins, method, min_pct_empty_buckets):
+        """
+        Perform basic checks on the arguments of the class.
+
+        basis: pd.DataFrame or dictionary.
+            Information required to define the basis for the PSI calculations. It is either a
+            dataframe in the case of direct comparison or the label of the column containing the
+            date and the cut-off-date in case a single dataframe is provided. In the latter case,
+            the dataframe will be split on two parts that are non-overlapping over time. 
+
+        variables: list
+            The list of variables to evaluate. If None, the transformer will evaluate all
+            numerical variables in the dataset.
+
+        switch_basis: boolean
+            If set to true the role of the two matrices involved in the PSI calculations
+            (basis and measurement) will be switch. This is an important option as the 
+            PSI value is not symmetric (i.e. PSI(a, b) != PSI(b, a)).
+
+        threshold: float
+            Threshold above which the distribution of a feature has changed so much that the
+            feature will be dropped. The most common values are 0.25 (large shift) and 0.10
+            (medium shift). 
+
+        method: string or callable
+            Type of binning used to represent the distribution of the feature. In can be either
+            "equal_width" for equally spaced bins or "equal_frequency" for bins based on quantiles.
+
+        n_nbins: int
+            Number of bins used in the binning. For numerical feature a value of 10 is considered 
+            as appropriate. For features with lower cardinality lower values are usually used.
+
+        min_pct_empty_buckets: float
+            Value to add to empty bucket (when considering percentages). If a bin is empty the 
+            PSI value may jump to infinity. By adding a small number to empty bins, this issue 
+            is avoided. If the value added is too large, it may disturb the calculations.
+
+        missing_values: str
+            Takes values 'raise' and 'ignore'. Whether the missing values should be raised
+            as error or ignored when determining correlation.
+
+        Returns:
+            None
+
+        """
+        
 
         if not isinstance(n_bins, int) or n_bins <= 1:
             raise ValueError("n_bins must be an integer larger than 1.")
