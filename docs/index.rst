@@ -170,7 +170,7 @@ Feature Selection:
 Preprocessing:
 ~~~~~~~~~~~~~~
 
-- :doc:`preprocessing/MatchColumnsToTrainSet`: ensures that columns in test set match those in train set
+- :doc:`preprocessing/MatchVariables`: ensures that columns in test set match those in train set
 
 Getting Help
 ------------
