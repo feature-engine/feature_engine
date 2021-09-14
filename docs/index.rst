@@ -23,6 +23,7 @@ Feature-engine includes transformers for:
 - Outlier capping or removal
 - Variable combination
 - Variable selection
+- Preprocessing
 
 Feature-engine allows you to select the variables you want to transform within each
 transformer. This way, different engineering procedures can be easily applied to
@@ -166,6 +167,10 @@ Feature Selection:
 - :doc:`selection/RecursiveFeatureElimination`: selects features recursively, by evaluating model performance
 - :doc:`selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
 
+Preprocessing:
+~~~~~~~~~~~~~~
+
+- :doc:`preprocessing/MatchVariables`: ensures that columns in test set match those in train set
 
 Getting Help
 ------------
@@ -237,6 +242,7 @@ The `issues <https://github.com/feature-engine/feature_engine/issues/>`_ and
    outliers/index
    creation/index
    selection/index
+   preprocessing/index
    wrappers/index
 
 .. toctree::
