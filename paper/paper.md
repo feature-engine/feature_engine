@@ -46,13 +46,14 @@ together with data exploration. Feature-engine transformers return dataframes as
 thus, users can continue to leverage the power of Pandas for data analysis and visualization 
 after transforming the data set.
 
-In summary, Feature engine supports a large variety of commonly used data transformation 
+In summary, Feature-engine supports a large variety of commonly used data transformation 
 techniques [@data_prep; @boxcox; @yeojohnson; @kdd_2009_competition; 
-@beatingkaggle; @micci_mean_encoder], as well as, techniques that were developed 
+@beatingkaggle; @micci_mean_encoder], as well as techniques that were developed 
 in data science competitions [@niculescu09_kdd], including those for feature selection 
-[@miller09_kdd]. Thus, Feature-engine builds upon and extends the capabilities of the 
-current Python’s scientific computing stack and makes accessible transformations that are 
-otherwise not easy to find, understand or code, to data scientist and data practitioners.
+[@miller09_kdd]. Thus, Feature-engine builds upon and extends the capabilities of 
+Python's current scientific computing stack and makes accessible transformations that 
+are otherwise not easy to find, understand or code, to data scientist and data 
+practitioners.
 
 
 
@@ -67,7 +68,7 @@ the main library for machine learning. Yet, depending on the nature of the varia
 the characteristics of the machine learning model, they may need to use different techniques. 
 
 Feature-engine gathers the most frequently used data pre-processing techniques, as well as 
-bespoke techniques developed in data competitions, in a library, from which users can pick 
+bespoke techniques developed in data science competitions, in a library, from which users can pick 
 and choose the transformation that they need, and use it just like they would use any other 
 Scikit-learn class. As a result, users are spared of manually creating a lot of code, which 
 is often repetitive, as the same procedures are applied to different datasets. In addition, 
