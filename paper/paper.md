@@ -84,13 +84,13 @@ tsfresh [@christ_tsfresh] extracts features from time series, Category encoders
 [@category_encoders] supports a comprehensive list of methods to encode categorical 
 variables, and Scikit-learn [@sklearn] implements a number of data transformation 
 techniques, with the caveat that the transformations are applied to the entire dataset, 
-and the output are NumPy arrays. Feature-engine [@feature_engine_zenodo] extends the 
-capabilities of the current Python’s scientific computing stack by allowing the application 
-of the transformations to subsets of variables in the dataset, returning dataframes for 
-data exploration, and supporting transformations not currently available in other 
-libraries, like those for outlier censoring or removal, besides additional techniques for 
-discretization and feature selection that were developed by data scientist working in the 
-industry or data science competitions.
+and the output are NumPy arrays. Feature-engine extends the capabilities of the current 
+Python’s scientific computing stack by allowing the application of the transformations 
+to subsets of variables in the dataset, returning dataframes for data exploration, and 
+supporting transformations not currently available in other libraries, like those for 
+outlier censoring or removal, besides additional techniques for discretization and 
+feature selection that were developed by data scientist working in the industry or data 
+science competitions.
 
 
 # Acknowledgements
