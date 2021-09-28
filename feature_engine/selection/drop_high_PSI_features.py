@@ -156,14 +156,7 @@ class DropHighPSIFeatures(BaseSelector):
         # Check the input is in the correct format.
         self.variables = _check_input_parameter_variables(variables)
         self._check_init_values(
-            basis,
-            variables,
-            missing_values,
-            switch_basis,
-            threshold,
-            n_bins,
-            method,
-            min_pct_empty_buckets,
+            basis, variables, missing_values, switch_basis, threshold, n_bins, method, min_pct_empty_buckets,
         )
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
@@ -205,9 +198,7 @@ class DropHighPSIFeatures(BaseSelector):
         self.psi = self._compute_PSI(basis_df, measurement_df, self.bucketer)
 
         # Select features below the threshold
-        self.features_to_drop_ = self.psi[
-            self.psi.value >= self.threshold
-        ].index.to_list()
+        self.features_to_drop_ = self.psi[self.psi.value >= self.threshold].index.to_list()
 
         self.n_features_in_ = X.shape[1]
 
@@ -241,9 +232,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Compute the PSI for each feature.
         for feature in self.variables_:
-            results[feature] = [
-                self._compute_feature_psi(df_basis[[feature]], df_meas[[feature]])
-            ]
+            results[feature] = [self._compute_feature_psi(df_basis[[feature]], df_meas[[feature]])]
 
         # Transform the result container in a user friendly format.
         results_df = pd.DataFrame.from_dict(results).T
@@ -269,23 +258,14 @@ class DropHighPSIFeatures(BaseSelector):
             PSI value.
         """
         # Perform the binning for all features.
-        basis_binned = (
-            self.bucketer.fit_transform(series_basis.dropna()).value_counts().fillna(0)
-        )
+        basis_binned = self.bucketer.fit_transform(series_basis.dropna()).value_counts().fillna(0)
 
-        meas_binned = (
-            self.bucketer.transform(series_meas.dropna()).value_counts().fillna(0)
-        )
+        meas_binned = self.bucketer.transform(series_meas.dropna()).value_counts().fillna(0)
 
         # Combine the two distributions by merging the buckets (bins)
         binning = (
             pd.DataFrame(basis_binned)
-            .merge(
-                pd.DataFrame(meas_binned),
-                right_index=True,
-                left_index=True,
-                how="outer",
-            )
+            .merge(pd.DataFrame(meas_binned), right_index=True, left_index=True, how="outer",)
             .fillna(0)
         )
         binning.columns = ["basis", "meas"]
@@ -317,15 +297,11 @@ class DropHighPSIFeatures(BaseSelector):
         meas_ratio = d_meas / d_meas.sum()
 
         # Necessary to avoid divide by zero and ln(0). Has minor impact on PSI value.
-        basis_ratio = np.where(
-            basis_ratio <= 0, self.min_pct_empty_buckets, basis_ratio
-        )
+        basis_ratio = np.where(basis_ratio <= 0, self.min_pct_empty_buckets, basis_ratio)
         meas_ratio = np.where(meas_ratio <= 0, self.min_pct_empty_buckets, meas_ratio)
 
         # Calculate the PSI value
-        psi_value = np.sum(
-            (meas_ratio - basis_ratio) * np.log(meas_ratio / basis_ratio)
-        )
+        psi_value = np.sum((meas_ratio - basis_ratio) * np.log(meas_ratio / basis_ratio))
 
         return psi_value
 
@@ -367,15 +343,7 @@ class DropHighPSIFeatures(BaseSelector):
             raise ValueError("compare should be either a pd.dataframe or a dictionary")
 
     def _check_init_values(
-        self,
-        basis,
-        variables,
-        missing_values,
-        switch_basis,
-        threshold,
-        n_bins,
-        method,
-        min_pct_empty_buckets,
+        self, basis, variables, missing_values, switch_basis, threshold, n_bins, method, min_pct_empty_buckets,
     ):
         """
         Perform basic checks on the arguments of the class.
@@ -443,16 +411,11 @@ class DropHighPSIFeatures(BaseSelector):
             if "date_col" not in basis.keys() or "cut_off_date" not in basis.keys():
                 raise ValueError("date_col and cut_off_date must be keys")
 
-        if (
-            not isinstance(min_pct_empty_buckets, (float, int))
-            or min_pct_empty_buckets < 0
-        ):
+        if not isinstance(min_pct_empty_buckets, (float, int)) or min_pct_empty_buckets < 0:
             raise ValueError("min_pct_empty_buckets must be larger or equal to 0")
 
         if missing_values not in ["raise", "ignore", "include"]:
-            raise ValueError(
-                "missing_values can only be 'raise', 'ignore' or 'include'."
-            )
+            raise ValueError("missing_values can only be 'raise', 'ignore' or 'include'.")
         if method.lower() in ["equalwidth", "equal_width", "equal width"]:
             self.bucketer = EqualWidthDiscretiser(bins=n_bins)
         elif method.lower() in ["equalfrequency", "equal_frequency", "equal frequency"]:
