@@ -69,9 +69,9 @@ class DropHighPSIFeatures(BaseSelector):
         PSI value is not symmetric (i.e. PSI(a, b) != PSI(b, a)).
 
     threshold: float, default = 0.25.
-        Threshold above which the distribution of a feature has changed so much that the
-        feature will be dropped. The most common values are 0.25 (large shift) and 0.10
-        (medium shift).
+        Threshold above which the distribution of a feature has changed so much that
+	the feature will be dropped. The most common values are 0.25 (large shift)
+	and 0.10 (medium shift).
 
     method: string or callable, default='equal_frequency'
         Type of binning used to represent the distribution of the feature. In can be
