@@ -73,7 +73,9 @@ def test_check_psi_values():
     df = pd.DataFrame({"A": [1, 1, 1, 4]})
     df2 = pd.DataFrame({"A": [4, 4, 4, 1]})
 
-    (AutoDist(statistical_tests=['PSI'], binning_strategies="SimpleBucketer", bin_count=2)
+    (AutoDist(statistical_tests=['PSI'],
+    binning_strategies="SimpleBucketer",
+    bin_count=2)
     .compute(df, df2)
     )
     ```
