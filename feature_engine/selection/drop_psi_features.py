@@ -337,7 +337,8 @@ class DropHighPSIFeatures(BaseSelector):
         self, basis, variables, missing_values, switch_basis, threshold, bins, strategy, min_pct_empty_buckets,
     ):
         """
-        Perform basic checks on the arguments of the class.
+        Raise an error if one of the arguments is not of the expected type or 
+        has an inadequate value.
 
         basis: pd.DataFrame or dictionary.
             Information required to define the basis for the PSI calculations.
