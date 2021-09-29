@@ -44,17 +44,30 @@ Citing Feature-engine
 .. image:: https://zenodo.org/badge/163630824.svg
    :target: https://zenodo.org/badge/latestdoi/163630824
 
-.. image:: coming soon
-   :target: coming soon
+.. image:: https://joss.theoj.org/papers/10.21105/joss.03642/status.svg
+   :target: https://joss.theoj.org/papers/10.21105/joss.03642
 
 If you use Feature-engine in a scientific publication, you can cite the following paper:
-`Feature-engine: A Python package for feature engineering <url>`_,
-Galli S, journal vol, pp. 2825-2830, 2021.
+Galli, S., (2021). `Feature-engine: A Python package for feature engineering for machine learning. <https://joss.theoj.org/papers/10.21105/joss.03642>`_
+Journal of Open Source Software, 6(65), 3642.
 
 Bibtex entry:
 
 .. code-block:: bibtex
-    coming soon
+
+    @article{Galli2021,
+    doi = {10.21105/joss.03642},
+    url = {https://doi.org/10.21105/joss.03642},
+    year = {2021},
+    publisher = {The Open Journal},
+    volume = {6},
+    number = {65},
+    pages = {3642},
+    author = {Soledad Galli},
+    title = {Feature-engine: A Python package for feature engineering for machine learning},
+    journal = {Journal of Open Source Software}
+    }
+
 
 
 You can also find a DOI (digital object identifier) for every version of Feature-engine
