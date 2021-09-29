@@ -3,9 +3,14 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
-from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
-from feature_engine.discretisation.equal_frequency import EqualFrequencyDiscretiser
-from feature_engine.discretisation.equal_width import EqualWidthDiscretiser
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na, 
+    _is_dataframe,
+)
+from feature_engine.discretisation import (
+    EqualFrequencyDiscretiser, EqualWidthDiscretiser
+    )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -73,12 +78,12 @@ class DropHighPSIFeatures(BaseSelector):
         the feature will be dropped. The most common values are 0.25 (large shift)
         and 0.10 (medium shift).
 
-    method: string or callable, default='equal_frequency'
+    strategy: string or callable, default='equal_frequency'
         Type of binning used to represent the distribution of the feature. In can be
         either "equal_width" for equally spaced bins or "equal_frequency" for bins
         based on quantiles.
 
-    n_nbins, int, default = 10
+    bins, int, default = 10
         Number of bins used in the binning. For numerical feature a value of 10 is
         considered as appropriate. For features with lower cardinality lower values
         are usually used.
@@ -110,27 +115,14 @@ class DropHighPSIFeatures(BaseSelector):
     psi:
         Dataframe containing the PSI values for all features considered.
 
-    features_to_drop_:
-        List of features that are dropped because of PSI values above threshold.
-
     Methods
     -------
     fit:
-        Find correlated features.
+        Find features with high PSI values.
     transform:
-        Remove correlated features.
+        Remove features wth high PSI values.
     fit_transform:
         Fit to the data. Then transform it.
-    _compute_psi:
-        Perform binning and compute the PSI for all features
-    _compute_feature_psi:
-        Combine information and call psi calculation
-    _psi
-        Compute the PSI value
-    _split_dataframe:
-        returns the basis and the measurement dataframes needed for PSI calculations
-    _check_init_values:
-        Perform a series of check on the attributes.
     """
 
     # TODO: Implement the check on the types of the cut-off dates and the date
@@ -142,11 +134,13 @@ class DropHighPSIFeatures(BaseSelector):
         missing_values: str = "include",
         switch_basis=False,
         threshold: float = 0.25,
-        n_bins=10,
-        method="equal_frequency",
+        bins=10,
+        strategy="equal_frequency",
         min_pct_empty_buckets=0.0001,
     ):
-
+        self._check_init_values(
+            basis, variables, missing_values, switch_basis, threshold, bins, strategy, min_pct_empty_buckets,
+        )
         # Set all arguments (except self and variables as attributes)
         for name, value in vars().items():
             if name not in ("self", "variables"):
@@ -154,20 +148,10 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Check the input is in the correct format.
         self.variables = _check_input_parameter_variables(variables)
-        self._check_init_values(
-            basis,
-            variables,
-            missing_values,
-            switch_basis,
-            threshold,
-            n_bins,
-            method,
-            min_pct_empty_buckets,
-        )
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
-        Perform all steps needed for the the PSI calculations of all features.
+        Assess the features that needs to be dropped because of high PSI values. 
 
         Parameters
         ----------
@@ -190,6 +174,7 @@ class DropHighPSIFeatures(BaseSelector):
         if self.missing_values == "raise":
             # check if dataset contains na
             _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
         # TODO: Test missing values do not lead to an error and have no impact.
 
@@ -204,9 +189,7 @@ class DropHighPSIFeatures(BaseSelector):
         self.psi = self._compute_PSI(basis_df, measurement_df, self.bucketer)
 
         # Select features below the threshold
-        self.features_to_drop_ = self.psi[
-            self.psi.value >= self.threshold
-        ].index.to_list()
+        self.features_to_drop_ = self.psi[self.psi.value >= self.threshold].index.to_list()
 
         self.n_features_in_ = X.shape[1]
 
@@ -219,10 +202,10 @@ class DropHighPSIFeatures(BaseSelector):
 
         Parameters
         ----------
-        df_basis : pandas dataframe of shape = [n_1, n_features]
+        df_basis : pandas dataframe of shape = [m_rows, n_features]
             Serve as reference for the features distribution.
 
-        df_meas : pandas dataframe of shape = [n_2, n_features]
+        df_meas : pandas dataframe of shape = [p_rows, n_features]
             Matrix for which the feature distributions will be compared to the basis.
 
         bucketer : EqualFrequencyDiscretiser or EqualWidthDiscretiser.
@@ -240,9 +223,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Compute the PSI for each feature.
         for feature in self.variables_:
-            results[feature] = [
-                self._compute_feature_psi(df_basis[[feature]], df_meas[[feature]])
-            ]
+            results[feature] = [self._compute_feature_psi(df_basis[[feature]], df_meas[[feature]])]
 
         # Transform the result container in a user friendly format.
         results_df = pd.DataFrame.from_dict(results).T
@@ -268,23 +249,14 @@ class DropHighPSIFeatures(BaseSelector):
             PSI value.
         """
         # Perform the binning for all features.
-        basis_binned = (
-            self.bucketer.fit_transform(series_basis.dropna()).value_counts().fillna(0)
-        )
+        basis_binned = self.bucketer.fit_transform(series_basis.dropna()).value_counts().fillna(0)
 
-        meas_binned = (
-            self.bucketer.transform(series_meas.dropna()).value_counts().fillna(0)
-        )
+        meas_binned = self.bucketer.transform(series_meas.dropna()).value_counts().fillna(0)
 
         # Combine the two distributions by merging the buckets (bins)
         binning = (
             pd.DataFrame(basis_binned)
-            .merge(
-                pd.DataFrame(meas_binned),
-                right_index=True,
-                left_index=True,
-                how="outer",
-            )
+            .merge(pd.DataFrame(meas_binned), right_index=True, left_index=True, how="outer",)
             .fillna(0)
         )
         binning.columns = ["basis", "meas"]
@@ -316,15 +288,11 @@ class DropHighPSIFeatures(BaseSelector):
         meas_ratio = d_meas / d_meas.sum()
 
         # Necessary to avoid divide by zero and ln(0). Has minor impact on PSI value.
-        basis_ratio = np.where(
-            basis_ratio <= 0, self.min_pct_empty_buckets, basis_ratio
-        )
+        basis_ratio = np.where(basis_ratio <= 0, self.min_pct_empty_buckets, basis_ratio)
         meas_ratio = np.where(meas_ratio <= 0, self.min_pct_empty_buckets, meas_ratio)
 
         # Calculate the PSI value
-        psi_value = np.sum(
-            (meas_ratio - basis_ratio) * np.log(meas_ratio / basis_ratio)
-        )
+        psi_value = np.sum((meas_ratio - basis_ratio) * np.log(meas_ratio / basis_ratio))
 
         return psi_value
 
@@ -366,15 +334,7 @@ class DropHighPSIFeatures(BaseSelector):
             raise ValueError("compare should be either a pd.dataframe or a dictionary")
 
     def _check_init_values(
-        self,
-        basis,
-        variables,
-        missing_values,
-        switch_basis,
-        threshold,
-        n_bins,
-        method,
-        min_pct_empty_buckets,
+        self, basis, variables, missing_values, switch_basis, threshold, bins, strategy, min_pct_empty_buckets,
     ):
         """
         Perform basic checks on the arguments of the class.
@@ -402,12 +362,12 @@ class DropHighPSIFeatures(BaseSelector):
             much that the feature will be dropped. The most common values are
             0.25 (large shift) and 0.10 (medium shift).
 
-        method: string or callable
+        strategy: string or callable
             Type of binning used to represent the distribution of the feature.
             In can be either "equal_width" for equally spaced bins or
             "equal_frequency" for bins based on quantiles.
 
-        n_nbins: int
+        bins: int
             Number of bins used in the binning. For numerical feature a value of
             10 is considered as appropriate. For features with lower cardinality
             lower values are usually used.
@@ -426,8 +386,8 @@ class DropHighPSIFeatures(BaseSelector):
             None
 
         """
-        if not isinstance(n_bins, int) or n_bins <= 1:
-            raise ValueError("n_bins must be an integer larger than 1.")
+        if not isinstance(bins, int) or bins <= 1:
+            raise ValueError("bins must be an integer larger than 1.")
 
         if not isinstance(switch_basis, bool):
             raise ValueError("The value of switch basis must be True or False.")
@@ -442,19 +402,14 @@ class DropHighPSIFeatures(BaseSelector):
             if "date_col" not in basis.keys() or "cut_off_date" not in basis.keys():
                 raise ValueError("date_col and cut_off_date must be keys")
 
-        if (
-            not isinstance(min_pct_empty_buckets, (float, int))
-            or min_pct_empty_buckets < 0
-        ):
+        if not isinstance(min_pct_empty_buckets, (float, int)) or min_pct_empty_buckets < 0:
             raise ValueError("min_pct_empty_buckets must be larger or equal to 0")
 
         if missing_values not in ["raise", "ignore", "include"]:
-            raise ValueError(
-                "missing_values can only be 'raise', 'ignore' or 'include'."
-            )
-        if method.lower() in ["equalwidth", "equal_width", "equal width"]:
-            self.bucketer = EqualWidthDiscretiser(bins=n_bins)
-        elif method.lower() in ["equalfrequency", "equal_frequency", "equal frequency"]:
-            self.bucketer = EqualFrequencyDiscretiser(q=n_bins)
+            raise ValueError("missing_values can only be 'raise', 'ignore' or 'include'.")
+        if strategy.lower() in ["equal_width"]:
+            self.bucketer = EqualWidthDiscretiser(bins=bins)
+        elif strategy.lower() in ["equal_frequency"]:
+            self.bucketer = EqualFrequencyDiscretiser(q=bins)
         else:
-            raise ValueError("Method must be either equal_width or equal_frequency")
+            raise ValueError("Strategy must be either equal_width or equal_frequency")
