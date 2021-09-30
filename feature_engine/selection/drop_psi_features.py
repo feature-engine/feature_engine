@@ -126,8 +126,6 @@ class DropHighPSIFeatures(BaseSelector):
         Fit to the data. Then transform it.
     """
 
-    # TODO: Implement the check on the types of the cut-off dates and the date
-    # column that need ot be the same.
     def __init__(
         self,
         split_col: str = "use_df_index",
