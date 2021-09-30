@@ -5,12 +5,13 @@ import pandas as pd
 
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
-    _check_contains_na, 
+    _check_contains_na,
     _is_dataframe,
 )
 from feature_engine.discretisation import (
-    EqualFrequencyDiscretiser, EqualWidthDiscretiser
-    )
+    EqualFrequencyDiscretiser,
+    EqualWidthDiscretiser,
+)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -129,7 +130,7 @@ class DropHighPSIFeatures(BaseSelector):
     # column that need ot be the same.
     def __init__(
         self,
-        split_col: str = 'use_df_index',
+        split_col: str = "use_df_index",
         split_frac: float = 0.5,
         split_distinct_value: bool = False,
         variables: Variables = None,
@@ -138,11 +139,19 @@ class DropHighPSIFeatures(BaseSelector):
         threshold: float = 0.25,
         bins: int = 10,
         strategy: str = "equal_frequency",
-        min_pct_empty_buckets: float =0.0001,
+        min_pct_empty_buckets: float = 0.0001,
     ):
         self._check_init_values(
-            split_col, split_frac, split_distinct_value, variables, missing_values, 
-            switch_basis, threshold, bins, strategy, min_pct_empty_buckets,
+            split_col,
+            split_frac,
+            split_distinct_value,
+            variables,
+            missing_values,
+            switch_basis,
+            threshold,
+            bins,
+            strategy,
+            min_pct_empty_buckets,
         )
         # Set all arguments (except self and variables as attributes)
         for name, value in vars().items():
@@ -192,7 +201,9 @@ class DropHighPSIFeatures(BaseSelector):
         self.psi = self._compute_PSI(basis_df, measurement_df, self.bucketer)
 
         # Select features below the threshold
-        self.features_to_drop_ = self.psi[self.psi.value >= self.threshold].index.to_list()
+        self.features_to_drop_ = self.psi[
+            self.psi.value >= self.threshold
+        ].index.to_list()
 
         self.n_features_in_ = X.shape[1]
 
@@ -225,8 +236,10 @@ class DropHighPSIFeatures(BaseSelector):
         results = {}
 
         # Compute the PSI for each feature excluding the column used for split.
-        for feature in filter(lambda x: x!= self.split_col, self.variables_):
-            results[feature] = [self._compute_feature_psi(df_basis[[feature]], df_meas[[feature]])]
+        for feature in filter(lambda x: x != self.split_col, self.variables_):
+            results[feature] = [
+                self._compute_feature_psi(df_basis[[feature]], df_meas[[feature]])
+            ]
 
         # Transform the result container in a user friendly format.
         results_df = pd.DataFrame.from_dict(results).T
@@ -252,14 +265,23 @@ class DropHighPSIFeatures(BaseSelector):
             PSI value.
         """
         # Perform the binning for all features.
-        basis_binned = self.bucketer.fit_transform(series_basis.dropna()).value_counts().fillna(0)
+        basis_binned = (
+            self.bucketer.fit_transform(series_basis.dropna()).value_counts().fillna(0)
+        )
 
-        meas_binned = self.bucketer.transform(series_meas.dropna()).value_counts().fillna(0)
+        meas_binned = (
+            self.bucketer.transform(series_meas.dropna()).value_counts().fillna(0)
+        )
 
         # Combine the two distributions by merging the buckets (bins)
         binning = (
             pd.DataFrame(basis_binned)
-            .merge(pd.DataFrame(meas_binned), right_index=True, left_index=True, how="outer",)
+            .merge(
+                pd.DataFrame(meas_binned),
+                right_index=True,
+                left_index=True,
+                how="outer",
+            )
             .fillna(0)
         )
         binning.columns = ["basis", "meas"]
@@ -291,11 +313,15 @@ class DropHighPSIFeatures(BaseSelector):
         meas_ratio = d_meas / d_meas.sum()
 
         # Necessary to avoid divide by zero and ln(0). Has minor impact on PSI value.
-        basis_ratio = np.where(basis_ratio <= 0, self.min_pct_empty_buckets, basis_ratio)
+        basis_ratio = np.where(
+            basis_ratio <= 0, self.min_pct_empty_buckets, basis_ratio
+        )
         meas_ratio = np.where(meas_ratio <= 0, self.min_pct_empty_buckets, meas_ratio)
 
         # Calculate the PSI value
-        psi_value = np.sum((meas_ratio - basis_ratio) * np.log(meas_ratio / basis_ratio))
+        psi_value = np.sum(
+            (meas_ratio - basis_ratio) * np.log(meas_ratio / basis_ratio)
+        )
 
         return psi_value
 
@@ -331,7 +357,7 @@ class DropHighPSIFeatures(BaseSelector):
         basis pandas dataframe
         """
         # Identify the values according to which the split must be done.
-        if self.split_col == 'use_df_index':
+        if self.split_col == "use_df_index":
             reference = pd.Series(X.index.to_list())
         else:
             reference = X[self.split_col]
@@ -344,17 +370,24 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Split the original dataframe in two parts: above and below cut-off
         is_above_cut_off = reference > cut_off
-        
+
         below_cut_off = X[~is_above_cut_off]
         above_cut_off = X[is_above_cut_off]
 
-
         return below_cut_off, above_cut_off
 
-
     def _check_init_values(
-        self, split_col, split_frac, split_distinct_value, variables, missing_values, 
-        switch_basis, threshold, bins, strategy, min_pct_empty_buckets,
+        self,
+        split_col,
+        split_frac,
+        split_distinct_value,
+        variables,
+        missing_values,
+        switch_basis,
+        threshold,
+        bins,
+        strategy,
+        min_pct_empty_buckets,
     ):
         """
         Raise an error if one of the arguments is not of the expected type or 
@@ -418,18 +451,23 @@ class DropHighPSIFeatures(BaseSelector):
 
         if not isinstance(split_col, str):
             raise ValueError("split_col must be a string")
-        
+
         if not 0 < split_frac < 1:
             raise ValueError("split_frac must be larger than 0 and smaller than 1")
-        
+
         if not isinstance(split_distinct_value, bool):
             raise ValueError("split_distinct_value must be a boolean")
 
-        if not isinstance(min_pct_empty_buckets, (float, int)) or min_pct_empty_buckets < 0:
+        if (
+            not isinstance(min_pct_empty_buckets, (float, int))
+            or min_pct_empty_buckets < 0
+        ):
             raise ValueError("min_pct_empty_buckets must be larger or equal to 0")
 
         if missing_values not in ["raise", "ignore", "include"]:
-            raise ValueError("missing_values can only be 'raise', 'ignore' or 'include'.")
+            raise ValueError(
+                "missing_values can only be 'raise', 'ignore' or 'include'."
+            )
         if strategy.lower() in ["equal_width"]:
             self.bucketer = EqualWidthDiscretiser(bins=bins)
         elif strategy.lower() in ["equal_frequency"]:
