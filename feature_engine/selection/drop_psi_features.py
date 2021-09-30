@@ -356,15 +356,17 @@ class DropHighPSIFeatures(BaseSelector):
         """
         # Identify the values according to which the split must be done.
         if self.split_col == "use_df_index":
-            reference = pd.Series(X.index.to_list())
+            reference = pd.Series(X.index.to_list()).dropna()
         else:
-            reference = X[self.split_col]
+            reference = X[self.split_col].dropna()
 
         # Define the cut-off point based on quantile.
         if self.split_distinct_value:
-            cut_off = np.quantile(reference.unique(), self.split_frac)
+            cut_off = self._get_cut_off_value(reference.unique())
         else:
-            cut_off = np.quantile(reference, self.split_frac)
+            cut_off = self._get_cut_off_value(reference)
+
+        self.quantile = {self.split_col: cut_off}
 
         # Split the original dataframe in two parts: above and below cut-off
         is_above_cut_off = reference > cut_off
@@ -373,6 +375,49 @@ class DropHighPSIFeatures(BaseSelector):
         above_cut_off = X[is_above_cut_off]
 
         return below_cut_off, above_cut_off
+
+    def _get_cut_off_value(self, ref):
+        """
+        Define the cut-off of the series (ref) in order to split the dataframe.
+
+        - For a float or integer, np.quantile is used.
+        - For other type, the quantile is based on the value_counts method.
+        This allows to deal with date or string in a unified way.
+            - The distinct values are sorted and the cumulative sum is
+            used to compute the quantile. The value with the quantile that
+            is the closest to the chosen split fraction is used as cut-off.
+            - The sort involves that categorical values are sorted alphabetically.
+
+        Parameters
+        ----------
+        ref : np.array.
+            Series for which the nth quantile must be computed.
+
+        Returns
+        -------
+        cut_off: (float, int, str, object).
+            value for the cut-off.
+        """
+        # Ensure the argument is a pd.Series
+        if not isinstance(ref, pd.Series):
+            ref = pd.Series(ref)
+
+        # If the value is numerical, use numpy functionalities
+        if isinstance(ref.iloc[0], (int, float)):
+            cut_off = np.quantile(ref, self.split_frac)
+
+        # Otherwise use value_counts combined with cumsum
+        else:
+            reference = pd.DataFrame(
+                ref.value_counts(normalize=True).sort_index().cumsum()
+            )
+
+            # Get the index (i.e. value) with the quantile that is the closest
+            # to the split_frac defined at initialization.
+            distance = abs(reference - self.split_frac)
+            cut_off = (distance.idxmin()).values[0]
+
+        return cut_off
 
     def _check_init_values(
         self,

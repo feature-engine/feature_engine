@@ -78,6 +78,47 @@ def test_check_psi_values():
     assert abs(test.psi.value[0] - ref_value) < 0.000001
 
 
+def test_calculation_distinct_value():
+    """Test the calculation of the quantiles using distinct values."""
+    df = pd.DataFrame(
+        {"A": [it for it in range(0, 30)], "C": ["A", "B", "C", "D", "D", "D"] * 5}
+    )
+
+    test = DropHighPSIFeatures(
+        split_col="C", split_frac=0.5, split_distinct_value=False
+    )
+    test.fit_transform(df)
+    assert test.quantile["C"] == "C"
+
+    test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct_value=True)
+    test.fit_transform(df)
+    assert test.quantile["C"] == "B"
+
+
+@pytest.fixture(params=["time", "A", "B", "C"])
+def test_column(request):
+    return request.param
+
+
+def test_calculation_df_split_with_different_types(test_column):
+    """Test the split of the dataframe using different type of variables."""
+    df = pd.DataFrame(
+        {
+            "time": [date(2012, 6, it) for it in range(1, 31)],
+            "A": [it for it in range(0, 30)],
+            "B": [1, 2, 3, 4, 5, 6] * 5,
+            "C": ["A", "B", "C", "D", "D", "D"] * 5,
+        }
+    )
+
+    test = DropHighPSIFeatures(
+        split_col=test_column, split_frac=0.5, split_distinct_value=False
+    )
+    results = test.fit_transform(df)
+    assert results.shape[0] > 0
+    assert results.shape[1] > 0
+
+
 def test_switch_basis():
     """Test the functionality to switch the basis."""
     import pandas as pd
