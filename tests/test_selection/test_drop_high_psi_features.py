@@ -78,6 +78,23 @@ def test_check_psi_values():
     assert abs(test.psi.value[0] - ref_value) < 0.000001
 
 
+quantile_test = [(0.5, 50), (0.33, 33), (0.17, 17), (0.81, 81)]
+
+
+@pytest.mark.parametrize("split_frac, expected", quantile_test)
+def test_calculation_quantile(split_frac, expected):
+    """Test the calculation of the quantiles using distinct values."""
+    df = pd.DataFrame(
+        {"A": [it for it in range(1, 101)], "B": [it for it in range(1, 101)]}
+    )
+
+    test = DropHighPSIFeatures(
+        split_col="A", split_frac=split_frac, split_distinct_value=False
+    )
+    test.fit_transform(df)
+    assert test.quantile["A"] == expected
+
+
 def test_calculation_distinct_value():
     """Test the calculation of the quantiles using distinct values."""
     df = pd.DataFrame(
