@@ -126,9 +126,6 @@ def test_split_df_according_to_col():
         }
     )
 
-    below_value = df[df["time"] <= date(2019, 1, 11)]
-    above_value = df[df["time"] > date(2019, 1, 11)]
-
     cut_off = DropHighPSIFeatures(
         split_col="time", split_frac=0.5, bins=5, min_pct_empty_buckets=0.001
     )
