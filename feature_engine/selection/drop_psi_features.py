@@ -163,7 +163,7 @@ class DropHighPSIFeatures(BaseSelector):
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
-        Assess the features that needs to be dropped because of high PSI values. 
+        Assess the features that needs to be dropped because of high PSI values.
 
         Parameters
         ----------
@@ -342,7 +342,7 @@ class DropHighPSIFeatures(BaseSelector):
 
             - Considering the values of the observations. The cut-off applies to
             the distinct values. In that case a split fraction of 0.25 will ensure
-            25% of the distinct values are in the "below cut-off" dataframe; 
+            25% of the distinct values are in the "below cut-off" dataframe;
             regardless of the number of observations.
 
         Parameters
@@ -353,7 +353,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         Returns
         -------
-        pandas dataframe with value below the 
+        pandas dataframe with value below the
         basis pandas dataframe
         """
         # Identify the values according to which the split must be done.
@@ -390,7 +390,7 @@ class DropHighPSIFeatures(BaseSelector):
         min_pct_empty_buckets,
     ):
         """
-        Raise an error if one of the arguments is not of the expected type or 
+        Raise an error if one of the arguments is not of the expected type or
         has an inadequate value.
 
         basis: pd.DataFrame or dictionary.

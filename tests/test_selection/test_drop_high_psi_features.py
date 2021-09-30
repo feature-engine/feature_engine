@@ -60,20 +60,18 @@ def test_check_psi_values():
     ```
     Output; 1.098612
     """
-    df = pd.DataFrame(
-        {"A": [1, 1, 1, 4, 4, 4, 4, 1],
-        "B": [1, 1, 1, 1, 2, 2, 2, 2]})
+    df = pd.DataFrame({"A": [1, 1, 1, 4, 4, 4, 4, 1], "B": [1, 1, 1, 1, 2, 2, 2, 2]})
 
     ref_value = 1.098612
 
     test = DropHighPSIFeatures(
         split_frac=0.5,
-        split_col='B',
+        split_col="B",
         bins=2,
         strategy="equal_width",
         switch_basis=False,
         min_pct_empty_buckets=0.001,
-        )
+    )
 
     test.fit(df)
 
@@ -137,7 +135,6 @@ def test_split_df_according_to_col():
     psi = cut_off.fit(df).psi
 
     assert psi.shape == (2, 1)
-
 
 
 def test_value_error_is_raised(df):
