@@ -129,17 +129,20 @@ class DropHighPSIFeatures(BaseSelector):
     # column that need ot be the same.
     def __init__(
         self,
-        basis,
+        split_col: str = 'use_df_index',
+        split_frac: float = 0.5,
+        split_distinct_value: bool = False,
         variables: Variables = None,
         missing_values: str = "include",
-        switch_basis=False,
+        switch_basis: bool = False,
         threshold: float = 0.25,
-        bins=10,
-        strategy="equal_frequency",
-        min_pct_empty_buckets=0.0001,
+        bins: int = 10,
+        strategy: str = "equal_frequency",
+        min_pct_empty_buckets: float =0.0001,
     ):
         self._check_init_values(
-            basis, variables, missing_values, switch_basis, threshold, bins, strategy, min_pct_empty_buckets,
+            split_col, split_frac, split_distinct_value, variables, missing_values, 
+            switch_basis, threshold, bins, strategy, min_pct_empty_buckets,
         )
         # Set all arguments (except self and variables as attributes)
         for name, value in vars().items():
@@ -179,7 +182,7 @@ class DropHighPSIFeatures(BaseSelector):
         # TODO: Test missing values do not lead to an error and have no impact.
 
         # Split the dataframe into a basis and a measurement dataframe.
-        measurement_df, basis_df = self._split_dataframe(X, self.basis)
+        basis_df, measurement_df = self._split_dataframe(X)
 
         # Switch base and measurement dataframe if required.
         if self.switch_basis:
@@ -221,8 +224,8 @@ class DropHighPSIFeatures(BaseSelector):
         # Initialize a container for the results.
         results = {}
 
-        # Compute the PSI for each feature.
-        for feature in self.variables_:
+        # Compute the PSI for each feature excluding the column used for split.
+        for feature in filter(lambda x: x!= self.split_col, self.variables_):
             results[feature] = [self._compute_feature_psi(df_basis[[feature]], df_meas[[feature]])]
 
         # Transform the result container in a user friendly format.
@@ -296,45 +299,62 @@ class DropHighPSIFeatures(BaseSelector):
 
         return psi_value
 
-    def _split_dataframe(self, X, basis):
+    def _split_dataframe(self, X):
         """
-        Split a dataframe according to a cut-off date in case only a single
-        dataframe is provided. Otherwise return the two original dataframes.
+        Split a dataframe according to a cut-off value and return two dataframes:
+        one with values above the cut-off and one with values below or equal
+        to the cut-off.
+        The cut-off value is associated to a specific column.
+
+        The cut-off can be defined in two ways:
+
+            - Considering all observations. In that case a split fraction of 0.25
+            will ensure 25% of the observations are in the "below cut-off"
+            dataframe. The final number of observations in the "below cut-off" may
+            be slightly different than 25% as all observations with the same value
+            are put in the same split.
+
+            - Considering the values of the observations. The cut-off applies to
+            the distinct values. In that case a split fraction of 0.25 will ensure
+            25% of the distinct values are in the "below cut-off" dataframe; 
+            regardless of the number of observations.
 
         Parameters
         ----------
         X : pandas dataframe
             The original dataset. Correspond either to the measurement dataset
             or will be spit into a measurement and a basis dataframe.
-        basis : pandas dataframe or dict
-            If it is a dict, it must contain a reference to a date column and
-            the cut-off date.
 
         Returns
         -------
-        measurement pandas dataframe
+        pandas dataframe with value below the 
         basis pandas dataframe
         """
-        # In case a dataframe is passed do nothing.
-        if isinstance(basis, pd.DataFrame):
-            return X, basis
-
-        # In case a dictionary is passed, split the dataframe according to time.
-        elif isinstance(basis, dict):
-            date_col = basis["date_col"]
-            value = basis["cut_off_date"]
-
-            below_value = X[X[date_col] <= value]
-            above_value = X[X[date_col] > value]
-
-            return above_value, below_value
-
-        # In any other cases raise an error.
+        # Identify the values according to which the split must be done.
+        if self.split_col == 'use_df_index':
+            reference = pd.Series(X.index.to_list())
         else:
-            raise ValueError("compare should be either a pd.dataframe or a dictionary")
+            reference = X[self.split_col]
+
+        # Define the cut-off point based on quantile.
+        if self.split_distinct_value:
+            cut_off = np.quantile(reference.unique(), self.split_frac)
+        else:
+            cut_off = np.quantile(reference, self.split_frac)
+
+        # Split the original dataframe in two parts: above and below cut-off
+        is_above_cut_off = reference > cut_off
+        
+        below_cut_off = X[~is_above_cut_off]
+        above_cut_off = X[is_above_cut_off]
+
+
+        return below_cut_off, above_cut_off
+
 
     def _check_init_values(
-        self, basis, variables, missing_values, switch_basis, threshold, bins, strategy, min_pct_empty_buckets,
+        self, split_col, split_frac, split_distinct_value, variables, missing_values, 
+        switch_basis, threshold, bins, strategy, min_pct_empty_buckets,
     ):
         """
         Raise an error if one of the arguments is not of the expected type or 
@@ -345,7 +365,7 @@ class DropHighPSIFeatures(BaseSelector):
             It is either a dataframe in the case of direct comparison or the
             label of the column containing the date and the cut-off-date in
             case a single dataframe is provided. In the latter case,the
-            dataframe will be split on two parts that arenon-overlapping
+            dataframe will be split on two parts that are non-overlapping
             over time.
 
         variables: list
@@ -396,12 +416,14 @@ class DropHighPSIFeatures(BaseSelector):
         if not isinstance(threshold, (float, int)) or threshold < 0:
             raise ValueError("threshold must be a float larger than 0")
 
-        if not isinstance(basis, (pd.DataFrame, dict)):
-            raise ValueError("basis must be either a pd.DataFrame or a dict")
-
-        if isinstance(basis, dict):
-            if "date_col" not in basis.keys() or "cut_off_date" not in basis.keys():
-                raise ValueError("date_col and cut_off_date must be keys")
+        if not isinstance(split_col, str):
+            raise ValueError("split_col must be a string")
+        
+        if not 0 < split_frac < 1:
+            raise ValueError("split_frac must be larger than 0 and smaller than 1")
+        
+        if not isinstance(split_distinct_value, bool):
+            raise ValueError("split_distinct_value must be a boolean")
 
         if not isinstance(min_pct_empty_buckets, (float, int)) or min_pct_empty_buckets < 0:
             raise ValueError("min_pct_empty_buckets must be larger or equal to 0")

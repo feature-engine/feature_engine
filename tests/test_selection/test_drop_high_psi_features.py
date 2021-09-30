@@ -5,7 +5,7 @@ import pytest
 from sklearn.datasets import make_classification
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.selection.drop_high_PSI_features import DropHighPSIFeatures
+from feature_engine.selection.drop_psi_features import DropHighPSIFeatures
 
 
 @pytest.fixture(scope="module")
@@ -28,39 +28,18 @@ def df():
     return X
 
 
-@pytest.fixture(scope="module")
-def df_basis():
-    # create array with 8 correlated features and 4 independent ones
-    X, y = make_classification(
-        n_samples=1000,
-        n_features=12,
-        n_redundant=4,
-        n_clusters_per_class=1,
-        weights=[0.50],
-        class_sep=2,
-        random_state=1,
-    )
-
-    # transform array into pandas df
-    colnames = ["var_" + str(i) for i in range(12)]
-    X = pd.DataFrame(X, columns=colnames)
-
-    return X
-
-
-def test_sanity_checks(df_basis):
+def test_sanity_checks(df):
     """Sanity checks.
 
     All PSI must be zero if the two dataframe involved are the same.
     There will be no changes in the dataframe.
     """
-    transformer = DropHighPSIFeatures(df_basis)
-    X = transformer.fit_transform(df_basis)
+    transformer = DropHighPSIFeatures()
+    X = transformer.fit_transform(df)
 
-    assert transformer.psi.value.min() == 0
-    assert transformer.psi.value.max() == 0
-    assert X.shape == df_basis.shape
-    assert transformer.psi.shape[0] == df_basis.shape[1]
+    assert transformer.psi.value.min() >= 0
+    assert X.shape == df.shape
+    assert transformer.psi.shape[0] == df.shape[1]
 
 
 def test_check_psi_values():
@@ -81,20 +60,23 @@ def test_check_psi_values():
     ```
     Output; 1.098612
     """
-    df = pd.DataFrame({"A": [1, 1, 1, 4]})
-    df2 = pd.DataFrame({"A": [4, 4, 4, 1]})
+    df = pd.DataFrame(
+        {"A": [1, 1, 1, 4, 4, 4, 4, 1],
+        "B": [1, 1, 1, 1, 2, 2, 2, 2]})
 
     ref_value = 1.098612
 
     test = DropHighPSIFeatures(
-        df2,
-        n_bins=2,
-        method="equal_width",
+        split_frac=0.5,
+        split_col='B',
+        bins=2,
+        strategy="equal_width",
         switch_basis=False,
         min_pct_empty_buckets=0.001,
-    )
+        )
 
     test.fit(df)
+
     assert abs(test.psi.value[0] - ref_value) < 0.000001
 
 
@@ -120,26 +102,23 @@ def test_switch_basis():
         }
     )
 
+    df_order = pd.concat([df_a, df_b]).reset_index(drop=True)
+    df_reverse = pd.concat([df_b, df_a]).reset_index(drop=True)
+
     case = DropHighPSIFeatures(
-        df_a, n_bins=5, switch_basis=False, min_pct_empty_buckets=0.001
+        split_frac=0.5, bins=5, switch_basis=False, min_pct_empty_buckets=0.001
     )
-    case.fit(df_b)
+    case.fit(df_order)
 
     switch_case = DropHighPSIFeatures(
-        df_a, n_bins=5, switch_basis=True, min_pct_empty_buckets=0.001
+        split_frac=0.5, bins=5, switch_basis=True, min_pct_empty_buckets=0.001
     )
-    switch_case.fit(df_b)
+    switch_case.fit(df_reverse)
 
-    reverse_case = DropHighPSIFeatures(
-        df_b, n_bins=5, switch_basis=True, min_pct_empty_buckets=0.001
-    )
-    reverse_case.fit(df_a)
-
-    assert (case.psi == reverse_case.psi).all
-    assert (case.psi != switch_case.psi).all
+    assert (case.psi == switch_case.psi).all
 
 
-def test_split_df_according_to_time():
+def test_split_df_according_to_col():
 
     df = pd.DataFrame(
         {
@@ -152,45 +131,40 @@ def test_split_df_according_to_time():
     below_value = df[df["time"] <= date(2019, 1, 11)]
     above_value = df[df["time"] > date(2019, 1, 11)]
 
-    sb = False
-    basis = {"date_col": "time", "cut_off_date": date(2019, 1, 11)}
     cut_off = DropHighPSIFeatures(
-        basis, n_bins=5, switch_basis=sb, min_pct_empty_buckets=0.001
+        split_col="time", split_frac=0.5, bins=5, min_pct_empty_buckets=0.001
     )
-    cut_off.fit(df).psi
+    psi = cut_off.fit(df).psi
 
-    separate_df = DropHighPSIFeatures(
-        below_value, n_bins=5, switch_basis=sb, min_pct_empty_buckets=0.001
-    )
-    separate_df.fit(above_value).psi
+    assert psi.shape == (2, 1)
 
-    assert (cut_off.fit(df).psi == separate_df.fit(above_value).psi).all
 
 
 def test_value_error_is_raised(df):
 
     with pytest.raises(ValueError):
-        basis = pd.Series([1, 2, 3])
-        DropHighPSIFeatures(basis, n_bins=5, min_pct_empty_buckets=0.001)
+        DropHighPSIFeatures(split_frac=0, bins=5, min_pct_empty_buckets=0.001)
 
     with pytest.raises(ValueError):
-        DropHighPSIFeatures(df, n_bins=1)
+        DropHighPSIFeatures(split_frac=1, bins=5, min_pct_empty_buckets=0.001)
 
     with pytest.raises(ValueError):
-        DropHighPSIFeatures(df, threshold=-1)
+        DropHighPSIFeatures(bins=1)
 
     with pytest.raises(ValueError):
-        DropHighPSIFeatures(df, switch_basis=1)
+        DropHighPSIFeatures(threshold=-1)
 
     with pytest.raises(ValueError):
-        DropHighPSIFeatures(df, method="unknown")
+        DropHighPSIFeatures(switch_basis=1)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(strategy="unknown")
 
 
 def test_variable_definition(df):
 
-    df_0 = df * 0
-    select = DropHighPSIFeatures(df, variables=["var_1", "var_3", "var_5"])
-    transformed_df = select.fit_transform(df_0)
+    select = DropHighPSIFeatures(variables=["var_1", "var_3", "var_5"], split_frac=0.01)
+    transformed_df = select.fit_transform(df)
 
     assert transformed_df.columns.to_list() == ["var_0", "var_2", "var_4"]
 
@@ -198,5 +172,5 @@ def test_variable_definition(df):
 def test_non_fitted_error(df):
     # when fit is not called prior to transform
     with pytest.raises(NotFittedError):
-        transformer = DropHighPSIFeatures(df)
+        transformer = DropHighPSIFeatures()
         transformer.transform(df)
