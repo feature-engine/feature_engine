@@ -31,18 +31,26 @@ class DropHighPSIFeatures(BaseSelector):
     is frequent and usually required by the Regulator.
 
     The calculation of the PSI requires to compare two distributions.
-    In DropHighPSIFeatures two approaches are implemented though the
-    "basis" argument.
+    In DropHighPSIFeatures the approach implemented is the following:
 
-    - If it is a pandas.DataFrame, the class will compare the distributions of the
-    X dataframe (argument of the fit method) and "basis". The two dataframes must
-    contain the same features (i.e. labels).
+    - The dataframe is split in two parts and the PSI calculations are performed by
+    comparing the distribution of the features in the two parts.
 
-    - If it is a dictionary, the X matrix of the fit method is split in two according
-    to time and the distribution between the two parts are compared using the PSI.
-    The dictionary must contain the label of a column with dates and the cut-off date.
+    - The user defines the columns of the dataframe according to which the dataframe
+    will de split. The column can contain numbers, dates and strings.
 
-    - The PSI calculations are not symmetric. The switch_basis argument allows to
+    - The user defines a split fraction. This is used to define the sizes of the two
+    dataframe. Is the split fraction is 50%, the two dataframe will have about the same
+    size. It is not guaranteed that the size will exactly match because the observations
+    are grouped by their label (i.e. their values in the split columns) so all
+    observations with the same label will automatically belong to the same dataframe.
+
+    - If the option split_distinct_value is activated, the number of distinct values
+    is used to make the split. For example a feature with values: [1, 2, 3, 4, 4, 4]
+    a 50% split without split_distinct_value will split into two parts [1, 2, 3] and
+    [4, 4, 4] while if the option is set on, the split will be [1, 2] and [3, 4, 4, 4].
+
+    The PSI calculations are not symmetric. The switch_basis argument allows to
     switch the role of the two dataframes in the PSI calculations.
 
     The comparison of the distribution is done through binning. Two strategies are
@@ -52,18 +60,25 @@ class DropHighPSIFeatures(BaseSelector):
     References:
     https://scholarworks.wmich.edu/cgi/viewcontent.cgi?article=4249&context=dissertations
 
-    DropHighPSIFeatures() works only with numerical variables. Categorical variables
-    will need to be encoded to numerical or will be excluded from the analysis.
+    DropHighPSIFeatures suited for numerical variables and for discrete variables with
+    high cardinality. For categorical variables differences in distribution can be
+    investigated using a Chi-square or Kolmogorov-Smirnov test.
 
     Parameters
     ----------
 
-    basis: pd.DataFrame or dictionary.
-        Information required to define the basis for the PSI calculations. It is
-        either a dataframe in the case of direct comparison or the label of the
-        column containing the date and the cut-off-date in case a single
-        dataframe is provided. In the latter case, the dataframe will be split
-        on two parts that are non-overlapping over time.
+    split_col: string.
+        Label of the column according to which the dataframe will be split.
+
+    split_frac: float.
+        Ratio of the observations (when split_distinct is not activated) that goes
+        into the sub-dataframe that is used to determine the reference for the feature
+        distributions. The second sub-dataframe will be used to compare its feature
+        distributions to the reference ones.
+
+    split_distinct_values: boolean.
+        If set on, the split fraction does not account for the number of observations
+        but only for the number of distinct values in split_col.
 
     variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
@@ -121,7 +136,7 @@ class DropHighPSIFeatures(BaseSelector):
     fit:
         Find features with high PSI values.
     transform:
-        Remove features wth high PSI values.
+        Remove features with high PSI values.
     fit_transform:
         Fit to the data. Then transform it.
     """
@@ -186,8 +201,6 @@ class DropHighPSIFeatures(BaseSelector):
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
 
-        # TODO: Test missing values do not lead to an error and have no impact.
-
         # Split the dataframe into a basis and a measurement dataframe.
         basis_df, measurement_df = self._split_dataframe(X)
 
@@ -221,7 +234,7 @@ class DropHighPSIFeatures(BaseSelector):
             Matrix for which the feature distributions will be compared to the basis.
 
         bucketer : EqualFrequencyDiscretiser or EqualWidthDiscretiser.
-                    Default = EqualFrequencyDiscretiser
+                Default = EqualFrequencyDiscretiser
             Class used to bucket (bin) the features in order to approximate
             the distribution.
 
@@ -390,7 +403,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         Parameters
         ----------
-        ref : np.array.
+        ref : (np.array, pd.Series).
             Series for which the nth quantile must be computed.
 
         Returns
@@ -436,13 +449,18 @@ class DropHighPSIFeatures(BaseSelector):
         Raise an error if one of the arguments is not of the expected type or
         has an inadequate value.
 
-        basis: pd.DataFrame or dictionary.
-            Information required to define the basis for the PSI calculations.
-            It is either a dataframe in the case of direct comparison or the
-            label of the column containing the date and the cut-off-date in
-            case a single dataframe is provided. In the latter case,the
-            dataframe will be split on two parts that are non-overlapping
-            over time.
+        split_col: string.
+        Label of the column according to which the dataframe will be split.
+
+        split_frac: float.
+            Ratio of the observations (when split_distinct is not activated) that
+            goes into the sub-dataframe that is used to determine the reference for
+            the feature distributions. The second sub-dataframe will be used to compare
+            its feature distributions to the reference ones.
+
+        split_distinct_values: boolean.
+            If set on, the split fraction does not account for the number of
+            observations but only for the number of distinct values in split_col.
 
         variables: list
             The list of variables to evaluate. If None, the transformer will
