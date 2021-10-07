@@ -37,9 +37,9 @@ def test_sanity_checks(df):
     transformer = DropHighPSIFeatures()
     X = transformer.fit_transform(df)
 
-    assert transformer.psi.value.min() >= 0
+    assert transformer.psi_.value.min() >= 0
     assert X.shape == df.shape
-    assert transformer.psi.shape[0] == df.shape[1]
+    assert transformer.psi_.shape[0] == df.shape[1]
 
 
 def test_check_psi_values():
@@ -69,13 +69,13 @@ def test_check_psi_values():
         split_col="B",
         bins=2,
         strategy="equal_width",
-        switch_basis=False,
+        switch=False,
         min_pct_empty_buckets=0.001,
     )
 
     test.fit(df)
 
-    assert abs(test.psi.value[0] - ref_value) < 0.000001
+    assert abs(test.psi_.value[0] - ref_value) < 0.000001
 
 
 quantile_test = [(0.5, 50), (0.33, 33), (0.17, 17), (0.81, 81)]
@@ -136,7 +136,7 @@ def test_calculation_df_split_with_different_types(test_column):
     assert results.shape[1] > 0
 
 
-def test_switch_basis():
+def test_switch():
     """Test the functionality to switch the basis."""
     import pandas as pd
 
@@ -162,16 +162,16 @@ def test_switch_basis():
     df_reverse = pd.concat([df_b, df_a]).reset_index(drop=True)
 
     case = DropHighPSIFeatures(
-        split_frac=0.5, bins=5, switch_basis=False, min_pct_empty_buckets=0.001
+        split_frac=0.5, bins=5, switch=False, min_pct_empty_buckets=0.001
     )
     case.fit(df_order)
 
     switch_case = DropHighPSIFeatures(
-        split_frac=0.5, bins=5, switch_basis=True, min_pct_empty_buckets=0.001
+        split_frac=0.5, bins=5, switch=True, min_pct_empty_buckets=0.001
     )
     switch_case.fit(df_reverse)
 
-    assert (case.psi == switch_case.psi).all
+    assert (case.psi_ == switch_case.psi_).all
 
 
 def test_split_df_according_to_col():
@@ -187,7 +187,7 @@ def test_split_df_according_to_col():
     cut_off = DropHighPSIFeatures(
         split_col="time", split_frac=0.5, bins=5, min_pct_empty_buckets=0.001
     )
-    psi = cut_off.fit(df).psi
+    psi = cut_off.fit(df).psi_
 
     assert psi.shape == (2, 1)
 
@@ -207,7 +207,7 @@ def test_value_error_is_raised(df):
         DropHighPSIFeatures(threshold=-1)
 
     with pytest.raises(ValueError):
-        DropHighPSIFeatures(switch_basis=1)
+        DropHighPSIFeatures(switch=1)
 
     with pytest.raises(ValueError):
         DropHighPSIFeatures(strategy="unknown")

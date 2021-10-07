@@ -171,10 +171,6 @@ class DropHighPSIFeatures(BaseSelector):
         # Check the input is in the correct format.
         self.variables = _check_input_parameter_variables(variables)
 
-        # If variable is not defined, the split_col will be part of the list.
-        # It then needs to be removed because the selector will not act on it.
-        self.variables = [var for var in self.variables if var != split_col]
-
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
         Assess the features that needs to be dropped because of high PSI values.
@@ -197,6 +193,11 @@ class DropHighPSIFeatures(BaseSelector):
         # find all variables or check those entered are present in the dataframe
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
+        # Remove the split columns from the variables list. It is automatically added to
+        # it in variables is not defined at initiation.
+        if self.split_col in self.variables_:
+            self.variables_.remove(self.split_col)
+
         if self.missing_values == "raise":
             # check if dataset contains na
             _check_contains_na(X, self.variables_)
@@ -214,7 +215,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Select features below the threshold
         self.features_to_drop_ = self.psi_[
-            self.psi.value >= self.threshold
+            self.psi_.value >= self.threshold
         ].index.to_list()
 
         self.n_features_in_ = X.shape[1]
@@ -511,7 +512,7 @@ class DropHighPSIFeatures(BaseSelector):
         if not isinstance(threshold, (float, int)) or threshold < 0:
             raise ValueError("threshold must be a float larger than 0")
 
-        if not isinstance(split_col, str):
+        if not isinstance(split_col, (str, type(None))):
             raise ValueError("split_col must be a string")
 
         if not 0 < split_frac < 1:
