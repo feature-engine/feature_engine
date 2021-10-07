@@ -25,7 +25,7 @@ class DropHighPSIFeatures(BaseSelector):
     """
     DropHighPSIFeatures drops features with a Population Stability Index (PSI) above
     a given threshold. The PSI of a feature is an indication of the shift in its
-    distribution; a feature with high PSI might therefore be seen as instable.
+    distribution; a feature with high PSI might therefore be seen as unstable.
 
     In fields like Credit Risk Modelling, the elimination of features with high PSI
     is frequent and usually required by the Regulator.
@@ -50,7 +50,7 @@ class DropHighPSIFeatures(BaseSelector):
     a 50% split without split_distinct_value will split into two parts [1, 2, 3] and
     [4, 4, 4] while if the option is set on, the split will be [1, 2] and [3, 4, 4, 4].
 
-    The PSI calculations are not symmetric. The switch_basis argument allows to
+    The PSI calculations are not symmetric. The switch argument allows to
     switch the role of the two dataframes in the PSI calculations.
 
     The comparison of the distribution is done through binning. Two strategies are
@@ -67,16 +67,16 @@ class DropHighPSIFeatures(BaseSelector):
     Parameters
     ----------
 
-    split_col: string.
+    split_col: string, default=None.
         Label of the column according to which the dataframe will be split.
 
-    split_frac: float.
+    split_frac: float, default=0.5.
         Ratio of the observations (when split_distinct is not activated) that goes
         into the sub-dataframe that is used to determine the reference for the feature
         distributions. The second sub-dataframe will be used to compare its feature
         distributions to the reference ones.
 
-    split_distinct_values: boolean.
+    split_distinct_values: boolean, default=False.
         If set on, the split fraction does not account for the number of observations
         but only for the number of distinct values in split_col.
 
@@ -84,7 +84,7 @@ class DropHighPSIFeatures(BaseSelector):
         The list of variables to evaluate. If None, the transformer will evaluate all
         numerical variables in the dataset.
 
-    switch_basis: boolean, default=False.
+    switch: boolean, default=False.
         If set to true the role of the two matrices involved in the PSI calculations
         (basis and measurement) will be switch. This is an important option as the
         PSI value is not symmetric (i.e. PSI(a, b) != PSI(b, a)).
@@ -111,16 +111,13 @@ class DropHighPSIFeatures(BaseSelector):
         the calculations.
 
     missing_values: str, default=ignore
-        Takes values 'raise' and 'ignore'. Whether the missing values should be raised
-        as error or ignored when determining correlation.
+        Takes values 'raise' or 'ignore'. Whether the missing values should be raised
+        as error or ignored when computing PSI.
 
     Attributes
     ----------
     features_to_drop_:
         Set with the correlated features that will be dropped.
-
-    correlated_feature_sets_:
-        Groups of correlated features. Each list is a group of correlated features.
 
     variables_:
         The variables to consider for the feature selection.
@@ -128,7 +125,7 @@ class DropHighPSIFeatures(BaseSelector):
     n_features_in_:
         The number of features in the train set used in fit.
 
-    psi:
+    psi_:
         Dataframe containing the PSI values for all features considered.
 
     Methods
@@ -143,12 +140,12 @@ class DropHighPSIFeatures(BaseSelector):
 
     def __init__(
         self,
-        split_col: str = "use_df_index",
+        split_col: str = None,
         split_frac: float = 0.5,
         split_distinct_value: bool = False,
         variables: Variables = None,
-        missing_values: str = "include",
-        switch_basis: bool = False,
+        missing_values: str = "ignore",
+        switch: bool = False,
         threshold: float = 0.25,
         bins: int = 10,
         strategy: str = "equal_frequency",
@@ -160,7 +157,7 @@ class DropHighPSIFeatures(BaseSelector):
             split_distinct_value,
             variables,
             missing_values,
-            switch_basis,
+            switch,
             threshold,
             bins,
             strategy,
@@ -173,6 +170,10 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Check the input is in the correct format.
         self.variables = _check_input_parameter_variables(variables)
+
+        # If variable is not defined, the split_col will be part of the list.
+        # It then needs to be removed because the selector will not act on it.
+        self.variables = [var for var in self.variables if var != split_col]
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -205,14 +206,14 @@ class DropHighPSIFeatures(BaseSelector):
         basis_df, measurement_df = self._split_dataframe(X)
 
         # Switch base and measurement dataframe if required.
-        if self.switch_basis:
+        if self.switch:
             measurement_df, basis_df = basis_df, measurement_df
 
         # Compute the PSI
-        self.psi = self._compute_PSI(basis_df, measurement_df, self.bucketer)
+        self.psi_ = self._compute_PSI(basis_df, measurement_df, self.bucketer)
 
         # Select features below the threshold
-        self.features_to_drop_ = self.psi[
+        self.features_to_drop_ = self.psi_[
             self.psi.value >= self.threshold
         ].index.to_list()
 
@@ -247,7 +248,7 @@ class DropHighPSIFeatures(BaseSelector):
         results = {}
 
         # Compute the PSI for each feature excluding the column used for split.
-        for feature in filter(lambda x: x != self.split_col, self.variables_):
+        for feature in self.variables_:
             results[feature] = [
                 self._compute_feature_psi(df_basis[[feature]], df_meas[[feature]])
             ]
@@ -368,7 +369,7 @@ class DropHighPSIFeatures(BaseSelector):
         basis pandas dataframe
         """
         # Identify the values according to which the split must be done.
-        if self.split_col == "use_df_index":
+        if self.split_col is None:
             reference = pd.Series(X.index.to_list()).dropna()
         else:
             reference = X[self.split_col].dropna()
@@ -439,7 +440,7 @@ class DropHighPSIFeatures(BaseSelector):
         split_distinct_value,
         variables,
         missing_values,
-        switch_basis,
+        switch,
         threshold,
         bins,
         strategy,
@@ -466,7 +467,7 @@ class DropHighPSIFeatures(BaseSelector):
             The list of variables to evaluate. If None, the transformer will
             evaluate all numerical variables in the dataset.
 
-        switch_basis: boolean
+        switch: boolean
             If set to true the role of the two matrices involved in the PSI
             calculations (basis and measurement) will be switch. This is an
             important option as the PSI value is not symmetric
@@ -504,7 +505,7 @@ class DropHighPSIFeatures(BaseSelector):
         if not isinstance(bins, int) or bins <= 1:
             raise ValueError("bins must be an integer larger than 1.")
 
-        if not isinstance(switch_basis, bool):
+        if not isinstance(switch, bool):
             raise ValueError("The value of switch basis must be True or False.")
 
         if not isinstance(threshold, (float, int)) or threshold < 0:
@@ -525,10 +526,8 @@ class DropHighPSIFeatures(BaseSelector):
         ):
             raise ValueError("min_pct_empty_buckets must be larger or equal to 0")
 
-        if missing_values not in ["raise", "ignore", "include"]:
-            raise ValueError(
-                "missing_values can only be 'raise', 'ignore' or 'include'."
-            )
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError("missing_values can only be 'raise' or 'ignore'.")
         if strategy.lower() in ["equal_width"]:
             self.bucketer = EqualWidthDiscretiser(bins=bins)
         elif strategy.lower() in ["equal_frequency"]:
