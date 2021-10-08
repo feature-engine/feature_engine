@@ -22,15 +22,38 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 class DropHighPSIFeatures(BaseSelector):
-    """
+    r"""
     DropHighPSIFeatures drops features with a Population Stability Index (PSI) above
-    a given threshold. The PSI of a feature is an indication of the shift in its
-    distribution; a feature with high PSI might therefore be seen as unstable.
+    a given threshold. The PSI of a numerical feature is an indication of the shift in
+    its distribution; a feature with high PSI might therefore be seen as unstable.
 
     In fields like Credit Risk Modelling, the elimination of features with high PSI
     is frequent and usually required by the Regulator.
 
-    The calculation of the PSI requires to compare two distributions.
+    When comparing the actual distribution of a feature to a reference distribution,
+    the PSI is computed as follow:
+
+    - Compute a discretized proxy of the reference feature distribution using
+    binning.
+    - Apply the binning to the actual feature.
+    - Compute the percentage of the distribution in each bin ($Actual_i$
+    and $Reference_i$ for bin i).
+    - Compute the PSI using the following formula:
+
+    $$PSI = \sum_{i=1}^n (Actual_i - Reference_i) . ln(\frac{Actual_i}{Reference_i})$$
+
+    Thresholds are used to assess the importance of the population shift reported by the
+    PSI value. The most commonly used thresholds are:
+    - Below 10%, the variable has not experienced a significant shift.
+    - Above 25%, the variable has experienced a major shift.
+    - Between those two values, the shift is intermediate.
+
+    When working with PSI, the following 2 points are worth mentioning:
+    - The PSI is not symmetric with respected to the actual and reference; flipping the
+    order will lead to different values fir the PSI.
+    - The number of bins has an impact on the PSI values. 10 bins is usually
+    a good choice.
+
     In DropHighPSIFeatures the approach implemented is the following:
 
     - The dataframe is split in two parts and the PSI calculations are performed by
@@ -371,9 +394,15 @@ class DropHighPSIFeatures(BaseSelector):
         """
         # Identify the values according to which the split must be done.
         if self.split_col is None:
-            reference = pd.Series(X.index.to_list()).dropna()
+            reference = pd.Series(X.index.to_list())
         else:
-            reference = X[self.split_col].dropna()
+            reference = X[self.split_col]
+
+        # Raise an error if there are missing values in the reference column.
+        if reference.isna().sum() != 0:
+            raise ValueError(
+                "Na's are not allowed in the columns used to split the dataframe."
+            )
 
         # Define the cut-off point based on quantile.
         if self.split_distinct_value:
