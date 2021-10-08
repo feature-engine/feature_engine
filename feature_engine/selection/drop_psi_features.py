@@ -36,11 +36,11 @@ class DropHighPSIFeatures(BaseSelector):
     - Compute a discretized proxy of the reference feature distribution using
     binning.
     - Apply the binning to the actual feature.
-    - Compute the percentage of the distribution in each bin ($Actual_i$
-    and $Reference_i$ for bin i).
+    - Compute the percentage of the distribution in each bin (Actual_i
+    and Reference_i for bin i).
     - Compute the PSI using the following formula:
 
-    $$PSI = \sum_{i=1}^n (Actual_i - Reference_i) . ln(\frac{Actual_i}{Reference_i})$$
+    PSI = \sum_{i=1}^n (Actual_i - Reference_i) . ln(\frac{Actual_i}{Reference_i})
 
     Thresholds are used to assess the importance of the population shift reported by the
     PSI value. The most commonly used thresholds are:
