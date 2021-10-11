@@ -136,6 +136,21 @@ def test_calculation_df_split_with_different_types(test_column):
     assert results.shape[1] > 0
 
 
+def test_calculation_no_split_columns():
+    """Test the split of the dataframe using different type of variables."""
+    df = pd.DataFrame(
+        {
+            "time": [date(2012, 6, it) for it in range(1, 31)],
+            "A": [it for it in range(0, 30)],
+            "B": [1, 2, 3, 4, 5, 6] * 5,
+        }
+    )
+
+    test = DropHighPSIFeatures(split_frac=0.5, split_distinct_value=True)
+    test.fit_transform(df)
+    assert test.psi_.shape == (2, 1)
+
+
 def test_switch():
     """Test the functionality to switch the basis."""
     import pandas as pd
