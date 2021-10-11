@@ -3,6 +3,13 @@
 Quick Start
 ===========
 
+.. toctree::
+   :maxdepth: 1
+
+   installation
+   getting_help
+   datasets
+
 If you're new to Feature-engine this guide will get you started. Feature-engine
 transformers have the methods `fit()` and `transform()` to learn parameters from the
 data and then modify the data. They work just like any Scikit-learn transformer.

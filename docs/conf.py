@@ -15,14 +15,11 @@
 
 import os
 import sys
-import sphinx_rtd_theme
+import pydata_sphinx_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("../"))
-sys.path.insert(1, os.path.dirname(os.path.abspath("../")) + os.sep + "feature_engine")
 sys.path.insert(0, os.path.abspath("sphinxext"))
 from github_link import make_linkcode_resolve
 
@@ -133,20 +130,33 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
 html_theme_options = {
-    "logo_only": True,
-    "style_nav_header_background": "#e09200",
-    "canonical_url": "https://feature-engine.readthedocs.io/en/latest/",
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/feature-engine/feature_engine",
+            "icon": "fab fa-github-square",
+        },
+    ],
+    "favicons": [
+        {
+            "rel": "icon",
+            "sizes": "16x16",
+            "href": "images/logo/favicon.png",
+        },
+    ],
+    "navigation_depth": 2,
+    "show_toc_level": 2,
 }
-
-# Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+#
+# # Add any paths that contain custom themes here, relative to this directory.
+# html_theme_path = [pydata_sphinx_theme.get_html_theme_path()]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
