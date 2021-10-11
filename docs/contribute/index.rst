@@ -1,7 +1,7 @@
 .. -*- mode: rst -*-
 
-Contributing
-============
+Contribute
+==========
 
 Feature-engine is an open source project, originally designed to support the online
 course `Feature Engineering for Machine Learning in Udemy <https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO>`_,
