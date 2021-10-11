@@ -394,7 +394,7 @@ class DropHighPSIFeatures(BaseSelector):
         """
         # Identify the values according to which the split must be done.
         if self.split_col is None:
-            reference = pd.Series(X.index.to_list())
+            reference = pd.Series(X.index)
         else:
             reference = X[self.split_col]
 
@@ -405,10 +405,7 @@ class DropHighPSIFeatures(BaseSelector):
             )
 
         # Define the cut-off point based on quantile.
-        if self.split_distinct_value:
-            cut_off = self._get_cut_off_value(reference.unique())
-        else:
-            cut_off = self._get_cut_off_value(reference)
+        cut_off = self._get_cut_off_value(reference)
 
         self.quantile = {self.split_col: cut_off}
 
@@ -430,7 +427,8 @@ class DropHighPSIFeatures(BaseSelector):
             - The distinct values are sorted and the cumulative sum is
             used to compute the quantile. The value with the quantile that
             is the closest to the chosen split fraction is used as cut-off.
-            - The sort involves that categorical values are sorted alphabetically.
+            - The sort involves that categorical values are sorted alphabetically
+            and cut accordingly.
 
         Parameters
         ----------
@@ -442,9 +440,9 @@ class DropHighPSIFeatures(BaseSelector):
         cut_off: (float, int, str, object).
             value for the cut-off.
         """
-        # Ensure the argument is a pd.Series
-        if not isinstance(ref, pd.Series):
-            ref = pd.Series(ref)
+        # In case split_distinct_value is used, extract series with unique values
+        if self.split_distinct_value:
+            ref = pd.Series(ref.unique())
 
         # If the value is numerical, use numpy functionalities
         if isinstance(ref.iloc[0], (int, float)):
@@ -558,9 +556,9 @@ class DropHighPSIFeatures(BaseSelector):
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values can only be 'raise' or 'ignore'.")
-        if strategy.lower() in ["equal_width"]:
+        if strategy in ["equal_width"]:
             self.bucketer = EqualWidthDiscretiser(bins=bins)
-        elif strategy.lower() in ["equal_frequency"]:
+        elif strategy in ["equal_frequency"]:
             self.bucketer = EqualFrequencyDiscretiser(q=bins)
         else:
             raise ValueError("Strategy must be either equal_width or equal_frequency")
