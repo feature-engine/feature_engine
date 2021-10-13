@@ -7,6 +7,6 @@ in the following books:
 .. figure::  images/cookbook.png
    :width: 200
    :align: left
-   :target: https://www.packtpub.com/product/python-feature-engineering-cookbook/9781789806311
+   :target: https://packt.link/python
 
    Python Feature Engineering Cookbook

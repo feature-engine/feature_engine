@@ -25,7 +25,7 @@ transforming parameters from data and then transform the data.
 
 * [Feature Selection for Machine Learning, Online Course](https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71)
 
-* [Python Feature Engineering Cookbook](https://www.packtpub.com/data/python-feature-engineering-cookbook)
+* [Python Feature Engineering Cookbook](https://packt.link/python)
 
 * [Deployment of Machine Learning Models, Online Course](https://www.udemy.com/course/deployment-of-machine-learning-models/?referralCode=D4FE5EA129FFD203CFF4)
 
