@@ -1,5 +1,6 @@
 from typing import List, Union
 
+import datetime
 import numpy as np
 import pandas as pd
 
@@ -33,7 +34,7 @@ class DropHighPSIFeatures(BaseSelector):
     When comparing the actual distribution of a feature to a reference distribution,
     the PSI is computed as follow:
 
-    - Compute a discretized proxy of the reference feature distribution using
+    - Compute a discretised proxy of the reference feature distribution using
     binning.
     - Apply the binning to the actual feature.
     - Compute the percentage of the distribution in each bin (Actual_i
@@ -103,6 +104,16 @@ class DropHighPSIFeatures(BaseSelector):
         If set on, the split fraction does not account for the number of observations
         but only for the number of distinct values in split_col.
 
+    cut_off: None, int, float, date or list, default=None
+        Threshold used to split the split_col values. If int, float or date the split
+        is done by selecting the values below and starting from the threshold. If
+        cut_off is a list, values belonging to the list will be split from the values
+        not belonging to the list.
+        cut_off is conflicting with split_frac as they both define a different way
+        to split the dataframe for performing PSI calculations. So cases where the
+        two arguments are None and cases where the two arguments are assigned to
+        a value are not valid.
+
     variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         numerical variables in the dataset.
@@ -166,6 +177,7 @@ class DropHighPSIFeatures(BaseSelector):
         split_col: str = None,
         split_frac: float = 0.5,
         split_distinct_value: bool = False,
+        cut_off: Union[None, int, float, datetime.date, List] = None,
         variables: Variables = None,
         missing_values: str = "ignore",
         switch: bool = False,
@@ -174,24 +186,67 @@ class DropHighPSIFeatures(BaseSelector):
         strategy: str = "equal_frequency",
         min_pct_empty_buckets: float = 0.0001,
     ):
-        self._check_init_values(
-            split_col,
-            split_frac,
-            split_distinct_value,
-            variables,
-            missing_values,
-            switch,
-            threshold,
-            bins,
-            strategy,
-            min_pct_empty_buckets,
-        )
-        # Set all arguments (except self and variables as attributes)
+        # Ensure the arguments are according to expectations
+        if (cut_off and split_frac) and not (cut_off or split_frac):
+            raise ValueError(
+                "cut_off and split frac cannot be defined at the same time."
+                f"The values provided for cut_off and split_frac are {cut_off} "
+                f"and {split_frac}."
+            )
+        if not isinstance(bins, int) or bins <= 1:
+            raise ValueError(f"bins must be than 1 but has value: {bins}.")
+
+        if not isinstance(switch, bool):
+            raise ValueError(f"Switch must be a boolean but has value: {switch}.")
+
+        if not isinstance(threshold, (float, int)) or threshold < 0:
+            raise ValueError(
+                f"threshold must be larger than 0 but has value: {threshold}."
+            )
+
+        if not isinstance(split_col, (str, type(None))):
+            raise ValueError(
+                f"split_col must be a string but has type: {type(split_col)}"
+            )
+
+        if split_frac is not None:
+            if not (0 < split_frac < 1):
+                raise ValueError(
+                    f"split_frac must be between 0 and 1 but is: {split_frac}"
+                )
+
+        if not isinstance(split_distinct_value, bool):
+            raise ValueError(
+                "split_distinct_value must be a boolean but is "
+                f"{type(split_distinct_value)}"
+            )
+
+        if (
+            not isinstance(min_pct_empty_buckets, (float, int))
+            or min_pct_empty_buckets < 0
+        ):
+            raise ValueError(
+                f"min_pct_empty_buckets must >= 0 but has value {min_pct_empty_buckets}"
+            )
+
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError(
+                "missing_values can only be 'raise' or 'ignore' but is "
+                f"{missing_values}."
+            )
+
+        if strategy not in ["equal_width", "equal_frequency"]:
+            raise ValueError(
+                "Strategy must be either equal_width or equal_frequency but "
+                f"is {strategy}"
+            )
+
+        # Set all arguments (except self and variables) as attributes.
         for name, value in vars().items():
             if name not in ("self", "variables"):
                 setattr(self, name, value)
 
-        # Check the input is in the correct format.
+        # Check the variables.
         self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
@@ -212,17 +267,18 @@ class DropHighPSIFeatures(BaseSelector):
         """
         # check input dataframe
         X = _is_dataframe(X)
+        self.n_features_in_ = X.shape[1]
 
         # find all variables or check those entered are present in the dataframe
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # Remove the split columns from the variables list. It is automatically added to
-        # it in variables is not defined at initiation.
+        # it if variables is not defined at initiation.
         if self.split_col in self.variables_:
             self.variables_.remove(self.split_col)
 
         if self.missing_values == "raise":
-            # check if dataset contains na
+            # check if dataset contains na or inf
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
 
@@ -233,133 +289,98 @@ class DropHighPSIFeatures(BaseSelector):
         if self.switch:
             measurement_df, basis_df = basis_df, measurement_df
 
-        # Compute the PSI
-        self.psi_ = self._compute_PSI(basis_df, measurement_df, self.bucketer)
-
-        # Select features below the threshold
-        self.features_to_drop_ = self.psi_[
-            self.psi_.value >= self.threshold
-        ].index.to_list()
-
-        self.n_features_in_ = X.shape[1]
+        # Compute the PSI by looping over the features
+        self.psi_values_ = {}
+        self.features_to_drop_ = []
+        for feature in self.variables_:
+            # Discretize the features using bucketing.
+            basis_discrete, meas_discrete = self._discretize_features(
+                basis_df[[feature]], measurement_df[[feature]]
+            )
+            # Approximate the features' normalized distribution.
+            meas_distrib, basis_distrib = self._approximate_features_distribution(
+                basis_discrete, meas_discrete
+            )
+            # Calculate the PSI value based on the distributions
+            self.psi_values_[feature] = np.sum(
+                (meas_distrib - basis_distrib) * np.log(meas_distrib / basis_distrib)
+            )
+            # Assess if the feature needs to be dropped
+            if self.psi_values_[feature] > self.threshold:
+                self.features_to_drop_.append(feature)
 
         return self
 
-    def _compute_PSI(self, df_basis, df_meas, bucketer):
+    def _discretize_features(self, series_basis, series_meas):
         """
-        Compute the PSI by first bucketing (=binning) and then call the psi calculator
-        for each feature.
-
-        Parameters
-        ----------
-        df_basis : pandas dataframe of shape = [m_rows, n_features]
-            Serve as reference for the features distribution.
-
-        df_meas : pandas dataframe of shape = [p_rows, n_features]
-            Matrix for which the feature distributions will be compared to the basis.
-
-        bucketer : EqualFrequencyDiscretiser or EqualWidthDiscretiser.
-                Default = EqualFrequencyDiscretiser
-            Class used to bucket (bin) the features in order to approximate
-            the distribution.
-
-        Returns
-        -------
-        results_df: pandas dataframe.
-            Dataframe containing the PSI for each feature.
-        """
-        # Initialize a container for the results.
-        results = {}
-
-        # Compute the PSI for each feature excluding the column used for split.
-        for feature in self.variables_:
-            results[feature] = [
-                self._compute_feature_psi(df_basis[[feature]], df_meas[[feature]])
-            ]
-
-        # Transform the result container in a user friendly format.
-        results_df = pd.DataFrame.from_dict(results).T
-        results_df.columns = ["value"]
-
-        return results_df
-
-    def _compute_feature_psi(self, series_basis, series_meas):
-        """
-        Call the PSI calculator for two distributions
+        Use binning to discretise the values of the feature to invesigate.
 
         Parameters
         ----------
         series_basis : pandas series
-            Proxy for the reference distribution.
+            Series that will serve as basis for the PSI calculations (i.e. reference).
 
         series_meas : pandas series
-            Proxy for the measurement distribution.
+            Series that will compared to the reference during PSI calculations.
 
         Returns
         -------
-        psi_value: float.
-            PSI value.
+        basis_discrete, pd.Series.
+            Series with discretised values for series_basis.
+        meas_discrete, pd.Series.
+            Series with discretised values for series_meas.
         """
-        # Perform the binning for all features.
-        basis_binned = (
-            self.bucketer.fit_transform(series_basis.dropna()).value_counts().fillna(0)
-        )
+        if self.strategy in ["equal_width"]:
+            bucketer = EqualWidthDiscretiser(bins=self.bins)
+        else:
+            bucketer = EqualFrequencyDiscretiser(q=self.bins)
 
-        meas_binned = (
-            self.bucketer.transform(series_meas.dropna()).value_counts().fillna(0)
-        )
+        # Discretize the features.
+        basis_discrete = bucketer.fit_transform(series_basis.dropna())
+        meas_discrete = bucketer.transform(series_meas.dropna())
 
-        # Combine the two distributions by merging the buckets (bins)
-        binning = (
-            pd.DataFrame(basis_binned)
+        return basis_discrete, meas_discrete
+
+    def _approximate_features_distribution(self, basis, meas):
+        """
+        Approximate the distribution of the two features.
+
+        Parameters
+        ----------
+        basis : pd.Series.
+            Series with discretised (i.e. binned) values.
+
+        meas: pd.Series.
+            Series with discretised (i.e. binned) values.
+
+        Returns
+        -------
+        distribution.basis: pd.Series.
+            Normalized distribution of the basis Series over the bins.
+
+        distribution.meas: pd.Series.
+            Normalized distribution of the meas Series over the bins.
+        """
+        # TODO: were the fillna needed?
+        basis_distrib = basis.value_counts(normalize=True)
+        meas_distrib = meas.value_counts(normalize=True)
+
+        # Align the two distributions by merging the buckets (bins). This ensures
+        # the number of bins is the same for the two distributions (in case of
+        # empty bucket).
+        distributions = (
+            pd.DataFrame(basis_distrib)
             .merge(
-                pd.DataFrame(meas_binned),
+                pd.DataFrame(meas_distrib),
                 right_index=True,
                 left_index=True,
                 how="outer",
             )
-            .fillna(0)
+            .fillna(self.min_pct_empty_buckets)
         )
-        binning.columns = ["basis", "meas"]
+        distributions.columns = ["basis", "meas"]
 
-        # Compute the PSI value.
-        psi_value = self._psi(binning.basis.to_numpy(), binning.meas.to_numpy())
-
-        return psi_value
-
-    def _psi(self, d_basis, d_meas):
-        """
-        Compute the PSI value
-
-        Parameters
-        ----------
-        d_basis : np.array.
-            Proxy for the basis distribution.
-
-        d_meas: np.array.
-            Proxy for the measurement distribution.
-
-        Returns
-        -------
-        psi_value: float.
-            PSI value.
-        """
-        # Calculate the ratio of samples in each bin
-        basis_ratio = d_basis / d_basis.sum()
-        meas_ratio = d_meas / d_meas.sum()
-
-        # Necessary to avoid divide by zero and ln(0). Has minor impact on PSI value.
-        basis_ratio = np.where(
-            basis_ratio <= 0, self.min_pct_empty_buckets, basis_ratio
-        )
-        meas_ratio = np.where(meas_ratio <= 0, self.min_pct_empty_buckets, meas_ratio)
-
-        # Calculate the PSI value
-        psi_value = np.sum(
-            (meas_ratio - basis_ratio) * np.log(meas_ratio / basis_ratio)
-        )
-
-        return psi_value
+        return distributions.basis, distributions.meas
 
     def _split_dataframe(self, X):
         """
@@ -389,8 +410,10 @@ class DropHighPSIFeatures(BaseSelector):
 
         Returns
         -------
-        pandas dataframe with value below the
-        basis pandas dataframe
+        within_cut_off, pd.DataFrame
+            pandas dataframe with value within the cut_off
+        outside_cut_off, pd.DataFrame
+            pandas dataframe with value outside the cut_off
         """
         # Identify the values according to which the split must be done.
         if self.split_col is None:
@@ -404,18 +427,20 @@ class DropHighPSIFeatures(BaseSelector):
                 "Na's are not allowed in the columns used to split the dataframe."
             )
 
-        # Define the cut-off point based on quantile.
-        cut_off = self._get_cut_off_value(reference)
+        # If no cut_off is pre-defined, compute it.
+        if not self.cut_off:
+            self.cut_off = self._get_cut_off_value(reference)
 
-        self.quantile = {self.split_col: cut_off}
+        # Split the original dataframe in two parts: within and outside cut-off
+        if isinstance(self.cut_off, list):
+            is_within_cut_off = reference.isin(self.cut_off)
+        else:
+            is_within_cut_off = reference <= self.cut_off
 
-        # Split the original dataframe in two parts: above and below cut-off
-        is_above_cut_off = reference > cut_off
+        within_cut_off = X[is_within_cut_off]
+        outside_cut_off = X[~is_within_cut_off]
 
-        below_cut_off = X[~is_above_cut_off]
-        above_cut_off = X[is_above_cut_off]
-
-        return below_cut_off, above_cut_off
+        return within_cut_off, outside_cut_off
 
     def _get_cut_off_value(self, ref):
         """
@@ -460,105 +485,3 @@ class DropHighPSIFeatures(BaseSelector):
             cut_off = (distance.idxmin()).values[0]
 
         return cut_off
-
-    def _check_init_values(
-        self,
-        split_col,
-        split_frac,
-        split_distinct_value,
-        variables,
-        missing_values,
-        switch,
-        threshold,
-        bins,
-        strategy,
-        min_pct_empty_buckets,
-    ):
-        """
-        Raise an error if one of the arguments is not of the expected type or
-        has an inadequate value.
-
-        split_col: string.
-        Label of the column according to which the dataframe will be split.
-
-        split_frac: float.
-            Ratio of the observations (when split_distinct is not activated) that
-            goes into the sub-dataframe that is used to determine the reference for
-            the feature distributions. The second sub-dataframe will be used to compare
-            its feature distributions to the reference ones.
-
-        split_distinct_values: boolean.
-            If set on, the split fraction does not account for the number of
-            observations but only for the number of distinct values in split_col.
-
-        variables: list
-            The list of variables to evaluate. If None, the transformer will
-            evaluate all numerical variables in the dataset.
-
-        switch: boolean
-            If set to true the role of the two matrices involved in the PSI
-            calculations (basis and measurement) will be switch. This is an
-            important option as the PSI value is not symmetric
-            (i.e. PSI(a, b) != PSI(b, a)).
-
-        threshold: float
-            Threshold above which the distribution of a feature has changed so
-            much that the feature will be dropped. The most common values are
-            0.25 (large shift) and 0.10 (medium shift).
-
-        strategy: string or callable
-            Type of binning used to represent the distribution of the feature.
-            In can be either "equal_width" for equally spaced bins or
-            "equal_frequency" for bins based on quantiles.
-
-        bins: int
-            Number of bins used in the binning. For numerical feature a value of
-            10 is considered as appropriate. For features with lower cardinality
-            lower values are usually used.
-
-        min_pct_empty_buckets: float
-            Value to add to empty bucket (when considering percentages). If a bin
-            is empty the PSI value may jump to infinity. By adding a small number
-            to empty bins, this issue is avoided. If the value added is too large,
-            it may disturb the calculations.
-
-        missing_values: str
-            Takes values 'raise' and 'ignore'. Whether the missing values should
-            be raised as error or ignored when determining correlation.
-
-        Returns:
-            None
-
-        """
-        if not isinstance(bins, int) or bins <= 1:
-            raise ValueError("bins must be an integer larger than 1.")
-
-        if not isinstance(switch, bool):
-            raise ValueError("The value of switch basis must be True or False.")
-
-        if not isinstance(threshold, (float, int)) or threshold < 0:
-            raise ValueError("threshold must be a float larger than 0")
-
-        if not isinstance(split_col, (str, type(None))):
-            raise ValueError("split_col must be a string")
-
-        if not 0 < split_frac < 1:
-            raise ValueError("split_frac must be larger than 0 and smaller than 1")
-
-        if not isinstance(split_distinct_value, bool):
-            raise ValueError("split_distinct_value must be a boolean")
-
-        if (
-            not isinstance(min_pct_empty_buckets, (float, int))
-            or min_pct_empty_buckets < 0
-        ):
-            raise ValueError("min_pct_empty_buckets must be larger or equal to 0")
-
-        if missing_values not in ["raise", "ignore"]:
-            raise ValueError("missing_values can only be 'raise' or 'ignore'.")
-        if strategy in ["equal_width"]:
-            self.bucketer = EqualWidthDiscretiser(bins=bins)
-        elif strategy in ["equal_frequency"]:
-            self.bucketer = EqualFrequencyDiscretiser(q=bins)
-        else:
-            raise ValueError("Strategy must be either equal_width or equal_frequency")

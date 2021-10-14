@@ -37,9 +37,9 @@ def test_sanity_checks(df):
     transformer = DropHighPSIFeatures()
     X = transformer.fit_transform(df)
 
-    assert transformer.psi_.value.min() >= 0
+    assert min(transformer.psi_values_.values()) >= 0
     assert X.shape == df.shape
-    assert transformer.psi_.shape[0] == df.shape[1]
+    assert len(transformer.psi_values_.values()) == df.shape[1]
 
 
 def test_check_psi_values():
@@ -75,7 +75,7 @@ def test_check_psi_values():
 
     test.fit(df)
 
-    assert abs(test.psi_.value[0] - ref_value) < 0.000001
+    assert abs(test.psi_values_["A"] - ref_value) < 0.000001
 
 
 quantile_test = [(0.5, 50), (0.33, 33), (0.17, 17), (0.81, 81)]
@@ -92,7 +92,7 @@ def test_calculation_quantile(split_frac, expected):
         split_col="A", split_frac=split_frac, split_distinct_value=False
     )
     test.fit_transform(df)
-    assert test.quantile["A"] == expected
+    assert test.cut_off == expected
 
 
 def test_calculation_distinct_value():
@@ -105,11 +105,11 @@ def test_calculation_distinct_value():
         split_col="C", split_frac=0.5, split_distinct_value=False
     )
     test.fit_transform(df)
-    assert test.quantile["C"] == "C"
+    assert test.cut_off == "C"
 
     test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct_value=True)
     test.fit_transform(df)
-    assert test.quantile["C"] == "B"
+    assert test.cut_off == "B"
 
 
 @pytest.fixture(params=["time", "A", "B", "C"])
@@ -148,7 +148,7 @@ def test_calculation_no_split_columns():
 
     test = DropHighPSIFeatures(split_frac=0.5, split_distinct_value=True)
     test.fit_transform(df)
-    assert test.psi_.shape == (2, 1)
+    assert len(test.psi_values_) == 2
 
 
 def test_switch():
@@ -186,7 +186,7 @@ def test_switch():
     )
     switch_case.fit(df_reverse)
 
-    assert (case.psi_ == switch_case.psi_).all
+    assert case.psi_values_ == switch_case.psi_values_
 
 
 def test_split_df_according_to_col():
@@ -202,9 +202,9 @@ def test_split_df_according_to_col():
     cut_off = DropHighPSIFeatures(
         split_col="time", split_frac=0.5, bins=5, min_pct_empty_buckets=0.001
     )
-    psi = cut_off.fit(df).psi_
+    psi = cut_off.fit(df).psi_values_
 
-    assert psi.shape == (2, 1)
+    assert len(psi) == 2
 
 
 def test_value_error_is_raised(df):
