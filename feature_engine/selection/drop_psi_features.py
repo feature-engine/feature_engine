@@ -435,7 +435,7 @@ class DropHighPSIFeatures(BaseSelector):
             pandas dataframe with value outside the cut_off
         """
         # Identify the values according to which the split must be done.
-        if self.split_col is None:
+        if not self.split_col:
             reference = pd.Series(X.index)
         else:
             reference = X[self.split_col]
@@ -447,7 +447,7 @@ class DropHighPSIFeatures(BaseSelector):
             )
 
         # If no cut_off is pre-defined, compute it.
-        if self.cut_off:
+        if not self.cut_off:
             self.cut_off = self._get_cut_off_value(reference)
 
         # Split the original dataframe in two parts: within and outside cut-off
