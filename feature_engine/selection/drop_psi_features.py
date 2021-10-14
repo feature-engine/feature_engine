@@ -259,6 +259,7 @@ class DropHighPSIFeatures(BaseSelector):
                 setattr(self, name, value)
 
         # Check the variables.
+        self.cut_off = cut_off
         self.variables = _check_input_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
@@ -440,7 +441,7 @@ class DropHighPSIFeatures(BaseSelector):
             )
 
         # If no cut_off is pre-defined, compute it.
-        if not self.cut_off:
+        if self.cut_off:
             self.cut_off = self._get_cut_off_value(reference)
 
         # Split the original dataframe in two parts: within and outside cut-off
