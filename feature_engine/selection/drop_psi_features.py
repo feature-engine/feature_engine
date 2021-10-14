@@ -24,24 +24,26 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class DropHighPSIFeatures(BaseSelector):
     r"""
-    DropHighPSIFeatures drops features with a Population Stability Index (PSI) above
-    a given threshold. The PSI of a numerical feature is an indication of the shift in
-    its distribution; a feature with high PSI might therefore be seen as unstable.
+    DropHighPSIFeatures drops features with a Population Stability Index (PSI) value
+    above a given threshold. The PSI of a numerical feature is an indication of the
+    shift in its distribution; a feature with high PSI might therefore be seen as
+    unstable. In order to compute the PSI we will split the feature in two parts:
+    train and test. Train will be used to define the expected feature distribution
+    while test will be used to assess the difference with the train distrbution.
 
     In fields like Credit Risk Modelling, the elimination of features with high PSI
-    is frequent and usually required by the Regulator.
+    is common use and usually required by the Regulator.
 
-    When comparing the actual distribution of a feature to a reference distribution,
+    When comparing the test distribution of a feature to its train counterpart,
     the PSI is computed as follow:
 
-    - Compute a discretised proxy of the reference feature distribution using
-    binning.
-    - Apply the binning to the actual feature.
-    - Compute the percentage of the distribution in each bin (Actual_i
-    and Reference_i for bin i).
+    - Define bins and discretise the feature from the train set.
+    - Apply the binning to the same feature from the test set.
+    - Compute the percentage of the distribution in each bin (test_i
+      and train_i for bin i).
     - Compute the PSI using the following formula:
 
-    PSI = \sum_{i=1}^n (Actual_i - Reference_i) . ln(\frac{Actual_i}{Reference_i})
+    PSI = \sum_{i=1}^n (test_i - train_i) . ln(\frac{test_i}{train_i})
 
     Thresholds are used to assess the importance of the population shift reported by the
     PSI value. The most commonly used thresholds are:
@@ -49,11 +51,14 @@ class DropHighPSIFeatures(BaseSelector):
     - Above 25%, the variable has experienced a major shift.
     - Between those two values, the shift is intermediate.
 
-    When working with PSI, the following 2 points are worth mentioning:
+    When working with PSI, the following 3 points are worth mentioning:
     - The PSI is not symmetric with respected to the actual and reference; flipping the
     order will lead to different values fir the PSI.
     - The number of bins has an impact on the PSI values. 10 bins is usually
     a good choice.
+    - The PSI is suited for numerical feature (either continuous or with high
+    cardinality). For categorical features we advise to compute the difference
+    between distribution using Chi-Square or Kolmogorov-Smirnov.
 
     In DropHighPSIFeatures the approach implemented is the following:
 
@@ -63,16 +68,23 @@ class DropHighPSIFeatures(BaseSelector):
     - The user defines the columns of the dataframe according to which the dataframe
     will de split. The column can contain numbers, dates and strings.
 
-    - The user defines a split fraction. This is used to define the sizes of the two
-    dataframe. Is the split fraction is 50%, the two dataframe will have about the same
-    size. It is not guaranteed that the size will exactly match because the observations
-    are grouped by their label (i.e. their values in the split columns) so all
-    observations with the same label will automatically belong to the same dataframe.
+    - The user defines a split fraction or a cut-off value. This is used to define the
+    sizes of the two dataframe.
+        - If the split fraction is 50%, the two dataframe will have about the same
+        size. It is not guaranteed that the size will exactly match because the
+        observations are grouped by their label (i.e. their values in the split
+        columns) so all observations with the same label will automatically belong
+        to the same dataframe.
+        - A cut-off value define the border between the train and the test set.
+        It can be a value (float, int) and date or a list. In case of a list the
+        element of the list define the train set.
 
     - If the option split_distinct_value is activated, the number of distinct values
     is used to make the split. For example a feature with values: [1, 2, 3, 4, 4, 4]
     a 50% split without split_distinct_value will split into two parts [1, 2, 3] and
     [4, 4, 4] while if the option is set on, the split will be [1, 2] and [3, 4, 4, 4].
+    split_distinct is only meaningful in combination with split_fraction. It is
+    irrelevant when a cut-off is used.
 
     The PSI calculations are not symmetric. The switch argument allows to
     switch the role of the two dataframes in the PSI calculations.
@@ -159,8 +171,8 @@ class DropHighPSIFeatures(BaseSelector):
     n_features_in_:
         The number of features in the train set used in fit.
 
-    psi_:
-        Dataframe containing the PSI values for all features considered.
+    psi_values_:
+        Dictionary containing the PSI values for all features considered.
 
     Methods
     -------
