@@ -253,14 +253,20 @@ class DropHighPSIFeatures(BaseSelector):
                 f"is {strategy}"
             )
 
-        # Set all arguments (except self and variables) as attributes.
-        for name, value in vars().items():
-            if name not in ("self", "variables"):
-                setattr(self, name, value)
-
-        # Check the variables.
-        self.cut_off = cut_off
+        # Check the variables before assignment.
         self.variables = _check_input_parameter_variables(variables)
+
+        # Set all remaining arguments as attributes.
+        self.split_col = split_col
+        self.split_frac = split_frac
+        self.split_distinct_value = split_distinct_value
+        self.cut_off = cut_off
+        self.missing_values = missing_values
+        self.switch = switch
+        self.threshold = threshold
+        self.bins = bins
+        self.strategy = strategy
+        self.min_pct_empty_buckets = min_pct_empty_buckets
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -374,7 +380,7 @@ class DropHighPSIFeatures(BaseSelector):
         distribution.meas: pd.Series.
             Normalized distribution of the meas Series over the bins.
         """
-        # TODO: were the fillna needed?
+        # TODO: were the fillna in previous version needed?
         basis_distrib = basis.value_counts(normalize=True)
         meas_distrib = meas.value_counts(normalize=True)
 
