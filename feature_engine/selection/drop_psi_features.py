@@ -340,8 +340,8 @@ class DropHighPSIFeatures(BaseSelector):
 
         for feature in self.variables_:
             # Discretize the features.
-            basis_discrete = bucketer.fit_transform(basis_df[feature].dropna())
-            test_discrete = bucketer.transform(test_df[feature].dropna())
+            basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
+            test_discrete = bucketer.transform(test_df[[feature]].dropna())
             
             # Determine percentage of observations per bin
             basis_distrib, test_distrib = self._observation_frequency_per_bin(
