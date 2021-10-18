@@ -70,7 +70,7 @@ def test_check_psi_values():
         bins=2,
         strategy="equal_width",
         switch=False,
-        min_pct_empty_buckets=0.001,
+        min_pct_empty_bins=0.001,
     )
 
     test.fit(df)
@@ -177,12 +177,12 @@ def test_switch():
     df_reverse = pd.concat([df_b, df_a]).reset_index(drop=True)
 
     case = DropHighPSIFeatures(
-        split_frac=0.5, bins=5, switch=False, min_pct_empty_buckets=0.001
+        split_frac=0.5, bins=5, switch=False, min_pct_empty_bins=0.001
     )
     case.fit(df_order)
 
     switch_case = DropHighPSIFeatures(
-        split_frac=0.5, bins=5, switch=True, min_pct_empty_buckets=0.001
+        split_frac=0.5, bins=5, switch=True, min_pct_empty_bins=0.001
     )
     switch_case.fit(df_reverse)
 
@@ -200,7 +200,7 @@ def test_split_df_according_to_col():
     )
 
     cut_off = DropHighPSIFeatures(
-        split_col="time", split_frac=0.5, bins=5, min_pct_empty_buckets=0.001
+        split_col="time", split_frac=0.5, bins=5, min_pct_empty_bins=0.001
     )
     psi = cut_off.fit(df).psi_values_
 
@@ -210,10 +210,10 @@ def test_split_df_according_to_col():
 def test_value_error_is_raised(df):
 
     with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_frac=0, bins=5, min_pct_empty_buckets=0.001)
+        DropHighPSIFeatures(split_frac=0, bins=5, min_pct_empty_bins=0.001)
 
     with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_frac=1, bins=5, min_pct_empty_buckets=0.001)
+        DropHighPSIFeatures(split_frac=1, bins=5, min_pct_empty_bins=0.001)
 
     with pytest.raises(ValueError):
         DropHighPSIFeatures(bins=1)

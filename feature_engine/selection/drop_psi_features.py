@@ -25,38 +25,38 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class DropHighPSIFeatures(BaseSelector):
     r"""
-    DropHighPSIFeatures drops features with a Population Stability Index (PSI) value
+    DropHighPSIFeatures drops features which Population Stability Index (PSI) value is
     above a given threshold. The PSI of a numerical feature is an indication of the
-    shift in its distribution; a feature with high PSI might therefore be considered
+    shift in its distribution; a feature with high PSI could therefore be considered
     unstable.
 
-    To compute the PSI the transformer splits the dataset in two: a base and a test set.
-    The base set is assumed to contain the expected feature distributions. The test set
-    will be assessed against the base set.
+    To compute the PSI the transformer splits the training dataset in two: a basis data
+    set and a test set. The basis data set is assumed to contain the expected or
+    original feature distributions. The test set will be assessed against the basis
+    data set.
 
-    In Credit Risk, eliminating features with high PSI is commonly done and
-    usually required by the Regulator.
+    In Credit Risk, eliminating features with high PSI is commonly done and usually
+    required by the Regulator.
 
     To determine the PSI, continuous features are sorted into discrete intervals, the
-    number of observations per intervals is then determined, and those values are
-    compared between the base and test sets.
+    fraction of observations per interval is then determined, and finally those values
+    are compared between the base and test sets, to obtain the PSI.
 
     In other words, the PSI is computed as follows:
 
-    - Define the bins into which the observations will be sorted using the base set.
-    - Sort the feature values into those bins (for both base and test sets).
+    - Define the bins into which the observations will be sorted (uses the basis set).
+    - Sort the feature values into those bins (in both bassis and test sets).
     - Determine the fraction of observations within each bin.
     - Compute the PSI.
 
     The PSI is determined as:
 
-    PSI = \sum_{i=1}^n (test_i - base_i) . ln(\frac{test_i}{base_i})
+    PSI = \sum_{i=1}^n (test_i - basis_i) . ln(\frac{test_i}{basis_i})
 
-    A bigger value of the PSI indicates a bigger shift in the feature distribution
-    between the base and test sets.
+    A bigger PSI value indicates a bigger shift in the feature distribution.
 
-    Different thresholds can be used to assess the importance of the population shift
-    reported by the PSI value. The most commonly used thresholds are:
+    Different thresholds can be used to assess the magnitud of the distribution shift
+    according to the PSI value. The most commonly used thresholds are:
 
     - Below 10%, the variable has not experienced a significant shift.
     - Above 25%, the variable has experienced a major shift.
@@ -64,34 +64,35 @@ class DropHighPSIFeatures(BaseSelector):
 
     When working with PSI, it is worth highlighting the following:
 
-    - The PSI is not symmetric; switching the order of the dataframes used as base and
-    test will lead to different PSI values.
+    - The PSI is not symmetric; switching the order of the basis and test dataframes
+    will lead to different PSI values.
     - The number of bins has an impact on the PSI values.
     - The PSI is a suitable metric for numerical features (i.e., either continuous or
     with high cardinality). For categorical or discrete features, the change in
     distributions is better assessed with Chi-squared.
 
-    To compute the PSI the DropHighPSIFeatures splits the dataset in two. To split the
-    dataframe, several options are available.
+    To compute the PSI the DropHighPSIFeatures splits the dataset in two:
 
-    First and foremost, the user can enter one variable, which will be used to guide the
-    data split. This variable can take numbers, strings or dates as values. If the user
-    does not enter a variable name, DropHighPSIFeatures will use the dataframe index.
+    First and foremost, the user should enter one variable which will be used to guide
+    the data split. This variable can be of any data type. If the user does not enter a
+    variable name, DropHighPSIFeatures will use the dataframe index.
 
     Second, the user has the option to specify a proportion of observations to put in
     each data set, or alternatively, provide a cut-off value.
 
     If the user specifies a proportion through the split_frac parameter, the data will
     be sorted to accommodate that proportion. If split_frac is 0.5, 50% of the
-    observations will go to either base or test sets. If split_frac is 0.6, 60% of the
-    samples will go to the base test and the remaining 40% to the test set.
+    observations will go to either basis or test sets. If split_frac is 0.6, 60% of the
+    samples will go to the basis data set and the remaining 40% to the test set.
 
     If the user defines a numeric cut-off value or a specific date using the cut_off
-    parameter, the observations with value below the cut-off will go to the base set and
+    parameter, the observations with value <= cut-off will go to the basis data set and
     the remaining ones to the test set.
 
     If the user passes a list of values, the observations with the values in the list,
-    will go to the base set, alternatively to the test set.
+    will go to the basis set, and the remaining ones to the test set.
+
+    For more details check the parameter definitions below.
 
 
     References
@@ -108,26 +109,30 @@ class DropHighPSIFeatures(BaseSelector):
 
     split_frac: float, default=0.5.
         The proportion of observations in each of the dataframes that will be used
-        to compare the feature distributions. If split_distinct is True, the indicated
-        ratio may not be achieved exactly. See parameter split_distinct for more
-        details. If cut_off is not None, split_frac will be ignored and the data split
-        based on the cut_off value.
+        to compare the feature distributions. If split_frac is 0.6, 60% of the
+        observations will be put in the basis data set.
+
+        If split_distinct is True, the indicated fraction may not be achieved exactly.
+        See parameter split_distinct for more details.
+
+        If cut_off is not None, split_frac will be ignored and the data split based off
+        the cut_off value.
 
     split_distinct: boolean, default=False.
-        If True, split_col unique values will go to either dataframe but not both. For
-        example, if split_col is [0, 1, 1, 1, 2, 2], split_frac is 0.5 and
-        split_distinct is False, the data will be divided ind [0, 1, 1] and [1, 2, 2]
-        achieving exactly a 50% split. However, if split_distinct is True, then the data
-        will be divided into [0, 1, 1, 1] and [2, 2], with an approximate split of 0.5
-        but not exactly.
+        If True, unique values in split_col will go to either basis or test data sets
+        but not both. For example, if split_col is [0, 1, 1, 1, 2, 2], split_frac is 0.5
+        and split_distinct is False, the data will be divided ind [0, 1, 1] and
+        [1, 2, 2] achieving exactly a 50% split. However, if split_distinct is True,
+        then the data will be divided into [0, 1, 1, 1] and [2, 2], with an approximate
+        split of 0.5 but not exactly.
 
-    cut_off: None, int, float, date or list, default=None
+    cut_off: int, float, date or list, default=None
         Threshold to split the dataset based on the split_col values. If int, float
-        or date, observations where the split_col values are below the threshold will
-        go to the base dataframe and those with values above the threshold will land in
-        the test dataframe. If cut_off is a list, the observations where the split_col
-        values are within the list will go to the base dataframe and the remaining
-        observations will land in the test dataframe. If cut_off is not None, this
+        or date, observations where the split_col values are <= threshold will
+        go to the basis data set and those with values above the threshold will land in
+        the test set. If cut_off is a list, the observations where the split_col
+        values are within the list will go to the basis data set and the remaining
+        observations will land in the test set. If cut_off is not None, this
         parameter will be used to split the data and split_frac will be ignored.
 
     switch: boolean, default=False.
@@ -146,17 +151,18 @@ class DropHighPSIFeatures(BaseSelector):
         distributions, lower values may be required.
 
     strategy: string, default='equal_frequency'
-        Type of binning used to represent the distribution of the feature. In can be
-        "equal_width" for equally spaced bins or "equal_frequency" for bins based on
-        quantiles, that is, bins with similar number of observations.
+        If the intervals into which the features should be discretized are of equal
+        size or equal number of observations. Takes values "equal_width" for equally
+        spaced bins or "equal_frequency" for bins based on quantiles, that is, bins
+        with similar number of observations.
 
-    min_pct_empty_buckets: float, default = 0.0001
-        Value to add to empty buckets or empty bins. If after sorting the variable
-        values into bins, a bin is empty the PSI cannot be determined. By adding a
+    min_pct_empty_bins: float, default = 0.0001
+        Value to add to empty bins or intervals. If after sorting the variable
+        values into bins, a bin is empty, the PSI cannot be determined. By adding a
         small number to empty bins, we can avoid this issue. Note, that if the value
         added is too large, it may disturb the PSI calculation.
 
-    missing_values: str, default=ignore
+    missing_values: str, default='ignore'
         Whether to perform the PSI feature selection on a dataframe with missing values.
         Takes values 'raise' or 'ignore'. If 'ignore', missing values will be dropped
         when determining the PSI for that particular feature. If 'raise' the transformer
@@ -169,13 +175,13 @@ class DropHighPSIFeatures(BaseSelector):
     Attributes
     ----------
     features_to_drop_:
-        Set with the features that will be dropped.
+        List with the features that will be dropped.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables to evaluate.
 
     psi_values_:
-        Dictionary containing the PSI values for all features considered.
+        Dictionary containing the PSI value per feature.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -191,7 +197,7 @@ class DropHighPSIFeatures(BaseSelector):
 
     See Also
     --------
-    To know more about the discretization visit:
+    To know more about discretization visit:
 
     feature_engine.discretisation.EqualFrequencyDiscretiser
     feature_engine.discretisation.EqualWidthDiscretiser
@@ -207,7 +213,7 @@ class DropHighPSIFeatures(BaseSelector):
         threshold: float = 0.25,
         bins: int = 10,
         strategy: str = "equal_frequency",
-        min_pct_empty_buckets: float = 0.0001,
+        min_pct_empty_bins: float = 0.0001,
         missing_values: str = "ignore",
         variables: Variables = None,
     ):
@@ -258,11 +264,11 @@ class DropHighPSIFeatures(BaseSelector):
             )
 
         if (
-            not isinstance(min_pct_empty_buckets, (float, int))
-            or min_pct_empty_buckets < 0
+            not isinstance(min_pct_empty_bins, (float, int))
+            or min_pct_empty_bins < 0
         ):
             raise ValueError(
-                f"min_pct_empty_buckets must be >= 0. Got {min_pct_empty_buckets} "
+                f"min_pct_empty_buckets must be >= 0. Got {min_pct_empty_bins} "
                 f"instead."
             )
 
@@ -292,7 +298,7 @@ class DropHighPSIFeatures(BaseSelector):
         self.threshold = threshold
         self.bins = bins
         self.strategy = strategy
-        self.min_pct_empty_buckets = min_pct_empty_buckets
+        self.min_pct_empty_buckets = min_pct_empty_bins
         self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
