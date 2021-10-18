@@ -190,47 +190,58 @@ class DropHighPSIFeatures(BaseSelector):
         split_frac: float = 0.5,
         split_distinct_value: bool = False,
         cut_off: Union[None, int, float, datetime.date, List] = None,
-        variables: Variables = None,
-        missing_values: str = "ignore",
         switch: bool = False,
         threshold: float = 0.25,
         bins: int = 10,
         strategy: str = "equal_frequency",
         min_pct_empty_buckets: float = 0.0001,
+        missing_values: str = "ignore",
+        variables: Variables = None,
     ):
-        # Ensure the arguments are according to expectations
-        if (cut_off and split_frac) and not (cut_off or split_frac):
-            raise ValueError(
-                "cut_off and split frac cannot be defined at the same time."
-                f"The values provided for cut_off and split_frac are {cut_off} "
-                f"and {split_frac}."
-            )
-        if not isinstance(bins, int) or bins <= 1:
-            raise ValueError(f"bins must be than 1 but has value: {bins}.")
 
-        if not isinstance(switch, bool):
-            raise ValueError(f"Switch must be a boolean but has value: {switch}.")
-
-        if not isinstance(threshold, (float, int)) or threshold < 0:
+        if split_col and not isinstance(split_col, (str, int)):
             raise ValueError(
-                f"threshold must be larger than 0 but has value: {threshold}."
+                f"split_col must be a string an integer or None. Got "
+                f"{split_col} instead."
             )
 
-        if not isinstance(split_col, (str, type(None))):
+        # split_frac and cut_off can't be None at the same time
+        if not split_frac and not cut_off:
             raise ValueError(
-                f"split_col must be a string but has type: {type(split_col)}"
+                "cut_off and split_frac cannot be both set to None. Please specify a "
+                "value for at least one of these parameters."
             )
 
-        if split_frac is not None:
+        # check split_frac only if it will be used.
+        if split_frac and not cut_off:
             if not (0 < split_frac < 1):
                 raise ValueError(
-                    f"split_frac must be between 0 and 1 but is: {split_frac}"
+                    f"split_frac must be a float between 0 and 1. Got {split_frac} "
+                    f"instead."
                 )
 
         if not isinstance(split_distinct_value, bool):
             raise ValueError(
-                "split_distinct_value must be a boolean but is "
-                f"{type(split_distinct_value)}"
+                f"split_distinct_value must be a boolean. Got {split_distinct_value} "
+                f"instead."
+            )
+
+        if not isinstance(switch, bool):
+            raise ValueError(f"switch must be a boolean. Got {switch} instead.")
+
+        if not isinstance(threshold, (float, int)) or threshold < 0:
+            raise ValueError(
+                f"threshold must be >= 0. Got {threshold} instead."
+            )
+
+        if not isinstance(bins, int) or bins <= 1:
+            raise ValueError(f"bins must be an integer >= 1. Got {bins} "
+                             f"instead.")
+
+        if strategy not in ["equal_width", "equal_frequency"]:
+            raise ValueError(
+                "strategy takes only values equal_width or equal_frequency. Got "
+                f"{strategy} instead."
             )
 
         if (
@@ -238,19 +249,14 @@ class DropHighPSIFeatures(BaseSelector):
             or min_pct_empty_buckets < 0
         ):
             raise ValueError(
-                f"min_pct_empty_buckets must >= 0 but has value {min_pct_empty_buckets}"
+                f"min_pct_empty_buckets must be >= 0. Got {min_pct_empty_buckets} "
+                f"instead."
             )
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
-                "missing_values can only be 'raise' or 'ignore' but is "
-                f"{missing_values}."
-            )
-
-        if strategy not in ["equal_width", "equal_frequency"]:
-            raise ValueError(
-                "Strategy must be either equal_width or equal_frequency but "
-                f"is {strategy}"
+                f"missing_values takes only values 'raise' or 'ignore'. Got "
+                f"{missing_values} instead."
             )
 
         # Check the variables before assignment.
@@ -261,12 +267,12 @@ class DropHighPSIFeatures(BaseSelector):
         self.split_frac = split_frac
         self.split_distinct_value = split_distinct_value
         self.cut_off = cut_off
-        self.missing_values = missing_values
         self.switch = switch
         self.threshold = threshold
         self.bins = bins
         self.strategy = strategy
         self.min_pct_empty_buckets = min_pct_empty_buckets
+        self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
