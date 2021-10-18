@@ -268,7 +268,7 @@ class DropHighPSIFeatures(BaseSelector):
             or min_pct_empty_bins < 0
         ):
             raise ValueError(
-                f"min_pct_empty_buckets must be >= 0. Got {min_pct_empty_bins} "
+                f"min_pct_empty_bins must be >= 0. Got {min_pct_empty_bins} "
                 f"instead."
             )
 
