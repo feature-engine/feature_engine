@@ -1,5 +1,4 @@
 from datetime import date
-
 import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
@@ -207,13 +206,53 @@ def test_split_df_according_to_col():
     assert len(psi) == 2
 
 
-def test_value_error_is_raised(df):
+def test_init_params():
+    transformer = DropHighPSIFeatures(
+        split_col = 'hola',
+        split_frac = 0.6,
+        split_distinct = True,
+        cut_off = ['value_1', 'value_2'],
+        switch = True,
+        threshold = 0.10,
+        bins = 5,
+        strategy = "equal_frequency",
+        min_pct_empty_bins = 0.1,
+        missing_values = "raise",
+        variables = ['chau', 'adios'],
+    )
+
+    assert transformer.split_col == 'hola'
+    assert transformer.split_frac == 0.6
+    assert transformer.split_distinct is True
+    assert transformer.cut_off == ['value_1', 'value_2']
+    assert transformer.switch is True
+    assert transformer.threshold == 0.1
+    assert transformer.bins == 5
+    assert transformer.strategy == "equal_frequency"
+    assert transformer.min_pct_empty_buckets == 0.1
+    assert transformer.missing_values == 'raise'
+    assert transformer.variables == ['chau', 'adios']
+
+
+def test_init_value_error_is_raised():
 
     with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_frac=0, bins=5, min_pct_empty_bins=0.001)
+        DropHighPSIFeatures(split_col=['hola'])
 
     with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_frac=1, bins=5, min_pct_empty_bins=0.001)
+        DropHighPSIFeatures(split_col=['hola'], variables=['hola', 'chau'])
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_frac=0)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_frac=1)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_frac=None, cut_off=None)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_distinct=1)
 
     with pytest.raises(ValueError):
         DropHighPSIFeatures(bins=1)
@@ -226,6 +265,9 @@ def test_value_error_is_raised(df):
 
     with pytest.raises(ValueError):
         DropHighPSIFeatures(strategy="unknown")
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(min_pct_empty_bins="unknown")
 
 
 def test_variable_definition(df):
@@ -241,3 +283,6 @@ def test_non_fitted_error(df):
     with pytest.raises(NotFittedError):
         transformer = DropHighPSIFeatures()
         transformer.transform(df)
+
+
+

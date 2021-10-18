@@ -162,7 +162,7 @@ class DropHighPSIFeatures(BaseSelector):
         small number to empty bins, we can avoid this issue. Note, that if the value
         added is too large, it may disturb the PSI calculation.
 
-    missing_values: str, default='ignore'
+    missing_values: str, default='raise'
         Whether to perform the PSI feature selection on a dataframe with missing values.
         Takes values 'raise' or 'ignore'. If 'ignore', missing values will be dropped
         when determining the PSI for that particular feature. If 'raise' the transformer
@@ -214,11 +214,11 @@ class DropHighPSIFeatures(BaseSelector):
         bins: int = 10,
         strategy: str = "equal_frequency",
         min_pct_empty_bins: float = 0.0001,
-        missing_values: str = "ignore",
+        missing_values: str = "raise",
         variables: Variables = None,
     ):
 
-        if split_col and not isinstance(split_col, (str, int)):
+        if not isinstance(split_col, (str, int, type(None))):
             raise ValueError(
                 f"split_col must be a string an integer or None. Got "
                 f"{split_col} instead."
@@ -241,7 +241,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         if not isinstance(split_distinct, bool):
             raise ValueError(
-                f"split_distinct_value must be a boolean. Got {split_distinct} "
+                f"split_distinct must be a boolean. Got {split_distinct} "
                 f"instead."
             )
 
@@ -292,7 +292,7 @@ class DropHighPSIFeatures(BaseSelector):
         # Set all remaining arguments as attributes.
         self.split_col = split_col
         self.split_frac = split_frac
-        self.split_distinct_value = split_distinct
+        self.split_distinct = split_distinct
         self.cut_off = cut_off
         self.switch = switch
         self.threshold = threshold
@@ -317,9 +317,21 @@ class DropHighPSIFeatures(BaseSelector):
         -------
         self
         """
-        # input checks
-        X = self._input_check(X)
-        self._check_input_variables(X)
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # find all variables or check those entered are present in the dataframe
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+
+        # Remove the split_col from the variables list. It might be added if the
+        # variables are not defined at initiation.
+        if self.split_col in self.variables_:
+            self.variables_.remove(self.split_col)
+
+        if self.missing_values == "raise":
+            # check if dataset contains na or inf
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
         # Split the dataframe into basis and test.
         basis_df, test_df = self._split_dataframe(X)
@@ -487,8 +499,8 @@ class DropHighPSIFeatures(BaseSelector):
         cut_off: (float, int, str, object).
             value for the cut-off.
         """
-        # In case split_distinct_value is used, extract series with unique values
-        if self.split_distinct_value:
+        # In case split_distinct is used, extract series with unique values
+        if self.split_distinct:
             split_column = pd.Series(split_column.unique())
 
         # If the value is numerical, use numpy functionality
@@ -508,30 +520,6 @@ class DropHighPSIFeatures(BaseSelector):
 
         return cut_off
 
-    def _input_check(self, X):
-        """
-        Checks dataframe against input parameters
-        """
-        # check input dataframe
-        X = _is_dataframe(X)
-
-        if self.missing_values == "raise":
-            # check if dataset contains na or inf
-            _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.variables_)
-            
-        return X
-
-    def _check_input_variables(self, X):
-        # find all variables or check those entered are present in the dataframe
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
-
-        # Remove the split column from the variables list. It might be accidentally
-        # added if selecting numerical variables automatically.
-        if self.split_col in self.variables_:
-            self.variables_.remove(self.split_col)
-
-        return self
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
