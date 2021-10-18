@@ -344,7 +344,7 @@ class DropHighPSIFeatures(BaseSelector):
             test_discrete = bucketer.transform(test_df[feature].dropna())
             
             # Determine percentage of observations per bin
-            basis_distrib, test_distrib  = self._observation_frequency_per_bin(
+            basis_distrib, test_distrib = self._observation_frequency_per_bin(
                 basis_discrete, test_discrete
             )
 
@@ -352,7 +352,7 @@ class DropHighPSIFeatures(BaseSelector):
             self.psi_values_[feature] = np.sum(
                 (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
             )
-            # Assess if the feature needs to be dropped
+            # Assess if feature should be dropped
             if self.psi_values_[feature] > self.threshold:
                 self.features_to_drop_.append(feature)
 
@@ -362,23 +362,23 @@ class DropHighPSIFeatures(BaseSelector):
 
     def _observation_frequency_per_bin(self, basis, test):
         """
-        Approximate the distribution of the two features.
+        Obtain the fraction of observations per interval.
 
         Parameters
         ----------
         basis : pd.Series.
-            Pandas Series with discretised (i.e., binned) values.
+            The basis Pandas Series with discretised (i.e., binned) values.
 
         test: pd.Series.
-            Pandas Series with discretised (i.e., binned) values.
+            The test Pandas Series with discretised (i.e., binned) values.
 
         Returns
         -------
         distribution.basis: pd.Series.
-            Pandas Series with percentage of observations per bin.
+            Basis Pandas Series with percentage of observations per bin.
 
         distribution.meas: pd.Series.
-            Pandas Series with percentage of observations per bin.
+            Test Pandas Series with percentage of observations per bin.
         """
         # TODO: were the fillna in previous version needed?
         basis_distrib = basis.value_counts(normalize=True)
@@ -395,7 +395,7 @@ class DropHighPSIFeatures(BaseSelector):
                 left_index=True,
                 how="outer",
             )
-            .fillna(self.min_pct_empty_buckets)
+            .fillna(self.min_pct_empty_bins)
         )
         distributions.columns = ["basis", "test"]
 
@@ -408,10 +408,10 @@ class DropHighPSIFeatures(BaseSelector):
         observations > cut_off.
 
         If cut-off is a list, then the basis dataframe will contain all observations
-        with values are within the list, and the test dataframe all remaining
+        which values are within the list, and the test dataframe all remaining
         observations.
 
-        The cut-off value is associated to a specific column; the reference column.
+        The cut-off value is associated to a specific column.
 
         Parameters
         ----------
@@ -419,11 +419,13 @@ class DropHighPSIFeatures(BaseSelector):
 
         Returns
         -------
-        basis_df; pd.DataFrame
+        basis_df: pd.DataFrame
             pandas dataframe with observations which value <= cut_off
+
         test_df: pd.DataFrame
             pandas dataframe with observations which value > cut_off
         """
+
         # Identify the values according to which the split must be done.
         if not self.split_col:
             reference = pd.Series(X.index)
@@ -471,13 +473,14 @@ class DropHighPSIFeatures(BaseSelector):
             used to compute the quantile. The value with the quantile that
             is the closest to the chosen split fraction is used as cut-off.
 
+            #TODO: this needs to be in the dosctrings at the top as well:
             - The sort involves that categorical values are sorted alphabetically
             and cut accordingly.
 
         Parameters
         ----------
-        split_column : (np.array, pd.Series).
-            Series for which the nth quantile must be computed.
+        split_column : pd.Series.
+            Series for which the nth quantile will be computed.
 
         Returns
         -------
@@ -529,3 +532,11 @@ class DropHighPSIFeatures(BaseSelector):
             self.variables_.remove(self.split_col)
 
         return self
+
+    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = super().transform(X)
+
+        return X
+
+    transform.__doc__ = BaseSelector.transform.__doc__
