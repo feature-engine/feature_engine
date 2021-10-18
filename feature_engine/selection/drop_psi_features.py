@@ -3,6 +3,7 @@ from typing import List, Union
 import datetime
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
@@ -271,6 +272,14 @@ class DropHighPSIFeatures(BaseSelector):
                 f"{missing_values} instead."
             )
 
+        if variables:
+            if split_col in variables:
+                raise ValueError(
+                    f"{split_col} cannot be used to split the data and be evaluated at"
+                    f"the same time. Either remove {split_col} from the variables list "
+                    f"or choose another splitting criteria."
+                )
+
         # Check the variables before assignment.
         self.variables = _check_input_parameter_variables(variables)
 
@@ -288,7 +297,7 @@ class DropHighPSIFeatures(BaseSelector):
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
-        Assess the features that needs to be dropped because of high PSI values.
+        Find features with high PSI values.
 
         Parameters
         ----------
@@ -302,155 +311,112 @@ class DropHighPSIFeatures(BaseSelector):
         -------
         self
         """
-        # check input dataframe
-        X = _is_dataframe(X)
-        self.n_features_in_ = X.shape[1]
+        # input checks
+        X = self._input_check(X)
+        self._check_input_variables(X)
 
-        # find all variables or check those entered are present in the dataframe
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        # Split the dataframe into basis and test.
+        basis_df, test_df = self._split_dataframe(X)
 
-        # Remove the split columns from the variables list. It is automatically added to
-        # it if variables is not defined at initiation.
-        if self.split_col in self.variables_:
-            self.variables_.remove(self.split_col)
-
-        if self.missing_values == "raise":
-            # check if dataset contains na or inf
-            _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.variables_)
-
-        # Split the dataframe into a basis and a measurement dataframe.
-        basis_df, measurement_df = self._split_dataframe(X)
-
-        # Switch base and measurement dataframe if required.
+        # Switch basis and test dataframes if required.
         if self.switch:
-            measurement_df, basis_df = basis_df, measurement_df
+            test_df, basis_df = basis_df, test_df
 
+        # set up the discretizer
+        if self.strategy == "equal_width":
+            bucketer = EqualWidthDiscretiser(bins=self.bins)
+        else:
+            bucketer = EqualFrequencyDiscretiser(q=self.bins)
+            
         # Compute the PSI by looping over the features
         self.psi_values_ = {}
         self.features_to_drop_ = []
+
         for feature in self.variables_:
-            # Discretize the features using bucketing.
-            basis_discrete, meas_discrete = self._discretize_features(
-                basis_df[[feature]], measurement_df[[feature]]
+            # Discretize the features.
+            basis_discrete = bucketer.fit_transform(basis_df[feature].dropna())
+            test_discrete = bucketer.transform(test_df[feature].dropna())
+            
+            # Determine percentage of observations per bin
+            basis_distrib, test_distrib  = self._observation_frequency_per_bin(
+                basis_discrete, test_discrete
             )
-            # Approximate the features' normalized distribution.
-            meas_distrib, basis_distrib = self._approximate_features_distribution(
-                basis_discrete, meas_discrete
-            )
-            # Calculate the PSI value based on the distributions
+
+            # Calculate the PSI value
             self.psi_values_[feature] = np.sum(
-                (meas_distrib - basis_distrib) * np.log(meas_distrib / basis_distrib)
+                (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
             )
             # Assess if the feature needs to be dropped
             if self.psi_values_[feature] > self.threshold:
                 self.features_to_drop_.append(feature)
 
+        self.n_features_in_ = X.shape[1]
+
         return self
 
-    def _discretize_features(self, series_basis, series_meas):
-        """
-        Use binning to discretise the values of the feature to invesigate.
-
-        Parameters
-        ----------
-        series_basis : pandas series
-            Series that will serve as basis for the PSI calculations (i.e. reference).
-
-        series_meas : pandas series
-            Series that will compared to the reference during PSI calculations.
-
-        Returns
-        -------
-        basis_discrete, pd.Series.
-            Series with discretised values for series_basis.
-        meas_discrete, pd.Series.
-            Series with discretised values for series_meas.
-        """
-        if self.strategy in ["equal_width"]:
-            bucketer = EqualWidthDiscretiser(bins=self.bins)
-        else:
-            bucketer = EqualFrequencyDiscretiser(q=self.bins)
-
-        # Discretize the features.
-        basis_discrete = bucketer.fit_transform(series_basis.dropna())
-        meas_discrete = bucketer.transform(series_meas.dropna())
-
-        return basis_discrete, meas_discrete
-
-    def _approximate_features_distribution(self, basis, meas):
+    def _observation_frequency_per_bin(self, basis, test):
         """
         Approximate the distribution of the two features.
 
         Parameters
         ----------
         basis : pd.Series.
-            Series with discretised (i.e. binned) values.
+            Pandas Series with discretised (i.e., binned) values.
 
-        meas: pd.Series.
-            Series with discretised (i.e. binned) values.
+        test: pd.Series.
+            Pandas Series with discretised (i.e., binned) values.
 
         Returns
         -------
         distribution.basis: pd.Series.
-            Normalized distribution of the basis Series over the bins.
+            Pandas Series with percentage of observations per bin.
 
         distribution.meas: pd.Series.
-            Normalized distribution of the meas Series over the bins.
+            Pandas Series with percentage of observations per bin.
         """
         # TODO: were the fillna in previous version needed?
         basis_distrib = basis.value_counts(normalize=True)
-        meas_distrib = meas.value_counts(normalize=True)
+        test_distrib = test.value_counts(normalize=True)
 
         # Align the two distributions by merging the buckets (bins). This ensures
         # the number of bins is the same for the two distributions (in case of
-        # empty bucket).
+        # empty buckets).
         distributions = (
             pd.DataFrame(basis_distrib)
             .merge(
-                pd.DataFrame(meas_distrib),
+                pd.DataFrame(test_distrib),
                 right_index=True,
                 left_index=True,
                 how="outer",
             )
             .fillna(self.min_pct_empty_buckets)
         )
-        distributions.columns = ["basis", "meas"]
+        distributions.columns = ["basis", "test"]
 
-        return distributions.basis, distributions.meas
+        return distributions.basis, distributions.test
 
     def _split_dataframe(self, X):
         """
-        Split a dataframe according to a cut-off value and return two dataframes:
-        one with values above the cut-off and one with values below or equal
-        to the cut-off.
-        The cut-off value is associated to a specific column.
+        Split dataframe according to a cut-off value and return two dataframes: the
+        basis dataframe contains all observations <= cut_off and the test dataframe the
+        observations > cut_off.
 
-        The cut-off can be defined in two ways:
+        If cut-off is a list, then the basis dataframe will contain all observations
+        with values are within the list, and the test dataframe all remaining
+        observations.
 
-            - Considering all observations. In that case a split fraction of 0.25
-            will ensure 25% of the observations are in the "below cut-off"
-            dataframe. The final number of observations in the "below cut-off" may
-            be slightly different than 25% as all observations with the same value
-            are put in the same split.
-
-            - Considering the values of the observations. The cut-off applies to
-            the distinct values. In that case a split fraction of 0.25 will ensure
-            25% of the distinct values are in the "below cut-off" dataframe;
-            regardless of the number of observations.
+        The cut-off value is associated to a specific column; the reference column.
 
         Parameters
         ----------
         X : pandas dataframe
-            The original dataset. Correspond either to the measurement dataset
-            or will be spit into a measurement and a basis dataframe.
 
         Returns
         -------
-        within_cut_off, pd.DataFrame
-            pandas dataframe with value within the cut_off
-        outside_cut_off, pd.DataFrame
-            pandas dataframe with value outside the cut_off
+        basis_df; pd.DataFrame
+            pandas dataframe with observations which value <= cut_off
+        test_df: pd.DataFrame
+            pandas dataframe with observations which value > cut_off
         """
         # Identify the values according to which the split must be done.
         if not self.split_col:
@@ -461,40 +427,50 @@ class DropHighPSIFeatures(BaseSelector):
         # Raise an error if there are missing values in the reference column.
         if reference.isna().sum() != 0:
             raise ValueError(
-                "Na's are not allowed in the columns used to split the dataframe."
+                "Missing data are not allowed in the variable used to split the "
+                "dataframe."
             )
 
-        # If no cut_off is pre-defined, compute it.
+        # If cut_off is not pre-defined, compute it.
         if not self.cut_off:
-            self.cut_off = self._get_cut_off_value(reference)
+            cut_off = self._get_cut_off_value(reference)
+        else:
+            cut_off = self.cut_off
 
-        # Split the original dataframe in two parts: within and outside cut-off
+        # Split the original dataframe
         if isinstance(self.cut_off, list):
             is_within_cut_off = reference.isin(self.cut_off)
         else:
             is_within_cut_off = reference <= self.cut_off
 
-        within_cut_off = X[is_within_cut_off]
-        outside_cut_off = X[~is_within_cut_off]
+        basis_df = X[is_within_cut_off]
+        test_df = X[~is_within_cut_off]
 
-        return within_cut_off, outside_cut_off
+        return basis_df, test_df
 
-    def _get_cut_off_value(self, ref):
+    def _get_cut_off_value(self, split_column):
         """
-        Define the cut-off of the series (ref) in order to split the dataframe.
+        Find the cut-off value to split the dataframe. It is implemented when the user
+        does not enter a cut_off value. It is based on split_frac.
 
-        - For a float or integer, np.quantile is used.
-        - For other type, the quantile is based on the value_counts method.
-        This allows to deal with date or string in a unified way.
+        Finds the value in a pandas series at which we find the split_frac percentage
+        of observations.
+
+        If the reference column is numerical, the cut-off value is determined using
+        np.quantile
+
+        Otherwise, the cut-off value is based on the value_counts:
+
             - The distinct values are sorted and the cumulative sum is
             used to compute the quantile. The value with the quantile that
             is the closest to the chosen split fraction is used as cut-off.
+
             - The sort involves that categorical values are sorted alphabetically
             and cut accordingly.
 
         Parameters
         ----------
-        ref : (np.array, pd.Series).
+        split_column : (np.array, pd.Series).
             Series for which the nth quantile must be computed.
 
         Returns
@@ -504,16 +480,16 @@ class DropHighPSIFeatures(BaseSelector):
         """
         # In case split_distinct_value is used, extract series with unique values
         if self.split_distinct_value:
-            ref = pd.Series(ref.unique())
+            split_column = pd.Series(split_column.unique())
 
-        # If the value is numerical, use numpy functionalities
-        if isinstance(ref.iloc[0], (int, float)):
-            cut_off = np.quantile(ref, self.split_frac)
+        # If the value is numerical, use numpy functionality
+        if is_numeric_dtype(split_column):
+            cut_off = np.quantile(split_column, self.split_frac)
 
         # Otherwise use value_counts combined with cumsum
         else:
             reference = pd.DataFrame(
-                ref.value_counts(normalize=True).sort_index().cumsum()
+                split_column.value_counts(normalize=True).sort_index().cumsum()
             )
 
             # Get the index (i.e. value) with the quantile that is the closest
@@ -522,3 +498,28 @@ class DropHighPSIFeatures(BaseSelector):
             cut_off = (distance.idxmin()).values[0]
 
         return cut_off
+
+    def _input_check(self, X):
+        """
+        Checks dataframe against input parameters
+        """
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        if self.missing_values == "raise":
+            # check if dataset contains na or inf
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
+            
+        return X
+
+    def _check_input_variables(self, X):
+        # find all variables or check those entered are present in the dataframe
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+
+        # Remove the split column from the variables list. It might be accidentally
+        # added if selecting numerical variables automatically.
+        if self.split_col in self.variables_:
+            self.variables_.remove(self.split_col)
+
+        return self
