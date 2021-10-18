@@ -26,79 +26,77 @@ class DropHighPSIFeatures(BaseSelector):
     r"""
     DropHighPSIFeatures drops features with a Population Stability Index (PSI) value
     above a given threshold. The PSI of a numerical feature is an indication of the
-    shift in its distribution; a feature with high PSI might therefore be seen as
-    unstable. In order to compute the PSI we will split the feature in two parts:
-    train and test. Train will be used to define the expected feature distribution
-    while test will be used to assess the difference with the train distrbution.
+    shift in its distribution; a feature with high PSI might therefore be considered
+    unstable.
 
-    In fields like Credit Risk Modelling, the elimination of features with high PSI
-    is common use and usually required by the Regulator.
+    To compute the PSI the transformer splits the dataset in two: a base and a test set.
+    The base set is assumed to contain the expected feature distributions. The test set
+    will be assessed against the base set.
 
-    When comparing the test distribution of a feature to its train counterpart,
-    the PSI is computed as follow:
+    In Credit Risk, eliminating features with high PSI is commonly done and
+    usually required by the Regulator.
 
-    - Define bins and discretise the feature from the train set.
-    - Apply the binning to the same feature from the test set.
-    - Compute the percentage of the distribution in each bin (test_i
-      and train_i for bin i).
-    - Compute the PSI using the following formula:
+    To determine the PSI, continuous features are sorted into discrete intervals, the
+    number of observations per intervals is then determined, and those values are
+    compared between the base and test sets.
 
-    PSI = \sum_{i=1}^n (test_i - train_i) . ln(\frac{test_i}{train_i})
+    In other words, the PSI is computed as follows:
 
-    Thresholds are used to assess the importance of the population shift reported by the
-    PSI value. The most commonly used thresholds are:
+    - Define the bins into which the observations will be sorted using the base set.
+    - Sort the feature values into those bins (for both base and test sets).
+    - Determine the fraction of observations within each bin.
+    - Compute the PSI.
+
+    The PSI is determined as:
+
+    PSI = \sum_{i=1}^n (test_i - base_i) . ln(\frac{test_i}{base_i})
+
+    A bigger value of the PSI indicates a bigger shift in the feature distribution
+    between the base and test sets.
+
+    Different thresholds can be used to assess the importance of the population shift
+    reported by the PSI value. The most commonly used thresholds are:
+
     - Below 10%, the variable has not experienced a significant shift.
     - Above 25%, the variable has experienced a major shift.
     - Between those two values, the shift is intermediate.
 
-    When working with PSI, the following 3 points are worth mentioning:
-    - The PSI is not symmetric with respected to the actual and reference; flipping the
-    order will lead to different values fir the PSI.
-    - The number of bins has an impact on the PSI values. 10 bins is usually
-    a good choice.
-    - The PSI is suited for numerical feature (either continuous or with high
-    cardinality). For categorical features we advise to compute the difference
-    between distribution using Chi-Square or Kolmogorov-Smirnov.
+    When working with PSI, it is worth highlighting the following:
 
-    In DropHighPSIFeatures the approach implemented is the following:
+    - The PSI is not symmetric; switching the order of the dataframes used as base and
+    test will lead to different PSI values.
+    - The number of bins has an impact on the PSI values.
+    - The PSI is a suitable metric for numerical features (i.e., either continuous or
+    with high cardinality). For categorical or discrete features, the change in
+    distributions is better assessed with Chi-squared.
 
-    - The dataframe is split in two parts and the PSI calculations are performed by
-    comparing the distribution of the features in the two parts.
+    To compute the PSI the DropHighPSIFeatures splits the dataset in two. To split the
+    dataframe, several options are available.
 
-    - The user defines the columns of the dataframe according to which the dataframe
-    will de split. The column can contain numbers, dates and strings.
+    First and foremost, the user can enter one variable, which will be used to guide the
+    data split. This variable can take numbers, strings or dates as values. If the user
+    does not enter a variable name, DropHighPSIFeatures will use the dataframe index.
 
-    - The user defines a split fraction or a cut-off value. This is used to define the
-    sizes of the two dataframe.
-        - If the split fraction is 50%, the two dataframe will have about the same
-        size. It is not guaranteed that the size will exactly match because the
-        observations are grouped by their label (i.e. their values in the split
-        columns) so all observations with the same label will automatically belong
-        to the same dataframe.
-        - A cut-off value define the border between the train and the test set.
-        It can be a value (float, int) and date or a list. In case of a list the
-        element of the list define the train set.
+    Second, the user has the option to specify a proportion of observations to put in
+    each data set, or alternatively, provide a cut-off value.
 
-    - If the option split_distinct_value is activated, the number of distinct values
-    is used to make the split. For example a feature with values: [1, 2, 3, 4, 4, 4]
-    a 50% split without split_distinct_value will split into two parts [1, 2, 3] and
-    [4, 4, 4] while if the option is set on, the split will be [1, 2] and [3, 4, 4, 4].
-    split_distinct is only meaningful in combination with split_fraction. It is
-    irrelevant when a cut-off is used.
+    If the user specifies a proportion through the split_frac parameter, the data will
+    be sorted to accommodate that proportion. If split_frac is 0.5, 50% of the
+    observations will go to either base or test sets. If split_frac is 0.6, 60% of the
+    samples will go to the base test and the remaining 40% to the test set.
 
-    The PSI calculations are not symmetric. The switch argument allows to
-    switch the role of the two dataframes in the PSI calculations.
+    If the user defines a numeric cut-off value or a specific date using the cut_off
+    parameter, the observations with value below the cut-off will go to the base set and
+    the remaining ones to the test set.
 
-    The comparison of the distribution is done through binning. Two strategies are
-    implemented: equal_frequency and equal_width. These labels refer to two
-    discretisation implementation from the present package.
+    If the user passes a list of values, the observations with the values in the list,
+    will go to the base set, alternatively to the test set.
 
-    References:
+
+    References
+    ----------
     https://scholarworks.wmich.edu/cgi/viewcontent.cgi?article=4249&context=dissertations
 
-    DropHighPSIFeatures suited for numerical variables and for discrete variables with
-    high cardinality. For categorical variables differences in distribution can be
-    investigated using a Chi-square or Kolmogorov-Smirnov test.
 
     Parameters
     ----------
@@ -189,6 +187,13 @@ class DropHighPSIFeatures(BaseSelector):
         Remove features with high PSI values.
     fit_transform:
         Fit to the data. Then transform it.
+
+    See Also
+    --------
+    To know more about the discretization visit:
+
+    feature_engine.discretisation.EqualFrequencyDiscretiser
+    feature_engine.discretisation.EqualWidthDiscretiser
     """
 
     def __init__(
