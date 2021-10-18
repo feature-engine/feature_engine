@@ -103,76 +103,83 @@ class DropHighPSIFeatures(BaseSelector):
     Parameters
     ----------
 
-    split_col: string, default=None.
-        Label of the column according to which the dataframe will be split.
+    split_col: string or int, default=None.
+        The variable that will be used to split the dataset. If None, the dataframe
+        index will be used.
 
     split_frac: float, default=0.5.
-        Ratio of the observations (when split_distinct is not activated) that goes
-        into the sub-dataframe that is used to determine the reference for the feature
-        distributions. The second sub-dataframe will be used to compare its feature
-        distributions to the reference ones.
+        The proportion of observations in each of the dataframes that will be used
+        to compare the feature distributions. If split_distinct is True, the indicated
+        ratio may not be achieved exactly. See parameter split_distinct for more
+        details. If cut_off is not None, split_frac will be ignored and the data split
+        based on the cut_off value.
 
-    split_distinct_values: boolean, default=False.
-        If set on, the split fraction does not account for the number of observations
-        but only for the number of distinct values in split_col.
+    split_distinct: boolean, default=False.
+        If True, split_col unique values will go to either dataframe but not both. For
+        example, if split_col is [0, 1, 1, 1, 2, 2], split_frac is 0.5 and
+        split_distinct is False, the data will be divided ind [0, 1, 1] and [1, 2, 2]
+        achieving exactly a 50% split. However, if split_distinct is True, then the data
+        will be divided into [0, 1, 1, 1] and [2, 2], with an approximate split of 0.5
+        but not exactly.
 
     cut_off: None, int, float, date or list, default=None
-        Threshold used to split the split_col values. If int, float or date the split
-        is done by selecting the values below and starting from the threshold. If
-        cut_off is a list, values belonging to the list will be split from the values
-        not belonging to the list.
-        cut_off is conflicting with split_frac as they both define a different way
-        to split the dataframe for performing PSI calculations. So cases where the
-        two arguments are None and cases where the two arguments are assigned to
-        a value are not valid.
+        Threshold to split the dataset based on the split_col values. If int, float
+        or date, observations where the split_col values are below the threshold will
+        go to the base dataframe and those with values above the threshold will land in
+        the test dataframe. If cut_off is a list, the observations where the split_col
+        values are within the list will go to the base dataframe and the remaining
+        observations will land in the test dataframe. If cut_off is not None, this
+        parameter will be used to split the data and split_frac will be ignored.
+
+    switch: boolean, default=False.
+        If True, the order of the 2 dataframes used to determine the PSI (base and
+        test) will be switched. This is important because the PSI is not symmetric,
+        i.e., PSI(a, b) != PSI(b, a)).
+
+    threshold: float, default = 0.25.
+        The threshold to drop a feature. If the PSI for a feature is >= threshold, the
+        feature will be dropped. The most common threshold values are 0.25 (large shift)
+        and 0.10 (medium shift).
+
+    bins: int, default = 10
+        Number of bins or intervals. For continuous features with good value spread, 10
+        bins is commonly used. For features with lower cardinality or highly skewed
+        distributions, lower values may be required.
+
+    strategy: string, default='equal_frequency'
+        Type of binning used to represent the distribution of the feature. In can be
+        "equal_width" for equally spaced bins or "equal_frequency" for bins based on
+        quantiles, that is, bins with similar number of observations.
+
+    min_pct_empty_buckets: float, default = 0.0001
+        Value to add to empty buckets or empty bins. If after sorting the variable
+        values into bins, a bin is empty the PSI cannot be determined. By adding a
+        small number to empty bins, we can avoid this issue. Note, that if the value
+        added is too large, it may disturb the PSI calculation.
+
+    missing_values: str, default=ignore
+        Whether to perform the PSI feature selection on a dataframe with missing values.
+        Takes values 'raise' or 'ignore'. If 'ignore', missing values will be dropped
+        when determining the PSI for that particular feature. If 'raise' the transformer
+        will raise an error and features will not be selected.
 
     variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
         numerical variables in the dataset.
 
-    switch: boolean, default=False.
-        If set to true the role of the two matrices involved in the PSI calculations
-        (basis and measurement) will be switch. This is an important option as the
-        PSI value is not symmetric (i.e. PSI(a, b) != PSI(b, a)).
-
-    threshold: float, default = 0.25.
-        Threshold above which the distribution of a feature has changed so much that
-        the feature will be dropped. The most common values are 0.25 (large shift)
-        and 0.10 (medium shift).
-
-    strategy: string or callable, default='equal_frequency'
-        Type of binning used to represent the distribution of the feature. In can be
-        either "equal_width" for equally spaced bins or "equal_frequency" for bins
-        based on quantiles.
-
-    bins, int, default = 10
-        Number of bins used in the binning. For numerical feature a value of 10 is
-        considered as appropriate. For features with lower cardinality lower values
-        are usually used.
-
-    min_pct_empty_buckets, float, default = 0.0001
-        Value to add to empty bucket (when considering percentages). If a bin is
-        empty the PSI value may jump to infinity. By adding a small number to empty
-        bins, this issue is avoided. If the value added is too large, it may disturb
-        the calculations.
-
-    missing_values: str, default=ignore
-        Takes values 'raise' or 'ignore'. Whether the missing values should be raised
-        as error or ignored when computing PSI.
-
     Attributes
     ----------
     features_to_drop_:
-        Set with the correlated features that will be dropped.
+        Set with the features that will be dropped.
 
     variables_:
         The variables to consider for the feature selection.
 
-    n_features_in_:
-        The number of features in the train set used in fit.
-
     psi_values_:
         Dictionary containing the PSI values for all features considered.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -188,7 +195,7 @@ class DropHighPSIFeatures(BaseSelector):
         self,
         split_col: str = None,
         split_frac: float = 0.5,
-        split_distinct_value: bool = False,
+        split_distinct: bool = False,
         cut_off: Union[None, int, float, datetime.date, List] = None,
         switch: bool = False,
         threshold: float = 0.25,
@@ -220,9 +227,9 @@ class DropHighPSIFeatures(BaseSelector):
                     f"instead."
                 )
 
-        if not isinstance(split_distinct_value, bool):
+        if not isinstance(split_distinct, bool):
             raise ValueError(
-                f"split_distinct_value must be a boolean. Got {split_distinct_value} "
+                f"split_distinct_value must be a boolean. Got {split_distinct} "
                 f"instead."
             )
 
@@ -265,7 +272,7 @@ class DropHighPSIFeatures(BaseSelector):
         # Set all remaining arguments as attributes.
         self.split_col = split_col
         self.split_frac = split_frac
-        self.split_distinct_value = split_distinct_value
+        self.split_distinct_value = split_distinct
         self.cut_off = cut_off
         self.switch = switch
         self.threshold = threshold

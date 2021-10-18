@@ -89,7 +89,7 @@ def test_calculation_quantile(split_frac, expected):
     )
 
     test = DropHighPSIFeatures(
-        split_col="A", split_frac=split_frac, split_distinct_value=False
+        split_col="A", split_frac=split_frac, split_distinct=False
     )
     test.fit_transform(df)
     assert test.cut_off == expected
@@ -102,12 +102,12 @@ def test_calculation_distinct_value():
     )
 
     test = DropHighPSIFeatures(
-        split_col="C", split_frac=0.5, split_distinct_value=False
+        split_col="C", split_frac=0.5, split_distinct=False
     )
     test.fit_transform(df)
     assert test.cut_off == "C"
 
-    test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct_value=True)
+    test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct=True)
     test.fit_transform(df)
     assert test.cut_off == "B"
 
@@ -129,7 +129,7 @@ def test_calculation_df_split_with_different_types(test_column):
     )
 
     test = DropHighPSIFeatures(
-        split_col=test_column, split_frac=0.5, split_distinct_value=False
+        split_col=test_column, split_frac=0.5, split_distinct=False
     )
     results = test.fit_transform(df)
     assert results.shape[0] > 0
@@ -146,7 +146,7 @@ def test_calculation_no_split_columns():
         }
     )
 
-    test = DropHighPSIFeatures(split_frac=0.5, split_distinct_value=True)
+    test = DropHighPSIFeatures(split_frac=0.5, split_distinct=True)
     test.fit_transform(df)
     assert len(test.psi_values_) == 2
 
