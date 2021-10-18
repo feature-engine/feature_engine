@@ -27,11 +27,10 @@ def df():
     return X
 
 
-def test_sanity_checks(df):
-    """Sanity checks.
-
-    All PSI must be zero if the two dataframe involved are the same.
-    There will be no changes in the dataframe.
+def test_psi_is_zero_if_basis_and_test_sets_identical(df):
+    """Sanity check:
+    PSI values must be zero if the two dataframes are the same;
+    i.e., there are no changes in the variable distributions.
     """
     transformer = DropHighPSIFeatures()
     X = transformer.fit_transform(df)

@@ -298,7 +298,7 @@ class DropHighPSIFeatures(BaseSelector):
         self.threshold = threshold
         self.bins = bins
         self.strategy = strategy
-        self.min_pct_empty_buckets = min_pct_empty_bins
+        self.min_pct_empty_bins = min_pct_empty_bins
         self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
@@ -459,9 +459,9 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Split the original dataframe
         if isinstance(self.cut_off, list):
-            is_within_cut_off = reference.isin(self.cut_off)
+            is_within_cut_off = reference.isin(cut_off)
         else:
-            is_within_cut_off = reference <= self.cut_off
+            is_within_cut_off = reference <= cut_off
 
         basis_df = X[is_within_cut_off]
         test_df = X[~is_within_cut_off]
