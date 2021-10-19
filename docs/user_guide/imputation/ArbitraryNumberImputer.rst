@@ -1,11 +1,44 @@
+.. _arbitrary_number_imputer:
+
 ArbitraryNumberImputer
 ======================
 
-The ArbitraryNumberImputer() replaces missing data with an arbitrary value determined
-by the user. It works only with numerical variables. A list of variables can be
-indicated, or the imputer will automatically select all numerical variables in the
-train set. A dictionary with variables and their arbitrary values can be indicated to
-use different arbitrary values for variables.
+The `ArbitraryNumberImputer()` replaces missing data with an arbitrary numerical value
+determined by the user. It works only with numerical variables.
+
+The `ArbitraryNumberImputer()` can find and impute all numerical variables
+automatically. Alternatively, you can pass a list of the variables you want to impute
+to the `variables` parameter.
+
+You can impute all variables with the same number, in which case you need to define
+the variables to impute in the `variables` parameter and the imputation number in
+`arbitrary_number` parameter. Alternatively, you can pass a dictionary with the
+variable names and the numbers to use for their imputation.
+
+For example, you can impute varA and varB with 99 like this:
+
+.. code-block:: python
+
+    transformer = ArbitraryNumberImputer(
+            variables = ['varA', 'varB'],
+            arbitrary_number = 99
+            )
+
+    Xt = transformer.fit_transform(X)
+
+Alternatively, you can impute varA with 1 and varB with 99 like this:
+
+.. code-block:: python
+
+    transformer = ArbitraryNumberImputer(
+            imputer_dict = {'varA' : 1, 'varB': 99]
+            )
+
+    Xt = transformer.fit_transform(X)
+
+
+Below a code example using the House Prices Dataset (more details about the dataset
+:ref:`here <datasets>`.
 
 .. code:: python
 
@@ -24,7 +57,10 @@ use different arbitrary values for variables.
     	data.drop(['Id', 'SalePrice'], axis=1), data['SalePrice'], test_size=0.3, random_state=0)
 
 	# set up the imputer
-	arbitrary_imputer = ArbitraryNumberImputer(arbitrary_number=-999, variables=['LotFrontage', 'MasVnrArea'])
+	arbitrary_imputer = ArbitraryNumberImputer(
+            arbitrary_number=-999,
+            variables=['LotFrontage', 'MasVnrArea'],
+            )
 
 	# fit the imputer
 	arbitrary_imputer.fit(X_train)
@@ -41,5 +77,7 @@ use different arbitrary values for variables.
 	ax.legend(lines, labels, loc='best')
 
 .. image:: ../../images/arbitraryvalueimputation.png
+
+Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/ArbitraryNumberImputer.ipynb>`_
 
 

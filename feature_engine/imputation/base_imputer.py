@@ -21,13 +21,6 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         ----------
         X: Pandas DataFrame
 
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            If the dataframe is not of same size as that used in fit()
-
         Returns
         -------
         X: Pandas DataFrame
@@ -52,13 +45,6 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
-
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            If the dataframe has different number of features than the df used in fit()
 
         Returns
         -------
