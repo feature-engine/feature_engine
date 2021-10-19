@@ -7,7 +7,7 @@ The CategoricalImputer() replaces missing data in categorical variables with an
 arbitrary value, like the string 'Missing' or by the most frequent category.
 
 Below a code example using the House Prices Dataset (more details about the dataset
-:ref:`here <datasets>`.
+:ref:`here <datasets>`).
 
 .. code:: python
 

@@ -17,7 +17,7 @@ imputer will automatically select all numerical variables in the train set.
 
 
 Below a code example using the House Prices Dataset (more details about the dataset
-:ref:`here <datasets>`.
+:ref:`here <datasets>`).
 
 .. code:: python
 

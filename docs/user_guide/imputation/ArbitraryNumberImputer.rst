@@ -38,7 +38,7 @@ Alternatively, you can impute varA with 1 and varB with 99 like this:
 
 
 Below a code example using the House Prices Dataset (more details about the dataset
-:ref:`here <datasets>`.
+:ref:`here <datasets>`).
 
 .. code:: python
 
