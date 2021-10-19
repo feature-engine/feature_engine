@@ -30,7 +30,7 @@ Feature-engine includes transformers for:
 - Variable selection
 - Preprocessing
 
-Feature-engine allows you to select the variables you want to transform within each
+Feature-engine allows you to select the variables you want to transform **within** each
 transformer. This way, different engineering procedures can be easily applied to
 different feature subsets.
 
@@ -44,12 +44,12 @@ What is unique about Feature-engine?
 
 The following characteristics make Feature-engine unique:
 
-- Feature-engine hosts the most exhaustive battery of feature engineering transformations
+- Feature-engine contains the most exhaustive battery of feature engineering transformations
 - Feature-engine can transform a specific group of variables in the dataframe
 - Feature-engine returns dataframes, hence suitable for data exploration and model deployment
 - Feature-engine is compatible with the Scikit-learn pipeline.
 - Feature-engine automatically recognizes numerical and categorical variables
-- Feature-engine will let us know if a transformation is not possible, e.g., if applying logarithm to negative variables or divisions by 0
+- Feature-engine alerts you if a transformation is not possible, e.g., if applying logarithm to negative variables or divisions by 0
 
 If you want to know more about what makes Feature-engine unique, check this
 `article <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c>`_.
@@ -89,7 +89,7 @@ If you’re using Anaconda, you can install the
 Feature-engine features in the following resources
 ---------------------------------------------------
 
-- `Its dedicated website <https://www.trainindata.com/feature-engine>`_.
+- `Website <https://www.trainindata.com/feature-engine>`_.
 - `Feature Engineering for Machine Learning <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_, Online Course.
 - `Feature Selection for Machine Learning <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_, Online Course.
 - `Python Feature Engineering Cookbook <https://packt.link/python>`_.

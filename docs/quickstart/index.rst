@@ -95,8 +95,8 @@ Feature-engine with the Scikit-learn's pipeline
 -----------------------------------------------
 
 Feature-engine's transformers can be assembled within a Scikit-learn pipeline. This
-way, we can store our feature engineering pipeline in one object and save it in one
-pickle (.pkl). Here is an example on how to do it:
+way, we can store our entire feature engineering pipeline in one single object or
+pickle (.pkl). Here is an example of how to do it:
 
 .. code:: python
 
@@ -229,12 +229,14 @@ pickle (.pkl). Here is an example on how to do it:
 .. image:: ../images/pipelineprediction.png
 
 
+More examples
+~~~~~~~~~~~~~
+
 More examples can be found in:
 
-- API documentation
-- Learning Resources
-
-Check the navigation bar at the top.
+- :ref:`User Guide <user_guide>`
+- :ref:`Learning Resources <learning_resources>`
+- `Jupyter notebooks <https://nbviewer.jupyter.org/github/feature-engine/feature-engine-examples/tree/main/>`_
 
 .. toctree::
    :maxdepth: 1

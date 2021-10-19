@@ -1,8 +1,8 @@
 .. -*- mode: rst -*-
-.. _learning_resources:
+.. _about:
 
-Learning Resources
-==================
+About
+=====
 
 .. toctree::
    :maxdepth: 1
