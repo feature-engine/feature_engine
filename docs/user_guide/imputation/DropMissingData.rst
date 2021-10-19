@@ -1,12 +1,37 @@
+.. _drop_missing_data:
+
+
 DropMissingData
 ===============
 
 
-DropMissingData() deletes rows with missing values. It works with numerical and
-categorical variables. You can pass a list of variables to impute, or the transformer
-will select and impute all variables. The trasformer has the option to learn the
-variables with missing data in the train set, and then remove observations with NA only
-in those variables.
+The DropMissingData() will delete rows containing missing values. It provides
+similar functionality to `pandas.drop_na()`. The transformer has however some
+advantages over pandas:
+
+- it learns and stores the variables for which the rows with na should be deleted
+- it can be used within the Scikit-learn pipeline
+
+It works with numerical and categorical variables. You can pass a list of variables to
+impute, or the transformer will select and impute all variables.
+
+The trasformer has the option to learn the variables with missing data in the train set,
+and then remove observations with NA only in those variables. Or alternatively remove
+observations with NA in all variables. You can change the behaviour using the parameter
+`missing_only`.
+
+This means that if you pass a list of variables to impute and set `missing_only=True`,
+and some of the variables in your list do not have missing data in the train set,
+missing data will not be removed during transform for those particular variables. In
+other words, when `missing_only=True`, the transformer "double checks" that the entered
+variables have missing data in the train set. If not, it ignores it during
+`transform()`.
+
+It is recommended to use `missing_only=True` when not passing a list of variables to
+impute.
+
+Below a code example using the House Prices Dataset (more details about the dataset
+:ref:`here <datasets>`).
 
 .. code:: python
 
@@ -46,7 +71,7 @@ in those variables.
 .. code:: python
 
     # Number of NA after the transformation:
-	train_t['LotFrontage'].isna().sum()
+    train_t['LotFrontage'].isna().sum()
 
 .. code:: python
 
@@ -64,4 +89,5 @@ in those variables.
     (829, 79)
 
 
+Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/DropMissingData.ipynb>`_
 
