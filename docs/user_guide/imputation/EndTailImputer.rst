@@ -1,14 +1,6 @@
 EndTailImputer
 ==============
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.imputation.EndTailImputer
-    :members:
-
-Example
--------
 
 The EndTailImputer() replaces missing data with a value at the end of the distribution.
 The value can be determined using the mean plus or minus a number of times the standard
@@ -57,6 +49,6 @@ imputer will automatically select all numerical variables in the train set.
 	lines, labels = ax.get_legend_handles_labels()
 	ax.legend(lines, labels, loc='best')
 
-.. image:: ../images/endtailimputer.png
+.. image:: ../../images/endtailimputer.png
 
 

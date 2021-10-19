@@ -1,4 +1,5 @@
 .. -*- mode: rst -*-
+.. _quick_start:
 
 Quick Start
 ===========

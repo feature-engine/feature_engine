@@ -1,14 +1,6 @@
 ArbitraryOutlierCapper
 ======================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.outliers.ArbitraryOutlierCapper
-    :members:
-
-Example
--------
 
 .. code:: python
 

@@ -1,15 +1,6 @@
 SmartCorrelatedSelection
 ========================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.selection.SmartCorrelatedSelection
-    :members:
-
-Example
--------
-
 .. code:: python
 
     import pandas as pd

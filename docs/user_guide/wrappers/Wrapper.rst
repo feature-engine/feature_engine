@@ -1,15 +1,6 @@
 SklearnTransformerWrapper
 =========================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.wrappers.SklearnTransformerWrapper
-    :members:
-
-Example
--------
-
 Implements Scikit-learn transformers like the SimpleImputer, the OrdinalEncoder or most
 scalers only to the selected subset of features.
 

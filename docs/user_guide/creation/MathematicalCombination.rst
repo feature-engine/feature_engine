@@ -1,16 +1,6 @@
 MathematicalCombination
 =======================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.creation.MathematicalCombination
-    :members:
-
-
-Example
--------
-
 MathematicalCombination() applies basic mathematical operations to multiple
 features, returning one or more additional features as a result. That is, it sums,
 multiplies, takes the average, maximum, minimum or standard deviation of a group

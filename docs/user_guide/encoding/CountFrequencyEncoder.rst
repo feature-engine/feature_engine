@@ -1,15 +1,6 @@
 CountFrequencyEncoder
 =====================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.encoding.CountFrequencyEncoder
-    :members:
-
-Example
--------
-
 .. code:: python
 
 	import numpy as np

@@ -1,14 +1,6 @@
 DropMissingData
 ===============
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.imputation.DropMissingData
-    :members:
-
-Example
--------
 
 DropMissingData() deletes rows with missing values. It works with numerical and
 categorical variables. You can pass a list of variables to impute, or the transformer

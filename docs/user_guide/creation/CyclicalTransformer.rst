@@ -1,16 +1,6 @@
 CyclicalTransformer
 ===================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.creation.CyclicalTransformer
-    :members:
-
-
-Example
--------
-
 .. code:: python
 
     import pandas as pd

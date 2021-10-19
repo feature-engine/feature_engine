@@ -1,15 +1,6 @@
 EqualFrequencyDiscretiser
 =========================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.discretisation.EqualFrequencyDiscretiser
-    :members:
-
-Example
--------
-
 The EqualFrequencyDiscretiser() sorts the variable values into contiguous intervals of
 equal proportion of observations. The limits of the intervals are calculated according
 to the quantiles. The number of intervals or quantiles should be determined by the user.
@@ -83,6 +74,6 @@ variables in the train set.
 	plt.ylabel('Number of houses')
 
 
-.. image:: ../images/equalfrequencydiscretisation.png
+.. image:: ../../images/equalfrequencydiscretisation.png
 
 

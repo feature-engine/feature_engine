@@ -6,10 +6,8 @@ Learning Resources
 
 .. toctree::
    :maxdepth: 1
-   :caption: Learning Resources
+   :caption: About
 
-   tutorials
-   howto
-   books
-   courses
-   blogs
+   about
+   governance
+   roadmap

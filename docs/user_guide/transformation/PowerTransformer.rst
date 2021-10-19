@@ -1,16 +1,6 @@
 PowerTransformer
 ================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.transformation.PowerTransformer
-    :members:
-
-
-Example
--------
-
 .. code:: python
 
 	import numpy as np
@@ -41,7 +31,7 @@ Example
 	# un-transformed variable
 	X_train['LotArea'].hist(bins=50)
 
-.. image:: ../images/lotarearaw.png
+.. image:: ../../images/lotarearaw.png
 
 .. code:: python
 
@@ -49,4 +39,4 @@ Example
 	train_t['LotArea'].hist(bins=50)
 
 
-.. image:: ../images/lotareapower.png
+.. image:: ../../images/lotareapower.png

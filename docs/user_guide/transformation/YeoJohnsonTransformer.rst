@@ -3,19 +3,9 @@ YeoJohnsonTransformer
 
 The Yeo-Johnson transformation is defined as:
 
-.. image:: ../images/yeojohnsonformula.png
+.. image:: ../../images/yeojohnsonformula.png
 
 where Y is the response variable and λ is the transformation parameter.
-
-API Reference
--------------
-
-.. autoclass:: feature_engine.transformation.YeoJohnsonTransformer
-    :members:
-
-
-Example
--------
 
 .. code:: python
 
@@ -47,7 +37,7 @@ Example
 	# un-transformed variable
 	X_train['LotArea'].hist(bins=50)
 
-.. image:: ../images/lotarearaw.png
+.. image:: ../../images/lotarearaw.png
 
 .. code:: python
 
@@ -55,4 +45,4 @@ Example
 	train_t['LotArea'].hist(bins=50)
 
 
-.. image:: ../images/lotareayeojohnson.png
+.. image:: ../../images/lotareayeojohnson.png

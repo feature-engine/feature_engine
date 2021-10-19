@@ -1,15 +1,6 @@
 WoEEncoder
 ==========
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.encoding.WoEEncoder
-    :members:
-
-Example
--------
-
 .. code:: python
 
 	import numpy as np

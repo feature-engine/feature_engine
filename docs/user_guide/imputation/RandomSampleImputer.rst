@@ -1,15 +1,6 @@
 RandomSampleImputer
 ===================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.imputation.RandomSampleImputer
-    :members:
-
-Example
--------
-
 The RandomSampleImputer() replaces missing data with a random sample extracted from the
 variable. It works with both numerical and categorical variables. A list of variables
 can be indicated, or the imputer will automatically select all variables in the train
@@ -78,6 +69,6 @@ More details on how to use the RandomSampleImputer():
 	lines, labels = ax.get_legend_handles_labels()
 	ax.legend(lines, labels, loc='best')
 
-.. image:: ../images/randomsampleimputation.png
+.. image:: ../../images/randomsampleimputation.png
 
 

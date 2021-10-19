@@ -1,4 +1,5 @@
 .. -*- mode: rst -*-
+.. _contribute:
 
 Contribute
 ==========
@@ -47,6 +48,8 @@ Contributing Guide
 
 .. toctree::
     :maxdepth: 2
+    :hidden:
 
     github_quick_start
     building_the_docs
+    code_of_conduct

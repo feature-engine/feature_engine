@@ -1,15 +1,6 @@
 MeanMedianImputer
 =================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.imputation.MeanMedianImputer
-    :members:
-
-Example
--------
-
 The MeanMedianImputer() replaces missing data with the mean or median of the variable.
 It works only with numerical variables. You can pass a list of variables to impute,
 or the imputer will automatically select all numerical variables in the train set.
@@ -47,6 +38,6 @@ or the imputer will automatically select all numerical variables in the train se
 	lines, labels = ax.get_legend_handles_labels()
 	ax.legend(lines, labels, loc='best')
 
-.. image:: ../images/medianimputation.png
+.. image:: ../../images/medianimputation.png
 
 

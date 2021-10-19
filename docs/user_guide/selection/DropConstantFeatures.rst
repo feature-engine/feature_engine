@@ -1,15 +1,6 @@
 DropConstantFeatures
 ====================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.selection.DropConstantFeatures
-    :members:
-
-
-Example
--------
 
 The DropConstantFeatures() drops constant and quasi-constant variables from a dataframe.
 By default, DropConstantFeatures drops only constant variables. This transformer works

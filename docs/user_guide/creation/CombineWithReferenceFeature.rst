@@ -1,16 +1,6 @@
 CombineWithReferenceFeature
 ===========================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.creation.CombineWithReferenceFeature
-    :members:
-
-
-Example
--------
-
 CombineWithReferenceFeature() combines a group of variables with a group of reference
 variables utilizing basic mathematical operations (subtraction, division, addition and
 multiplication), returning one or more additional features in the dataframe as a result.

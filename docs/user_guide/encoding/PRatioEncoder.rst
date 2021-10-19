@@ -1,15 +1,6 @@
 PRatioEncoder
 =============
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.encoding.PRatioEncoder
-    :members:
-
-Example
--------
-
 The PRatioEncoder() replaces the labels by the ratio of probabilities. It only works
 for binary classification.
     

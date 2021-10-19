@@ -1,16 +1,6 @@
 MatchVariables
 ==============
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.preprocessing.MatchVariables
-    :members:
-
-
-Example
--------
-
 MatchVariables() ensures that the columns in the test set are identical to those
 in the train set.
 

@@ -1,15 +1,6 @@
 RareLabelEncoder
 ================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.encoding.RareLabelEncoder
-    :members:
-
-Example
--------
-
 The RareLabelEncoder() groups infrequent categories altogether into one new category
 called 'Rare' or a different string indicated by the user. We need to specify the
 minimum percentage of observations a category should show to be preserved and the

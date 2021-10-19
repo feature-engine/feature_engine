@@ -1,15 +1,6 @@
 OneHotEncoder
 =============
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.encoding.OneHotEncoder
-    :members:
-
-Example
--------
-
 The OneHotEncoder() replaces categorical variables by a set of binary variables,
 one per unique category. The encoder has the option to create k or k-1 binary variables,
 where k is the number of unique categories.

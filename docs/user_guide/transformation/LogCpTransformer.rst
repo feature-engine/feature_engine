@@ -1,15 +1,6 @@
 LogCpTransformer
 ================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.transformation.LogCpTransformer
-    :members:
-
-
-Example
--------
 
 .. code:: python
 
@@ -49,11 +40,11 @@ Example
     # un-transformed variable
     X_train[12].hist()
 
-.. image:: ../images/logcpraw.png
+.. image:: ../../images/logcpraw.png
 
 .. code:: python
 
     # transformed variable
     train_t[12].hist()
 
-.. image:: ../images/logcptransform.png
+.. image:: ../../images/logcptransform.png

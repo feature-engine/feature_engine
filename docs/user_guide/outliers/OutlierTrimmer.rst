@@ -1,15 +1,6 @@
 OutlierTrimmer
 ==============
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.outliers.OutlierTrimmer
-    :members:
-
-Example
--------
-
 Removes values beyond predefined minimum and maximum values from the data set.
 The minimum and maximum values can be calculated in 1 of 3 different ways:
 

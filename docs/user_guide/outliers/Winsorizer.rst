@@ -1,15 +1,6 @@
 Winsorizer
 ==========
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.outliers.Winsorizer
-    :members:
-
-Example
--------
-
 Censors variables at predefined minimum and maximum values. The minimum and maximum
 values can be calculated in 1 of 3 different ways:
 

@@ -1,15 +1,6 @@
 ArbitraryNumberImputer
 ======================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.imputation.ArbitraryNumberImputer
-    :members:
-
-Example
--------
-
 The ArbitraryNumberImputer() replaces missing data with an arbitrary value determined
 by the user. It works only with numerical variables. A list of variables can be
 indicated, or the imputer will automatically select all numerical variables in the
@@ -49,6 +40,6 @@ use different arbitrary values for variables.
 	lines, labels = ax.get_legend_handles_labels()
 	ax.legend(lines, labels, loc='best')
 
-.. image:: ../images/arbitraryvalueimputation.png
+.. image:: ../../images/arbitraryvalueimputation.png
 
 

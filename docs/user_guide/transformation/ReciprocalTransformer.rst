@@ -1,15 +1,6 @@
 ReciprocalTransformer
 =====================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.transformation.ReciprocalTransformer
-    :members:
-
-
-Example
--------
 
 .. code:: python
 
@@ -41,7 +32,7 @@ Example
 	# un-transformed variable
 	X_train['LotArea'].hist(bins=50)
 
-.. image:: ../images/lotarearaw.png
+.. image:: ../../images/lotarearaw.png
 
 .. code:: python
 
@@ -49,4 +40,4 @@ Example
 	train_t['LotArea'].hist(bins=50)
 
 
-.. image:: ../images/lotareareciprocal.png
+.. image:: ../../images/lotareareciprocal.png

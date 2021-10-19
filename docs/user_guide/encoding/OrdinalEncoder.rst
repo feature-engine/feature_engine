@@ -1,14 +1,6 @@
 OrdinalEncoder
 ==============
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.encoding.OrdinalEncoder
-    :members:
-
-Example
--------
 
 The OrdinalEncoder() replaces the categories by digits, starting from 0 to k-1, where k
 is the number of different categories. If you select "arbitrary", then the encoder will

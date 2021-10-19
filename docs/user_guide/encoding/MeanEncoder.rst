@@ -1,15 +1,6 @@
 MeanEncoder
 ===========
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.encoding.MeanEncoder
-    :members:
-
-Example
--------
-
 The MeanEncoder() replaces categories with the mean of the target per category. For
 example, if we are trying to predict default rate, and our data has the variable city,
 with categories, London, Manchester and Bristol, and the default rate per city is 0.1,

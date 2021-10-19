@@ -1,15 +1,6 @@
 ArbitraryDiscretiser
 ====================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.discretisation.ArbitraryDiscretiser
-    :members:
-
-Example
--------
-
 The ArbitraryDiscretiser() sorts the variable values into contiguous intervals which
 limits are arbitrarily defined by the user.
 
@@ -39,7 +30,7 @@ First, let's load a dataset and plot a histogram of a continuous variable.
     plt.title('Histogram of LSTAT')
     plt.show()
 
-.. image:: ../images/lstat_hist.png
+.. image:: ../../images/lstat_hist.png
 
 Now, let's discretise the variable into arbitrarily determined intervals. We want the
 interval names as integers, so we set return_boundaries to False.
@@ -58,7 +49,7 @@ interval names as integers, so we set return_boundaries to False.
     plt.title('Discretised LSTAT')
     plt.show()
 
-.. image:: ../images/lstat_disc_arbitrarily.png
+.. image:: ../../images/lstat_disc_arbitrarily.png
 
 Alternatively, we can return the interval limits in the discretised variable by
 setting return_boundaries to True.
@@ -75,7 +66,7 @@ setting return_boundaries to True.
     plt.title('Discretised LSTAT')
     plt.show()
 
-.. image:: ../images/lstat_disc_arbitrarily2.png
+.. image:: ../../images/lstat_disc_arbitrarily2.png
 
 
 

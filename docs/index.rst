@@ -36,8 +36,8 @@ different feature subsets.
 
 Feature-engine transformers can be assembled within the Scikit-learn pipeline,
 therefore making it possible to save and deploy one single object (.pkl) with the
-entire machine learning pipeline. Check the **Quick Start** tab on the navigation bar
-at the top of the documentation for an example.
+entire machine learning pipeline. Check :ref:`**Quick Start** <quick_start>` for an
+example.
 
 What is unique about Feature-engine?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,8 +96,7 @@ Feature-engine features in the following resources
 - `Feature-engine: A new open-source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c/>`_.
 - `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd>`_.
 
-More learning resources in the **Learning Resources** tab in the navigation bar at the top of the
-documentation.
+More learning resources in the :ref:`**Learning Resources** <learning_resources>`.
 
 
 Feature-engine's Transformers
@@ -216,7 +215,7 @@ improvements. We also appreciate blogs about Feature-engine. If you happen to ha
 let us know!
 
 For more details on how to contribute check the contributing page. Click on the
-**Contribute** tab in the navigation bar at the top of the documentation.
+:ref:`**Contribute** <contribute>` guide.
 
 
 Open Source

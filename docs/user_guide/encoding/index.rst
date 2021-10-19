@@ -6,7 +6,7 @@ Categorical Variable Encoding
 Feature-engine's categorical encoders replace variable strings by estimated or
 arbitrary numbers.
 
-.. figure::  ../images/categoricalSummary.png
+.. figure::  ../../images/categoricalSummary.png
    :align:   center
 
    Summary of Feature-engine's encoders main characteristics

@@ -1,15 +1,6 @@
 CategoricalImputer
 ==================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.imputation.CategoricalImputer
-    :members:
-
-Example
--------
-
 The CategoricalImputer() replaces missing data in categorical variables with an
 arbitrary value, like the string 'Missing' or by the most frequent category.
 
@@ -41,6 +32,6 @@ arbitrary value, like the string 'Missing' or by the most frequent category.
 
 	test_t['MasVnrType'].value_counts().plot.bar()
 
-.. image:: ../images/missingcategoryimputer.png
+.. image:: ../../images/missingcategoryimputer.png
 
 

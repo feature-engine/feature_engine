@@ -81,7 +81,7 @@ Artwork
 High quality PNG and SVG logos are available in the `docs/images/ <https://github.com/feature-engine/feature_engine/tree/main/docs/images/logo>`_
 source directory of the repository.
 
-.. figure::  images/logo/FeatureEngine.png
+.. figure::  ../images/logo/FeatureEngine.png
    :align:   center
 
 
@@ -95,5 +95,5 @@ The project would like to thank the following sponsors:
 
 Soledad Galli spends a big part of her time at Train in Data maintaining the project.
 
-.. image:: images/sponsors/trainindata.png
+.. image:: ../images/sponsors/trainindata.png
    :target: https://www.trainindata.com/

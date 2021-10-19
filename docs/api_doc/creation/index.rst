@@ -4,7 +4,7 @@ Feature Creation
 ================
 
 Feature-engine's creation transformers combine features into new variables through
-various mathematical and other methods.
+mathematical operations.
 
 .. toctree::
    :maxdepth: 2

@@ -1,5 +1,8 @@
 API Documentation
 =================
+
+Full API documentation for Feature-engine transformers.
+
 .. toctree::
    :maxdepth: 1
 

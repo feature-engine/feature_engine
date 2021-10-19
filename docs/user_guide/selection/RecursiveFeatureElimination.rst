@@ -1,15 +1,6 @@
 RecursiveFeatureElimination
 ============================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.selection.RecursiveFeatureElimination
-    :members:
-
-
-Example
--------
 
 .. code:: python
 

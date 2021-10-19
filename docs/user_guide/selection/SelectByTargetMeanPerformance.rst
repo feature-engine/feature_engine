@@ -1,16 +1,6 @@
 SelectByTargetMeanPerformance
 =============================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.selection.SelectByTargetMeanPerformance
-    :members:
-
-
-Example
--------
-
 .. code:: python
 
     import pandas as pd

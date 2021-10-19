@@ -1,16 +1,6 @@
 DecisionTreeDiscretiser
 =======================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.discretisation.DecisionTreeDiscretiser
-    :members:
-
-
-Example
--------
-
 In the original article, each feature of the challenge dataset was recoded by training
 a decision tree of limited depth (2, 3 or 4) using that feature alone, and letting the
 tree predict the target. The probabilistic predictions of this decision tree were used
@@ -95,6 +85,6 @@ In the following example, we recode 2 numerical variables using decision trees.
 	plt.ylabel('Number of houses')
 
 
-.. image:: ../images/treediscretisation.png
+.. image:: ../../images/treediscretisation.png
 
 

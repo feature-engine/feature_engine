@@ -1,15 +1,6 @@
 RecursiveFeatureAddition
 ========================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.selection.RecursiveFeatureAddition
-    :members:
-
-
-Example
--------
 
 .. code:: python
 

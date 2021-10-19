@@ -1,15 +1,6 @@
 SelectByShuffling
 =================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.selection.SelectByShuffling
-    :members:
-
-Example
--------
-
 The SelectByShuffling() selects important features if permutation their values
 at random produces a decrease in the initial model performance.
 

@@ -1,16 +1,6 @@
 DropDuplicateFeatures
 =====================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.selection.DropDuplicateFeatures
-    :members:
-
-
-Example
--------
-
 The DropDuplicateFeatures() finds and removes duplicated variables from a dataframe.
 The user can pass a list of variables to examine, or alternatively the selector will
 examine all variables in the data set.

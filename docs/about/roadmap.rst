@@ -37,7 +37,7 @@ data, mostly numerical or categorical. But we would like to extend its functiona
 to work with datetime, text and time series. In the following figure we show how we
 would like the overall structure of Feature-engine to look like:
 
-.. figure::  images/FeatureEnginePackageStructure.png
+.. figure::  ../images/FeatureEnginePackageStructure.png
    :align:   center
 
    Feature-engine structure
@@ -50,7 +50,7 @@ We expand and update this arm of the library, based on user feedback and suggest
 and our own research in the field. In grey, the transformers that are not yet included
 in the package:
 
-.. figure::  images/FeatureEnginePackageStructureCrossSectional.png
+.. figure::  ../images/FeatureEnginePackageStructureCrossSectional.png
    :align:   center
 
    Transformers for cross-sectional data
@@ -80,7 +80,7 @@ also consider integrating the Bag of Words and TFiDF from sklearn with a wrapper
 returns a dataframe ready to use to train machine learning models. Below we show more
 detail into these new modules.
 
-.. figure::  images/FeatureEnginePackageStructureDatetimeText.png
+.. figure::  ../images/FeatureEnginePackageStructureDatetimeText.png
    :align:   center
 
    New models wanted: datetime and text
@@ -91,7 +91,7 @@ compared to the functionality already existing in pandas and Scipy, and in other
 established open source projects like tsfresh and featuretools. The transformations
 we are considering are shown in this image:
 
-.. figure::  images/FeatureEnginePackageStructureTimeseries.png
+.. figure::  ../images/FeatureEnginePackageStructureTimeseries.png
    :align:   center
 
    Time series module and the transformations envisioned

@@ -1,15 +1,6 @@
 EqualWidthDiscretiser
 =====================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.discretisation.EqualWidthDiscretiser
-    :members:
-
-Example
--------
-
 The EqualWidthDiscretiser() sorts the variable values into contiguous intervals of
 equal size. The size of the interval is calculated as:
 
@@ -86,6 +77,6 @@ the train set.
 	plt.ylabel('Number of houses')
 
 
-.. image:: ../images/equalwidthdiscretisation.png
+.. image:: ../../images/equalwidthdiscretisation.png
 
 

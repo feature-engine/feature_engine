@@ -1,15 +1,6 @@
 DecisionTreeEncoder
 ===================
 
-API Reference
--------------
-
-.. autoclass:: feature_engine.encoding.DecisionTreeEncoder
-    :members:
-
-Example
--------
-
 The DecisionTreelEncoder() replaces categories in the variable with
 the predictions of a decision tree. The transformer first encodes categorical
 variables into numerical variables using ordinal encoding. You have the option
