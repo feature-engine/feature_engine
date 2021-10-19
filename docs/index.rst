@@ -12,7 +12,7 @@ A Python library for Feature Engineering and Selection
 .. figure::  images/logo/FeatureEngine.png
    :align:   center
 
-   Feature-engine rocks!
+   **Feature-engine rocks!**
 
 Feature-engine is a Python library with multiple transformers to engineer and select
 features to use in machine learning models. Feature-engine preserves Scikit-learn
@@ -39,11 +39,20 @@ therefore making it possible to save and deploy one single object (.pkl) with th
 entire machine learning pipeline. Check the **Quick Start** tab on the navigation bar
 at the top of the documentation for an example.
 
-**Would you like to know more about what is unique about Feature-engine?**
+What is unique about Feature-engine?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This article provides a nice summary:
+The following characteristics make Feature-engine unique:
 
-- `Feature-engine: A new open source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c>`_.
+- Feature-engine hosts the most exhaustive battery of feature engineering transformations
+- Feature-engine can transform a specific group of variables in the dataframe
+- Feature-engine returns dataframes, hence suitable for data exploration and model deployment
+- Feature-engine is compatible with the Scikit-learn pipeline.
+- Feature-engine automatically recognizes numerical and categorical variables
+- Feature-engine will let us know if a transformation is not possible, e.g., if applying logarithm to negative variables or divisions by 0
+
+If you want to know more about what makes Feature-engine unique, check this
+`article <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c>`_.
 
 
 Installation
@@ -80,16 +89,12 @@ If you’re using Anaconda, you can install the
 Feature-engine features in the following resources
 ---------------------------------------------------
 
+- `Its dedicated website <https://www.trainindata.com/feature-engine>`_.
 - `Feature Engineering for Machine Learning <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_, Online Course.
 - `Feature Selection for Machine Learning <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_, Online Course.
 - `Python Feature Engineering Cookbook <https://packt.link/python>`_.
 - `Feature-engine: A new open-source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c/>`_.
 - `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd>`_.
-
-En Español:
-
-- `Ingeniería de variables para machine learning <https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C>`_, Curso Online.
-- `Ingeniería de variables, MachinLenin <https://www.youtube.com/watch?v=NhCxOOoFXds>`_, charla online.
 
 More learning resources in the **Learning Resources** tab in the navigation bar at the top of the
 documentation.
@@ -211,7 +216,7 @@ improvements. We also appreciate blogs about Feature-engine. If you happen to ha
 let us know!
 
 For more details on how to contribute check the contributing page. Click on the
-"Contribute" tab in the navigation bar at the top of the documentation.
+**Contribute** tab in the navigation bar at the top of the documentation.
 
 
 Open Source

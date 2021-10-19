@@ -3,13 +3,6 @@
 Quick Start
 ===========
 
-.. toctree::
-   :maxdepth: 1
-
-   installation
-   getting_help
-   datasets
-
 If you're new to Feature-engine this guide will get you started. Feature-engine
 transformers have the methods `fit()` and `transform()` to learn parameters from the
 data and then modify the data. They work just like any Scikit-learn transformer.
@@ -94,7 +87,7 @@ imputation.
 	lines, labels = ax.get_legend_handles_labels()
 	ax.legend(lines, labels, loc='best')
 
-.. image:: images/medianimputation.png
+.. image:: ../images/medianimputation.png
 
 
 Feature-engine with the Scikit-learn's pipeline
@@ -123,7 +116,7 @@ pickle (.pkl). Here is an example on how to do it:
         AddMissingIndicator,
         MeanMedianImputer,
         CategoricalImputer,
-        )
+    )
 
     # load dataset
     data = pd.read_csv('houseprice.csv')
@@ -133,7 +126,7 @@ pickle (.pkl). Here is an example on how to do it:
         labels=['YearBuilt', 'YearRemodAdd', 'GarageYrBlt', 'Id'],
         axis=1,
         inplace=True
-        )
+    )
 
     # make a list of categorical variables
     categorical = [var for var in data.columns if data[var].dtype == 'O']
@@ -232,13 +225,20 @@ pickle (.pkl). Here is an example on how to do it:
     plt.ylabel('Predicted Price')
     plt.show()
 
-.. image:: images/pipelineprediction.png
+.. image:: ../images/pipelineprediction.png
 
 
 More examples can be found in:
 
-- The API documentation
-- Tutorials
-- How To
+- API documentation
+- Learning Resources
 
-Check the navigation panel on the left.
+Check the navigation bar at the top.
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   installation
+   getting_help
+   datasets
