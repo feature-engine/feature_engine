@@ -18,8 +18,8 @@ class EndTailImputer(BaseImputer):
     The EndTailImputer() replaces missing data by a value at either tail of the
     distribution. It works only with numerical variables.
 
-    You can indicate the variables to be imputed in a list. Alternatively, the
-    EndTailImputer() will automatically find and select all variables of type numeric.
+    You can indicate the variables to impute in a list. Alternatively, the
+    EndTailImputer() will automatically select all numerical variables.
 
     The imputer first calculates the values at the end of the distribution for each
     variable (fit). The values at the end of the distribution are determined using
@@ -41,9 +41,11 @@ class EndTailImputer(BaseImputer):
         - left tail: not applicable
 
     You can change the factor that multiplies the std, IQR or the maximum value
-    using the parameter 'fold' (we used fold=3 in the examples above).
+    using the parameter `fold` (we used `fold=3` in the examples above).
 
     The imputer then replaces the missing data with the estimated values (transform).
+
+    More details in the :ref:`User Guide <end_tail_imputer>`.
 
     Parameters
     ----------
@@ -70,8 +72,8 @@ class EndTailImputer(BaseImputer):
         are 2 or 3 for Gaussian, or 1.5 or 3 for IQR.
 
     variables: list, default=None
-        The list of variables to be imputed. If None, the imputer will find and
-        select all variables of type numeric.
+        The list of variables to impute. If None, the imputer will select
+        all numerical variables.
 
     Attributes
     ----------
@@ -129,18 +131,6 @@ class EndTailImputer(BaseImputer):
 
         y: pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame
-            - If any of the user provided variables are not numerical
-        ValueError
-            If there are no numerical variables in the df or the df is empty
-
-        Returns
-        -------
-        self
         """
         # check input dataframe
         X = _is_dataframe(X)
