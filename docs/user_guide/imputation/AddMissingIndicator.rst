@@ -1,15 +1,32 @@
+.. _add_missing_indicator:
+
 AddMissingIndicator
 ===================
 
 
 The AddMissingIndicator() adds a binary variable indicating if observations are missing
-(missing indicator). It adds a missing indicator for both categorical and numerical
-variables. A list of variables for which to add a missing indicator can be passed, or
-the imputer will automatically select all variables.
+(missing indicator). It adds missing indicators to both categorical and numerical
+variables.
 
-The imputer has the option to select if binary variables should be added to all
-variables, or only to those that show missing data in the train set, by setting the
-option how='missing_only'.
+You can select the variables for which the missing indicators should be created passing
+a variable list to the `variables` parameter. Alternatively, the imputer will
+automatically select all variables.
+
+The imputer has the option to add missing indicators to all variables or only to those
+that have missing data in the train set. You can change the behaviour using the
+parameter `missing_only`.
+
+If `missing_only=True`, missing indicators will be added only to those variables with
+missing data in the train set. This means that if you passed a variable list to
+`variables` and some of those variables did not have missing data, no missing indicators
+will be added to them. If it is paramount that all variables in your list get their
+missing indicators, make sure to set `missing_only=False`.
+
+It is recommended to use `missing_only=True` when not passing a list of variables to
+impute.
+
+Below a code example using the House Prices Dataset (more details about the dataset
+:ref:`here <datasets>`).
 
 .. code:: python
 
@@ -29,7 +46,9 @@ option how='missing_only'.
     	data.drop(['Id', 'SalePrice'], axis=1), data['SalePrice'], test_size=0.3, random_state=0)
 
 	# set up the imputer
-	addBinary_imputer = AddMissingIndicator( variables=['Alley', 'MasVnrType', 'LotFrontage', 'MasVnrArea'])
+	addBinary_imputer = AddMissingIndicator(
+        variables=['Alley', 'MasVnrType', 'LotFrontage', 'MasVnrArea'],
+        )
 
 	# fit the imputer
 	addBinary_imputer.fit(X_train)
@@ -41,5 +60,8 @@ option how='missing_only'.
 	train_t[['Alley_na', 'MasVnrType_na', 'LotFrontage_na', 'MasVnrArea_na']].head()
 
 .. image:: ../../images/missingindicator.png
+
+Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/AddMissingIndicator.ipynb>`_
+
 
 
