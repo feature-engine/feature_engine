@@ -18,24 +18,20 @@ class MeanMedianImputer(BaseImputer):
     The MeanMedianImputer() replaces missing data by the mean or median value of the
     variable. It works only with numerical variables.
 
-    You can pass a list of variables to be imputed. Alternatively, the
+    You can pass a list of variables to impute. Alternatively, the
     MeanMedianImputer() will automatically select all variables of type numeric in the
     training set.
 
-    The imputer:
-
-    - first calculates the mean / median values of the variables (fit).
-    - Then replaces the missing data with the estimated mean / median (transform).
-
+    More details in the :ref:`User Guide <mean_median_imputer>`.
 
     Parameters
     ----------
-    imputation_method: str, default=median
+    imputation_method: str, default='median'
         Desired method of imputation. Can take 'mean' or 'median'.
 
     variables: list, default=None
-        The list of variables to be imputed. If None, the imputer will select
-        all variables of type numeric.
+        The list of variables to impute. If None, the imputer will select
+        all numerical variables.
 
     Attributes
     ----------
@@ -81,18 +77,6 @@ class MeanMedianImputer(BaseImputer):
 
         y: pandas series or None, default=None
             y is not needed in this imputation. You can pass None or y.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame
-            - If any of the user provided variables are not numerical
-        ValueError
-            If there are no numerical variables in the df or the df is empty
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

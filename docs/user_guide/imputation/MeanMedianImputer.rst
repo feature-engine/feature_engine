@@ -1,9 +1,18 @@
+.. _mean_median_imputer:
+
 MeanMedianImputer
 =================
 
 The MeanMedianImputer() replaces missing data with the mean or median of the variable.
 It works only with numerical variables. You can pass a list of variables to impute,
-or the imputer will automatically select all numerical variables in the train set.
+or the imputer will automatically select and impute all numerical variables in the
+train set.
+
+In the `fit()` method, the transformer learns and stores the mean or median values per
+variable. Then it uses these values in the `transform()` method to transform the data.
+
+Below a code example using the House Prices Dataset (more details about the dataset
+:ref:`here <datasets>`.
 
 .. code:: python
 
@@ -40,4 +49,5 @@ or the imputer will automatically select all numerical variables in the train se
 
 .. image:: ../../images/medianimputation.png
 
+Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/MeanMedianImputer.ipynb>`_
 

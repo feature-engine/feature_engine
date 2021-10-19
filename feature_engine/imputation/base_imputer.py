@@ -48,7 +48,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X_new: pandas dataframe of shape = [n_samples, n_features]
             The dataframe without missing values in the selected variables.
         """
 
