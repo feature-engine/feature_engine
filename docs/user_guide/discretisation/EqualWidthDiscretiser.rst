@@ -1,17 +1,29 @@
+.. _equal_width_discretiser:
+
+.. currentmodule:: feature_engine.discretisation
+
 EqualWidthDiscretiser
 =====================
 
-The EqualWidthDiscretiser() sorts the variable values into contiguous intervals of
-equal size. The size of the interval is calculated as:
+The :class:`EqualWidthDiscretiser()` sorts the variable values into contiguous intervals
+of equal size. The size of the interval is calculated as:
 
 ( max(X) - min(X) ) / bins
 
 where bins, which is the number of intervals, should be determined by the user. The
-transformer can return the variable as numeric or object (default = numeric).
+interval limits are determined using `pandas.cut()`.
 
-The EqualWidthDiscretiser() works only with numerical variables. A list of variables can
-be indicated, or the discretiser will automatically select all numerical variables in
-the train set.
+**A note on number of intervals**
+
+Common values are 5 and 10. Note that if the variable is highly skewed or not continuous
+smaller intervals maybe required.
+
+The :class:`EqualWidthDiscretiser()` works only with numerical variables. A list of
+variables to discretise can be indicated, or the discretiser will automatically select
+all numerical variables in the train set.
+
+Let's look at an example using the House Prices Dataset (more details about the
+dataset :ref:`here <datasets>`).
 
 .. code:: python
 
@@ -41,6 +53,8 @@ the train set.
 	test_t= disc.transform(X_test)
 
 	disc.binner_dict_
+
+The `binner_dict_` stores the interval limits identified for each variable.
 
 
 .. code:: python
@@ -76,7 +90,24 @@ the train set.
 	train_t.groupby('GrLivArea')['GrLivArea'].count().plot.bar()
 	plt.ylabel('Number of houses')
 
+We can see below that the intervals contain different number of observations.
 
 .. image:: ../../images/equalwidthdiscretisation.png
 
+If we return the interval values as integers, the discretiser has the option to return
+the transformed variable as integer or as object. Why would we want the transformed
+variables as object?
 
+Categorical encoders in Feature-engine are designed to work with variables of type
+object by default. Thus, if you wish to encode the returned bins further, say to try and
+obtain monotonic relationships between the variable and the target, you can do so
+seamlessly by setting `return_object` to True. You can find an example of how to use
+this functionality `here <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualWidthDiscretiser_plus_OrdinalEncoder.ipynb>`_.
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualWidthDiscretiser.ipynb>`_
+- `Jupyter notebook - Discretiser plus Ordinal encoding <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualWidthDiscretiser_plus_OrdinalEncoder.ipynb>`_

@@ -92,6 +92,15 @@ observations.
 
 .. image:: ../../images/equalfrequencydiscretisation.png
 
+If we return the interval values as integers, the discretiser has the option to return
+the transformed variable as integer or as object. Why would we want the transformed
+variables as object?
+
+Categorical encoders in Feature-engine are designed to work with variables of type
+object by default. Thus, if you wish to encode the returned bins further, say to try and
+obtain monotonic relationships between the variable and the target, you can do so
+seamlessly by setting `return_object` to True. You can find an example of how to use
+this functionality `here <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualFrequencyDiscretiser_plus_WoEEncoder.ipynb>`_.
 
 More details
 ^^^^^^^^^^^^
