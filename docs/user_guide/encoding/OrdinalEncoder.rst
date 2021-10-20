@@ -1,15 +1,31 @@
+.. _ordinal_encoder:
+
+.. currentmodule:: feature_engine.encoding
+
 OrdinalEncoder
 ==============
 
 
-The OrdinalEncoder() replaces the categories by digits, starting from 0 to k-1, where k
-is the number of different categories. If you select "arbitrary", then the encoder will
-assign numbers as the labels appear in the variable (first come first served). If you
-select "ordered", the encoder will assign numbers following the mean of the target
-value for that label. So labels for which the mean of the target is higher will get the
-number 0, and those where the mean of the target is smallest will get the number k-1.
-This way, we create a monotonic relationship between the encoded variable and the
-target.
+The :class:`OrdinalEncoder()` replaces the categories by digits, starting from 0 to k-1,
+where k is the number of different categories. If you select **"arbitrary"** in the
+`encoding_method`, then the encoder will assign numbers as the labels appear in the
+variable (first come first served). If you select **"ordered"**, the encoder will assign
+numbers following the mean of the target value for that label. So labels for which the
+mean of the target is higher will get the number 0, and those where the mean of the
+target is smallest will get the number k-1. This way, we create a monotonic relationship
+between the encoded variable and the target.
+
+**Arbitrary vs ordered encoding: examples**
+
+**Ordered ordinal encoding**: for the variable colour, if the mean of the target
+for blue, red and grey is 0.5, 0.8 and 0.1 respectively, blue is replaced by 1,
+red by 2 and grey by 0.
+
+**Arbitrary ordinal encoding**: the numbers will be assigned arbitrarily to the
+categories, on a first seen first served basis.
+
+Let's look at an example using the Titanic Dataset.
+
 
 .. code:: python
 
@@ -48,6 +64,9 @@ target.
 
 	encoder.encoder_dict_
 
+In the `encoder_dict_` we find the integers that will replace each one of the categories
+of each variable that we want to encode. This way, we can map the original value of the
+variable to the new value.
 
 .. code:: python
 
@@ -64,3 +83,9 @@ target.
 	 'embarked': {'S': 0, 'Q': 1, 'C': 2}}
 
 
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/OrdinalEncoder.ipynb>`_
