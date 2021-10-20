@@ -1,10 +1,46 @@
+.. _rarelabel_encoder:
+
+.. currentmodule:: feature_engine.encoding
+
 RareLabelEncoder
 ================
 
-The RareLabelEncoder() groups infrequent categories altogether into one new category
+The :class:`RareLabelEncoder()` groups infrequent categories into one new category
 called 'Rare' or a different string indicated by the user. We need to specify the
-minimum percentage of observations a category should show to be preserved and the
+minimum percentage of observations a category should have to be preserved and the
 minimum number of unique categories a variable should have to be re-grouped.
+
+**tol**
+
+In the parameter `tol` we indicate the minimum proportion of observations a category
+should have, not to be grouped. In other words, categories which frequency, or proportion
+of observations is <= `tol` will be grouped into a unique term.
+
+**n_categories**
+
+In the parameter `n_categories` we indicate the minimum cardinality of the categorical
+variable in order to group infrequent categories. For example, if `n_categories=5`,
+categories will be grouped only in those categorical variables with more than 5 unique
+categories. The rest will be ignored.
+
+This parameter is useful when we have big datasets and do not have time to examine all
+categorical variables individually. This way, we ensure that variables with low cardinality
+are not reduced any further.
+
+**max_n_categories**
+
+In the parameter `max_n_categories` we indicate the maximum number of unique categories
+that we want in the encoded variable. If `max_n_categories=5`, then the most popular 5
+categories will remain in the variable after the encoding, all other will be grouped into
+a single category.
+
+This parameter is useful if we are going to perform one hot encoding at the back of it,
+to control the expansion of the feature space.
+
+**Example**
+
+Let's look at an example using the Titanic Dataset.
+
 
 .. code:: python
 
@@ -44,6 +80,8 @@ minimum number of unique categories a variable should have to be re-grouped.
 
     encoder.encoder_dict_
 
+In the `encoder_dict_` we find the most frequent categories per variable to encode.
+Any category that is not in this dictionary, will be grouped.
 
 .. code:: python
 
@@ -96,3 +134,10 @@ using the `max_n_categories` parameter.
     Rare     3
     Name: var_A, dtype: int64
 
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/RareLabelEncoder.ipynb>`_

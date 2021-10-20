@@ -1,12 +1,37 @@
+.. _pratio_encoder:
+
+.. currentmodule:: feature_engine.encoding
+
 PRatioEncoder
 =============
 
-The PRatioEncoder() replaces the labels by the ratio of probabilities. It only works
-for binary classification.
-    
-The target probability ratio is given by: p(1) / p(0)
+The :class:`PRatioEncoder()` replaces categories by the ratio of the probability of the
+target = 1 and the probability of the target = 0.
 
-The log of the target probability ratio is: np.log( p(1) / p(0) )
+The target probability ratio is given by:
+
+.. math::
+
+    p(1) / p(0)
+
+The log of the target probability ratio is:
+
+.. math::
+
+    log( p(1) / p(0) )
+
+**Note**
+
+This categorical encoding is exclusive for binary classification.
+
+For example in the variable colour, if the mean of the target = 1 for blue
+is 0.8 and the mean of the target = 0  is 0.2, blue will be replaced by:
+0.8 / 0.2 = 4 if ratio is selected, or log(0.8/0.2) = 1.386 if log_ratio
+is selected.
+    
+
+Let's look at an example using the Titanic Dataset.
+
 
 .. code:: python
 
@@ -52,6 +77,8 @@ The log of the target probability ratio is: np.log( p(1) / p(0) )
 
 	pratio_encoder.encoder_dict_
 
+In the `encoder_dict_` we find the probability ratio for each category in each
+variable to encode. This way, we can map the original value to the new value.
 
 .. code:: python
 
@@ -68,3 +95,9 @@ The log of the target probability ratio is: np.log( p(1) / p(0) )
       'Q': 0.5961538461538461,
       'S': 0.5127610208816704}}
 
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/PRatioEncoder.ipynb>`_
