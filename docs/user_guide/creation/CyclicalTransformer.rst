@@ -1,5 +1,28 @@
+.. _cyclical_features:
+
+.. currentmodule:: feature_engine.creation
+
 CyclicalTransformer
 ===================
+
+The :class:`CyclicalTransformer()` applies cyclical transformations to numerical
+variables. The transformations return 2 new features per variable, according to:
+
+- var_sin = sin(variable * (2. * pi / max_value))
+- var_cos = cos(variable * (2. * pi / max_value))
+
+where max_value is the maximum value in the variable, and pi is 3.14...
+
+**Motivation**
+
+There are some features that are cyclic by nature. For example the
+hours of a day or the months in a year. In these cases, the higher values of
+the variable are closer to the lower values. For example, December (12) is closer
+to January (1) than to June (6). By applying a cyclical transformation we capture
+this cycle or proximity between values.
+
+In the code example below, we show how to obtain cyclical features from days and months
+in a toy dataframe.
 
 .. code:: python
 

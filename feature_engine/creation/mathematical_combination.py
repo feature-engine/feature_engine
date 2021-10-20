@@ -21,73 +21,35 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
     multiplies, takes the average, maximum, minimum or standard deviation of a group
     of variables, and returns the result into new variables.
 
-    For example, if we have the variables **number_payments_first_quarter**,
-    **number_payments_second_quarter**, **number_payments_third_quarter** and
-    **number_payments_fourth_quarter**, we can use MathematicalCombination() to
-    calculate the total number of payments and mean number of payments as follows:
-
-    .. code-block:: python
-
-        transformer = MathematicalCombination(
-            variables_to_combine=[
-                'number_payments_first_quarter',
-                'number_payments_second_quarter',
-                'number_payments_third_quarter',
-                'number_payments_fourth_quarter'
-            ],
-            math_operations=[
-                'sum',
-                'mean'
-            ],
-            new_variables_name=[
-                'total_number_payments',
-                'mean_number_payments'
-            ]
-        )
-
-        Xt = transformer.fit_transform(X)
-
-    The transformed X, Xt, will contain the additional features
-    **total_number_payments** and **mean_number_payments**, plus the original set of
-    variables.
-
-    Attention, if some of the variables to combine have missing data and
-    `missing_values = 'ignore'`, the value will be ignored in the computation. To be
+    Note that if some of the variables to combine have missing data and you set
+    `missing_values='ignore'`, the value will be ignored in the computation. To be
     clear, if variables A, B and C, have values 10, 20 and NA, and we perform the sum,
     the result will be A + B = 30.
+
+    More details in the :ref:`User Guide <math_combination>`.
 
     Parameters
     ----------
     variables_to_combine: list
-        The list of numerical variables to be combined.
+        The list of numerical variables to combine.
 
     math_operations: list, default=None
         The list of basic math operations to be used to create the new features.
 
-        If None, all of ['sum', 'prod', 'mean', 'std', 'max', 'min'] will be performed
-        over the `variables_to_combine`. Alternatively, you can enter the list of
-        operations to carry out.
-
-        Each operation should be a string and must be one of the elements
-        in `['sum', 'prod', 'mean', 'std', 'max', 'min']`.
+        If None, all of ['sum', 'prod', 'mean', 'std', 'max', 'min'] will be performed.
+        Alternatively, you can enter the list of operations to carry out. Each operation
+        should be a string and must be one of the elements in
+        `['sum', 'prod', 'mean', 'std', 'max', 'min']`.
 
         Each operation will result in a new variable that will be added to the
         transformed dataset.
 
     new_variables_names: list, default=None
-        Names of the newly created variables. You can enter a name or a list
-        of names for the newly created features (recommended). You must enter
-        one name for each mathematical transformation indicated in the `math_operations`
-        parameter. That is, if you want to perform mean and sum of features, you
-        should enter 2 new variable names. If you perform only mean of features,
-        enter 1 variable name. Alternatively, if you chose to perform all
-        mathematical transformations, enter 6 new variable names.
-
-        The name of the variables indicated by the user should coincide with the order
-        in which the mathematical operations are initialised in the transformer.
-        That is, if you set math_operations = ['mean', 'prod'], the first new variable
-        name will be assigned to the mean of the variables and the second variable name
-        to the product of the variables.
+        Names of the new variables. If passing a list with the names for the new
+        features (recommended), you must enter one name for each mathematical
+        transformation indicated in the `math_operations` parameter. The name of the
+        new variables should coincide with the order in which the mathematical
+        operations are initialised in the transformer.
 
         If `new_variable_names = None`, the transformer will assign an arbitrary name
         to the newly created features starting by the name of the mathematical
@@ -95,7 +57,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
     missing_values: string, default='raise'
         Indicates if missing values should be ignored or raised. If 'raise' the
-        transformer will return an error if the the datasets to fit or transform
+        transformer will return an error if the the datasets to `fit` or `transform`
         contain missing values. If 'ignore', missing data will be ignored when
         performing the calculations.
 
@@ -216,18 +178,6 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
         y: pandas Series, or np.array. Defaults to None.
             It is not needed in this transformer. You can pass y or None.
-
-        Raises
-        ------
-        TypeError
-           - If the input is not a Pandas DataFrame
-           - If any user provided variables in variables_to_combine are not numerical
-        ValueError
-           If the variable(s) contain null values when missing_values = raise
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe
@@ -277,17 +227,9 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
 
-        Raises
-        ------
-        TypeError
-           If the input is not a Pandas DataFrame
-        ValueError
-           - If the variable(s) contain null values when missing_values = raise
-           - If the dataframe is not of the same size as that used in fit()
-
         Returns
         -------
-        X: Pandas dataframe, shape = [n_samples, n_features + n_operations]
+        X_new: Pandas dataframe, shape = [n_samples, n_features + n_operations]
             The dataframe with the original variables plus the new variables.
         """
 
