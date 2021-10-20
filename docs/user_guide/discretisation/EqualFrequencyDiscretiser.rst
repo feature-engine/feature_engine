@@ -1,14 +1,27 @@
+.. _equal_freq_discretiser:
+
+.. currentmodule:: feature_engine.discretisation
+
 EqualFrequencyDiscretiser
 =========================
 
-The EqualFrequencyDiscretiser() sorts the variable values into contiguous intervals of
-equal proportion of observations. The limits of the intervals are calculated according
-to the quantiles. The number of intervals or quantiles should be determined by the user.
-The transformer can return the variable as numeric or object (default = numeric).
+The :class:`EqualFrequencyDiscretiser()` sorts continuous numerical variables into
+contiguous equal frequency intervals, that is, intervals that contain approximately the
+same proportion of observations. The limits of the intervals are calculated according
+to percentiles or quantiles utilising `pandas.qcut()`. You decide the number of
+intervals.
 
-The EqualFrequencyDiscretiser() works only with numerical variables. A list of
+**A note on number of intervals**
+
+Common values are 5 and 10. Note that if the variable is highly skewed or not continuous
+smaller intervals maybe required.
+
+The :class:`EqualFrequencyDiscretiser()` works only with numerical variables. A list of
 variables can be indicated, or the discretiser will automatically select all numerical
 variables in the train set.
+
+Let's look at an example using the House Prices Dataset (more details about the
+dataset :ref:`here <datasets>`).
 
 .. code:: python
 
@@ -39,6 +52,7 @@ variables in the train set.
 
 	disc.binner_dict_
 
+The `binner_dict_` stores the interval limits identified for each variable.
 
 .. code:: python
 
@@ -73,7 +87,16 @@ variables in the train set.
 	train_t.groupby('GrLivArea')['GrLivArea'].count().plot.bar()
 	plt.ylabel('Number of houses')
 
+We can see below that the intervals contain approximately the same number of
+observations.
 
 .. image:: ../../images/equalfrequencydiscretisation.png
 
 
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualFrequencyDiscretiser.ipynb>`_
+- `Jupyter notebook - Discretiser plus Weight of Evidence encoding <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualFrequencyDiscretiser_plus_WoEEncoder.ipynb>`_
