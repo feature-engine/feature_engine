@@ -1,14 +1,28 @@
+.. _decisiontree_encoder:
+
+.. currentmodule:: feature_engine.encoding
+
 DecisionTreeEncoder
 ===================
 
-The DecisionTreelEncoder() replaces categories in the variable with
-the predictions of a decision tree. The transformer first encodes categorical
-variables into numerical variables using ordinal encoding. You have the option
-to have the integers assigned to the categories as they appear in the variable, 
-or ordered by the mean value of the target per category. After this, the transformer
-fits with this numerical variable a decision tree to predict the target variable.
-Finally, the original categorical variable is replaced by the predictions of
-the decision tree.
+The :class:`DecisionTreeEncoder()` replaces categories in the variable with
+the predictions of a decision tree.
+
+The transformer first encodes categorical variables into numerical variables using
+:class:`OrdinalEncoder`. You have the option to have the integers assigned to the
+categories as they appear in the variable, or ordered by the mean value of the target
+per category. You can regulate this behaviour with the parameter `encoding_method`. As
+decision trees are able to pick non-linear relationships, replacing categories by
+arbitrary numbers should be enough in practice.
+
+After this, the transformer fits with this numerical variable a decision tree to predict
+the target variable. Finally, the original categorical variable is replaced by the
+predictions of the decision tree.
+
+The motivation of the :class:`DecisionTreeEncoder()` is to try and create monotonic
+relationships between the categorical variables and the target.
+
+Let's look at an example using the Titanic Dataset.
 
 .. code:: python
 
@@ -37,6 +51,8 @@ the decision tree.
 
     X_train[['cabin', 'pclass', 'embarked']].head(10)
 
+We will encode the following categorical variables:
+
 .. code:: python
 
          cabin pclass embarked
@@ -51,10 +67,17 @@ the decision tree.
    294      C      1        C
    261      E      1        S
 
+We set up the encoder and encode the variables:
+
 .. code:: python
 
     # set up the encoder
-    encoder = DecisionTreeEncoder(variables=['cabin', 'pclass', 'embarked'], random_state=0)
+    encoder = DecisionTreeEncoder(
+         variables=['cabin', 'pclass', 'embarked'],
+         regression=False,
+         scoring='roc_auc',
+         cv=3,
+         random_state=0)
 
     # fit the encoder
     encoder.fit(X_train, y_train)
@@ -65,19 +88,27 @@ the decision tree.
 
     train_t[['cabin', 'pclass', 'embarked']].head(10)
 
+We can see the encoded variables below:
+
 .. code:: python
 
-         cabin    pclass  embarked
-    501   0.304843  0.307580  0.338957
-    588   0.304843  0.307580  0.338957
-    402   0.304843  0.307580  0.558011
-    1193  0.304843  0.307580  0.373494
-    686   0.304843  0.307580  0.373494
-    971   0.304843  0.307580  0.373494
-    117   0.649533  0.617391  0.558011
-    540   0.304843  0.307580  0.338957
-    294   0.649533  0.617391  0.558011
-    261   0.649533  0.617391  0.338957
+             cabin    pclass  embarked
+    501   0.304843  0.436170  0.338957
+    588   0.304843  0.436170  0.338957
+    402   0.304843  0.436170  0.558011
+    1193  0.304843  0.259036  0.373494
+    686   0.304843  0.259036  0.373494
+    971   0.304843  0.259036  0.373494
+    117   0.611650  0.617391  0.558011
+    540   0.304843  0.436170  0.338957
+    294   0.611650  0.617391  0.558011
+    261   0.611650  0.617391  0.338957
 
 
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/DecisionTreeEncoder.ipynb>`_
 

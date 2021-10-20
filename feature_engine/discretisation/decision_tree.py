@@ -48,7 +48,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
     param_grid: dictionary, default=None
-        The hyperparameters for the decision tree to search from in a grid search. The
+        The hyperparameters for the decision tree to test with a grid search. The
         `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
         DecisionTreeRegressor() or DecisionTreeClassifier().
 
