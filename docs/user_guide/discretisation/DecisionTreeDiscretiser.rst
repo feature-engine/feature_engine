@@ -1,7 +1,19 @@
+.. _decisiontree_discretiser:
+
+.. currentmodule:: feature_engine.discretisation
+
 DecisionTreeDiscretiser
 =======================
 
-In the original article, each feature of the challenge dataset was recoded by training
+The :class:`DecisionTreeDiscretiser()` replaces numerical variables by discrete, i.e.,
+finite variables, which values are the predictions of a decision tree. The method is
+based on the winning solution of the KDD 2009 competition:
+
+`Niculescu-Mizil, et al. "Winning the KDD Cup Orange Challenge with Ensemble
+Selection". JMLR: Workshop and Conference Proceedings 7: 23-34. KDD 2009
+<http://proceedings.mlr.press/v7/niculescu09/niculescu09.pdf>`_.
+
+In the original article, each feature in the challenge dataset was re-coded by training
 a decision tree of limited depth (2, 3 or 4) using that feature alone, and letting the
 tree predict the target. The probabilistic predictions of this decision tree were used
 as an additional feature, that was now linearly (or at least monotonically) correlated
@@ -10,7 +22,7 @@ with the target.
 According to the authors, the addition of these new features had a significant impact
 on the performance of linear models.
 
-In the following example, we recode 2 numerical variables using decision trees.
+In the following example, we re-code 2 numerical variables using decision trees.
 
 .. code:: python
 
@@ -88,3 +100,10 @@ In the following example, we recode 2 numerical variables using decision trees.
 .. image:: ../../images/treediscretisation.png
 
 
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/DecisionTreeDiscretiser.ipynb>`_
+- `tree_pipe in cell 21 of this Kaggle kernel <https://www.kaggle.com/solegalli/feature-engineering-and-model-stacking>`_

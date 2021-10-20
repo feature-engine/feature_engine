@@ -16,22 +16,21 @@ from feature_engine.variable_manipulation import (
 
 class DecisionTreeDiscretiser(BaseNumericalTransformer):
     """
-    The DecisionTreeDiscretiser() replaces continuous numerical variables by discrete,
-    finite, values estimated by a decision tree.
+    The DecisionTreeDiscretiser() replaces numerical variables by discrete, i.e.,
+    finite variables, which values are the predictions of a decision tree.
 
-    The methods is inspired by the following article from the winners of the KDD
+    The method is inspired by the following article from the winners of the KDD
     2009 competition:
     http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf
 
-    The DecisionTreeDiscretiser() works only with numerical variables.
-    A list of variables can be passed as an argument. Alternatively, the
-    discretiser will automatically select all numerical variables.
+    The DecisionTreeDiscretiser() trains a decision tree per variable. Then, it
+    transforms the variables, with predictions of the decision tree.
 
-    The DecisionTreeDiscretiser() first trains a decision tree for each variable.
+    The DecisionTreeDiscretiser() works only with numerical variables. A list of
+    variables to transform can be indicated. Alternatively, the discretiser will
+    automatically select all numerical variables.
 
-    The DecisionTreeDiscretiser() then transforms the variables, that is,
-    makes predictions based on the variable values, using the trained decision
-    tree.
+    More details in the :ref:`User Guide <decisiontree_discretiser>`.
 
     Parameters
     ----------
@@ -40,22 +39,20 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         automatically select all numerical variables.
 
     cv: int, default=3
-        Desired number of cross-validation fold to be used to fit the decision
-        tree.
+        Desired cross-validation fold to fit the decision tree.
 
     scoring: str, default='neg_mean_squared_error'
-        Desired metric to optimise the performance for the tree. Comes from
-        sklearn.metrics. See DecisionTreeRegressor or DecisionTreeClassifier
+        Desired metric to optimise the performance of the tree. Comes from
+        sklearn.metrics. See the DecisionTreeRegressor or DecisionTreeClassifier
         model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
     param_grid: dictionary, default=None
-        The list of parameters over which the decision tree should be optimised
-        during the grid search. The param_grid can contain any of the permitted
-        parameters for Scikit-learn's DecisionTreeRegressor() or
-        DecisionTreeClassifier().
+        The hyperparameters for the decision tree to search from in a grid search. The
+        `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
+        DecisionTreeRegressor() or DecisionTreeClassifier().
 
-        If None, then param_grid = {'max_depth': [1, 2, 3, 4]}
+        If None, then `param_grid = {'max_depth': [1, 2, 3, 4]}`.
 
     regression: boolean, default=True
         Indicates whether the discretiser should train a regression or a classification
@@ -73,7 +70,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         Dictionary containing the fitted tree per variable.
 
     scores_dict_:
-        Dictionary with the score of the best decision tree, over the train set.
+        Dictionary with the score of the best decision tree per variable.
 
     variables_:
          The variables to discretise.
@@ -86,7 +83,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     fit:
         Fit a decision tree per variable.
     transform:
-        Replace continuous values by the predictions of the decision tree.
+        Replace continuous variable values by the predictions of the decision tree.
     fit_transform:
         Fit to the data, then transform it.
 
@@ -100,7 +97,6 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     .. [1] Niculescu-Mizil, et al. "Winning the KDD Cup Orange Challenge with Ensemble
         Selection". JMLR: Workshop and Conference Proceedings 7: 23-34. KDD 2009
         http://proceedings.mlr.press/v7/niculescu09/niculescu09.pdf
-
     """
 
     def __init__(
@@ -128,7 +124,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):  # type: ignore
         """
-        Fit the decision trees. One tree per variable to be transformed.
+        Fit one decision tree per variable to discretize with cross-validation and
+        grid-search for hyperparameters.
 
         Parameters
         ----------
@@ -136,21 +133,9 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the
             variables to be transformed.
+
         y: pandas series.
             Target variable. Required to train the decision tree.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame
-            - If any of the user provided variables are not numerical
-        ValueError
-            - If there are no numerical variables in the df or the df is empty
-            - If the variable(s) contain null values
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe
@@ -189,25 +174,17 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Replaces original variable with the predictions of the tree. The tree outcome
-        is finite, aka, discrete.
+        Replaces original variable values with the predictions of the tree. The
+        decision tree predictions are finite, aka, discrete.
 
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
-        Raises
-        ------
-        TypeError
-           If the input is not a Pandas DataFrame
-        ValueError
-           - If the variable(s) contain null values
-           - If the dataframe is not of the same size as the one used in fit()
-
         Returns
         -------
-        X_transformed: pandas dataframe of shape = [n_samples, n_features]
+        X_new: pandas dataframe of shape = [n_samples, n_features]
             The dataframe with transformed variables.
         """
 
