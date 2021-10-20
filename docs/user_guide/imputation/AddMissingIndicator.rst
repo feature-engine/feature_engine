@@ -1,11 +1,13 @@
 .. _add_missing_indicator:
 
+.. currentmodule:: feature_engine.imputation
+
 AddMissingIndicator
 ===================
 
 
-The AddMissingIndicator() adds a binary variable indicating if observations are missing
-(missing indicator). It adds missing indicators to both categorical and numerical
+The :class:`AddMissingIndicator()` adds a binary variable indicating if observations are
+missing (missing indicator). It adds missing indicators to both categorical and numerical
 variables.
 
 You can select the variables for which the missing indicators should be created passing
@@ -60,6 +62,9 @@ Below a code example using the House Prices Dataset (more details about the data
 	train_t[['Alley_na', 'MasVnrType_na', 'LotFrontage_na', 'MasVnrArea_na']].head()
 
 .. image:: ../../images/missingindicator.png
+
+More details
+^^^^^^^^^^^^
 
 Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/AddMissingIndicator.ipynb>`_
 

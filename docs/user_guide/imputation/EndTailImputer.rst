@@ -1,10 +1,12 @@
 .. _end_tail_imputer:
 
+.. currentmodule:: feature_engine.imputation
+
 EndTailImputer
 ==============
 
 
-The EndTailImputer() replaces missing data with a value at the end of the distribution.
+The :class:`EndTailImputer()` replaces missing data with a value at the end of the distribution.
 The value can be determined using the mean plus or minus a number of times the standard
 deviation, or using the inter-quartile range proximity rule. The value can also be
 determined as a factor of the maximum value.
@@ -55,6 +57,9 @@ Below a code example using the House Prices Dataset (more details about the data
 	ax.legend(lines, labels, loc='best')
 
 .. image:: ../../images/endtailimputer.png
+
+More details
+^^^^^^^^^^^^
 
 Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/EndTailImputer.ipynb>`_
 

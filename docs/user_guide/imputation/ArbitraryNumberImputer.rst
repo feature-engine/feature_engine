@@ -1,12 +1,14 @@
 .. _arbitrary_number_imputer:
 
+.. currentmodule:: feature_engine.imputation
+
 ArbitraryNumberImputer
 ======================
 
-The `ArbitraryNumberImputer()` replaces missing data with an arbitrary numerical value
-determined by the user. It works only with numerical variables.
+The :class:`ArbitraryNumberImputer()` replaces missing data with an arbitrary numerical
+value determined by the user. It works only with numerical variables.
 
-The `ArbitraryNumberImputer()` can find and impute all numerical variables
+The :class:`ArbitraryNumberImputer()` can find and impute all numerical variables
 automatically. Alternatively, you can pass a list of the variables you want to impute
 to the `variables` parameter.
 
@@ -77,6 +79,9 @@ Below a code example using the House Prices Dataset (more details about the data
 	ax.legend(lines, labels, loc='best')
 
 .. image:: ../../images/arbitraryvalueimputation.png
+
+More details
+^^^^^^^^^^^^
 
 Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/ArbitraryNumberImputer.ipynb>`_
 

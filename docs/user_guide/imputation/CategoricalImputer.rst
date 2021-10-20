@@ -1,9 +1,11 @@
 .. _categorical_imputer:
 
+.. currentmodule:: feature_engine.imputation
+
 CategoricalImputer
 ==================
 
-The CategoricalImputer() replaces missing data in categorical variables with an
+The :class:`CategoricalImputer()` replaces missing data in categorical variables with an
 arbitrary value, like the string 'Missing' or by the most frequent category.
 
 Below a code example using the House Prices Dataset (more details about the dataset
@@ -38,6 +40,9 @@ Below a code example using the House Prices Dataset (more details about the data
 	test_t['MasVnrType'].value_counts().plot.bar()
 
 .. image:: ../../images/missingcategoryimputer.png
+
+More details
+^^^^^^^^^^^^
 
 Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/CategoricalImputer.ipynb>`_
 

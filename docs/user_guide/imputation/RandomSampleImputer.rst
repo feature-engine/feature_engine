@@ -1,5 +1,7 @@
 .. _random_sample_imputer:
 
+.. currentmodule:: feature_engine.imputation
+
 RandomSampleImputer
 ===================
 
@@ -109,6 +111,9 @@ Below a code example using the House Prices Dataset (more details about the data
 	ax.legend(lines, labels, loc='best')
 
 .. image:: ../../images/randomsampleimputation.png
+
+More details
+^^^^^^^^^^^^
 
 Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/RandomSampleImputer.ipynb>`_
 
