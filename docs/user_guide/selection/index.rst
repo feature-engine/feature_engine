@@ -1,4 +1,5 @@
 .. -*- mode: rst -*-
+.. _selection_user_guide:
 
 Feature Selection
 =================

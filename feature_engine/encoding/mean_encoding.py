@@ -30,6 +30,8 @@ class MeanEncoder(BaseCategoricalTransformer):
     The encoder first maps the categories to the numbers for each variable (fit). The
     encoder then replaces the categories with those numbers (transform).
 
+    More details in the :ref:`User Guide <mean_encoder>`.
+
     Parameters
     ----------
     variables: list, default=None
@@ -108,19 +110,6 @@ class MeanEncoder(BaseCategoricalTransformer):
 
         y: pandas series
             The target.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame.
-            - f user enters non-categorical variables (unless ignore_format is True)
-        ValueError
-            - If there are no categorical variables in the df or the df is empty
-            - If the variable(s) contain null values
-
-        Returns
-        -------
-        self
         """
 
         X = self._check_fit_input_and_variables(X)

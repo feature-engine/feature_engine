@@ -1,11 +1,20 @@
+.. _mean_encoder:
+
+.. currentmodule:: feature_engine.encoding
+
 MeanEncoder
 ===========
 
-The MeanEncoder() replaces categories with the mean of the target per category. For
-example, if we are trying to predict default rate, and our data has the variable city,
+The :class:`MeanEncoder()` replaces categories with the mean of the target per category.
+For example, if we are trying to predict default rate, and our data has the variable city,
 with categories, London, Manchester and Bristol, and the default rate per city is 0.1,
 0.5, and 0.3, respectively, the encoder will replace London by 0.1, Manchester by 0.5
 and Bristol by 0.3.
+
+The motivation is to try and create a monotonic relationship between the target and
+the encoded categories. This tends to help improve performance of linear models.
+
+Let's look at an example using the Titanic Dataset.
 
 .. code:: python
 
@@ -44,6 +53,8 @@ and Bristol by 0.3.
 
 	encoder.encoder_dict_
 
+The `encoder_dict_` contains the mean value of the target per category, per variable.
+So we can easily use this dictionary to map the numbers to the original labels.
 
 .. code:: python
 
@@ -63,4 +74,10 @@ and Bristol by 0.3.
 	  'Q': 0.37349397590361444,
 	  'S': 0.3389570552147239}}
 
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/MeanEncoder.ipynb>`_
 
