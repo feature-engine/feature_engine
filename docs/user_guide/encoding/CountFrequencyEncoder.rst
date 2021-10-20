@@ -1,5 +1,16 @@
+.. _count_freq_encoder:
+
+.. currentmodule:: feature_engine.encoding
+
 CountFrequencyEncoder
 =====================
+
+The :class:`CountFrequencyEncoder(`)` replaces categories by either the count or the
+percentage of observations per category. For example in the variable colour, if 10
+observations are blue, blue will be replaced by 10. Alternatively, if 10% of the
+observations are blue, blue will be replaced by 0.1.
+
+Let's look at an example using the Titanic Dataset.
 
 .. code:: python
 
@@ -39,6 +50,9 @@ CountFrequencyEncoder
 
 	encoder.encoder_dict_
 
+In the `encoder_dict_` we find the frequencies for each one of the categories of each
+variable that we want to encode. This way, we can map the original value to the new
+value.
 
 .. code:: python
 
@@ -57,3 +71,11 @@ CountFrequencyEncoder
 	 'embarked': {'S': 0.7117903930131004,
 	  'C': 0.19759825327510916,
 	  'Q': 0.0906113537117904}}
+
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/CountFrequencyEncoder.ipynb>`_
