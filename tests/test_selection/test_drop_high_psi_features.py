@@ -1,5 +1,4 @@
 from datetime import date
-
 import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
@@ -28,11 +27,10 @@ def df():
     return X
 
 
-def test_sanity_checks(df):
-    """Sanity checks.
-
-    All PSI must be zero if the two dataframe involved are the same.
-    There will be no changes in the dataframe.
+def test_psi_is_zero_if_basis_and_test_sets_identical(df):
+    """Sanity check:
+    PSI values must be zero if the two dataframes are the same;
+    i.e., there are no changes in the variable distributions.
     """
     transformer = DropHighPSIFeatures()
     X = transformer.fit_transform(df)
@@ -70,7 +68,7 @@ def test_check_psi_values():
         bins=2,
         strategy="equal_width",
         switch=False,
-        min_pct_empty_buckets=0.001,
+        min_pct_empty_bins=0.001,
     )
 
     test.fit(df)
@@ -89,7 +87,7 @@ def test_calculation_quantile(split_frac, expected):
     )
 
     test = DropHighPSIFeatures(
-        split_col="A", split_frac=split_frac, split_distinct_value=False
+        split_col="A", split_frac=split_frac, split_distinct=False
     )
     test.fit_transform(df)
     assert test.cut_off == expected
@@ -102,12 +100,12 @@ def test_calculation_distinct_value():
     )
 
     test = DropHighPSIFeatures(
-        split_col="C", split_frac=0.5, split_distinct_value=False
+        split_col="C", split_frac=0.5, split_distinct=False
     )
     test.fit_transform(df)
     assert test.cut_off == "C"
 
-    test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct_value=True)
+    test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct=True)
     test.fit_transform(df)
     assert test.cut_off == "B"
 
@@ -129,7 +127,7 @@ def test_calculation_df_split_with_different_types(test_column):
     )
 
     test = DropHighPSIFeatures(
-        split_col=test_column, split_frac=0.5, split_distinct_value=False
+        split_col=test_column, split_frac=0.5, split_distinct=False
     )
     results = test.fit_transform(df)
     assert results.shape[0] > 0
@@ -146,7 +144,7 @@ def test_calculation_no_split_columns():
         }
     )
 
-    test = DropHighPSIFeatures(split_frac=0.5, split_distinct_value=True)
+    test = DropHighPSIFeatures(split_frac=0.5, split_distinct=True)
     test.fit_transform(df)
     assert len(test.psi_values_) == 2
 
@@ -177,12 +175,12 @@ def test_switch():
     df_reverse = pd.concat([df_b, df_a]).reset_index(drop=True)
 
     case = DropHighPSIFeatures(
-        split_frac=0.5, bins=5, switch=False, min_pct_empty_buckets=0.001
+        split_frac=0.5, bins=5, switch=False, min_pct_empty_bins=0.001
     )
     case.fit(df_order)
 
     switch_case = DropHighPSIFeatures(
-        split_frac=0.5, bins=5, switch=True, min_pct_empty_buckets=0.001
+        split_frac=0.5, bins=5, switch=True, min_pct_empty_bins=0.001
     )
     switch_case.fit(df_reverse)
 
@@ -200,20 +198,60 @@ def test_split_df_according_to_col():
     )
 
     cut_off = DropHighPSIFeatures(
-        split_col="time", split_frac=0.5, bins=5, min_pct_empty_buckets=0.001
+        split_col="time", split_frac=0.5, bins=5, min_pct_empty_bins=0.001
     )
     psi = cut_off.fit(df).psi_values_
 
     assert len(psi) == 2
 
 
-def test_value_error_is_raised(df):
+def test_init_params():
+    transformer = DropHighPSIFeatures(
+        split_col = 'hola',
+        split_frac = 0.6,
+        split_distinct = True,
+        cut_off = ['value_1', 'value_2'],
+        switch = True,
+        threshold = 0.10,
+        bins = 5,
+        strategy = "equal_frequency",
+        min_pct_empty_bins = 0.1,
+        missing_values = "raise",
+        variables = ['chau', 'adios'],
+    )
+
+    assert transformer.split_col == 'hola'
+    assert transformer.split_frac == 0.6
+    assert transformer.split_distinct is True
+    assert transformer.cut_off == ['value_1', 'value_2']
+    assert transformer.switch is True
+    assert transformer.threshold == 0.1
+    assert transformer.bins == 5
+    assert transformer.strategy == "equal_frequency"
+    assert transformer.min_pct_empty_buckets == 0.1
+    assert transformer.missing_values == 'raise'
+    assert transformer.variables == ['chau', 'adios']
+
+
+def test_init_value_error_is_raised():
 
     with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_frac=0, bins=5, min_pct_empty_buckets=0.001)
+        DropHighPSIFeatures(split_col=['hola'])
 
     with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_frac=1, bins=5, min_pct_empty_buckets=0.001)
+        DropHighPSIFeatures(split_col=['hola'], variables=['hola', 'chau'])
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_frac=0)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_frac=1)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_frac=None, cut_off=None)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_distinct=1)
 
     with pytest.raises(ValueError):
         DropHighPSIFeatures(bins=1)
@@ -226,6 +264,9 @@ def test_value_error_is_raised(df):
 
     with pytest.raises(ValueError):
         DropHighPSIFeatures(strategy="unknown")
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(min_pct_empty_bins="unknown")
 
 
 def test_variable_definition(df):
@@ -241,3 +282,6 @@ def test_non_fitted_error(df):
     with pytest.raises(NotFittedError):
         transformer = DropHighPSIFeatures()
         transformer.transform(df)
+
+
+
