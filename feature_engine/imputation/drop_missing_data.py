@@ -34,7 +34,7 @@ class DropMissingData(BaseImputer):
     variables: list, default=None
         The list of variables to be imputed. If None, the imputer will find and
         select all variables in the dataframe.
-        
+
     thresh_pct: float, default=None
         Defines the percentage of data that must be available in order for a row of
         data to be kept. If None, DropMissingData proceeds as normal.
@@ -68,11 +68,11 @@ class DropMissingData(BaseImputer):
 
         if not isinstance(missing_only, bool):
             raise ValueError("missing_only takes values True or False")
-        
+
         if thresh_pct:
             if not isinstance(thresh_pct, float):
                 raise TypeError("thresh_pct must be of type float")
-            if not 0.0<thresh_pct<1.0:
+            if not 0.0 < thresh_pct < 1.0:
                 raise ValueError("thresh_pct must be between 0.0 and 1.0")
 
         self.variables = _check_input_parameter_variables(variables)
@@ -144,7 +144,7 @@ class DropMissingData(BaseImputer):
         X = self._check_transform_input_and_state(X)
 
         if self.thresh_pct:
-            X.dropna(thresh=X.shape[1]*self.thresh_pct, axis=0, inplace=True)
+            X.dropna(thresh=X.shape[1] * self.thresh_pct, axis=0, inplace=True)
         else:
             X.dropna(axis=0, how="any", subset=self.variables_, inplace=True)
 
