@@ -58,7 +58,7 @@ def test_non_fitted_error(df_na):
         imputer = DropMissingData()
         imputer.transform(df_na)
 
-def test_thres_pct(df_na):
+def test_thresh_pct(df_na):
     # Drops rows with more than 25% data missing
     imputer = DropMissingData(thresh_pct=0.25)
     two_nan = imputer.return_na_data(df_na)
