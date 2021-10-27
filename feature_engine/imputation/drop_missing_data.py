@@ -36,8 +36,9 @@ class DropMissingData(BaseImputer):
         select all variables in the dataframe.
 
     thresh_pct: float, default=None
-        Defines the percentage of data that must be available in order for a row of
-        data to be kept. If None, DropMissingData proceeds as normal.
+        The minimum percentage of variables that need to have data for a row to be kept, 
+        i.e., if thresh_pct=0.3,rows where > 30% of the variables have NA will be dropped. 
+        If None, rows with NA in any variable will be dropped
 
 
     Attributes
