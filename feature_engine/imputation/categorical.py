@@ -17,7 +17,7 @@ from feature_engine.variable_manipulation import (
 class CategoricalImputer(BaseImputer):
     """
     The CategoricalImputer() replaces missing data in categorical variables by an
-    arbitrary value or by the most frequent category.
+    arbitrary value that you define or by the most frequent category.
 
     The CategoricalVariableImputer() imputes by default only categorical variables
     (type 'object' or 'categorical'). You can pass a list of variables to impute, or
@@ -33,6 +33,8 @@ class CategoricalImputer(BaseImputer):
     list of variables to impute, the imputer will automatically select and impute all
     variables in the dataframe.
 
+    More details in the :ref:`User Guide <categorical_imputer>`.
+
     Parameters
     ----------
     imputation_method: str, default='missing'
@@ -47,7 +49,7 @@ class CategoricalImputer(BaseImputer):
         The list of categorical variables that will be imputed. If None, the
         imputer will find and transform all variables of type object or categorical by
         default. You can also make the transformer accept numerical variables, see the
-        parameter ignore_format below.
+        parameter `ignore_format` below.
 
     return_object: bool, default=False
         If working with numerical variables cast as object, decide
@@ -76,7 +78,7 @@ class CategoricalImputer(BaseImputer):
     Methods
     -------
     fit:
-        Learn the most frequent category, or assign arbitrary value to variable.
+        Learn the most frequent category or assign arbitrary value to variable.
     transform:
         Impute missing data.
     fit_transform:
@@ -117,18 +119,6 @@ class CategoricalImputer(BaseImputer):
 
         y: pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame.
-            - If user enters non-categorical variables (unless ignore_format is True)
-        ValueError
-            If there are no categorical variables in the df or the df is empty
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

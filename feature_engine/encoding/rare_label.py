@@ -13,7 +13,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class RareLabelEncoder(BaseCategoricalTransformer):
     """
-    The RareLabelCategoricalEncoder() groups rare / infrequent categories in
+    The RareLabelCategoricalEncoder() groups rare or infrequent categories in
     a new category called "Rare", or any other name entered by the user.
 
     For example in the variable colour, if the percentage of observations
@@ -38,6 +38,9 @@ class RareLabelEncoder(BaseCategoricalTransformer):
     The encoder first finds the frequent labels for each variable (fit). The encoder
     then groups the infrequent labels under the new label 'Rare' or by another user
     defined string (transform).
+
+    More details in the :ref:`User Guide <rarelabel_encoder>`.
+
 
     Parameters
     ----------
@@ -136,22 +139,6 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
         y: None
             y is not required. You can pass y or None.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame.
-            - If user enters non-categorical variables (unless ignore_format is True)
-        ValueError
-            - If there are no categorical variables in the df or the df is empty
-            - If the variable(s) contain null values
-        Warning
-            If the number of categories in any one variable is less than the indicated
-            in `n_categories`.
-
-        Returns
-        -------
-        self
         """
 
         X = self._check_fit_input_and_variables(X)
@@ -198,14 +185,6 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
             The input samples.
-
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            - If the variable(s) contain null values
-            - If user enters non-categorical variables (unless ignore_format is True)
 
         Returns
         -------

@@ -3,16 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Feature-engine: A Python library for Feature Engineering for Machine Learning
-=============================================================================
+Feature-engine
+==============
+
+A Python library for Feature Engineering and Selection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. figure::  images/logo/FeatureEngine.png
    :align:   center
 
-   Feature-engine rocks!
+   **Feature-engine rocks!**
 
-Feature-engine is a Python library with multiple transformers to engineer features for
-use in machine learning models. Feature-engine preserves Scikit-learn functionality with
-methods `fit()` and `transform()` to learn parameters from and then transform the data.
+Feature-engine is a Python library with multiple transformers to engineer and select
+features to use in machine learning models. Feature-engine preserves Scikit-learn
+functionality with methods `fit()` and `transform()` to learn parameters from and then
+transform the data.
 
 Feature-engine includes transformers for:
 
@@ -25,20 +30,29 @@ Feature-engine includes transformers for:
 - Variable selection
 - Preprocessing
 
-Feature-engine allows you to select the variables you want to transform within each
+Feature-engine allows you to select the variables you want to transform **within** each
 transformer. This way, different engineering procedures can be easily applied to
 different feature subsets.
 
 Feature-engine transformers can be assembled within the Scikit-learn pipeline,
 therefore making it possible to save and deploy one single object (.pkl) with the
-entire machine learning pipeline. Check **Quick Start** for an example, on the
-navigation panel on the left.
+entire machine learning pipeline. Check :ref:`**Quick Start** <quick_start>` for an
+example.
 
-**Would you like to know more about what is unique about Feature-engine?**
+What is unique about Feature-engine?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This article provides a nice summary:
+The following characteristics make Feature-engine unique:
 
-- `Feature-engine: A new open source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c>`_.
+- Feature-engine contains the most exhaustive battery of feature engineering transformations
+- Feature-engine can transform a specific group of variables in the dataframe
+- Feature-engine returns dataframes, hence suitable for data exploration and model deployment
+- Feature-engine is compatible with the Scikit-learn pipeline.
+- Feature-engine automatically recognizes numerical and categorical variables
+- Feature-engine alerts you if a transformation is not possible, e.g., if applying logarithm to negative variables or divisions by 0
+
+If you want to know more about what makes Feature-engine unique, check this
+`article <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c>`_.
 
 
 Installation
@@ -78,17 +92,11 @@ Feature-engine features in the following resources
 - `Website <https://www.trainindata.com/feature-engine>`_.
 - `Feature Engineering for Machine Learning <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_, Online Course.
 - `Feature Selection for Machine Learning <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_, Online Course.
-- `Python Feature Engineering Cookbook <https://www.packtpub.com/data/python-feature-engineering-cookbook>`_.
+- `Python Feature Engineering Cookbook <https://packt.link/python>`_.
 - `Feature-engine: A new open-source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c/>`_.
 - `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd>`_.
 
-En Español:
-
-- `Ingeniería de variables para machine learning <https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C>`_, Curso Online.
-- `Ingeniería de variables, MachinLenin <https://www.youtube.com/watch?v=NhCxOOoFXds>`_, charla online.
-
-More resources in the **Learning Resources** sections on the navigation panel on the
-left.
+More learning resources in the :ref:`**Learning Resources** <learning_resources>`.
 
 
 Feature-engine's Transformers
@@ -96,81 +104,81 @@ Feature-engine's Transformers
 Missing Data Imputation: Imputers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`imputation/MeanMedianImputer`: replaces missing data in numerical variables by the mean or median
-- :doc:`imputation/ArbitraryNumberImputer`: replaces missing data in numerical variables by an arbitrary value
-- :doc:`imputation/EndTailImputer`: replaces missing data in numerical variables by numbers at the distribution tails
-- :doc:`imputation/CategoricalImputer`: replaces missing data in categorical variables with an arbitrary value or by the most frequent category
-- :doc:`imputation/RandomSampleImputer`: replaces missing data with random samples of the variable
-- :doc:`imputation/AddMissingIndicator`: adds a binary missing indicator to flag observations with missing data
-- :doc:`imputation/DropMissingData`: removes rows containing missing values from dataframe
+- :doc:`api_doc/imputation/MeanMedianImputer`: replaces missing data in numerical variables by the mean or median
+- :doc:`api_doc/imputation/ArbitraryNumberImputer`: replaces missing data in numerical variables by an arbitrary value
+- :doc:`api_doc/imputation/EndTailImputer`: replaces missing data in numerical variables by numbers at the distribution tails
+- :doc:`api_doc/imputation/CategoricalImputer`: replaces missing data in categorical variables with an arbitrary value or by the most frequent category
+- :doc:`api_doc/imputation/RandomSampleImputer`: replaces missing data by random sampling observations from the variable
+- :doc:`api_doc/imputation/AddMissingIndicator`: adds a binary missing indicator to flag observations with missing data
+- :doc:`api_doc/imputation/DropMissingData`: removes observations (rows) containing missing values from dataframe
 
 Categorical Variable Encoders: Encoders
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`encoding/OneHotEncoder`: performs one hot encoding, optional: of popular categories
-- :doc:`encoding/CountFrequencyEncoder`: replaces categories by observation count or percentage
-- :doc:`encoding/OrdinalEncoder`: replaces categories by numbers arbitrarily or ordered by target
-- :doc:`encoding/MeanEncoder`: replaces categories by the target mean
-- :doc:`encoding/WoEEncoder`: replaces categories by the weight of evidence
-- :doc:`encoding/PRatioEncoder`: replaces categories by a ratio of probabilities
-- :doc:`encoding/DecisionTreeEncoder`: replaces categories by predictions of a decision tree
-- :doc:`encoding/RareLabelEncoder`: groups infrequent categories
+- :doc:`api_doc/encoding/OneHotEncoder`: performs one hot encoding, optional: of popular categories
+- :doc:`api_doc/encoding/CountFrequencyEncoder`: replaces categories by the observation count or percentage
+- :doc:`api_doc/encoding/OrdinalEncoder`: replaces categories by numbers arbitrarily or ordered by target
+- :doc:`api_doc/encoding/MeanEncoder`: replaces categories by the target mean
+- :doc:`api_doc/encoding/WoEEncoder`: replaces categories by the weight of evidence
+- :doc:`api_doc/encoding/PRatioEncoder`: replaces categories by a ratio of probabilities
+- :doc:`api_doc/encoding/DecisionTreeEncoder`: replaces categories by predictions of a decision tree
+- :doc:`api_doc/encoding/RareLabelEncoder`: groups infrequent categories
 
 Numerical Variable Transformation: Transformers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`transformation/LogTransformer`: performs logarithmic transformation of numerical variables
-- :doc:`transformation/LogCpTransformer`: adds the variables a constant value and then applies the logarithm
-- :doc:`transformation/ReciprocalTransformer`: performs reciprocal transformation of numerical variables
-- :doc:`transformation/PowerTransformer`: performs power transformation of numerical variables
-- :doc:`transformation/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables
-- :doc:`transformation/YeoJohnsonTransformer`: performs Yeo-Johnson transformation of numerical variables
+- :doc:`api_doc/transformation/LogTransformer`: performs logarithmic transformation of numerical variables
+- :doc:`api_doc/transformation/LogCpTransformer`: performs logarithmic transformation after adding a constant value
+- :doc:`api_doc/transformation/ReciprocalTransformer`: performs reciprocal transformation of numerical variables
+- :doc:`api_doc/transformation/PowerTransformer`: performs power transformation of numerical variables
+- :doc:`api_doc/transformation/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables
+- :doc:`api_doc/transformation/YeoJohnsonTransformer`: performs Yeo-Johnson transformation of numerical variables
 
 Variable Discretisation: Discretisers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`discretisation/ArbitraryDiscretiser`: sorts variable into intervals arbitrarily defined by the user
-- :doc:`discretisation/EqualFrequencyDiscretiser`: sorts variable into equal frequency intervals
-- :doc:`discretisation/EqualWidthDiscretiser`: sorts variable into equal size contiguous intervals
-- :doc:`discretisation/DecisionTreeDiscretiser`: uses decision trees to create finite variables
+- :doc:`api_doc/discretisation/ArbitraryDiscretiser`: sorts variable into intervals defined by the user
+- :doc:`api_doc/discretisation/EqualFrequencyDiscretiser`: sorts variable into equal frequency intervals
+- :doc:`api_doc/discretisation/EqualWidthDiscretiser`: sorts variable into equal width intervals
+- :doc:`api_doc/discretisation/DecisionTreeDiscretiser`: uses decision trees to create finite variables
 
 Outlier Capping or Removal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  :doc:`outliers/ArbitraryOutlierCapper`: caps maximum and minimum values at user defined values
--  :doc:`outliers/Winsorizer`: caps maximum or minimum values using statistical parameters
--  :doc:`outliers/OutlierTrimmer`: removes outliers from the dataset
-
-Scikit-learn Wrapper:
-~~~~~~~~~~~~~~~~~~~~~
-
--  :doc:`wrappers/Wrapper`: applies Scikit-learn transformers to a selected subset of features
+-  :doc:`api_doc/outliers/ArbitraryOutlierCapper`: caps maximum and minimum values at user defined values
+-  :doc:`api_doc/outliers/Winsorizer`: caps maximum or minimum values using statistical parameters
+-  :doc:`api_doc/outliers/OutlierTrimmer`: removes outliers from the dataset
 
 Mathematical Combination:
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  :doc:`creation/MathematicalCombination`: creates new variables by combining features with mathematical operations
--  :doc:`creation/CombineWithReferenceFeature`: combines variables with reference features through mathematical operations
--  :doc:`creation/CyclicalTransformer`: creates variables using sine and cosine, suitable for cyclical features
+-  :doc:`api_doc/creation/MathematicalCombination`: creates new variables by combining features with mathematical operations
+-  :doc:`api_doc/creation/CombineWithReferenceFeature`: combines variables with reference features through mathematical operations
+-  :doc:`api_doc/creation/CyclicalTransformer`: creates variables using sine and cosine, suitable for cyclical features
 
 Feature Selection:
 ~~~~~~~~~~~~~~~~~~
 
-- :doc:`selection/DropFeatures`: drops an arbitrary subset of variables from a dataframe
-- :doc:`selection/DropConstantFeatures`: drops constant and quasi-constant variables from a dataframe
-- :doc:`selection/DropDuplicateFeatures`: drops duplicated variables from a dataframe
-- :doc:`selection/DropCorrelatedFeatures`: drops correlated variables from a dataframe
-- :doc:`selection/SmartCorrelatedSelection`: selects best feature from correlated group
-- :doc:`selection/SelectByShuffling`: selects features by evaluating model performance after feature shuffling
-- :doc:`selection/SelectBySingleFeaturePerformance`: selects features based on their performance on univariate estimators
-- :doc:`selection/SelectByTargetMeanPerformance`: selects features based on target mean encoding performance
-- :doc:`selection/RecursiveFeatureElimination`: selects features recursively, by evaluating model performance
-- :doc:`selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
+- :doc:`api_doc/selection/DropFeatures`: drops an arbitrary subset of variables from a dataframe
+- :doc:`api_doc/selection/DropConstantFeatures`: drops constant and quasi-constant variables from a dataframe
+- :doc:`api_doc/selection/DropDuplicateFeatures`: drops duplicated variables from a dataframe
+- :doc:`api_doc/selection/DropCorrelatedFeatures`: drops correlated variables from a dataframe
+- :doc:`api_doc/selection/SmartCorrelatedSelection`: selects best features from correlated groups
+- :doc:`api_doc/selection/SelectByShuffling`: selects features by evaluating model performance after feature shuffling
+- :doc:`api_doc/selection/SelectBySingleFeaturePerformance`: selects features based on their performance on univariate estimators
+- :doc:`api_doc/selection/SelectByTargetMeanPerformance`: selects features based on target mean encoding performance
+- :doc:`api_doc/selection/RecursiveFeatureElimination`: selects features recursively, by evaluating model performance
+- :doc:`api_doc/selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
 
 Preprocessing:
 ~~~~~~~~~~~~~~
 
-- :doc:`preprocessing/MatchVariables`: ensures that columns in test set match those in train set
+- :doc:`api_doc/preprocessing/MatchVariables`: ensures that columns in test set match those in train set
+
+Scikit-learn Wrapper:
+~~~~~~~~~~~~~~~~~~~~~
+
+-  :doc:`api_doc/wrappers/Wrapper`: applies Scikit-learn transformers to a selected subset of features
 
 Getting Help
 ------------
@@ -207,7 +215,7 @@ improvements. We also appreciate blogs about Feature-engine. If you happen to ha
 let us know!
 
 For more details on how to contribute check the contributing page. Click on the
-"Contributing" link on the left of this page.
+:ref:`**Contribute** <contribute>` guide.
 
 
 Open Source
@@ -221,52 +229,16 @@ The `issues <https://github.com/feature-engine/feature_engine/issues/>`_ and
 `pull requests <https://github.com/feature-engine/feature_engine/pulls>`_ are tracked there.
 
 
+Table of Contents
+-----------------
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Table of Contents
-   
-   quickstart
-   installation
-   getting_help
-   datasets
+   :maxdepth: 2
 
-.. toctree::
-   :maxdepth: 1
-   :caption: API Documentation
-
-   imputation/index
-   encoding/index
-   transformation/index
-   discretisation/index
-   outliers/index
-   creation/index
-   selection/index
-   preprocessing/index
-   wrappers/index
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Learning Resources
-
-   tutorials
-   howto
-   books
-   courses
-   blogs
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Contribute
-
-   roadmap
-   about
+   quickstart/index
+   user_guide/index
+   api_doc/index
+   resources/index
    contribute/index
-   code_of_conduct
-   governance
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Releases
-
+   about/index
    whats_new/index

@@ -15,13 +15,6 @@ class OrdinalEncoder(BaseCategoricalTransformer):
     (0, 1, 2, 3, etc). The numbers can be ordered based on the mean of the target
     per category, or assigned arbitrarily.
 
-    **Ordered ordinal encoding**: for the variable colour, if the mean of the target
-    for blue, red and grey is 0.5, 0.8 and 0.1 respectively, blue is replaced by 1,
-    red by 2 and grey by 0.
-
-    **Arbitrary ordinal encoding**: the numbers will be assigned arbitrarily to the
-    categories, on a first seen first served basis.
-
     The encoder will encode only categorical variables by default (type 'object' or
     'categorical'). You can pass a list of variables to encode. Alternatively, the
     encoder will find and encode all categorical variables (type 'object' or
@@ -34,15 +27,17 @@ class OrdinalEncoder(BaseCategoricalTransformer):
     The encoder first maps the categories to the numbers for each variable (fit). The
     encoder then transforms the categories to the mapped numbers (transform).
 
+    More details in the :ref:`User Guide <ordinal_encoder>`.
+
     Parameters
     ----------
     encoding_method: str, default='ordered'
         Desired method of encoding.
 
-        'ordered': the categories are numbered in ascending order according to
+        **'ordered'**: the categories are numbered in ascending order according to
         the target mean value per category.
 
-        'arbitrary' : categories are numbered arbitrarily.
+        **'arbitrary'** : categories are numbered arbitrarily.
 
     variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
@@ -130,19 +125,6 @@ class OrdinalEncoder(BaseCategoricalTransformer):
         y: pandas series, default=None
             The Target. Can be None if encoding_method = 'arbitrary'.
             Otherwise, y needs to be passed when fitting the transformer.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame.
-            - If user enters non-categorical variables (unless ignore_format is True)
-        ValueError
-            - If there are no categorical variables in the df or the df is empty
-            - If the variable(s) contain null values
-
-        Returns
-        -------
-        self
         """
 
         X = self._check_fit_input_and_variables(X)

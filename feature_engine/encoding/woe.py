@@ -13,7 +13,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class WoEEncoder(BaseCategoricalTransformer):
     """
-    The WoERatioCategoricalEncoder() replaces categories by the weight of evidence
+    The WoEEncoder() replaces categories by the weight of evidence
     (WoE). The WoE was used primarily in the financial sector to create credit risk
     scorecards.
 
@@ -30,45 +30,15 @@ class WoEEncoder(BaseCategoricalTransformer):
     (fit). The encoder then transforms the categories into the mapped numbers
     (transform).
 
-    **Note**
-
     This categorical encoding is exclusive for binary classification.
-
-    **The weight of evidence is given by:**
-
-    .. math::
-
-        log( p(X=xj|Y = 1) / p(X=xj|Y=0) )
-
-
-
-    **The WoE is determined as follows:**
-
-    We calculate the percentage positive cases in each category of the total of all
-    positive cases. For example 20 positive cases in category A out of 100 total
-    positive cases equals 20 %. Next, we calculate the percentage of negative cases in
-    each category respect to the total negative cases, for example 5 negative cases in
-    category A out of a total of 50 negative cases equals 10%. Then we calculate the
-    WoE by dividing the category percentages of positive cases by the category
-    percentage of negative cases, and take the logarithm, so for category A in our
-    example WoE = log(20/10).
-
-    **Note**
-
-    - If WoE values are negative, negative cases supersede the positive cases.
-    - If WoE values are positive, positive cases supersede the negative cases.
-    - And if WoE is 0, then there are equal number of positive and negative examples.
-
-    **Encoding into WoE**:
-
-    - Creates a monotonic relationship between the encoded variable and the target
-    - Returns variables in a similar scale
 
     **Note**
 
     The log(0) is not defined and the division by 0 is not defined. Thus, if any of the
     terms in the WoE equation are 0 for a given category, the encoder will return an
     error. If this happens, try grouping less frequent categories.
+
+    More details in the :ref:`User Guide <woe_encoder>`.
 
     Parameters
     ----------
@@ -112,12 +82,6 @@ class WoEEncoder(BaseCategoricalTransformer):
     For details on the calculation of the weight of evidence visit:
     https://www.listendata.com/2015/03/weight-of-evidence-woe-and-information.html
 
-    In credit scoring, continuous variables are also transformed using the WoE. To do
-    this, first variables are sorted into a discrete number of bins, and then these
-    bins are encoded with the WoE as explained here for categorical variables. You can
-    do this by combining the use of the equal width, equal frequency or arbitrary
-    discretisers.
-
     NAN are introduced when encoding categories that were not present in the training
     dataset. If this happens, try grouping infrequent categories using the
     RareLabelEncoder().
@@ -152,21 +116,6 @@ class WoEEncoder(BaseCategoricalTransformer):
 
         y: pandas series.
             Target, must be binary.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not the Pandas DataFrame.
-            - If user enters non-categorical variables (unless ignore_format is True)
-        ValueError
-            - If there are no categorical variables in df or df is empty
-            - If variable(s) contain null values.
-            - If y is not binary with values 0 and 1.
-            - If p(0) = 0 or p(1) = 0.
-
-        Returns
-        -------
-        self
         """
 
         X = self._check_fit_input_and_variables(X)

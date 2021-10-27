@@ -122,19 +122,9 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         X: pandas dataframe of shape = [n_samples, n_features].
             The dataset to transform.
 
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            - If the variable(s) contain null values
-            - If the df has different number of features than the df used in fit()
-        Warning
-            If after encoding, NAN were introduced.
-
         Returns
         -------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X_new: pandas dataframe of shape = [n_samples, n_features].
             The dataframe containing the categories replaced by numbers.
         """
 

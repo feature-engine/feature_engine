@@ -10,34 +10,32 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 class CyclicalTransformer(BaseNumericalTransformer):
     """
     The CyclicalTransformer() applies cyclical transformations to numerical
-    variables. The transformations returns 2 new features per variable, according to:
+    variables, returning 2 new features per variable, according to:
 
     - var_sin = sin(variable * (2. * pi / max_value))
     - var_cos = cos(variable * (2. * pi / max_value))
 
     where max_value is the maximum value in the variable, and pi is 3.14...
 
-    **Motivation**: There are some features that are cyclic by nature. For example the
-    hours of a day or the months in a year. In these cases, the higher values of
-    the variable are closer to the lower values. For example, December (12) is closer
-    to January (1) than to June (6). By applying a cyclical transformation we capture
-    this cycle or proximity between values.
+    The CyclicalTransformer() works only with numerical variables. A list of variables
+    to transform can be passed as an argument. Alternatively, the transformer will
+    automatically select and transform all numerical variables.
 
-    The CyclicalTransformer() works only with numerical variables. Missing data should
-    be imputed before applying this transformer.
+    Missing data should be imputed before applying this transformer.
 
-    A list of variables can be passed as an argument. Alternatively, the transformer
-    will automatically select and transform all numerical variables.
+    More details in the :ref:`User Guide <cyclical_features>`.
 
     Parameters
     ----------
     variables: list, default=None
         The list of numerical variables to transform. If None, the transformer will
         automatically find and select all numerical variables.
+
     max_values: dict, default=None
         A dictionary with the maximum value of each variable to transform. Useful when
         the maximum value is not present in the dataset. If None, the transformer will
         automatically find the maximum value of each variable.
+
     drop_original: bool, default=False
         If True, the original variables to transform will be dropped from the dataframe.
 
@@ -58,7 +56,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
     fit:
         Learns the maximum values of the cyclical features.
     transform:
-        Applies the cyclical transformation, creates 2 new features.
+        Applies the cyclical transformation.
     fit_transform:
         Fit to data, then transform it.
 
@@ -94,7 +92,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the maximum value of each of the cyclical variables.
+        Learns the maximum value of each cyclical variable.
 
         Parameters
         ----------
@@ -104,18 +102,6 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
         y: pandas Series, default=None
             It is not needed in this transformer. You can pass y or None.
-
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame.
-        ValueError:
-            - If some of the columns contains NaNs.
-            - If some of the mapping keys are not present in variables.
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe
@@ -144,16 +130,10 @@ class CyclicalTransformer(BaseNumericalTransformer):
         X: Pandas DataFrame of shame = [n_samples, n_features]
             The data to be transformed.
 
-        Raises
-        ------
-        TypeError
-            If the input is not Pandas DataFrame.
-
         Returns
         -------
-        X: Pandas dataframe.
-            The dataframe with the additional new features. The original variables will
-            be dropped if drop_originals is False, or retained otherwise.
+        X_new: Pandas dataframe.
+            The original dataframe plus the additional features.
         """
         X = super().transform(X)
 

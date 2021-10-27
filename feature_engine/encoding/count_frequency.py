@@ -31,6 +31,8 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
     variable (fit). The encoder then replaces the categories with those numbers
     (transform).
 
+    More details in the :ref:`User Guide <count_freq_encoder>`.
+
     Parameters
     ----------
     encoding_method: str, default='count'
@@ -116,19 +118,6 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
 
         y: pandas Series, default = None
             y is not needed in this encoder. You can pass y or None.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame.
-            - f user enters non-categorical variables (unless ignore_format is True)
-        ValueError
-            - If there are no categorical variables in the df or the df is empty
-            - If the variable(s) contain null values
-
-        Returns
-        -------
-        self
         """
 
         X = self._check_fit_input_and_variables(X)

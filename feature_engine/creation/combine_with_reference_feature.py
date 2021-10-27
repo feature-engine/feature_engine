@@ -24,52 +24,23 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     divides a group of features to / by a group of reference variables, and returns the
     result as new variables in the dataframe.
 
-    For example, if we have the variables **number_payments_first_quarter**,
-    **number_payments_second_quarter**, **number_payments_third_quarter**,
-    **number_payments_fourth_quarter**, and **total_payments**, we can use
-    CombineWithReferenceFeature() to determine the percentage of payments per
-    quarter as follows:
-
-    .. code-block:: python
-
-        transformer = CombineWithReferenceFeature(
-            variables_to_combine=[
-                'number_payments_first_quarter',
-                'number_payments_second_quarter',
-                'number_payments_third_quarter',
-                'number_payments_fourth_quarter',
-            ],
-
-            reference_variables=['total_payments'],
-
-            operations=['div'],
-
-            new_variables_name=[
-                'perc_payments_first_quarter',
-                'perc_payments_second_quarter',
-                'perc_payments_third_quarter',
-                'perc_payments_fourth_quarter',
-            ]
-        )
-
-        Xt = transformer.fit_transform(X)
-
     The transformed X, Xt, will contain the additional features indicated in the
     new_variables_name list plus the original set of variables.
+
+    More details in the :ref:`User Guide <combine_with_ref>`.
 
     Parameters
     ----------
     variables_to_combine: list
-        The list of numerical variables to be combined with the reference
-        variables.
+        The list of numerical variables to combine with the reference variables.
 
     reference_variables: list
         The list of numerical reference variables that will be added to, multiplied
-        with, or subtracted from the variables_to_combine, or used as denominator for
+        with, or subtracted from the `variables_to_combine`, or used as denominator for
         division.
 
     operations: list, default=['sub']
-        The list of basic mathematical operations to be used in transformation.
+        The list of basic mathematical operations to be used in the transformation.
 
         If None, all of ['sub', 'div','add','mul'] will be performed. Alternatively,
         you can enter a list of operations to carry out. Each operation should
@@ -79,21 +50,14 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         transformed dataset.
 
     new_variables_names: list, default=None
-        Names of the newly created variables. You can enter a list with the names for
-        the newly created features (recommended). You must enter as many names as new
-        features created by the transformer. The number of new features is the number
-        of operations times the number of reference variables times the number of
-        variables to combine.
+        Names of the new variables. If passing a list with the names for the new
+        features (recommended), you must enter as many names as new features created
+        by the transformer. The number of new features is the number of `operations`,
+        times the number of `reference_variables`, times the number of
+        `variables_to_combine`.
 
-        Thus, if you want to perform 2 operations, sub and div, combining 4 variables
-        with 2 reference variables, you should enter 2 X 4 X 2 new variable names.
-
-        The name of the variables indicated by the user should coincide with the order
-        in which the  operations are performed by the transformer. The transformer will
-        first carry out 'sub', then 'div', then 'add' and finally 'mul'.
-
-        If new_variable_names is None, the transformer will assign an arbitrary name
-        to the newly created features.
+        If `new_variable_names` is None, the transformer will assign an arbitrary name
+        to the ne features. The name will be var + operation + ref_var.
 
     missing_values: string, default='ignore'
         Indicates if missing values should be ignored or raised. If 'ignore', the
@@ -119,7 +83,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     Notes
     -----
     Although the transformer in essence allows us to combine any feature with any of
-    the allowed mathematical operations, its used is intended mostly for the creation
+    the allowed mathematical operations, its use is intended mostly for the creation
     of new features based on some domain knowledge. Typical examples within the
     financial sector are:
 
@@ -202,7 +166,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        This transformer does not learn any parameter. Performs dataframe checks.
+        This transformer does not learn any parameter.
 
         Parameters
         ----------
@@ -212,19 +176,6 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
         y: pandas Series, or np.array. Default=None.
             It is not needed in this transformer. You can pass y or None.
-
-        Raises
-        ------
-        TypeError
-           - If the input is not a Pandas DataFrame
-           - If any user provided variables are not numerical
-        ValueError
-           If any of the reference variables contain null values and the
-           mathematical operation is 'div'.
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe
@@ -271,8 +222,8 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X: Pandas dataframe, shape = [n_samples, n_features + n_operations]
-            The dataframe with the operations results added as columns.
+        X_new: Pandas dataframe, shape = [n_samples, n_features + n_operations]
+            The dataframe with the new variables.
         """
 
         # Check method fit has been called
