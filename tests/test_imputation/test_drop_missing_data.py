@@ -59,9 +59,31 @@ def test_non_fitted_error(df_na):
         imputer.transform(df_na)
 
 
-def test_thresh_pct(df_na):
-    # Drops rows with more than 25% data missing
-    imputer = DropMissingData(thresh_pct=0.25)
+def test_drop_pct(df_na):
+    imputer = DropMissingData(missing_only=False, drop_pct=0.34)
     X = imputer.fit_transform(df_na)
-    two_nan = imputer.return_na_data(X)
-    assert two_nan.shape == (2, 6)
+    # Drop rows missing more than 34% of the data. Index 3 only.
+    assert list(X.index) == [0, 1, 2, 4, 5, 6, 7]
+
+    imputer = DropMissingData(missing_only=False, drop_pct=0.32)
+    X = imputer.fit_transform(df_na)
+    # Drop rows missing more than 32% of the data. Index 2, 3, 5 will be dropped.
+    assert list(X.index) == [0, 1, 4, 6, 7]
+    
+def test_drop_pct_with_missing_only(df_na):
+    with pytest.raises(ValueError):
+        DropMissingData(missing_only=True, drop_pct=0.33)
+        
+def test_drop_pct_with_variables(df_na):
+    imputer = DropMissingData(missing_only=False, drop_pct=0.26, variables=['City', 'Studies', 'Age', 'Marks'])
+    X = imputer.fit_transform(df_na)
+    # Drop rows missing more than 26% of the data is missing from ['City', 'Studies', 'Age', 'Marks']. 
+    # I.E. 2 or more columns are missing since there are 4 variables
+    assert list(X.index) == [0, 1, 4, 5, 6, 7]
+
+    imputer = DropMissingData(missing_only=False, drop_pct=0.24, variables=['City', 'Studies', 'Age', 'Marks'])
+    X = imputer.fit_transform(df_na)
+    # Drop rows missing more than 24% of the data is missing from ['City', 'Studies', 'Age', 'Marks']. 
+    # I.E. 1 or more columns are missing since there are 4 variables
+    assert list(X.index) == [0, 1, 4, 6, 7]
+

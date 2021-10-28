@@ -12,30 +12,34 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 
 class DropMissingData(BaseImputer):
     """
-    The DropMissingData() will delete rows containing missing values. It works for both
-    numerical and categorical variables.
+    The DropMissingData() will delete rows containing missing values. It provides
+    similar functionality to pandas.drop_na().
 
-    You can enter the list of variables for which missing values should be removed from
-    the dataframe. Alternatively, the imputer will automatically select all variables
-    in the dataframe.
+    It works for both numerical and categorical variables. You can enter the list of
+    variables for which missing values should be removed from the dataframe.
+    Alternatively, the imputer will automatically select all variables in the dataframe.
 
-    More details in the :ref:`User Guide <drop_missing_data>`.
+    **Note**
+    The transformer will first select all variables or all user entered
+    variables and if `missing_only=True`, it will re-select from the original group
+    only those that show missing data in during fit, that is in the train set.
 
     Parameters
     ----------
     missing_only: bool, default=True
         If true, missing observations will be dropped only for the variables that have
-        missing data in the train set. If False, observations with NA will be dropped
-        from all variables.
+        missing data in the train set, during fit. If False, observations with NA
+        will be dropped from all variables indicated by the user.
 
     variables: list, default=None
         The list of variables to be imputed. If None, the imputer will find and
         select all variables in the dataframe.
 
-    thresh_pct: float, default=None
-        The minimum percentage of variables that need to have data for a row to be kept, 
-        i.e., if thresh_pct=0.3,rows where > 30% of the variables have NA will be dropped. 
-        If None, rows with NA in any variable will be dropped
+    drop_pct: float, default=None
+        The maximum percentage of data that can be missing in a row to be kept, i.e., if
+        drop_pct=0.34, rows where > 34% of the variables have NaN will be dropped.
+        If there are 3 features, then 1 feature could be missing since it's only 33% of the data.
+        If None, rows with NA in any variable will be dropped.
 
 
     Attributes
@@ -54,28 +58,31 @@ class DropMissingData(BaseImputer):
     fit_transform:
         Fit to the data, then transform it.
     return_na_data:
-        Returns the dataframe with the rows that contain NA.
+        Returns the dataframe with the rows that contain NA .
     """
 
     def __init__(
         self,
         missing_only: bool = True,
+        drop_pct: Optional[float] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        thresh_pct: Optional[float] = None,
     ) -> None:
 
         if not isinstance(missing_only, bool):
             raise ValueError("missing_only takes values True or False")
 
-        if thresh_pct:
-            if not isinstance(thresh_pct, float):
-                raise TypeError("thresh_pct must be of type float")
-            if not 0.0 < thresh_pct < 1.0:
-                raise ValueError("thresh_pct must be between 0.0 and 1.0")
+        if drop_pct:
+            if not isinstance(drop_pct, float):
+                raise TypeError("drop_pct must be of type float")
+            if not 0.0 < drop_pct < 1.0:
+                raise ValueError("drop_pct must be between 0.0 and 1.0")
+
+        if missing_only & (drop_pct is not None):
+            raise ValueError("Cannot have missing_only=True & drop_pct!=None, If your intention is to drop rows across any data based during fit, then setting missing_only=False will drop based on drop_pct as expected.")
 
         self.variables = _check_input_parameter_variables(variables)
         self.missing_only = missing_only
-        self.thresh_pct = thresh_pct
+        self.drop_pct = drop_pct
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -88,6 +95,15 @@ class DropMissingData(BaseImputer):
 
         y: pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
+
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+
+        Returns
+        -------
+        self
         """
 
         # check input dataframe
@@ -125,15 +141,15 @@ class DropMissingData(BaseImputer):
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_transformed: pandas dataframe
             The complete case dataframe for the selected variables, of shape
             [n_samples - rows_with_na, n_features]
         """
 
         X = self._check_transform_input_and_state(X)
 
-        if self.thresh_pct:
-            X.dropna(thresh=X.shape[1] * self.thresh_pct, axis=0, inplace=True)
+        if self.drop_pct:
+            X.dropna(thresh=X[self.variables_].shape[1] * (1 - self.drop_pct), subset=self.variables_, axis=0, inplace=True)
         else:
             X.dropna(axis=0, how="any", subset=self.variables_, inplace=True)
 
@@ -150,9 +166,14 @@ class DropMissingData(BaseImputer):
         X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe to be transformed.
 
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+
         Returns
         -------
-        X_na: pandas dataframe of shape = [obs_with_na, features]
+        X: pandas dataframe of shape = [obs_with_na, features]
             The dataframe containing only the rows with missing values.
         """
 
