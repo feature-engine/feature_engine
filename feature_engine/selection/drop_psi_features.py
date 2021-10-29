@@ -55,7 +55,7 @@ class DropHighPSIFeatures(BaseSelector):
 
     A bigger PSI value indicates a bigger shift in the feature distribution.
 
-    Different thresholds can be used to assess the magnitud of the distribution shift
+    Different thresholds can be used to assess the magnitude of the distribution shift
     according to the PSI value. The most commonly used thresholds are:
 
     - Below 10%, the variable has not experienced a significant shift.
@@ -249,13 +249,10 @@ class DropHighPSIFeatures(BaseSelector):
             raise ValueError(f"switch must be a boolean. Got {switch} instead.")
 
         if not isinstance(threshold, (float, int)) or threshold < 0:
-            raise ValueError(
-                f"threshold must be >= 0. Got {threshold} instead."
-            )
+            raise ValueError(f"threshold must be >= 0. Got {threshold} instead.")
 
         if not isinstance(bins, int) or bins <= 1:
-            raise ValueError(f"bins must be an integer >= 1. Got {bins} "
-                             f"instead.")
+            raise ValueError(f"bins must be an integer >= 1. Got {bins} instead.")
 
         if strategy not in ["equal_width", "equal_frequency"]:
             raise ValueError(
@@ -263,10 +260,7 @@ class DropHighPSIFeatures(BaseSelector):
                 f"{strategy} instead."
             )
 
-        if (
-            not isinstance(min_pct_empty_bins, (float, int))
-            or min_pct_empty_bins < 0
-        ):
+        if not isinstance(min_pct_empty_bins, (float, int)) or min_pct_empty_bins < 0:
             raise ValueError(
                 f"min_pct_empty_bins must be >= 0. Got {min_pct_empty_bins} "
                 f"instead."
@@ -345,7 +339,7 @@ class DropHighPSIFeatures(BaseSelector):
             bucketer = EqualWidthDiscretiser(bins=self.bins)
         else:
             bucketer = EqualFrequencyDiscretiser(q=self.bins)
-            
+
         # Compute the PSI by looping over the features
         self.psi_values_ = {}
         self.features_to_drop_ = []
@@ -354,7 +348,7 @@ class DropHighPSIFeatures(BaseSelector):
             # Discretize the features.
             basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
             test_discrete = bucketer.transform(test_df[[feature]].dropna())
-            
+
             # Determine percentage of observations per bin
             basis_distrib, test_distrib = self._observation_frequency_per_bin(
                 basis_discrete, test_discrete
@@ -378,11 +372,11 @@ class DropHighPSIFeatures(BaseSelector):
 
         Parameters
         ----------
-        basis : pd.Series.
-            The basis Pandas Series with discretised (i.e., binned) values.
+        basis : pd.DataFrame.
+            The basis Pandas DataFrame with discretised (i.e., binned) values.
 
-        test: pd.Series.
-            The test Pandas Series with discretised (i.e., binned) values.
+        test: pd.DataFrame.
+            The test Pandas DataFrame with discretised (i.e., binned) values.
 
         Returns
         -------
@@ -451,11 +445,11 @@ class DropHighPSIFeatures(BaseSelector):
                 "dataframe."
             )
 
-        # If cut_off is not pre-defined, compute it.
+        # If cut_off is not pre-defined, compute it and set it as attribute.
         if not self.cut_off:
-            cut_off = self._get_cut_off_value(reference)
-        else:
-            cut_off = self.cut_off
+            self.cut_off = self._get_cut_off_value(reference)
+
+        cut_off = self.cut_off
 
         # Split the original dataframe
         if isinstance(self.cut_off, list):
@@ -519,7 +513,6 @@ class DropHighPSIFeatures(BaseSelector):
             cut_off = (distance.idxmin()).values[0]
 
         return cut_off
-
 
     # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
