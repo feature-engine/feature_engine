@@ -258,6 +258,55 @@ def test_switch():
     assert case.psi_values_ == switch_case.psi_values_
 
 
+type_test = [
+    ("A", 14, 15),
+    ("B", 1, 10),
+    ("C", ["A"], 5),
+    ("time", date(2019, 1, 4), 4),
+]
+
+
+@pytest.mark.parametrize("col, cut_off, expected", type_test)
+def test_split_using_cut_off(col, cut_off, expected, df_mixed_types):
+    """Test the cut off for different data types."""
+    test = DropHighPSIFeatures(split_col=col, cut_off=cut_off)
+    a, b = test._split_dataframe(df_mixed_types)
+
+    assert a.shape[0] == expected
+
+
+split_distinct_test = [
+    ("A", 100, 100),
+    ("B", 60, 140),
+    ("C", 60, 140),
+    ("time", 60, 140),
+]
+
+
+@pytest.mark.parametrize("col, expected_a, expected_b", split_distinct_test)
+def test_split_distinct(col, expected_a, expected_b):
+    """Test the cut off for different data types.
+
+    For columns B, C and time we have 6 distinct values, 5 appearing 20 times and
+    1 appearing 100 times. A 50% split based on the number of values will results
+    in 2 groups of 3. One has 60 appearances (in total) and the other has 140.
+    """
+    data = pd.DataFrame(
+        {
+            "A": [it for it in range(0, 200)],
+            "B": [1, 2, 3, 4, 5, 6, 6, 6, 6, 6] * 20,
+            "C": ["A", "B", "C", "D", "E", "F", "F", "F", "F", "F"] * 20,
+            "time": [date(2019, 1, it + 1) for it in range(5)] * 20
+            + [date(2019, 1, 31)] * 100,
+        }
+    )
+    test = DropHighPSIFeatures(split_col=col, split_distinct=True)
+    a, b = test._split_dataframe(data)
+
+    assert a.shape[0] == expected_a
+    assert b.shape[0] == expected_b
+
+
 def test_split_df_according_to_col():
 
     df = pd.DataFrame(
