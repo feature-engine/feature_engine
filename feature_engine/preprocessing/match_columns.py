@@ -16,63 +16,47 @@ class MatchVariables(BaseEstimator, TransformerMixin):
     were not present in the train set, they are dropped. If the dataset to transform
     lacks variables that were present in the train set, these variables are added to
     the dataframe with a value determined by the user (np.nan by default).
-
     .. code-block:: python
-
         train = pd.DataFrame({
             "Name": ["tom", "nick", "krish", "jack"],
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
         })
-
         test = pd.DataFrame({
             "Name": ["tom", "sam", "nick"],
             "Age": [20, 22, 23],
             "Marks": [0.9, 0.7, 0.6],
             "Hobbies": ["tennis", "rugby", "football"]
         })
-
         match_columns = MatchVariables()
-
         match_columns.fit(train)
-
         df_transformed = match_columns.transform(test)
-
         df_transformed
-
             Name    City  Age  Marks
         0    tom  np.nan   20    0.9
         1    sam  np.nan   22    0.7
         2   nick  np.nan   23    0.6
-
-
     The order of the variables in the transformed dataset is also adjusted to match
     that observed in the train set.
-
     Parameters
     ----------
     fill_value: integer, float or string. Default=np.nan
         The values for the variables that will be added to the transformed dataset.
-
     missing_values: string, default='ignore'
         Indicates if missing values should be ignored or raised. If 'ignore', the
         transformer will ignore missing data when transforming the data. If 'raise' the
         transformer will return an error if the training or the datasets to transform
         contain missing values.
-
     verbose: bool, default=True
         If True, the transformer will print out the names of the variables that are
         added and / or removed from the dataset.
-
     Attributes
     ----------
     input_features_:
         The variables present in the train set, in the order observed during fit.
-
     n_features_in_:
         The number of features in the train set used in fit.
-
     Methods
     -------
     fit:
@@ -93,20 +77,16 @@ class MatchVariables(BaseEstimator, TransformerMixin):
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
                 "missing_values takes only values 'raise' or 'ignore'."
-                f"Got '{missing_values} instead."
-            )
+                f"Got '{missing_values} instead.")
 
         if not isinstance(verbose, bool):
-            raise ValueError(
-                "verbose takes only booleans True and False." f"Got '{verbose} instead."
-            )
+            raise ValueError("verbose takes only booleans True and False."
+                             f"Got '{verbose} instead.")
 
         # note: np.nan is an instance of float!!!
         if not isinstance(fill_value, (str, int, float)):
-            raise ValueError(
-                "fill_value takes integers, floats or strings."
-                f"Got '{fill_value} instead."
-            )
+            raise ValueError("fill_value takes integers, floats or strings."
+                             f"Got '{fill_value} instead.")
 
         self.fill_value = fill_value
         self.missing_values = missing_values
@@ -114,21 +94,16 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """Learns and stores the names of the variables in the training dataset.
-
         Parameters
         ----------
-
         X: pandas dataframe of shape = [n_samples, n_features]
             The input dataframe
-
         y: None
             y is not needed for this transformer. You can pass y or None.
-
         Raises
         ------
         TypeError
            - If the input is not a Pandas DataFrame
-
         Returns
         -------
         self
@@ -149,12 +124,10 @@ class MatchVariables(BaseEstimator, TransformerMixin):
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Drops variables that were not seen in the train set and adds variables that
          were in the train set but not in the data to transform.
-
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
-
         Returns
         -------
         X_transformed: Pandas dataframe, shape = [n_samples, n_features]
@@ -173,15 +146,12 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
         if self.verbose:
             if len(_columns_to_add) > 0:
-                print(
-                    "The following variables are added to the DataFrame: "
-                    f"{_columns_to_add}"
-                )
+                print("The following variables are added to the DataFrame: "
+                      f"{_columns_to_add}")
             if len(_columns_to_drop) > 0:
                 print(
                     "The following variables are dropped from the DataFrame: "
-                    f"{_columns_to_drop}"
-                )
+                    f"{_columns_to_drop}")
 
         X = X.drop(_columns_to_drop, axis=1)
 
@@ -198,8 +168,7 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
         msg = (
             "transformer takes categorical variables, and inf cannot be determined"
-            "on these variables. Thus, check is not implemented"
-        )
+            "on these variables. Thus, check is not implemented")
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = msg
 
         return tags_dict
