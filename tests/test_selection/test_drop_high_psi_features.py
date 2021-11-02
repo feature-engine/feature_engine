@@ -168,7 +168,7 @@ def test_calculation_quantile(split_frac, expected):
         split_col="A", split_frac=split_frac, split_distinct=False
     )
     test.fit_transform(df)
-    assert test.cut_off == expected
+    assert test.cut_off_ == expected
 
 
 def test_calculation_distinct_value():
@@ -179,11 +179,11 @@ def test_calculation_distinct_value():
 
     test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct=False)
     test.fit_transform(df)
-    assert test.cut_off == "C"
+    assert test.cut_off_ == "C"
 
     test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct=True)
     test.fit_transform(df)
-    assert test.cut_off == "B"
+    assert test.cut_off_ == "B"
 
 
 def test_calculation_df_split_with_different_types(df_mixed_types):
@@ -246,12 +246,12 @@ def test_switch():
     df_reverse = pd.concat([df_b, df_a]).reset_index(drop=True)
 
     case = DropHighPSIFeatures(
-        split_frac=0.5, bins=5, switch=False, min_pct_empty_bins=0.001
+        split_frac=0.5, bins=3, switch=False, min_pct_empty_bins=0.001
     )
     case.fit(df_order)
 
     switch_case = DropHighPSIFeatures(
-        split_frac=0.5, bins=5, switch=True, min_pct_empty_bins=0.001
+        split_frac=0.5, bins=3, switch=True, min_pct_empty_bins=0.001
     )
     switch_case.fit(df_reverse)
 

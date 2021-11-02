@@ -87,7 +87,8 @@ class DropHighPSIFeatures(BaseSelector):
 
     If the user defines a numeric cut-off value or a specific date using the cut_off
     parameter, the observations with value <= cut-off will go to the basis data set and
-    the remaining ones to the test set.
+    the remaining ones to the test set. For categorical values this means they are
+    sorted alphabetically and cut accordingly.
 
     If the user passes a list of values, the observations with the values in the list,
     will go to the basis set, and the remaining ones to the test set.
@@ -186,6 +187,10 @@ class DropHighPSIFeatures(BaseSelector):
     n_features_in_:
         The number of features in the train set used in fit.
 
+    cut_off_:
+        Value used to split the dataframe into basis and test.
+        This value is computed when not given as parameter.
+
     Methods
     -------
     fit:
@@ -227,8 +232,9 @@ class DropHighPSIFeatures(BaseSelector):
         # split_frac and cut_off can't be None at the same time
         if not split_frac and not cut_off:
             raise ValueError(
-                "cut_off and split_frac cannot be both set to None. Please specify a "
-                "value for at least one of these parameters."
+                f"cut_off and split_frac cannot be both set to None "
+                f"The current values are {split_frac, cut_off}. Please "
+                f"specify a value for at least one of these parameters."
             )
 
         # check split_frac only if it will be used.
@@ -330,6 +336,17 @@ class DropHighPSIFeatures(BaseSelector):
         # Split the dataframe into basis and test.
         basis_df, test_df = self._split_dataframe(X)
 
+        # Check the shape of the dataframe for PSI calculations.
+        # The number of observations must be at least equal to the
+        # number of bins.
+        if min(basis_df.shape[0], test_df.shape[0]) < self.bins:
+            raise ValueError(
+                f"The number of rows for the matrices used in the PSI "
+                f"calculations must be larger than {self.bins}. Now have "
+                f"{basis_df.shape[0]} samples, and {test_df.shape[0]} "
+                f"samples, Please adjust the value of the cut_off."
+            )
+
         # Switch basis and test dataframes if required.
         if self.switch:
             test_df, basis_df = basis_df, test_df
@@ -346,6 +363,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         for feature in self.variables_:
             # Discretize the features.
+
             basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
             test_discrete = bucketer.transform(test_df[[feature]].dropna())
 
@@ -386,7 +404,7 @@ class DropHighPSIFeatures(BaseSelector):
         distribution.meas: pd.Series.
             Test Pandas Series with percentage of observations per bin.
         """
-        # TODO: were the fillna in previous version needed?
+        # Compute the feature distribution for basis and test
         basis_distrib = basis.value_counts(normalize=True)
         test_distrib = test.value_counts(normalize=True)
 
@@ -441,21 +459,21 @@ class DropHighPSIFeatures(BaseSelector):
         # Raise an error if there are missing values in the reference column.
         if reference.isna().sum() != 0:
             raise ValueError(
-                "Missing data are not allowed in the variable used to split the "
-                "dataframe."
+                f"{reference.isna().sum()} missing values. Missing data are "
+                f"not allowed in the variable used to split the dataframe."
             )
 
         # If cut_off is not pre-defined, compute it and set it as attribute.
         if not self.cut_off:
-            self.cut_off = self._get_cut_off_value(reference)
-
-        cut_off = self.cut_off
+            self.cut_off_ = self._get_cut_off_value(reference)
+        else:
+            self.cut_off_ = self.cut_off
 
         # Split the original dataframe
         if isinstance(self.cut_off, list):
-            is_within_cut_off = reference.isin(cut_off)
+            is_within_cut_off = reference.isin(self.cut_off_)
         else:
-            is_within_cut_off = reference <= cut_off
+            is_within_cut_off = reference <= self.cut_off_
 
         basis_df = X[is_within_cut_off]
         test_df = X[~is_within_cut_off]
@@ -479,7 +497,6 @@ class DropHighPSIFeatures(BaseSelector):
             used to compute the quantile. The value with the quantile that
             is the closest to the chosen split fraction is used as cut-off.
 
-            #TODO: this needs to be in the dosctrings at the top as well:
             - The sort involves that categorical values are sorted alphabetically
             and cut accordingly.
 
