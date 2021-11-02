@@ -27,8 +27,8 @@ def df():
     X = pd.DataFrame(X, columns=colnames)
 
     # Add drifted features that will be dropped during transformation.
-    X["drift_1"] = [itel for itel in range(X.shape[0])]
-    X["drift_2"] = [itel / 2 for itel in range(X.shape[0])]
+    X["drift_1"] = [number for number in range(X.shape[0])]
+    X["drift_2"] = [number / 2 for number in range(X.shape[0])]
 
     return X
 
