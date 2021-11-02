@@ -451,7 +451,7 @@ class DropHighPSIFeatures(BaseSelector):
             cut_off = self.cut_off
 
         # Split the original dataframe
-        if isinstance(self.cut_off, list):
+        if isinstance(cut_off, list):
             is_within_cut_off = reference.isin(cut_off)
         else:
             is_within_cut_off = reference <= cut_off
