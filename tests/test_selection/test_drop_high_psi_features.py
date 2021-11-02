@@ -398,12 +398,12 @@ def test_switch():
     df_reverse = pd.concat([df_b, df_a]).reset_index(drop=True)
 
     case = DropHighPSIFeatures(
-        split_frac=0.5, bins=5, switch=False, min_pct_empty_bins=0.001
+        split_frac=0.5, bins=3, switch=False, min_pct_empty_bins=0.001
     )
     case.fit(df_order)
 
     switch_case = DropHighPSIFeatures(
-        split_frac=0.5, bins=5, switch=True, min_pct_empty_bins=0.001
+        split_frac=0.5, bins=3, switch=True, min_pct_empty_bins=0.001
     )
     switch_case.fit(df_reverse)
 
