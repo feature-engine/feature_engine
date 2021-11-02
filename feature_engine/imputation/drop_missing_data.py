@@ -36,9 +36,11 @@ class DropMissingData(BaseImputer):
         select all variables in the dataframe.
 
     row_drop_pct: float, default=None
-        If a row of data is missing this percentage of column values or greater, it will be dropped, i.e. if
-        there are 3 columns of data with row_drop_pct=0.34, then 2/3 or 3/3 of the columns must be missing
-        to be dropped. If row_drop_pct=0.32 then any amount of NaN in 3 columns will be dropped.
+        If a row of data is missing this percentage of column values or greater
+        then it will be dropped, i.e. if there are 3 columns of data with
+        row_drop_pct=0.34, then 2/3 or 3/3 of the columns must be missing
+        to be dropped. If row_drop_pct=0.32 then any amount of NaN
+        in 3 columns will be dropped.
         It's inversely related to the amount of rows that will be dropped.
         If row_drop_pct is not None, then missing_only will be ignored.
         If None, rows with NA in any variable will be dropped.
@@ -74,12 +76,17 @@ class DropMissingData(BaseImputer):
 
         if row_drop_pct:
             if not isinstance(row_drop_pct, float):
-                raise TypeError(f"row_drop_pct must be of type float. Got {row_drop_pct} instead.")
+                raise TypeError(
+                    f"row_drop_pct must be of type float. Got {row_drop_pct} instead."
+                )
             if not 0.0 < row_drop_pct < 1.0:
                 raise ValueError("row_drop_pct must be between 0.0 and 1.0")
 
         if missing_only & (row_drop_pct is not None):
-            raise ValueError(f"If row_drop_pct is not None, missing_only must be set to False. Got {missing_only} instead")
+            raise ValueError(
+                f"If row_drop_pct is not None, missing_only must be set to False. \
+                Got {missing_only} instead"
+            )
 
         self.variables = _check_input_parameter_variables(variables)
         self.missing_only = missing_only
@@ -142,7 +149,12 @@ class DropMissingData(BaseImputer):
         X = self._check_transform_input_and_state(X)
 
         if self.row_drop_pct:
-            X.dropna(thresh=len(self.variables_) * (1 - self.row_drop_pct), subset=self.variables_, axis=0, inplace=True)
+            X.dropna(
+                thresh=len(self.variables_) * (1 - self.row_drop_pct),
+                subset=self.variables_,
+                axis=0,
+                inplace=True,
+            )
         else:
             X.dropna(axis=0, how="any", subset=self.variables_, inplace=True)
 
