@@ -81,8 +81,11 @@ def test_fit_attributes(df):
     assert transformer.n_features_in_ == 8
 
 
-def test_default_values():
-    """Test the default values are correctly assigned."""
+def test_init_default_parameters():
+    #TODO: merge this test and the following into 1, using parametrize
+    # and passing all allowed values to each parameter, ie, split col can
+    # take None, string, should test both.
+    """Test the default param values are correctly assigned."""
     transformer = DropHighPSIFeatures()
 
     assert transformer.split_col is None
@@ -98,12 +101,81 @@ def test_default_values():
     assert transformer.variables is None
 
 
-def test_split_col_not_included(df):
-    """Check that the split columns is not included in the process."""
-    transformer = DropHighPSIFeatures(split_col="var_3")
-    transformer.fit_transform(df)
+def test_init_alternative_params():
+    #TODO: merge with previous using parametrize
+    """ Test user entered parameters correctly assigned"""
+    transformer = DropHighPSIFeatures(
+        split_col="hola",
+        split_frac=0.6,
+        split_distinct=True,
+        cut_off=["value_1", "value_2"],
+        switch=True,
+        threshold=0.10,
+        bins=5,
+        strategy="equal_frequency",
+        min_pct_empty_bins=0.1,
+        missing_values="raise",
+        variables=["chau", "adios"],
+    )
 
-    assert ("var_3" in transformer.psi_values_.keys()) is False
+    assert transformer.split_col == "hola"
+    assert transformer.split_frac == 0.6
+    assert transformer.split_distinct is True
+    assert transformer.cut_off == ["value_1", "value_2"]
+    assert transformer.switch is True
+    assert transformer.threshold == 0.1
+    assert transformer.bins == 5
+    assert transformer.strategy == "equal_frequency"
+    assert transformer.min_pct_empty_bins == 0.1
+    assert transformer.missing_values == "raise"
+    assert transformer.variables == ["chau", "adios"]
+
+
+def test_init_value_error_is_raised():
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_col=["hola"])
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_col=["hola"], variables=["hola", "chau"])
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_frac=0)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_frac=1)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_frac=None, cut_off=None)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(split_distinct=1)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(bins=1)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(threshold=-1)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(switch=1)
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(strategy="unknown")
+
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(min_pct_empty_bins="unknown")
+
+
+def test_split_col_not_included_in_variables(df):
+    """Check that the split columns is not included among the features
+     to evaluate."""
+    transformer = DropHighPSIFeatures(split_col="var_3")
+    transformer.fit(df)
+
+    assert transformer.variables is None
+    assert "var_3" not in transformer.variables_
+    assert "var_3" not in transformer.psi_values_.keys()
 
 
 def test_missing_split_col(df):
@@ -167,8 +239,8 @@ def test_calculation_quantile(split_frac, expected):
     test = DropHighPSIFeatures(
         split_col="A", split_frac=split_frac, split_distinct=False
     )
-    test.fit_transform(df)
-    assert test.cut_off == expected
+    cut_off = test._get_cut_off_value(df["A"])
+    assert cut_off == expected
 
 
 def test_calculation_distinct_value():
@@ -178,12 +250,12 @@ def test_calculation_distinct_value():
     )
 
     test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct=False)
-    test.fit_transform(df)
-    assert test.cut_off == "C"
+    cut_off = test._get_cut_off_value(df["C"])
+    assert cut_off == "C"
 
     test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct=True)
-    test.fit_transform(df)
-    assert test.cut_off == "B"
+    cut_off = test._get_cut_off_value(df["C"])
+    assert cut_off == "B"
 
 
 def test_calculation_df_split_with_different_types(df_mixed_types):
@@ -325,68 +397,6 @@ def test_split_df_according_to_col():
     assert len(psi) == 2
 
 
-def test_init_params():
-    transformer = DropHighPSIFeatures(
-        split_col="hola",
-        split_frac=0.6,
-        split_distinct=True,
-        cut_off=["value_1", "value_2"],
-        switch=True,
-        threshold=0.10,
-        bins=5,
-        strategy="equal_frequency",
-        min_pct_empty_bins=0.1,
-        missing_values="raise",
-        variables=["chau", "adios"],
-    )
-
-    assert transformer.split_col == "hola"
-    assert transformer.split_frac == 0.6
-    assert transformer.split_distinct is True
-    assert transformer.cut_off == ["value_1", "value_2"]
-    assert transformer.switch is True
-    assert transformer.threshold == 0.1
-    assert transformer.bins == 5
-    assert transformer.strategy == "equal_frequency"
-    assert transformer.min_pct_empty_bins == 0.1
-    assert transformer.missing_values == "raise"
-    assert transformer.variables == ["chau", "adios"]
-
-
-def test_init_value_error_is_raised():
-
-    with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_col=["hola"])
-
-    with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_col=["hola"], variables=["hola", "chau"])
-
-    with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_frac=0)
-
-    with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_frac=1)
-
-    with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_frac=None, cut_off=None)
-
-    with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_distinct=1)
-
-    with pytest.raises(ValueError):
-        DropHighPSIFeatures(bins=1)
-
-    with pytest.raises(ValueError):
-        DropHighPSIFeatures(threshold=-1)
-
-    with pytest.raises(ValueError):
-        DropHighPSIFeatures(switch=1)
-
-    with pytest.raises(ValueError):
-        DropHighPSIFeatures(strategy="unknown")
-
-    with pytest.raises(ValueError):
-        DropHighPSIFeatures(min_pct_empty_bins="unknown")
 
 
 def test_variable_definition(df):
