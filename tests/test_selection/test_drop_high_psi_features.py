@@ -1,4 +1,5 @@
 from datetime import date
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -46,6 +47,7 @@ def df_mixed_types():
     return df
 
 
+# ====  test  main functionality of the class ====
 def test_fit_attributes(df):
     """Check the value of the fit attributes.
 
@@ -75,14 +77,17 @@ def test_fit_attributes(df):
         "drift_2": 8.283089355027482,
     }
 
-    assert transformer.variables_ == ['var_0','var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'drift_1', 'drift_2']
+    assert transformer.variables_ == ['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'drift_1', 'drift_2']
     assert transformer.psi_values_ == pytest.approx(expected_psi, 12)
     assert transformer.features_to_drop_ == ["drift_1", "drift_2"]
     assert transformer.n_features_in_ == 8
 
 
+# ================ test init parameters =================
+
+
 def test_init_default_parameters():
-    #TODO: merge this test and the following into 1, using parametrize
+    # TODO: merge this test and the following into 1, using parametrize
     # and passing all allowed values to each parameter, ie, split col can
     # take None, string, should test both.
     """Test the default param values are correctly assigned."""
@@ -102,7 +107,7 @@ def test_init_default_parameters():
 
 
 def test_init_alternative_params():
-    #TODO: merge with previous using parametrize
+    # TODO: merge with previous using parametrize
     """ Test user entered parameters correctly assigned"""
     transformer = DropHighPSIFeatures(
         split_col="hola",
@@ -132,7 +137,6 @@ def test_init_alternative_params():
 
 
 def test_init_value_error_is_raised():
-
     with pytest.raises(ValueError):
         DropHighPSIFeatures(split_col=["hola"])
 
@@ -167,10 +171,13 @@ def test_init_value_error_is_raised():
         DropHighPSIFeatures(min_pct_empty_bins="unknown")
 
 
+# ================= test fit() functionality ==================
+
+
 def test_split_col_not_included_in_variables(df):
     """Check that the split columns is not included among the features
-     to evaluate."""
-    transformer = DropHighPSIFeatures(split_col="var_3")
+     to evaluate when these are selected automatically."""
+    transformer = DropHighPSIFeatures(split_col="var_3", variables=None)
     transformer.fit(df)
 
     assert transformer.variables is None
@@ -188,14 +195,14 @@ def test_missing_split_col(df):
         transformer.fit_transform(data)
 
 
-def test_raise_missing_value_na(df):
+def test_raise_error_missing_value_na(df):
     # Test an error is raised when missing values is set to raise
     data = df.copy()
     data["var_3"].iloc[15] = np.nan
 
     with pytest.raises(ValueError):
         transformer = DropHighPSIFeatures(missing_values="raise")
-        transformer.fit_transform(data)
+        transformer.fit(data)
 
 
 def test_raise_missing_value_inf(df):
@@ -208,22 +215,7 @@ def test_raise_missing_value_inf(df):
         transformer.fit(data)
 
 
-def test_observation_frequency_per_bin():
-    """Test empty bins are populated by a tiny amount."""
-    a = pd.DataFrame({"A": [1, 2, 4]})
-    b = pd.DataFrame({"A": [1, 2, 3]})
-    transformer = DropHighPSIFeatures()
-    a_bins, b_bins = transformer._observation_frequency_per_bin(a, b)
-
-    expected_a_bins = pd.Series([0.3333333, 0.333333, 0.0001, 0.333333])
-    expected_b_bins = pd.Series([0.3333333, 0.333333, 0.333333, 0.0001])
-
-    pd.testing.assert_series_equal(
-        a_bins.reset_index(drop=True), expected_a_bins, check_names=False
-    )
-    pd.testing.assert_series_equal(
-        b_bins.reset_index(drop=True), expected_b_bins, check_names=False
-    )
+# ========= tests for _split_dataframe() fit ====
 
 
 quantile_test = [(0.5, 50), (0.33, 33), (0.17, 17), (0.81, 81)]
@@ -259,6 +251,9 @@ def test_calculation_distinct_value():
 
 
 def test_calculation_df_split_with_different_types(df_mixed_types):
+    # TODO: add asserts for the output of cut-off to ensure this function
+    # is working properly, like the tests above
+
     """Test the split of the dataframe using different type of variables."""
     results = {}
     for split_col in df_mixed_types.columns:
@@ -278,6 +273,7 @@ def test_calculation_df_split_with_different_types(df_mixed_types):
 
 
 def test_calculation_no_split_columns():
+    # TODO: test the output of cut-off
     """Test the split of the dataframe using different type of variables."""
     df = pd.DataFrame(
         {
@@ -292,9 +288,82 @@ def test_calculation_no_split_columns():
     assert len(test.psi_values_) == 2
 
 
+type_test = [
+    ("A", 14, 15),
+    ("B", 1, 10),
+    ("C", ["A"], 5),
+    ("time", date(2019, 1, 4), 4),
+]
+
+
+@pytest.mark.parametrize("col, cut_off, expected", type_test)
+def test_split_using_cut_off(col, cut_off, expected, df_mixed_types):
+    # TODO: can we compare dfs and not just shapes?
+    """Test the cut off for different data types."""
+    test = DropHighPSIFeatures(split_col=col, cut_off=cut_off)
+    a, b = test._split_dataframe(df_mixed_types)
+
+    assert a.shape[0] == expected
+
+
+split_distinct_test = [
+    ("A", 100, 100),
+    ("B", 60, 140),
+    ("C", 60, 140),
+    ("time", 60, 140),
+]
+
+
+@pytest.mark.parametrize("col, expected_a, expected_b", split_distinct_test)
+def test_split_distinct(col, expected_a, expected_b):
+    # todo: can we compare dfs and not just shapes?
+    """Test the cut off for different data types.
+
+    For columns B, C and time we have 6 distinct values, 5 appearing 20 times and
+    1 appearing 100 times. A 50% split based on the number of values will results
+    in 2 groups of 3. One has 60 appearances (in total) and the other has 140.
+    """
+    data = pd.DataFrame(
+        {
+            "A": [it for it in range(0, 200)],
+            "B": [1, 2, 3, 4, 5, 6, 6, 6, 6, 6] * 20,
+            "C": ["A", "B", "C", "D", "E", "F", "F", "F", "F", "F"] * 20,
+            "time": [date(2019, 1, it + 1) for it in range(5)] * 20
+                    + [date(2019, 1, 31)] * 100,
+        }
+    )
+    test = DropHighPSIFeatures(split_col=col, split_distinct=True)
+    a, b = test._split_dataframe(data)
+
+    assert a.shape[0] == expected_a
+    assert b.shape[0] == expected_b
+
+
+def test_split_df_according_to_col():
+    # TODO: what is the aim of this test? which functionality is it testing?
+    df = pd.DataFrame(
+        {
+            "A": [it for it in range(0, 20)],
+            "B": [1, 2, 3, 4] * 5,
+            "time": [date(2019, 1, it + 1) for it in range(20)],
+        }
+    )
+
+    cut_off = DropHighPSIFeatures(
+        split_col="time", split_frac=0.5, bins=5, min_pct_empty_bins=0.001
+    )
+    psi = cut_off.fit(df).psi_values_
+
+    assert len(psi) == 2
+
+# TODO: are we testing _split_df() when user passes a list of values?
+# ===== end of tests for _split_dataframe() =======
+
+# ==== more tests for fit functionality ============
+
+
 def test_switch():
     """Test the functionality to switch the basis."""
-    import pandas as pd
 
     df_a = pd.DataFrame(
         {
@@ -330,77 +399,26 @@ def test_switch():
     assert case.psi_values_ == switch_case.psi_values_
 
 
-type_test = [
-    ("A", 14, 15),
-    ("B", 1, 10),
-    ("C", ["A"], 5),
-    ("time", date(2019, 1, 4), 4),
-]
+def test_observation_frequency_per_bin():
+    """Test empty bins are populated by a tiny amount."""
+    a = pd.DataFrame({"A": [1, 2, 4]})
+    b = pd.DataFrame({"A": [1, 2, 3]})
+    transformer = DropHighPSIFeatures()
+    a_bins, b_bins = transformer._observation_frequency_per_bin(a, b)
 
+    expected_a_bins = pd.Series([0.3333333, 0.333333, 0.0001, 0.333333])
+    expected_b_bins = pd.Series([0.3333333, 0.333333, 0.333333, 0.0001])
 
-@pytest.mark.parametrize("col, cut_off, expected", type_test)
-def test_split_using_cut_off(col, cut_off, expected, df_mixed_types):
-    """Test the cut off for different data types."""
-    test = DropHighPSIFeatures(split_col=col, cut_off=cut_off)
-    a, b = test._split_dataframe(df_mixed_types)
-
-    assert a.shape[0] == expected
-
-
-split_distinct_test = [
-    ("A", 100, 100),
-    ("B", 60, 140),
-    ("C", 60, 140),
-    ("time", 60, 140),
-]
-
-
-@pytest.mark.parametrize("col, expected_a, expected_b", split_distinct_test)
-def test_split_distinct(col, expected_a, expected_b):
-    """Test the cut off for different data types.
-
-    For columns B, C and time we have 6 distinct values, 5 appearing 20 times and
-    1 appearing 100 times. A 50% split based on the number of values will results
-    in 2 groups of 3. One has 60 appearances (in total) and the other has 140.
-    """
-    data = pd.DataFrame(
-        {
-            "A": [it for it in range(0, 200)],
-            "B": [1, 2, 3, 4, 5, 6, 6, 6, 6, 6] * 20,
-            "C": ["A", "B", "C", "D", "E", "F", "F", "F", "F", "F"] * 20,
-            "time": [date(2019, 1, it + 1) for it in range(5)] * 20
-            + [date(2019, 1, 31)] * 100,
-        }
+    pd.testing.assert_series_equal(
+        a_bins.reset_index(drop=True), expected_a_bins, check_names=False
     )
-    test = DropHighPSIFeatures(split_col=col, split_distinct=True)
-    a, b = test._split_dataframe(data)
-
-    assert a.shape[0] == expected_a
-    assert b.shape[0] == expected_b
-
-
-def test_split_df_according_to_col():
-
-    df = pd.DataFrame(
-        {
-            "A": [it for it in range(0, 20)],
-            "B": [1, 2, 3, 4] * 5,
-            "time": [date(2019, 1, it + 1) for it in range(20)],
-        }
+    pd.testing.assert_series_equal(
+        b_bins.reset_index(drop=True), expected_b_bins, check_names=False
     )
-
-    cut_off = DropHighPSIFeatures(
-        split_col="time", split_frac=0.5, bins=5, min_pct_empty_bins=0.001
-    )
-    psi = cut_off.fit(df).psi_values_
-
-    assert len(psi) == 2
-
-
 
 
 def test_variable_definition(df):
-
+    # TODO: what is this testing?
     select = DropHighPSIFeatures(variables=["var_1", "var_3", "var_5"], split_frac=0.01)
     transformed_df = select.fit_transform(df)
 
@@ -411,6 +429,11 @@ def test_variable_definition(df):
         "drift_1",
         "drift_2",
     ]
+
+# TODO: are we testing that the features are selected appropriately? i.e., the
+# attribute features_to_drop_ ?
+
+# TODO: can we add some tests for the transform method? comparing dfs?
 
 
 def test_non_fitted_error(df):
