@@ -106,7 +106,10 @@ class DropHighPSIFeatures(BaseSelector):
 
     split_col: string or int, default=None.
         The variable that will be used to split the dataset into the basis and test
-        sets. If None, the dataframe index will be used.
+        sets. If None, the dataframe index will be used. `split_col` can be a numerical,
+        categorical or datetime variable. If `split_col` is a categorical variable, and
+        the splitting criteria is given by `split_frac`, it will be assumed that the
+        labels of the variable are sorted alphabetically.
 
     split_frac: float, default=0.5.
         The proportion of observations in each of the basis and test dataframes. If
@@ -475,7 +478,6 @@ class DropHighPSIFeatures(BaseSelector):
             used to compute the quantile. The value with the quantile that
             is the closest to the chosen split fraction is used as cut-off.
 
-            #TODO: this needs to be in the dosctrings at the top as well:
             - The sort involves that categorical values are sorted alphabetically
             and cut accordingly.
 
