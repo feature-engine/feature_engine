@@ -306,10 +306,6 @@ class DropHighPSIFeatures(BaseSelector):
 
         y : pandas series. Default = None
             y is not needed in this transformer. You can pass y or None.
-
-        Returns
-        -------
-        self
         """
         # check input dataframe
         X = _is_dataframe(X)
