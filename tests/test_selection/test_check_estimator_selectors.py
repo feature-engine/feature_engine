@@ -24,9 +24,8 @@ from feature_engine.selection import (
         DropConstantFeatures(),
         DropDuplicateFeatures(),
         DropCorrelatedFeatures(),
-        DropHighPSIFeatures(bins=4),
+        DropHighPSIFeatures(bins=5),
         SmartCorrelatedSelection(),
-        DropHighPSIFeatures(),
         SelectByShuffling(RandomForestClassifier(random_state=1), scoring="accuracy"),
         SelectBySingleFeaturePerformance(
             RandomForestClassifier(random_state=1), scoring="accuracy"

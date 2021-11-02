@@ -250,7 +250,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         if not isinstance(split_distinct, bool):
             raise ValueError(
-                f"split_distinct must be a boolean. Got {split_distinct} " f"instead."
+                f"split_distinct must be a boolean. Got {split_distinct} instead."
             )
 
         if not isinstance(switch, bool):
@@ -461,7 +461,7 @@ class DropHighPSIFeatures(BaseSelector):
                 f"not allowed in the variable used to split the dataframe."
             )
 
-        # If cut_off is not pre-defined, compute it
+        # If cut_off is not pre-defined, compute it.
         if not self.cut_off:
             self.cut_off_ = self._get_cut_off_value(reference)
         else:
