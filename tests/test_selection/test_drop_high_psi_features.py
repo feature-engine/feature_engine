@@ -77,7 +77,16 @@ def test_fit_attributes(df):
         "drift_2": 8.283089355027482,
     }
 
-    assert transformer.variables_ == ['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'drift_1', 'drift_2']
+    assert transformer.variables_ == [
+        "var_0",
+        "var_1",
+        "var_2",
+        "var_3",
+        "var_4",
+        "var_5",
+        "drift_1",
+        "drift_2",
+    ]
     assert transformer.psi_values_ == pytest.approx(expected_psi, 12)
     assert transformer.features_to_drop_ == ["drift_1", "drift_2"]
     assert transformer.n_features_in_ == 8
@@ -108,7 +117,7 @@ def test_init_default_parameters():
 
 def test_init_alternative_params():
     # TODO: merge with previous using parametrize
-    """ Test user entered parameters correctly assigned"""
+    """Test user entered parameters correctly assigned"""
     transformer = DropHighPSIFeatures(
         split_col="hola",
         split_frac=0.6,
@@ -176,7 +185,7 @@ def test_init_value_error_is_raised():
 
 def test_split_col_not_included_in_variables(df):
     """Check that the split columns is not included among the features
-     to evaluate when these are selected automatically."""
+    to evaluate when these are selected automatically."""
     transformer = DropHighPSIFeatures(split_col="var_3", variables=None)
     transformer.fit(df)
 
@@ -329,7 +338,7 @@ def test_split_distinct(col, expected_a, expected_b):
             "B": [1, 2, 3, 4, 5, 6, 6, 6, 6, 6] * 20,
             "C": ["A", "B", "C", "D", "E", "F", "F", "F", "F", "F"] * 20,
             "time": [date(2019, 1, it + 1) for it in range(5)] * 20
-                    + [date(2019, 1, 31)] * 100,
+            + [date(2019, 1, 31)] * 100,
         }
     )
     test = DropHighPSIFeatures(split_col=col, split_distinct=True)
@@ -355,6 +364,7 @@ def test_split_df_according_to_col():
     psi = cut_off.fit(df).psi_values_
 
     assert len(psi) == 2
+
 
 # TODO: are we testing _split_df() when user passes a list of values?
 # ===== end of tests for _split_dataframe() =======
@@ -429,6 +439,7 @@ def test_variable_definition(df):
         "drift_1",
         "drift_2",
     ]
+
 
 # TODO: are we testing that the features are selected appropriately? i.e., the
 # attribute features_to_drop_ ?

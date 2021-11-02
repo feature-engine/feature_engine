@@ -244,8 +244,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         if not isinstance(split_distinct, bool):
             raise ValueError(
-                f"split_distinct must be a boolean. Got {split_distinct} "
-                f"instead."
+                f"split_distinct must be a boolean. Got {split_distinct} " f"instead."
             )
 
         if not isinstance(switch, bool):
