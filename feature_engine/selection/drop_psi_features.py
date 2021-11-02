@@ -314,7 +314,7 @@ class DropHighPSIFeatures(BaseSelector):
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # Remove the split_col from the variables list. It might be added if the
-        # variables are not defined at initiation.
+        # variables are not defined at initialization.
         if self.split_col in self.variables_:
             self.variables_.remove(self.split_col)
 
@@ -441,11 +441,11 @@ class DropHighPSIFeatures(BaseSelector):
                 "dataframe."
             )
 
-        # If cut_off is not pre-defined, compute it and set it as attribute.
+        # If cut_off is not pre-defined, compute it
         if not self.cut_off:
-            self.cut_off = self._get_cut_off_value(reference)
-
-        cut_off = self.cut_off
+            cut_off = self._get_cut_off_value(reference)
+        else:
+            cut_off = self.cut_off
 
         # Split the original dataframe
         if isinstance(self.cut_off, list):
