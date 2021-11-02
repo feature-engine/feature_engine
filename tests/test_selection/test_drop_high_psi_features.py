@@ -5,7 +5,7 @@ import pytest
 from sklearn.datasets import make_classification
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.selection.drop_psi_features import DropHighPSIFeatures
+from feature_engine.selection import DropHighPSIFeatures
 
 
 @pytest.fixture(scope="module")
