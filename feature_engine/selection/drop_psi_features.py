@@ -1,6 +1,6 @@
+import datetime
 from typing import List, Union
 
-import datetime
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
@@ -40,12 +40,12 @@ class DropHighPSIFeatures(BaseSelector):
 
     To determine the PSI, continuous features are sorted into discrete intervals, the
     fraction of observations per interval is then determined, and finally those values
-    are compared between the base and test sets, to obtain the PSI.
+    are compared between the basis and test sets, to obtain the PSI.
 
     In other words, the PSI is computed as follows:
 
     - Define the bins into which the observations will be sorted (uses the basis set).
-    - Sort the feature values into those bins (in both bassis and test sets).
+    - Sort the feature values into those bins (in both basis and test sets).
     - Determine the fraction of observations within each bin.
     - Compute the PSI.
 
@@ -90,8 +90,9 @@ class DropHighPSIFeatures(BaseSelector):
     the remaining ones to the test set. For categorical values this means they are
     sorted alphabetically and cut accordingly.
 
-    If the user passes a list of values, the observations with the values in the list,
-    will go to the basis set, and the remaining ones to the test set.
+    If the user passes a list of values in the cut-off, the observations with the
+    values in the list, will go to the basis set, and the remaining ones to the test
+    set.
 
     For more details check the parameter definitions below.
 
@@ -105,39 +106,41 @@ class DropHighPSIFeatures(BaseSelector):
     ----------
 
     split_col: string or int, default=None.
-        The variable that will be used to split the dataset. If None, the dataframe
-        index will be used.
+        The variable that will be used to split the dataset into the basis and test
+        sets. If None, the dataframe index will be used. `split_col` can be a numerical,
+        categorical or datetime variable. If `split_col` is a categorical variable, and
+        the splitting criteria is given by `split_frac`, it will be assumed that the
+        labels of the variable are sorted alphabetically.
 
     split_frac: float, default=0.5.
-        The proportion of observations in each of the dataframes that will be used
-        to compare the feature distributions. If split_frac is 0.6, 60% of the
-        observations will be put in the basis data set.
+        The proportion of observations in each of the basis and test dataframes. If
+        `split_frac` is 0.6, 60% of the observations will be put in the basis data set.
 
-        If split_distinct is True, the indicated fraction may not be achieved exactly.
-        See parameter split_distinct for more details.
+        If `split_distinct` is True, the indicated fraction may not be achieved exactly.
+        See parameter `split_distinct` for more details.
 
-        If cut_off is not None, split_frac will be ignored and the data split based off
-        the cut_off value.
+        If `cut_off` is not None, `split_frac` will be ignored and the data split based
+        on the `cut_off` value.
 
     split_distinct: boolean, default=False.
-        If True, unique values in split_col will go to either basis or test data sets
-        but not both. For example, if split_col is [0, 1, 1, 1, 2, 2], split_frac is 0.5
-        and split_distinct is False, the data will be divided ind [0, 1, 1] and
-        [1, 2, 2] achieving exactly a 50% split. However, if split_distinct is True,
+        If True, unique values in `split_col` will go to either basis or test data sets
+        but not both. For example, if `split_col` is [0, 1, 1, 1, 2, 2], `split_frac` is
+        0.5 and `split_distinct` is False, the data will be divided ind [0, 1, 1] and
+        [1, 2, 2] achieving exactly a 50% split. However, if `split_distinct` is True,
         then the data will be divided into [0, 1, 1, 1] and [2, 2], with an approximate
         split of 0.5 but not exactly.
 
     cut_off: int, float, date or list, default=None
-        Threshold to split the dataset based on the split_col values. If int, float
-        or date, observations where the split_col values are <= threshold will
-        go to the basis data set and those with values above the threshold will land in
-        the test set. If cut_off is a list, the observations where the split_col
-        values are within the list will go to the basis data set and the remaining
-        observations will land in the test set. If cut_off is not None, this
-        parameter will be used to split the data and split_frac will be ignored.
+        Threshold to split the dataset based on the `split_col` variable. If int, float
+        or date, observations where the `split_col` values are <= threshold will
+        go to the basis data set and the rest to the test set. If `cut_off` is a list,
+        the observations where the `split_col` values are within the list will go to the
+        basis data set and the remaining observations to the test set. If `cut_off` is
+        not None, this parameter will be used to split the data and `split_frac` will be
+        ignored.
 
     switch: boolean, default=False.
-        If True, the order of the 2 dataframes used to determine the PSI (base and
+        If True, the order of the 2 dataframes used to determine the PSI (basis and
         test) will be switched. This is important because the PSI is not symmetric,
         i.e., PSI(a, b) != PSI(b, a)).
 
@@ -247,8 +250,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         if not isinstance(split_distinct, bool):
             raise ValueError(
-                f"split_distinct must be a boolean. Got {split_distinct} "
-                f"instead."
+                f"split_distinct must be a boolean. Got {split_distinct} instead."
             )
 
         if not isinstance(switch, bool):
@@ -281,7 +283,7 @@ class DropHighPSIFeatures(BaseSelector):
         if isinstance(variables, list):
             if split_col in variables:
                 raise ValueError(
-                    f"{split_col} cannot be used to split the data and be evaluated at"
+                    f"{split_col} cannot be used to split the data and be evaluated at "
                     f"the same time. Either remove {split_col} from the variables list "
                     f"or choose another splitting criteria."
                 )
@@ -312,10 +314,6 @@ class DropHighPSIFeatures(BaseSelector):
 
         y : pandas series. Default = None
             y is not needed in this transformer. You can pass y or None.
-
-        Returns
-        -------
-        self
         """
         # check input dataframe
         X = _is_dataframe(X)
@@ -324,7 +322,7 @@ class DropHighPSIFeatures(BaseSelector):
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # Remove the split_col from the variables list. It might be added if the
-        # variables are not defined at initiation.
+        # variables are not defined at initialization.
         if self.split_col in self.variables_:
             self.variables_.remove(self.split_col)
 
@@ -463,7 +461,7 @@ class DropHighPSIFeatures(BaseSelector):
                 f"not allowed in the variable used to split the dataframe."
             )
 
-        # If cut_off is not pre-defined, compute it and set it as attribute.
+        # If cut_off is not pre-defined, compute it.
         if not self.cut_off:
             self.cut_off_ = self._get_cut_off_value(reference)
         else:
@@ -472,6 +470,7 @@ class DropHighPSIFeatures(BaseSelector):
         # Split the original dataframe
         if isinstance(self.cut_off, list):
             is_within_cut_off = reference.isin(self.cut_off_)
+
         else:
             is_within_cut_off = reference <= self.cut_off_
 
