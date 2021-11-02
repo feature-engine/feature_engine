@@ -34,7 +34,6 @@ def df():
 
 @pytest.fixture(scope="module")
 def df_mixed_types():
-    #
     df = pd.DataFrame(
         {
             "A": [it for it in range(0, 20)],
@@ -50,7 +49,7 @@ def df_mixed_types():
 def test_fit_attributes(df):
     """Check the value of the fit attributes.
 
-    The expected PSI values used in the assertion are computed using
+    The expected PSI values used in the assertion were determined using
     the Probatus package.
     ```
     from probatus.stat_tests import AutoDist
@@ -76,6 +75,7 @@ def test_fit_attributes(df):
         "drift_2": 8.283089355027482,
     }
 
+    assert transformer.variables_ == ['var_0','var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'drift_1', 'drift_2']
     assert transformer.psi_values_ == pytest.approx(expected_psi, 12)
     assert transformer.features_to_drop_ == ["drift_1", "drift_2"]
     assert transformer.n_features_in_ == 8
