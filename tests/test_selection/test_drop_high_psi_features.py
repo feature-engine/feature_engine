@@ -133,7 +133,7 @@ def test_raise_missing_value_inf(df):
 
     with pytest.raises(ValueError):
         transformer = DropHighPSIFeatures(missing_values="raise")
-        transformer.fit_transform(data)
+        transformer.fit(data)
 
 
 def test_observation_frequency_per_bin():
