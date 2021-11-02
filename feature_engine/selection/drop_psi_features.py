@@ -275,7 +275,7 @@ class DropHighPSIFeatures(BaseSelector):
         if isinstance(variables, list):
             if split_col in variables:
                 raise ValueError(
-                    f"{split_col} cannot be used to split the data and be evaluated at"
+                    f"{split_col} cannot be used to split the data and be evaluated at "
                     f"the same time. Either remove {split_col} from the variables list "
                     f"or choose another splitting criteria."
                 )
