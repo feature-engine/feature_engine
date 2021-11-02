@@ -7,6 +7,7 @@ from feature_engine.selection import (
     DropCorrelatedFeatures,
     DropDuplicateFeatures,
     DropFeatures,
+    DropHighPSIFeatures,
     RecursiveFeatureAddition,
     RecursiveFeatureElimination,
     SelectByShuffling,
@@ -24,6 +25,7 @@ from feature_engine.selection import (
         DropDuplicateFeatures(),
         DropCorrelatedFeatures(),
         SmartCorrelatedSelection(),
+        DropHighPSIFeatures(),
         SelectByShuffling(RandomForestClassifier(random_state=1), scoring="accuracy"),
         SelectBySingleFeaturePerformance(
             RandomForestClassifier(random_state=1), scoring="accuracy"
