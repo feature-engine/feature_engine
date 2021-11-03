@@ -468,6 +468,49 @@ def test_variable_definition(df):
 # attribute features_to_drop_ ?
 
 # TODO: can we add some tests for the transform method? comparing dfs?
+def test_transform_standard(df):
+    """Test the transform method in a standard approach."""
+    test = DropHighPSIFeatures()
+    test.fit(df)
+    transformed = test.transform(df)
+
+    # Check the features to drop
+    assert test.features_to_drop_ == ["drift_1", "drift_2"]
+
+    # Check the transformed dataframe
+    pd.testing.assert_frame_equal(
+        transformed, df[[col for col in df if "drift" not in col]]
+    )
+
+
+def test_transform_feature_to_drop_not_present(df):
+    """Test transform when the feature  to drop in not in the dataframe."""
+    with pytest.raises(KeyError):
+        test = DropHighPSIFeatures()
+        test.fit(df)
+
+        # Define new dataframe with additional column
+        data = df.copy()
+        data["A"] = [1] * 1000
+        # Remove one of the feature to drop
+        data = data.drop("drift_1", axis=1)
+
+        # Transform
+        test.transform(data)
+
+
+def test_transform_different_number_of_columns(df):
+    """Test transform when the feature  to drop in not in the dataframe."""
+    with pytest.raises(ValueError):
+        test = DropHighPSIFeatures()
+        test.fit(df)
+
+        # Define new dataframe with additional column
+        data = df.copy()
+        data["A"] = [1] * 1000
+
+        # Transform
+        test.transform(data)
 
 
 def test_non_fitted_error(df):
