@@ -286,7 +286,6 @@ def test_calculation_df_split_with_different_types(df_mixed_types):
 
 
 def test_calculation_no_split_columns():
-    # TODO: test the output of cut-off
     """Test the split of the dataframe using different type of variables."""
     df = pd.DataFrame(
         {
@@ -296,27 +295,33 @@ def test_calculation_no_split_columns():
         }
     )
 
+    expected_psi = {"A": 7.745116608833365, "B": 0.1621860432432658}
+
     test = DropHighPSIFeatures(split_frac=0.5, split_distinct=True)
     test.fit_transform(df)
-    assert len(test.psi_values_) == 2
+
+    assert test.cut_off_ == 14.5
+    assert test.psi_values_ == pytest.approx(expected_psi)
 
 
 type_test = [
-    ("A", 14, 15),
-    ("B", 1, 10),
-    ("C", ["A"], 5),
-    ("time", date(2019, 1, 4), 4),
+    ("A", 14, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]),
+    ("B", 1, [0, 3, 4, 7, 8, 11, 12, 15, 16, 19]),
+    ("C", ["A"], [0, 4, 8, 12, 16]),
+    ("time", date(2019, 1, 4), [0, 1, 2, 3]),
 ]
 
 
 @pytest.mark.parametrize("col, cut_off, expected", type_test)
 def test_split_using_cut_off(col, cut_off, expected, df_mixed_types):
-    # TODO: can we compare dfs and not just shapes?
     """Test the cut off for different data types."""
     test = DropHighPSIFeatures(split_col=col, cut_off=cut_off)
     a, b = test._split_dataframe(df_mixed_types)
 
-    assert a.shape[0] == expected
+    pd.testing.assert_frame_equal(a, df_mixed_types.loc[expected])
+    pd.testing.assert_frame_equal(
+        b, df_mixed_types.loc[~df_mixed_types.index.isin(expected)]
+    )
 
 
 split_distinct_test = [
