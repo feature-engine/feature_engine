@@ -261,20 +261,23 @@ def test_calculation_distinct_value():
 
 
 def test_calculation_df_split_with_different_types(df_mixed_types):
-    # TODO: add asserts for the output of cut-off to ensure this function
-    # is working properly, like the tests above
-
     """Test the split of the dataframe using different type of variables."""
     results = {}
+    cut_offs = {}
     for split_col in df_mixed_types.columns:
         test = DropHighPSIFeatures(split_frac=0.5, split_col=split_col)
         test.fit_transform(df_mixed_types)
         results[split_col] = test.psi_values_
+        cut_offs[split_col] = test.cut_off_
 
     assert results["A"] == pytest.approx({"B": 0.0}, 12)
     assert results["B"] == pytest.approx({"A": 3.0375978817052403}, 12)
     assert results["C"] == pytest.approx({"A": 2.27819841127893, "B": 0.0}, 12)
     assert results["time"] == pytest.approx({"A": 8.283089355027482, "B": 0.0}, 12)
+
+    expected_cut_offs = {"A": 9.5, "B": 1.5, "C": "B", "time": date(2019, 1, 10)}
+
+    assert cut_offs == expected_cut_offs
 
     # Test when no columns is defined
     test = DropHighPSIFeatures(split_frac=0.5)
@@ -429,7 +432,13 @@ def test_observation_frequency_per_bin():
 
 
 def test_variable_definition(df):
-    # TODO: what is this testing?
+    """Test if defining the subset of features through the variable argument.
+
+    Due to the low split fractions all variables will fail the PSI test. However
+    the test shows that only those defined in the variable argument will are
+    dropped from the dataframe.
+    """
+    #
     select = DropHighPSIFeatures(variables=["var_1", "var_3", "var_5"], split_frac=0.01)
     transformed_df = select.fit_transform(df)
 
