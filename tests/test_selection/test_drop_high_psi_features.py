@@ -94,55 +94,49 @@ def test_fit_attributes(df):
 
 # ================ test init parameters =================
 
+# Define two dictionaries with arguments: one with default values and
+# one with arbitrary values.
+default_dict = {
+    "split_col": None,
+    "split_frac": 0.5,
+    "split_distinct": False,
+    "cut_off": None,
+    "switch": False,
+    "threshold": 0.25,
+    "bins": 10,
+    "strategy": "equal_frequency",
+    "min_pct_empty_bins": 0.0001,
+    "missing_values": "raise",
+    "variables": None,
+}
 
-def test_init_default_parameters():
-    # TODO: merge this test and the following into 1, using parametrize
-    # and passing all allowed values to each parameter, ie, split col can
-    # take None, string, should test both.
+args_dict = {
+    "split_col": None,
+    "split_frac": 0.5,
+    "split_distinct": False,
+    "cut_off": None,
+    "switch": False,
+    "threshold": 0.25,
+    "bins": 10,
+    "strategy": "equal_frequency",
+    "min_pct_empty_bins": 0.0001,
+    "missing_values": "raise",
+    "variables": None,
+}
+
+init_dict = [(None, default_dict), (args_dict, args_dict)]
+
+
+@pytest.mark.parametrize("initialize, attribute_dict", init_dict)
+def test_init_default_parameters(initialize, attribute_dict):
     """Test the default param values are correctly assigned."""
-    transformer = DropHighPSIFeatures()
+    if initialize:
+        transformer = DropHighPSIFeatures(**attribute_dict)
+    else:
+        transformer = DropHighPSIFeatures()
 
-    assert transformer.split_col is None
-    assert transformer.split_frac == 0.5
-    assert transformer.split_distinct is False
-    assert transformer.cut_off is None
-    assert transformer.switch is False
-    assert transformer.threshold == 0.25
-    assert transformer.bins == 10
-    assert transformer.strategy == "equal_frequency"
-    assert transformer.min_pct_empty_bins == 0.0001
-    assert transformer.missing_values == "raise"
-    assert transformer.variables is None
-
-
-def test_init_alternative_params():
-    # TODO: merge with previous using parametrize
-    """Test user entered parameters correctly assigned"""
-    transformer = DropHighPSIFeatures(
-        split_col="hola",
-        split_frac=0.6,
-        split_distinct=True,
-        cut_off=["value_1", "value_2"],
-        switch=True,
-        threshold=0.10,
-        bins=5,
-        strategy="equal_frequency",
-        min_pct_empty_bins=0.1,
-        missing_values="raise",
-        variables=["chau", "adios"],
-    )
-
-    assert transformer.split_col == "hola"
-    assert transformer.split_frac == 0.6
-    assert transformer.split_distinct is True
-    assert transformer.cut_off == ["value_1", "value_2"]
-    assert transformer.switch is True
-    assert transformer.threshold == 0.1
-    assert transformer.bins == 5
-    assert transformer.strategy == "equal_frequency"
-    assert transformer.min_pct_empty_bins == 0.1
-    assert transformer.missing_values == "raise"
-    assert transformer.variables == ["chau", "adios"]
+    for attribute, value in attribute_dict.items():
+        assert getattr(transformer, attribute) == value
 
 
 def test_init_value_error_is_raised():
@@ -195,7 +189,7 @@ def test_split_col_not_included_in_variables(df):
 
 
 def test_missing_split_col(df):
-    # Test an error is raised if the split column contains missing values
+    """Test an error is raised if the split column contains missing values."""
     data = df.copy()
     data["var_3"].iloc[15] = np.nan
 
@@ -205,7 +199,7 @@ def test_missing_split_col(df):
 
 
 def test_raise_error_missing_value_na(df):
-    # Test an error is raised when missing values is set to raise
+    """Test an error is raised when missing values is set to raise."""
     data = df.copy()
     data["var_3"].iloc[15] = np.nan
 
@@ -214,8 +208,21 @@ def test_raise_error_missing_value_na(df):
         transformer.fit(data)
 
 
+def test_missing_value_ignored(df):
+    """Test if PSI are computed when missing values are present in the dataframe."""
+    data = df.copy()
+    data["var_3"].iloc[15] = np.nan
+
+    var_col = [col for col in data if "var" in col]
+
+    transformer = DropHighPSIFeatures(missing_values="ignore")
+    transformed = transformer.fit_transform(data)
+
+    pd.testing.assert_frame_equal(transformed, data[var_col])
+
+
 def test_raise_missing_value_inf(df):
-    # Test an error is raised when missing values is set to raise
+    """Test an error is raised for inf when missing values is set to raise."""
     data = df.copy()
     data["var_3"].iloc[15] = np.inf
 
@@ -360,7 +367,6 @@ split_distinct_test = [
 
 @pytest.mark.parametrize("col, expected_index", split_distinct_test)
 def test_split_distinct(col, expected_index):
-    # todo: can we compare dfs and not just shapes?
     """Test the cut off for different data types.
 
     For columns B, C and time we have 6 distinct values, 5 appearing 20 times and
@@ -383,7 +389,28 @@ def test_split_distinct(col, expected_index):
     pd.testing.assert_frame_equal(b, data.loc[~data.index.isin(expected_index)])
 
 
-# TODO: are we testing _split_df() when user passes a list of values?
+cut_off_list_test = [
+    ("A", [1, 2, 10, 11, 16]),
+    ("B", [2]),
+    ("C", ["B", "D"]),
+    ("time", [date(2019, 1, day) for day in [1, 2, 5, 7, 12, 15, 18]]),
+]
+
+
+@pytest.mark.parametrize("col, cut_off_list", cut_off_list_test)
+def test_split_by_list(df_mixed_types, col, cut_off_list):
+    """Test elements a correctly selected when cut_off is a list."""
+    test = DropHighPSIFeatures(split_col=col, cut_off=cut_off_list, bins=3)
+    a, b = test._split_dataframe(df_mixed_types)
+
+    pd.testing.assert_frame_equal(
+        a, df_mixed_types[df_mixed_types[col].isin(cut_off_list)]
+    )
+    pd.testing.assert_frame_equal(
+        b, df_mixed_types[~df_mixed_types[col].isin(cut_off_list)]
+    )
+
+
 # ===== end of tests for _split_dataframe() =======
 
 # ==== more tests for fit functionality ============
@@ -464,12 +491,6 @@ def test_variable_definition(df):
     ]
 
 
-# TODO: Add test on PSI values if missing values are allowed and present
-
-# TODO: are we testing that the features are selected appropriately? i.e., the
-# attribute features_to_drop_ ?
-
-# TODO: can we add some tests for the transform method? comparing dfs?
 def test_transform_standard(df):
     """Test the transform method in a standard approach."""
     test = DropHighPSIFeatures()
@@ -516,7 +537,7 @@ def test_transform_different_number_of_columns(df):
 
 
 def test_non_fitted_error(df):
-    # when fit is not called prior to transform
+    """Error is raised when fit is not called prior to transform."""
     with pytest.raises(NotFittedError):
         transformer = DropHighPSIFeatures()
         transformer.transform(df)
