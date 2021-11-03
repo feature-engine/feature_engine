@@ -325,15 +325,41 @@ def test_split_using_cut_off(col, cut_off, expected, df_mixed_types):
 
 
 split_distinct_test = [
-    ("A", 100, 100),
-    ("B", 60, 140),
-    ("C", 60, 140),
-    ("time", 60, 140),
+    ("A", [number for number in range(0, 100)]),
+    (
+        "B",
+        (
+            [0, 1, 2, 10, 11, 12, 20, 21, 22, 30, 31, 32, 40]
+            + [41, 42, 50, 51, 52, 60, 61, 62, 70, 71, 72, 80, 81]
+            + [82, 90, 91, 92, 100, 101, 102, 110, 111, 112, 120, 121, 122]
+            + [130, 131, 132, 140, 141, 142, 150, 151, 152, 160, 161, 162, 170]
+            + [171, 172, 180, 181, 182, 190, 191, 192]
+        ),
+    ),
+    (
+        "C",
+        (
+            [0, 1, 2, 10, 11, 12, 20, 21, 22, 30, 31, 32, 40]
+            + [41, 42, 50, 51, 52, 60, 61, 62, 70, 71, 72, 80, 81]
+            + [82, 90, 91, 92, 100, 101, 102, 110, 111, 112, 120, 121, 122]
+            + [130, 131, 132, 140, 141, 142, 150, 151, 152, 160, 161, 162, 170]
+            + [171, 172, 180, 181, 182, 190, 191, 192]
+        ),
+    ),
+    (
+        "time",
+        (
+            [0, 1, 2, 5, 6, 7, 10, 11, 12, 15, 16, 17, 20, 21, 22, 25, 26]
+            + [27, 30, 31, 32, 35, 36, 37, 40, 41, 42, 45, 46, 47, 50, 51, 52, 55]
+            + [56, 57, 60, 61, 62, 65, 66, 67, 70, 71, 72, 75, 76, 77, 80, 81, 82]
+            + [85, 86, 87, 90, 91, 92, 95, 96, 97]
+        ),
+    ),
 ]
 
 
-@pytest.mark.parametrize("col, expected_a, expected_b", split_distinct_test)
-def test_split_distinct(col, expected_a, expected_b):
+@pytest.mark.parametrize("col, expected_index", split_distinct_test)
+def test_split_distinct(col, expected_index):
     # todo: can we compare dfs and not just shapes?
     """Test the cut off for different data types.
 
@@ -353,26 +379,8 @@ def test_split_distinct(col, expected_a, expected_b):
     test = DropHighPSIFeatures(split_col=col, split_distinct=True)
     a, b = test._split_dataframe(data)
 
-    assert a.shape[0] == expected_a
-    assert b.shape[0] == expected_b
-
-
-def test_split_df_according_to_col():
-    # TODO: what is the aim of this test? which functionality is it testing?
-    df = pd.DataFrame(
-        {
-            "A": [it for it in range(0, 20)],
-            "B": [1, 2, 3, 4] * 5,
-            "time": [date(2019, 1, it + 1) for it in range(20)],
-        }
-    )
-
-    cut_off = DropHighPSIFeatures(
-        split_col="time", split_frac=0.5, bins=5, min_pct_empty_bins=0.001
-    )
-    psi = cut_off.fit(df).psi_values_
-
-    assert len(psi) == 2
+    pd.testing.assert_frame_equal(a, data.loc[expected_index])
+    pd.testing.assert_frame_equal(b, data.loc[~data.index.isin(expected_index)])
 
 
 # TODO: are we testing _split_df() when user passes a list of values?
