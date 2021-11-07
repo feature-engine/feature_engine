@@ -15,53 +15,54 @@ class DropMissingData(BaseImputer):
     DropMissingData() will delete rows containing missing values. It provides
     similar functionality to pandas.drop_na().
 
-    It works for both numerical and categorical variables. You can enter the list of
-    variables for which missing values should be removed from the dataframe.
-    Alternatively, the imputer will automatically select all variables in the dataframe.
+    It works for numerical and categorical variables. You can enter the list of
+    variables for which missing values should be evaluated. Alternatively, the imputer
+    will evaluate missing data in all variables in the dataframe.
 
-    **Note**
-    The transformer will first select all variables or all user entered
-    variables and if `missing_only=True`, it will re-select from the original group
-    only those that show missing data in during fit, that is in the train set.
+    More details in the :ref:`User Guide <drop_missing_data>`.
 
     Parameters
     ----------
     missing_only: bool, default=True
-        If true, missing observations will be dropped only for the variables that have
-        missing data in the train set, during fit. If False, observations with NA
-        will be dropped from all variables indicated by the user.
+        If `True`, rows will be dropped only if they show missing data in variables that
+        have missing data in the train set, that is, the data set used in `fit()`. If
+        `False`, rows will be dropped if there is missing data in any of the variables.
 
     variables: list, default=None
-        The list of variables to be imputed. If None, the imputer will find and
-        select all variables in the dataframe.
+        The list of variables to consider for the imputation. If None, the imputer will
+        evaluate missing data in all variables in the dataframe. Alternatively, the
+        imputer will evaluate missing data only in the variables in the list.
 
-    row_drop_pct: float, default=None
-        If a row of data is missing this percentage of column values or greater
-        then it will be dropped, i.e. if there are 3 columns of data with
-        row_drop_pct=0.34, then 2/3 or 3/3 of the columns must be missing
-        to be dropped. If row_drop_pct=0.32 then any amount of NaN
-        in 3 columns will be dropped.
-        It's inversely related to the amount of rows that will be dropped.
-        If row_drop_pct is not None, then missing_only will be ignored.
-        If None, rows with NA in any variable will be dropped.
+        Note that if `missing_only=True` only variables with NA in the train set will
+        be considered to drop a row, which might be a subset of your indicated list.
+
+    tresh: float, default=None
+        Require a certain percentage of missing data in a row to drop it. If `thresh=1`,
+        all variables contemplated need to have NA to drop the row. If `thresh=0.5`,
+        50% of the variables contemplated should show NA for a row to be dropped. If
+        `thresh=None`, rows with NA in any of the variables will be dropped.
 
     Attributes
     ----------
     variables_:
-        List of variables for which the rows with NA will be deleted.
+        The variables for which missing data will be examined to decide if a row is
+        dropped. The attribute `variables_` is different from the parameter `variables`
+        when the latter is `None`, or when only a subset of the indicated variables
+        show NA in the train set if `missing_only=True`.
+
     n_features_in_:
         The number of features in the train set used in fit.
 
     Methods
     -------
     fit:
-        Learn the variables for which the rows with NA will be deleted
+        Find the variables in which missing data should be evaluated.
     transform:
-        Remove observations with NA
+        Remove rows with NA.
     fit_transform:
         Fit to the data, then transform it.
     return_na_data:
-        Returns the dataframe with the rows that contain NA .
+        Returns the dataframe with the rows that contain NA.
     """
 
     def __init__(
