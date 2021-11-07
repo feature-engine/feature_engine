@@ -24,23 +24,26 @@ class DropMissingData(BaseImputer):
     Parameters
     ----------
     missing_only: bool, default=True
-        If `True`, rows will be dropped only if they show missing data in variables that
-        have missing data in the train set, that is, the data set used in `fit()`. If
+        If `True`, rows will be dropped when they show missing data in variables with
+        missing data in the train set, that is, in the data set used in `fit()`. If
         `False`, rows will be dropped if there is missing data in any of the variables.
+        This parameter only works when `threshold=None`, otherwise it is ignored.
 
     variables: list, default=None
         The list of variables to consider for the imputation. If None, the imputer will
         evaluate missing data in all variables in the dataframe. Alternatively, the
         imputer will evaluate missing data only in the variables in the list.
 
-        Note that if `missing_only=True` only variables with NA in the train set will
-        be considered to drop a row, which might be a subset of your indicated list.
+        Note that if `missing_only=True` only variables with missing data in the train
+        set will be considered to drop a row, which might be a subset of the indicated
+        list.
 
-    tresh: float, default=None
-        Require a certain percentage of missing data in a row to drop it. If `thresh=1`,
-        all variables contemplated need to have NA to drop the row. If `thresh=0.5`,
-        50% of the variables contemplated should show NA for a row to be dropped. If
-        `thresh=None`, rows with NA in any of the variables will be dropped.
+    threshold: int or float, default=None
+        Require a certain percentage of missing data in a row to drop it. If
+        `threshold=1`, all variables contemplated need to have NA to drop the row. If
+        `threshold=0.5`, 50% of the variables contemplated should show NA for a row to
+        be dropped. If `thresh=None`, rows with NA in any of the variables will be
+        dropped.
 
     Attributes
     ----------
@@ -56,76 +59,79 @@ class DropMissingData(BaseImputer):
     Methods
     -------
     fit:
-        Find the variables in which missing data should be evaluated.
+        Find the variables for which missing data should be evaluated.
     transform:
-        Remove rows with NA.
+        Remove rows with missing data.
     fit_transform:
         Fit to the data, then transform it.
     return_na_data:
-        Returns the dataframe with the rows that contain NA.
+        Returns a dataframe with the rows that contain missing data.
     """
 
     def __init__(
         self,
         missing_only: bool = True,
-        row_drop_pct: Optional[float] = None,
+        threshold: Union[None, int, float] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if not isinstance(missing_only, bool):
-            raise ValueError("missing_only takes values True or False")
+            raise ValueError("missing_only takes values True or False. "
+                             f"Got {missing_only} instead.")
 
-        if row_drop_pct:
-            if not isinstance(row_drop_pct, float):
-                raise TypeError(
-                    f"row_drop_pct must be of type float. Got {row_drop_pct} instead."
-                )
-            if not 0.0 < row_drop_pct < 1.0:
-                raise ValueError("row_drop_pct must be between 0.0 and 1.0")
-
-        if missing_only & (row_drop_pct is not None):
-            raise ValueError(
-                f"If row_drop_pct is not None, missing_only must be set to False. \
-                Got {missing_only} instead"
-            )
+        if threshold:
+            if not isinstance(threshold, (int, float)) or not 0 < threshold < 1:
+                raise ValueError("threshold must be a float between 0 and 1. "
+                                 f"Got {threshold} instead.")
 
         self.variables = _check_input_parameter_variables(variables)
         self.missing_only = missing_only
-        self.row_drop_pct = row_drop_pct
+        self.threshold = threshold
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learn the variables for which the rows with NA will be deleted.
+        Find the variables for which missing data should be evaluated to decide if a
+        row should be dropped.
 
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
-            The training dataset.
+            The training data set.
 
         y: pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
-
         """
 
         # check input dataframe
         X = _is_dataframe(X)
 
         # find variables for which indicator should be added
-        if self.missing_only:
-            if not self.variables:
-                self.variables_ = [
-                    var for var in X.columns if X[var].isnull().sum() > 0
-                ]
-            else:
-                self.variables_ = [
-                    var for var in self.variables if X[var].isnull().sum() > 0
-                ]
 
-        else:
+        # if threshold, then missing_only is ignored:
+        if self.threshold is not None:
             if not self.variables:
                 self.variables_ = [var for var in X.columns]
             else:
                 self.variables_ = self.variables
+
+        # if threshold is None, we have the option to identify
+        # variables with NA only.
+        else:
+            if self.missing_only:
+                if not self.variables:
+                    self.variables_ = [
+                        var for var in X.columns if X[var].isnull().sum() > 0
+                    ]
+                else:
+                    self.variables_ = [
+                        var for var in self.variables if X[var].isnull().sum() > 0
+                    ]
+
+            else:
+                if not self.variables:
+                    self.variables_ = [var for var in X.columns]
+                else:
+                    self.variables_ = self.variables
 
         self.n_features_in_ = X.shape[1]
 
@@ -133,7 +139,7 @@ class DropMissingData(BaseImputer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Remove rows with missing values.
+        Remove rows with missing data.
 
         Parameters
         ----------
@@ -144,14 +150,14 @@ class DropMissingData(BaseImputer):
         -------
         X_new: pandas dataframe
             The complete case dataframe for the selected variables, of shape
-            [n_samples - rows_with_na, n_features]
+            [n_samples - n_samples_with_na, n_features]
         """
 
         X = self._check_transform_input_and_state(X)
 
-        if self.row_drop_pct:
+        if self.threshold:
             X.dropna(
-                thresh=len(self.variables_) * (1 - self.row_drop_pct),
+                thresh=len(self.variables_) * self.threshold,
                 subset=self.variables_,
                 axis=0,
                 inplace=True,
@@ -163,18 +169,20 @@ class DropMissingData(BaseImputer):
 
     def return_na_data(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Returns the subset of the dataframe which contains the rows with missing values.
-        This method could be useful in production, in case we want to store the
-        observations that will not be fed into the model.
+        Returns the subset of the dataframe with the rows with missing values. That is,
+        the subset of the dataframe that would be removed with the `transform()` method.
+        This method may be useful in production, for example if we want to store or log
+        the removed observations, that is, rows that will not be fed into the model.
 
         Parameters
         ----------
-        X_na: pandas dataframe of shape = [obs_with_na, features]
-            The dataframe to be transformed.
+        X_na: pandas dataframe of shape = [n_samples_with_na, features]
+            The subset of the dataframe with the rows with missing data.
         """
 
         X = self._check_transform_input_and_state(X)
 
+        # TODO: this method needs to be modified to accommodate threshold
         idx = pd.isnull(X[self.variables_]).any(1)
         idx = idx[idx]
         return X.loc[idx.index, :]

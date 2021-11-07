@@ -10,6 +10,7 @@ def test_detect_variables_with_na(df_na):
     X_transformed = imputer.fit_transform(df_na)
     # init params
     assert imputer.missing_only is True
+    assert imputer.threshold is None
     assert imputer.variables is None
     # fit params
     assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks"]
@@ -40,6 +41,7 @@ def test_detect_variables_with_na_in_variables_entered_by_user(df_na):
 
 
 def test_return_na_data_method(df_na):
+    # TODO: expand to accommodate threshold parameter
     imputer = DropMissingData(
         missing_only=True, variables=["City", "Studies", "Age", "dob"]
     )
@@ -59,37 +61,36 @@ def test_non_fitted_error(df_na):
         imputer.transform(df_na)
 
 
-def test_row_row_drop_pct(df_na):
-    imputer = DropMissingData(missing_only=False, row_drop_pct=0.34)
+def test_threshold(df_na):
+    # TODO: fix to accomodate new logic
+    # also test the same threshold value when missing_only is true and then false
+    # it should return the same results
+
+    imputer = DropMissingData(threshold=0.34)
     X = imputer.fit_transform(df_na)
     # Drop rows missing more than 34% of the data. Index 3 only.
     assert list(X.index) == [0, 1, 2, 4, 5, 6, 7]
 
-    imputer = DropMissingData(missing_only=False, row_drop_pct=0.32)
+    imputer = DropMissingData(threshold=0.32)
     X = imputer.fit_transform(df_na)
     # Drop rows missing more than 32% of the data. Index 2, 3, 5 will be dropped.
     assert list(X.index) == [0, 1, 4, 6, 7]
 
 
-def test_row_row_drop_pct_with_missing_only(df_na):
+def test_threshold_value_error(df_na):
     with pytest.raises(ValueError):
-        DropMissingData(missing_only=True, row_drop_pct=0.33)
+        DropMissingData(threshold=1.01)
 
-
-def test_row_row_drop_pct_upper_bound_out_of_range(df_na):
     with pytest.raises(ValueError):
-        DropMissingData(missing_only=False, row_drop_pct=1.01)
+        DropMissingData(threshold=-0.01)
 
 
-def test_row_row_drop_pct_lower_bound_out_of_range(df_na):
-    with pytest.raises(ValueError):
-        DropMissingData(missing_only=False, row_drop_pct=-0.01)
+def test_threshold_with_variables(df_na):
+    # TODO: update to accommodate new logic
 
-
-def test_row_row_drop_pct_with_variables(df_na):
     imputer = DropMissingData(
         missing_only=False,
-        row_drop_pct=0.26,
+        threshold=0.26,
         variables=["City", "Studies", "Age", "Marks"],
     )
     X = imputer.fit_transform(df_na)
@@ -99,7 +100,7 @@ def test_row_row_drop_pct_with_variables(df_na):
 
     imputer = DropMissingData(
         missing_only=False,
-        row_drop_pct=0.24,
+        threshold=0.24,
         variables=["City", "Studies", "Age", "Marks"],
     )
     X = imputer.fit_transform(df_na)
