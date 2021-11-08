@@ -42,7 +42,7 @@ class MeanEncoder(BaseCategoricalTransformer):
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
-        ignored. If false, the encoder will automatically select variables of type
+        ignored. If False, the encoder will automatically select variables of type
         object or categorical, or check that the variables entered by the user are of
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.
@@ -75,9 +75,14 @@ class MeanEncoder(BaseCategoricalTransformer):
     dataset. If this happens, try grouping infrequent categories using the
     RareLabelEncoder().
 
+    Check also the related transformers in the the open-source package
+    `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
+
     See Also
     --------
     feature_engine.encoding.RareLabelEncoder
+    category_encoders.target_encoder.TargetEncoder
+    category_encoders.m_estimate.MEstimateEncoder
 
     References
     ----------

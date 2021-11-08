@@ -27,6 +27,9 @@ and make the transformers also accept numerical variables as input.
    PRatioEncoder
    DecisionTreeEncoder
    RareLabelEncoder
-   
+
+Other categorical encoding libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 For additional categorical encoding transformations, visit the open-source package
 `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_.

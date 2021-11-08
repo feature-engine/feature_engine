@@ -70,7 +70,7 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
-        ignored. If false, the encoder will automatically select variables of type
+        ignored. If False, the encoder will automatically select variables of type
         object or categorical, or check that the variables entered by the user are of
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.
@@ -204,5 +204,5 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         return X
 
     def inverse_transform(self, X: pd.DataFrame):
-        """inverse_transform is not implemented for this transformer yet."""
+        """inverse_transform is not implemented for this transformer."""
         return self

@@ -17,8 +17,8 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     The DecisionTreeEncoder() encodes categorical variables with predictions
     of a decision tree.
 
-    The encoder first fits a decision tree using a single feature and the target (fit).
-    And  then replaces the values of the original feature by the predictions of the
+    The encoder first fits a decision tree using a single feature and the target (fit),
+    and then replaces the values of the original feature by the predictions of the
     tree (transform). The transformer will train a decision tree per every feature to
     encode.
 
@@ -55,9 +55,8 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     param_grid: dictionary, default=None
         The hyperparameters for the decision tree to test with a grid search. The
         `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
-        DecisionTreeRegressor() or DecisionTreeClassifier().
-
-        If None, then `param_grid = {'max_depth': [1, 2, 3, 4]}`.
+        DecisionTreeRegressor() or DecisionTreeClassifier(). If None, then
+        `param_grid = {'max_depth': [1, 2, 3, 4]}`.
 
     regression: boolean, default=True
         Indicates whether the encoder should train a regression or a classification
@@ -77,7 +76,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
-        ignored. If false, the encoder will automatically select variables of type
+        ignored. If False, the encoder will automatically select variables of type
         object or categorical, or check that the variables entered by the user are of
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.

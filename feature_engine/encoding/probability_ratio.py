@@ -32,7 +32,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
     This categorical encoding is exclusive for binary classification.
 
-    Note: the division by 0 is not defined and the log(0) is not defined.
+    The division by 0 is not defined and the log(0) is not defined.
     Thus, if p(0) = 0 for the ratio encoder, or either p(0) = 0 or p(1) = 0 for
     log_ratio, in any of the variables, the encoder will return an error.
 
@@ -55,9 +55,9 @@ class PRatioEncoder(BaseCategoricalTransformer):
     encoding_method: str, default='ratio'
         Desired method of encoding.
 
-        'ratio' : probability ratio
+        **'ratio'**: probability ratio
 
-        'log_ratio' : log probability ratio
+        **'log_ratio'**: log probability ratio
 
     variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
@@ -67,7 +67,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
-        ignored. If false, the encoder will automatically select variables of type
+        ignored. If False, the encoder will automatically select variables of type
         object or categorical, or check that the variables entered by the user are of
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.

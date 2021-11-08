@@ -53,7 +53,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
     Parameters
     ----------
     top_categories: int, default=None
-        If None, a dummy variable will be created for each unique  category of the
+        If None, dummy variables will be created for each unique category of the
         variable. Alternatively, we can indicate in the number of most frequent
         categories to encode. In this case, dummy variables will be created only for
         those popular categories and the rest will be ignored, i.e., they will show the
@@ -80,7 +80,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
-        ignored. If false, the encoder will automatically select variables of type
+        ignored. If False, the encoder will automatically select variables of type
         object or categorical, or check that the variables entered by the user are of
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.

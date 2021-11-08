@@ -37,7 +37,7 @@ class OrdinalEncoder(BaseCategoricalTransformer):
         **'ordered'**: the categories are numbered in ascending order according to
         the target mean value per category.
 
-        **'arbitrary'** : categories are numbered arbitrarily.
+        **'arbitrary'**: categories are numbered arbitrarily.
 
     variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
@@ -47,7 +47,7 @@ class OrdinalEncoder(BaseCategoricalTransformer):
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
-        ignored. If false, the encoder will automatically select variables of type
+        ignored. If False, the encoder will automatically select variables of type
         object or categorical, or check that the variables entered by the user are of
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.
@@ -80,9 +80,13 @@ class OrdinalEncoder(BaseCategoricalTransformer):
     dataset. If this happens, try grouping infrequent categories using the
     RareLabelEncoder().
 
+    There is a similar implementation in the the open-source package
+    `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
+
     See Also
     --------
     feature_engine.encoding.RareLabelEncoder
+    category_encoders.ordinal.OrdinalEncoder
 
     References
     ----------
@@ -123,7 +127,7 @@ class OrdinalEncoder(BaseCategoricalTransformer):
             variables to be encoded.
 
         y: pandas series, default=None
-            The Target. Can be None if encoding_method = 'arbitrary'.
+            The Target. Can be None if `encoding_method='arbitrary'`.
             Otherwise, y needs to be passed when fitting the transformer.
         """
 
