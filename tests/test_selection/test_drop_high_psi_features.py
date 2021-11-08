@@ -111,17 +111,17 @@ default_dict = {
 }
 
 args_dict = {
-    "split_col": None,
-    "split_frac": 0.5,
-    "split_distinct": False,
-    "cut_off": None,
-    "switch": False,
-    "threshold": 0.25,
-    "bins": 10,
-    "strategy": "equal_frequency",
-    "min_pct_empty_bins": 0.0001,
-    "missing_values": "raise",
-    "variables": None,
+    "split_col": "hola",
+    "split_frac": 0.6,
+    "split_distinct": True,
+    "cut_off": ["value_1", "value_2"],
+    "switch": True,
+    "threshold": 0.10,
+    "bins": 5,
+    "strategy": "equal_width",
+    "min_pct_empty_bins": 0.1,
+    "missing_values": "ignore",
+    "variables": ["chau", "adios"],
 }
 
 init_dict = [(None, default_dict), (args_dict, args_dict)]
@@ -144,7 +144,7 @@ def test_init_value_error_is_raised():
         DropHighPSIFeatures(split_col=["hola"])
 
     with pytest.raises(ValueError):
-        DropHighPSIFeatures(split_col=["hola"], variables=["hola", "chau"])
+        DropHighPSIFeatures(split_col="hola", variables=["hola", "chau"])
 
     with pytest.raises(ValueError):
         DropHighPSIFeatures(split_frac=0)
@@ -173,6 +173,9 @@ def test_init_value_error_is_raised():
     with pytest.raises(ValueError):
         DropHighPSIFeatures(min_pct_empty_bins="unknown")
 
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(min_pct_empty_bins=-1)
+
 
 # ================= test fit() functionality ==================
 
@@ -188,23 +191,25 @@ def test_split_col_not_included_in_variables(df):
     assert "var_3" not in transformer.psi_values_.keys()
 
 
-def test_missing_split_col(df):
+def test_error_if_na_in_split_col(df):
     """Test an error is raised if the split column contains missing values."""
     data = df.copy()
     data["var_3"].iloc[15] = np.nan
 
+    transformer = DropHighPSIFeatures(split_col="var_3")
+
     with pytest.raises(ValueError):
-        transformer = DropHighPSIFeatures(split_col="var_3")
         transformer.fit_transform(data)
 
 
-def test_raise_error_missing_value_na(df):
+def test_raise_error_if_na_in_df(df):
     """Test an error is raised when missing values is set to raise."""
     data = df.copy()
     data["var_3"].iloc[15] = np.nan
 
+    transformer = DropHighPSIFeatures(missing_values="raise")
+
     with pytest.raises(ValueError):
-        transformer = DropHighPSIFeatures(missing_values="raise")
         transformer.fit(data)
 
 
@@ -221,25 +226,27 @@ def test_missing_value_ignored(df):
     pd.testing.assert_frame_equal(transformed, data[var_col])
 
 
-def test_raise_missing_value_inf(df):
+def test_raise_error_if_inf_in_df(df):
     """Test an error is raised for inf when missing values is set to raise."""
     data = df.copy()
     data["var_3"].iloc[15] = np.inf
 
+    transformer = DropHighPSIFeatures(missing_values="raise")
+
     with pytest.raises(ValueError):
-        transformer = DropHighPSIFeatures(missing_values="raise")
         transformer.fit(data)
 
 
 # ========= tests for _split_dataframe() fit ====
 
+# tests for splits based on split_frac and numerical variables:
 
 quantile_test = [(0.5, 50), (0.33, 33), (0.17, 17), (0.81, 81)]
 
 
 @pytest.mark.parametrize("split_frac, expected", quantile_test)
 def test_calculation_quantile(split_frac, expected):
-    """Test the calculation of the quantiles using distinct values."""
+    """Test the calculation of the quantiles using numerical values."""
     df = pd.DataFrame(
         {"A": [it for it in range(0, 101)], "B": [it for it in range(0, 101)]}
     )
@@ -251,8 +258,34 @@ def test_calculation_quantile(split_frac, expected):
     assert test.cut_off_ == expected
 
 
+quantile_test_skewed = [(50, 50), (1, 30), (10, 40), (7, 80)]
+
+
+@pytest.mark.parametrize("index, fraction", quantile_test_skewed)
+def test_quatile_split_skewed_variables(index, fraction):
+    """Test the calculation of the quantiles using numerical and skewed variables."""
+    df = pd.DataFrame(
+        {
+            "A": [index for it in range(0, fraction + 1)]
+            + [it for it in range(fraction + 1, 101)],
+            "B": [it for it in range(0, 101)],
+        }
+    )
+
+    test = DropHighPSIFeatures(
+        split_col="A", split_frac=fraction / 100, split_distinct=False
+    )
+    test.fit_transform(df)
+
+    assert test.cut_off_ == index
+
+
+# tests for splits based on split_frac and categorical variables:
+
+
 def test_calculation_distinct_value():
-    """Test the calculation of the quantiles using distinct values."""
+    """Test the calculation of the quantiles using distinct values when reference
+    variable is categorical."""
     df = pd.DataFrame(
         {"A": [it for it in range(0, 30)], "C": ["A", "B", "C", "D", "D", "D"] * 5}
     )
@@ -266,8 +299,21 @@ def test_calculation_distinct_value():
     test.fit_transform(df)
     assert test.cut_off_ == "B"
 
+    df = pd.DataFrame(
+        {"A": [it for it in range(0, 30)], "C": ["A", "A", "A", "B", "C", "D"] * 5}
+    )
 
-def test_calculation_df_split_with_different_types(df_mixed_types):
+    test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct=False)
+
+    test.fit_transform(df)
+    assert test.cut_off_ == "A"
+
+    test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct=True)
+    test.fit_transform(df)
+    assert test.cut_off_ == "B"
+
+
+def test_calculation_df_split_with_different_variable_types(df_mixed_types):
     """Test the split of the dataframe using different type of variables."""
     results = {}
     cut_offs = {}
@@ -292,7 +338,7 @@ def test_calculation_df_split_with_different_types(df_mixed_types):
     assert test.psi_values_ == pytest.approx({"A": 8.283089355027482, "B": 0.0}, 12)
 
 
-def test_calculation_no_split_columns():
+def test_calculation_when_split_column_is_none():
     """Test the split of the dataframe using different type of variables."""
     df = pd.DataFrame(
         {
@@ -309,6 +355,9 @@ def test_calculation_no_split_columns():
 
     assert test.cut_off_ == 14.5
     assert test.psi_values_ == pytest.approx(expected_psi)
+
+
+# =========== tests for user entered cut_off values ===========
 
 
 type_test = [
@@ -370,7 +419,7 @@ def test_split_distinct(col, expected_index):
     """Test the cut off for different data types.
 
     For columns B, C and time we have 6 distinct values, 5 appearing 20 times and
-    1 appearing 100 times. A 50% split based on the number of values will results
+    1 appearing 100 times. A 50% split based on the number of values will result
     in 2 groups of 3. One has 60 appearances (in total) and the other has 140.
     """
     data = pd.DataFrame(
@@ -471,16 +520,23 @@ def test_observation_frequency_per_bin():
     )
 
 
-def test_variable_definition(df):
-    """Test if defining the subset of features through the variable argument.
+def test_param_variable_definition(df):
+    """Test defining the subset of features through the variable argument.
 
-    Due to the low split fractions all variables will fail the PSI test. However
-    the test shows that only those defined in the variable argument will are
-    dropped from the dataframe.
+    Due to the small split_frac value, all variables will fail the PSI test, that is,
+    the variables in the list will show a high PSI value and this will be removed.
+
+    The aim of the test is to show that only those variables defined in the variable
+    argument are examined.
     """
     #
     select = DropHighPSIFeatures(variables=["var_1", "var_3", "var_5"], split_frac=0.01)
     transformed_df = select.fit_transform(df)
+
+    assert select.variables == ["var_1", "var_3", "var_5"]
+    assert select.variables_ == ["var_1", "var_3", "var_5"]
+    assert list(select.psi_values_.keys()) == ["var_1", "var_3", "var_5"]
+    assert select.features_to_drop_ == ["var_1", "var_3", "var_5"]
 
     assert transformed_df.columns.to_list() == [
         "var_0",
@@ -507,32 +563,31 @@ def test_transform_standard(df):
 
 
 def test_transform_feature_to_drop_not_present(df):
-    """Test transform when the feature  to drop in not in the dataframe."""
+    """Test transform when the feature to drop in not in the dataframe."""
+    test = DropHighPSIFeatures()
+    test.fit(df)
+
+    # Define new dataframe with additional column
+    data = df.copy()
+    data["A"] = [1] * 1000
+    # Remove one of the feature to drop
+    data = data.drop("drift_1", axis=1)
+
     with pytest.raises(KeyError):
-        test = DropHighPSIFeatures()
-        test.fit(df)
-
-        # Define new dataframe with additional column
-        data = df.copy()
-        data["A"] = [1] * 1000
-        # Remove one of the feature to drop
-        data = data.drop("drift_1", axis=1)
-
         # Transform
         test.transform(data)
 
 
 def test_transform_different_number_of_columns(df):
-    """Test transform when the feature  to drop in not in the dataframe."""
+    """Test transform on df with different number of features to train set."""
+    test = DropHighPSIFeatures()
+    test.fit(df)
+
+    # Define new dataframe with additional column
+    data = df.copy()
+    data["A"] = [1] * 1000
+
     with pytest.raises(ValueError):
-        test = DropHighPSIFeatures()
-        test.fit(df)
-
-        # Define new dataframe with additional column
-        data = df.copy()
-        data["A"] = [1] * 1000
-
-        # Transform
         test.transform(data)
 
 

@@ -125,7 +125,7 @@ class DropHighPSIFeatures(BaseSelector):
     split_distinct: boolean, default=False.
         If True, unique values in `split_col` will go to either basis or test data sets
         but not both. For example, if `split_col` is [0, 1, 1, 1, 2, 2], `split_frac` is
-        0.5 and `split_distinct` is False, the data will be divided ind [0, 1, 1] and
+        0.5 and `split_distinct` is False, the data will be divided in [0, 1, 1] and
         [1, 2, 2] achieving exactly a 50% split. However, if `split_distinct` is True,
         then the data will be divided into [0, 1, 1, 1] and [2, 2], with an approximate
         split of 0.5 but not exactly.
@@ -187,12 +187,12 @@ class DropHighPSIFeatures(BaseSelector):
     psi_values_:
         Dictionary containing the PSI value per feature.
 
-    n_features_in_:
-        The number of features in the train set used in fit.
-
     cut_off_:
         Value used to split the dataframe into basis and test.
         This value is computed when not given as parameter.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
@@ -318,7 +318,7 @@ class DropHighPSIFeatures(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # find all variables or check those entered are present in the dataframe
+        # find numerical variables or check those entered are present in the dataframe
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # Remove the split_col from the variables list. It might be added if the
@@ -334,15 +334,17 @@ class DropHighPSIFeatures(BaseSelector):
         # Split the dataframe into basis and test.
         basis_df, test_df = self._split_dataframe(X)
 
-        # Check the shape of the dataframe for PSI calculations.
+        # Check the shape of the returned dataframes for PSI calculations.
         # The number of observations must be at least equal to the
         # number of bins.
         if min(basis_df.shape[0], test_df.shape[0]) < self.bins:
             raise ValueError(
-                f"The number of rows for the matrices used in the PSI "
-                f"calculations must be larger than {self.bins}. Now have "
-                f"{basis_df.shape[0]} samples, and {test_df.shape[0]} "
-                f"samples, Please adjust the value of the cut_off."
+                "The number of rows in the basis and test datasets that will be used "
+                f"in the PSI calculations must be at least larger than {self.bins}. "
+                "After slitting the original dataset based on the given cut_off or"
+                f"split_frac we have {basis_df.shape[0]} samples in the basis set, "
+                f"and {test_df.shape[0]} samples in the test set. "
+                "Please adjust the value of the cut_off or split_frac."
             )
 
         # Switch basis and test dataframes if required.
@@ -457,8 +459,9 @@ class DropHighPSIFeatures(BaseSelector):
         # Raise an error if there are missing values in the reference column.
         if reference.isna().sum() != 0:
             raise ValueError(
-                f"{reference.isna().sum()} missing values. Missing data are "
-                f"not allowed in the variable used to split the dataframe."
+                f"There are {reference.isna().sum()} missing values in the reference"
+                "variable. Missing data are not allowed in the variable used to "
+                "split the dataframe."
             )
 
         # If cut_off is not pre-defined, compute it.
@@ -468,7 +471,7 @@ class DropHighPSIFeatures(BaseSelector):
             self.cut_off_ = self.cut_off
 
         # Split the original dataframe
-        if isinstance(self.cut_off, list):
+        if isinstance(self.cut_off_, list):
             is_within_cut_off = reference.isin(self.cut_off_)
 
         else:
@@ -482,21 +485,20 @@ class DropHighPSIFeatures(BaseSelector):
     def _get_cut_off_value(self, split_column):
         """
         Find the cut-off value to split the dataframe. It is implemented when the user
-        does not enter a cut_off value. It is based on split_frac.
+        does not enter a cut_off value as a parameter. It is calculated based on
+        split_frac.
 
         Finds the value in a pandas series at which we find the split_frac percentage
         of observations.
 
         If the reference column is numerical, the cut-off value is determined using
-        np.quantile
-
-        Otherwise, the cut-off value is based on the value_counts:
+        np.quantile. Otherwise, the cut-off value is based on the value_counts:
 
             - The distinct values are sorted and the cumulative sum is
             used to compute the quantile. The value with the quantile that
             is the closest to the chosen split fraction is used as cut-off.
 
-            - The sort involves that categorical values are sorted alphabetically
+            - The procedure assumes that categorical values are sorted alphabetically
             and cut accordingly.
 
         Parameters
@@ -509,6 +511,7 @@ class DropHighPSIFeatures(BaseSelector):
         cut_off: (float, int, str, object).
             value for the cut-off.
         """
+
         # In case split_distinct is used, extract series with unique values
         if self.split_distinct:
             split_column = pd.Series(split_column.unique())
