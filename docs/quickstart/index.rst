@@ -64,7 +64,8 @@ imputation.
 
 	# Separate into train and test sets
 	X_train, X_test, y_train, y_test = train_test_split(
-    	    data.drop(['Id', 'SalePrice'], axis=1), data['SalePrice'],
+    	    data.drop(['Id', 'SalePrice'], axis=1),
+            data['SalePrice'],
             test_size=0.3,
             random_state=0
         )
@@ -242,6 +243,4 @@ More examples can be found in:
    :maxdepth: 1
    :hidden:
 
-   installation
-   getting_help
    datasets

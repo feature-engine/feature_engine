@@ -6,12 +6,14 @@ Datasets
 The user guide and examples included in Feature-engine's documentation are based on
 these 3 datasets:
 
-**Titanic dataset**
+Titanic dataset
+~~~~~~~~~~~~~~~
 
 We use the dataset available in `openML <https://www.openml.org/d/40945>`_ which can be
 downloaded from `here <https://www.openml.org/data/get_csv/16826755/phpMYEkMl>`_.
 
-**Ames House Prices dataset**
+Ames House Prices dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We use the data set created by Professor Dean De Cock:
 * Dean De Cock (2011) Ames, Iowa: Alternative to the Boston Housing
@@ -26,7 +28,8 @@ The original data and documentation can be found here:
 
 * `Data <http://jse.amstat.org/v19n3/decock/AmesHousing.xls>`_
 
-**Credit Approval dataset**
+Credit Approval dataset
+~~~~~~~~~~~~~~~~~~~~~~~
 
 We use the Credit Approval dataset from the UCI Machine Learning Repository:
 
