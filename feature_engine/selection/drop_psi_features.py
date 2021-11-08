@@ -339,12 +339,12 @@ class DropHighPSIFeatures(BaseSelector):
         # number of bins.
         if min(basis_df.shape[0], test_df.shape[0]) < self.bins:
             raise ValueError(
-                f"The number of rows in the basis and test datasets that will be used "
+                "The number of rows in the basis and test datasets that will be used "
                 f"in the PSI calculations must be at least larger than {self.bins}. "
-                f"After slitting the original dataset based on the given cut_off or"
+                "After slitting the original dataset based on the given cut_off or"
                 f"split_frac we have {basis_df.shape[0]} samples in the basis set, "
                 f"and {test_df.shape[0]} samples in the test set. "
-                f"Please adjust the value of the cut_off or split_frac."
+                "Please adjust the value of the cut_off or split_frac."
             )
 
         # Switch basis and test dataframes if required.
@@ -459,8 +459,9 @@ class DropHighPSIFeatures(BaseSelector):
         # Raise an error if there are missing values in the reference column.
         if reference.isna().sum() != 0:
             raise ValueError(
-                f"{reference.isna().sum()} missing values. Missing data are "
-                f"not allowed in the variable used to split the dataframe."
+                f"There are {reference.isna().sum()} missing values in the reference"
+                "variable. Missing data are not allowed in the variable used to "
+                "split the dataframe."
             )
 
         # If cut_off is not pre-defined, compute it.
