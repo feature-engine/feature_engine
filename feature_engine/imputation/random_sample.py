@@ -132,8 +132,7 @@ class RandomSampleImputer(BaseImputer):
         ----------
 
         X: pandas dataframe of shape = [n_samples, n_features]
-            The training dataset. Only a copy of the indicated variables will be stored
-            in the transformer.
+            The training dataset.
 
         y: None
             y is not needed in this imputation. You can pass None or y.

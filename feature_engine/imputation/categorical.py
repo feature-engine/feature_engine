@@ -17,11 +17,11 @@ from feature_engine.variable_manipulation import (
 class CategoricalImputer(BaseImputer):
     """
     The CategoricalImputer() replaces missing data in categorical variables by an
-    arbitrary value that you define or by the most frequent category.
+    arbitrary value or by the most frequent category.
 
     The CategoricalVariableImputer() imputes by default only categorical variables
     (type 'object' or 'categorical'). You can pass a list of variables to impute, or
-    alternatively, the encoder will find and encode all categorical variables.
+    alternatively, the encoder will find and impute all categorical variables.
 
     If you want to impute numerical variables with this transformer, there are 2 ways
     of doing it:

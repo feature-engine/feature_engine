@@ -14,9 +14,8 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 class AddMissingIndicator(BaseImputer):
     """
     The AddMissingIndicator() adds binary variables that indicate if data is
-    missing. It adds a missing indicator for each variable to impute.
-
-    Binary variables are named as the original variable name plus ‘_na’.
+    missing (one indicator per variable). The added variables (missing indicators) are
+    named with the original variable name plus ‘_na’.
 
     The AddMissingIndicator() works for both numerical and categorical variables. You
     can pass a list with the variables for which the missing indicators should be

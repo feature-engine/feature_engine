@@ -9,7 +9,7 @@ from data or arbitrary values pre-defined by the user.
 .. figure::  ../../images/summary/imputersSummary.png
    :align:   center
 
-The `CategoricalImputer` performs procedures suitable for categorical variables. Since
+The `CategoricalImputer` performs procedures suitable for categorical variables. From
 version 1.1.0 it also accepts numerical variables as input, for those cases were
 categorical variables by nature are coded as numeric.
 

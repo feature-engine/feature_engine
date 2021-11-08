@@ -30,7 +30,7 @@ class MeanMedianImputer(BaseImputer):
         Desired method of imputation. Can take 'mean' or 'median'.
 
     variables: list, default=None
-        The list of variables to impute. If None, the imputer will select
+        The list of variables to impute. If None, the imputer will impute
         all numerical variables.
 
     Attributes
