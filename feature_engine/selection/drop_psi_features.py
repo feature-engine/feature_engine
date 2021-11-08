@@ -485,21 +485,20 @@ class DropHighPSIFeatures(BaseSelector):
     def _get_cut_off_value(self, split_column):
         """
         Find the cut-off value to split the dataframe. It is implemented when the user
-        does not enter a cut_off value. It is based on split_frac.
+        does not enter a cut_off value as a parameter. It is calculated based on
+        split_frac.
 
         Finds the value in a pandas series at which we find the split_frac percentage
         of observations.
 
         If the reference column is numerical, the cut-off value is determined using
-        np.quantile
-
-        Otherwise, the cut-off value is based on the value_counts:
+        np.quantile. Otherwise, the cut-off value is based on the value_counts:
 
             - The distinct values are sorted and the cumulative sum is
             used to compute the quantile. The value with the quantile that
             is the closest to the chosen split fraction is used as cut-off.
 
-            - The sort involves that categorical values are sorted alphabetically
+            - The procedure assumes that categorical values are sorted alphabetically
             and cut accordingly.
 
         Parameters
@@ -512,6 +511,7 @@ class DropHighPSIFeatures(BaseSelector):
         cut_off: (float, int, str, object).
             value for the cut-off.
         """
+
         # In case split_distinct is used, extract series with unique values
         if self.split_distinct:
             split_column = pd.Series(split_column.unique())
