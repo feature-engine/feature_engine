@@ -44,19 +44,19 @@ What is unique about Feature-engine?
 
 The following characteristics make Feature-engine unique:
 
-- Feature-engine contains the most exhaustive battery of feature engineering transformations
-- Feature-engine can transform a specific group of variables in the dataframe
-- Feature-engine returns dataframes, hence suitable for data exploration and model deployment
+- Feature-engine contains the most exhaustive battery of feature engineering transformations.
+- Feature-engine can transform a specific group of variables in the dataframe.
+- Feature-engine returns dataframes, hence suitable for data exploration and model deployment.
 - Feature-engine is compatible with the Scikit-learn pipeline.
-- Feature-engine automatically recognizes numerical and categorical variables
-- Feature-engine alerts you if a transformation is not possible, e.g., if applying logarithm to negative variables or divisions by 0
+- Feature-engine automatically recognizes numerical and categorical variables.
+- Feature-engine alerts you if a transformation is not possible, e.g., if applying logarithm to negative variables or divisions by 0.
 
 If you want to know more about what makes Feature-engine unique, check this
 `article <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c>`_.
 
 
 Installation
-------------
+~~~~~~~~~~~~
 
 Feature-engine is a Python 3 package and works well with 3.6 or later. Earlier versions
 have not been tested. The simplest way to install Feature-engine is from PyPI with pip:
@@ -87,9 +87,8 @@ If you’re using Anaconda, you can install the
 
 
 Feature-engine features in the following resources
----------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- `Website <https://www.trainindata.com/feature-engine>`_.
 - `Feature Engineering for Machine Learning <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_, Online Course.
 - `Feature Selection for Machine Learning <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_, Online Course.
 - `Python Feature Engineering Cookbook <https://packt.link/python>`_.
@@ -100,20 +99,23 @@ More learning resources in the :ref:`**Learning Resources** <learning_resources>
 
 
 Feature-engine's Transformers
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Feature-engine hosts the following groups of transformers:
+
 Missing Data Imputation: Imputers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 
 - :doc:`api_doc/imputation/MeanMedianImputer`: replaces missing data in numerical variables by the mean or median
-- :doc:`api_doc/imputation/ArbitraryNumberImputer`: replaces missing data in numerical variables by an arbitrary value
+- :doc:`api_doc/imputation/ArbitraryNumberImputer`: replaces missing data in numerical variables by an arbitrary number
 - :doc:`api_doc/imputation/EndTailImputer`: replaces missing data in numerical variables by numbers at the distribution tails
-- :doc:`api_doc/imputation/CategoricalImputer`: replaces missing data in categorical variables with an arbitrary value or by the most frequent category
+- :doc:`api_doc/imputation/CategoricalImputer`: replaces missing data with an arbitrary string or by the most frequent category
 - :doc:`api_doc/imputation/RandomSampleImputer`: replaces missing data by random sampling observations from the variable
 - :doc:`api_doc/imputation/AddMissingIndicator`: adds a binary missing indicator to flag observations with missing data
 - :doc:`api_doc/imputation/DropMissingData`: removes observations (rows) containing missing values from dataframe
 
 Categorical Variable Encoders: Encoders
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------
 
 - :doc:`api_doc/encoding/OneHotEncoder`: performs one hot encoding, optional: of popular categories
 - :doc:`api_doc/encoding/CountFrequencyEncoder`: replaces categories by the observation count or percentage
@@ -125,7 +127,7 @@ Categorical Variable Encoders: Encoders
 - :doc:`api_doc/encoding/RareLabelEncoder`: groups infrequent categories
 
 Numerical Variable Transformation: Transformers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------------------
 
 - :doc:`api_doc/transformation/LogTransformer`: performs logarithmic transformation of numerical variables
 - :doc:`api_doc/transformation/LogCpTransformer`: performs logarithmic transformation after adding a constant value
@@ -135,7 +137,7 @@ Numerical Variable Transformation: Transformers
 - :doc:`api_doc/transformation/YeoJohnsonTransformer`: performs Yeo-Johnson transformation of numerical variables
 
 Variable Discretisation: Discretisers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 
 - :doc:`api_doc/discretisation/ArbitraryDiscretiser`: sorts variable into intervals defined by the user
 - :doc:`api_doc/discretisation/EqualFrequencyDiscretiser`: sorts variable into equal frequency intervals
@@ -143,21 +145,21 @@ Variable Discretisation: Discretisers
 - :doc:`api_doc/discretisation/DecisionTreeDiscretiser`: uses decision trees to create finite variables
 
 Outlier Capping or Removal
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
 -  :doc:`api_doc/outliers/ArbitraryOutlierCapper`: caps maximum and minimum values at user defined values
 -  :doc:`api_doc/outliers/Winsorizer`: caps maximum or minimum values using statistical parameters
 -  :doc:`api_doc/outliers/OutlierTrimmer`: removes outliers from the dataset
 
 Mathematical Combination:
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 
 -  :doc:`api_doc/creation/MathematicalCombination`: creates new variables by combining features with mathematical operations
--  :doc:`api_doc/creation/CombineWithReferenceFeature`: combines variables with reference features through mathematical operations
+-  :doc:`api_doc/creation/CombineWithReferenceFeature`: combines variables with reference features
 -  :doc:`api_doc/creation/CyclicalTransformer`: creates variables using sine and cosine, suitable for cyclical features
 
 Feature Selection:
-~~~~~~~~~~~~~~~~~~
+------------------
 
 - :doc:`api_doc/selection/DropFeatures`: drops an arbitrary subset of variables from a dataframe
 - :doc:`api_doc/selection/DropConstantFeatures`: drops constant and quasi-constant variables from a dataframe
@@ -171,41 +173,35 @@ Feature Selection:
 - :doc:`api_doc/selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
 
 Preprocessing:
-~~~~~~~~~~~~~~
+--------------
 
 - :doc:`api_doc/preprocessing/MatchVariables`: ensures that columns in test set match those in train set
 
 Scikit-learn Wrapper:
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 -  :doc:`api_doc/wrappers/Wrapper`: applies Scikit-learn transformers to a selected subset of features
 
+
 Getting Help
-------------
+~~~~~~~~~~~~
 
 Can't get something to work? Here are places where you can find help.
 
-1. The docs (you're here!).
-2. `Stack Overflow <https://stackoverflow.com/questions/tagged/feature-engine>`_. If you ask a question, please mention "feature_engine" in it.
-3. If you are enrolled in the `Feature Engineering for Machine Learning course in Udemy <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_ , post a question in a relevant section.
-4. If you are enrolled in the `Feature Selection for Machine Learning course in Udemy <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_ , post a question in a relevant section.
+1. The :ref:`**User Guide** <user_guide>` in the docs.
+2. `Stack Overflow <https://stackoverflow.com/search?q=feature_engine>`_. If you ask a question, please mention "feature_engine" in it.
+3. If you are enrolled in the `Feature Engineering for Machine Learning course <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_ , post a question in a relevant section.
+4. If you are enrolled in the `Feature Selection for Machine Learning course <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_ , post a question in a relevant section.
 5. Join our `gitter community <https://gitter.im/feature_engine/community>`_. You an ask questions here as well.
-6. Ask a question in the repo by filing an `issue <https://github.com/feature-engine/feature_engine/issues/>`_.
+6. Ask a question in the repo by filing an `issue <https://github.com/feature-engine/feature_engine/issues/>`_ (check before if there is already a similar issue created :) ).
 
-
-Found a Bug or have a suggestion?
----------------------------------
-
-Check if there's already an open `issue <https://github.com/feature-engine/feature_engine/issues/>`_
-on the topic. If not, open a new `issue <https://github.com/feature-engine/feature_engine/issues/>`_
-with your bug report, suggestion or new feature request.
 
 Contributing
-------------
+~~~~~~~~~~~~
 
 Interested in contributing to Feature-engine? That is great news!
 
-Feature-engine is a welcoming and inclusive project and it would be great to have you
+Feature-engine is a welcoming and inclusive project and we would be delighted to have you
 on board. We follow the
 `Python Software Foundation Code of Conduct <http://www.python.org/psf/codeofconduct/>`_.
 
@@ -219,7 +215,7 @@ For more details on how to contribute check the contributing page. Click on the
 
 
 Open Source
------------
+~~~~~~~~~~~
 
 Feature-engine's `license <https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md>`_
 is an open source BSD 3-Clause.
@@ -230,7 +226,7 @@ The `issues <https://github.com/feature-engine/feature_engine/issues/>`_ and
 
 
 Table of Contents
------------------
+~~~~~~~~~~~~~~~~~
 
 .. toctree::
    :maxdepth: 2

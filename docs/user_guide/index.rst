@@ -1,3 +1,4 @@
+.. -*- mode: rst -*-
 .. _user_guide:
 
 User Guide

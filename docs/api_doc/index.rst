@@ -1,7 +1,7 @@
 .. _api:
 
-API Documentation
-=================
+API
+===
 
 Full API documentation for Feature-engine transformers.
 
