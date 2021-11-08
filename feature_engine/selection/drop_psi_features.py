@@ -318,7 +318,7 @@ class DropHighPSIFeatures(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # find all variables or check those entered are present in the dataframe
+        # find numerical variables or check those entered are present in the dataframe
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # Remove the split_col from the variables list. It might be added if the
@@ -334,15 +334,17 @@ class DropHighPSIFeatures(BaseSelector):
         # Split the dataframe into basis and test.
         basis_df, test_df = self._split_dataframe(X)
 
-        # Check the shape of the dataframe for PSI calculations.
+        # Check the shape of the returned dataframes for PSI calculations.
         # The number of observations must be at least equal to the
         # number of bins.
         if min(basis_df.shape[0], test_df.shape[0]) < self.bins:
             raise ValueError(
-                f"The number of rows for the matrices used in the PSI "
-                f"calculations must be larger than {self.bins}. Now have "
-                f"{basis_df.shape[0]} samples, and {test_df.shape[0]} "
-                f"samples, Please adjust the value of the cut_off."
+                f"The number of rows in the basis and test datasets that will be used "
+                f"in the PSI calculations must be at least larger than {self.bins}. "
+                f"After slitting the original dataset based on the given cut_off or"
+                f"split_frac we have {basis_df.shape[0]} samples in the basis set, "
+                f"and {test_df.shape[0]} samples in the test set. "
+                f"Please adjust the value of the cut_off or split_frac."
             )
 
         # Switch basis and test dataframes if required.
