@@ -125,7 +125,7 @@ class DropHighPSIFeatures(BaseSelector):
     split_distinct: boolean, default=False.
         If True, unique values in `split_col` will go to either basis or test data sets
         but not both. For example, if `split_col` is [0, 1, 1, 1, 2, 2], `split_frac` is
-        0.5 and `split_distinct` is False, the data will be divided ind [0, 1, 1] and
+        0.5 and `split_distinct` is False, the data will be divided in [0, 1, 1] and
         [1, 2, 2] achieving exactly a 50% split. However, if `split_distinct` is True,
         then the data will be divided into [0, 1, 1, 1] and [2, 2], with an approximate
         split of 0.5 but not exactly.
@@ -187,12 +187,12 @@ class DropHighPSIFeatures(BaseSelector):
     psi_values_:
         Dictionary containing the PSI value per feature.
 
-    n_features_in_:
-        The number of features in the train set used in fit.
-
     cut_off_:
         Value used to split the dataframe into basis and test.
         This value is computed when not given as parameter.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
     Methods
     -------
