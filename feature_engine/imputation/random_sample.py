@@ -58,10 +58,10 @@ class RandomSampleImputer(BaseImputer):
         Indicates whether the seed should be set for each observation with missing
         values, or if one seed should be used to impute all observations in one go.
 
-        **general**: one seed will be used to impute the entire dataframe. This is
+        **'general'**: one seed will be used to impute the entire dataframe. This is
         equivalent to setting the seed in pandas.sample(random_state).
 
-        **observation**: the seed will be set for each observation using the values
+        **'observation'**: the seed will be set for each observation using the values
         of the variables indicated in the random_state for that particular
         observation.
 

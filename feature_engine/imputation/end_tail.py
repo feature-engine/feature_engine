@@ -49,20 +49,20 @@ class EndTailImputer(BaseImputer):
 
     Parameters
     ----------
-    imputation_method: str, default=gaussian
+    imputation_method: str, default='gaussian'
         Method to be used to find the replacement values. Can take 'gaussian',
         'iqr' or 'max'.
 
-        **gaussian**: the imputer will use the Gaussian limits to find the values
+        **'gaussian'**: the imputer will use the Gaussian limits to find the values
         to replace missing data.
 
-        **iqr**: the imputer will use the IQR limits to find the values to replace
+        **'iqr'**: the imputer will use the IQR limits to find the values to replace
         missing data.
 
-        **max**: the imputer will use the maximum values to replace missing data. Note
+        **'max'**: the imputer will use the maximum values to replace missing data. Note
         that if 'max' is passed, the parameter 'tail' is ignored.
 
-    tail: str, default=right
+    tail: str, default='right'
         Indicates if the values to replace missing data should be selected from the
         right or left tail of the variable distribution. Can take values 'left' or
         'right'.
