@@ -165,7 +165,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X_tr: pandas dataframe of shape = [n_samples, n_features].
             The un-transformed dataframe, with the categorical variables containing the
             original values.
         """

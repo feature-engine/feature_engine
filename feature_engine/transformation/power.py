@@ -117,17 +117,9 @@ class PowerTransformer(BaseNumericalTransformer):
         X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            - If the variable(s) contain null values
-            - If the df has different number of features than the df used in fit()
-
         Returns
         -------
-        X: pandas Dataframe
+        X_tr: pandas Dataframe
             The dataframe with the power transformed variables.
         """
 

@@ -128,7 +128,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         Returns
         -------
-        X: pandas dataframe
+        X_tr: pandas dataframe
             The dataframe with the transformed variables.
         """
         # inverse_transform

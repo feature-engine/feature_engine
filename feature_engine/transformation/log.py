@@ -140,7 +140,7 @@ class LogTransformer(BaseNumericalTransformer):
 
         Returns
         -------
-        X: pandas dataframe
+        X_tr: pandas dataframe
             The dataframe with the transformed variables.
         """
 
@@ -336,7 +336,7 @@ class LogCpTransformer(BaseNumericalTransformer):
 
         Returns
         -------
-        X: Pandas dataframe
+        X_tr: Pandas dataframe
             The dataframe with the transformed variables.
         """
 
