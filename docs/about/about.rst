@@ -22,7 +22,7 @@ Governance
 ----------
 
 The decision making process and governance structure of Feature-engine is laid out in
-the `governance document <https://feature-engine.readthedocs.io/en/latest/governance.html>`_.
+the :ref:`**governance document** <governance>`.
 
 Core contributors
 -----------------
@@ -82,18 +82,53 @@ High quality PNG and SVG logos are available in the `docs/images/ <https://githu
 source directory of the repository.
 
 .. figure::  ../images/logo/FeatureEngine.png
-   :align:   center
+   :width: 200
+   :figclass: align-center
+   :align: center
 
 
 Sponsors
 --------
 
 Feature-engine is a community driven project, however institutional and private grants
-help to assure its sustainability.
+help to assure its sustainability. The project would like to thank the following
+sponsors:
 
-The project would like to thank the following sponsors:
+|
+|
 
-Soledad Galli spends a big part of her time at Train in Data maintaining the project.
+.. raw:: html
+
+   </div>
+   </div>
+
+........
+
+.. raw:: html
+
+   <div class="sk-sponsor-div">
+   <div class="sk-sponsor-div-box">
+
+Soledad Galli spends a big part of her time at `Train in Data <https://www.trainindata.com/>`_
+maintaining the project.
+
+.. raw:: html
+
+   </div>
+
+   <div class="sk-sponsor-div-box">
 
 .. image:: ../images/sponsors/trainindata.png
-   :target: https://www.trainindata.com/
+   :width: 150pt
+   :align: center
+   :target:  https://www.trainindata.com/
+
+.. raw:: html
+
+   </div>
+   </div>
+
+..........
+
+|
+|

@@ -1,3 +1,5 @@
+.. _governance:
+
 Governance
 ==========
 
@@ -14,8 +16,7 @@ Contributors
 
 Contributors are community members who contribute in various ways to the project.
 Anyone can become a contributor, and contributions can be of various forms, not just
-code. To see how you can help check the
-`Contribute page <https://feature-engine.readthedocs.io/en/latest/contribute/index.html>`_.
+code. To see how you can help check the :ref:`**Contribute page** <contribute>`.
 
 
 Core Contributors
@@ -31,7 +32,7 @@ Feature-engine API. Core Contributors determine who can join as a Core Contribut
 Founder and Leadership
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Feature-engine was founded by `Soledad Galli <https://www.trainindata.com/meet-the-team>`_
+Feature-engine was founded by `Soledad Galli <https://www.linkedin.com/in/soledad-galli/>`_
 who at the time was solely responsible for the initial prototypes, documentation, and
 dissemination of the project. In the tradition of Python, Sole is referred to as the
 “benevolent dictator for life” (BDFL) of the project, or simply, “the founder”. From a
