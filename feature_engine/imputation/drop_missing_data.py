@@ -76,13 +76,17 @@ class DropMissingData(BaseImputer):
     ) -> None:
 
         if not isinstance(missing_only, bool):
-            raise ValueError("missing_only takes values True or False. "
-                             f"Got {missing_only} instead.")
+            raise ValueError(
+                "missing_only takes values True or False. "
+                f"Got {missing_only} instead."
+            )
 
-        if threshold:
-            if not isinstance(threshold, (int, float)) or not 0 < threshold < 1:
-                raise ValueError("threshold must be a float between 0 and 1. "
-                                 f"Got {threshold} instead.")
+        if threshold is not None:
+            if not isinstance(threshold, (int, float)) or not (0 < threshold <= 1):
+                raise ValueError(
+                    "threshold must be a value between 0 < x <= 1. "
+                    f"Got {threshold} instead."
+                )
 
         self.variables = _check_input_parameter_variables(variables)
         self.missing_only = missing_only
@@ -182,7 +186,11 @@ class DropMissingData(BaseImputer):
 
         X = self._check_transform_input_and_state(X)
 
-        # TODO: this method needs to be modified to accommodate threshold
-        idx = pd.isnull(X[self.variables_]).any(1)
-        idx = idx[idx]
+        if self.threshold:
+            idx = pd.isnull(X[self.variables_]).mean(axis=1) >= self.threshold
+            idx = idx[idx]
+        else:
+            idx = pd.isnull(X[self.variables_]).any(1)
+            idx = idx[idx]
+
         return X.loc[idx.index, :]

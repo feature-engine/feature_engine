@@ -41,13 +41,20 @@ def test_detect_variables_with_na_in_variables_entered_by_user(df_na):
 
 
 def test_return_na_data_method(df_na):
-    # TODO: expand to accommodate threshold parameter
+
+    # test with vars
     imputer = DropMissingData(
-        missing_only=True, variables=["City", "Studies", "Age", "dob"]
+        threshold=0.5, variables=["City", "Studies", "Age", "Marks"]
     )
-    imputer.fit(df_na)
+    imputer.fit_transform(df_na)
     X_nona = imputer.return_na_data(df_na)
-    assert X_nona.shape == (2, 6)
+    assert list(X_nona.index) == [2, 3]
+
+    # test without vars & threshold
+    imputer = DropMissingData()
+    imputer.fit_transform(df_na)
+    X_nona = imputer.return_na_data(df_na)
+    assert list(X_nona.index) == [2, 3, 5]
 
 
 def test_error_when_missing_only_not_bool():
@@ -62,19 +69,36 @@ def test_non_fitted_error(df_na):
 
 
 def test_threshold(df_na):
-    # TODO: fix to accomodate new logic
-    # also test the same threshold value when missing_only is true and then false
-    # it should return the same results
 
-    imputer = DropMissingData(threshold=0.34)
+    # Each row must have 100% data available
+    imputer = DropMissingData(threshold=1)
     X = imputer.fit_transform(df_na)
-    # Drop rows missing more than 34% of the data. Index 3 only.
+    assert list(X.index) == [0, 1, 4, 6, 7]
+
+    # Each row must have at least 1% data available
+    imputer = DropMissingData(threshold=0.01)
+    X = imputer.fit_transform(df_na)
+    assert list(X.index) == [0, 1, 2, 3, 4, 5, 6, 7]
+
+    # Each row must have at least 50% data available
+    imputer = DropMissingData(threshold=0.50)
+    X = imputer.fit_transform(df_na)
     assert list(X.index) == [0, 1, 2, 4, 5, 6, 7]
 
-    imputer = DropMissingData(threshold=0.32)
+    # Each row must have 100% data available
+    imputer = DropMissingData(threshold=1, missing_only=False)
     X = imputer.fit_transform(df_na)
-    # Drop rows missing more than 32% of the data. Index 2, 3, 5 will be dropped.
     assert list(X.index) == [0, 1, 4, 6, 7]
+
+    # Each row must have at least 1% data available
+    imputer = DropMissingData(threshold=0.01, missing_only=False)
+    X = imputer.fit_transform(df_na)
+    assert list(X.index) == [0, 1, 2, 3, 4, 5, 6, 7]
+
+    # Each row must have at least 50% data available
+    imputer = DropMissingData(threshold=0.50, missing_only=False)
+    X = imputer.fit_transform(df_na)
+    assert list(X.index) == [0, 1, 2, 4, 5, 6, 7]
 
 
 def test_threshold_value_error(df_na):
@@ -84,26 +108,20 @@ def test_threshold_value_error(df_na):
     with pytest.raises(ValueError):
         DropMissingData(threshold=-0.01)
 
+    with pytest.raises(ValueError):
+        DropMissingData(threshold=0)
+
 
 def test_threshold_with_variables(df_na):
-    # TODO: update to accommodate new logic
 
+    # Each row must have 100% data avaiable for columns ['Marks']
+    imputer = DropMissingData(threshold=1, variables=["Marks"])
+    X = imputer.fit_transform(df_na)
+    assert list(X.index) == [0, 1, 2, 4, 6, 7]
+
+    # Each row must have 75% data avaiable for ['City', 'Studies', 'Age', 'Marks']
     imputer = DropMissingData(
-        missing_only=False,
-        threshold=0.26,
-        variables=["City", "Studies", "Age", "Marks"],
+        threshold=0.75, variables=["City", "Studies", "Age", "Marks"]
     )
     X = imputer.fit_transform(df_na)
-    # Drop rows missing > 26% of the data in ['City', 'Studies', 'Age', 'Marks'].
-    # I.E. 2 or more columns are missing since there are 4 variables
     assert list(X.index) == [0, 1, 4, 5, 6, 7]
-
-    imputer = DropMissingData(
-        missing_only=False,
-        threshold=0.24,
-        variables=["City", "Studies", "Age", "Marks"],
-    )
-    X = imputer.fit_transform(df_na)
-    # Drop rows missing > 24% of the data in ['City', 'Studies', 'Age', 'Marks'].
-    # I.E. 1 or more columns are missing since there are 4 variables
-    assert list(X.index) == [0, 1, 4, 6, 7]
