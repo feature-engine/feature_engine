@@ -1,5 +1,5 @@
-Blogs and Videos
-================
+Blogs, Videos and More
+======================
 
 Articles and videos about Feature-engine and feature engineering and selection in general.
 
@@ -18,13 +18,16 @@ Videos
 
 - `Optimising Feature Engineering Pipelines with Feature-engine <https://www.youtube.com/watch?v=qT-3KUaFYmk/>`_, Pydata Cambridge 2020, from minute 51:43.
 
+
+Podcasts
+--------
+
+- `Build Composable And Reusable Feature Engineering Pipelines with Feature-Engine <https://www.pythonpodcast.com/feature-engine-feature-engineering-pipelines-episode-338/>`_.
+
 En Español
 ----------
 
 - `Ingeniería de variables para machine learning <https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C>`_, Curso Online.
 - `Ingeniería de variables, MachinLenin <https://www.youtube.com/watch?v=NhCxOOoFXds>`_, charla con video online.
-- `Ingeniería de atributos para aprendizaje automático: una revisión completa <https://www.trainindatablog.com/ingenieria-de-variables-aprendizaje-de-maquinas/>`_, Artículo.
-- `Paquetes Python de código abierto para la ingeniería de atributos: Comparaciones y conclusiones <https://www.trainindatablog.com/paquetes-python-de-para-ingenieria-de-atributos/>`_, Artículo.
-- `Feature-engine: Un paquete Python de código abierto para la ingeniería de atributos <https://www.trainindatablog.com/feature-engine-un-paquete-python-de-codigo-abierto-para-la-ingenieria-de-atributos/>`_, Artículo.
 
-More resources will be added as they appear online!
+More resources will be added as they appear online. If you know of a good resource, let us know.

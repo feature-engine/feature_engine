@@ -6,6 +6,7 @@ in the following books:
 
 .. figure::  ../images/cookbook.png
    :width: 200
+   :figclass: align-center
    :align: left
    :target: https://packt.link/python
 
