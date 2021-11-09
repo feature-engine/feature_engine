@@ -1,7 +1,11 @@
+.. _match_variables:
+
+.. currentmodule:: feature_engine.preprocessing
+
 MatchVariables
 ==============
 
-MatchVariables() ensures that the columns in the test set are identical to those
+:class:`MatchVariables()` ensures that the columns in the test set are identical to those
 in the train set.
 
 If the test set contains additional columns, they are dropped. Alternatively, if the
@@ -153,6 +157,13 @@ While creating these modelling datasets, a lot of meta data e.g., "scenario numb
 "time scenario was generated", etc, could be added to the data. Then we need to pass
 these data over to the model to obtain the modelled prediction.
 
-MatchVariables() provides an easy an elegant way to remove the additional metadeta,
+:class:`MatchVariables()` provides an easy an elegant way to remove the additional metadeta,
 while returning datasets with the input features in the correct order, allowing the
 different scenarios to be modelled directly inside a machine learning pipeline.
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/preprocessing/MatchVariables.ipynb>`_

@@ -50,6 +50,8 @@ class MatchVariables(BaseEstimator, TransformerMixin):
     The order of the variables in the transformed dataset is also adjusted to match
     that observed in the train set.
 
+    More details in the :ref:`User Guide <match_variables>`.
+
     Parameters
     ----------
     fill_value: integer, float or string. Default=np.nan
