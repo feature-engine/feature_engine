@@ -123,12 +123,17 @@ class DropHighPSIFeatures(BaseSelector):
         on the `cut_off` value.
 
     split_distinct: boolean, default=False.
-        If True, unique values in `split_col` will go to either basis or test data sets
-        but not both. For example, if `split_col` is [0, 1, 1, 1, 2, 2], `split_frac` is
-        0.5 and `split_distinct` is False, the data will be divided in [0, 1, 1] and
-        [1, 2, 2] achieving exactly a 50% split. However, if `split_distinct` is True,
-        then the data will be divided into [0, 1, 1, 1] and [2, 2], with an approximate
-        split of 0.5 but not exactly.
+        If True, `split_frac` is applied to the vector of unique values in `split_col`
+        instead of being applied to the whole vector of values. For example, if the
+        values in `split_col` are [1, 1, 1, 1, 2, 2, 3, 4] and `split_frac` is
+        0.5, we have the following:
+        - `split_distinct=False` splits the vector in two equally sized parts:
+        [1, 1, 1, 1] and [2, 2, 3, 4]. This involves that 2 dataframes with 4
+        observations each are used for the PSI calculations.
+        - `split_distinct=True` computes the vector of unique values in `split_col`
+        ([1, 2, 3, 4]) and splits that vector in two equal parts: [1, 2] and [3, 4].
+        The number of observations in the two dataframes used for the PSI calculations
+        is respectively 6 ([1, 1, 1, 1, 2, 2]) and 2 ([3, 4]).
 
     cut_off: int, float, date or list, default=None
         Threshold to split the dataset based on the `split_col` variable. If int, float

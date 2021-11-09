@@ -283,7 +283,7 @@ def test_quatile_split_skewed_variables(index, fraction):
 # tests for splits based on split_frac and categorical variables:
 
 
-def test_calculation_distinct_value():
+def test_calculation_distinct_value_categorical():
     """Test the calculation of the quantiles using distinct values when reference
     variable is categorical."""
     df = pd.DataFrame(
@@ -313,6 +313,29 @@ def test_calculation_distinct_value():
     assert test.cut_off_ == "B"
 
 
+numerical_split_distinct = [(True, [1, 2, 3], [4, 5, 6]), (False, [1], [2, 3, 4, 5, 6])]
+
+
+@pytest.mark.parametrize("split_distinct, a_values, b_values", numerical_split_distinct)
+def test_split_distinct_with_numerical_values(split_distinct, a_values, b_values):
+    """Test the split_distinct functionality with numerical variables."""
+    # Define the testing dataframe
+    df = pd.DataFrame(
+        {
+            "ID": [1, 1, 2, 3, 1, 4, 5, 1, 1, 6],
+            "numerical": [1, 1, 1, 4, 1, 4, 3, 7, 1, 3],
+        }
+    )
+    a_expected = df[df.ID.isin(a_values)]
+    b_expected = df[df.ID.isin(b_values)]
+    # Run the split_dataframe method to extract the input of the PSI calculation.
+    transformer = DropHighPSIFeatures(split_col="ID", split_distinct=split_distinct)
+    a, b = transformer._split_dataframe(df)
+    # Test if the functionality provides the expected results.
+    pd.testing.assert_frame_equal(a, a_expected)
+    pd.testing.assert_frame_equal(b, b_expected)
+
+
 def test_calculation_df_split_with_different_variable_types(df_mixed_types):
     """Test the split of the dataframe using different type of variables."""
     results = {}
@@ -332,29 +355,10 @@ def test_calculation_df_split_with_different_variable_types(df_mixed_types):
 
     assert cut_offs == expected_cut_offs
 
-    # Test when no columns is defined
+    # Test when no data frame with mixed data types when no split_col is provided.
     test = DropHighPSIFeatures(split_frac=0.5)
     test.fit_transform(df_mixed_types)
     assert test.psi_values_ == pytest.approx({"A": 8.283089355027482, "B": 0.0}, 12)
-
-
-def test_calculation_when_split_column_is_none():
-    """Test the split of the dataframe using different type of variables."""
-    df = pd.DataFrame(
-        {
-            "time": [date(2012, 6, it) for it in range(1, 31)],
-            "A": [it for it in range(0, 30)],
-            "B": [1, 2, 3, 4, 5, 6] * 5,
-        }
-    )
-
-    expected_psi = {"A": 7.745116608833365, "B": 0.1621860432432658}
-
-    test = DropHighPSIFeatures(split_frac=0.5, split_distinct=True)
-    test.fit_transform(df)
-
-    assert test.cut_off_ == 14.5
-    assert test.psi_values_ == pytest.approx(expected_psi)
 
 
 # =========== tests for user entered cut_off values ===========
