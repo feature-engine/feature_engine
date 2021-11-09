@@ -24,7 +24,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     divides a group of features to / by a group of reference variables, and returns the
     result as new variables in the dataframe.
 
-    The transformed X, Xt, will contain the additional features indicated in the
+    The transformed dataframe will contain the additional features indicated in the
     new_variables_name list plus the original set of variables.
 
     More details in the :ref:`User Guide <combine_with_ref>`.
@@ -57,7 +57,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         `variables_to_combine`.
 
         If `new_variable_names` is None, the transformer will assign an arbitrary name
-        to the ne features. The name will be var + operation + ref_var.
+        to the features. The name will be var + operation + ref_var.
 
     missing_values: string, default='ignore'
         Indicates if missing values should be ignored or raised. If 'ignore', the
