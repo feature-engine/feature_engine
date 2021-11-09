@@ -21,6 +21,8 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     works with transformers like the SimpleImputer, OrdinalEncoder, OneHotEncoder, all
     the scalers and also the transformers for feature selection.
 
+    More details in the :ref:`User Guide <sklearn_wrapper>`.
+
     Parameters
     ----------
     transformer: sklearn transformer
@@ -88,15 +90,6 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             The dataset to fit the transformer
         y: pandas Series, default=None
             The target variable.
-
-        Raises
-        ------
-         TypeError
-            If the input is not a Pandas DataFrame
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe
@@ -144,14 +137,9 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         X: Pandas DataFrame
             The data to transform
 
-        Raises
-        ------
-         TypeError
-            If the input is not a Pandas DataFrame
-
         Returns
         -------
-        X: Pandas DataFrame
+        X_new: Pandas DataFrame
             The transformed dataset.
         """
 

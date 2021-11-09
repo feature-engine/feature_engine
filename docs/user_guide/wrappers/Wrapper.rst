@@ -1,3 +1,7 @@
+.. _sklearn_wrapper:
+
+.. currentmodule:: feature_engine.wrappers
+
 SklearnTransformerWrapper
 =========================
 
@@ -98,3 +102,15 @@ to select only a subset of the variables.
     # transform the data
     X_train_t = selector.transform(X_train.fillna(0))
     X_test_t = selector.transform(X_test.fillna(0))
+
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Wrap sklearn categorical encoder <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-Categorical-Encoding.ipynb>`_
+- `Wrap sklearn KBinsDiscretizer <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-KBinsDiscretizer.ipynb>`_
+- `Wrap sklearn SimpleImputer <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-SimpleImputer.ipynb>`_
+- `Wrap sklearn feature selectors <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-feature-selection.ipynb>`_
+- `Wrap sklearn scalers <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-scalers.ipynb>`_
