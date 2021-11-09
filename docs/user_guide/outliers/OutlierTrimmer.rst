@@ -1,3 +1,7 @@
+.. _outlier_trimmer:
+
+.. currentmodule:: feature_engine.outliers
+
 OutlierTrimmer
 ==============
 
@@ -79,5 +83,10 @@ See the API Reference for more details.
     age     53.0
     dtype: float64
 
+More details
+^^^^^^^^^^^^
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/outliers/OutlierTrimmer.ipynb>`_
 
 

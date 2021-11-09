@@ -25,6 +25,8 @@ class ArbitraryOutlierCapper(BaseOutlier):
     You must provide the maximum or minimum values that will be used to cap each
     variable in a dictionary {feature:capping value}
 
+    More details in the :ref:`User Guide <arbitrary_capper>`.
+
     Parameters
     ----------
     max_capping_dict: dictionary, default=None
@@ -94,15 +96,6 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
         y: pandas Series, default=None
             y is not needed in this transformer. You can pass y or None.
-
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-
-        Returns
-        -------
-        self
         """
         X = _is_dataframe(X)
 

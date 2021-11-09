@@ -61,16 +61,9 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
         X: pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            If the dataframe is not of same size as that used in fit()
-
         Returns
         -------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X_new: pandas dataframe of shape = [n_samples, n_features]
             The dataframe with the capped variables.
         """
 

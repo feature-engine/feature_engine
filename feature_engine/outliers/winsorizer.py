@@ -19,18 +19,14 @@ from feature_engine.variable_manipulation import (
 
 class Winsorizer(BaseOutlier):
     """
-    The Winsorizer() caps maximum and / or minimum values of a variable.
+    The Winsorizer() caps maximum and/or minimum values of a variable at automatically
+    determined values.
 
-    The Winsorizer() works only with numerical variables. A list of variables can
-    be indicated. Alternatively, the Winsorizer() will select all numerical
-    variables in the train set.
+    The values to cap variables are determined using:
 
-    The Winsorizer() first calculates the capping values at the end of the
-    distribution. The values are determined using:
-
-    - a Gaussian approximation,
+    - a Gaussian approximation
     - the inter-quantile range proximity rule (IQR)
-    - percentiles.
+    - percentiles
 
     **Gaussian limits:**
 
@@ -44,7 +40,7 @@ class Winsorizer(BaseOutlier):
 
     where IQR is the inter-quartile range: 75th quantile - 25th quantile.
 
-    **percentiles or quantiles:**
+    **percentiles:**
 
     - right tail: 95th percentile
     - left tail:  5th percentile
@@ -60,22 +56,29 @@ class Winsorizer(BaseOutlier):
     be censored. For example, if fold=0.05, the limits will be the 5th and 95th
     percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
 
+    The Winsorizer() works only with numerical variables. A list of variables can
+    be indicated. Alternatively, the Winsorizer() will select and cap all numerical
+    variables in the train set.
+
     The transformer first finds the values at one or both tails of the distributions
     (fit). The transformer then caps the variables (transform).
 
+    More details in the :ref:`User Guide <winsorizer>`.
+
     Parameters
     ----------
-    capping_method: str, default=gaussian
+    capping_method: str, default='gaussian'
         Desired capping method. Can take 'gaussian', 'iqr' or 'quantiles'.
 
-        'gaussian': the transformer will find the maximum and / or minimum values to
-        cap the variables using the Gaussian approximation.
+        **'gaussian'**: the transformer will find the maximum and / or minimum values
+        to cap the variables using the Gaussian approximation.
 
-        'iqr': the transformer will find the boundaries using the IQR proximity rule.
+        **'iqr'**: the transformer will find the boundaries using the IQR proximity
+        rule.
 
-        'quantiles': the limits are given by the percentiles.
+        **'quantiles'**: the limits are given by the percentiles.
 
-    tail: str, default=right
+    tail: str, default='right'
         Whether to cap outliers on the right, left or both tails of the distribution.
         Can take 'left', 'right' or 'both'.
 
@@ -93,7 +96,7 @@ class Winsorizer(BaseOutlier):
 
     variables: list, default=None
         The list of variables for which the outliers will be capped. If None,
-        the transformer will find and select all numerical variables.
+        the transformer will select and cap all numerical variables.
 
     missing_values: string, default='raise'
         Indicates if missing values should be ignored or raised. Sometimes we want to
@@ -173,15 +176,6 @@ class Winsorizer(BaseOutlier):
 
         y : pandas Series, default=None
             y is not needed in this transformer. You can pass y or None.
-
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

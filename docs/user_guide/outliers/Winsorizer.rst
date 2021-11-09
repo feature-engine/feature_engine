@@ -1,3 +1,7 @@
+.. _winsorizer:
+
+.. currentmodule:: feature_engine.outliers
+
 Winsorizer
 ==========
 
@@ -78,3 +82,9 @@ See the API Reference for more details.
     fare    174.781622
     age      67.490484
     dtype: float64
+
+More details
+^^^^^^^^^^^^
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/outliers/Winsorizer.ipynb>`_

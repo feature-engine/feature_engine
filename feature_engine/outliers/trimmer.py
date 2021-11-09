@@ -10,9 +10,6 @@ from feature_engine.outliers import Winsorizer
 class OutlierTrimmer(Winsorizer):
     """The OutlierTrimmer() removes observations with outliers from the dataset.
 
-    It works only with numerical variables. A list of variables can be indicated.
-    Alternatively, the OutlierTrimmer() will select all numerical variables.
-
     The OutlierTrimmer() first calculates the maximum and /or minimum values
     beyond which a value will be considered an outlier, and thus removed.
 
@@ -50,25 +47,29 @@ class OutlierTrimmer(Winsorizer):
     be censored. For example, if fold=0.05, the limits will be the 5th and 95th
     percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
 
-    The transformer first finds the values at one or both tails of the distributions
-    (fit).
+    The OutlierTrimmer() works only with numerical variables. A list of variables can
+    be indicated. Alternatively, it will select all numerical variables.
 
-    The transformer then removes observations with outliers from the dataframe
+    The transformer first finds the values at one or both tails of the distributions
+    (fit). The transformer then removes observations with outliers from the dataframe
     (transform).
+
+    More details in the :ref:`User Guide <outlier_trimmer>`.
 
     Parameters
     ----------
-    capping_method: str, default=gaussian
+    capping_method: str, default='gaussian'
         Desired capping method. Can take 'gaussian', 'iqr' or 'quantiles'.
 
-        'gaussian': the transformer will find the maximum and / or minimum values to
-        cap the variables using the Gaussian approximation.
+        **'gaussian'**: the transformer will find the maximum and / or minimum values
+        to cap the variables using the Gaussian approximation.
 
-        'iqr': the transformer will find the boundaries using the IQR proximity rule.
+        **'iqr'**: the transformer will find the boundaries using the IQR proximity
+        rule.
 
-        'quantiles': the limits are given by the percentiles.
+        **'quantiles'**: the limits are given by the percentiles.
 
-    tail: str, default=right
+    tail: str, default='right'
         Whether to cap outliers on the right, left or both tails of the distribution.
         Can take 'left', 'right' or 'both'.
 
@@ -129,16 +130,9 @@ class OutlierTrimmer(Winsorizer):
         X : pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            If the dataframe is not of same size as that used in fit()
-
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X_new: pandas dataframe of shape = [n_samples, n_features]
             The dataframe without outlier observations.
         """
 

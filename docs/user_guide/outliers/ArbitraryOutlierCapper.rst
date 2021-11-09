@@ -1,3 +1,7 @@
+.. _arbitrary_capper:
+
+.. currentmodule:: feature_engine.outliers
+
 ArbitraryOutlierCapper
 ======================
 
@@ -59,6 +63,9 @@ ArbitraryOutlierCapper
     dtype: float64
 
 
+More details
+^^^^^^^^^^^^
+Check also:
 
-
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/outliers/ArbitraryOutlierCapper.ipynb>`_
 
