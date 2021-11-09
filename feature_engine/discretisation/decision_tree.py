@@ -73,7 +73,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         Dictionary with the score of the best decision tree per variable.
 
     variables_:
-         The variables to discretise.
+         The variables that will be discretised.
 
     n_features_in_:
         The number of features in the train set used in fit.

@@ -49,7 +49,7 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
          Dictionary with the interval limits per variable.
 
     variables_:
-         The variables to discretise.
+         The variables that will be discretised.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -65,8 +65,8 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
 
     See Also
     --------
-    pandas.qcut :
-        https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.qcut.html
+    pandas.qcut
+    sklearn.preprocessing.KBinsDiscretizer
 
     References
     ----------

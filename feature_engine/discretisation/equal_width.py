@@ -21,7 +21,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
         ( max(X) - min(X) ) / bins
 
-    where bins, which is the number of intervals, should be determined by the user.
+    where bins, which is the number of intervals, is determined by the user.
 
     The EqualWidthDiscretiser() works only with numerical variables.
     A list of variables can be passed as argument. Alternatively, the discretiser
@@ -57,7 +57,7 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
         Dictionary with the interval limits per variable.
 
     variables_:
-         The variables to be discretised.
+         The variables that will be discretised.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -73,8 +73,8 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
 
     See Also
     --------
-    pandas.cut :
-        https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.cut.html
+    pandas.cut
+    sklearn.preprocessing.KBinsDiscretizer
 
     References
     ----------

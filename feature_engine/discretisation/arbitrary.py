@@ -45,7 +45,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
          Dictionary with the interval limits per variable.
 
     variables_:
-         The variables to discretise.
+         The variables that will be discretised.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -61,9 +61,7 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
 
     See Also
     --------
-    pandas.cut:
-        https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.cut.html
-
+    pandas.cut
     """
 
     def __init__(
