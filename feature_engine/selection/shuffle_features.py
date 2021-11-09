@@ -25,7 +25,7 @@ class SelectByShuffling(BaseSelector):
     If the variables are important, a random permutation of their values will
     decrease dramatically the machine learning model performance. Contrarily, the
     permutation of the values should have little to no effect on the model performance
-    metric we are assessing.
+    metric we are assessing, if the feature is not predictive.
 
     The SelectByShuffling() first trains a machine learning model utilising all
     features. Next, it shuffles the values of 1 feature, obtains a prediction with the
@@ -39,6 +39,8 @@ class SelectByShuffling(BaseSelector):
     which a feature will be removed, and the performance metric to evaluate.
 
     Model training and performance calculation are done with cross-validation.
+
+    More details in the :ref:`User Guide <feature_shuffling>`.
 
     Parameters
     ----------
@@ -97,7 +99,7 @@ class SelectByShuffling(BaseSelector):
         List with the features to remove from the dataset.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables that will be considered for the feature selection.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -110,6 +112,16 @@ class SelectByShuffling(BaseSelector):
         Reduce X to the selected features.
     fit_transform:
         Fit to data, then transform it.
+
+    Notes
+    -----
+    This transformer is a similar concept to the permutation_importance from
+    Scikit-learn. The function in Scikit-learn is used to evaluate feature importance
+    instead of to select features.
+
+    See Also
+    --------
+    sklearn.inspection.permutation_importance
     """
 
     def __init__(
@@ -142,10 +154,6 @@ class SelectByShuffling(BaseSelector):
            The input dataframe
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

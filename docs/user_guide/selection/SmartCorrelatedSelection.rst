@@ -1,3 +1,7 @@
+.. _smart_correlation:
+
+.. currentmodule:: feature_engine.selection
+
 SmartCorrelatedSelection
 ========================
 
@@ -72,3 +76,11 @@ SmartCorrelatedSelection
     2 -2.240741
     3 -3.534861
     4 -2.053965
+
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Smart-Correlation-Selection.ipynb>`_

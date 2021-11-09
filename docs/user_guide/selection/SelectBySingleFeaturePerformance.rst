@@ -1,7 +1,11 @@
+.. _single_feat_performance:
+
+.. currentmodule:: feature_engine.selection
+
 SelectBySingleFeaturePerformance
 ================================
 
-The SelectBySingleFeaturePerformance()selects features based on the performance of
+The :class:`SelectBySingleFeaturePerformance()` selects features based on the performance of
 machine learning models trained using individual features. In other words, selects
 features based on their individual performance, returned by estimators trained on
 only that particular feature.
@@ -48,4 +52,10 @@ only that particular feature.
      8: 0.3149462084418813,
      9: 0.13876602125792703}
 
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Select-by-Single-Feature-Performance.ipynb>`_
 

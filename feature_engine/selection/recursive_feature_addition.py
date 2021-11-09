@@ -16,15 +16,15 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class RecursiveFeatureAddition(BaseSelector):
     """
-    RecursiveFeatureAddition selects features following a recursive process.
+    RecursiveFeatureAddition selects features following a recursive addition process.
 
     The process is as follows:
 
     1. Train an estimator using all the features.
 
-    2. Rank the features according to their importance, derived from the estimator.
+    2. Rank the features according to their importance derived from the estimator.
 
-    3. Train an estimator with the most important feature and determine its performance.
+    3. Train an estimator with the most important feature and determine performance.
 
     4. Add the second most important feature and train a new estimator.
 
@@ -37,6 +37,8 @@ class RecursiveFeatureAddition(BaseSelector):
     7. Repeat steps 4-6 until all features have been evaluated.
 
     Model training and performance calculation are done with cross-validation.
+
+    More details in the :ref:`User Guide <recursive_addition>`.
 
     Parameters
     ----------
@@ -96,7 +98,7 @@ class RecursiveFeatureAddition(BaseSelector):
         List with the features to remove from the dataset.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables that will be considered for the feature selection.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -142,10 +144,6 @@ class RecursiveFeatureAddition(BaseSelector):
 
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

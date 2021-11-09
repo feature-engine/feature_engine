@@ -1,8 +1,12 @@
+.. _drop_constant:
+
+.. currentmodule:: feature_engine.selection
+
 DropConstantFeatures
 ====================
 
 
-The DropConstantFeatures() drops constant and quasi-constant variables from a dataframe.
+The :class:`DropConstantFeatures()` drops constant and quasi-constant variables from a dataframe.
 By default, DropConstantFeatures drops only constant variables. This transformer works
 with both numerical and categorical variables.
 
@@ -82,3 +86,10 @@ than 70% of the observations displayed the same value:
 
 77% of the passengers had 0 parent or child. Because of this, these features were
 deemed constant and removed.
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Drop-Constant-and-QuasiConstant-Features.ipynb>`_

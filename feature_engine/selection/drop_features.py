@@ -11,13 +11,7 @@ class DropFeatures(BaseSelector):
     """
     DropFeatures() drops a list of variable(s) indicated by the user from the dataframe.
 
-    **When is this transformer useful?**
-
-    Sometimes, we create new variables combining other variables in the dataset, for
-    example, we obtain the variable `age` by subtracting `date_of_application` from
-    `date_of_birth`. After we obtained our new variable, we do not need the date
-    variables in the dataset any more. Thus, we can add DropFeatures() in the Pipeline
-    to have these removed.
+    More details in the :ref:`User Guide <drop_features>`.
 
     Parameters
     ----------
@@ -61,10 +55,6 @@ class DropFeatures(BaseSelector):
             The input dataframe
         y : pandas Series, default = None
             y is not needed for this transformer. You can pass y or None.
-
-        Returns
-        -------
-        self
         """
         # check input dataframe
         X = _is_dataframe(X)

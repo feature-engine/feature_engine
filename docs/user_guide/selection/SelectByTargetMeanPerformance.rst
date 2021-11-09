@@ -1,3 +1,8 @@
+.. _target_mean_selection:
+
+.. currentmodule:: feature_engine.selection
+
+
 SelectByTargetMeanPerformance
 =============================
 
@@ -96,3 +101,11 @@ SelectByTargetMeanPerformance
 .. code:: python
 
     ((914, 4), (392, 4))
+
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Select-by-Target-Mean-Encoding.ipynb>`_

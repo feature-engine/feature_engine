@@ -5,7 +5,7 @@
 CountFrequencyEncoder
 =====================
 
-The :class:`CountFrequencyEncoder(`)` replaces categories by either the count or the
+The :class:`CountFrequencyEncoder()` replaces categories by either the count or the
 percentage of observations per category. For example in the variable colour, if 10
 observations are blue, blue will be replaced by 10. Alternatively, if 10% of the
 observations are blue, blue will be replaced by 0.1.

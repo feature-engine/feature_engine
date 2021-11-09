@@ -28,6 +28,8 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     The performance metric to evaluate and the machine learning model to train are
     specified by the user.
 
+    More details in the :ref:`User Guide <single_feat_performance>`.
+
     Parameters
     ----------
     estimator : object
@@ -85,7 +87,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         Dictionary with the single feature model performance per feature.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables that will be considered for the feature selection.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -98,6 +100,14 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         Reduce X to the selected features.
     fit_transform:
         Fit to data, then transform it.
+
+    References
+    ----------
+    Selection based on single feature performance was used in Credit Risk modelling as
+    discussed in the following talk at PyData London 2017:
+
+    .. [1] Galli S. "Machine Learning in Financial Risk Assessment".
+        https://www.youtube.com/watch?v=KHGGlozsRtA
     """
 
     def __init__(
@@ -143,10 +153,6 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

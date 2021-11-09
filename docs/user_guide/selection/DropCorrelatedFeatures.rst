@@ -1,7 +1,11 @@
+.. _drop_correlated:
+
+.. currentmodule:: feature_engine.selection
+
 DropCorrelatedFeatures
 ======================
 
-The DropCorrelatedFeatures() finds and removes correlated variables from a dataframe.
+The :class:`DropCorrelatedFeatures()` finds and removes correlated variables from a dataframe.
 The user can pass a list of variables to examine, or alternatively the selector will
 examine all numerical variables in the data set.
 
@@ -68,3 +72,9 @@ examine all numerical variables in the data set.
     4 -0.186530
 
 
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Drop-Correlated-Features.ipynb>`_

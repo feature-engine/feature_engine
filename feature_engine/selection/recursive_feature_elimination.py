@@ -16,15 +16,16 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class RecursiveFeatureElimination(BaseSelector):
     """
-    RecursiveFeatureElimination selects features following a recursive process.
+    RecursiveFeatureElimination selects features following a recursive elimination
+    process.
 
     The process is as follows:
 
     1. Train an estimator using all the features.
 
-    2. Rank the features according to their importance, derived from the estimator.
+    2. Rank the features according to their importance derived from the estimator.
 
-    3. Remove the least important and fit a new estimator with the remaining variables.
+    3. Remove the least important feature and fit a new estimator.
 
     4. Calculate the performance of the new estimator.
 
@@ -37,6 +38,8 @@ class RecursiveFeatureElimination(BaseSelector):
     7. Repeat steps 3-6 until all features have been evaluated.
 
     Model training and performance calculation are done with cross-validation.
+
+    More details in the :ref:`User Guide <recursive_elimination>`.
 
     Parameters
     ----------
@@ -96,7 +99,7 @@ class RecursiveFeatureElimination(BaseSelector):
         List with the features to remove from the dataset.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables that will be considered for the feature selection.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -140,11 +143,6 @@ class RecursiveFeatureElimination(BaseSelector):
            The input dataframe
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

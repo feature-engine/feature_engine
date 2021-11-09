@@ -1,7 +1,11 @@
+.. _drop_duplicate:
+
+.. currentmodule:: feature_engine.selection
+
 DropDuplicateFeatures
 =====================
 
-The DropDuplicateFeatures() finds and removes duplicated variables from a dataframe.
+The :class:`DropDuplicateFeatures()` finds and removes duplicated variables from a dataframe.
 The user can pass a list of variables to examine, or alternatively the selector will
 examine all variables in the data set.
 
@@ -64,4 +68,11 @@ examine all variables in the data set.
 
     [{'sex', 'sex_dup'}, {'age', 'age_dup'}, {'sibsp', 'sibsp_dup'}]
 
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Drop-Duplicated-Features.ipynb>`_
 

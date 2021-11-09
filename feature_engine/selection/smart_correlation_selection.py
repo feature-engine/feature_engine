@@ -37,6 +37,8 @@ class SmartCorrelatedSelection(BaseSelector):
     variables will need to be encoded to numerical or will be excluded from the
     analysis.
 
+    More details in the :ref:`User Guide <smart_correlation>`.
+
     Parameters
     ----------
     variables: list, default=None
@@ -114,7 +116,7 @@ class SmartCorrelatedSelection(BaseSelector):
         The correlated features to remove from the dataset.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables that will be considered for the feature selection.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -197,10 +199,6 @@ class SmartCorrelatedSelection(BaseSelector):
 
         y: pandas series. Default = None
             y is needed if selection_method == 'model_performance'.
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

@@ -60,6 +60,8 @@ class SelectByTargetMeanPerformance(BaseSelector):
     6. Selects the features which roc-auc or r2 is bigger than the indicated
     threshold
 
+    More details in the :ref:`User Guide <target_mean_selection>`.
+
     Parameters
     ----------
     variables: list, default=None
@@ -109,6 +111,12 @@ class SelectByTargetMeanPerformance(BaseSelector):
         Reduce X to the selected features.
     fit_transform:
         Fit to data, then transform it.
+
+    References
+    ----------
+    .. [1] Miller, et al. "Predicting customer behaviour: The University of Melbourne’s
+        KDD Cup report". JMLR Workshop and Conference Proceeding. KDD 2009
+        http://proceedings.mlr.press/v7/miller09/miller09.pdf
     """
 
     def __init__(
@@ -167,10 +175,6 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
-        Returns
-        -------
-        self
         """
         # check input dataframe
         X = _is_dataframe(X)

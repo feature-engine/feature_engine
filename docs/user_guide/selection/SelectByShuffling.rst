@@ -1,7 +1,11 @@
+.. _feature_shuffling:
+
+.. currentmodule:: feature_engine.selection
+
 SelectByShuffling
 =================
 
-The SelectByShuffling() selects important features if permutation their values
+The :class:`SelectByShuffling()` selects important features if permutation their values
 at random produces a decrease in the initial model performance.
 
 .. code:: python
@@ -70,3 +74,10 @@ at random produces a decrease in the initial model performance.
     3 -0.044642 -0.011595 -0.036656  0.012191  0.024991  0.034309  0.022692
     4 -0.044642 -0.036385  0.021872  0.003935  0.015596 -0.002592 -0.031991
     None
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Select-by-Feature-Shuffling.ipynb>`_

@@ -27,6 +27,8 @@ class DropCorrelatedFeatures(BaseSelector):
     DropCorrelatedFeatures() works only with numerical variables. Categorical variables
     will need to be encoded to numerical or will be excluded from the analysis.
 
+    More details in the :ref:`User Guide <drop_correlated>`.
+
     Parameters
     ----------
     variables: list, default=None
@@ -61,7 +63,7 @@ class DropCorrelatedFeatures(BaseSelector):
         Groups of correlated features. Each list is a group of correlated features.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables that will be considered for the feature selection.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -111,10 +113,6 @@ class DropCorrelatedFeatures(BaseSelector):
 
         y : pandas series. Default = None
             y is not needed in this transformer. You can pass y or None.
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

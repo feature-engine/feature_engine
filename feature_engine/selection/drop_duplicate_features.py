@@ -24,6 +24,8 @@ class DropDuplicateFeatures(BaseSelector):
     The transformer will first identify and store the duplicated variables. Next, the
     transformer will drop these variables from a dataframe.
 
+    More details in the :ref:`User Guide <drop_duplicate>`.
+
     Parameters
     ----------
     variables: list, default=None
@@ -43,7 +45,7 @@ class DropDuplicateFeatures(BaseSelector):
         Groups of duplicated features. Each list is a group of duplicated features.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables that will be considered for the feature selection.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -76,10 +78,6 @@ class DropDuplicateFeatures(BaseSelector):
             The input dataframe.
         y: None
             y is not needed for this transformer. You can pass y or None.
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

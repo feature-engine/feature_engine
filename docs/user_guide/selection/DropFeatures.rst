@@ -1,9 +1,21 @@
+.. _drop_features:
+
+.. currentmodule:: feature_engine.selection
+
 DropFeatures
 =============
 
-The DropFeatures() drops a list of variables indicated by the user from the original
+The :class:`DropFeatures()` drops a list of variables indicated by the user from the original
 dataframe. The user can pass a single variable as a string or list of variables to be
 dropped.
+
+**When is this transformer useful?**
+
+Sometimes, we create new variables combining other variables in the dataset, for
+example, we obtain the variable `age` by subtracting `date_of_application` from
+`date_of_birth`. After we obtained our new variable, we do not need the date
+variables in the dataset any more. Thus, we can add DropFeatures() in the Pipeline
+to have these removed.
 
 .. code:: python
 
@@ -62,3 +74,9 @@ dropped.
           dtype='object')
 
 
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Drop-Arbitrary-Features.ipynb>`_

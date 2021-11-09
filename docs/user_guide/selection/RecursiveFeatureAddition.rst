@@ -1,3 +1,7 @@
+.. _recursive_addition:
+
+.. currentmodule:: feature_engine.selection
+
 RecursiveFeatureAddition
 ========================
 
@@ -70,3 +74,9 @@ RecursiveFeatureAddition
     3  0.012191  0.022692 -0.011595 -0.036656
     4  0.003935 -0.031991 -0.036385  0.021872
 
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Recursive-Feature-Addition.ipynb>`_
