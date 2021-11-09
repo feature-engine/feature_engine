@@ -23,6 +23,8 @@ class ReciprocalTransformer(BaseNumericalTransformer):
     transformer will automatically select and transform all numerical
     variables.
 
+    More details in the :ref:`User Guide <reciprocal>`.
+
     Parameters
     ----------
     variables: list, default=None
@@ -67,20 +69,6 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         y: pandas Series, default=None
             It is not needed in this transformer. You can pass y or None.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame
-            - If any of the user provided variables are not numerical
-        ValueError
-            - If there are no numerical variables in the df or the df is empty
-            - If the variable(s) contain null values
-            - If some variables contain zero as values
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe
@@ -106,18 +94,9 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            - If the variable(s) contain null values
-            - If the df has different number of features than the df used in fit()
-            - If some variables contain zero values
-
         Returns
         -------
-        X: pandas dataframe
+        X_new: pandas dataframe
             The dataframe with the transformed variables.
         """
 
@@ -146,15 +125,6 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         ----------
         X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
-
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            - If the variable(s) contain null values
-            - If the df has different number of features than the df used in fit()
-            - If some variables contain zero values
 
         Returns
         -------

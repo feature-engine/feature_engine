@@ -1,3 +1,7 @@
+.. _reciprocal:
+
+.. currentmodule:: feature_engine.transformation
+
 ReciprocalTransformer
 =====================
 
@@ -41,3 +45,10 @@ ReciprocalTransformer
 
 
 .. image:: ../../images/lotareareciprocal.png
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/transformation/ReciprocalTransformer.ipynb>`_

@@ -1,3 +1,7 @@
+.. _log_cp:
+
+.. currentmodule:: feature_engine.transformation
+
 LogCpTransformer
 ================
 
@@ -48,3 +52,10 @@ LogCpTransformer
     train_t[12].hist()
 
 .. image:: ../../images/logcptransform.png
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/transformation/LogCpTransformer.ipynb>`_

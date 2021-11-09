@@ -15,3 +15,13 @@ mathematical transformations.
    PowerTransformer
    BoxCoxTransformer
    YeoJohnsonTransformer
+
+
+Transformers in other Libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These and additional transformations can be obtained with the following Scikit-learn
+classes:
+
+* `FunctionTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.FunctionTransformer.html>`_
+* `PowerTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PowerTransformer.html/>`_

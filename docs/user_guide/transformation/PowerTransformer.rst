@@ -1,3 +1,7 @@
+.. _power:
+
+.. currentmodule:: feature_engine,transformation
+
 PowerTransformer
 ================
 
@@ -40,3 +44,10 @@ PowerTransformer
 
 
 .. image:: ../../images/lotareapower.png
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/transformation/PowerTransformer.ipynb>`_

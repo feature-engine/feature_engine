@@ -1,3 +1,7 @@
+.. _yeojohnson:
+
+.. currentmodule:: feature_engine.transformation
+
 YeoJohnsonTransformer
 =====================
 
@@ -46,3 +50,11 @@ where Y is the response variable and λ is the transformation parameter.
 
 
 .. image:: ../../images/lotareayeojohnson.png
+
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/transformation/YeoJohnsonTransformer.ipynb>`_

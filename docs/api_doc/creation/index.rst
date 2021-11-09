@@ -12,3 +12,10 @@ by either combining or transforming existing features.
    MathematicalCombination
    CombineWithReferenceFeature
    CyclicalTransformer
+
+Transformers in other Libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Check also the following transformer from Scikit-learn:
+
+* `PolynomialFeatures <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures>`_

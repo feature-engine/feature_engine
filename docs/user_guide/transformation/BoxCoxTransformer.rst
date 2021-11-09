@@ -1,3 +1,7 @@
+.. _box_cox:
+
+.. currentmodule:: feature_engine.transformation
+
 BoxCoxTransformer
 =================
 
@@ -40,3 +44,11 @@ BoxCoxTransformer
 
 
 .. image:: ../../images/lotareaboxcox.png
+
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/transformation/BoxCoxTransformer.ipynb>`_

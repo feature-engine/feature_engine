@@ -1,3 +1,7 @@
+.. _log_transformer:
+
+.. currentmodule:: feature_engine.transformation
+
 LogTransformer
 ==============
 
@@ -40,3 +44,10 @@ LogTransformer
 
 
 .. image:: ../../images/lotarealog.png
+
+More details
+^^^^^^^^^^^^
+
+Check also:
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/transformation/LogTransformer.ipynb>`_
