@@ -10,6 +10,9 @@ showcasing the functionality of each Feature-engine transformer.
 Kaggle Kernels
 --------------
 
+We also prepared Kaggle kernels with demos mixing data exploration, feature engineering,
+feature creation, feature selection and hyperparameter optimization of entire pipelines.
+
 - `Feature selection for bank customer satisfaction prediction <https://www.kaggle.com/solegalli/feature-selection-with-feature-engine>`_
 - `Feature engineering and selection for house price prediction <https://www.kaggle.com/solegalli/predict-house-price-with-feature-engine>`_
 - `Feature creation for wine quality prediction <https://www.kaggle.com/solegalli/create-new-features-with-feature-engine>`_
@@ -22,6 +25,6 @@ Kaggle Kernels
 Video tutorials
 ---------------
 
-You can find some videos on how to use Feature-engine in our youtube channel
-`Feature-engine playlist <https://www.youtube.com/playlist?list=PL_7uaHXkQmKVlqlvgQJuaWEKjagHbERtp>`_.
-The list is a bit short at the moment, apologies.
+You can find some videos on how to use Feature-engine in the
+`Feature-engine playlist <https://www.youtube.com/playlist?list=PL_7uaHXkQmKVlqlvgQJuaWEKjagHbERtp>`_
+in Train in Data's YouTube channel. The list is a bit short at the moment, apologies.

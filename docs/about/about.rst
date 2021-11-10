@@ -35,6 +35,7 @@ and maintenance:
 Contributors
 ------------
 
+A growing international community is beginning to lead Feature-engine's development.
 You can learn more about Feature-engine's Contributors in the
 `GitHub contributors page <https://github.com/feature-engine/feature_engine/graphs/contributors>`_.
 
@@ -46,6 +47,8 @@ Citing Feature-engine
 
 .. image:: https://joss.theoj.org/papers/10.21105/joss.03642/status.svg
    :target: https://joss.theoj.org/papers/10.21105/joss.03642
+
+|
 
 If you use Feature-engine in a scientific publication, you can cite the following paper:
 Galli, S., (2021). `Feature-engine: A Python package for feature engineering for machine learning. <https://joss.theoj.org/papers/10.21105/joss.03642>`_

@@ -88,8 +88,9 @@ detail into these new modules.
 In addition, we are evaluating whether including a module to extract features from time
 series is possible, within the current design of the package, and if it adds real value
 compared to the functionality already existing in pandas and Scipy, and in other well
-established open source projects like tsfresh and featuretools. The transformations
-we are considering are shown in this image:
+established open source projects like `tsfresh <https://tsfresh.readthedocs.io/en/latest/>`_
+and `featuretools <https://featuretools.alteryx.com/en/stable/index.html>`_.
+The transformations we are considering are shown in this image:
 
 .. figure::  ../images/FeatureEnginePackageStructureTimeseries.png
    :align:   center
@@ -102,11 +103,11 @@ Goals
 
 Our main goals are:
 
-- Continue maintaining a high-quality, well-documented collection of canonical tools for data processing
-- Expand the documentation with more examples about Feature-engine's functionality
-- Expand the documentation with more detail on how to contribute to the package
-- Expand the library's functionality as per the precedent paragraphs
+- Continue maintaining a high-quality, well-documented collection of canonical tools for data processing.
+- Expand the documentation with more examples about Feature-engine's functionality.
+- Expand the documentation with more detail on how to contribute to the package.
+- Expand the library's functionality as per the precedent paragraphs.
 
-For more fine-grained goals and current and lined-up issues please visit the `issue <https://github.com/feature-engine/feature_engine/issues/>`_
+For more fine-grained goals and current and lined-up issues please visit the `issues <https://github.com/feature-engine/feature_engine/issues/>`_
 section in our repo.
 

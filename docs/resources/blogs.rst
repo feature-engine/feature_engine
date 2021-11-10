@@ -1,7 +1,8 @@
 Blogs, Videos and More
 ======================
 
-Articles and videos about Feature-engine and feature engineering and selection in general.
+Here you find articles and videos about Feature-engine and feature engineering and
+selection in general.
 
 Blogs
 -----
