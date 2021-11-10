@@ -24,4 +24,6 @@ These and additional transformations can be obtained with the following Scikit-l
 classes:
 
 * `FunctionTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.FunctionTransformer.html>`_
-* `PowerTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PowerTransformer.html/>`_
+* `PowerTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PowerTransformer.html>`_
+
+Note that Scikit-klearn classes return Numpy arrays and are applied to the entire dataset.

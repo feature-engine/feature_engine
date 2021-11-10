@@ -54,7 +54,7 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Cap the variable values, that is, censors outliers.
+        Cap the variable values.
 
         Parameters
         ----------

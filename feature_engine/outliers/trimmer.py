@@ -37,7 +37,7 @@ class OutlierTrimmer(Winsorizer):
     - left tail:  5th percentile
 
     You can select how far out to cap the maximum or minimum values with the
-    parameter 'fold'.
+    parameter `'fold'`.
 
     If `capping_method='gaussian'` fold gives the value to multiply the std.
 
@@ -79,14 +79,15 @@ class OutlierTrimmer(Winsorizer):
         or 3 for the gaussian approximation, or 1.5 or 3 for the IQR proximity
         rule.
 
-        If capping_method='quantile', then 'fold' indicates the percentile. So if
-        fold=0.05, the limits will be the 95th and 5th percentiles.
+        If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if
+        `fold=0.05`, the limits will be the 95th and 5th percentiles.
+
         **Note**: Outliers will be removed up to a maximum of the 20th percentiles on
-        both sides. Thus, when capping_method='quantile', then 'fold' takes values
+        both sides. Thus, when `capping_method='quantile'`, then `'fold'` takes values
         between 0 and 0.20.
 
     variables: list, default=None
-        The list of variables for which the outliers will be removed If None,
+        The list of variables for which the outliers will be removed. If None,
         the transformer will find and select all numerical variables.
 
     missing_values: string, default='raise'

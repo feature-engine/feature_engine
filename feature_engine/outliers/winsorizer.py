@@ -46,7 +46,7 @@ class Winsorizer(BaseOutlier):
     - left tail:  5th percentile
 
     You can select how far out to cap the maximum or minimum values with the
-    parameter 'fold'.
+    parameter `'fold'`.
 
     If `capping_method='gaussian'` fold gives the value to multiply the std.
 
@@ -88,10 +88,11 @@ class Winsorizer(BaseOutlier):
         or 3 for the gaussian approximation, or 1.5 or 3 for the IQR proximity
         rule.
 
-        If capping_method='quantile', then 'fold' indicates the percentile. So if
-        fold=0.05, the limits will be the 95th and 5th percentiles.
+        If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if
+        `fold=0.05`, the limits will be the 95th and 5th percentiles.
+
         **Note**: Outliers will be removed up to a maximum of the 20th percentiles on
-        both sides. Thus, when capping_method='quantile', then 'fold' takes values
+        both sides. Thus, when `capping_method='quantile'`, then `'fold'` takes values
         between 0 and 0.20.
 
     variables: list, default=None
@@ -101,9 +102,9 @@ class Winsorizer(BaseOutlier):
     missing_values: string, default='raise'
         Indicates if missing values should be ignored or raised. Sometimes we want to
         remove outliers in the raw, original data, sometimes, we may want to remove
-        outliers in the already pre-transformed data. If missing_values='ignore', the
+        outliers in the already pre-transformed data. If `missing_values='ignore'`, the
         transformer will ignore missing data when learning the capping parameters or
-        transforming the data. If missing_values='raise' the transformer will return
+        transforming the data. If `missing_values='raise'` the transformer will return
         an error if the training or the datasets to transform contain missing values.
 
     Attributes
