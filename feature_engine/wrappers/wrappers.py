@@ -50,9 +50,19 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     fit:
         Fit Scikit-learn transformer
     transform:
-        Transform data with Scikit-learn transformer
+        Transform data with the Scikit-learn transformer
     fit_transform:
         Fit to data, then transform it.
+
+    Notes
+    -----
+    This transformer offers similar functionality to the ColumnTransformer from
+    Scikit-learn, but it allows entering the transformations directly into a
+    Pipeline.
+
+    See Also
+    --------
+    sklearn.compose.ColumnTransformer
     """
 
     def __init__(
@@ -74,20 +84,10 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         """
         Fits the Scikit-learn transformer to the selected variables.
 
-        If you enter None in the variables parameter, all variables will be
-        automatically transformed by the OneHotEncoder, OrdinalEncoder or
-        SimpleImputer. For the rest of the transformers, only the numerical variables
-        will be selected and transformed.
-
-        If you enter a list in the variables attribute, the SklearnTransformerWrapper
-        will check that those variables exist in the dataframe and are of type
-        numeric for all transformers except the OneHotEncoder, OrdinalEncoder or
-        SimpleImputer, which also accept categorical variables.
-
         Parameters
         ----------
         X: Pandas DataFrame
-            The dataset to fit the transformer
+            The dataset to fit the transformer.
         y: pandas Series, default=None
             The target variable.
         """
@@ -127,10 +127,12 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         Apply the transformation to the dataframe. Only the selected variables will be
         modified.
 
-        If transformer is the OneHotEncoder, the dummy features will be concatenated
-        to the input dataset. Note that the original categorical variables will not be
-        removed from the dataset after encoding. If this is the desired effect, please
-        use Feature-engine's OneHotEncoder instead.
+        **Note**
+
+        If the Scikit-learn transformer is the OneHotEncoder, the dummy features will
+        be concatenated to the input dataset. Note that the original categorical
+        variables will not be removed from the dataset after encoding. If this is the
+        desired effect, please use Feature-engine's OneHotEncoder instead.
 
         Parameters
         ----------
