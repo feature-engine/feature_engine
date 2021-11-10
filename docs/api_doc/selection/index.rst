@@ -4,8 +4,10 @@
 Feature Selection
 =================
 
-Feature-engine's feature selection transformers are used to drop subsets of variables.
-Or in other words to select subsets of variables.
+Feature-engine's feature selection transformers are used to drop subsets of variables,
+or in other words, to select subsets of variables. Feature-engine hosts selection
+algorithms that are in general, not available in other libraries. These algorithms have
+been gathered from data science competitions or used in the industry.
 
 **Summary of Feature-engine's selectors main characteristics**
 
@@ -47,3 +49,7 @@ For additional feature selection algorithms visit the following open-source libr
 
 * `Scikit-learn selection <https://scikit-learn.org/stable/modules/feature_selection.html>`_
 * `MLXtend selection <http://rasbt.github.io/mlxtend/api_subpackages/mlxtend.feature_selection/>`_
+
+Scikit-learn hosts multiple filter and embedded methods, that select features based on
+statistical tests or machine learning model derived importance. MLXtend hosts greedy
+(wrapper) feature selection methods.

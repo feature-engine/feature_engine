@@ -9,7 +9,7 @@ from feature_engine.validation import _return_tags
 
 class DropFeatures(BaseSelector):
     """
-    DropFeatures() drops a list of variable(s) indicated by the user from the dataframe.
+    DropFeatures() drops a list of variables indicated by the user from the dataframe.
 
     More details in the :ref:`User Guide <drop_features>`.
 
@@ -17,6 +17,11 @@ class DropFeatures(BaseSelector):
     ----------
     features_to_drop: str or list
         Variable(s) to be dropped from the dataframe
+
+    Attributes
+    ----------
+    features_to_drop_:
+        The features that will be dropped.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -45,9 +50,6 @@ class DropFeatures(BaseSelector):
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
         This transformer does not learn any parameter.
-
-        Verifies that the input X is a pandas dataframe, and that the variables to
-        drop exist in the training dataframe.
 
         Parameters
         ----------

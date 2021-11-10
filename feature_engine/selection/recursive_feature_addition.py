@@ -16,7 +16,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class RecursiveFeatureAddition(BaseSelector):
     """
-    RecursiveFeatureAddition selects features following a recursive addition process.
+    RecursiveFeatureAddition() selects features following a recursive addition process.
 
     The process is as follows:
 
@@ -28,11 +28,9 @@ class RecursiveFeatureAddition(BaseSelector):
 
     4. Add the second most important feature and train a new estimator.
 
-    5. Calculate the difference in performance between the last estimator and the
-    previous one.
+    5. Calculate the difference in performance between estimators.
 
-    6. If the performance increases beyond the threshold, then that feature is important
-    and will be kept. Otherwise, that feature is removed.
+    6. If the performance increases beyond the threshold, the feature is kept.
 
     7. Repeat steps 4-6 until all features have been evaluated.
 
@@ -60,7 +58,7 @@ class RecursiveFeatureAddition(BaseSelector):
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
-        root_mean_square_error the threshold will be a big number.
+        root_mean_square_error the threshold can be a big number.
         The threshold must be defined by the user. Bigger thresholds will select less
         features.
 
@@ -77,11 +75,10 @@ class RecursiveFeatureAddition(BaseSelector):
             - An iterable yielding (train, test) splits as arrays of indices.
 
         For int/None inputs, if the estimator is a classifier and y is either binary or
-        multiclass, StratifiedKFold is used. In all other cases, Fold is used. These
-        splitters are instantiated with shuffle=False so the splits will be the same
-        across calls.
-
-        For more details check Scikit-learn's cross_validate documentation
+        multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
+        splitters are instantiated with `shuffle=False` so the splits will be the same
+        across calls. For more details check Scikit-learn's `cross_validate`'s
+        documentation.
 
     Attributes
     ----------
@@ -92,7 +89,7 @@ class RecursiveFeatureAddition(BaseSelector):
         Pandas Series with the feature importance (comes from step 2)
 
     performance_drifts_:
-        Dictionary with the performance drift per examined feature.
+        Dictionary with the performance drift per examined feature (comes from step 5).
 
     features_to_drop_:
         List with the features to remove from the dataset.

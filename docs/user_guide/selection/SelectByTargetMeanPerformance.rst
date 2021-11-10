@@ -5,6 +5,40 @@
 
 SelectByTargetMeanPerformance
 =============================
+    SelectByTargetMeanPerformance() uses the mean value of the target per category, or
+    interval if the variable is numerical, as proxy for target estimation. With this
+    proxy and the real target, the selector determines a performance metric for each
+    feature, and then selects them based on this performance metric.
+
+    SelectByTargetMeanPerformance() works with numerical and categorical variables.
+    First, it eparates the training set into train and test sets. Then it works as
+    follows:
+
+    For each categorical variable:
+
+    1. Determines the mean target value per category using the train set
+    (equivalent to target mean encoding).
+
+    2. Replaces the categories in the test set by the target mean values.
+
+    3. Using the encoded variables and the real target calculates the roc-auc or r2.
+
+    4. Selects the features which roc-auc or r2 is bigger than the indicated
+    threshold.
+
+    For each numerical variable:
+
+    1- Discretises the variable into intervals of equal width or equal frequency
+    (uses the discretisers of Feature-engine).
+
+    2- Determines the mean value of the target per interval using the train set.
+
+    3- Replaces the intervals in the test set, by the target mean values.
+
+    4- Using the transformed variable and the real target calculates the roc-auc or r2.
+
+    5- Selects the features which roc-auc or r2 is bigger than the indicated
+    threshold.
 
 .. code:: python
 

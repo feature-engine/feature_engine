@@ -5,6 +5,11 @@
 RecursiveFeatureAddition
 ========================
 
+    5. Calculate the difference in performance between the last estimator and the
+    previous one.
+
+    6. If the performance increases beyond the threshold, then that feature is important
+    and will be kept. Otherwise, that feature is removed.
 
 .. code:: python
 

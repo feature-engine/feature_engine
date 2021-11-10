@@ -5,6 +5,9 @@
 RecursiveFeatureElimination
 ============================
 
+    6. If the performance drops beyond the threshold, then that feature is important
+    and will be kept. Otherwise, that feature is removed.
+
 
 .. code:: python
 

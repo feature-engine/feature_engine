@@ -21,6 +21,10 @@ class DropDuplicateFeatures(BaseSelector):
     name. If they show the same values for every observation, then they are considered
     duplicated.
 
+    This transformer works with numerical and categorical variables. The user can
+    indicate a list of variables to examine. Alternatively, the transformer will
+    evaluate all the variables in the dataset.
+
     The transformer will first identify and store the duplicated variables. Next, the
     transformer will drop these variables from a dataframe.
 
@@ -55,7 +59,7 @@ class DropDuplicateFeatures(BaseSelector):
     fit:
         Find duplicated features.
     transform:
-        Remove duplicated features
+        Remove duplicated features.
     fit_transform:
         Fit to data. Then transform it.
     """
