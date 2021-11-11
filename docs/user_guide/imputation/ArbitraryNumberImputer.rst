@@ -14,10 +14,8 @@ to the `variables` parameter.
 
 You can impute all variables with the same number, in which case you need to define
 the variables to impute in the `variables` parameter and the imputation number in
-`arbitrary_number` parameter. Alternatively, you can pass a dictionary with the
-variable names and the numbers to use for their imputation.
-
-For example, you can impute varA and varB with 99 like this:
+`arbitrary_number` parameter. For example, you can impute varA and varB with 99
+like this:
 
 .. code-block:: python
 
@@ -28,7 +26,10 @@ For example, you can impute varA and varB with 99 like this:
 
     Xt = transformer.fit_transform(X)
 
-Alternatively, you can impute varA with 1 and varB with 99 like this:
+You can also impute different variables with different numbers. To do this, you need to
+pass a dictionary with the variable names and the numbers to use for their imputation
+to the `imputer_dict` parameter. For example, you can impute varA with 1 and varB
+with 99 like this:
 
 .. code-block:: python
 
@@ -41,6 +42,8 @@ Alternatively, you can impute varA with 1 and varB with 99 like this:
 
 Below a code example using the House Prices Dataset (more details about the dataset
 :ref:`here <datasets>`).
+
+First, let's load the data and separate it into train and test:
 
 .. code:: python
 
@@ -56,7 +59,16 @@ Below a code example using the House Prices Dataset (more details about the data
 
 	# Separate into train and test sets
 	X_train, X_test, y_train, y_test = train_test_split(
-    	data.drop(['Id', 'SalePrice'], axis=1), data['SalePrice'], test_size=0.3, random_state=0)
+                                    data.drop(['Id', 'SalePrice'], axis=1),
+                                    data['SalePrice'],
+                                    test_size=0.3,
+                                    random_state=0,
+                                    )
+
+Now we set up the :class:`ArbitraryNumberImputer()` to impute 2 variables from the
+dataset with the number -999:
+
+.. code:: python
 
 	# set up the imputer
 	arbitrary_imputer = ArbitraryNumberImputer(
@@ -67,9 +79,23 @@ Below a code example using the House Prices Dataset (more details about the data
 	# fit the imputer
 	arbitrary_imputer.fit(X_train)
 
+With `fit()`, the transformer does not learn any parameter. It just assigns the imputation
+values to each variable, which can be found in the attribute `imputer_dict_`.
+
+With transform, we replace the missing data with the arbitrary values both in train and
+test sets:
+
+.. code:: python
+
 	# transform the data
 	train_t= arbitrary_imputer.transform(X_train)
 	test_t= arbitrary_imputer.transform(X_test)
+
+Note that after the imputation, if the percentage of missing values is relatively big,
+the variable distribution will differ from the original one (in red the imputed
+variable):
+
+.. code:: python
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
@@ -83,6 +109,10 @@ Below a code example using the House Prices Dataset (more details about the data
 More details
 ^^^^^^^^^^^^
 
-Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/ArbitraryNumberImputer.ipynb>`_
+In the following Jupyter notebook you will find more details on the functionality of the
+:class:`ArbitraryNumberImputer()`, including how to select numerical variables automatically.
+You will also see how to navigate the different attributes of the transformer.
 
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/ArbitraryNumberImputer.ipynb>`_
 
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

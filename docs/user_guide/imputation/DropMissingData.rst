@@ -25,7 +25,7 @@ This means that if you pass a list of variables to impute and set `missing_only=
 and some of the variables in your list do not have missing data in the train set,
 missing data will not be removed during transform for those particular variables. In
 other words, when `missing_only=True`, the transformer "double checks" that the entered
-variables have missing data in the train set. If not, it ignores it during
+variables have missing data in the train set. If not, it ignores them during
 `transform()`.
 
 It is recommended to use `missing_only=True` when not passing a list of variables to
@@ -33,6 +33,8 @@ impute.
 
 Below a code example using the House Prices Dataset (more details about the dataset
 :ref:`here <datasets>`).
+
+First, let's load the data and separate it into train and test:
 
 .. code:: python
 
@@ -52,15 +54,30 @@ Below a code example using the House Prices Dataset (more details about the data
     test_size=0.3,
     random_state=0)
 
+Now, we set up the imputer to remove observations if they have missing data in any of
+the variables indicated in the list.
+
+.. code:: python
+
     # set up the imputer
     missingdata_imputer = DropMissingData(variables=['LotFrontage', 'MasVnrArea'])
 
     # fit the imputer
     missingdata_imputer.fit(X_train)
 
+
+Now, we can go ahead and add the missing indicators:
+
+.. code:: python
+
     # transform the data
     train_t= missingdata_imputer.transform(X_train)
     test_t= missingdata_imputer.transform(X_test)
+
+We can explore the number of observations with NA in the variable `LotFrontage` before
+the imputation:
+
+.. code:: python
 
     # Number of NA before the transformation
     X_train['LotFrontage'].isna().sum()
@@ -68,6 +85,8 @@ Below a code example using the House Prices Dataset (more details about the data
 .. code:: python
 
     189
+
+And after the imputation we should not have observations with NA:
 
 .. code:: python
 
@@ -77,6 +96,10 @@ Below a code example using the House Prices Dataset (more details about the data
 .. code:: python
 
     0
+
+We can go ahead and compare the shapes of the different dataframes, before and after
+the imputation, and we will see that the imputed data has less observations, because
+those with NA in any of the 2 variables of interest were removed.
 
 .. code:: python
 
@@ -89,8 +112,26 @@ Below a code example using the House Prices Dataset (more details about the data
     (1022, 79)
     (829, 79)
 
+Drop partially complete rows
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The default behaviour of :class:`DropMissingData()` will drop rows in NA is present in
+any of the variables indicated in the list.
+
+We have the option of dropping rows only if a certain percentage of values is missing
+across all variables.
+
+For example, if we set the parameter `threshold=0.5`, a row will be dropped if data is
+missing in 50% of the variables. If we set the parameter `threshold=0.01`, a row will
+be dropped if data is missing in 1% of the variables. If we set the parameter
+`threshold=1`, a row will be dropped if data is missing in all the variables.
+
+
 More details
 ^^^^^^^^^^^^
+In the following Jupyter notebook you will find more details on the functionality of the
+:class:`DropMissingData()`, including how to select numerical variables automatically.
 
-Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/DropMissingData.ipynb>`_
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/DropMissingData.ipynb>`_
 
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

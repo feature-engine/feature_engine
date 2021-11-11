@@ -7,6 +7,6 @@ Feature-engine's preprocessing transformers apply general data pre-processing
 and transformation procedures.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    MatchVariables

@@ -5,21 +5,21 @@
 RandomSampleImputer
 ===================
 
-The RandomSampleImputer() replaces missing data with a random sample extracted from the
+The :class:`RandomSampleImputer()` replaces missing data with a random sample extracted from the
 variable. It works with both numerical and categorical variables. A list of variables
 can be indicated, or the imputer will automatically select all variables in the train
 set.
 
 **Note**
 
-The Random samples used to replace missing values may vary from execution to
+The random samples used to replace missing values may vary from execution to
 execution. This may affect the results of your work. Thus, it is advisable to set a
 seed.
 
 Setting the seed
 ~~~~~~~~~~~~~~~~
 
-There are 2 ways in which the seed can be set in the RandomSampleImputer():
+There are 2 ways in which the seed can be set in the :class:`RandomSampleImputer()`:
 
 If `seed = 'general'` then the random_state can be either `None` or an integer.
 The `random_state` then provides the seed to use in the imputation. All observations will
@@ -45,7 +45,7 @@ and we set the imputer as:
                                   seed='observation',
                                   seeding_method='add'))
 
-the observation will be replaced using pandas sample as follows:
+the np.nan in the variable colour will be replaced using pandas sample as follows:
 
 .. code:: python
 
@@ -54,7 +54,10 @@ the observation will be replaced using pandas sample as follows:
 For more details on why this functionality is important refer to the course
 `Feature Engineering for Machine Learning <https://www.udemy.com/feature-engineering-for-machine-learning/>`_.
 
-Note, if the variables indicated in the random_state list are not numerical
+You can also find more details about this imputation in the following
+`notebook <https://github.com/solegalli/feature-engineering-for-machine-learning/blob/master/Section-04-Missing-Data-Imputation/04.07-Random-Sample-Imputation.ipynb>`_.
+
+Note, if the variables indicated in the `random_state` list are not numerical
 the imputer will return an error. In addition, the variables indicated as seed
 should not contain missing values themselves.
 
@@ -68,6 +71,8 @@ if this behaviour is allowed within your organisation.
 
 Below a code example using the House Prices Dataset (more details about the dataset
 :ref:`here <datasets>`).
+
+First, let's load the data and separate it into train and test:
 
 .. code:: python
 
@@ -89,6 +94,15 @@ Below a code example using the House Prices Dataset (more details about the data
             random_state=0
         )
 
+In this example, we sample values at random, observation per observation, using as seed
+the value of the variable 'MSSubClass' plus the value of the variable 'YrSold'. Note
+that this value might be different for each observation.
+
+The :class:`RandomSampleImputer()` will impute all variables in the data, as we left the
+default value of the parameter `variables` to `None`.
+
+.. code:: python
+
 	# set up the imputer
 	imputer = RandomSampleImputer(
                 random_state=['MSSubClass', 'YrSold'],
@@ -99,9 +113,19 @@ Below a code example using the House Prices Dataset (more details about the data
 	# fit the imputer
 	imputer.fit(X_train)
 
+With `fit()` the imputer stored a copy of the X_train. And with transform, it will extract
+values at random from this X_train to replace NA in the datasets indicated in the `transform()`
+methods.
+
+.. code:: python
+
 	# transform the data
 	train_t = imputer.transform(X_train)
 	test_t = imputer.transform(X_test)
+
+The beauty of the random sampler is that it preserves the original variable distribution:
+
+.. code:: python
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
@@ -115,7 +139,18 @@ Below a code example using the House Prices Dataset (more details about the data
 More details
 ^^^^^^^^^^^^
 
-Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/RandomSampleImputer.ipynb>`_
+In the following Jupyter notebook you will find more details on the functionality of the
+:class:`RandomSampleImputer()`, including how to set the different types of seeds.
 
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/RandomSampleImputer.ipynb>`_
 
+All Feature-engine notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
 
+You will also find a lot of information on why the seed matters in this notebook:
+
+- `notebook <https://github.com/solegalli/feature-engineering-for-machine-learning/blob/master/Section-04-Missing-Data-Imputation/04.07-Random-Sample-Imputation.ipynb>`_
+
+And finally, there is also a lot of information about this and other imputation techniques
+in this online course:
+
+- `Feature Engineering for Machine Learning <https://www.udemy.com/feature-engineering-for-machine-learning/>`_

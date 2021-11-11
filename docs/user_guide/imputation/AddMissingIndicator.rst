@@ -30,6 +30,8 @@ impute.
 Below a code example using the House Prices Dataset (more details about the dataset
 :ref:`here <datasets>`).
 
+First, let's load the data and separate it into train and test:
+
 .. code:: python
 
 	import numpy as np
@@ -47,6 +49,11 @@ Below a code example using the House Prices Dataset (more details about the data
 	X_train, X_test, y_train, y_test = train_test_split(
     	data.drop(['Id', 'SalePrice'], axis=1), data['SalePrice'], test_size=0.3, random_state=0)
 
+
+Now we set up the imputer to add missing indicators to the 4 indicated variables:
+
+.. code:: python
+
 	# set up the imputer
 	addBinary_imputer = AddMissingIndicator(
         variables=['Alley', 'MasVnrType', 'LotFrontage', 'MasVnrArea'],
@@ -55,18 +62,46 @@ Below a code example using the House Prices Dataset (more details about the data
 	# fit the imputer
 	addBinary_imputer.fit(X_train)
 
+Because we left the default value for `missing_only`, the :class:`AddMissingIndicator()`
+will check if the variables indicated above have missing data in X_train. If they do,
+missing indicators will be added for all 4 variables looking forward. If one of them
+had not had missing data in X_train, missing indicators would have been added to the
+remaining 3 variables only.
+
+We can know which variables will have missing indicators by looking at the variable list
+in the :class:`AddMissingIndicator()`'s attribute `variables_`.
+
+Now, we can go ahead and add the missing indicators:
+
+.. code:: python
+
 	# transform the data
 	train_t = addBinary_imputer.transform(X_train)
 	test_t = addBinary_imputer.transform(X_test)
 
 	train_t[['Alley_na', 'MasVnrType_na', 'LotFrontage_na', 'MasVnrArea_na']].head()
 
+
 .. image:: ../../images/missingindicator.png
+   :width: 500
+
+Note that after adding missing indicators, we still need to replace NA in the original
+variables if we plan to use them to train machine learning models.
+
+Tip
+^^^
+
+Missing indicators are commonly used together with random sampling, mean or median
+imputation, or frequent category imputation.
 
 More details
 ^^^^^^^^^^^^
 
-Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/AddMissingIndicator.ipynb>`_
+In the following Jupyter notebook you will find more details on the functionality of the
+:class:`AddMissingIndicator()`, including how to use the parameter `missing_indicator` and
+how to select the variables automatically.
 
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/AddMissingIndicator.ipynb>`_
 
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
 

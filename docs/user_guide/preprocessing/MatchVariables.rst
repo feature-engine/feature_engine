@@ -168,7 +168,7 @@ By default, :class:`MatchVariables()` will print out messages indicating which v
 were added or removed. We can switch off the messages through the parameter `verbose`.
 
 When to use the transformer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 These transformer is useful in "predict then optimize type of problems". In such cases,
 a machine learning model is trained on a certain dataset, with certain input features.

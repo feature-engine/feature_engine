@@ -8,8 +8,19 @@ CategoricalImputer
 The :class:`CategoricalImputer()` replaces missing data in categorical variables with an
 arbitrary value, like the string 'Missing' or by the most frequent category.
 
+You can indicate which variables to impute passing the variable names in a list, or the
+imputer automatically finds and selects all variables of type object and categorical.
+
+Originally, we designed this imputer to work only with categorical variables. From version
+1.1.0 we introduced the parameter `ignore_format` to allow the imputer to also impute
+numerical variables with this functionality. This is, because in some cases, variables
+that are by nature categorical, have numerical values.
+
 Below a code example using the House Prices Dataset (more details about the dataset
 :ref:`here <datasets>`).
+
+In this example, we impute 2 variables from the dataset with the string 'Missing', which
+is the default functionality of the transformer:
 
 .. code:: python
 
@@ -39,10 +50,17 @@ Below a code example using the House Prices Dataset (more details about the data
 
 	test_t['MasVnrType'].value_counts().plot.bar()
 
+Note in the plot the presence of the category "Missing" which is added after the imputation:
+
 .. image:: ../../images/missingcategoryimputer.png
 
 More details
 ^^^^^^^^^^^^
+In the following Jupyter notebook you will find more details on the functionality of the
+:class:`EndTailImputer()`, including how to select numerical variables automatically.
+You will also find demos on how to impute using the maximum value or the interquartile
+range proximity rule.
 
 Check also this `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/CategoricalImputer.ipynb>`_
 
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
