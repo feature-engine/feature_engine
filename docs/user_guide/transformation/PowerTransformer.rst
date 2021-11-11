@@ -1,9 +1,15 @@
 .. _power:
 
-.. currentmodule:: feature_engine,transformation
+.. currentmodule:: feature_engine.transformation
 
 PowerTransformer
 ================
+
+The :class:`PowerTransformer()` applies power or exponential transformations to numerical
+variables.
+
+Let's load the house prices dataset and  separate it into train and test sets (more
+details about the dataset :ref:`here <datasets>`).
 
 .. code:: python
 
@@ -22,20 +28,35 @@ PowerTransformer
 		    data.drop(['Id', 'SalePrice'], axis=1),
 		    data['SalePrice'], test_size=0.3, random_state=0)
 
+Now we want to apply the square root to 2 variables in the dataframe:
+
+.. code:: python
+
 	# set up the variable transformer
 	tf = vt.PowerTransformer(variables = ['LotArea', 'GrLivArea'], exp=0.5)
 
 	# fit the transformer
 	tf.fit(X_train)
 
+The transformer does not learn any parameters. So we can go ahead and transform the
+variables:
+
+.. code:: python
+
 	# transform the data
 	train_t= tf.transform(X_train)
 	test_t= tf.transform(X_test)
+
+Finally, we can plot the original variable distribution:
+
+.. code:: python
 
 	# un-transformed variable
 	X_train['LotArea'].hist(bins=50)
 
 .. image:: ../../images/lotarearaw.png
+
+And now the distribution after the transformation:
 
 .. code:: python
 
@@ -48,6 +69,8 @@ PowerTransformer
 More details
 ^^^^^^^^^^^^
 
-Check also:
+You can find more details about the :class:`PowerTransformer()` here:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/transformation/PowerTransformer.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

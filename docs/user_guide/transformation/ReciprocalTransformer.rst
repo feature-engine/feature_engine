@@ -5,6 +5,14 @@
 ReciprocalTransformer
 =====================
 
+The :class:`ReciprocalTransformer()` applies the reciprocal transformation 1 / x to
+numerical variables.
+
+The :class:`ReciprocalTransformer()` only works with numerical variables with non-zero
+values. If a variable contains the value 0, the transformer will raise an error.
+
+Let's load the house prices dataset and  separate it into train and test sets (more
+details about the dataset :ref:`here <datasets>`).
 
 .. code:: python
 
@@ -23,20 +31,35 @@ ReciprocalTransformer
 		    data.drop(['Id', 'SalePrice'], axis=1),
 		    data['SalePrice'], test_size=0.3, random_state=0)
 
+Now we want to apply the reciprocal transformation to 2 variables in the dataframe:
+
+.. code:: python
+
 	# set up the variable transformer
 	tf = vt.ReciprocalTransformer(variables = ['LotArea', 'GrLivArea'])
 
 	# fit the transformer
 	tf.fit(X_train)
 
+The transformer does not learn any parameters. So we can go ahead and transform the
+variables:
+
+.. code:: python
+
 	# transform the data
 	train_t= tf.transform(X_train)
 	test_t= tf.transform(X_test)
+
+Finally, we can plot the original variable distribution:
+
+.. code:: python
 
 	# un-transformed variable
 	X_train['LotArea'].hist(bins=50)
 
 .. image:: ../../images/lotarearaw.png
+
+And now the distribution after the transformation:
 
 .. code:: python
 
@@ -49,6 +72,9 @@ ReciprocalTransformer
 More details
 ^^^^^^^^^^^^
 
-Check also:
+You can find more details about the :class:`ReciprocalTransformer()` here:
+
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/transformation/ReciprocalTransformer.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
