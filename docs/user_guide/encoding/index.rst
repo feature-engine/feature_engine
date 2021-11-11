@@ -4,7 +4,7 @@ Categorical Variable Encoding
 =============================
 
 Feature-engine's categorical encoders replace variable strings by estimated or
-arbitrary numbers.
+arbitrary numbers. The following image summarizes the main encoder’s functionality.
 
 .. figure::  ../../images/summary/categoricalSummary.png
    :align:   center
@@ -17,7 +17,7 @@ and make the transformers also accept numerical variables as input.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    OneHotEncoder
    CountFrequencyEncoder
@@ -27,4 +27,8 @@ and make the transformers also accept numerical variables as input.
    PRatioEncoder
    DecisionTreeEncoder
    RareLabelEncoder
+
+
+Additional categorical encoding transformations ara available in the open-source package
+`Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_.
    

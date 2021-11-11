@@ -9,7 +9,7 @@ The :class:`DecisionTreeEncoder()` replaces categories in the variable with
 the predictions of a decision tree.
 
 The transformer first encodes categorical variables into numerical variables using
-:class:`OrdinalEncoder`. You have the option to have the integers assigned to the
+:class:`OrdinalEncoder()`. You have the option to have the integers assigned to the
 categories as they appear in the variable, or ordered by the mean value of the target
 per category. You can regulate this behaviour with the parameter `encoding_method`. As
 decision trees are able to pick non-linear relationships, replacing categories by
@@ -23,6 +23,8 @@ The motivation of the :class:`DecisionTreeEncoder()` is to try and create monoto
 relationships between the categorical variables and the target.
 
 Let's look at an example using the Titanic Dataset.
+
+First, let's load the data and separate it into train and test:
 
 .. code:: python
 
@@ -67,7 +69,10 @@ We will encode the following categorical variables:
    294      C      1        C
    261      E      1        S
 
-We set up the encoder and encode the variables:
+We set up the encoder to encode the variables above with 3 fold cross-validation, using
+a grid search to find the optimal depth of the decision tree (this is the default
+behaviour of the :class:`DecisionTreeEncoder()`). In this example, we optimize the
+tree using the roc-auc metric.
 
 .. code:: python
 
@@ -81,6 +86,11 @@ We set up the encoder and encode the variables:
 
     # fit the encoder
     encoder.fit(X_train, y_train)
+
+With `fit()` the :class:`DecisionTreeEncoder()` fits 1 decision tree per variable. Now we can go ahead and
+transform the categorical variables into numbers, using the predictions of these trees:
+
+.. code:: python
 
     # transform the data
     train_t = encoder.transform(X_train)
@@ -108,7 +118,9 @@ We can see the encoded variables below:
 More details
 ^^^^^^^^^^^^
 
-Check also:
+In the following notebook, you can find more details into the :class:`DecisionTreeEncoder()`
+functionality and example plots with the encoded variables:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/DecisionTreeEncoder.ipynb>`_
 
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

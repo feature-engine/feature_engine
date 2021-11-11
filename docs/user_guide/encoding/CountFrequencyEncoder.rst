@@ -12,6 +12,8 @@ observations are blue, blue will be replaced by 0.1.
 
 Let's look at an example using the Titanic Dataset.
 
+First, let's load the data and separate it into train and test:
+
 .. code:: python
 
 	import numpy as np
@@ -37,6 +39,12 @@ Let's look at an example using the Titanic Dataset.
 			data.drop(['survived', 'name', 'ticket'], axis=1),
 			data['survived'], test_size=0.3, random_state=0)
 
+
+Now, we set up the :class:`CountFrequencyEncoder()` to replace the categories by their
+frequencies, only in the 3 indicated variables:
+
+.. code:: python
+
 	# set up the encoder
 	encoder = CountFrequencyEncoder(encoding_method='frequency',
 				 variables=['cabin', 'pclass', 'embarked'])
@@ -44,9 +52,10 @@ Let's look at an example using the Titanic Dataset.
 	# fit the encoder
 	encoder.fit(X_train)
 
-	# transform the data
-	train_t= encoder.transform(X_train)
-	test_t= encoder.transform(X_test)
+With `fit()` the encoder learns the frequencies of each category, which are stored in
+its `encoder_dict_` parameter:
+
+.. code:: python
 
 	encoder.encoder_dict_
 
@@ -72,10 +81,21 @@ value.
 	  'C': 0.19759825327510916,
 	  'Q': 0.0906113537117904}}
 
+We can now go ahead and replace the original strings with the numbers:
+
+.. code:: python
+
+	# transform the data
+	train_t= encoder.transform(X_train)
+	test_t= encoder.transform(X_test)
+
 
 More details
 ^^^^^^^^^^^^
 
-Check also:
+In the following notebook, you can find more details into the :class:`CountFrequencyEncoder()`
+functionality and example plots with the encoded variables:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/CountFrequencyEncoder.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

@@ -16,6 +16,8 @@ the encoded categories. This tends to help improve performance of linear models.
 
 Let's look at an example using the Titanic Dataset.
 
+First, let's load the data and separate it into train and test:
+
 .. code:: python
 
 	import numpy as np
@@ -41,15 +43,21 @@ Let's look at an example using the Titanic Dataset.
 			data.drop(['survived', 'name', 'ticket'], axis=1),
 			data['survived'], test_size=0.3, random_state=0)
 
+Now, we set up the :class:`MeanEncoder()` to replace the categories only in the 3
+indicated variables:
+
+.. code:: python
+
 	# set up the encoder
 	encoder = MeanEncoder(variables=['cabin', 'pclass', 'embarked'])
 
 	# fit the encoder
 	encoder.fit(X_train, y_train)
 
-	# transform the data
-	train_t= encoder.transform(X_train)
-	test_t= encoder.transform(X_test)
+With `fit()` the encoder learns the target mean value for each category, which are stored in
+its `encoder_dict_` parameter:
+
+.. code:: python
 
 	encoder.encoder_dict_
 
@@ -74,10 +82,22 @@ So we can easily use this dictionary to map the numbers to the original labels.
 	  'Q': 0.37349397590361444,
 	  'S': 0.3389570552147239}}
 
+We can now go ahead and replace the original strings with the numbers:
+
+.. code:: python
+
+	# transform the data
+	train_t= encoder.transform(X_train)
+	test_t= encoder.transform(X_test)
+
+
+
 More details
 ^^^^^^^^^^^^
 
-Check also:
+In the following notebook, you can find more details into the :class:`MeanEncoder()`
+functionality and example plots with the encoded variables:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/MeanEncoder.ipynb>`_
 
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

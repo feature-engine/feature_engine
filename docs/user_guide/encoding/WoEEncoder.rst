@@ -39,7 +39,14 @@ example WoE = log(20/10).
 - Creates a monotonic relationship between the encoded variable and the target
 - Returns variables in a similar scale
 
+**Note**
+
+This categorical encoding is exclusive for binary classification.
+
 Let's look at an example using the Titanic Dataset.
+
+First, let's load the data and separate it into train and test:
+
 
 .. code:: python
 
@@ -66,6 +73,11 @@ Let's look at an example using the Titanic Dataset.
 			data.drop(['survived', 'name', 'ticket'], axis=1),
 			data['survived'], test_size=0.3, random_state=0)
 
+Before we encode the variables, I would like to group infrequent categories into one
+category, called 'Rare'. For this, I will use the :class:`RareLabelEncoder()` as follows:
+
+.. code:: python
+
 	# set up a rare label encoder
 	rare_encoder = RareLabelEncoder(tol=0.03, n_categories=2, variables=['cabin', 'pclass', 'embarked'])
 
@@ -73,15 +85,21 @@ Let's look at an example using the Titanic Dataset.
 	train_t = rare_encoder.fit_transform(X_train)
 	test_t = rare_encoder.transform(X_train)
 
+Now, we set up the :class:`WoEEncoder()` to replace the categories by the weight of the
+evidence, only in the 3 indicated variables:
+
+.. code:: python
+
 	# set up a weight of evidence encoder
 	woe_encoder = WoEEncoder(variables=['cabin', 'pclass', 'embarked'])
 
 	# fit the encoder
 	woe_encoder.fit(train_t, y_train)
 
-	# transform
-	train_t = woe_encoder.transform(train_t)
-	test_t = woe_encoder.transform(test_t)
+With `fit()` the encoder learns the weight of the evidence for each category, which are stored in
+its `encoder_dict_` parameter:
+
+.. code:: python
 
 	woe_encoder.encoder_dict_
 
@@ -103,6 +121,14 @@ variables to encode. This way, we can map the original values to the new value.
     'Q': -0.05044494288988759,
     'S': -0.20113381737960143}}
 
+Now, we can go ahead and encode the variables:
+
+.. code:: python
+
+	# transform
+	train_t = woe_encoder.transform(train_t)
+	test_t = woe_encoder.transform(test_t)
+
 
 **WoE for continuous variables**
 
@@ -115,6 +141,10 @@ discretisers.
 More details
 ^^^^^^^^^^^^
 
-Check also:
+In the following notebooks, you can find more details into the :class:`WoEEncoder()`
+functionality and example plots with the encoded variables:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/WoEEncoder.ipynb>`_
+- `WoE in categorical variables <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/WoEEncoder.ipynb>`_
+- `WoE in numerical variables <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualFrequencyDiscretiser_plus_WoEEncoder.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

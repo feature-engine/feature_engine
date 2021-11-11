@@ -15,17 +15,21 @@ mean of the target is higher will get the number 0, and those where the mean of 
 target is smallest will get the number k-1. This way, we create a monotonic relationship
 between the encoded variable and the target.
 
-**Arbitrary vs ordered encoding: examples**
+**Arbitrary vs ordered encoding**
 
 **Ordered ordinal encoding**: for the variable colour, if the mean of the target
 for blue, red and grey is 0.5, 0.8 and 0.1 respectively, blue is replaced by 1,
 red by 2 and grey by 0.
+
+The motivation is to try and create a monotonic relationship between the target and the
+encoded categories. This tends to help improve performance of linear models.
 
 **Arbitrary ordinal encoding**: the numbers will be assigned arbitrarily to the
 categories, on a first seen first served basis.
 
 Let's look at an example using the Titanic Dataset.
 
+First, let's load the data and separate it into train and test:
 
 .. code:: python
 
@@ -52,15 +56,22 @@ Let's look at an example using the Titanic Dataset.
 			data.drop(['survived', 'name', 'ticket'], axis=1),
 			data['survived'], test_size=0.3, random_state=0)
 
+
+Now, we set up the :class:`OrdinalEncoder()` to replace the categories by strings based
+on the target mean value and only in the 3 indicated variables:
+
+.. code:: python
+
 	# set up the encoder
 	encoder = OrdinalEncoder(encoding_method='ordered', variables=['pclass', 'cabin', 'embarked'])
 
 	# fit the encoder
 	encoder.fit(X_train, y_train)
 
-	# transform the data
-	train_t= encoder.transform(X_train)
-	test_t= encoder.transform(X_test)
+With `fit()` the encoder learns the mappings for each category, which are stored in
+its `encoder_dict_` parameter:
+
+.. code:: python
 
 	encoder.encoder_dict_
 
@@ -82,10 +93,22 @@ variable to the new value.
 	  'B': 8},
 	 'embarked': {'S': 0, 'Q': 1, 'C': 2}}
 
+We can now go ahead and replace the original strings with the numbers:
+
+.. code:: python
+
+	# transform the data
+	train_t= encoder.transform(X_train)
+	test_t= encoder.transform(X_test)
+
+
+
 
 More details
 ^^^^^^^^^^^^
-
-Check also:
+In the following notebook, you can find more details into the :class:`OrdinalEncoder()`'s
+functionality and example plots with the encoded variables:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/OrdinalEncoder.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

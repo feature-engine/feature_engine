@@ -21,7 +21,7 @@ of observations is <= `tol` will be grouped into a unique term.
 In the parameter `n_categories` we indicate the minimum cardinality of the categorical
 variable in order to group infrequent categories. For example, if `n_categories=5`,
 categories will be grouped only in those categorical variables with more than 5 unique
-categories. The rest will be ignored.
+categories. The rest of the variables will be ignored.
 
 This parameter is useful when we have big datasets and do not have time to examine all
 categorical variables individually. This way, we ensure that variables with low cardinality
@@ -41,6 +41,7 @@ to control the expansion of the feature space.
 
 Let's look at an example using the Titanic Dataset.
 
+First, let's load the data and separate it into train and test:
 
 .. code:: python
 
@@ -67,6 +68,12 @@ Let's look at an example using the Titanic Dataset.
         data.drop(['survived', 'name', 'ticket'], axis=1),
         data['survived'], test_size=0.3, random_state=0)
 
+Now, we set up the :class:`RareLabelEncoder()` to group categories shown by less than 3%
+of the observations into a new group or category called 'Rare'. We will group the
+categories in the indicated variables if they have more than 2 unique categories each.
+
+.. code:: python
+
     # set up the encoder
     encoder = RareLabelEncoder(tol=0.03, n_categories=2, variables=['cabin', 'pclass', 'embarked'],
                                replace_with='Rare')
@@ -74,9 +81,11 @@ Let's look at an example using the Titanic Dataset.
     # fit the encoder
     encoder.fit(X_train)
 
-    # transform the data
-    train_t = encoder.transform(X_train)
-    test_t = encoder.transform(X_test)
+With `fit()`, the :class:`RareLabelEncoder()` finds the categories present in more than
+3% of the observations, that is, those that will not be grouped. These categories can
+be found in the `encoder_dict_` attribute.
+
+.. code:: python
 
     encoder.encoder_dict_
 
@@ -89,8 +98,19 @@ Any category that is not in this dictionary, will be grouped.
 	 'pclass': array([2, 3, 1], dtype='int64'),
 	 'embarked': array(['S', 'C', 'Q'], dtype=object)}
 
-You can also specify the maximum number of categories that can be considered frequent
+Now we can go ahead and transform the variables:
+
+.. code:: python
+
+    # transform the data
+    train_t = encoder.transform(X_train)
+    test_t = encoder.transform(X_test)
+
+We can also specify the maximum number of categories that can be considered frequent
 using the `max_n_categories` parameter.
+
+Let's begin by creating a toy dataframe and count the values of observations per
+category:
 
 .. code:: python
 
@@ -108,6 +128,9 @@ using the `max_n_categories` parameter.
     D     1
     Name: var_A, dtype: int64
 
+In this block of code, we group the categories only for variables with more than 3
+unique categories and then we plot the result:
+
 .. code:: python
 
     rare_encoder = RareLabelEncoder(tol=0.05, n_categories=3)
@@ -120,6 +143,9 @@ using the `max_n_categories` parameter.
     C        2
     Rare     1
     Name: var_A, dtype: int64
+
+Now, we retain the 2 most frequent categories of the variable and group the rest into
+the 'Rare' group:
 
 .. code:: python
 
@@ -134,10 +160,28 @@ using the `max_n_categories` parameter.
     Rare     3
     Name: var_A, dtype: int64
 
+Tips
+^^^^
+
+The :class:`RareLabelEncoder()` can be used to group infrequent categories and like this
+control the expansion of the feature space if using one hot encoding.
+
+Some categorical encodings will also return NAN if a category is present in the test
+set, but was not seen in the train set. This inconvenient can usually be avoided if we
+group rare labels before training the encoders.
+
+Some categorical encoders will also return NAN if there is not enough observations for
+a certain category. For example the :class:`WoEEncoder()` and the :class:`PRatioEncoder()`.
+This behaviour can be also prevented by grouping infrequent labels before the encoding
+with the :class:`RareLabelEncoder()`.
+
 
 More details
 ^^^^^^^^^^^^
 
-Check also:
+In the following notebook, you can find more details into the :class:`RareLabelEncoder()`
+functionality and example plots with the encoded variables:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/RareLabelEncoder.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
