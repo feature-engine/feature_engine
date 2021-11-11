@@ -21,8 +21,12 @@ the variable are closer to the lower values. For example, December (12) is close
 to January (1) than to June (6). By applying a cyclical transformation we capture
 this cycle or proximity between values.
 
+**Examples**
+
 In the code example below, we show how to obtain cyclical features from days and months
 in a toy dataframe.
+
+We first create a toy dataframe with the variables "days" and "months":
 
 .. code:: python
 
@@ -36,9 +40,15 @@ in a toy dataframe.
         'months': [3, 7, 9, 12, 4, 6, 12],
         })
 
+Now we set up the transformer to find the maximum value automatically:
+
+.. code:: python
+
     cyclical = CyclicalTransformer(variables=None, drop_original=True)
 
     X = cyclical.fit_transform(df)
+
+The maximum values used for the transformation are stored in the attribute `max_values_`:
 
 .. code:: python
 
@@ -47,6 +57,10 @@ in a toy dataframe.
 .. code:: python
 
     {'day': 7, 'months': 12}
+
+We can now see the new variables in the dataframe. Note that we set `drop_original=True`,
+which means that the transformer will drop the original variables after the transformation.
+If we had chosen False, the new variables will be added alongside the original ones.
 
 .. code:: python
 

@@ -7,7 +7,7 @@ Feature-engine's creation transformers create and add new features to the datafr
 by either combining or transforming existing features.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    MathematicalCombination
    CombineWithReferenceFeature

@@ -5,27 +5,31 @@
 OutlierTrimmer
 ==============
 
-Removes values beyond predefined minimum and maximum values from the data set.
-The minimum and maximum values can be calculated in 1 of 3 different ways:
+The :class:`OutlierTrimmer()` removes values beyond an automatically generated
+minimum and/or maximum values. The minimum and maximum values can be calculated in 1 of
+3 ways:
 
 Gaussian limits:
-    right tail: mean + 3* std
 
-    left tail: mean - 3* std
+- right tail: mean + 3* std
+- left tail: mean - 3* std
 
 IQR limits:
-    right tail: 75th quantile + 3* IQR
 
-    left tail:  25th quantile - 3* IQR
+- right tail: 75th quantile + 3* IQR
+- left tail:  25th quantile - 3* IQR
 
 where IQR is the inter-quartile range: 75th quantile - 25th quantile.
 
 percentiles or quantiles:
-    right tail: 95th percentile
 
-    left tail:  5th percentile
+- right tail: 95th percentile
+- left tail:  5th percentile
 
-See the API Reference for more details.
+**Example**
+
+Let's remove some outliers in the Titanic Dataset. First, let's load the data and separate
+it into train and test:
 
 .. code:: python
 
@@ -56,22 +60,41 @@ See the API Reference for more details.
 		data.drop(['survived', 'name', 'ticket'], axis=1),
 		data['survived'], test_size=0.3, random_state=0)
 
+Now, we will set the :class:`OutlierTrimmer()` to remove outliers at the right side of the
+distribution only (param `tail`). We want the maximum values to be determined using the
+75th quantile of the variable (param `capping_method`) plus 1.5 times the IQR
+(param `fold`). And we only want to cap outliers in 2 variables, which we indicate in a
+list.
+
+.. code:: python
+
     # set up the capper
     capper = OutlierTrimmer(capping_method='iqr', tail='right', fold=1.5, variables=['age', 'fare'])
 
     # fit the capper
     capper.fit(X_train)
 
-    # transform the data
-    train_t= capper.transform(X_train)
-    test_t= capper.transform(X_test)
+With `fit()`, the :class:`OutlierTrimmer()` finds the values at which it should cap the variables.
+These values are stored in its attribute:
+
+.. code:: python
 
     capper.right_tail_caps_
-
 
 .. code:: python
 
 	{'age': 53.0, 'fare': 66.34379999999999}
+
+We can now go ahead and remove the outliers:
+
+.. code:: python
+
+    # transform the data
+    train_t= capper.transform(X_train)
+    test_t= capper.transform(X_test)
+
+If we evaluate now the maximum of the variables in the transformed datasets, they should
+be <= the values observed in the attribute `right_tail_caps_`:
 
 .. code:: python
 
@@ -85,7 +108,9 @@ See the API Reference for more details.
 
 More details
 ^^^^^^^^^^^^
-Check also:
+
+You can find more details about the :class:`OutlierTrimmer()` functionality in the following
+notebook:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/outliers/OutlierTrimmer.ipynb>`_
 

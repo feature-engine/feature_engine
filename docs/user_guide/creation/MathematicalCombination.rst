@@ -7,8 +7,8 @@ MathematicalCombination
 
 :class:`MathematicalCombination()` applies basic mathematical operations to multiple
 features, returning one or more additional features as a result. That is, it sums,
-multiplies, takes the average, maximum, minimum or standard deviation of a group
-of variables and returns the result into new variables.
+multiplies, takes the average, finds the maximum, minimum or standard deviation of a
+group of variables and returns the result into new variables.
 
 For example, if we have the variables:
 
@@ -44,7 +44,9 @@ and mean number of payments as follows:
 
 The transformed dataset, Xt, will contain the additional features
 **total_number_payments** and **mean_number_payments**, plus the original set of
-variables. The variable **total_number_payments** is obtained by adding up the features
+variables.
+
+The variable **total_number_payments** is obtained by adding up the features
 indicated in `variables_to_combine`, whereas the variable **mean_number_payments** is
 the mean of those 4 features.
 
@@ -75,7 +77,13 @@ dataset :ref:`here <datasets>`). In this example, we sum 2 variables: 'LotFronta
     )
 
     math_combinator.fit(X_train, y_train)
+
     X_train_ = math_combinator.transform(X_train)
+
+
+In the attribute `combination_dict_` the transformer stores the variable name and the
+operation used to obtain that variable. This way, we can easily identify which variable
+is the result of which transformation.
 
 .. code:: python
 
@@ -84,6 +92,8 @@ dataset :ref:`here <datasets>`). In this example, we sum 2 variables: 'LotFronta
 .. code:: python
 
     {'LotTotal': 'sum'}
+
+We can see that the transformed dataset contains the additional variable:
 
 .. code:: python
 
@@ -122,7 +132,8 @@ to the product of the variables.
 More details
 ^^^^^^^^^^^^
 
-Check also:
+You can find creative ways to use the :class:`MathematicalCombination()` in the
+following Jupyter notebooks and Kaggle kernels.
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/creation/MathematicalCombination.ipynb>`_
 - `Kaggle kernel - Wine Quality <https://www.kaggle.com/solegalli/create-new-features-with-feature-engine>`_

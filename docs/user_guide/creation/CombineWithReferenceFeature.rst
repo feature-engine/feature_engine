@@ -82,7 +82,12 @@ dataset :ref:`here <datasets>`). In this example, we subtract `LotFrontage` from
         )
 
     combinator.fit(X_train, y_train)
+
     X_train = combinator.transform(X_train)
+
+We can see the newly created variable in the following code blocks:
+
+.. code:: python
 
     print(X_train[["LotPartial","LotFrontage","LotArea"]].head())
 
@@ -117,7 +122,8 @@ then 'add' and finally 'mul'.
 More details
 ^^^^^^^^^^^^
 
-Check also:
+You can find creative ways to use the :class:`CombineWithReferenceFeature()` in the
+following Jupyter notebooks and Kaggle kernels.
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/creation/CombineWithReferenceFeature.ipynb>`_
 - `Kaggle kernel - Wine Quality <https://www.kaggle.com/solegalli/create-new-features-with-feature-engine>`_
