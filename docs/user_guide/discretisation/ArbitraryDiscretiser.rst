@@ -14,6 +14,8 @@ The :class:`ArbitraryDiscretiser()` works only with numerical variables. The dis
 will check that the variables entered by the user are present in the train set and cast
 as numerical.
 
+**Example**
+
 Let's take a look at how this transformer works. First, let's load a dataset and plot a
 histogram of a continuous variable. We use the boston house prices dataset that comes
 with Scikit-learn.
@@ -46,7 +48,12 @@ interval names as integers, so we set `return_boundaries` to False.
 
     transformer = ArbitraryDiscretiser(
         binning_dict=user_dict, return_object=False, return_boundaries=False)
+
     X = transformer.fit_transform(data)
+
+Now, we can go ahead and plot the variable after the transformation:
+
+.. code:: python
 
     X['LSTAT'].value_counts().plot.bar()
     plt.xlabel('LSTAT - bins')
@@ -55,6 +62,8 @@ interval names as integers, so we set `return_boundaries` to False.
     plt.show()
 
 .. image:: ../../images/lstat_disc_arbitrarily.png
+
+Note that in the above figure the intervals are represented by digits.
 
 Alternatively, we can return the interval limits in the discretised variable by
 setting `return_boundaries` to True.
@@ -72,6 +81,8 @@ setting `return_boundaries` to True.
     plt.show()
 
 .. image:: ../../images/lstat_disc_arbitrarily2.png
+
+**Discretisation plus encoding**
 
 If we return the interval values as integers, the discretiser has the option to return
 the transformed variable as integer or as object. Why would we want the transformed

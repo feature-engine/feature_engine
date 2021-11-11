@@ -22,7 +22,11 @@ with the target.
 According to the authors, the addition of these new features had a significant impact
 on the performance of linear models.
 
+**Example**
+
 In the following example, we re-code 2 numerical variables using decision trees.
+
+First we load the data and separate it into train and test:
 
 .. code:: python
 
@@ -41,6 +45,11 @@ In the following example, we re-code 2 numerical variables using decision trees.
 		    data.drop(['Id', 'SalePrice'], axis=1),
 		    data['SalePrice'], test_size=0.3, random_state=0)
 
+Now we set up the discretiser. We will optimise the decision tree's depth using 3 fold
+cross-validation.
+
+.. code:: python
+
 	# set up the discretisation transformer
 	disc = DecisionTreeDiscretiser(cv=3,
                                   scoring='neg_mean_squared_error',
@@ -50,9 +59,19 @@ In the following example, we re-code 2 numerical variables using decision trees.
 	# fit the transformer
 	disc.fit(X_train, y_train)
 
+
+With `fit()` the transformer fits a decision tree per variable. Then, we can go
+ahead replace the variable values by the predictions of the trees:
+
+.. code:: python
+
 	# transform the data
 	train_t= disc.transform(X_train)
 	test_t= disc.transform(X_test)
+
+The `binner_dict_` stores the details of each decision tree.
+
+.. code:: python
 
 	disc.binner_dict_
 
@@ -89,6 +108,9 @@ In the following example, we re-code 2 numerical variables using decision trees.
 	              scoring='neg_mean_squared_error', verbose=0)}
 
 
+With tree discretisation, each bin, that is, each prediction value, does not necessarily
+contain the same number of observations.
+
 .. code:: python
 
 	# with tree discretisation, each bin does not necessarily contain
@@ -99,11 +121,17 @@ In the following example, we re-code 2 numerical variables using decision trees.
 
 .. image:: ../../images/treediscretisation.png
 
+**Note**
+
+Our implementation of the :class:`DecisionTreeDiscretiser()` will replace the original
+values of the variable by the predictions of the trees. This is not strictly identical
+to what the winners of the KDD competition did. They added the predictions of the features
+as new variables, while keeping the original ones.
 
 More details
 ^^^^^^^^^^^^
 
-Check also:
+Check also for more details on how to use this transformer:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/DecisionTreeDiscretiser.ipynb>`_
 - `tree_pipe in cell 21 of this Kaggle kernel <https://www.kaggle.com/solegalli/feature-engineering-and-model-stacking>`_

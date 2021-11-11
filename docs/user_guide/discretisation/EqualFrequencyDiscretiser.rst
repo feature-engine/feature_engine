@@ -14,14 +14,18 @@ intervals.
 **A note on number of intervals**
 
 Common values are 5 and 10. Note that if the variable is highly skewed or not continuous
-smaller intervals maybe required.
+smaller intervals maybe required. Otherwise, the transformer will introduce np.nan.
 
 The :class:`EqualFrequencyDiscretiser()` works only with numerical variables. A list of
 variables can be indicated, or the discretiser will automatically select all numerical
 variables in the train set.
 
+**Example**
+
 Let's look at an example using the House Prices Dataset (more details about the
 dataset :ref:`here <datasets>`).
+
+Let's load the house prices dataset and  separate it into train and test sets:
 
 .. code:: python
 
@@ -40,19 +44,31 @@ dataset :ref:`here <datasets>`).
 		    data.drop(['Id', 'SalePrice'], axis=1),
 		    data['SalePrice'], test_size=0.3, random_state=0)
 
+Now we want to discretise the 2 variables indicated below into 10 intervals of equal
+number of observations:
+
+.. code:: python
+
 	# set up the discretisation transformer
 	disc = EqualFrequencyDiscretiser(q=10, variables=['LotArea', 'GrLivArea'])
 
 	# fit the transformer
 	disc.fit(X_train)
 
+With `fit()` the transformer learns the boundaries of each interval. Then, we can go
+ahead and sort the values into the intervals:
+
+.. code:: python
+
 	# transform the data
 	train_t= disc.transform(X_train)
 	test_t= disc.transform(X_test)
 
-	disc.binner_dict_
-
 The `binner_dict_` stores the interval limits identified for each variable.
+
+.. code:: python
+
+	disc.binner_dict_
 
 .. code:: python
 
@@ -80,10 +96,10 @@ The `binner_dict_` stores the interval limits identified for each variable.
 	  inf]}
 
 
+With equal frequency discretisation, each bin contains approximately the same number of observations.
+
 .. code:: python
 
-	# with equal frequency discretisation, each bin contains approximately
-	# the same number of observations.
 	train_t.groupby('GrLivArea')['GrLivArea'].count().plot.bar()
 	plt.ylabel('Number of houses')
 
@@ -91,6 +107,10 @@ We can see below that the intervals contain approximately the same number of
 observations.
 
 .. image:: ../../images/equalfrequencydiscretisation.png
+
+|
+
+**Discretisation plus encoding**
 
 If we return the interval values as integers, the discretiser has the option to return
 the transformed variable as integer or as object. Why would we want the transformed
@@ -105,7 +125,7 @@ this functionality `here <https://nbviewer.org/github/feature-engine/feature-eng
 More details
 ^^^^^^^^^^^^
 
-Check also:
+Check also for more details on how to use this transformer:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualFrequencyDiscretiser.ipynb>`_
 - `Jupyter notebook - Discretiser plus Weight of Evidence encoding <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualFrequencyDiscretiser_plus_WoEEncoder.ipynb>`_
