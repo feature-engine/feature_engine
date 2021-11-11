@@ -5,8 +5,21 @@
 SklearnTransformerWrapper
 =========================
 
-Implements Scikit-learn transformers like the SimpleImputer, the OrdinalEncoder or most
-scalers only to the selected subset of features.
+The :class:`SklearnTransformerWrapper()` applies Scikit-learn transformers to a selected
+group of variables. It works with transformers like the SimpleImputer, OrdinalEncoder,
+OneHotEncoder, KBinsDiscretizer, all scalers and also transformers for feature selection.
+Other transformers have not been tested, but we think it should work with most of them.
+
+The :class:`SklearnTransformerWrapper()` offers similar functionality to the
+`ColumnTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html>`_
+class available in Scikit-learn. They differ in the implementation to select the
+variables and the output.
+
+The :class:`SklearnTransformerWrapper()` returns a pandas dataframe with the variables
+in the order of the original data. The
+`ColumnTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html>`_
+returns a Numpy array, and the order of the variables may not coincide with that of the
+original dataset.
 
 In the next code snippet we show how to wrap the SimpleImputer from Scikit-learn to
 impute only the selected variables.
@@ -107,10 +120,14 @@ to select only a subset of the variables.
 More details
 ^^^^^^^^^^^^
 
-Check also:
+In the following Jupyter notebooks you can find more details about how to navigate the
+parameters of the :class:`SklearnTransformerWrapper()` and also access the parameters
+of the Scikit-learn transformer wrapped, as well as the output of the transformations.
 
 - `Wrap sklearn categorical encoder <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-Categorical-Encoding.ipynb>`_
 - `Wrap sklearn KBinsDiscretizer <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-KBinsDiscretizer.ipynb>`_
 - `Wrap sklearn SimpleImputer <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-SimpleImputer.ipynb>`_
 - `Wrap sklearn feature selectors <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-feature-selection.ipynb>`_
 - `Wrap sklearn scalers <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-scalers.ipynb>`_
+
+The notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
