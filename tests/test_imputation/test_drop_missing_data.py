@@ -75,7 +75,7 @@ def test_threshold(df_na):
     X = imputer.fit_transform(df_na)
     assert list(X.index) == [0, 1, 4, 6, 7]
 
-    # Each row must have at least 99% data available
+    # Each row must have at least 1% data available
     imputer = DropMissingData(threshold=0.01)
     X = imputer.fit_transform(df_na)
     assert list(X.index) == [0, 1, 2, 3, 4, 5, 6, 7]
@@ -90,7 +90,7 @@ def test_threshold(df_na):
     X = imputer.fit_transform(df_na)
     assert list(X.index) == [0, 1, 4, 6, 7]
 
-    # Each row must have at least 99% data available
+    # Each row must have at least 1% data available
     imputer = DropMissingData(threshold=0.01, missing_only=False)
     X = imputer.fit_transform(df_na)
     assert list(X.index) == [0, 1, 2, 3, 4, 5, 6, 7]
