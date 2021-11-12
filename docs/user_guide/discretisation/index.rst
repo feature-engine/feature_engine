@@ -11,7 +11,7 @@ new feature takes a finite number of values.
 
 The following illustration shows the process of discretisation:
 
-.. figure::  ../../images/discretisation.png
+.. figure::  ../../images/Discretisation.png
    :align:   center
    :width: 500
 
