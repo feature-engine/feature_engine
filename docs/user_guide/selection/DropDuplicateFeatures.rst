@@ -6,8 +6,17 @@ DropDuplicateFeatures
 =====================
 
 The :class:`DropDuplicateFeatures()` finds and removes duplicated variables from a dataframe.
-The user can pass a list of variables to examine, or alternatively the selector will
-examine all variables in the data set.
+Duplicated features are identical features, regardless of the variable or column name. If
+they show the same values for every observation, then they are considered duplicated.
+
+The transformer will automatically evaluate all variables, or alternatively, you can pass a
+list with the variables you wish to have examined. And it works with numerical and categorical
+features.
+
+**Example**
+
+Let's see how to use :class:`DropDuplicateFeatures()` in an example with the Titanic dataset.
+These dataset does not have duplicated features, so we will add a few manually:
 
 .. code:: python
 
@@ -37,8 +46,17 @@ examine all variables in the data set.
                 data.drop(['survived'], axis=1),
                 data['survived'], test_size=0.3, random_state=0)
 
+Now, we set up :class:`DropDuplicateFeatures()` to find the duplications:
+
+.. code:: python
+
     # set up the transformer
     transformer = DropDuplicateFeatures()
+
+With `fit()` the transformer finds the duplicated features, With `transform()` it removes
+them:
+
+.. code:: python
 
     # fit the transformer
     transformer.fit(X_train)
@@ -46,11 +64,18 @@ examine all variables in the data set.
     # transform the data
     train_t = transformer.transform(X_train)
 
+If we examine the variable names of the transformed dataset, we see that the duplicated
+features are not present:
+
+.. code:: python
+
     train_t.columns
 
 .. code:: python
 
     Index(['pclass', 'sex', 'age', 'sibsp', 'parch', 'cabin', 'embarked'], dtype='object')
+
+The features that are removed are stored in the transformer's attribute:
 
 ..  code:: python
 
@@ -59,6 +84,9 @@ examine all variables in the data set.
 .. code:: python
 
     {'age_dup', 'sex_dup', 'sibsp_dup'}
+
+And the transformer also stores the groups of duplicated features, which could be useful
+if we have groups where more than 2 features are identical.
 
 .. code:: python
 
@@ -72,7 +100,7 @@ examine all variables in the data set.
 More details
 ^^^^^^^^^^^^
 
-Check also:
+In this Kaggle kernel we use :class:`DropDuplicateFeatures()` together with other feature selection algorithms:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Drop-Duplicated-Features.ipynb>`_
+- `Kaggle kernel <https://www.kaggle.com/solegalli/feature-selection-with-feature-engine>`_
 
