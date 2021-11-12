@@ -5,40 +5,41 @@
 
 SelectByTargetMeanPerformance
 =============================
-    SelectByTargetMeanPerformance() uses the mean value of the target per category, or
-    interval if the variable is numerical, as proxy for target estimation. With this
-    proxy and the real target, the selector determines a performance metric for each
-    feature, and then selects them based on this performance metric.
 
-    SelectByTargetMeanPerformance() works with numerical and categorical variables.
-    First, it eparates the training set into train and test sets. Then it works as
-    follows:
+:class:`SelectByTargetMeanPerformance()` uses the mean value of the target per unique
+category, or per interval if the variable is numerical, as proxy for prediction. And with
+this prediction, it determines a performance metric against the target.
 
-    For each categorical variable:
+:class:`SelectByTargetMeanPerformance()` splits the data into two halves. The first half
+is used as training set to determine the mappings from category to mean target value or from
+interval to mean target value. The second half is the test set, where the categories and
+intervals will be mapped to the determined values, these will be considered a prediction,
+and assessed against the target to determine a performance metric.
 
-    1. Determines the mean target value per category using the train set
-    (equivalent to target mean encoding).
+These feature selection idea is very simple; it involves taking the mean of the
+responses (target) for each level (category or interval), and so amounts to a least
+squares fit on a single categorical variable against a response variable, with the
+categories in the continuous variables defined by intervals.
 
-    2. Replaces the categories in the test set by the target mean values.
+Despite its simplicity, the method has a number of advantages:
 
-    3. Using the encoded variables and the real target calculates the roc-auc or r2.
+- Speed: Computing means and intervals is fast, straightforward and efficient
+- Stability with respect to scale: Extreme values for continuous variables do not skew predictions as they would in many models
+- Comparability between continuous and categorical variables.
+- Accommodation of non-linearities.
+- Does not require encoding categorical variables into numbers.
 
-    4. Selects the features which roc-auc or r2 is bigger than the indicated
-    threshold.
+The methods has as well some limitations. First, the selection of the number of intervals
+as well as the threshold are arbitrary. And also, rare categories and
+very skewed variables will cause over-fitting or the model to raise an error if NAN
+are accidentally introduced.
 
-    For each numerical variable:
+**Example**
 
-    1- Discretises the variable into intervals of equal width or equal frequency
-    (uses the discretisers of Feature-engine).
+Let's see how to use this method to select variables in the Titanic dataset. We choose
+this data because it has a mix of numerical and categorical variables.
 
-    2- Determines the mean value of the target per interval using the train set.
-
-    3- Replaces the intervals in the test set, by the target mean values.
-
-    4- Using the transformed variable and the real target calculates the roc-auc or r2.
-
-    5- Selects the features which roc-auc or r2 is bigger than the indicated
-    threshold.
+Let's go ahead and load the data and separate it into train and test:
 
 .. code:: python
 
@@ -71,6 +72,12 @@ SelectByTargetMeanPerformance
         test_size=0.3,
         random_state=0)
 
+Now, we set up :class:`SelectByTargetMeanPerformance()`. We will examine the roc-auc
+using 2 fold cross-validation. We will separate numerical variables into
+equal frequency intervals. And we will retain those variables where the roc-auc is bigger
+than 0.6.
+
+.. code:: python
 
     # feature engine automates the selection for both categorical and numerical
     # variables
@@ -84,14 +91,30 @@ SelectByTargetMeanPerformance
         random_state=1, #seed for reproducibility
     )
 
+With `fit()` the transformer:
+
+- replaces categories by the target mean
+- sorts numerical variables into equal frequency bins
+- replaces bins by the target mean
+- using the target mean encoded variables returns the roc-auc
+- selects features which roc-auc >0.6
+
+.. code:: python
+
     # find important features
     sel.fit(X_train, y_train)
+
+The transformer stores the categorical variables identified in the data:
+
+.. code:: python
 
     sel.variables_categorical_
 
 .. code:: python
 
     ['pclass', 'sex', 'sibsp', 'parch', 'cabin', 'embarked']
+
+The transformer also stores the numerical variables:
 
 .. code:: python
 
@@ -100,6 +123,8 @@ SelectByTargetMeanPerformance
 .. code:: python
 
     ['age', 'fare']
+
+:class:`SelectByTargetMeanPerformance()` also stores the roc-auc per feature:
 
 .. code:: python
 
@@ -116,6 +141,8 @@ SelectByTargetMeanPerformance
      'cabin': 0.6379782658154696,
      'embarked': 0.5672382248783936}
 
+And the features that will be dropped from the data:
+
 .. code:: python
 
     sel.features_to_drop_
@@ -123,6 +150,8 @@ SelectByTargetMeanPerformance
 .. code:: python
 
     ['age', 'sibsp', 'parch', 'embarked']
+
+With `transform()` we can go ahead and drop the features:
 
 .. code:: python
 
