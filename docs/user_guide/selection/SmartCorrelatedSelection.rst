@@ -5,6 +5,53 @@
 SmartCorrelatedSelection
 ========================
 
+When we have big datasets, more than 2 features can be correlated. We could have 3, 4 or
+more features that are correlated. Thus, which one should be keep and which ones should we
+drop?
+
+:class:`SmartCorrelatedSelection` tries to answer this question.
+
+From a group of correlated variables, the :class:`SmartCorrelatedSelection` will retain
+the one with:
+
+- the highest variance
+- the highest cardinality
+- the least missing data
+- the most important (based on embedded selection methods)
+
+And drop the rest.
+
+Features with higher diversity of values (higher variance or cardinality), tend to be more
+predictive, whereas features with least missing data, tend to be more useful.
+
+Procedure
+---------
+
+:class:`SmartCorrelatedSelection` will first find correlated feature groups using any
+correlation method supported by `pandas.corr()`, or a user defined function that returns
+a value between -1 and 1.
+
+Then, from each group of correlated features, it will try and identify the best candidate
+based on the above criteria.
+
+If the criteria is based on feature importance, :class:`SmartCorrelatedSelection` will
+train a machine learning model using the correlated feature group, derive the feature importance
+from this model, end then keep the feature with the highest important.
+
+:class:`SmartCorrelatedSelection` works with machine learning models that derive coefficients
+or feature importance values.
+
+If the criteria is based on variance or cardinality, :class:`SmartCorrelatedSelection` will
+determine these attributes for each feature in the group and retain that one with the highest.
+
+If the criteria is based on missing data, :class:`SmartCorrelatedSelection` will determine the
+number of NA in each feature from the correlated group and keep the one with less NA.
+
+**Example**
+
+Let's see how to use :class:`SmartCorrelatedSelection` in a toy example. Let's create a
+toy dataframe with 4 correlated featutes:
+
 .. code:: python
 
     import pandas as pd
@@ -26,9 +73,13 @@ SmartCorrelatedSelection
         X = pd.DataFrame(X, columns=colnames)
         return X
 
-
     X = make_data()
 
+Now, we set up :class:`SmartCorrelatedSelection` to find features groups which (absolute)
+correlation coefficient is >0.8. From these groups, we want to retain the feature with
+highest variance:
+
+.. code:: python
 
     # set up the selector
     tr = SmartCorrelatedSelection(
@@ -40,14 +91,26 @@ SmartCorrelatedSelection
         estimator=None,
     )
 
+With `fit()` the transformer finds the correlated variables and selects the one to keep.
+With `transform()` it drops them from the dataset:
+
+.. code:: python
+
     Xt = tr.fit_transform(X)
+
+The correlated feature groups are stored in the transformer's attributes:
+
+.. code:: python
 
     tr.correlated_feature_sets_
 
+Note that in the second group, 4 features are correlated among themselves.
 
 .. code:: python
 
     [{'var_0', 'var_8'}, {'var_4', 'var_6', 'var_7', 'var_9'}]
+
+In the following attribute we find the features that will be removed from the dataset:
 
 ..  code:: python
 
@@ -56,6 +119,9 @@ SmartCorrelatedSelection
 .. code:: python
 
    ['var_0', 'var_4', 'var_6', 'var_9']
+
+If we now go ahead and print the transformed data, we see that the correlated features
+have been removed.
 
 .. code:: python
 
@@ -81,6 +147,8 @@ SmartCorrelatedSelection
 More details
 ^^^^^^^^^^^^
 
-Check also:
+In this notebook, we show how to use :class:`SmartCorrelatedSelection` with a different
+relation metric:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Smart-Correlation-Selection.ipynb>`_
+
