@@ -39,11 +39,11 @@ class DropMissingData(BaseImputer):
         list.
 
     threshold: int or float, default=None
-        Require a certain percentage of missing data in a row to drop it. If
-        `threshold=1`, all variables contemplated need to have NA to drop the row. If
-        `threshold=0.5`, 50% of the variables contemplated should show NA for a row to
-        be dropped. If `thresh=None`, rows with NA in any of the variables will be
-        dropped.
+        Require that percentage of non-NA values in a row to keep it. If
+        `threshold=1`, all variables need to have data to keep the row. If
+        `threshold=0.5`, 50% of the variables need to have data to keep the row.
+        If `threshold=0.01`, 10% of the variables need to have data to keep the row.
+        If `thresh=None`, rows with NA in any of the variables will be dropped.
 
     Attributes
     ----------
