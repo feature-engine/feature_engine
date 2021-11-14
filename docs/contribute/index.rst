@@ -50,6 +50,8 @@ Contributing Guide
     :maxdepth: 2
     :hidden:
 
-    github_quick_start
-    building_the_docs
+    contribute_code
+    contribute_docs
+    contribute_jup
+    contribute_other
     code_of_conduct

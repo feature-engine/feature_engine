@@ -1,7 +1,7 @@
 .. -*- mode: rst -*-
 
-Getting Started with Feature-engine on GitHub
-=============================================
+Contribute Code
+===============
 
 Feature-engine is hosted on `GitHub <https://github.com/feature-engine/feature_engine>`_.
 

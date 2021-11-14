@@ -1,7 +1,7 @@
 .. -*- mode: rst -*-
 
-Getting started with Feature-engine documentation
-=================================================
+Contribute Docs
+===============
 
 Feature-engine documentation is built using `Sphinx <https://www.sphinx-doc.org>`_ and
 is hosted on `Read the Docs <https://readthedocs.org/>`_.
