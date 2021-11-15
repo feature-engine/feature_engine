@@ -221,6 +221,12 @@ basically need to repeat these steps as often as you need::
 Once you think your code is ready to review, leave a message in the PR saying "please review"
 or something similar.
 
+Create Docstrings
+~~~~~~~~~~~~~~~~~
+
+If you are coding an entire new class, make sure you follow our :ref:`guidelines to create
+the docstrings <contribute_docs>`.
+
 Test the Code
 -------------
 

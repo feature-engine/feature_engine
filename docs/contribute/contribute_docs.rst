@@ -1,4 +1,5 @@
 .. -*- mode: rst -*-
+.. _contribute_docs:
 
 Contribute Docs
 ===============
