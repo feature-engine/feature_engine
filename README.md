@@ -21,7 +21,7 @@ Feature-engine's transformers follow Scikit-learn's functionality with fit() and
 transforming parameters from the data and then transform it.
 
 
-## Feature-engine features in the following resources:
+## Feature-engine features in the following resources
 
 * [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06)
 
@@ -32,25 +32,23 @@ transforming parameters from the data and then transform it.
 * [Python Feature Engineering Cookbook](https://packt.link/python)
 
 
-## Blogs about Feature-engine:
+## Blogs about Feature-engine
 
 * [Feature-engine: A new open-source Python package for feature engineering](https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c)
 
 * [Practical Code Implementations of Feature Engineering for Machine Learning with Python](https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd)
 
 
-## Documentation
-
-* [Documentation](http://feature-engine.readthedocs.io)
-
-
-## En Español:
+## En Español
 
 * [Ingeniería de variables para machine learning, Curso Online](https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C)
 
 * [Ingeniería de variables, MachinLenin, charla online](https://www.youtube.com/watch?v=NhCxOOoFXds)
 
 
+## Documentation
+
+* [Documentation](http://feature-engine.readthedocs.io)
 
 
 ## Current Feature-engine's transformers include functionality for:
@@ -138,15 +136,15 @@ From Anaconda:
 
 ```
 conda install -c conda-forge feature_engine
-
 ```
+
 Or simply clone it:
 
 ```
 git clone https://github.com/feature-engine/feature_engine.git
 ```
 
-### Example Usage
+## Example Usage
 
 ```python
 >>> import pandas as pd
