@@ -21,7 +21,7 @@ class CategoricalImputer(BaseImputer):
 
     The CategoricalVariableImputer() imputes by default only categorical variables
     (type 'object' or 'categorical'). You can pass a list of variables to impute, or
-    alternatively, the encoder will find and encode all categorical variables.
+    alternatively, the encoder will find and impute all categorical variables.
 
     If you want to impute numerical variables with this transformer, there are 2 ways
     of doing it:
@@ -32,6 +32,8 @@ class CategoricalImputer(BaseImputer):
     **Option 2**: Set `ignore_format=True`. Note that if you do this and do not pass the
     list of variables to impute, the imputer will automatically select and impute all
     variables in the dataframe.
+
+    More details in the :ref:`User Guide <categorical_imputer>`.
 
     Parameters
     ----------
@@ -47,7 +49,7 @@ class CategoricalImputer(BaseImputer):
         The list of categorical variables that will be imputed. If None, the
         imputer will find and transform all variables of type object or categorical by
         default. You can also make the transformer accept numerical variables, see the
-        parameter ignore_format below.
+        parameter `ignore_format` below.
 
     return_object: bool, default=False
         If working with numerical variables cast as object, decide
@@ -76,7 +78,7 @@ class CategoricalImputer(BaseImputer):
     Methods
     -------
     fit:
-        Learn the most frequent category, or assign arbitrary value to variable.
+        Learn the most frequent category or assign arbitrary value to variable.
     transform:
         Impute missing data.
     fit_transform:
@@ -117,18 +119,6 @@ class CategoricalImputer(BaseImputer):
 
         y: pandas Series, default=None
             y is not needed in this imputation. You can pass None or y.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame.
-            - If user enters non-categorical variables (unless ignore_format is True)
-        ValueError
-            If there are no categorical variables in the df or the df is empty
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

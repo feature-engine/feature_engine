@@ -1,20 +1,39 @@
 @import url("theme.css");
 
-.highlight a {
-    text-decoration: underline;
+
+/* Css template from sklearn:
+https://github.com/scikit-learn/scikit-learn/blob/f71c0313142c4e5f2f35a0021c36075cf8dba611/doc/themes/scikit-learn-modern/static/css/theme.css
+*/
+
+/* authors */
+.authors-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-.wy-nav-content {
-    max-width: 1200px !important;
+
+/* sponsors and testimonials */
+
+div.sk-sponsor-div, div.sk-testimonial-div {
+  display: flex;
+  flex-wrap: wrap;
+  -webkit-flex-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  align-items: center;
 }
 
-
-.wy-table-responsive {
-    overflow: visible !important;
+div.sk-sponsor-div-box, div.sk-testimonial-div-box {
+  width: 100%;
 }
 
-.classifier:before {
-    font-style: normal;
-    margin: 0.5em;
-    content: ":";
+@media screen and (min-width: 500px) {
+  div.sk-sponsor-div-box, div.sk-testimonial-div-box {
+    width: 50%;
+  }
+}
+
+.caption {
+  text-align: center
 }

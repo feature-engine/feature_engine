@@ -16,27 +16,28 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class RecursiveFeatureElimination(BaseSelector):
     """
-    RecursiveFeatureElimination selects features following a recursive process.
+    RecursiveFeatureElimination() selects features following a recursive elimination
+    process.
 
     The process is as follows:
 
     1. Train an estimator using all the features.
 
-    2. Rank the features according to their importance, derived from the estimator.
+    2. Rank the features according to their importance derived from the estimator.
 
-    3. Remove the least important and fit a new estimator with the remaining variables.
+    3. Remove the least important feature and fit a new estimator.
 
     4. Calculate the performance of the new estimator.
 
-    5. Calculate the difference in performance between the new and the original
-    estimator.
+    5. Calculate the performance difference between the new and original estimator.
 
-    6. If the performance drops beyond the threshold, then that feature is important
-    and will be kept. Otherwise, that feature is removed.
+    6. If the performance drop is below the threshold the feature is removed.
 
     7. Repeat steps 3-6 until all features have been evaluated.
 
-    Model training and performance calculation are done with cross-validation.
+    Model training and performance evaluation are done with cross-validation.
+
+    More details in the :ref:`User Guide <recursive_elimination>`.
 
     Parameters
     ----------
@@ -58,7 +59,7 @@ class RecursiveFeatureElimination(BaseSelector):
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
-        root_mean_square_error the threshold will be a big number.
+        root_mean_square_error the threshold can be a big number.
         The threshold must be defined by the user. Bigger thresholds will select less
         features.
 
@@ -75,11 +76,10 @@ class RecursiveFeatureElimination(BaseSelector):
             - An iterable yielding (train, test) splits as arrays of indices.
 
         For int/None inputs, if the estimator is a classifier and y is either binary or
-        multiclass, StratifiedKFold is used. In all other cases, Fold is used. These
-        splitters are instantiated with shuffle=False so the splits will be the same
-        across calls.
-
-        For more details check Scikit-learn's cross_validate documentation
+        multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
+        splitters are instantiated with `shuffle=False` so the splits will be the same
+        across calls. For more details check Scikit-learn's `cross_validate`'s
+        documentation.
 
     Attributes
     ----------
@@ -90,13 +90,13 @@ class RecursiveFeatureElimination(BaseSelector):
         Pandas Series with the feature importance (comes from step 2)
 
     performance_drifts_:
-        Dictionary with the performance drift per examined feature.
+        Dictionary with the performance drift per examined feature (comes from step 5).
 
     features_to_drop_:
         List with the features to remove from the dataset.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables that will be considered for the feature selection.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -140,11 +140,6 @@ class RecursiveFeatureElimination(BaseSelector):
            The input dataframe
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

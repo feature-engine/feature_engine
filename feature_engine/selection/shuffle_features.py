@@ -25,20 +25,21 @@ class SelectByShuffling(BaseSelector):
     If the variables are important, a random permutation of their values will
     decrease dramatically the machine learning model performance. Contrarily, the
     permutation of the values should have little to no effect on the model performance
-    metric we are assessing.
+    metric we are assessing if the feature is not predictive.
 
     The SelectByShuffling() first trains a machine learning model utilising all
     features. Next, it shuffles the values of 1 feature, obtains a prediction with the
     pre-trained model, and determines the performance drop (if any). If the drop in
     performance is bigger than a threshold then the feature is retained, otherwise
-    removed. It continues until all features have been shuffled and the drop in
-    performance evaluated.
+    removed. It continues until all features have been shuffled and examined.
 
     The user can determine the model for which performance drop after feature shuffling
     should be assessed. The user also determines the threshold in performance under
     which a feature will be removed, and the performance metric to evaluate.
 
     Model training and performance calculation are done with cross-validation.
+
+    More details in the :ref:`User Guide <feature_shuffling>`.
 
     Parameters
     ----------
@@ -58,8 +59,8 @@ class SelectByShuffling(BaseSelector):
         The value that defines if a feature will be kept or removed. Note that for
         metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
         between 0 and 1. For metrics like the mean_square_error and the
-        root_mean_square_error the threshold will be a big number. The threshold can be
-        defined by the user. If None, the selector will select features which
+        root_mean_square_error the threshold might be a big number. The threshold can
+        be defined by the user. If None, the selector will select features which
         performance drift is smaller than the mean performance drift across all
         features.
 
@@ -76,11 +77,10 @@ class SelectByShuffling(BaseSelector):
             - An iterable yielding (train, test) splits as arrays of indices.
 
         For int/None inputs, if the estimator is a classifier and y is either binary or
-        multiclass, StratifiedKFold is used. In all other cases, Fold is used. These
-        splitters are instantiated with shuffle=False so the splits will be the same
-        across calls.
-
-        For more details check Scikit-learn's cross_validate documentation
+        multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
+        splitters are instantiated with `shuffle=False` so the splits will be the same
+        across calls. For more details check Scikit-learn's `cross_validate`'s
+        documentation.
 
     random_state: int, default=None
         Controls the randomness when shuffling features.
@@ -97,7 +97,7 @@ class SelectByShuffling(BaseSelector):
         List with the features to remove from the dataset.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables that will be considered for the feature selection.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -110,6 +110,16 @@ class SelectByShuffling(BaseSelector):
         Reduce X to the selected features.
     fit_transform:
         Fit to data, then transform it.
+
+    Notes
+    -----
+    This transformer is a similar concept to the `permutation_importance` from
+    Scikit-learn. The function in Scikit-learn is used to evaluate feature importance
+    instead of to select features.
+
+    See Also
+    --------
+    sklearn.inspection.permutation_importance
     """
 
     def __init__(
@@ -139,13 +149,9 @@ class SelectByShuffling(BaseSelector):
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
-           The input dataframe
+           The input dataframe.
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

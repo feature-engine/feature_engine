@@ -19,13 +19,13 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 class DropCorrelatedFeatures(BaseSelector):
     """
     DropCorrelatedFeatures() finds and removes correlated features. Correlation is
-    calculated with `pandas.corr()`.
-
-    Features are removed on first found first removed basis, without any further
-    insight.
+    calculated with `pandas.corr()`. Features are removed on first found first removed
+    basis, without any further insight.
 
     DropCorrelatedFeatures() works only with numerical variables. Categorical variables
     will need to be encoded to numerical or will be excluded from the analysis.
+
+    More details in the :ref:`User Guide <drop_correlated>`.
 
     Parameters
     ----------
@@ -37,9 +37,9 @@ class DropCorrelatedFeatures(BaseSelector):
         Can take 'pearson', 'spearman', 'kendall' or callable. It refers to the
         correlation method to be used to identify the correlated features.
 
-        - pearson : standard correlation coefficient
-        - kendall : Kendall Tau correlation coefficient
-        - spearman : Spearman rank correlation
+        - 'pearson': standard correlation coefficient
+        - 'kendall': Kendall Tau correlation coefficient
+        - 'spearman': Spearman rank correlation
         - callable: callable with input two 1d ndarrays and returning a float.
 
         For more details on this parameter visit the  `pandas.corr()` documentation.
@@ -61,7 +61,7 @@ class DropCorrelatedFeatures(BaseSelector):
         Groups of correlated features. Each list is a group of correlated features.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables that will be considered for the feature selection.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -74,6 +74,11 @@ class DropCorrelatedFeatures(BaseSelector):
         Remove correlated features.
     fit_transform:
         Fit to the data. Then transform it.
+
+    Notes
+    -----
+    If you want to select from each group of correlated features those that are perhaps
+    more predictive or more complete, check Feature-engine's SmartCorrelationSelection.
 
     See Also
     --------
@@ -111,10 +116,6 @@ class DropCorrelatedFeatures(BaseSelector):
 
         y : pandas series. Default = None
             y is not needed in this transformer. You can pass y or None.
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

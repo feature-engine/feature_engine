@@ -1,55 +1,58 @@
 # Feature Engine
 
 ![PythonVersion](https://img.shields.io/badge/python-3.6%20|3.7%20|%203.8%20|%203.9-success)
-[![PyPI version](https://badge.fury.io/py/feature-engine.svg)](https://badge.fury.io/py/feature-engine)
 [![License https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md](https://img.shields.io/badge/license-BSD-success.svg)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md)
+[![PyPI version](https://badge.fury.io/py/feature-engine.svg)](https://badge.fury.io/py/feature-engine)
+[![Conda https://anaconda.org/conda-forge/feature_engine](https://anaconda.org/conda-forge/feature_engine/badges/installer/conda.svg)](https://anaconda.org/conda-forge/feature_engine)
 [![CircleCI https://app.circleci.com/pipelines/github/feature-engine/feature_engine?branch=1.1.X](https://img.shields.io/circleci/build/github/feature-engine/feature_engine)](https://app.circleci.com/pipelines/github/feature-engine/feature_engine?branch=1.1.X)
 [![Documentation Status https://feature-engine.readthedocs.io/en/latest/index.html](https://readthedocs.org/projects/feature-engine/badge/?version=latest)](https://feature-engine.readthedocs.io/en/latest/index.html)
 [![Join the chat at https://gitter.im/feature_engine/community](https://badges.gitter.im/feature_engine/community.svg)](https://gitter.im/feature_engine/community)
 [![Sponsorship https://www.trainindata.com/](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/)
 [![Downloads](https://pepy.tech/badge/feature-engine)](https://pepy.tech/project/feature-engine)
 [![Downloads](https://pepy.tech/badge/feature-engine/month)](https://pepy.tech/project/feature-engine)
-[![Conda https://anaconda.org/conda-forge/feature_engine](https://anaconda.org/conda-forge/feature_engine/badges/installer/conda.svg)](https://anaconda.org/conda-forge/feature_engine)
 [![DOI](https://zenodo.org/badge/163630824.svg)](https://zenodo.org/badge/latestdoi/163630824)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.03642/status.svg)](https://doi.org/10.21105/joss.03642)
 
 
+[<img src="./docs/images/logo/FeatureEngine.png" width="248">](http://feature-engine.readthedocs.io)
+
 Feature-engine is a Python library with multiple transformers to engineer and select features for use in machine learning models. 
-Feature-engine's transformers follow scikit-learn's functionality with fit() and transform() methods to first learn the 
-transforming parameters from data and then transform the data.
+Feature-engine's transformers follow Scikit-learn's functionality with fit() and transform() methods to learn the 
+transforming parameters from the data and then transform it.
 
 
-## Feature-engine features in the following resources:
+## Feature-engine features in the following resources
 
 * [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06)
 
 * [Feature Selection for Machine Learning, Online Course](https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71)
 
-* [Python Feature Engineering Cookbook](https://www.packtpub.com/data/python-feature-engineering-cookbook)
-
 * [Deployment of Machine Learning Models, Online Course](https://www.udemy.com/course/deployment-of-machine-learning-models/?referralCode=D4FE5EA129FFD203CFF4)
 
-## Blogs about Feature-engine:
+* [Python Feature Engineering Cookbook](https://packt.link/python)
+
+
+## Blogs about Feature-engine
 
 * [Feature-engine: A new open-source Python package for feature engineering](https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c)
 
 * [Practical Code Implementations of Feature Engineering for Machine Learning with Python](https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd)
 
-## Documentation
 
-* [Documentation](http://feature-engine.readthedocs.io)
-* [Home page](https://www.trainindata.com/feature-engine)
-
-## En Español:
+## En Español
 
 * [Ingeniería de variables para machine learning, Curso Online](https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C)
 
 * [Ingeniería de variables, MachinLenin, charla online](https://www.youtube.com/watch?v=NhCxOOoFXds)
 
-More resources will be added as they appear online!
+
+## Documentation
+
+* [Documentation](http://feature-engine.readthedocs.io)
 
 
 ## Current Feature-engine's transformers include functionality for:
+
 * Missing Data Imputation
 * Categorical Variable Encoding
 * Outlier Capping or Removal
@@ -60,7 +63,7 @@ More resources will be added as they appear online!
 * Scikit-learn Wrappers
 * Preprocessing
 
-### Imputing Methods
+### Imputation Methods
 * MeanMedianImputer
 * RandomSampleImputer
 * EndTailImputer
@@ -98,9 +101,6 @@ More resources will be added as they appear online!
 * BoxCoxTransformer
 * YeoJohnsonTransformer
 
-### Scikit-learn Wrapper:
- * SklearnTransformerWrapper
-
 ### Variable Creation:
  * MathematicalCombination
  * CombineWithReferenceFeature
@@ -120,8 +120,11 @@ More resources will be added as they appear online!
 
 ### Preprocessing
  * MatchVariables
+ 
+### Wrappers:
+ * SklearnTransformerWrapper
 
-## Installing
+## Installation
 
 From PyPI using pip:
 
@@ -133,15 +136,15 @@ From Anaconda:
 
 ```
 conda install -c conda-forge feature_engine
-
 ```
+
 Or simply clone it:
 
 ```
 git clone https://github.com/feature-engine/feature_engine.git
 ```
 
-### Usage
+## Example Usage
 
 ```python
 >>> import pandas as pd
@@ -175,21 +178,21 @@ Rare     3
 Name: var_A, dtype: int64
 ```
 
-See more usage examples in the Jupyter Notebooks in the **example** folder of this repository, or in the [documentation](http://feature-engine.readthedocs.io).
+Find more examples in our [Jupyter Notebook Gallery](https://nbviewer.org/github/feature-engine/feature-engine-examples/tree/main/) 
+or in the [documentation](http://feature-engine.readthedocs.io).
 
-## Contributing
+## Contribute
 
-Details about how to contribute can be found in the [Contributing Page](https://feature-engine.readthedocs.io/en/latest/contribute/index.html)
+Details about how to contribute can be found in the [Contribute Page](https://feature-engine.readthedocs.io/en/latest/contribute/index.html)
 
-In short:
+Briefly:
 
-### Local Setup Steps
 - Fork the repo
 - Clone your fork into your local computer: ``git clone https://github.com/<YOURUSERNAME>/feature_engine.git``
-- cd into the repo ``cd feature_engine``
-- Install as a developer: ``pip install -e .``
-- Create and activate a virtual environment with any tool of choice
-- Install the dependencies as explained in the [Contributing Page](https://feature-engine.readthedocs.io/en/latest/contribute/index.html)
+- navigate into the repo folder ``cd feature_engine``
+- Install Feature-engine as a developer: ``pip install -e .``
+- Optional: Create and activate a virtual environment with any tool of choice
+- Install Feature-engine dependencies: ``pip install -r requirements.txt`` and ``pip install -r test_requirements.txt``
 - Create a feature branch with a meaningful name for your feature: ``git checkout -b myfeaturebranch``
 - Develop your feature, tests and documentation
 - Make sure the tests pass
@@ -197,36 +200,16 @@ In short:
 
 Thank you!!
 
-### Opening Pull Requests
-PR's are welcome! Please make sure the CI tests pass on your branch.
-
-### Tests
-
-We prefer tox. In your environment:
-
-- Run `pip install tox`
-- cd into the root directory of the repo: ``cd feature_engine``
-- Run `tox` 
-
-If the tests pass, the code is functional.
-
-You can also run the tests in your environment (without tox). For guidelines on how to do so, check the [Contributing Page](https://feature-engine.readthedocs.io/en/latest/contribute/index.html).
-
 
 ### Documentation
 
 Feature-engine documentation is built using [Sphinx](https://www.sphinx-doc.org) and is hosted on [Read the Docs](https://readthedocs.org/).
 
-To build the documentation make sure you have the dependencies installed. From the root directory: ``pip install -r docs/requirements.txt``.
+To build the documentation make sure you have the dependencies installed: from the root directory: ``pip install -r docs/requirements.txt``.
 
-Now you can build the docs: ``sphinx-build -b html docs build``
+Now you can build the docs using: ``sphinx-build -b html docs build``
 
 
 ## License
 
 BSD 3-Clause
-
-
-## References
-
-Many of the engineering and encoding functionalities are inspired by this [series of articles from the 2009 KDD Competition](http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf).

@@ -31,14 +31,16 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
     variable (fit). The encoder then replaces the categories with those numbers
     (transform).
 
+    More details in the :ref:`User Guide <count_freq_encoder>`.
+
     Parameters
     ----------
     encoding_method: str, default='count'
         Desired method of encoding.
 
-        'count': number of observations per category
+        **'count'**: number of observations per category
 
-        'frequency': percentage of observations per category
+        **'frequency'**: percentage of observations per category
 
     variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
@@ -48,7 +50,7 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
-        ignored. If false, the encoder will automatically select variables of type
+        ignored. If False, the encoder will automatically select variables of type
         object or categorical, or check that the variables entered by the user are of
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.
@@ -81,9 +83,13 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
     dataset. If this happens, try grouping infrequent categories using the
     RareLabelEncoder().
 
+    There is a similar implementation in the the open-source package
+    `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
+
     See Also
     --------
     feature_engine.encoding.RareLabelEncoder
+    category_encoders.count.CountEncoder
     """
 
     def __init__(
@@ -116,19 +122,6 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
 
         y: pandas Series, default = None
             y is not needed in this encoder. You can pass y or None.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame.
-            - f user enters non-categorical variables (unless ignore_format is True)
-        ValueError
-            - If there are no categorical variables in the df or the df is empty
-            - If the variable(s) contain null values
-
-        Returns
-        -------
-        self
         """
 
         X = self._check_fit_input_and_variables(X)

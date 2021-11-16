@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # feature_engine documentation build configuration file, created by
@@ -15,7 +14,7 @@
 
 import os
 import sys
-import sphinx_rtd_theme
+from datetime import datetime
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -42,29 +41,10 @@ extensions = [
     "numpydoc",
     "sphinx.ext.linkcode",
     # "sphinx.ext.doctest",
-    # "sphinx.ext.todo",
-    # "sphinx.ext.coverage",
-    # "sphinx.ext.mathjax",
-    # "sphinx.ext.ifconfig",
-    # "sphinx-prompt",
 ]
-
-# this is needed for some reason...
-# see https://github.com/numpy/numpydoc/issues/69
-numpydoc_show_class_members = False
-numpydoc_attributes_as_param_list = False
-
-# autodoc_default_options = {
-# #     "members": True,
-# #     "inherited-members": False,
-# # }
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
-
-# generate autosummary even if no references
-autosummary_generate = True
-autosummary_imported_members = True
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -76,7 +56,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "Feature-engine"
-copyright = "2018-2021, Feature-engine developers"
+copyright = f"2018-{datetime.now().year}, Feature-engine developers"
 author = "Feature-engine developers"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -89,6 +69,7 @@ with open(VERSION_PATH, "r") as version_file:
 
 # The short X.Y version.
 version = v
+
 # The full version, including alpha/beta/rc tags.
 release = v
 
@@ -122,37 +103,38 @@ show_authors = False
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
 
-# Custom style
-html_style = "css/feature-engine.css"
-
-# If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = False
-
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
 html_theme_options = {
-    "logo_only": True,
-    "style_nav_header_background": "#e09200",
-    "canonical_url": "https://feature-engine.readthedocs.io/en/latest/",
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/feature-engine/feature_engine",
+            "icon": "fab fa-github-square",
+        },
+    ],
+    "favicons": [
+        {
+            "rel": "icon",
+            "sizes": "16x16",
+            "href": "images/logo/favicon.png",
+        },
+    ],
+    "navigation_depth": 2,
+    "show_toc_level": 2,
 }
-
-# Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
-# autoclass_content = "both"
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -160,17 +142,18 @@ html_title = version
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = "images/logo/Logo.png"
+html_logo = "images/logo/Logo_name.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 html_favicon = "images/logo/favicon.png"
 
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
+# Custom style
+html_style = "css/feature-engine.css"
+html_css_files = [
+    "css/feature-engine.css",
+]
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 html_show_sphinx = True
@@ -178,10 +161,38 @@ html_show_sphinx = True
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 html_show_copyright = True
 
-# -- Options for HTMLHelp output ------------------------------------------
-
 # Output file base name for HTML help builder.
 htmlhelp_basename = "feature_enginedoc"
+
+
+# -- Options for autodoc ------------------------------------------------------
+
+autodoc_default_options = {
+    "members": True,
+    "inherited-members": True,
+}
+
+# generate autosummary even if no references
+autosummary_generate = True
+
+# -- Options for numpydoc -----------------------------------------------------
+
+# this is needed for some reason...
+# see https://github.com/numpy/numpydoc/issues/69
+numpydoc_show_class_members = False
+
+
+# -- Options for intersphinx --------------------------------------------------
+
+# intersphinx configuration
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/{.major}".format(sys.version_info), None),
+    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
+    "matplotlib": ("https://matplotlib.org/", None),
+    "sklearn": ("http://scikit-learn.org/stable", None),
+}
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -212,16 +223,6 @@ latex_documents = [
         "manual",
     ),
 ]
-
-# intersphinx configuration
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/{.major}".format(sys.version_info), None),
-    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
-    "pandas": ("https://pandas.pydata.org/docs/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
-    "matplotlib": ("https://matplotlib.org/", None),
-    "sklearn": ("http://scikit-learn.org/stable", None),
-}
 
 # -- Options for manual page output ---------------------------------------
 

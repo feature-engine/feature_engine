@@ -17,42 +17,34 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     The DecisionTreeEncoder() encodes categorical variables with predictions
     of a decision tree.
 
-    The encoder first fits a decision tree using a single feature and the target (fit).
-    And  then replaces the values of the original feature by the predictions of the
-    tree (transform). The transformer will train a Decision tree per every feature to
+    The encoder first fits a decision tree using a single feature and the target (fit),
+    and then replaces the values of the original feature by the predictions of the
+    tree (transform). The transformer will train a decision tree per every feature to
     encode.
-
-    The motivation is to try and create monotonic relationships between the categorical
-    variables and the target.
-
-    Under the hood, the categorical variable will be first encoded into integers with
-    the OrdinalCategoricalEncoder(). The integers can be assigned arbitrarily to the
-    categories or following the mean value of the target in each category. Then a
-    decision tree will fit the resulting numerical variable to predict the target
-    variable. Finally, the original categorical variable values will be replaced by the
-    predictions of the decision tree.
 
     The DecisionTreeEncoder() will encode only categorical variables by default
     (type 'object' or 'categorical'). You can pass a list of variables to encode or the
-    encoder will find and encode all categorical variables. But with
-    `ignore_format=True` you have the option to encode numerical variables as well. In
-    this case, you can either enter the list of variables to encode, or the transformer
-    will automatically select all variables.
+    encoder will find and encode all categorical variables.
+
+    With `ignore_format=True` you have the option to encode numerical variables as
+    well. In this case, you can either enter the list of variables to encode, or the
+    transformer will automatically select all variables.
+
+    More details in the :ref:`User Guide <decisiontree_encoder>`.
 
     Parameters
     ----------
     encoding_method: str, default='arbitrary'
-        The categorical encoding method that will be used to encode the original
-        categories to numerical values.
+        The method used to encode the categories to numerical values before fitting the
+        decision tree.
 
-        'ordered': the categories are numbered in ascending order according to
+        **'ordered'**: the categories are numbered in ascending order according to
         the target mean value per category.
 
-        'arbitrary' : categories are numbered arbitrarily.
+        **'arbitrary'** : categories are numbered arbitrarily.
 
     cv: int, default=3
-        Desired number of cross-validation fold to be used to fit the decision
-        tree.
+        Desired cross-validation fold to fit the decision tree.
 
     scoring: str, default='neg_mean_squared_error'
         Desired metric to optimise the performance for the decision tree. Comes from
@@ -61,12 +53,10 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         https://scikit-learn.org/stable/modules/model_evaluation.html
 
     param_grid: dictionary, default=None
-        The list of parameters over which the decision tree should be optimised
-        during the grid search. The param_grid can contain any of the permitted
-        parameters for Scikit-learn's DecisionTreeRegressor() or
-        DecisionTreeClassifier().
-
-        If None, then param_grid = {'max_depth': [1, 2, 3, 4]}.
+        The hyperparameters for the decision tree to test with a grid search. The
+        `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
+        DecisionTreeRegressor() or DecisionTreeClassifier(). If None, then
+        `param_grid = {'max_depth': [1, 2, 3, 4]}`.
 
     regression: boolean, default=True
         Indicates whether the encoder should train a regression or a classification
@@ -86,7 +76,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
-        ignored. If false, the encoder will automatically select variables of type
+        ignored. If False, the encoder will automatically select variables of type
         object or categorical, or check that the variables entered by the user are of
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.
@@ -113,9 +103,10 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     Notes
     -----
-    The authors designed this method originally, to work with numerical variables. We
-    can replace numerical variables by the preditions of a decision tree utilising the
-    DecisionTreeDiscretiser().
+    The authors designed this method originally to work with numerical variables. We
+    can replace numerical variables by the predictions of a decision tree utilising the
+    DecisionTreeDiscretiser(). Here we extend this functionality to work also with
+    categorical variables.
 
     NAN are introduced when encoding categories that were not present in the training
     dataset. If this happens, try grouping infrequent categories using the
@@ -170,19 +161,6 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         y : pandas series.
             The target variable. Required to train the decision tree and for
             ordered ordinal encoding.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame.
-            - f user enters non-categorical variables (unless ignore_format is True)
-        ValueError
-            - If there are no categorical variables in the df or the df is empty
-            - If the variable(s) contain null values
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe
@@ -226,26 +204,16 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Replace categorical variable by the predictions of the decision tree.
+        Replace categorical variables by the predictions of the decision tree.
 
         Parameters
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            - If the variable(s) contain null values
-            - If dataframe is not of same size as that used in fit()
-        Warning
-            If after encoding, NAN were introduced.
-
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features].
+        X_new : pandas dataframe of shape = [n_samples, n_features].
             Dataframe with variables encoded with decision tree predictions.
         """
 

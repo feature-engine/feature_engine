@@ -39,6 +39,11 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
         df_transformed = match_columns.transform(test)
 
+    Note that in the returned dataframe, the variable "Hobbies" was removed and the
+    variable "City" was added with np.nan:
+
+    .. code-block:: python
+
         df_transformed
 
             Name    City  Age  Marks
@@ -49,6 +54,8 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
     The order of the variables in the transformed dataset is also adjusted to match
     that observed in the train set.
+
+    More details in the :ref:`User Guide <match_variables>`.
 
     Parameters
     ----------
@@ -115,19 +122,10 @@ class MatchVariables(BaseEstimator, TransformerMixin):
         ----------
 
         X: pandas dataframe of shape = [n_samples, n_features]
-            The input dataframe
+            The input dataframe.
 
         y: None
             y is not needed for this transformer. You can pass y or None.
-
-        Raises
-        ------
-        TypeError
-           - If the input is not a Pandas DataFrame
-
-        Returns
-        -------
-        self
         """
         X = _is_dataframe(X)
 
@@ -143,8 +141,10 @@ class MatchVariables(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Drops variables that were not seen in the train set and adds variables that
-         were in the train set but not in the data to transform.
+        """
+        Drops variables that were not seen in the train set and adds variables that
+        were in the train set but not in the data to transform. In other words, it
+        returns a dataframe with matching columns.
 
         Parameters
         ----------
@@ -153,7 +153,7 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X_transformed: Pandas dataframe, shape = [n_samples, n_features]
+        X_new: Pandas dataframe, shape = [n_samples, n_features]
              The dataframe with variables that match those observed in the train set.
         """
         check_is_fitted(self)

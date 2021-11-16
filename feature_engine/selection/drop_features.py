@@ -9,20 +9,19 @@ from feature_engine.validation import _return_tags
 
 class DropFeatures(BaseSelector):
     """
-    DropFeatures() drops a list of variable(s) indicated by the user from the dataframe.
+    DropFeatures() drops a list of variables indicated by the user from the dataframe.
 
-    **When is this transformer useful?**
-
-    Sometimes, we create new variables combining other variables in the dataset, for
-    example, we obtain the variable `age` by subtracting `date_of_application` from
-    `date_of_birth`. After we obtained our new variable, we do not need the date
-    variables in the dataset any more. Thus, we can add DropFeatures() in the Pipeline
-    to have these removed.
+    More details in the :ref:`User Guide <drop_features>`.
 
     Parameters
     ----------
     features_to_drop: str or list
         Variable(s) to be dropped from the dataframe
+
+    Attributes
+    ----------
+    features_to_drop_:
+        The features that will be dropped.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -52,19 +51,12 @@ class DropFeatures(BaseSelector):
         """
         This transformer does not learn any parameter.
 
-        Verifies that the input X is a pandas dataframe, and that the variables to
-        drop exist in the training dataframe.
-
         Parameters
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
             The input dataframe
         y : pandas Series, default = None
             y is not needed for this transformer. You can pass y or None.
-
-        Returns
-        -------
-        self
         """
         # check input dataframe
         X = _is_dataframe(X)

@@ -10,9 +10,6 @@ from feature_engine.outliers import Winsorizer
 class OutlierTrimmer(Winsorizer):
     """The OutlierTrimmer() removes observations with outliers from the dataset.
 
-    It works only with numerical variables. A list of variables can be indicated.
-    Alternatively, the OutlierTrimmer() will select all numerical variables.
-
     The OutlierTrimmer() first calculates the maximum and /or minimum values
     beyond which a value will be considered an outlier, and thus removed.
 
@@ -40,7 +37,7 @@ class OutlierTrimmer(Winsorizer):
     - left tail:  5th percentile
 
     You can select how far out to cap the maximum or minimum values with the
-    parameter 'fold'.
+    parameter `'fold'`.
 
     If `capping_method='gaussian'` fold gives the value to multiply the std.
 
@@ -50,25 +47,29 @@ class OutlierTrimmer(Winsorizer):
     be censored. For example, if fold=0.05, the limits will be the 5th and 95th
     percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
 
-    The transformer first finds the values at one or both tails of the distributions
-    (fit).
+    The OutlierTrimmer() works only with numerical variables. A list of variables can
+    be indicated. Alternatively, it will select all numerical variables.
 
-    The transformer then removes observations with outliers from the dataframe
+    The transformer first finds the values at one or both tails of the distributions
+    (fit). The transformer then removes observations with outliers from the dataframe
     (transform).
+
+    More details in the :ref:`User Guide <outlier_trimmer>`.
 
     Parameters
     ----------
-    capping_method: str, default=gaussian
+    capping_method: str, default='gaussian'
         Desired capping method. Can take 'gaussian', 'iqr' or 'quantiles'.
 
-        'gaussian': the transformer will find the maximum and / or minimum values to
-        cap the variables using the Gaussian approximation.
+        **'gaussian'**: the transformer will find the maximum and / or minimum values
+        to cap the variables using the Gaussian approximation.
 
-        'iqr': the transformer will find the boundaries using the IQR proximity rule.
+        **'iqr'**: the transformer will find the boundaries using the IQR proximity
+        rule.
 
-        'quantiles': the limits are given by the percentiles.
+        **'quantiles'**: the limits are given by the percentiles.
 
-    tail: str, default=right
+    tail: str, default='right'
         Whether to cap outliers on the right, left or both tails of the distribution.
         Can take 'left', 'right' or 'both'.
 
@@ -78,14 +79,15 @@ class OutlierTrimmer(Winsorizer):
         or 3 for the gaussian approximation, or 1.5 or 3 for the IQR proximity
         rule.
 
-        If capping_method='quantile', then 'fold' indicates the percentile. So if
-        fold=0.05, the limits will be the 95th and 5th percentiles.
+        If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if
+        `fold=0.05`, the limits will be the 95th and 5th percentiles.
+
         **Note**: Outliers will be removed up to a maximum of the 20th percentiles on
-        both sides. Thus, when capping_method='quantile', then 'fold' takes values
+        both sides. Thus, when `capping_method='quantile'`, then `'fold'` takes values
         between 0 and 0.20.
 
     variables: list, default=None
-        The list of variables for which the outliers will be removed If None,
+        The list of variables for which the outliers will be removed. If None,
         the transformer will find and select all numerical variables.
 
     missing_values: string, default='raise'
@@ -129,16 +131,9 @@ class OutlierTrimmer(Winsorizer):
         X : pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            If the dataframe is not of same size as that used in fit()
-
         Returns
         -------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X_new: pandas dataframe of shape = [n_samples, n_features]
             The dataframe without outlier observations.
         """
 

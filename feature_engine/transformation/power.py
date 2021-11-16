@@ -21,6 +21,8 @@ class PowerTransformer(BaseNumericalTransformer):
     transformer will automatically select and transform all numerical
     variables.
 
+    More details in the :ref:`User Guide <power>`.
+
     Parameters
     ----------
     variables: list, default=None
@@ -74,19 +76,6 @@ class PowerTransformer(BaseNumericalTransformer):
 
         y: pandas Series, default=None
             It is not needed in this transformer. You can pass y or None.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not a Pandas DataFrame
-            - If any of the user provided variables are not numerical
-        ValueError
-            - If there are no numerical variables in the df or the df is empty
-            - If the variable(s) contain null values
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe
@@ -105,17 +94,9 @@ class PowerTransformer(BaseNumericalTransformer):
         X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            - If the variable(s) contain null values
-            - If the df has different number of features than the df used in fit()
-
         Returns
         -------
-        X: pandas Dataframe
+        X_new: pandas Dataframe
             The dataframe with the power transformed variables.
         """
 
@@ -136,17 +117,9 @@ class PowerTransformer(BaseNumericalTransformer):
         X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame
-        ValueError
-            - If the variable(s) contain null values
-            - If the df has different number of features than the df used in fit()
-
         Returns
         -------
-        X: pandas Dataframe
+        X_tr: pandas Dataframe
             The dataframe with the power transformed variables.
         """
 

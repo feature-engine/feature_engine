@@ -15,17 +15,19 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 class DropConstantFeatures(BaseSelector):
     """
-    Drop constant and quasi-constant variables from a dataframe. Constant variables
-    show the same value across all the observations in the dataset. Quasi-constant
-    variables show the same value in almost all the observations in the dataset.
+    DropConstantFeatures() drops constant and quasi-constant variables from a dataframe.
+    Constant variables show the same value in all the observations in the dataset.
+    Quasi-constant variables show the same value in almost all the observations in the
+    dataset.
 
-    By default, DropConstantFeatures() drops only constant variables. This transformer
-    works with both numerical and categorical variables. The user can indicate a list
-    of variables to examine. Alternatively, the transformer will evaluate all the
-    variables in the dataset.
+    This transformer works with numerical and categorical variables. The user can
+    indicate a list of variables to examine. Alternatively, the transformer will
+    evaluate all the variables in the dataset.
 
     The transformer will first identify and store the constant and quasi-constant
     variables. Next, the transformer will drop these variables from a dataframe.
+
+    More details in the :ref:`User Guide <drop_constant>`.
 
     Parameters
     ----------
@@ -37,12 +39,13 @@ class DropConstantFeatures(BaseSelector):
         Threshold to detect constant/quasi-constant features. Variables showing the
         same value in a percentage of observations greater than tol will be considered
         constant / quasi-constant and dropped. If tol=1, the transformer removes
-        constant variables. Else, it will remove quasi-constant variables.
+        constant variables. Else, it will remove quasi-constant variables. For example,
+        if tol=0.98, the transformer will remove variables that show the same value in
+        98% of the observations.
 
     missing_values: str, default=raises
         Whether the missing values should be raised as error, ignored or included as an
-        additional value of the variable, when considering if the feature is constant
-        or quasi-constant. Takes values 'raise', 'ignore', 'include'.
+        additional value of the variable. Takes values 'raise', 'ignore', 'include'.
 
     Attributes
     ----------
@@ -50,7 +53,7 @@ class DropConstantFeatures(BaseSelector):
         List with constant and quasi-constant features.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables that will be considered for the feature selection.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -67,7 +70,7 @@ class DropConstantFeatures(BaseSelector):
     Notes
     -----
     This transformer is a similar concept to the VarianceThreshold from Scikit-learn,
-    but it evaluates number of unique values instead of variance
+    but it evaluates number of unique values instead of variance.
 
     See Also
     --------
@@ -100,10 +103,6 @@ class DropConstantFeatures(BaseSelector):
             The input dataframe.
         y: None
             y is not needed for this transformer. You can pass y or None.
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

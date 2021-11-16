@@ -32,12 +32,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
     This categorical encoding is exclusive for binary classification.
 
-    For example in the variable colour, if the mean of the target = 1 for blue
-    is 0.8 and the mean of the target = 0  is 0.2, blue will be replaced by:
-    0.8 / 0.2 = 4 if ratio is selected, or log(0.8/0.2) = 1.386 if log_ratio
-    is selected.
-
-    Note: the division by 0 is not defined and the log(0) is not defined.
+    The division by 0 is not defined and the log(0) is not defined.
     Thus, if p(0) = 0 for the ratio encoder, or either p(0) = 0 or p(1) = 0 for
     log_ratio, in any of the variables, the encoder will return an error.
 
@@ -53,14 +48,16 @@ class PRatioEncoder(BaseCategoricalTransformer):
     The encoder first maps the categories to the numbers for each variable (fit). The
     encoder then transforms the categories into the mapped numbers (transform).
 
+    More details in the :ref:`User Guide <pratio_encoder>`.
+
     Parameters
     ----------
     encoding_method: str, default='ratio'
         Desired method of encoding.
 
-        'ratio' : probability ratio
+        **'ratio'**: probability ratio
 
-        'log_ratio' : log probability ratio
+        **'log_ratio'**: log probability ratio
 
     variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
@@ -70,7 +67,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
-        ignored. If false, the encoder will automatically select variables of type
+        ignored. If False, the encoder will automatically select variables of type
         object or categorical, or check that the variables entered by the user are of
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.
@@ -140,21 +137,6 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
         y: pandas series.
             Target, must be binary.
-
-        Raises
-        ------
-        TypeError
-            - If the input is not the Pandas DataFrame.
-            - If user enters non-categorical variables (unless ignore_format is True)
-        ValueError
-            - If there are no categorical variables in df or df is empty
-            - If variable(s) contain null values.
-            - If y is not binary with values 0 and 1.
-            - If p(0) = 0 or any of p(0) or p(1) are 0.
-
-        Returns
-        -------
-        self
         """
 
         X = self._check_fit_input_and_variables(X)

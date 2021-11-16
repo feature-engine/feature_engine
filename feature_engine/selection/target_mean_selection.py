@@ -28,37 +28,32 @@ class SelectByTargetMeanPerformance(BaseSelector):
     feature, and then selects them based on this performance metric.
 
     SelectByTargetMeanPerformance() works with numerical and categorical variables.
+    First, it eparates the training set into train and test sets. Then it works as
+    follows:
 
-    The transformer works as follows:
+    For each categorical variable:
 
-    1. Separates the training set into train and test sets.
+    1. Determines the mean target value per category using the train set.
 
-    Then, for each categorical variable:
+    2. Replaces the categories in the test set by the target mean values.
 
-    2. Determines the mean target value per category per variable using the train set
-    (equivalent of Target mean encoding)
+    3. Using the encoded variables and the real target calculates the roc-auc or r2.
 
-    3. Replaces the categories in the test set by the target mean values
-
-    4. Using the encoded variables and the real target calculates the roc-auc or r2
-
-    5. Selects the features which roc-auc or r2 is bigger than the indicated
-    threshold
+    4. Selects the features which roc-auc or r2 is bigger than the threshold.
 
     For each numerical variable:
 
-    2. Discretizes the variable into intervals of equal width or equal frequency
-    (uses the discretizers of Feature-engine)
+    1. Discretises the variable into intervals of equal width or equal frequency.
 
-    3. Determines the mean value of the target per interval per variable using the
-    train set
+    2. Determines the mean value of the target per interval using the train set.
 
-    4. Replaces the intervals in the test set, by the target mean values
+    3. Replaces the intervals in the test set, by the target mean values.
 
-    5. Using the encoded variable and the real target calculates the roc-auc or r2
+    4. Using the transformed variable and the real target calculates the roc-auc or r2.
 
-    6. Selects the features which roc-auc or r2 is bigger than the indicated
-    threshold
+    5. Selects the features which roc-auc or r2 is bigger than the threshold.
+
+    More details in the :ref:`User Guide <target_mean_selection>`.
 
     Parameters
     ----------
@@ -77,15 +72,15 @@ class SelectByTargetMeanPerformance(BaseSelector):
         If the dataset contains numerical variables, the number of bins into which
         the values will be sorted.
 
-    strategy: str, default = equal_width
+    strategy: str, default = 'equal_width'
         Whether to create the bins for discretization of numerical variables of
-        equal width or equal frequency.
+        equal width ('equal_width') or equal frequency ('equal_frequency').
 
     cv: int, default=3
-        Desired number of cross-validation fold to be used to fit the estimator.
+        Desired cross-validation strategy to fit the estimator.
 
     random_state: int, default=0
-        The random state setting in the train_test_split method.
+        The random state used to split the data into train and test.
 
     Attributes
     ----------
@@ -109,6 +104,24 @@ class SelectByTargetMeanPerformance(BaseSelector):
         Reduce X to the selected features.
     fit_transform:
         Fit to data, then transform it.
+
+
+    Notes
+    -----
+    Replacing the categories or intervals by the target mean is the equivalent to
+    target mean encoding.
+
+    See Also
+    --------
+    feature_engine.encoding.MeanEncoder
+    feature_engine.discretisation.EqualWidthDiscretiser
+    feature_engine.discretisation.EqualFrequencyDiscretiser
+
+    References
+    ----------
+    .. [1] Miller, et al. "Predicting customer behaviour: The University of Melbourne’s
+        KDD Cup report". JMLR Workshop and Conference Proceeding. KDD 2009
+        http://proceedings.mlr.press/v7/miller09/miller09.pdf
     """
 
     def __init__(
@@ -163,14 +176,10 @@ class SelectByTargetMeanPerformance(BaseSelector):
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
-           The input dataframe
+           The input dataframe.
 
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
-
-        Returns
-        -------
-        self
         """
         # check input dataframe
         X = _is_dataframe(X)

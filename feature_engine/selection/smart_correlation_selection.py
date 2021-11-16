@@ -25,7 +25,7 @@ class SmartCorrelatedSelection(BaseSelector):
     - Feature with least missing values
     - Feature with most unique values
     - Feature with highest variance
-    - Best performing feature according to estimator entered by user
+    - Feature with highest importance according to an estimator
 
     SmartCorrelatedSelection() returns a dataframe containing from each group of
     correlated features, the selected variable, plus all original features that were
@@ -37,6 +37,8 @@ class SmartCorrelatedSelection(BaseSelector):
     variables will need to be encoded to numerical or will be excluded from the
     analysis.
 
+    More details in the :ref:`User Guide <smart_correlation>`.
+
     Parameters
     ----------
     variables: list, default=None
@@ -47,12 +49,12 @@ class SmartCorrelatedSelection(BaseSelector):
         Can take 'pearson', 'spearman', 'kendall' or callable. It refers to the
         correlation method to be used to identify the correlated features.
 
-        - pearson : standard correlation coefficient
-        - kendall : Kendall Tau correlation coefficient
-        - spearman : Spearman rank correlation
+        - 'pearson': standard correlation coefficient
+        - 'kendall': Kendall Tau correlation coefficient
+        - 'spearman': Spearman rank correlation
         - callable: callable with input two 1d ndarrays and returning a float.
 
-        For more details on this parameter visit the  `pandas.corr()` documentation.
+        For more details on this parameter visit the `pandas.corr()` documentation.
 
     threshold: float, default=0.8
         The correlation threshold above which a feature will be deemed correlated with
@@ -66,16 +68,16 @@ class SmartCorrelatedSelection(BaseSelector):
         Takes the values "missing_values", "cardinality", "variance" and
         "model_performance".
 
-        "missing_values": keeps the feature from the correlated group with least
+        **"missing_values"**: keeps the feature from the correlated group with least
         missing observations
 
-        "cardinality": keeps the feature from the correlated group with the highest
+        **"cardinality"**: keeps the feature from the correlated group with the highest
         cardinality.
 
-        "variance": keeps the feature from the correlated group with the highest
+        **"variance"**: keeps the feature from the correlated group with the highest
         variance.
 
-        "model_performance": trains a machine learning model using the correlated
+        **"model_performance"**: trains a machine learning model using the correlated
         feature group and retains the feature with the highest importance.
 
     estimator: object, default = None
@@ -99,11 +101,10 @@ class SmartCorrelatedSelection(BaseSelector):
             - An iterable yielding (train, test) splits as arrays of indices.
 
         For int/None inputs, if the estimator is a classifier and y is either binary or
-        multiclass, StratifiedKFold is used. In all other cases, Fold is used. These
-        splitters are instantiated with shuffle=False so the splits will be the same
-        across calls.
-
-        For more details check Scikit-learn's cross_validate documentation
+        multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
+        splitters are instantiated with `shuffle=False` so the splits will be the same
+        across calls. For more details check Scikit-learn's `cross_validate`'s
+        documentation.
 
     Attributes
     ----------
@@ -114,7 +115,7 @@ class SmartCorrelatedSelection(BaseSelector):
         The correlated features to remove from the dataset.
 
     variables_:
-        The variables to consider for the feature selection.
+        The variables that will be considered for the feature selection.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -127,6 +128,11 @@ class SmartCorrelatedSelection(BaseSelector):
         Return selected features.
     fit_transform:
         Fit to the data. Then transform it.
+
+    Notes
+    -----
+    For brute-force correlation selection, check Feature-engine's
+    DropCorrelatedFeatures().
 
     See Also
     --------
@@ -197,10 +203,6 @@ class SmartCorrelatedSelection(BaseSelector):
 
         y: pandas series. Default = None
             y is needed if selection_method == 'model_performance'.
-
-        Returns
-        -------
-        self
         """
 
         # check input dataframe

@@ -42,7 +42,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X_transformed: pandas dataframe of shape = [n_samples, n_selected_features]
+        X_new: pandas dataframe of shape = [n_samples, n_selected_features]
             Pandas dataframe with the selected features.
         """
 
