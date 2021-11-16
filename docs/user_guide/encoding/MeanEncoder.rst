@@ -91,6 +91,23 @@ We can now go ahead and replace the original strings with the numbers:
 	test_t= encoder.transform(X_test)
 
 
+Handling Cardinality
+^^^^^^^^^^^^^^^^^^^^
+
+The :class:`MeanEncoder()` replaces categories with the mean of the target per category.
+If the variable has low cardinality, then there is a fair representation of each label
+in the dataset, and the mean target value per category can be determined with some certainty.
+However, if variables are highly cardinal, with only very few observations for some labels,
+then the mean target value for those categories will be unreliable.
+
+To encode highly cardinal variables using target mean encoding, we could either group
+infrequent categories first using the :class:`RareLabelEncoder()`. Alternatively, we
+may want to choose different encoding methods that use blends of probabilities to try and
+better estimate the encoding mappings, like those available in the open-source package
+Category encoders through the transformers
+`M-estimate <https://contrib.scikit-learn.org/category_encoders/mestimate.html>`_ and
+`Target Encoder <https://contrib.scikit-learn.org/category_encoders/targetencoder.html>`_.
+
 
 More details
 ^^^^^^^^^^^^
