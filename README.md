@@ -14,6 +14,8 @@
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.03642/status.svg)](https://doi.org/10.21105/joss.03642)
 
 
+[<img src="./docs/images/logo/FeatureEngine.png" width="248">](http://feature-engine.readthedocs.io)
+
 Feature-engine is a Python library with multiple transformers to engineer and select features for use in machine learning models. 
 Feature-engine's transformers follow Scikit-learn's functionality with fit() and transform() methods to learn the 
 transforming parameters from the data and then transform it.
