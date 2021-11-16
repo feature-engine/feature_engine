@@ -3,11 +3,10 @@
 What's new
 ==========
 
-Feature-engine's creation transformers combine features into new variables through
-various mathematical and other methods.
+Find out what's new in each new version release.
 
 .. toctree::
    :maxdepth: 2
 
-   v1
-   changelog
+   v_1
+   v_06

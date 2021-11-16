@@ -1,10 +1,13 @@
+Version 1.1.2 and previous
+==========================
+
 Version 1.1.2
-=============
+-------------
 
 Deployed: 31th August 2021
 
 Contributors
-------------
+~~~~~~~~~~~~
 
     - Soledad Galli
 
@@ -14,16 +17,16 @@ when the parameter `drop_last_binary` is set to True. It also ensures that the v
 introduced in v1.1.0.
 
 Bug fix
--------
+~~~~~~~
     - **OneHotEncoder**: drop_last_binary now outputs 1 dummy variable per binary variable when set to true
 
 Version 1.1.1
-=============
+-------------
 
 Deployed: 6th August 2021
 
 Contributors
-------------
+~~~~~~~~~~~~
 
     - Miguel Trema Marrufo
     - Nicolas Galli
@@ -33,32 +36,32 @@ In this release, we add a new transformer, expand the functionality of 2 other
 transformers and migrate the repo to its own organisation!
 
 Mayor changes
--------------
+~~~~~~~~~~~~~
     - Feature-engine is now hosted in its `own Github organisation <https://github.com/feature-engine/feature_engine>`_
 
 New transformer
----------------
+~~~~~~~~~~~~~~~
     - **LogCpTransformer**: applies the logarithm transformation after adding a constant (**Miguel Trema Marrufo**)
 
 Minor changes
--------------
+~~~~~~~~~~~~~
     - Expands functionality of `DropCorrelatedFeatures` and `SmartCorrelationSelectionFeature` to accept callables as a correlation function (**Miguel Trema Marrufo**)
     - Adds `inverse_transform` to all transformers from the transformation module (**Nicolas Galli**).
 
 Documentation
--------------
+~~~~~~~~~~~~~
     - Migrates main repo to `Feature-engine's Github organisation <https://github.com/feature-engine/feature_engine>`_
     - Migrates example jupyter notebooks to `separate repo <https://github.com/feature-engine/feature-engine-examples>`_
     - Adds Roadmap
 
 
 Version 1.1.0
-=============
+-------------
 
 Deployed: 22st June 2021
 
 Contributors
-------------
+~~~~~~~~~~~~
     - Hector Patino
     - Andrew Tan
     - Shubhmay Potdar
@@ -77,7 +80,7 @@ Feature-engine transformers and create new attributes. We tried not to break bac
 compatibility as much as possible.
 
 Mayor changes
--------------
+~~~~~~~~~~~~~
     - Most transformers have now the additional attribute `variables_` containing the variables that will be modified. The former attribute `variables` is retained. `variables_` will almost always be identical to `variables` except when the transformer is initialised with `variables=None`.
     - The parameter `transformer` in the SklearnTransformerWrapper and the parameter `estimator` in the SelectBySingleFeaturePerformance, SelectByShuffling, RecursiveFeatureElimination and RecursiveFeatureAddition need a compulsory entry, and cannot be left blank when initialising the transformers.
     - Categorical encoders support now variables cast as `category` as well as `object` (**Shubhmay Potdar and Soledad Galli**)
@@ -86,24 +89,24 @@ Mayor changes
     - All transformers have now the new attribute `n_features_in` with captures the number of features in the dataset used to train the transformer (during fit()).
 
 Minor changes
--------------
+~~~~~~~~~~~~~
     - Feature selection transformers support now all cross-validation schemes in the `cv` parameter, and not just an integer. That is, you can initialize the transformer with LOOCV, or StratifiedCV for example.
     - The OneHotEncoder includes additional functionality to return just 1 dummy variable for categorical variables that contain only 2 categories. In the new attribute `variables_binary_` you can identify the original binary variables.
     - MathematicalCombinator now supports use of dataframes with null values (**Agustin Firpo**).
 
 New transformer
----------------
+~~~~~~~~~~~~~~~
     - **CyclicalTransformer**: applies a cyclical transformation to numerical variables (**Hector Patino**)
 
 Code improvement
-----------------
+~~~~~~~~~~~~~~~~
     - Tests from check_estimator added to all transformers
     - Test for compatibility with Python 3.9 added to circleCI (**Chris Samiullah and Soledad Galli**)
     - Automatic black8 and linting added to tox
     - Additional code fixes (**Andrew Tan and Indy Navarro Vidal**).
 
 Documentation
--------------
+~~~~~~~~~~~~~
     - Additional comparison tables for imputers and encoders.
     - Updates Readme with new badges and resources.
     - Expanded SklearnWrapper demos in Jupyter notebooks.
@@ -111,57 +114,57 @@ Documentation
     - Expanded Pipeline demos in Jupyter notebooks.
 
 Community
----------
+~~~~~~~~~
     - Created Gitter community to support users and foster knowledge exchange
 
 
 Version 1.0.2
-=============
+-------------
 
 Deployed: 22th January 2021
 
 Contributors
-------------
+~~~~~~~~~~~~
     - Nicolas Galli
     - Pradumna Suryawanshi
     - Elamraoui Sohayb
     - Soledad Galli
 
 New transformers
-----------------
+~~~~~~~~~~~~~~~~
     - **CombineWithReferenceFeatures**: applies mathematical operations between a group of variables and reference variables (**by Nicolas Galli**)
     - **DropMissingData**: removes missing observations from a dataset (**Pradumna Suryawanshi**)
 
 Bug Fix
--------
+~~~~~~~
     - Fix bugs in SelectByTargetMeanPerformance.
     - Fix documentation and jupyter notebook typos.
 
 Tutorials
----------
+~~~~~~~~~
 
     - **Creation**: updated "how to" examples on how to combine variables into new features (**by Elamraoui Sohayb and Nicolas Galli**)
     - **Kaggle Kernels**: include links to Kaggle kernels
 
 
 Version 1.0.1
-=============
+-------------
 
 Deployed: 11th January 2021
 
 Bug Fix
--------
+~~~~~~~
     - Fix use of r2 in SelectBySingleFeaturePerformance and SelectByTargetMeanPerformance.
     - Fix documentation not showing properly in readthedocs.
 
 
 Version 1.0.0
-=============
+-------------
 
 Deployed: 31st December 2020
 
 Contributors
-------------
+~~~~~~~~~~~~
     - Ashok Kumar
     - Christopher Samiullah
     - Nicolas Galli
@@ -178,7 +181,7 @@ throughout the code base, unification of attributes and methods, addition of new
 transformers and extended documentation. Read below for more details.
 
 New transformers for Feature Selection
---------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We included a whole new module with multiple transformers to select features.
 
@@ -194,7 +197,7 @@ We included a whole new module with multiple transformers to select features.
 
 
 Renaming of Modules
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 Feature-engine transformers have been sorted into submodules to smooth the development
 of the package and shorten import syntax for users.
@@ -208,7 +211,7 @@ of the package and shorten import syntax for users.
     - **Module creation**: new module hosts transformers that combine variables into new features using mathematical or other operations.
 
 Renaming of Classes
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 We shortened the name of categorical encoders, and also renamed other classes to
 simplify import syntax.
@@ -220,7 +223,7 @@ simplify import syntax.
     - **WoEEncoder and PRatioEncoder**: the ``WoEEncoder`` now applies only encoding with the weight of evidence. To apply encoding by probability ratios, use a different transformer: the ``PRatioEncoder`` (**by Nicolas Galli**).
 
 Renaming of Parameters
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 We renamed a few parameters to unify the nomenclature across the Package.
 
@@ -230,7 +233,7 @@ We renamed a few parameters to unify the nomenclature across the Package.
 
 
 Tutorials
----------
+~~~~~~~~~
 
     - **Imputation**: updated "how to" examples of missing data imputation (**by Pradumna Suryawanshi**)
     - **Encoders**: new and updated "how to" examples of categorical encoding (**by Ashok Kumar**)
@@ -239,10 +242,10 @@ Tutorials
 
 
 For Contributors and Developers
--------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Code Architecture
-~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^
 
     - **Submodules**: transformers have been grouped within relevant submodules and modules.
     - **Individual tests**: testing classes have been subdivided into individual tests
@@ -250,7 +253,7 @@ Code Architecture
     - **Type hint**: we rolled out the use of type hint throughout classes and functions (**by Nodar Okroshiashvili, Soledad Galli and Chris Samiullah**)
 
 Documentation
-~~~~~~~~~~~~~
+^^^^^^^^^^^^^
 
     - Switched fully to numpydoc and away from Napoleon
     - Included more detail about methods, parameters, returns and raises, as per numpydoc docstring style (**by Nodar Okroshiashvili, Soledad Galli**)
@@ -258,7 +261,7 @@ Documentation
     - Improved layout
 
 Other Changes
--------------
+~~~~~~~~~~~~~
 
     - **Updated documentation**: documentation reflects the current use of Feature-engine transformers
     - **Typo fixes**: Thank you to all who contributed to typo fixes (Tim Vink, Github user @piecot)
