@@ -25,10 +25,12 @@ There are many ways to contribute to Feature-engine:
 - Create a new transformer
 - Enhance functionality of current transformers
 - Fix a bug
-- Submit a bug report or feature request on `GitHub issues <https://github.com/feature-engine/feature_engine/issues/>`_.
+- If you find a bug, let us know by creating an `issues <https://github.com/feature-engine/feature_engine/issues/>`_ on Github.
+- If you would like additional functionality or a new feature, create an `issue <https://github.com/feature-engine/feature_engine/issues/>`_ on Github.
 - Add a Jupyter notebook to our `Jupyter notebooks example gallery <https://github.com/feature-engine/feature_engine/tree/master/examples>`_.
-- Improve our documentation.
+- Improve our documentation, i.e., fix typos, improve grammar, or add more code examples.
 - Write a blog, tweet, or share our project with others.
+- Use Feature-engine in your lectures if you teach
 
 With plenty of ways to get involved, we would be happy for you to support the project.
 You only need to abide by the principles of openness, respect, and consideration of
@@ -53,7 +55,6 @@ Contributing Guide
 
 .. toctree::
     :maxdepth: 2
-    :hidden:
 
     contribute_code
     contribute_docs

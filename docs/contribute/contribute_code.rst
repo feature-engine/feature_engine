@@ -1,5 +1,7 @@
 .. -*- mode: rst -*-
 
+.. _contribute_code:
+
 Contribute Code
 ===============
 
@@ -7,6 +9,7 @@ Contributing code to Feature-engine is fun and easy. If you want to make a code 
 you can check the `issue tracker <https://github.com/feature-engine/feature_engine/issues/>`_
 for already requested and wanted functionality. Alternatively, you can create a new issue
 with functionality you would like to see included in Feature-engine and then work it through.
+
 
 Contributing workflow
 ---------------------
@@ -90,6 +93,9 @@ environment, use any virtual environment tool of your choice. Some examples incl
     1. `venv <https://docs.python.org/3/library/venv.html>`_
     2. `conda environments <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`_
 
+In the previous links, you find details on how to create the environments as well. We also
+provide some guidelines below.
+
 venv
 ~~~~
 
@@ -109,6 +115,8 @@ Then, to activate the environment, run::
 
     Documents/Repositories/envs/featureengine/Scripts/activate
 
+**Note for windows users:** you may need to use \\ instead of /.
+
 conda
 ~~~~~
 
@@ -122,7 +130,7 @@ something more meaningful.
 
 Then, to activate the environment, run::
 
-    conda activate --stack myenv
+    conda activate myenv
 
 
 Install dependencies
@@ -137,7 +145,7 @@ Now, install Feature_engine in developer mode::
 
         $ pip install -e .
 
-Don't forget the `.`. This will add Feature-engine to your PYTHONPATH so your code edits
+Don't forget the `.` after the `-e`. This will add Feature-engine to your PYTHONPATH so your code edits
 are automatically picked up, and there is no need to re-install the package after each
 code change. This will also install Feature'engine's dependencies.
     
@@ -152,7 +160,7 @@ Make sure that your local main branch is up to date with the remote main branch:
 
 If you just cloned your fork, your local main branch should be up to date. If you cloned
 your fork a time ago, probably the main repository had some code changes. To sync your
-fork main to the main repository main branch, read below the section **Keep your fork up
+fork main branch to the main repository, read below the section **Keep your fork up
 to date**.
 
 Create a branch
@@ -195,6 +203,16 @@ To commit changes do the following::
 and make sure to include an informative but succinct commit message in the present tense,
 for example "fixes style in imputation error message".
 
+The previous commands will commit all files that have changes. If you want to commit just 1
+or 2 files, you can do so as follows::
+
+    $ git add file1.py file2.py
+    $ git commit -m "my commit message"
+
+It is important that you commit only the files relevant to your feature, and not others
+that may have been accidentally changed, for example through code styling (more on this in
+**Test the Code** below).
+
 After making a few commits, push your changes to your fork::
 
     $ git push origin myfeaturebranch
@@ -206,8 +224,8 @@ Make a Pull Request
 ~~~~~~~~~~~~~~~~~~~
 
 After pushing the first changes, go to your fork in Github. You will see the branch you
-just pushed and next to it a button to create a PR. Go ahead and create a PR from your
-feature branch to Feature_engine's main branch. In the PR message, describe what the overall
+just pushed and next to it a button to create a PR (Pull Request). Go ahead and create a PR from your
+feature branch to Feature_engine's **main branch**. In the PR message, describe what the overall
 aim of the PR is, and if it resolves an issue, link the issue in the message. This will
 notify us of your changes.
 
@@ -242,7 +260,7 @@ We have tests for:
 3. Typehints, using mypy
 4. Documentation, using sphinx.
 
-In the following paragraphs, we will show you how to test each of the above individually,
+In the following paragraphs, we will take you through how to test each of the above individually,
 and then altogether.
 
 Test functionality
@@ -261,15 +279,16 @@ feature-engine folder. Then run::
 
 These command will run all the test scripts within the test folder.
 
-Alternatively, you can run a specific script as follows:
+Alternatively, you can run a specific script as follows::
 
-    $ cd tests/test_encoding/test_categorical_encoder.py
+    $ pytest tests/test_encoding/test_categorical_encoder.py
 
 So if you just want to run the code you created, you would do::
 
-    $ cd tests/test_my_new_featre/test_my_new_feature.py
+    $ pytest tests/test_my_new_feature_folder/test_my_new_feature.py
 
-where my_new_feature is the name of your test script.
+where test_my_new_feature.py is the name of your test script, and it is located in the
+test_my_new_feature_folder.
 
 If you are using Pycharm, this is even easier:
 
@@ -279,12 +298,17 @@ If you are using Pycharm, this is even easier:
 
 Sweet, isn't it?
 
+With the above procedure you can also "click" on your individual test script and run only
+those tests.
+
 
 Test Code Style
 ~~~~~~~~~~~~~~~
 
-We follow `PEP8 <https://pep8.org/>`_. Before testing the code style, make sure to automatically
-fix anything that might be wrong with black and isort.
+We follow `PEP8 <https://pep8.org/>`_ and we keep our code lines up to 88 characters.
+Before testing the code style, make sure to automatically
+fix anything that might not abide by PEP8 with `**black** <https://pypi.org/project/black/>`_
+and `**isort** <https://pypi.org/project/isort/>`_.
 
 If you set up the development environment as we described previously, you should have these
 libraries installed. Alternatively, run from the windows cmd or mac terminal::
@@ -321,7 +345,7 @@ Test Typehint
 ~~~~~~~~~~~~~
 
 We use `Typehint <https://www.python.org/dev/peps/pep-0484/>`_. To test typehinting we use
-mypy.
+`**mypy** <http://mypy-lang.org/>`_.
 
 If you set up the development environment as we described previously, you should have
 mypy installed. Alternatively, run from the windows cmd or mac terminal::
@@ -334,15 +358,15 @@ now, you test typehint by running::
 
 A few things to notice:
 
-- We use typehint only on the code base and not on the tests
-- you need to run mypy on the entire module and not just your script!
+- We use typehint only on the code base and not on the tests.
+- You need to run mypy on the entire module and not just your script.
 
 Otherwise, you will most likely get an error.
 
 Test the docs
 ~~~~~~~~~~~~~
 
-If after running pytest, black and mypy you do not get errors, you only left with testing
+If after running pytest, black and mypy you do not get errors, you are only left with testing
 that the documentation builds correctly.
 
 To do this, first make sure you have all the documentation dependencies installed. If you
@@ -404,9 +428,16 @@ Review Process
 --------------
 
 Once your contribution contains the new code, the tests and the documentation, you can
-request a review, by mentioning that in a comment in the Pull Request. Likely, there will
+request a review by mentioning that in a comment in the Pull Request. Likely, there will
 be some back and forth until the final submission. We will work together to get the code
 in the final shape.
+
+If you feel you would like to clarify something before the first draft is done, or if
+you can't get some tests to pass, do not hesitate to mention that in a comment, and we
+will try to help.
+
+**We aim to review PRs within a week. If for some reason we can't, we will let you know
+through the PR as well.**
 
 Once the submission is reviewed and provided the continuous integration tests have
 passed and the code is up to date with Feature-engine's main branch, we will be ready
@@ -426,15 +457,6 @@ pull requests. Some preferences for commit messages when merging in pull request
 
 - Make sure to use the “Squash and Merge” option in order to create a Git history that is understandable.
 - Keep the title of the commit short and descriptive; be sure it links all related issues.
-
-
-After your PR is merged
------------------------
-
-Update your local fork (see section **Keeping your fork updated**) and delete the
-feature branch.
-
-Well done and thank you very much for your support!
 
 
 Releases
@@ -486,7 +508,6 @@ Feature-engine's main. Now, you need to rebase main onto your feature branch.
 
     $ git rebase main
 
-Again, if conflicts arise, try and resolve them and continue the rebase. Mostly, likely
-you will be able to edit and resolve the conflict very easily directly from Github.
+Again, if conflicts arise, try and resolve them and continue the rebase.
 
 Now you are good to go to continue developing your feature.

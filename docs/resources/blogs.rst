@@ -1,3 +1,5 @@
+.. _featureengine_blogs:
+
 Blogs, Videos and More
 ======================
 
