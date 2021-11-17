@@ -35,9 +35,6 @@ class DropHighPSIFeatures(BaseSelector):
     original feature distributions. The test set will be assessed against the basis
     data set.
 
-    In Credit Risk, eliminating features with high PSI is commonly done and usually
-    required by the Regulator.
-
     To determine the PSI, continuous features are sorted into discrete intervals, the
     fraction of observations per interval is then determined, and finally those values
     are compared between the basis and test sets, to obtain the PSI.
@@ -62,15 +59,6 @@ class DropHighPSIFeatures(BaseSelector):
     - Above 25%, the variable has experienced a major shift.
     - Between those two values, the shift is intermediate.
 
-    When working with PSI, it is worth highlighting the following:
-
-    - The PSI is not symmetric; switching the order of the basis and test dataframes
-    will lead to different PSI values.
-    - The number of bins has an impact on the PSI values.
-    - The PSI is a suitable metric for numerical features (i.e., either continuous or
-    with high cardinality). For categorical or discrete features, the change in
-    distributions is better assessed with Chi-squared.
-
     To compute the PSI the DropHighPSIFeatures splits the dataset in two:
 
     First and foremost, the user should enter one variable which will be used to guide
@@ -94,17 +82,14 @@ class DropHighPSIFeatures(BaseSelector):
     values in the list, will go to the basis set, and the remaining ones to the test
     set.
 
-    For more details check the parameter definitions below.
-
+    More details in the :ref:`User Guide <psi_selection>`.
 
     References
     ----------
     https://scholarworks.wmich.edu/cgi/viewcontent.cgi?article=4249&context=dissertations
 
-
     Parameters
     ----------
-
     split_col: string or int, default=None.
         The variable that will be used to split the dataset into the basis and test
         sets. If None, the dataframe index will be used. `split_col` can be a numerical,
@@ -210,8 +195,6 @@ class DropHighPSIFeatures(BaseSelector):
 
     See Also
     --------
-    To know more about discretization visit:
-
     feature_engine.discretisation.EqualFrequencyDiscretiser
     feature_engine.discretisation.EqualWidthDiscretiser
     """

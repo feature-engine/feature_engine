@@ -69,6 +69,8 @@ it does not support missing data.
 
 Throughout the user guide, you will find more details about each of the feature selection procedures.
 
+Say something about :class:`DropHighPSIFeatures()`.
+
 Transformers
 ------------
 
@@ -85,6 +87,7 @@ Transformers
    SelectByTargetMeanPerformance
    RecursiveFeatureElimination
    RecursiveFeatureAddition
+   DropHighPSIFeatures
 
 
 Additional Resources

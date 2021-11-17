@@ -26,9 +26,16 @@ been gathered from data science competitions or used in the industry.
 :class:`RecursiveFeatureAddition()`             ×                         ×             Adds features recursively by evaluating model performance
 ============================================ ======================= ============= ====================================================================================
 
+Feature-engine also hosts selection methods based on variable distributions. Currently,
+selection based on Population Stability Index is available through the :class:`DropHighPSIFeatures()`.
+Note that these methods may not necessarily enhance model performance, but may be necessary
+to abide by regulations.
+
+Selection Transformers
+----------------------
+
 .. toctree::
    :maxdepth: 2
-   :hidden:
 
    DropFeatures
    DropConstantFeatures
@@ -40,6 +47,7 @@ been gathered from data science competitions or used in the industry.
    SelectByTargetMeanPerformance
    RecursiveFeatureElimination
    RecursiveFeatureAddition
+   DropHighPSIFeatures
 
 
 Other Feature Selection Libraries

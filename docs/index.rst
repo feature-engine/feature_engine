@@ -171,6 +171,7 @@ Feature Selection:
 - :doc:`api_doc/selection/SelectByTargetMeanPerformance`: selects features based on target mean encoding performance
 - :doc:`api_doc/selection/RecursiveFeatureElimination`: selects features recursively, by evaluating model performance
 - :doc:`api_doc/selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
+- :doc:`api_doc/selection/DropHighPSIFeatures`: selects features based on the Population Stability Index (PSI)
 
 Preprocessing:
 --------------
