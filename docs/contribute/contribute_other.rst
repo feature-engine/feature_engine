@@ -34,4 +34,11 @@ straightaway.
 We are also happy to talk about the project in talks and podcasts. If you host a meetup
 or a podcast channel, do get in touch.
 
+Donate
+------
+
+If Feature-engine is helping your organization save money, time, effort, and frustrations,
+and be more productive, consider `sponsoring the maintainer <https://github.com/sponsors/solegalli>`_.
+This is a great way to show your appreciation. Thank you!
+
 For all of this, get in touch with the maintainer via `LinkedIn <https://www.linkedin.com/in/soledad-galli/>`_.

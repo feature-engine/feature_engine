@@ -213,6 +213,11 @@ let us know!
 For more details on how to contribute check the contributing page. Click on the
 :ref:`**Contribute** <contribute>` guide.
 
+Donate
+~~~~~~
+
+`Sponsor the maintainer <https://github.com/sponsors/solegalli>`_ to support her continue expanding
+Feature-engine.
 
 Open Source
 ~~~~~~~~~~~
