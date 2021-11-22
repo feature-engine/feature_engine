@@ -460,10 +460,10 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Split the original dataframe
         if isinstance(self.cut_off_, list):
-            is_within_cut_off = reference.isin(self.cut_off_)
+            is_within_cut_off = np.array(reference.isin(self.cut_off_))
 
         else:
-            is_within_cut_off = reference <= self.cut_off_
+            is_within_cut_off = np.array(reference <= self.cut_off_)
 
         basis_df = X[is_within_cut_off]
         test_df = X[~is_within_cut_off]
