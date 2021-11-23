@@ -95,7 +95,7 @@ When working with PSI, it is worth highlighting the following:
 Examples
 --------
 
-The complexity of the class lies in the different possibilities to split
+The complexity of the class lies in the different options to split
 the input dataframe in order to compute the PSI. Therefore several examples,
 illustrating the different approaches, are provided below.
 
@@ -122,7 +122,7 @@ for the PSI calculations.
 
 The default approach in :class:`DropHighPSIFeatures()` is to split the
 input dataframe (X) in two equally sized parts based on the value of the
-index. By passing a value to the `split_frac` argument the ratio between
+index. By passing a value to the `split_frac` argument, the ratio between
 the sizes of the two parts can be adjusted.
 
 .. code:: python
@@ -157,7 +157,7 @@ by the transform method.
      'var_4': 0.19861346887805775,
      'var_5': 0.1411194164512627}
 
-The cut-off value used to split the dataframe is also an attribute of the
+The cut-off value used to split the dataframe is stored in the
 `DropHighPSIFeatures` object. It can be
 accessed via the `.cut_off_` attribute:
 
@@ -177,16 +177,20 @@ using the `.split_dataframe()` method.
 .. code:: python
 
     base, test = transformer._split_dataframe(X)
-    
+
 
 **Case 2: split data based on variable (cut_off is numerical value)**
 
-:class:`DropHighPSIFeatures()` allows the user to define the column used to
-make the split. This is particularly relevant when it is used with the
-`cut-off` argument that represents the threshold used to split the input
-dataframe for computing the PSI values.
+:class:`DropHighPSIFeatures()` allows to define the column used to
+ split the dataframe. Two options are then available to the user:
+- Split by proportion. This is an approach similar to the one described in the
+first use case.
+- Split by threshold. Using the `cut_off` argument, the user can define the
+specific threshold for the split.
 
-Let's illustrate how it works with a simple example
+A real life example for this case is the use of the customer ID or contract ID
+to split the dataframe. These ID's are often increasing over time which justify
+their use to assess population shift in the features.
 
 .. code:: python
 
@@ -212,7 +216,7 @@ Let's illustrate how it works with a simple example
 used in the calculation of the PSI values contains all observations with `var_1`
 lower or equal to 0.5. The test dataframe contains all other values.
 
-This is shown by inspecting the dataframe from the `split_dataframe` method.
+This is shown by inspecting the dataframe using the `split_dataframe` method.
 
 .. code:: python
 
@@ -247,9 +251,8 @@ the `var_1` feature.
      'var_4': 0.3614010092217242,
      'var_5': 0.17200356108416925}
 
-This is the expected behaviour as the column used to split the dataframe is just
-used to define the
-two groups represented by the base and the test dataframe. Based on the
+This is the expected behaviour as the column used to split the dataframe is
+further excluded from the calculations. Based on the
 definition of the PSI, it
 does not make sense to compute the PSI value for the column defined in
 `split_col`
@@ -258,9 +261,12 @@ does not make sense to compute the PSI value for the column defined in
 **Case 3: split data based on variable (cut_off is date)**
 
 
-:class:`DropHighPSIFeatures()` can handle different type of `split_col`
+:class:`DropHighPSIFeatures()` can handle different types of `split_col`
 variables. In the following example
 it is shown how it works with a date.
+
+This case is representative when investigating population shift after an
+event like the start of the Covid-19 pandemic.
 
 .. code:: python
 
@@ -291,8 +297,8 @@ will be done comparing the period up to the French revolution and after.
 
     transformer = DropHighPSIFeatures(split_col='time', cut_off=date(1789, 7, 14))
 
-The check the split is performed as expected is performed by looking at the date
-for the base and test dataframe coming from the `_split_dataframe()` method.
+To check if the split is performed as expected, we look at the date
+for the base and test dataframes coming from the `_split_dataframe()` method.
 
 .. code:: python
 
@@ -308,11 +314,17 @@ This yields the following result.
 **Case 4: split data based on variable (cut_off is list)**
 
 :class:`DropHighPSIFeatures()` can also split the original dataframe based on
-a string variable. The cut-off can then be defined in two ways: by a single string
-or by a list. In the first case, the column with the categorical variable will be
-sorted alphabetically and the split will be determined by the cut-off. We advise
-the user to be very cautious when working in such a setting as alphabetical sorting
-and cut-off is not always obvious.
+a string variable. The cut-off can then be defined in two ways:
+- Using a single string.
+- Using a list of values.
+
+In the first case, the column with the categorical variable is
+sorted alphabetically and the split is determined by the cut-off. We advise
+the user to be very cautious when working in such a setting as alphabetical
+sorting in combination with a cut-off does not always provide obvious results.
+
+A real life example for this case is the computation of the PSI between
+different customer segments like 'Retail', 'SME' and 'Wholesale'.
 
 .. code:: python
 
@@ -333,7 +345,7 @@ and cut-off is not always obvious.
     # Add a categorical column
     X['group'] = ["A", "B", "C", "D", "E"] * 200
 
-We can define a simple cut-off value (for example the letter C.
+We can define a simple cut-off value (for example the letter C).
 
 .. code:: python
 
@@ -350,12 +362,15 @@ during the PSI calculations.
     print(base.group.unique())
     print(test.group.unique())
 
-That yields the following results:
+This yields the following results:
 
 .. code:: python
 
     ['A' 'B' 'C']
     ['D' 'E']
+
+The other option considered in this case is when `cut_off` is defined as
+a list.
 
 .. code:: python
 
@@ -376,19 +391,18 @@ That yields the following results:
     # Add a categorical column
     X['group'] = ["A", "B", "C", "D", "E"] * 200
 
-Now instead of defining a single cut-off value, the define a list.
+Running `DropHighPSIFeatures` in done is a similar way as in the previous cases.
 
 .. code:: python
 
     transformer = DropHighPSIFeatures(split_col='group', cut_off=['A', 'C', 'E'])
     base, test = transformer._split_dataframe(X)
 
-According to the parameters passed when initiating :class:`DropHighPSIFeatures()`,
+According to the parameters passed when initializing the `DropHighPSIFeatures`
+object,
 we expect the base dataframe to contain all observations associated with the groups
 A, C and E and the test dataframe to contain all observations associated with the groups
-B and D.
-
-This is exactly what happens.
+B and D. This is exactly what happens.
 
 .. code:: python
 
@@ -396,7 +410,7 @@ This is exactly what happens.
     print(base.group.unique())
     print(test.group.unique())
 
-That yields the following results:
+This yields the following results:
 
 .. code:: python
 
@@ -413,9 +427,11 @@ A variant to the previous example is the use of the split_distinct functionality
 In that case, the split is not done based on the number observations from
 `split_col` but from the number of distinct values in `split_col`.
 
-Let's illustrate how it works.
+A real life example for this case is when dealing with groups of different sizes
+like customer's incomes classes ('1000', '2000', '3000', '4000', ...).
+split_distinct allows to control the numbers of classes in the base and test
+dataframes regardless of the number of observations in each class.  
 
-Explain how it words. Give a meaninfuld example, eg, customer ids.
 
 .. code:: python
 
@@ -438,7 +454,7 @@ Explain how it words. Give a meaninfuld example, eg, customer ids.
 
 Now the `group` column contains 500 observations in the (A, B, C, D, E)
 group and 500 in the (F) group. This is reflected in the output of
-:class:`DropHighPSIFeatures()` when used with the default parameter values.
+`DropHighPSIFeatures` when used with the default parameter values.
 
 .. code:: python
 
@@ -454,7 +470,7 @@ That yields the following output:
     ['A' 'B' 'C' 'D' 'E'] (500, 8)
     ['F'] (500, 8)
 
-If we pass the `split_distinct=True` argument when initiating
+If we pass the `split_distinct=True` argument when initialize
 the `DropHighPSIFeatures` object, the split will
 
 .. code:: python
