@@ -73,21 +73,21 @@ The bins are defined on the values of the base dataframe.
 dataframes.
 - Compute the PSI value based on the percentage of observations per bin.
 - If the PSI is above the defined threshold, add the feature to the list of
-    features to drop.
+features to drop.
 
 ##### Remarks on the use of the PSI.
 
 When working with PSI, it is worth highlighting the following:
 
 - The PSI is not symmetric; switching the order of the basis and test dataframes
-  in the PSI calculation will lead to different values.
+in the PSI calculation will lead to different values.
 - The number of bins used to define the distributions has an impact on the PSI values.
 - The PSI is a suitable metric for numerical features (i.e., either continuous
-  or with high cardinality).
+or with high cardinality).
 - For categorical or discrete features, the change in distributions is better
-  assessed with Chi-squared.
+assessed with Chi-squared.
 - Different thresholds can be used to assess the magnitude of the distribution
-  shift according to the PSI value. The most commonly used thresholds are:
+shift according to the PSI value. The most commonly used thresholds are:
   - Below 10%, the variable has not experienced a significant shift.
   - Above 25%, the variable has experienced a major shift.
   - Between those two values, the shift is intermediate.
@@ -113,10 +113,10 @@ for the PSI calculations.
 
     # Define a dataframe with 200 observations from 6 random variables
     X, y = make_classification(
-           n_samples=200,
-           n_features=6,
-           random_state=0
-       )
+        n_samples=200,
+        n_features=6,
+        random_state=0
+    )
 
     colnames = ["var_" + str(i) for i in range(n_feat)]
     X = pd.DataFrame(X, columns=colnames)
@@ -134,7 +134,7 @@ the sizes of the two parts can be adjusted.
     X_transformed = transformer.fit_transform(X)
 
 - The value of the split_frac argument (0.6) means that the two dataframes used
-  to compute
+ to compute
 the PSI values (base and test) will be split according to a 60% - 40% basis.
 - The fit method performs the split of the dataframe and the calculations of
 the PSI values using the
@@ -152,11 +152,11 @@ by the transform method.
 .. code:: python
 
     {'var_0': 0.10200882787259648,
-     'var_1': 0.06247480220678372,
-     'var_2': 0.231106813775744,
-     'var_3': 0.2662638025200693,
-     'var_4': 0.19861346887805775,
-     'var_5': 0.1411194164512627}
+    'var_1': 0.06247480220678372,
+    'var_2': 0.231106813775744,
+    'var_3': 0.2662638025200693,
+    'var_4': 0.19861346887805775,
+    'var_5': 0.1411194164512627}
 
 The cut-off value used to split the dataframe is stored in the
 `DropHighPSIFeatures` object. It can be
@@ -183,7 +183,7 @@ using the `.split_dataframe()` method.
 **Case 2: split data based on variable (cut_off is numerical value)**
 
 :class:`DropHighPSIFeatures()` allows to define the column used to
- split the dataframe. Two options are then available to the user:
+split the dataframe. Two options are then available to the user:
 - Split by proportion. This is an approach similar to the one described in the
 first use case.
 - Split by threshold. Using the `cut_off` argument, the user can define the
