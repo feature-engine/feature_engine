@@ -18,6 +18,10 @@ more robust models and therefore to better performances. In the field of Credit 
 modelling, eliminating features with high PSI is common practice and usually required by the
 Regulator.
 
+.. math::
+
+    PSI = \sum_{i=1}^n (test_i - basis_i) . ln(\frac{test_i}{basis_i})
+
 ##### Approaches implemented
 
 Computing the PSI involves comparing two distributions. In
