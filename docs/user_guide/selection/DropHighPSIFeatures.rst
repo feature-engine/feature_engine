@@ -30,7 +30,7 @@ The class offers three ways to split the input dataframe:
 - Using proportions: For example 75% and 25%.
 - Using a cut-off value: Up-to and above the cut-off value.
 - Observations belonging to a group (defined by a list of values) and
-observations not belonging to that group.
+  observations not belonging to that group.
 
 The split can be done based on two dimensions:
 
