@@ -30,7 +30,7 @@ The class offers three ways to split the input dataframe:
 - Using proportions: For example 75% and 25%.
 - Using a cut-off value: Up-to and above the cut-off value.
 - Observations belonging to a group (defined by a list of values) and
-  observations not belonging to that group.
+observations not belonging to that group.
 
 The split can be done based on two dimensions:
 
@@ -80,14 +80,18 @@ features to drop.
 
 When working with PSI, it is worth highlighting the following:
 
-- The PSI is not symmetric; switching the order of the basis and test dataframes
+The PSI is not symmetric; switching the order of the basis and test dataframes
 in the PSI calculation will lead to different values.
-- The number of bins used to define the distributions has an impact on the PSI values.
-- The PSI is a suitable metric for numerical features (i.e., either continuous
+
+The number of bins used to define the distributions has an impact on the PSI values.
+
+The PSI is a suitable metric for numerical features (i.e., either continuous
 or with high cardinality).
-- For categorical or discrete features, the change in distributions is better
+
+For categorical or discrete features, the change in distributions is better
 assessed with Chi-squared.
-- Different thresholds can be used to assess the magnitude of the distribution
+
+Different thresholds can be used to assess the magnitude of the distribution
 shift according to the PSI value. The most commonly used thresholds are:
 below 10% (the variable has not experienced a significant shift) and above 25%
 (the variable has experienced a major shift). 
