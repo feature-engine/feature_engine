@@ -43,36 +43,37 @@ Procedure
 
 :class:`DropHighPSIFeatures()` works according to the following procedure:
 
-- The features in scope for the selector are identified. It is either the columns
-  of the dataframe whose labels are passed in the *variables* argument or all
-  numerical columns from
-  the dataframe if the *variables* argument is not explicitly defined.
+The features in scope for the selector are identified. It is either the columns
+of the dataframe whose labels are passed in the *variables* argument or all
+numerical columns from the dataframe if the *variables* argument is not explicitly defined.
 
-- The input dataframe is split in two subparts according to the parameters passed
-  to the `init` method. The method used to split the dataframe performs the following
-  steps:
-    - Identify the reference as the column to use for splitting the dataframe. It is either
-      a column provided by the user or the index of the dataframe.
-    - Determine the cut-off value. The cut-off is either directly provided by the user as
-      argument or it is computed based on the proportion (i.e. what is the cut-off value
-      if we split the dataframe on a X, 1-X basis).
-    - Define the base as the dataframe containing all observations associated with values
-      of the reference up to the cut-off value. The test dataframe contains all other
-      observations.
-    - If the cut-off value is defined as a list, the split is done in a slightly different
-      way. The base contains all observations for which the reference is part of the list.
-      The test dataframe contains all other observations.
-- Then for each feature in scope:
-    - Discretize the values using the binning strategy defined by the user.
-        - Two binning strategies can be used: equal frequency (i.e. each bin contains
-          the same number of observations) or equal width (i.e. the difference between
-          the upper and the lower limits of the bin is the same for all bins).
-        - The bins are defined on the values of the base dataframe.
-    - Determine percentage of observations per bin for the base and the test
-      dataframes.
-    - Compute the PSI value based on the percentage of observations per bin.
-    - If the PSI is above the defined threshold, add the feature to the list of
-      features to drop.
+
+The input dataframe is split in two subparts according to the parameters passed
+to the `init` method. The method used to split the dataframe performs the following
+steps:
+- Identify the reference as the column to use for splitting the dataframe. It is either
+a column provided by the user or the index of the dataframe.
+- Determine the cut-off value. The cut-off is either directly provided by the user as
+argument or it is computed based on the proportion (i.e. what is the cut-off value
+if we split the dataframe on a X, 1-X basis).
+- Define the base as the dataframe containing all observations associated with values
+of the reference up to the cut-off value. The test dataframe contains all other
+observations.
+- If the cut-off value is defined as a list, the split is done in a slightly different
+way. The base contains all observations for which the reference is part of the list.
+The test dataframe contains all other observations.
+
+Then for each feature in scope:
+- Discretize the values using the binning strategy defined by the user.
+Two binning strategies can be used: equal frequency (i.e. each bin contains
+the same number of observations) or equal width (i.e. the difference between
+the upper and the lower limits of the bin is the same for all bins).
+The bins are defined on the values of the base dataframe.
+- Determine percentage of observations per bin for the base and the test
+dataframes.
+- Compute the PSI value based on the percentage of observations per bin.
+- If the PSI is above the defined threshold, add the feature to the list of
+    features to drop.
 
 ##### Remarks on the use of the PSI.
 
@@ -246,10 +247,10 @@ the `var_1` feature.
 .. code:: python
 
     {'var_0': 0.19387083701883132,
-     'var_2': 0.12789758898627593,
-     'var_3': 0.20928408122831613,
-     'var_4': 0.3614010092217242,
-     'var_5': 0.17200356108416925}
+    'var_2': 0.12789758898627593,
+    'var_3': 0.20928408122831613,
+    'var_4': 0.3614010092217242,
+    'var_5': 0.17200356108416925}
 
 This is the expected behaviour as the column used to split the dataframe is
 further excluded from the calculations. Based on the
@@ -334,10 +335,10 @@ different customer segments like 'Retail', 'SME' and 'Wholesale'.
     from feature_engine.selection import DropHighPSIFeatures
 
     X, y = make_classification(
-           n_samples=1000,
-           n_features=6,
-           random_state=0
-        )
+        n_samples=1000,
+        n_features=6,
+        random_state=0
+    )
 
     colnames = ["var_" + str(i) for i in range(n_feat)]
     X = pd.DataFrame(X, columns=colnames)
@@ -380,10 +381,10 @@ a list.
     from feature_engine.selection import DropHighPSIFeatures
 
     X, y = make_classification(
-           n_samples=1000,
-           n_features=6,
-           random_state=0
-        )
+        n_samples=1000,
+        n_features=6,
+        random_state=0
+    )
 
     colnames = ["var_" + str(i) for i in range(n_feat)]
     X = pd.DataFrame(X, columns=colnames)
@@ -441,10 +442,10 @@ dataframes regardless of the number of observations in each class.
     from feature_engine.selection import DropHighPSIFeatures
 
     X, y = make_classification(
-           n_samples=1000,
-           n_features=6,
-           random_state=0
-        )
+        n_samples=1000,
+        n_features=6,
+        random_state=0
+    )
 
     colnames = ["var_" + str(i) for i in range(n_feat)]
     X = pd.DataFrame(X, columns=colnames)

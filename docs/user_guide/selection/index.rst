@@ -69,7 +69,11 @@ it does not support missing data.
 
 Throughout the user guide, you will find more details about each of the feature selection procedures.
 
-Say something about :class:`DropHighPSIFeatures()`.
+:class:`DropHighPSIFeatures()` allows to remove features with shifted distribution. This is done by
+splitting the input dataframe in two parts and comparing the distribution of each feature in the two
+parts. The metric used to assess distribution shift is the Pospulation Stability Index (PSI). Removing
+unstable features may lead to more robust models. In fields like Credit Risk Modelling, the regulator
+often requires to the PSI of the final feature set to be below are given threshold.  
 
 Transformers
 ------------
