@@ -72,8 +72,7 @@ The bins are defined on the values of the base dataframe.
 - Determine percentage of observations per bin for the base and the test
 dataframes.
 - Compute the PSI value based on the percentage of observations per bin.
-- If the PSI is above the defined threshold, add the feature to the list of
-  features to drop.
+- If the PSI is above the defined threshold, add the feature to the list of features to drop.
 
 
 ##### Remarks on the use of the PSI.
