@@ -75,6 +75,7 @@ dataframes.
 - If the PSI is above the defined threshold, add the feature to the list of
 features to drop.
 
+
 ##### Remarks on the use of the PSI.
 
 When working with PSI, it is worth highlighting the following:
@@ -88,9 +89,9 @@ or with high cardinality).
 assessed with Chi-squared.
 - Different thresholds can be used to assess the magnitude of the distribution
 shift according to the PSI value. The most commonly used thresholds are:
-  - Below 10%, the variable has not experienced a significant shift.
-  - Above 25%, the variable has experienced a major shift.
-  - Between those two values, the shift is intermediate.
+below 10% (the variable has not experienced a significant shift) and above 25%
+(the variable has experienced a major shift). 
+Between those two values, the shift is intermediate.
 
 
 Examples
