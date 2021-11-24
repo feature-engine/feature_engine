@@ -73,7 +73,7 @@ The bins are defined on the values of the base dataframe.
 dataframes.
 - Compute the PSI value based on the percentage of observations per bin.
 - If the PSI is above the defined threshold, add the feature to the list of
-features to drop.
+  features to drop.
 
 
 ##### Remarks on the use of the PSI.
@@ -139,12 +139,9 @@ the sizes of the two parts can be adjusted.
     X_transformed = transformer.fit_transform(X)
 
 - The value of the split_frac argument (0.6) means that the two dataframes used
- to compute
-the PSI values (base and test) will be split according to a 60% - 40% basis.
-- The fit method performs the split of the dataframe and the calculations of
-the PSI values using the
-procedure described above.
-The PSI values are accessible through the `.psi_values_` attribute.
+to compute the PSI values (base and test) will be split according to a 60% - 40% basis.
+- The fit method performs the split of the dataframe and the calculations of 
+procedure described above. The PSI values are accessible through the `.psi_values_` attribute.
 
 .. code:: python
 
