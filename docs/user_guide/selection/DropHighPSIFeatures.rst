@@ -5,35 +5,35 @@
 DropHighPSIFeatures
 ===================
 
-The :class:`DropHighPSIFeatures()` finds and removes features with unstable distribution
-from a pandas dataframe.
+The :class:`DropHighPSIFeatures()` finds and removes features with shifted distribution
+(i.e. unstable values) from a pandas dataframe.
 The stability of the distribution is computed using the `Population Stability
 Index (PSI)` and
 all features having a PSI value above a given threshold are removed.
 
 Unstable features may introduce an additional bias in a model if the training population
-significantly differs from the population in production. Removing these features leads to
-more robust models and therefore to better performances over time. In the field of Credit Risk
+significantly differs from the population in production. Removing features for
+which distribution shift is suspected leads to
+more robust models and therefore to better performances. In the field of Credit Risk
 modelling, eliminating features with high PSI is common practice and usually required by the
 Regulator.
 
-##### Splitting the input dataframe
+##### Approaches implemented
 
 Computing the PSI involves comparing two distributions. In
 :class: `DropHighPSIFeatures()` the input dataframe is split in
-two parts (called base and test); these two parts are used to calculate the
-PSI value for each feature.
+two parts (called base and test); the distribution of the features' values
+in these two parts are used to calculate the PSI.
 
+The class offers three approaches to split the input dataframe:
 
-The class offers three ways to split the input dataframe:
-
-- Using proportions: For example 75% and 25%.
-- Using a cut-off value: Up-to and above the cut-off value.
-- Observations belonging to a group (defined by a list of values) and observations not belonging to that group.
+- Using proportions: For example 75% and 25% of the input dataframe.
+- Using a cut-off value: All values up-to a given cut-off go in the base dataframe and all others in the test dataframe.
+- Using a list of values: All observations included in the list go into the base dataframe. All others go in the test dataframe.
 
 The split can be done based on two dimensions:
 
-- The index (i.e. its value).
+- The (value of the) index.
 - A specified column.
 
 
@@ -59,7 +59,7 @@ if we split the dataframe on a X, 1-X basis).
 of the reference up to the cut-off value. The test dataframe contains all other
 observations.
 - If the cut-off value is defined as a list, the split is done in a slightly different
-way. The base contains all observations for which the reference is part of the list.
+way. The base dataframe contains all observations for which the reference is part of the list.
 The test dataframe contains all other observations.
 
 Then for each feature in scope:
@@ -67,7 +67,7 @@ Then for each feature in scope:
 Two binning strategies can be used: equal frequency (i.e. each bin contains
 the same number of observations) or equal width (i.e. the difference between
 the upper and the lower limits of the bin is the same for all bins).
-The bins are defined on the values of the base dataframe.
+The bins are defined on the values of the base dataframe only.
 - Determine percentage of observations per bin for the base and the test
 dataframes.
 - Compute the PSI value based on the percentage of observations per bin.
@@ -86,7 +86,7 @@ When working with PSI, it is worth highlighting the following:
 Different thresholds can be used to assess the magnitude of the distribution
 shift according to the PSI value. The most commonly used thresholds are:
 below 10% (the variable has not experienced a significant shift) and above 25%
-(the variable has experienced a major shift). 
+(the variable has experienced a major shift).
 Between those two values, the shift is intermediate.
 
 
@@ -132,8 +132,8 @@ the sizes of the two parts can be adjusted.
 
 - The value of the split_frac argument (0.6) means that the two dataframes used
   to compute the PSI values (base and test) will be split according to a 60% - 40% basis.
-- The fit method performs the split of the dataframe and the calculations of 
-  procedure described above. The PSI values are accessible through the `.psi_values_` attribute.
+- The fit method performs the split of the dataframe and the calculation of the PSI
+  values following the procedure described above. The PSI values are accessible through the `.psi_values_` attribute.
 
 .. code:: python
 
@@ -141,7 +141,7 @@ the sizes of the two parts can be adjusted.
 
 The analysis of the PSI values (see below) shows that only feature 3 (called `var_3`)
 has a PSI above the 0.25 threshold (default value) and will be removed
-by the transform method.
+by the `transform` method.
 
 .. code:: python
 
@@ -185,7 +185,7 @@ specific threshold for the split.
 
 A real life example for this case is the use of the customer ID or contract ID
 to split the dataframe. These ID's are often increasing over time which justify
-their use to assess population shift in the features.
+their use to assess distribution shift in the features.
 
 .. code:: python
 
@@ -208,8 +208,8 @@ their use to assess population shift in the features.
     X_transformed = transformer.fit_transform(X)
 
 :class:`DropHighPSIFeatures()` is called in such a way that the base dataframe
-used in the calculation of the PSI values contains all observations with `var_1`
-lower or equal to 0.5. The test dataframe contains all other values.
+used in the calculation of the PSI values contains all rows with `var_1`
+lower or equal to 0.5. The test dataframe contains all other rows.
 
 This is shown by inspecting the dataframe using the `split_dataframe` method.
 
@@ -257,10 +257,9 @@ does not make sense to compute the PSI value for the column defined in
 
 
 :class:`DropHighPSIFeatures()` can handle different types of `split_col`
-variables. In the following example
-it is shown how it works with a date.
+variables. The following case illustrates how it works with a date.
 
-This case is representative when investigating population shift after an
+This case is representative when investigating distribution shift after an
 event like the start of the Covid-19 pandemic.
 
 .. code:: python
@@ -284,8 +283,9 @@ event like the start of the Covid-19 pandemic.
     X['time'] = [date(year, 1, 1) for year in range(1000, 2000)]
 
 Performing the PSI elimination by considering two periods of time is done simply
-by providing a date as cut-off value. In the example below the PSI calculations
-will be done comparing the period up to the French revolution and after.
+by providing the label of the column with the reference date and a cut-off date.
+In the example below the PSI calculations
+will be done comparing the periods up to the French revolution and after.
 
 
 .. code:: python
@@ -301,6 +301,7 @@ for the base and test dataframes coming from the `_split_dataframe()` method.
     print(base.time.max(), test.time.min())
 
 This yields the following result.
+
 .. code:: python
 
     1789-01-01 1790-01-01
@@ -319,7 +320,7 @@ the user to be very cautious when working in such a setting as alphabetical
 sorting in combination with a cut-off does not always provide obvious results.
 
 A real life example for this case is the computation of the PSI between
-different customer segments like 'Retail', 'SME' and 'Wholesale'.
+different customer segments like 'Retail', 'SME' or 'Wholesale'.
 
 .. code:: python
 
@@ -347,7 +348,7 @@ We can define a simple cut-off value (for example the letter C).
     transformer = DropHighPSIFeatures(split_col='group', cut_off='C')
     X_no_drift = transformer.fit_transform(X)
 
-In order to understand how the dataframe is split to compute the PSI,
+In order to understand how the dataframe is split (to compute the PSI),
 we look at the output of the `_split_dataframe` method that is called
 during the PSI calculations.
 
@@ -364,8 +365,7 @@ This yields the following results:
     ['A' 'B' 'C']
     ['D' 'E']
 
-The other option considered in this case is when `cut_off` is defined as
-a list.
+The other option considered is when `cut_off` is defined as a list.
 
 .. code:: python
 
@@ -412,20 +412,20 @@ This yields the following results:
     ['A' 'B' 'C']
     ['D' 'E']
 
-Note the defining a list works with all type of data (string, date, integer and float)
-that :class:`DropHighPSIFeatures()` can handle.:class:`DropHighPSIFeatures()`
+Note that defining a list works with all type of data (string, date, integer and float)
+that :class:`DropHighPSIFeatures()` can handle.
 
 
 **Case 5: split data based on unique values (split_distinct)**
 
-A variant to the previous example is the use of the split_distinct functionality.
+A variant to the previous example is the use of the `split_distinct` functionality.
 In that case, the split is not done based on the number observations from
-`split_col` but from the number of distinct values in `split_col`.
+`split_col` but from the number of distinct values in split_col.
 
 A real life example for this case is when dealing with groups of different sizes
-like customer's incomes classes ('1000', '2000', '3000', '4000', ...).
-split_distinct allows to control the numbers of classes in the base and test
-dataframes regardless of the number of observations in each class.  
+like customers income classes ('1000', '2000', '3000', '4000', ...).
+Split_distinct allows to control the numbers of classes in the base and test
+dataframes regardless of the number of observations in each class.
 
 
 .. code:: python
@@ -447,7 +447,7 @@ dataframes regardless of the number of observations in each class.
     # Add a categorical column
     X['group'] = ["A", "B", "C", "D", "E"] * 100 + ["F"] * 500
 
-Now the `group` column contains 500 observations in the (A, B, C, D, E)
+The `group` column contains 500 observations in the (A, B, C, D, E)
 group and 500 in the (F) group. This is reflected in the output of
 `DropHighPSIFeatures` when used with the default parameter values.
 
@@ -462,11 +462,13 @@ That yields the following output:
 
 .. code:: python
 
-    ['A' 'B' 'C' 'D' 'E'] (500, 8)
-    ['F'] (500, 8)
+    ['A' 'B' 'C' 'D' 'E'] (500, 6)
+    ['F'] (500, 6)
 
-If we pass the `split_distinct=True` argument when initialize
-the `DropHighPSIFeatures` object, the split will
+If we pass the `split_distinct=True` argument when initializing
+the `DropHighPSIFeatures` object, the split will ensures the base and
+the test dataframes contain the same number of unique values in the `group`
+column
 
 .. code:: python
 
@@ -479,8 +481,8 @@ That yields the following output:
 
 .. code:: python
 
-    ['A' 'B' 'C'] (300, 8)
-    ['D' 'E' 'F'] (700, 8)
+    ['A' 'B' 'C'] (300, 6)
+    ['D' 'E' 'F'] (700, 6)
 
 More details
 ^^^^^^^^^^^^
