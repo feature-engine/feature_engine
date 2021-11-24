@@ -18,22 +18,56 @@ more robust models and therefore to better performances. In the field of Credit 
 modelling, eliminating features with high PSI is common practice and usually required by the
 Regulator.
 
+Definition of PSI
+------------------
+
+To compute the PSI :class:`DropHighPSIFeatures()` splits the input dataset in
+two: a basis data set and a test set. The basis data set is assumed to contain
+the expected or original feature distributions. The test set will be assessed
+against the basis data set.
+
+To determine the PSI, continuous features are binned into discrete intervals, the
+fraction of observations per interval is then determined, and finally those values
+are compared between the basis and test sets, to obtain the PSI.
+
+In other words, the PSI is computed as follows:
+
+- Define the bins into which the observations will be sorted (uses the basis set).
+- Sort the feature values into those bins (in both basis and test sets).
+- Determine the fraction of observations within each bin.
+- Compute the PSI.
+
+The PSI is determined as:
+
 .. math::
 
     PSI = \sum_{i=1}^n (test_i - basis_i) . ln(\frac{test_i}{basis_i})
 
-##### Approaches implemented
+Where
 
-Computing the PSI involves comparing two distributions. In
-:class: `DropHighPSIFeatures()` the input dataframe is split in
-two parts (called base and test); the distribution of the features' values
-in these two parts are used to calculate the PSI.
+.. math::
 
-The class offers three approaches to split the input dataframe:
+    basis_i
+
+Represents the percentage of observations of the basis dataframe in bin i.
+
+.. math::
+
+    test_i
+
+Represents the percentage of observations of the test dataframe in bin i.
+
+The sum goes over the n distincts bins defined during discretization.
+
+
+Approaches implemented
+----------------------
+
+:class: `DropHighPSIFeatures()` offers three approaches to split the input dataframe:
 
 - Using proportions: For example 75% and 25% of the input dataframe.
-- Using a cut-off value: All values up-to a given cut-off go in the base dataframe and all others in the test dataframe.
-- Using a list of values: All observations included in the list go into the base dataframe. All others go in the test dataframe.
+- Using a cut-off value: All values up-to a given cut-off go in the basis dataframe and all others in the test dataframe.
+- Using a list of values: All observations included in the list go into the basis dataframe. All others go in the test dataframe.
 
 The split can be done based on two dimensions:
 
@@ -59,11 +93,11 @@ a column provided by the user or the index of the dataframe.
 - Determine the cut-off value. The cut-off is either directly provided by the user as
 argument or it is computed based on the proportion (i.e. what is the cut-off value
 if we split the dataframe on a X, 1-X basis).
-- Define the base as the dataframe containing all observations associated with values
+- Define the basis as the dataframe containing all observations associated with values
 of the reference up to the cut-off value. The test dataframe contains all other
 observations.
 - If the cut-off value is defined as a list, the split is done in a slightly different
-way. The base dataframe contains all observations for which the reference is part of the list.
+way. The basis dataframe contains all observations for which the reference is part of the list.
 The test dataframe contains all other observations.
 
 Then for each feature in scope:
@@ -71,8 +105,8 @@ Then for each feature in scope:
 Two binning strategies can be used: equal frequency (i.e. each bin contains
 the same number of observations) or equal width (i.e. the difference between
 the upper and the lower limits of the bin is the same for all bins).
-The bins are defined on the values of the base dataframe only.
-- Determine percentage of observations per bin for the base and the test
+The bins are defined on the values of the basis dataframe only.
+- Determine percentage of observations per bin for the basis and the test
 dataframes.
 - Compute the PSI value based on the percentage of observations per bin.
 - If the PSI is above the defined threshold, add the feature to the list of features to drop.
@@ -135,7 +169,7 @@ the sizes of the two parts can be adjusted.
     X_transformed = transformer.fit_transform(X)
 
 - The value of the split_frac argument (0.6) means that the two dataframes used
-  to compute the PSI values (base and test) will be split according to a 60% - 40% basis.
+  to compute the PSI values (basis and test) will be split according to a 60% - 40% basis.
 - The fit method performs the split of the dataframe and the calculation of the PSI
   values following the procedure described above. The PSI values are accessible through the `.psi_values_` attribute.
 
@@ -166,16 +200,16 @@ accessed via the `.cut_off_` attribute:
 
 The value of 119.4 means that observations with index from 0 to 119 are used
 to define the
-base dataframe. This corresponds to 60% (120 / 200) of the original dataframe
+basis dataframe. This corresponds to 60% (120 / 200) of the original dataframe
 (X).
 
-The base and the test dataframes are not directly accessible. However they can
+The basis and the test dataframes are not directly accessible. However they can
 be (re-)computed
 using the `.split_dataframe()` method.
 
 .. code:: python
 
-    base, test = transformer._split_dataframe(X)
+    basis, test = transformer._split_dataframe(X)
 
 
 **Case 2: split data based on variable (cut_off is numerical value)**
@@ -211,7 +245,7 @@ their use to assess distribution shift in the features.
     transformer = DropHighPSIFeatures(split_col='var_1', cut_off=0.5)
     X_transformed = transformer.fit_transform(X)
 
-:class:`DropHighPSIFeatures()` is called in such a way that the base dataframe
+:class:`DropHighPSIFeatures()` is called in such a way that the basis dataframe
 used in the calculation of the PSI values contains all rows with `var_1`
 lower or equal to 0.5. The test dataframe contains all other rows.
 
@@ -219,10 +253,10 @@ This is shown by inspecting the dataframe using the `split_dataframe` method.
 
 .. code:: python
 
-    base, test = transformer._split_dataframe(X)
-    base.describe()
+    basis, test = transformer._split_dataframe(X)
+    basis.describe()
 
-The maximum value for `var_1` column of the base dataframe is just below the
+The maximum value for `var_1` column of the basis dataframe is just below the
 cut-off
 value of 0.5.
 
@@ -297,12 +331,12 @@ will be done comparing the periods up to the French revolution and after.
     transformer = DropHighPSIFeatures(split_col='time', cut_off=date(1789, 7, 14))
 
 To check if the split is performed as expected, we look at the date
-for the base and test dataframes coming from the `_split_dataframe()` method.
+for the basis and test dataframes coming from the `_split_dataframe()` method.
 
 .. code:: python
 
-    base, test = transformer._split_dataframe(X)
-    print(base.time.max(), test.time.min())
+    basis, test = transformer._split_dataframe(X)
+    print(basis.time.max(), test.time.min())
 
 This yields the following result.
 
@@ -358,8 +392,8 @@ during the PSI calculations.
 
 .. code:: python
 
-    base, test = transformer._split_dataframe(X)
-    print(base.group.unique())
+    basis, test = transformer._split_dataframe(X)
+    print(basis.group.unique())
     print(test.group.unique())
 
 This yields the following results:
@@ -395,18 +429,18 @@ Running `DropHighPSIFeatures` in done is a similar way as in the previous cases.
 .. code:: python
 
     transformer = DropHighPSIFeatures(split_col='group', cut_off=['A', 'C', 'E'])
-    base, test = transformer._split_dataframe(X)
+    basis, test = transformer._split_dataframe(X)
 
 According to the parameters passed when initializing the `DropHighPSIFeatures`
 object,
-we expect the base dataframe to contain all observations associated with the groups
+we expect the basis dataframe to contain all observations associated with the groups
 A, C and E and the test dataframe to contain all observations associated with the groups
 B and D. This is exactly what happens.
 
 .. code:: python
 
-    base, test = transformer._split_dataframe(X)
-    print(base.group.unique())
+    basis, test = transformer._split_dataframe(X)
+    print(basis.group.unique())
     print(test.group.unique())
 
 This yields the following results:
@@ -428,7 +462,7 @@ In that case, the split is not done based on the number observations from
 
 A real life example for this case is when dealing with groups of different sizes
 like customers income classes ('1000', '2000', '3000', '4000', ...).
-Split_distinct allows to control the numbers of classes in the base and test
+Split_distinct allows to control the numbers of classes in the basis and test
 dataframes regardless of the number of observations in each class.
 
 
@@ -458,8 +492,8 @@ group and 500 in the (F) group. This is reflected in the output of
 .. code:: python
 
     transformer = DropHighPSIFeatures(split_col='group')
-    base, test = transformer._split_dataframe(X)
-    print(base.group.unique(), base.shape)
+    basis, test = transformer._split_dataframe(X)
+    print(basis.group.unique(), basis.shape)
     print(test.group.unique(), test.shape)
 
 That yields the following output:
@@ -470,15 +504,15 @@ That yields the following output:
     ['F'] (500, 6)
 
 If we pass the `split_distinct=True` argument when initializing
-the `DropHighPSIFeatures` object, the split will ensures the base and
+the `DropHighPSIFeatures` object, the split will ensures the basis and
 the test dataframes contain the same number of unique values in the `group`
 column
 
 .. code:: python
 
     transformer = DropHighPSIFeatures(split_col='group', split_distinct=True)
-    base, test = transformer._split_dataframe(X)
-    print(base.group.unique(), base.shape)
+    basis, test = transformer._split_dataframe(X)
+    print(basis.group.unique(), basis.shape)
     print(test.group.unique(), test.shape)
 
 That yields the following output:

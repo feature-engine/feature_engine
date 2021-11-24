@@ -30,26 +30,6 @@ class DropHighPSIFeatures(BaseSelector):
     shift in its distribution; a feature with high PSI could therefore be considered
     unstable.
 
-    To compute the PSI the transformer splits the training dataset in two: a basis data
-    set and a test set. The basis data set is assumed to contain the expected or
-    original feature distributions. The test set will be assessed against the basis
-    data set.
-
-    To determine the PSI, continuous features are sorted into discrete intervals, the
-    fraction of observations per interval is then determined, and finally those values
-    are compared between the basis and test sets, to obtain the PSI.
-
-    In other words, the PSI is computed as follows:
-
-    - Define the bins into which the observations will be sorted (uses the basis set).
-    - Sort the feature values into those bins (in both basis and test sets).
-    - Determine the fraction of observations within each bin.
-    - Compute the PSI.
-
-    The PSI is determined as:
-
-    PSI = \sum_{i=1}^n (test_i - basis_i) . ln(\frac{test_i}{basis_i})
-
     A bigger PSI value indicates a bigger shift in the feature distribution.
 
     Different thresholds can be used to assess the magnitude of the distribution shift
