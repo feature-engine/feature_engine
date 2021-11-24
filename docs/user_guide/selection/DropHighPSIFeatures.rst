@@ -139,9 +139,9 @@ the sizes of the two parts can be adjusted.
     X_transformed = transformer.fit_transform(X)
 
 - The value of the split_frac argument (0.6) means that the two dataframes used
-to compute the PSI values (base and test) will be split according to a 60% - 40% basis.
+  to compute the PSI values (base and test) will be split according to a 60% - 40% basis.
 - The fit method performs the split of the dataframe and the calculations of 
-procedure described above. The PSI values are accessible through the `.psi_values_` attribute.
+  procedure described above. The PSI values are accessible through the `.psi_values_` attribute.
 
 .. code:: python
 
