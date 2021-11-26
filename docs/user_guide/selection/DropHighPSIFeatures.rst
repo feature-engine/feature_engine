@@ -166,7 +166,7 @@ in `split_col` is below the cut-off, will be sent to the reference data, alterna
 #TODO: can we think of an example??
 
 split_col
----------
+~~~~~~~~~
 
 To split the dataset, we recommend that you indicate which column you want to use as
 reference in the `split_col` parameter. If you don't, the split will be done based on the
@@ -177,12 +177,22 @@ values or if splitting just based on `split_frac`.
 Examples
 --------
 
-The complexity of the class lies in the different options to split
-the input dataframe in order to compute the PSI. Therefore, we provide several examples
-illustrating the different approaches.
+The versatility of the class lies in the different options to split the input dataframe
+in a reference or basis data set with the "expected" distributions and a test set, which
+will be evaluated against the reference.
+
+After splitting the data, :class:`DropHighPSIFeatures()` goes ahead and compares the
+feature distributions in both datasets by computing the PSI.
+
+To illustrate how to best use this class depending on your scenario or data, we provide
+various examples illustrating the different approaches or scenarios.
 
 Case 1: split data based on proportions (split_frac)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this case, :class:`DropHighPSIFeatures()` will split the dataset in 2, based on the
+indicated proportion. The proportion is indicated in the `split_frac` parameter. You have
+the option to select a variable in `split_col` or leave it to None.
 
 Let's first create a toy dataframe containing random variables.
 
@@ -192,7 +202,7 @@ Let's first create a toy dataframe containing random variables.
     from sklearn.datasets import make_classification
     from feature_engine.selection import DropHighPSIFeatures
 
-    # Define a dataframe with 200 observations from 6 random variables
+    # Create a dataframe with 200 observations and 6 random variables
     X, y = make_classification(
         n_samples=200,
         n_features=6,
@@ -203,10 +213,10 @@ Let's first create a toy dataframe containing random variables.
     X = pd.DataFrame(X, columns=colnames)
 
 The default approach in :class:`DropHighPSIFeatures()` is to split the
-input dataframe `X` in two equally sized datasets. You can adjust the proportions by changing
+input dataframe `X` in two equally sized data sets. You can adjust the proportions by changing
 the value in the `split_frac` parameter.
 
-For example, let's split the input dataframe into a reference dataset containing 60% of
+For example, let's split the input dataframe into a reference data set containing 60% of
 the observations and a test set containing 40% of the observations.
 
 .. code:: python
@@ -216,11 +226,11 @@ the observations and a test set containing 40% of the observations.
     transformer = DropHighPSIFeatures(split_frac=0.6)
     X_transformed = transformer.fit_transform(X)
 
-- The value of the split_frac argument (0.6) means that the two dataframes used
-  to compute the PSI values (basis and test) will be split according to a 60% - 40% rule.
-- The fit method performs the split of the dataframe and the calculation of the PSI.
+The value of `split_frac` tells :class:`DropHighPSIFeatures()` to split X according to a
+60% - 40% ratio. The `fit()` method performs the split of the dataframe and the calculation
+of the PSI.
 
-The PSI values are accessible through the `.psi_values_` attribute.
+The PSI values are accessible through the `psi_values_` attribute:
 
 .. code:: python
 
@@ -239,9 +249,7 @@ by the `transform` method.
     'var_4': 0.19861346887805775,
     'var_5': 0.1411194164512627}
 
-The cut-off value used to split the dataframe is stored in the
-`DropHighPSIFeatures` object. It can be
-accessed via the `.cut_off_` attribute:
+The cut-off value used to split the dataframe is stored in the `cut_off_` attribute:
 
 .. code:: python
 
@@ -250,23 +258,29 @@ accessed via the `.cut_off_` attribute:
 #TODO: can you add the output of the previous command please?
 
 The value of 119.4 means that observations with index from 0 to 119 are used
-to define the
-basis dataframe. This corresponds to 60% (120 / 200) of the original dataframe
+to define the basis dataframe. This corresponds to 60% (120 / 200) of the original dataframe
 (X).
+
+Splitting with proportions will order the index or the reference column first, and then
+determine the data that will go into each dataframe. In other words, the order of the index
+or the variable indicated in `split_col` matters. Observations with the lowest values will
+be send to the basis dataframe and the ones with the highest values to the test set.
 
 
 Case 2: split data based on variable (numerical cut_off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:class:`DropHighPSIFeatures()` allows to define the column used to
-split the dataframe. Two options are then available to the user:
+:class:`DropHighPSIFeatures()` allows your to define the column used to
+split the dataframe. There are two options available:
 
-- Split by proportion: This is an approach similar to the one described in the first use case.
+- Split by proportion: This approach is similar to the one described in the previous example.
 - Split by threshold: Using the `cut_off` argument, the user can define the specific threshold for the split.
 
 A real life example for this case is the use of the customer ID or contract ID
-to split the dataframe. These ID's are often increasing over time which justify
+to split the dataframe. These ID's are often increasing in value over time which justify
 their use to assess distribution shift in the features.
+
+Let's create a toy dataframe with random variables.
 
 .. code:: python
 
@@ -284,40 +298,21 @@ their use to assess distribution shift in the features.
     X = pd.DataFrame(X, columns=colnames)
 
     # Call the PSI selector
-
     transformer = DropHighPSIFeatures(split_col='var_1', cut_off=0.5)
     X_transformed = transformer.fit_transform(X)
 
-:class:`DropHighPSIFeatures()` is called in such a way that the basis dataframe
-used in the calculation of the PSI values contains all rows with `var_1`
-lower or equal to 0.5. The test dataframe contains all other rows.
+In this case, :class:`DropHighPSIFeatures()` will allocate in the basis or reference data
+set, all observations which values in `var_1` are <= 0.5. The test dataframe contains the
+remaining observations.
 
-This is shown by inspecting the dataframe using the `split_dataframe` method.
-
-.. code:: python
-
-    basis, test = transformer._split_dataframe(X)
-    basis.describe()
-
-The maximum value for `var_1` column of the basis dataframe is just below the
-cut-off
-value of 0.5.
-
-.. code:: python
-
-    test.describe()
-
-The minimum value for the `var_1` column of the test dataframe is above the 0.5
-cut-off.
-
-When looking at the PSI values:
+The method `fit()` will determine the PSI values, which are stored in the class:
 
 .. code:: python
 
     transformer.psi_values_
 
 We see that :class:`DropHighPSIFeatures()` does not provide any PSI value for
-the `var_1` feature.
+the `var_1` feature, because this variable was used as a reference to split the data.
 
 .. code:: python
 
@@ -327,22 +322,18 @@ the `var_1` feature.
     'var_4': 0.3614010092217242,
     'var_5': 0.17200356108416925}
 
-This is the expected behaviour as the column used to split the dataframe is
-further excluded from the calculations. Based on the
-definition of the PSI, it
-does not make sense to compute the PSI value for the column defined in
-`split_col`
 
-
-Case 3: split data based on variable (date as cut_off)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Case 3: split data based on time (date as cut_off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 :class:`DropHighPSIFeatures()` can handle different types of `split_col`
-variables. The following case illustrates how it works with a date.
+variables. The following case illustrates how it works with a date variable. In fact,
+we often want to determine if the distribution of a feature changes in time, or after a
+certain event like the start of the Covid-19 pandemic.
 
-This case is representative when investigating distribution shift after an
-event like the start of the Covid-19 pandemic.
+This is how to do it. Let's create a toy dataframe with random numerical variables and a
+date variable.
 
 .. code:: python
 
@@ -360,40 +351,23 @@ event like the start of the Covid-19 pandemic.
     colnames = ["var_" + str(i) for i in range(n_feat)]
     X = pd.DataFrame(X, columns=colnames)
 
-    # Add a date to the dataframe
-
+    # Add a date variable to the dataframe
     X['time'] = [date(year, 1, 1) for year in range(1000, 2000)]
 
-Performing the PSI elimination by considering two periods of time is done simply
-by providing the label of the column with the reference date and a cut-off date.
+Dropping features with high PSI values comparing two periods of time is done simply
+by providing the name of the column with the date and a cut-off date.
+
 In the example below the PSI calculations
 will be done comparing the periods up to the French revolution and after.
 
 
-.. code:: python
 
-    transformer = DropHighPSIFeatures(split_col='time', cut_off=date(1789, 7, 14))
-
-To check if the split is performed as expected, we look at the date
-for the basis and test dataframes coming from the `_split_dataframe()` method.
-
-.. code:: python
-
-    basis, test = transformer._split_dataframe(X)
-    print(basis.time.max(), test.time.min())
-
-This yields the following result.
-
-.. code:: python
-
-    1789-01-01 1790-01-01
-
-
-Case 4: split data based on variable (cut_off is list)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Case 4: split data based on a categorical variable (list as cut_off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :class:`DropHighPSIFeatures()` can also split the original dataframe based on
-a string variable. The cut-off can then be defined in two ways:
+a categorical variable. The cut-off can then be defined in two ways:
+
 - Using a single string.
 - Using a list of values.
 
@@ -402,8 +376,13 @@ sorted alphabetically and the split is determined by the cut-off. We advise
 the user to be very cautious when working in such a setting as alphabetical
 sorting in combination with a cut-off does not always provide obvious results.
 
+A better way of using this class would be to pass a list with the values of the variable
+that want to be sent to the reference dataframe.
+
 A real life example for this case is the computation of the PSI between
 different customer segments like 'Retail', 'SME' or 'Wholesale'.
+
+Let's show how to set up the transformer in this case.
 
 .. code:: python
 
@@ -424,31 +403,15 @@ different customer segments like 'Retail', 'SME' or 'Wholesale'.
     # Add a categorical column
     X['group'] = ["A", "B", "C", "D", "E"] * 200
 
-We can define a simple cut-off value (for example the letter C).
+We can define a simple cut-off value (for example the letter C). In this case, observations
+with values that come before C, alphabetically, will be allocated to the reference data set.
 
 .. code:: python
 
     transformer = DropHighPSIFeatures(split_col='group', cut_off='C')
     X_no_drift = transformer.fit_transform(X)
 
-In order to understand how the dataframe is split (to compute the PSI),
-we look at the output of the `_split_dataframe` method that is called
-during the PSI calculations.
-
-.. code:: python
-
-    basis, test = transformer._split_dataframe(X)
-    print(basis.group.unique())
-    print(test.group.unique())
-
-This yields the following results:
-
-.. code:: python
-
-    ['A' 'B' 'C']
-    ['D' 'E']
-
-The other option considered is when `cut_off` is defined as a list.
+The second option consists in passing a list of values to `cut_off`.
 
 .. code:: python
 
@@ -469,34 +432,13 @@ The other option considered is when `cut_off` is defined as a list.
     # Add a categorical column
     X['group'] = ["A", "B", "C", "D", "E"] * 200
 
-Running `DropHighPSIFeatures` in done is a similar way as in the previous cases.
+Now we set up :class:`DropHighPSIFeatures()` so that it allocates observations whihc values
+in the variable 'group' are one of the list ['A', 'C', 'E']).
 
 .. code:: python
 
     transformer = DropHighPSIFeatures(split_col='group', cut_off=['A', 'C', 'E'])
     basis, test = transformer._split_dataframe(X)
-
-According to the parameters passed when initializing the `DropHighPSIFeatures`
-object,
-we expect the basis dataframe to contain all observations associated with the groups
-A, C and E and the test dataframe to contain all observations associated with the groups
-B and D. This is exactly what happens.
-
-.. code:: python
-
-    basis, test = transformer._split_dataframe(X)
-    print(basis.group.unique())
-    print(test.group.unique())
-
-This yields the following results:
-
-.. code:: python
-
-    ['A' 'B' 'C']
-    ['D' 'E']
-
-Note that defining a list works with all type of data (string, date, integer and float)
-that :class:`DropHighPSIFeatures()` can handle.
 
 
 Case 5: split data based on unique values (split_distinct)
@@ -532,41 +474,13 @@ dataframes regardless of the number of observations in each class.
     X['group'] = ["A", "B", "C", "D", "E"] * 100 + ["F"] * 500
 
 The `group` column contains 500 observations in the (A, B, C, D, E)
-group and 500 in the (F) group. This is reflected in the output of
-`DropHighPSIFeatures` when used with the default parameter values.
-
-.. code:: python
-
-    transformer = DropHighPSIFeatures(split_col='group')
-    basis, test = transformer._split_dataframe(X)
-    print(basis.group.unique(), basis.shape)
-    print(test.group.unique(), test.shape)
-
-That yields the following output:
-
-.. code:: python
-
-    ['A' 'B' 'C' 'D' 'E'] (500, 6)
-    ['F'] (500, 6)
+group and 500 in the (F) group.
 
 If we pass the `split_distinct=True` argument when initializing
 the `DropHighPSIFeatures` object, the split will ensures the basis and
 the test dataframes contain the same number of unique values in the `group`
 column
 
-.. code:: python
-
-    transformer = DropHighPSIFeatures(split_col='group', split_distinct=True)
-    basis, test = transformer._split_dataframe(X)
-    print(basis.group.unique(), basis.shape)
-    print(test.group.unique(), test.shape)
-
-That yields the following output:
-
-.. code:: python
-
-    ['A' 'B' 'C'] (300, 6)
-    ['D' 'E' 'F'] (700, 6)
 
 More details
 ~~~~~~~~~~~~
