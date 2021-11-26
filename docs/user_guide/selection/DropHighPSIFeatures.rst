@@ -5,36 +5,34 @@
 DropHighPSIFeatures
 ===================
 
-The :class:`DropHighPSIFeatures()` finds and removes features with shifted distribution
-(i.e. unstable values) from a pandas dataframe.
-The stability of the distribution is computed using the `Population Stability
-Index (PSI)` and
-all features having a PSI value above a given threshold are removed.
+The :class:`DropHighPSIFeatures()` finds and removes features with changes in their
+distribution, i.e. "unstable values", from a pandas dataframe.
+The stability of the distribution is computed using the **Population Stability
+Index (PSI)** and all features having a PSI value above a given threshold are removed.
 
 Unstable features may introduce an additional bias in a model if the training population
 significantly differs from the population in production. Removing features for
-which distribution shift is suspected leads to
-more robust models and therefore to better performances. In the field of Credit Risk
+which a shift in the distribution is suspected leads to
+more robust models and therefore to better performance. In the field of Credit Risk
 modelling, eliminating features with high PSI is common practice and usually required by the
 Regulator.
 
-Definition of PSI
-------------------
+Population Stability Index - PSI
+--------------------------------
 
-To compute the PSI :class:`DropHighPSIFeatures()` splits the input dataset in
-two: a basis data set and a test set. The basis data set is assumed to contain
-the expected or original feature distributions. The test set will be assessed
-against the basis data set.
+The PSI is a measure of how much a population has changed in time or how different the distributions
+are between two different population samples.
 
-To determine the PSI, continuous features are binned into discrete intervals, the
+To determine the PSI, continuous features are sorted into discrete intervals, the
 fraction of observations per interval is then determined, and finally those values
-are compared between the basis and test sets, to obtain the PSI.
+are compared between the 2 groups, or as we call them in Feature-engine, between the
+basis and test sets, to obtain the PSI.
 
 In other words, the PSI is computed as follows:
 
-- Define the bins into which the observations will be sorted (uses the basis set).
-- Sort the feature values into those bins (in both basis and test sets).
-- Determine the fraction of observations within each bin.
+- Define the intervals into which the observations will be sorted.
+- Sort the feature values into those intervals.
+- Determine the fraction of observations within each interval.
 - Compute the PSI.
 
 The PSI is determined as:
@@ -43,102 +41,150 @@ The PSI is determined as:
 
     PSI = \sum_{i=1}^n (test_i - basis_i) . ln(\frac{test_i}{basis_i})
 
-Where
+where `basis` and `test` are the reference and comparison datasets, respectively, and `i`
+refers to the interval.
 
-.. math::
+In other words, the PSI determines the difference in the proportion of observations in each
+interval, between the reference (aka, original) and comparison datasets.
 
-    basis_i
+In the PSI equation, `n` is the total number of intervals.
 
-Represents the percentage of observations of the basis dataframe in bin i.
+Important
+~~~~~~~~~
 
-.. math::
-
-    test_i
-
-Represents the percentage of observations of the test dataframe in bin i.
-
-The sum goes over the n distincts bins defined during discretization.
-
-
-Approaches implemented
-----------------------
-
-:class: `DropHighPSIFeatures()` offers three approaches to split the input dataframe:
-
-- Using proportions: For example 75% and 25% of the input dataframe.
-- Using a cut-off value: All values up-to a given cut-off go in the basis dataframe and all others in the test dataframe.
-- Using a list of values: All observations included in the list go into the basis dataframe. All others go in the test dataframe.
-
-The split can be done based on two dimensions:
-
-- The (value of the) index.
-- A specified column.
-
-
-Procedure
----------
-
-:class:`DropHighPSIFeatures()` works according to the following procedure:
-
-The features in scope for the selector are identified. It is either the columns
-of the dataframe whose labels are passed in the *variables* argument or all
-numerical columns from the dataframe if the *variables* argument is not explicitly defined.
-
-
-The input dataframe is split in two subparts according to the parameters passed
-to the `init` method. The method used to split the dataframe performs the following
-steps:
-- Identify the reference as the column to use for splitting the dataframe. It is either
-a column provided by the user or the index of the dataframe.
-- Determine the cut-off value. The cut-off is either directly provided by the user as
-argument or it is computed based on the proportion (i.e. what is the cut-off value
-if we split the dataframe on a X, 1-X basis).
-- Define the basis as the dataframe containing all observations associated with values
-of the reference up to the cut-off value. The test dataframe contains all other
-observations.
-- If the cut-off value is defined as a list, the split is done in a slightly different
-way. The basis dataframe contains all observations for which the reference is part of the list.
-The test dataframe contains all other observations.
-
-Then for each feature in scope:
-- Discretize the values using the binning strategy defined by the user.
-Two binning strategies can be used: equal frequency (i.e. each bin contains
-the same number of observations) or equal width (i.e. the difference between
-the upper and the lower limits of the bin is the same for all bins).
-The bins are defined on the values of the basis dataframe only.
-- Determine percentage of observations per bin for the basis and the test
-dataframes.
-- Compute the PSI value based on the percentage of observations per bin.
-- If the PSI is above the defined threshold, add the feature to the list of features to drop.
-
-
-##### Remarks on the use of the PSI.
-
-When working with PSI, it is worth highlighting the following:
+When working with the PSI it is worth highlighting the following:
 
 - The PSI is not symmetric; switching the order of the basis and test dataframes in the PSI calculation will lead to different values.
 - The number of bins used to define the distributions has an impact on the PSI values.
 - The PSI is a suitable metric for numerical features (i.e., either continuous or with high cardinality).
 - For categorical or discrete features, the change in distributions is better assessed with Chi-squared.
 
-Different thresholds can be used to assess the magnitude of the distribution
-shift according to the PSI value. The most commonly used thresholds are:
-below 10% (the variable has not experienced a significant shift) and above 25%
-(the variable has experienced a major shift).
-Between those two values, the shift is intermediate.
+Threshold
+~~~~~~~~~
+
+Different thresholds can be used to assess the magnitude of the distribution shift according
+to the PSI value. The most commonly used thresholds are:
+
+- Below 10%, the variable has not experienced a significant shift.
+- Above 25%, the variable has experienced a major shift.
+- Between those two values, the shift is intermediate.
+
+
+Procedure
+---------
+
+To compute the PSI, the :class:`DropHighPSIFeatures()` splits the input dataset in
+two: a basis data set (aka the reference data) and a test set. The basis data set is assumed to contain
+the expected or original feature distributions. The test set will be assessed
+against the basis data set.
+
+In the next step, the interval boundaries are determined based on the features in the basis
+or reference data. These intervals can be determined to be of equal with, or equal number
+of observations.
+
+Next, :class:`DropHighPSIFeatures()` sorts each of the variable values into those intervals, both in the
+basis and test datasets, and then determines the proportion (percentage) of observations
+within each interval.
+
+Finally, the PSI is determined as indicated in the previous paragraph for each indicated feature.
+With the PSI value per feature, :class:`DropHighPSIFeatures()` can now select the features that are unstable and
+drop them, based on a threshold.
+
+
+Splitting the data
+------------------
+
+:class:`DropHighPSIFeatures()` allows us to determine how much a feature distribution has
+changed in time, or how much it differs between 2 groups.
+
+If we want to evaluate the distribution change in time, we can use a datetime variable as splitting
+reference and provide a datetime cut-off as split point.
+
+If we want to compare the distribution change between 2 groups, :class: `DropHighPSIFeatures()`
+offers 3 different approaches to split the input dataframe:
+
+- Proportion of observations.
+- Proportions of unique observations.
+- Using a cut-off value.
+
+
+Proportion of observations
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Splitting by proportion of observations will result in a certain proportion of observations
+allocated to either the reference and test datasets. For example, if we set `split_frac=0.75`,
+then 75% and 25% of the observations will be put into the reference and test data, respectively.
+
+If we select this method, we can pass a variable in the parameter `split_col` or leave it to None.
+
+Note that this method **does not shuffle** the dataset. This means that if `split_frac=0.75`, the
+first 75% of the rows will be allocated to the reference set, and the bottom 25% to the test set.
+
+If the rows in your dataset are sorted in time, this could be a good option to split the
+dataframe.
+
+Proportions of unique observations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If we split based on proportion of unique observations, it is important that we indicate which
+column we want to use as reference in the `split_col` parameter, to make a meaningful split.
+
+:class:`DropHighPSIFeatures()` will first identify the unique values of the variable in
+`split_col`. Then it will put a certain proportion of those values into the reference
+dataset and the remaining to the test dataset. The proportion is indicated in the parameter
+`split_frac`.
+
+This split makes sence when we have for example unique customer identifiers, and multiple rows
+per customer in the dataset. We want to make sure that all rows belonging to the same customer
+are allocated either in the reference or test data, but not both. And we want to make sure that
+we have a certain percentage of customers in either dataframe.
+
+Thus, if `split_frac=0.6` and `split_distinct=True`, :class:`DropHighPSIFeatures()` will send
+the first 60% of customers to the reference dataset, and the bottom 40% to the test set. And it will
+ensure that rows beloging to the same customer are just in one of the 2 dataframes.
+
+Using a cut-off value
+~~~~~~~~~~~~~~~~~~~~~
+
+We have the option to pass a reference variable to use to split the dataframe using `split_col` and
+also a cut-off value in the `cut_off` parameter. The cut-off value can be a number, integer or float,
+a date or a list of values.
+
+If we pass a datetime column in `split_col` and a datetime value in the `cut_off`, we can split the
+data in a temporal manner. Observations collected before the time indicated will be sent to the reference
+dataframe, and the remaining to the test set.
+
+If we pass a list of values in the `cut_off` all observations whcih values are included in the
+list go into the reference dataframe, and the remaining to the test dataframe. This split is useful
+if we have a categorical variable indicating a portfolio from which the observations have been collected.
+For example, if we set `split_col=portfolio` and `cut_off=['port_1`, 'port_2']`, all observations
+that belong to the first and second portolio will be sent to the reference dataset, and the observations
+from other portfolios to the test set.
+
+Finally, if we pass a number to `cut_off`, all observations which value in the variable indicated
+in `split_col` is below the cut-off, will be sent to the reference data, alternatively to the test data.
+#TODO: can we think of an example??
+
+split_col
+---------
+
+To split the dataset, we recommend that you indicate which column you want to use as
+reference in the `split_col` parameter. If you don't, the split will be done based on the
+values of the dataframe index. This might be a good option if the index contains meaningful
+values or if splitting just based on `split_frac`.
 
 
 Examples
 --------
 
 The complexity of the class lies in the different options to split
-the input dataframe in order to compute the PSI. Therefore several examples,
-illustrating the different approaches, are provided below.
+the input dataframe in order to compute the PSI. Therefore, we provide several examples
+illustrating the different approaches.
 
-**Case 1: split data based on proportions (split_frac parameter)**
+Case 1: split data based on proportions (split_frac)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Let's first define a toy dataframe containing random variables as basis
-for the PSI calculations.
+Let's first create a toy dataframe containing random variables.
 
 .. code:: python
 
@@ -157,9 +203,11 @@ for the PSI calculations.
     X = pd.DataFrame(X, columns=colnames)
 
 The default approach in :class:`DropHighPSIFeatures()` is to split the
-input dataframe (X) in two equally sized parts based on the value of the
-index. By passing a value to the `split_frac` argument, the ratio between
-the sizes of the two parts can be adjusted.
+input dataframe `X` in two equally sized datasets. You can adjust the proportions by changing
+the value in the `split_frac` parameter.
+
+For example, let's split the input dataframe into a reference dataset containing 60% of
+the observations and a test set containing 40% of the observations.
 
 .. code:: python
 
@@ -169,9 +217,10 @@ the sizes of the two parts can be adjusted.
     X_transformed = transformer.fit_transform(X)
 
 - The value of the split_frac argument (0.6) means that the two dataframes used
-  to compute the PSI values (basis and test) will be split according to a 60% - 40% basis.
-- The fit method performs the split of the dataframe and the calculation of the PSI
-  values following the procedure described above. The PSI values are accessible through the `.psi_values_` attribute.
+  to compute the PSI values (basis and test) will be split according to a 60% - 40% rule.
+- The fit method performs the split of the dataframe and the calculation of the PSI.
+
+The PSI values are accessible through the `.psi_values_` attribute.
 
 .. code:: python
 
@@ -198,28 +247,22 @@ accessed via the `.cut_off_` attribute:
 
     transformer.cut_off_
 
+#TODO: can you add the output of the previous command please?
+
 The value of 119.4 means that observations with index from 0 to 119 are used
 to define the
 basis dataframe. This corresponds to 60% (120 / 200) of the original dataframe
 (X).
 
-The basis and the test dataframes are not directly accessible. However they can
-be (re-)computed
-using the `.split_dataframe()` method.
 
-.. code:: python
-
-    basis, test = transformer._split_dataframe(X)
-
-
-**Case 2: split data based on variable (cut_off is numerical value)**
+Case 2: split data based on variable (numerical cut_off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :class:`DropHighPSIFeatures()` allows to define the column used to
 split the dataframe. Two options are then available to the user:
-- Split by proportion. This is an approach similar to the one described in the
-first use case.
-- Split by threshold. Using the `cut_off` argument, the user can define the
-specific threshold for the split.
+
+- Split by proportion: This is an approach similar to the one described in the first use case.
+- Split by threshold: Using the `cut_off` argument, the user can define the specific threshold for the split.
 
 A real life example for this case is the use of the customer ID or contract ID
 to split the dataframe. These ID's are often increasing over time which justify
@@ -291,7 +334,8 @@ does not make sense to compute the PSI value for the column defined in
 `split_col`
 
 
-**Case 3: split data based on variable (cut_off is date)**
+Case 3: split data based on variable (date as cut_off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 :class:`DropHighPSIFeatures()` can handle different types of `split_col`
@@ -345,7 +389,8 @@ This yields the following result.
     1789-01-01 1790-01-01
 
 
-**Case 4: split data based on variable (cut_off is list)**
+Case 4: split data based on variable (cut_off is list)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :class:`DropHighPSIFeatures()` can also split the original dataframe based on
 a string variable. The cut-off can then be defined in two ways:
@@ -454,7 +499,8 @@ Note that defining a list works with all type of data (string, date, integer and
 that :class:`DropHighPSIFeatures()` can handle.
 
 
-**Case 5: split data based on unique values (split_distinct)**
+Case 5: split data based on unique values (split_distinct)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A variant to the previous example is the use of the `split_distinct` functionality.
 In that case, the split is not done based on the number observations from
@@ -523,7 +569,7 @@ That yields the following output:
     ['D' 'E' 'F'] (700, 6)
 
 More details
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 
 In this notebook, we show how to use :class:`DropHighPSIFeatures()`.
 
