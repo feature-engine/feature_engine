@@ -20,7 +20,7 @@ Feature-engine's transformers select features based on 2 mechanism. The first me
 involves selecting features based on the features intrinsic characteristics like distributions
 or their relationship with other features. The second mechanism involves selecting features
 based on their impact on the machine learning model performance. In this context, features
-are evaluated individually or as part of the group by different algorithms.
+are evaluated individually or as part of a feature group by different algorithms.
 
 .. figure::  ../../images/selectionChart.png
    :align:   center
@@ -95,7 +95,7 @@ it does not support missing data.
 :class:`DropHighPSIFeatures()` allows to remove features with changes in their distribution. This is done by
 splitting the input dataframe in two parts and comparing the distribution of each feature in the two
 parts. The metric used to assess distribution shift is the Population Stability Index (PSI). Removing
-unstable features may lead to more robust models. In fields like Credit Risk Modelling, the regulator
+unstable features may lead to more robust models. In fields like Credit Risk Modelling, the Regulator
 often requires the PSI of the final feature set to be below are given threshold.
 
 Throughout the user guide, you will find more details about each of the feature selection procedures.

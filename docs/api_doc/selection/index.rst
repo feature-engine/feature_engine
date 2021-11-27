@@ -6,15 +6,15 @@ Feature Selection
 
 Feature-engine's feature selection transformers are used to drop subsets of variables,
 or in other words, to select subsets of variables. Feature-engine hosts selection
-algorithms that are in general, not available in other libraries. These algorithms have
+algorithms that are, in general, not available in other libraries. These algorithms have
 been gathered from data science competitions or used in the industry.
 
 Feature-engine's transformers select features based on 2 strategies. They either select
-features by looking at the features intrinsic characteristics like distributions or their
+features by looking at the features intrinsic characteristics, like distributions or their
 relationship with other features. Or they select features based on their impact on the
 machine learning model performance.
 
-In the following tables you find the algorithms that belong to either strategy.
+In the following tables you find the algorithms that belong to either category.
 
 Selection based on feature characteristics
 ------------------------------------------

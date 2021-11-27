@@ -41,11 +41,11 @@ The PSI is determined as:
 
     PSI = \sum_{i=1}^n (test_i - basis_i) . ln(\frac{test_i}{basis_i})
 
-where `basis` and `test` are the reference and comparison datasets, respectively, and `i`
+where `basis` and `test` are the reference and "evaluation" datasets, respectively, and `i`
 refers to the interval.
 
 In other words, the PSI determines the difference in the proportion of observations in each
-interval, between the reference (aka, original) and comparison datasets.
+interval, between the reference (aka, original) and test datasets.
 
 In the PSI equation, `n` is the total number of intervals.
 
@@ -86,7 +86,7 @@ Next, :class:`DropHighPSIFeatures()` sorts each of the variable values into thos
 basis and test datasets, and then determines the proportion (percentage) of observations
 within each interval.
 
-Finally, the PSI is determined as indicated in the previous paragraph for each indicated feature.
+Finally, the PSI is determined as indicated in the previous paragraph for each feature.
 With the PSI value per feature, :class:`DropHighPSIFeatures()` can now select the features that are unstable and
 drop them, based on a threshold.
 
@@ -100,11 +100,11 @@ changed in time, or how much it differs between 2 groups.
 If we want to evaluate the distribution change in time, we can use a datetime variable as splitting
 reference and provide a datetime cut-off as split point.
 
-If we want to compare the distribution change between 2 groups, :class: `DropHighPSIFeatures()`
+If we want to compare the distribution change between 2 groups, :class:`DropHighPSIFeatures()`
 offers 3 different approaches to split the input dataframe:
 
-- Proportion of observations.
-- Proportions of unique observations.
+- Based on proportion of observations.
+- Based on proportions of unique observations.
 - Using a cut-off value.
 
 
@@ -117,31 +117,42 @@ then 75% and 25% of the observations will be put into the reference and test dat
 
 If we select this method, we can pass a variable in the parameter `split_col` or leave it to None.
 
-Note that this method **does not shuffle** the dataset. This means that if `split_frac=0.75`, the
-first 75% of the rows will be allocated to the reference set, and the bottom 25% to the test set.
+Note that the data split is not done at random, but instead guided by the values in the reference
+variable indicated in `split_col`. Under the hood, the reference variable indicated in `split_col`
+is ordered, and the percentage of observations is determined with NumPy quantile. This means
+that the observations with smaller values in `split_col` will land in the reference dataset,
+and those with bigger values will go to the test set.
 
-If the rows in your dataset are sorted in time, this could be a good option to split the
-dataframe.
+If the rows in your dataset are sorted in time, this could be a good default option to split the
+dataframe in 2. #TODO: can we add and example of when this would be a suitable option?
 
 Proportions of unique observations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If we split based on proportion of unique observations, it is important that we indicate which
-column we want to use as reference in the `split_col` parameter, to make a meaningful split.
+column we want to use as reference in the `split_col` parameter, to make a meaningful split. If
+we leave this to None, :class:`DropHighPSIFeatures()` will use the dataframe index as reference.
+This makes sense only if the index in the dataframe has meaningful values.
 
 :class:`DropHighPSIFeatures()` will first identify the unique values of the variable in
 `split_col`. Then it will put a certain proportion of those values into the reference
 dataset and the remaining to the test dataset. The proportion is indicated in the parameter
 `split_frac`.
 
-This split makes sence when we have for example unique customer identifiers, and multiple rows
+Under the hood, :class:`DropHighPSIFeatures()` will sort the unique values of the reference
+variable, and then use NumPy quantiles to determine the fraction that should be allocated to the
+reference and test sets. Thus, it is important to consider that the order of the unique values
+matters in the split.
+
+This split makes sense when we have for example unique customer identifiers and multiple rows
 per customer in the dataset. We want to make sure that all rows belonging to the same customer
-are allocated either in the reference or test data, but not both. And we want to make sure that
-we have a certain percentage of customers in either dataframe.
+are allocated either in the reference or test data, but the same customer cannot be in both
+data sets. This way of splitting the data will also ensure that we have a certain percentage,
+indicated in `split_frac` of customers in either data set after the split.
 
 Thus, if `split_frac=0.6` and `split_distinct=True`, :class:`DropHighPSIFeatures()` will send
-the first 60% of customers to the reference dataset, and the bottom 40% to the test set. And it will
-ensure that rows beloging to the same customer are just in one of the 2 dataframes.
+the first 60% of customers to the reference data set, and the remaining 40% to the test set. And it will
+ensure that rows belonging to the same customer are just in one of the 2 data sets.
 
 Using a cut-off value
 ~~~~~~~~~~~~~~~~~~~~~
@@ -154,21 +165,21 @@ If we pass a datetime column in `split_col` and a datetime value in the `cut_off
 data in a temporal manner. Observations collected before the time indicated will be sent to the reference
 dataframe, and the remaining to the test set.
 
-If we pass a list of values in the `cut_off` all observations whcih values are included in the
-list go into the reference dataframe, and the remaining to the test dataframe. This split is useful
+If we pass a list of values in the `cut_off` all observations which values are included in the
+list will go into the reference data set, and the remaining to the test set. This split is useful
 if we have a categorical variable indicating a portfolio from which the observations have been collected.
 For example, if we set `split_col=portfolio` and `cut_off=['port_1`, 'port_2']`, all observations
-that belong to the first and second portolio will be sent to the reference dataset, and the observations
+that belong to the first and second portfolio will be sent to the reference data set, and the observations
 from other portfolios to the test set.
 
 Finally, if we pass a number to `cut_off`, all observations which value in the variable indicated
-in `split_col` is below the cut-off, will be sent to the reference data, alternatively to the test data.
+in `split_col` is <= cut-off, will be sent to the reference data set, alternatively to the test set.
 #TODO: can we think of an example??
 
 split_col
 ~~~~~~~~~
 
-To split the dataset, we recommend that you indicate which column you want to use as
+To split the data set, we recommend that you indicate which column you want to use as
 reference in the `split_col` parameter. If you don't, the split will be done based on the
 values of the dataframe index. This might be a good option if the index contains meaningful
 values or if splitting just based on `split_frac`.
@@ -182,19 +193,21 @@ in a reference or basis data set with the "expected" distributions and a test se
 will be evaluated against the reference.
 
 After splitting the data, :class:`DropHighPSIFeatures()` goes ahead and compares the
-feature distributions in both datasets by computing the PSI.
+feature distributions in both data sets by computing the PSI.
 
-To illustrate how to best use this class depending on your scenario or data, we provide
-various examples illustrating the different approaches or scenarios.
+To illustrate how to best use :class:`DropHighPSIFeatures()` depending on your data, we
+provide various examples illustrating the different possibilities.
 
 Case 1: split data based on proportions (split_frac)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this case, :class:`DropHighPSIFeatures()` will split the dataset in 2, based on the
 indicated proportion. The proportion is indicated in the `split_frac` parameter. You have
-the option to select a variable in `split_col` or leave it to None.
+the option to select a variable in `split_col` or leave it to None. In the latter, the
+dataframe index will be used to split.
 
 Let's first create a toy dataframe containing random variables.
+#TODO: the thing with random variables is that the distribution will not change, thus we can't really show the power of the class. Could we add a variable that is not random?
 
 .. code:: python
 
@@ -236,9 +249,11 @@ The PSI values are accessible through the `psi_values_` attribute:
 
     transformer.psi_values_
 
-The analysis of the PSI values (see below) shows that only feature 3 (called `var_3`)
+The analysis of the PSI values below shows that only feature 3 (called `var_3`)
 has a PSI above the 0.25 threshold (default value) and will be removed
 by the `transform` method.
+
+#TODO: it is an unfortunate accident that the PSI here is >0.25, right? because the feature is created at random. Can we change this?
 
 .. code:: python
 
@@ -249,6 +264,7 @@ by the `transform` method.
     'var_4': 0.19861346887805775,
     'var_5': 0.1411194164512627}
 
+#TODO: explain a bit what this value is
 The cut-off value used to split the dataframe is stored in the `cut_off_` attribute:
 
 .. code:: python
@@ -258,29 +274,40 @@ The cut-off value used to split the dataframe is stored in the `cut_off_` attrib
 #TODO: can you add the output of the previous command please?
 
 The value of 119.4 means that observations with index from 0 to 119 are used
-to define the basis dataframe. This corresponds to 60% (120 / 200) of the original dataframe
+to define the basis data set. This corresponds to 60% (120 / 200) of the original dataframe
 (X).
 
 Splitting with proportions will order the index or the reference column first, and then
 determine the data that will go into each dataframe. In other words, the order of the index
 or the variable indicated in `split_col` matters. Observations with the lowest values will
-be send to the basis dataframe and the ones with the highest values to the test set.
+be sent to the basis dataframe and the ones with the highest values to the test set.
 
+#TODO: can we showcase the other parameters? like the features_to_drop and then also
+how to show transform?
+
+#TODO: I would also like to include a plot showing how the distribution of a feature
+changed in time, if we were to add this feature, and also showing how the distribution
+of other features that will not be dropped, does not change. It could be in the form of
+histograms or bar plots of the counts per interval. Up to you.
 
 Case 2: split data based on variable (numerical cut_off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:class:`DropHighPSIFeatures()` allows your to define the column used to
-split the dataframe. There are two options available:
+In the previous example, we wanted to split the input dataframe in 2 datasets, with the
+reference dataset containing 60% of the observations. We let :class:`DropHighPSIFeatures()`
+find the cut-off to achieve this.
 
-- Split by proportion: This approach is similar to the one described in the previous example.
-- Split by threshold: Using the `cut_off` argument, the user can define the specific threshold for the split.
+We can instead, provide ourselves the numerical cut-off that determines which observations will
+go to the reference or basis data set, and which to the test set. Using the `cut_off` parameter,
+we can define the specific threshold for the split.
 
 A real life example for this case is the use of the customer ID or contract ID
-to split the dataframe. These ID's are often increasing in value over time which justify
-their use to assess distribution shift in the features.
+to split the dataframe. These IDs are often increasing in value over time which justifies
+their use to assess distribution shifts in the features.
 
 Let's create a toy dataframe with random variables.
+#TODO: would it be possible to add a variable that resembles customer id to make it more real?
+#TODO: can we include a feature that changes in time?
 
 .. code:: python
 
@@ -322,18 +349,19 @@ the `var_1` feature, because this variable was used as a reference to split the 
     'var_4': 0.3614010092217242,
     'var_5': 0.17200356108416925}
 
+#TODO: can we showcase features_to_drop_ and the transform method?
 
 Case 3: split data based on time (date as cut_off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 :class:`DropHighPSIFeatures()` can handle different types of `split_col`
 variables. The following case illustrates how it works with a date variable. In fact,
-we often want to determine if the distribution of a feature changes in time, or after a
-certain event like the start of the Covid-19 pandemic.
+we often want to determine if the distribution of a feature changes in time, for example
+after a certain event like the start of the Covid-19 pandemic.
 
 This is how to do it. Let's create a toy dataframe with random numerical variables and a
 date variable.
+#TODO: can we add a feature that changes in time?
 
 .. code:: python
 
@@ -360,10 +388,12 @@ by providing the name of the column with the date and a cut-off date.
 In the example below the PSI calculations
 will be done comparing the periods up to the French revolution and after.
 
+#TODO: showcase the PSI dictionary, drop_features_ and transform
+#TODO: could we plot the feature distribution in time for a feature that changes and one that does not?
 
 
-Case 4: split data based on a categorical variable (list as cut_off)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Case 4: split data based on a categorical variable (category or list as cut_off)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :class:`DropHighPSIFeatures()` can also split the original dataframe based on
 a categorical variable. The cut-off can then be defined in two ways:
@@ -371,18 +401,24 @@ a categorical variable. The cut-off can then be defined in two ways:
 - Using a single string.
 - Using a list of values.
 
-In the first case, the column with the categorical variable is
-sorted alphabetically and the split is determined by the cut-off. We advise
-the user to be very cautious when working in such a setting as alphabetical
-sorting in combination with a cut-off does not always provide obvious results.
+In the first case, the column with the categorical variable is sorted alphabetically and
+the split is determined by the cut-off. We recommend being very careful when using a single
+label or category as cut-off, because alphabetical sorting in combination with a cut-off does
+not always provide obvious results. In other words, for this way of splitting the data to
+be meaningful, the alphabetical order of the categories in the reference variable should have
+to have an intrinsic meaning.
 
-A better way of using this class would be to pass a list with the values of the variable
-that want to be sent to the reference dataframe.
+A better purpose for splitting the data based on a categorical variable would be to pass a
+list with the values of the variable that want in the reference dataframe. A real life
+example for this case is the computation of the PSI between different customer segments
+like 'Retail', 'SME' or 'Wholesale'. In this case, if we indicate ['Retail'] as
+cut-off, observations for Retail will be sent to the basis data set, and those for 'SME'
+and 'Wholesale' will be added to the test set.
 
-A real life example for this case is the computation of the PSI between
-different customer segments like 'Retail', 'SME' or 'Wholesale'.
+#TODO: are be absolutely sure that if we pass 'Retail' the split is alphabetically but if we pass ['Retail'] it uses the list? Do we have a test for this? or can we add one?
 
 Let's show how to set up the transformer in this case.
+#TODO: it would be nice to have a feature that changes the distribution in the groups. Would it be possible to add one?
 
 .. code:: python
 
@@ -432,7 +468,7 @@ The second option consists in passing a list of values to `cut_off`.
     # Add a categorical column
     X['group'] = ["A", "B", "C", "D", "E"] * 200
 
-Now we set up :class:`DropHighPSIFeatures()` so that it allocates observations whihc values
+Now we set up :class:`DropHighPSIFeatures()` so that it allocates observations which values
 in the variable 'group' are one of the list ['A', 'C', 'E']).
 
 .. code:: python
@@ -440,19 +476,23 @@ in the variable 'group' are one of the list ['A', 'C', 'E']).
     transformer = DropHighPSIFeatures(split_col='group', cut_off=['A', 'C', 'E'])
     basis, test = transformer._split_dataframe(X)
 
+#TODO: can we showcase transform and the remaining attributes? consider if it is possible to add a plot with a feature distribution that changes and one that does not.
+
 
 Case 5: split data based on unique values (split_distinct)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A variant to the previous example is the use of the `split_distinct` functionality.
-In that case, the split is not done based on the number observations from
-`split_col` but from the number of distinct values in split_col.
+In this case, the split is not done based on the number observations from
+`split_col` but from the number of distinct values in the reference variable indicated
+in `split_col`.
 
 A real life example for this case is when dealing with groups of different sizes
 like customers income classes ('1000', '2000', '3000', '4000', ...).
 Split_distinct allows to control the numbers of classes in the basis and test
 dataframes regardless of the number of observations in each class.
 
+#TODO: could we try to capture some of the above example in the toy data?
 
 .. code:: python
 
@@ -481,9 +521,15 @@ the `DropHighPSIFeatures` object, the split will ensures the basis and
 the test dataframes contain the same number of unique values in the `group`
 column
 
+#TODO: showcase transform, remaining params, and plots if possible.
 
 More details
 ~~~~~~~~~~~~
+
+#TODO: it would be great to have a jupyter notebook with a real life dataset and some plots
+showcasing the power of this class. If we do add a notebook, we would link it here.
+
+If not, we should remove the More details section, and we can add the notebook at a later stage
 
 In this notebook, we show how to use :class:`DropHighPSIFeatures()`.
 
