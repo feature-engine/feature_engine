@@ -174,7 +174,9 @@ from other portfolios to the test set.
 
 Finally, if we pass a number to `cut_off`, all observations which value in the variable indicated
 in `split_col` is <= cut-off, will be sent to the reference data set, alternatively to the test set.
-#TODO: can we think of an example??
+This can be useful for example when dates are defined as integer (for example 20200411) or when
+using an ordinal customer segmentation to split the dataframe (1: retail customers, 2: private
+banking customers, 3: SME and 4: Wholesale).
 
 split_col
 ~~~~~~~~~
@@ -215,15 +217,18 @@ Let's first create a toy dataframe containing random variables.
     from sklearn.datasets import make_classification
     from feature_engine.selection import DropHighPSIFeatures
 
-    # Create a dataframe with 200 observations and 6 random variables
+    # Create a dataframe with 500 observations and 6 random variables
     X, y = make_classification(
-        n_samples=200,
+        n_samples=500,
         n_features=6,
         random_state=0
     )
 
     colnames = ["var_" + str(i) for i in range(n_feat)]
     X = pd.DataFrame(X, columns=colnames)
+
+    # Add a column with a shift.
+    X['var_3'][250:] = X['var_3'][250:] + 1
 
 The default approach in :class:`DropHighPSIFeatures()` is to split the
 input dataframe `X` in two equally sized data sets. You can adjust the proportions by changing
@@ -237,11 +242,16 @@ the observations and a test set containing 40% of the observations.
     # Remove the features with high PSI values using a 60-40 split.
 
     transformer = DropHighPSIFeatures(split_frac=0.6)
-    X_transformed = transformer.fit_transform(X)
+    transformer.fit(X)
 
 The value of `split_frac` tells :class:`DropHighPSIFeatures()` to split X according to a
 60% - 40% ratio. The `fit()` method performs the split of the dataframe and the calculation
 of the PSI.
+
+Because we created random variables, these features to have low PSI values.
+However, we manually added a distribution shift for the *var_3* variable
+and therefore expect the PSI for that particular feature only to be above the
+0.25 PSI threshold.
 
 The PSI values are accessible through the `psi_values_` attribute:
 
@@ -253,37 +263,76 @@ The analysis of the PSI values below shows that only feature 3 (called `var_3`)
 has a PSI above the 0.25 threshold (default value) and will be removed
 by the `transform` method.
 
-#TODO: it is an unfortunate accident that the PSI here is >0.25, right? because the feature is created at random. Can we change this?
-
 .. code:: python
 
-    {'var_0': 0.10200882787259648,
-    'var_1': 0.06247480220678372,
-    'var_2': 0.231106813775744,
-    'var_3': 0.2662638025200693,
-    'var_4': 0.19861346887805775,
-    'var_5': 0.1411194164512627}
+    {'var_0': 0.07405459925568803,
+    'var_1': 0.09124093185820083,
+    'var_2': 0.16985790067687764,
+    'var_3': 1.342485289730313,
+    'var_4': 0.0743442762545251,
+    'var_5': 0.06809060587241555}
 
-#TODO: explain a bit what this value is
+From the output, we see that the PSI value for *var_0* is around 7%. This means
+that, when comparing the first 300 and the last 200 observations of the dataframe,
+there is only a small difference in the distribution of the *var_0* feature.
+A similar conclusion applies to *var_1, var_2, var_4* and *var_5*.
+Looking at the PSI value for *var_3*, we see that it exceeds by far the 0.25
+threshold. We can then conclude the population of this feature has shifted and
+it is wise not to include it in the feature set for modelling.
+
 The cut-off value used to split the dataframe is stored in the `cut_off_` attribute:
 
 .. code:: python
 
     transformer.cut_off_
 
-#TODO: can you add the output of the previous command please?
+This yields the following answer
 
-The value of 119.4 means that observations with index from 0 to 119 are used
-to define the basis data set. This corresponds to 60% (120 / 200) of the original dataframe
+.. code:: python
+
+    299.4
+
+The value of 299.4 means that observations with index from 0 to 299 are used
+to define the basis data set. This corresponds to 60% (300 / 500) of the original dataframe
 (X).
+The value of 299.4 may seem strange because it is not one of the value present in (the
+(index of) the dataframe. Intuitively, we would expect the cut_off to be an integer
+in the present case. However, the cut_off is computed using quantiles and the quantiles
+are computed using extrapolation.
 
 Splitting with proportions will order the index or the reference column first, and then
 determine the data that will go into each dataframe. In other words, the order of the index
 or the variable indicated in `split_col` matters. Observations with the lowest values will
 be sent to the basis dataframe and the ones with the highest values to the test set.
 
-#TODO: can we showcase the other parameters? like the features_to_drop and then also
-how to show transform?
+The `features_to_drop_` attribute provides the list with the features to
+be dropped when executing the `transform` method.
+
+The command
+
+.. code:: python
+
+    transformer.features_to_drop_
+
+Yields the following result:
+
+.. code:: python
+
+    ['var_3']
+
+That the *var_3* feature is dropped during the procedure is illustrated when
+looking at the columns from the `X_transformed` dataframe.
+
+.. code:: python
+
+    X_transformed = transformer.transform(X)
+
+    X_transformed.columns
+
+    Index(['var_0', 'var_1', 'var_2', 'var_4', 'var_5'], dtype='object')
+
+:class:`DropHighPSIFeatures()` also contains a `fit_transform` method that combines
+the `fit` and the `transform` methods.
 
 #TODO: I would also like to include a plot showing how the distribution of a feature
 changed in time, if we were to add this feature, and also showing how the distribution
@@ -305,9 +354,18 @@ A real life example for this case is the use of the customer ID or contract ID
 to split the dataframe. These IDs are often increasing in value over time which justifies
 their use to assess distribution shifts in the features.
 
-Let's create a toy dataframe with random variables.
-#TODO: would it be possible to add a variable that resembles customer id to make it more real?
-#TODO: can we include a feature that changes in time?
+Let's create a toy dataframe representing the customers' characteristics of a
+company. This dataset contains six random variables (in
+real life this are variables like age or postal code), the seniority of the customer
+(i.e. the number of months since the start of the relationship between the
+customer and the company) and the customer ID (i.e. the number (integer) used
+to identify the customer). Generally the customer ID grows
+over time which means that early customers have a lower customer ID than late
+customers.
+
+From the definition of the variables, we expect the *seniority* to increase with
+the customer ID and therefore to have a high PSI value when comparing early and
+late customer,
 
 .. code:: python
 
@@ -316,7 +374,7 @@ Let's create a toy dataframe with random variables.
     from feature_engine.selection import DropHighPSIFeatures
 
     X, y = make_classification(
-            n_samples=200,
+            n_samples=500,
             n_features=6,
             random_state=0
         )
@@ -324,12 +382,17 @@ Let's create a toy dataframe with random variables.
     colnames = ["var_" + str(i) for i in range(n_feat)]
     X = pd.DataFrame(X, columns=colnames)
 
-    # Call the PSI selector
-    transformer = DropHighPSIFeatures(split_col='var_1', cut_off=0.5)
-    X_transformed = transformer.fit_transform(X)
+    # Let's add a variable for the customer ID
+    X['customer_id'] = [customer_id for customer_id in range(1, 501)]
+
+    # Add a column with the seniority... that is related to the customer ID
+    X['seniority'] = 100 - X['customer_id'] // 10
+
+    transformer = DropHighPSIFeatures(split_col='customer_id', cut_off=250)
+    transformer.fit(X)
 
 In this case, :class:`DropHighPSIFeatures()` will allocate in the basis or reference data
-set, all observations which values in `var_1` are <= 0.5. The test dataframe contains the
+set, all observations which values in `customer_id` are <= 250. The test dataframe contains the
 remaining observations.
 
 The method `fit()` will determine the PSI values, which are stored in the class:
@@ -339,17 +402,41 @@ The method `fit()` will determine the PSI values, which are stored in the class:
     transformer.psi_values_
 
 We see that :class:`DropHighPSIFeatures()` does not provide any PSI value for
-the `var_1` feature, because this variable was used as a reference to split the data.
+the `customer_id` feature, because this variable was used as a reference to split the data.
 
 .. code:: python
 
-    {'var_0': 0.19387083701883132,
-    'var_2': 0.12789758898627593,
-    'var_3': 0.20928408122831613,
-    'var_4': 0.3614010092217242,
-    'var_5': 0.17200356108416925}
+    {'var_0': 0.07385590683974477,
+    'var_1': 0.061155637727757485,
+    'var_2': 0.1736694458621651,
+    'var_3': 0.044965387331530465,
+    'var_4': 0.0904519893659045,
+    'var_5': 0.027545195437270797,
+    'seniority': 7.8688986006052035}
 
-#TODO: can we showcase features_to_drop_ and the transform method?
+
+.. code:: python
+
+    transformer.features_to_drop_
+
+Gives
+
+.. code:: python
+
+    ['seniority']
+
+
+Executing the dataframe transformation leads to the exclusion of the *seniority*
+feature but not to the exclusion of the *customer_id*.
+
+.. code:: python
+
+    X_transformed = transformer.transform(X)
+
+    X_transformed.columns
+
+    Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'customer_id'], dtype='object')
+
 
 Case 3: split data based on time (date as cut_off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
