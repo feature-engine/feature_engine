@@ -48,17 +48,20 @@ class DropHighPSIFeatures(BaseSelector):
     Second, the user has the option to specify a proportion of observations to put in
     each data set, or alternatively, provide a cut-off value.
 
-    If the user specifies a proportion through the split_frac parameter, the data will
-    be sorted to accommodate that proportion. If split_frac is 0.5, 50% of the
-    observations will go to either basis or test sets. If split_frac is 0.6, 60% of the
-    samples will go to the basis data set and the remaining 40% to the test set.
+    If the user specifies a proportion through the `split_frac` parameter, the data will
+    be sorted to accommodate that proportion. If `split_frac` is 0.5, 50% of the
+    observations will go to either basis or test sets. If `split_frac` is 0.6, 60% of
+    the samples will go to the basis data set and the remaining 40% to the test set.
 
-    If the user defines a numeric cut-off value or a specific date using the cut_off
+    If `split_distinct` is True, the data will be sorted considering unique values in
+    the selected variables. Check the parameter below for more details.
+
+    If the user defines a numeric cut-off value or a specific date using the `cut_off`
     parameter, the observations with value <= cut-off will go to the basis data set and
     the remaining ones to the test set. For categorical values this means they are
     sorted alphabetically and cut accordingly.
 
-    If the user passes a list of values in the cut-off, the observations with the
+    If the user passes a list of values in the `cut-off`, the observations with the
     values in the list, will go to the basis set, and the remaining ones to the test
     set.
 
