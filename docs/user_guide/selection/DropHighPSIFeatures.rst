@@ -1,4 +1,4 @@
-.. _psi_selection:
+6).. _psi_selection:
 
 .. currentmodule:: feature_engine.selection
 
@@ -208,8 +208,8 @@ indicated proportion. The proportion is indicated in the `split_frac` parameter.
 the option to select a variable in `split_col` or leave it to None. In the latter, the
 dataframe index will be used to split.
 
-Let's first create a toy dataframe containing random variables.
-#TODO: the thing with random variables is that the distribution will not change, thus we can't really show the power of the class. Could we add a variable that is not random?
+Let's first create a toy dataframe containing 5 random variables and 1 variable
+with shifted population (*var_3* in this case).
 
 .. code:: python
 
@@ -224,7 +224,7 @@ Let's first create a toy dataframe containing random variables.
         random_state=0
     )
 
-    colnames = ["var_" + str(i) for i in range(n_feat)]
+    colnames = ["var_" + str(i) for i in range(6)]
     X = pd.DataFrame(X, columns=colnames)
 
     # Add a column with a shift.
@@ -379,7 +379,7 @@ late customer,
             random_state=0
         )
 
-    colnames = ["var_" + str(i) for i in range(n_feat)]
+    colnames = ["var_" + str(i) for i in range(6)]
     X = pd.DataFrame(X, columns=colnames)
 
     # Let's add a variable for the customer ID
@@ -446,9 +446,9 @@ variables. The following case illustrates how it works with a date variable. In 
 we often want to determine if the distribution of a feature changes in time, for example
 after a certain event like the start of the Covid-19 pandemic.
 
-This is how to do it. Let's create a toy dataframe with random numerical variables and a
-date variable.
-#TODO: can we add a feature that changes in time?
+This is how to do it. Let's create a toy dataframe with 6 random numerical variables
+and two date variables. One will be use to specific the split of the dataframe
+while the second one is expected to have a high PSI value.
 
 .. code:: python
 
@@ -463,19 +463,62 @@ date variable.
             random_state=0
         )
 
-    colnames = ["var_" + str(i) for i in range(n_feat)]
+    colnames = ["var_" + str(i) for i in range(6)]
     X = pd.DataFrame(X, columns=colnames)
 
-    # Add a date variable to the dataframe
+    # Add two time variables to the dataframe
     X['time'] = [date(year, 1, 1) for year in range(1000, 2000)]
+    X['century'] = X['time'].apply(lambda x: ((x.year - 1) // 100) + 1)
+
+    # Let's shuffle the dataframe and reset the index to remove the correlation
+    # between the index and the time variables.
+
+    X = X.sample(frac=1).reset_index(drop=True)
 
 Dropping features with high PSI values comparing two periods of time is done simply
 by providing the name of the column with the date and a cut-off date.
-
 In the example below the PSI calculations
 will be done comparing the periods up to the French revolution and after.
 
-#TODO: showcase the PSI dictionary, drop_features_ and transform
+.. code:: python
+
+    transformer = DropHighPSIFeatures(split_col='time', cut_off=date(1789, 7, 14))
+    transformer.fit(X)
+
+The PSI values shows the *century* variables in unstable as its value is above
+the 0.25 threshold.
+
+.. code:: python
+
+    transformer.psi_values_
+
+    {'var_0': 0.0181623637463045,
+    'var_1': 0.10595496570984747,
+    'var_2': 0.05425659114295842,
+    'var_3': 0.09720689210928271,
+    'var_4': 0.07917647542638032,
+    'var_5': 0.10122468631060424,
+    'century': 8.272395772368412}
+
+The class has correctly identified the feature to be dropped.
+
+.. code:: python
+
+    transformer.features_to_drop_
+
+    ['century']
+
+And the transform method correctly removes the feature.
+
+.. code:: python
+
+    X_transformer = transformer.transform(X)
+
+    X_transformed.columns
+
+    Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'time'], dtype='object')
+
+
 #TODO: could we plot the feature distribution in time for a feature that changes and one that does not?
 
 
@@ -504,8 +547,9 @@ and 'Wholesale' will be added to the test set.
 
 #TODO: are be absolutely sure that if we pass 'Retail' the split is alphabetically but if we pass ['Retail'] it uses the list? Do we have a test for this? or can we add one?
 
-Let's show how to set up the transformer in this case.
-#TODO: it would be nice to have a feature that changes the distribution in the groups. Would it be possible to add one?
+Let's show how to set up the transformer in this case. The example data set
+contains 6 randoms variables, a categorical variable with the labels of the
+different categories and 2 category related features.
 
 .. code:: python
 
@@ -520,11 +564,15 @@ Let's show how to set up the transformer in this case.
         random_state=0
     )
 
-    colnames = ["var_" + str(i) for i in range(n_feat)]
+    colnames = ["var_" + str(i) for i in range(6)]
     X = pd.DataFrame(X, columns=colnames)
 
     # Add a categorical column
     X['group'] = ["A", "B", "C", "D", "E"] * 200
+
+    # And two category related features
+    X['group_means'] = X.group.map({"A": 1, "B": 2, "C": 0, "D": 1.5, "E": 2.5})
+    X['shifted_feature'] = X['group_means'] + X['var_2']
 
 We can define a simple cut-off value (for example the letter C). In this case, observations
 with values that come before C, alphabetically, will be allocated to the reference data set.
@@ -532,38 +580,98 @@ with values that come before C, alphabetically, will be allocated to the referen
 .. code:: python
 
     transformer = DropHighPSIFeatures(split_col='group', cut_off='C')
-    X_no_drift = transformer.fit_transform(X)
+    X_transformed = transformer.fit_transform(X)
+
+The PSI values are provided in the psi_values method.
+
+.. code:: python
+
+    transformer.psi_values_
+
+    {'var_0': 0.06485778974895254,
+    'var_1': 0.03605540598761757,
+    'var_2': 0.040632784917352296,
+    'var_3': 0.023845405645510645,
+    'var_4': 0.028007185972248064,
+    'var_5': 0.07009152672971862,
+    'group_means': 6.601444547497699,
+    'shifted_feature': 0.48428009522119164}
+
+These values are consistent with the features to drop provided by the object.
+
+
+.. code:: python
+
+    transformer.features_to_drop_
+
+    ['group_means', 'shifted_features']
+
+And these columns are removed from the original dataframe by the transform
+method that, in the present case, has been applied through the fit_transform
+method.
+
+
+.. code:: python
+
+    X_transformed.columns
+
+    Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'group'], dtype='object')
+
 
 The second option consists in passing a list of values to `cut_off`.
+Let's use the same data set and set up :class:`DropHighPSIFeatures()` so that
+it splits the rows of the X dataframe according to the list ['A', 'C', 'E']).
+
+This means that the PSI's will be computed by comparing two dataframes: one
+containing only the values A, C and E for the *group* variable and one containing
+only the values B and D.
 
 .. code:: python
 
-    import pandas as pd
+    trans = DropHighPSIFeatures(split_col='group', cut_off=['A', 'C', 'E'])
+    X_no_drift = trans.fit_transform(X)
 
-    from sklearn.datasets import make_classification
-    from feature_engine.selection import DropHighPSIFeatures
-
-    X, y = make_classification(
-        n_samples=1000,
-        n_features=6,
-        random_state=0
-    )
-
-    colnames = ["var_" + str(i) for i in range(n_feat)]
-    X = pd.DataFrame(X, columns=colnames)
-
-    # Add a categorical column
-    X['group'] = ["A", "B", "C", "D", "E"] * 200
-
-Now we set up :class:`DropHighPSIFeatures()` so that it allocates observations which values
-in the variable 'group' are one of the list ['A', 'C', 'E']).
 
 .. code:: python
 
-    transformer = DropHighPSIFeatures(split_col='group', cut_off=['A', 'C', 'E'])
-    basis, test = transformer._split_dataframe(X)
+    trans.psi_values_
 
-#TODO: can we showcase transform and the remaining attributes? consider if it is possible to add a plot with a feature distribution that changes and one that does not.
+    'var_0': 0.04322345673014104,
+    'var_1': 0.03534439253617049,
+    'var_2': 0.05220272785661243,
+    'var_3': 0.04550964862452317,
+    'var_4': 0.04492720670343145,
+    'var_5': 0.044886435640028144,
+    'group_means': 6.601444547497699,
+    'shifted_features': 0.3683642099948127}
+
+
+Here again, the object will remove the *group_means* and the *shifted_feature* columns
+from the dataframe.
+Also it is worth noticing that the PSI values of the `trans` object differ from
+those of the `transform` object with exception of the *group_means* variable.
+The reason for the latter effect lies in the small number of distinct values
+for that particular variable.
+
+
+.. code:: python
+
+    trans.features_to_drop_
+
+    ['group_means', 'shifted_features']
+
+And these columns are removed from the original dataframe by the transform
+method that, in the present case, has been applied through the fit_transform
+method.
+
+
+.. code:: python
+
+    X_transformed.columns
+
+    Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'group'], dtype='object')
+
+#TODO: consider if it is possible to add a plot with a feature distribution that changes and one that does not.
 
 
 Case 5: split data based on unique values (split_distinct)
@@ -584,6 +692,7 @@ dataframes regardless of the number of observations in each class.
 .. code:: python
 
     import pandas as pd
+    import numpy as np
 
     from sklearn.datasets import make_classification
     from feature_engine.selection import DropHighPSIFeatures
@@ -594,21 +703,69 @@ dataframes regardless of the number of observations in each class.
         random_state=0
     )
 
-    colnames = ["var_" + str(i) for i in range(n_feat)]
+    colnames = ["var_" + str(i) for i in range(6)]
     X = pd.DataFrame(X, columns=colnames)
 
     # Add a categorical column
     X['group'] = ["A", "B", "C", "D", "E"] * 100 + ["F"] * 500
 
+    # And an income variable that is category dependent.
+    np.random.seed(0)
+    X['income'] = np.random.uniform(1000, 2000, 500).tolist() + np.random.uniform(1250, 2250, 500).tolist()
+
+    # Shuffle the dataframe to make the dataset more real life case.
+    X = X.sample(frac=1).reset_index(drop=True)
+
+
 The `group` column contains 500 observations in the (A, B, C, D, E)
 group and 500 in the (F) group.
 
-If we pass the `split_distinct=True` argument when initializing
-the `DropHighPSIFeatures` object, the split will ensures the basis and
-the test dataframes contain the same number of unique values in the `group`
-column
+When we pass the `split_distinct=True` argument when initializing
+the `DropHighPSIFeatures` object, the two dataframe used to compute the
+PSI values contain the same number of unique values in the `group`
+column (i.e. one contains 300 rows associated to groups A, B and C
+while the other contains 700 rows associated to groups D, E and F).
 
-#TODO: showcase transform, remaining params, and plots if possible.
+.. code:: python
+
+    transformer = DropHighPSIFeatures(split_col='group', split_distinct=True)
+    transformer.fit(X)
+
+    transformer.psi_values_
+
+This yields the following PSI values.
+
+.. code:: python
+
+    {'var_0': 0.014825303242393804,
+    'var_1': 0.03818316821350485,
+    'var_2': 0.029635981271458896,
+    'var_3': 0.021700399485890084,
+    'var_4': 0.061194837255216114,
+    'var_5': 0.04119583769297253,
+    'income': 0.46191580731264914}
+
+.. code:: python
+
+    transformer.features_to_drop_
+
+        ['income']
+
+
+And these columns are removed from the original dataframe by the transform
+method that, in the present case, has been applied through the fit_transform
+method.
+
+
+.. code:: python
+
+    X_transformed = transformer.transform(X)
+
+    X_transformed.columns
+
+    Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'group'], dtype='object')
+
+#TODO: Plots if possible.
 
 More details
 ~~~~~~~~~~~~
