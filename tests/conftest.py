@@ -17,6 +17,20 @@ def df_vartypes():
 
     return df
 
+@pytest.fixture(scope="module")
+def df_vartypes2():
+    data = {
+        "Name": ["tom", "nick", "krish", "jack"],
+        "City": ["London", "Manchester", "Liverpool", "Bristol"],
+        "Age": [20, 21, 19, 18],
+        "Marks": [0.9, 0.8, 0.7, 0.6],
+        "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+        "doa": ["Dec-2010", "Feb-1945", "Jun-2100", "May-1999"]
+    }
+
+    df = pd.DataFrame(data)
+
+    return df
 
 @pytest.fixture(scope="module")
 def df_numeric_columns():
