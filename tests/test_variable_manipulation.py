@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from pandas.tseries.offsets import FY5253Quarter
 
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,

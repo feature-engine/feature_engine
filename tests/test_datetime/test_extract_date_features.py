@@ -1,5 +1,3 @@
-from typing import Type
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -57,7 +55,7 @@ def test_extract_date_features(df_vartypes2):
     # check transformer attributes
     transformer = ExtractDateFeatures()
     assert isinstance(transformer, ExtractDateFeatures)
-    assert transformer.variables == None
+    assert transformer.variables is None
     assert transformer.features_to_extract == ["year"]
 
     # check exceptions upon calling fit method
@@ -110,7 +108,7 @@ def test_extract_date_features(df_vartypes2):
         features_to_extract=["semester", "week_of_the_year"]
     )
     assert isinstance(transformer, ExtractDateFeatures)
-    assert transformer.variables == None
+    assert transformer.variables is None
     assert transformer.features_to_extract == ["semester", "week_of_the_year"]
 
     X = transformer.fit_transform(df_vartypes2)
@@ -133,7 +131,7 @@ def test_extract_date_features(df_vartypes2):
     # check transformer with all date features to extract
     transformer = ExtractDateFeatures(features_to_extract="all")
     assert isinstance(transformer, ExtractDateFeatures)
-    assert transformer.variables == None
+    assert transformer.variables is None
     assert transformer.features_to_extract == transformer.supported
 
     X = transformer.fit_transform(df_vartypes2)
