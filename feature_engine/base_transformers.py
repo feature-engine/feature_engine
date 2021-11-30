@@ -268,7 +268,7 @@ class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables_)
 
-        X = _convert_variables_to_datetime(X, self.variables_)
+        X = _convert_variables_to_datetime(X, self.variables_, **self.kwargs)
 
         return X
 

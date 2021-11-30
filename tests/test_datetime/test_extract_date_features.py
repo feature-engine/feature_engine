@@ -131,3 +131,10 @@ def test_extract_date_features(df_vartypes2):
     pd.testing.assert_frame_equal(X, _convert_variables_to_datetime(df_transformed_full)[
         list(original_columns) + ["dob_year", "doa_year", "dof_year"]
     ])
+
+    #check transformer with pd.to_datetime kwargs wrapped in
+    X = ExtractDateFeatures(yearfirst = True).fit_transform(df_vartypes2)
+    pd.testing.assert_frame_equal(X, 
+        df_transformed_full[vars_non_dt + ["dob_year", "doa_year"]].join(
+            pd.DataFrame({"dof_year" : [2010,2009,1995,2004]}))
+    )
