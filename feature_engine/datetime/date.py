@@ -28,7 +28,7 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
         features_to_extract: Union[None, str, List[Union[str, int]]] = "year"
     ) -> None:
 
-        self.supported = ["month", "quarter", "semester", "year"] 
+        self.supported = ["month", "quarter", "semester", "year", "week_of_the_year"] 
         self.variables  = _check_input_parameter_variables(variables)
 
         if features_to_extract:
@@ -37,8 +37,8 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
             if any(feature not in self.supported
                    for feature in features_to_extract):
                 raise ValueError(
-                    "At least one of the requested feature is not supported."
-                    "Pick them from {}".format(self.supported)
+                    "At least one of the requested feature is not supported. "
+                    "Supported features are {}.".format(', '.join(self.supported))
                 )
         self.features_to_extract = features_to_extract #run the above checks somewhere else
 
@@ -70,5 +70,9 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
         if "year" in self.features_to_extract:
             for var in self.variables_:
                 X[var+"_year"]     = X[var].dt.year
+
+        if "week_of_the_year" in self.features_to_extract:
+            for var in self.variables_:
+                X[var+"_woty"] = X[var].dt.isocalendar().week.astype(np.int64)
 
         return X
