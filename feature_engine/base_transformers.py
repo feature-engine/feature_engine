@@ -151,8 +151,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
 
 
 class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
-    """shared set-up procedures across datetime transformers, i.e.,
-    variable transformers, [and more?]
+    """shared set-up procedures across datetime transformers
     """
     def _select_variables_from_dict(
         self, X: pd.DataFrame, user_dict_: Dict
@@ -229,7 +228,7 @@ class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
         # find or check for numerical variables
         self.variables_ = _find_or_check_datetime_variables(X, self.variables)
 
-        # check if dataset contains na
+        # check if datetime variables contains na
         _check_contains_na(X, self.variables_)
 
         return X
