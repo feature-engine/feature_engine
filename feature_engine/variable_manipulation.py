@@ -175,7 +175,7 @@ def _convert_variable_to_datetime(X: pd.Series, **kwargs) -> pd.Series:
 
 def _convert_variables_to_datetime(
     X: pd.DataFrame, variables: Variables = None, **kwargs
-) -> List[Union[str, int]]:
+) -> pd.DataFrame:
     """
     Takes a dataframe and returns it with object/category features
     that represent a datetime converted into datetime variables.

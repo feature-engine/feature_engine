@@ -196,8 +196,9 @@ class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.DataFrame:
         """
-        Checks that input is a dataframe, finds datetime variables, or alternatively
-        checks that variables entered by the user are or can be converted to type datetime
+        Checks that input is a dataframe, finds datetime variables,
+        or alternatively checks that variables entered by the user are
+        or can be converted to type datetime
 
         Parameters
         ----------
