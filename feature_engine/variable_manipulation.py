@@ -2,8 +2,8 @@
 
 from typing import Any, List, Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -110,7 +110,11 @@ def _find_or_check_categorical_variables(
         variables = [variables]
 
     elif not variables:
-        variables = list(_convert_variables_to_datetime(X).select_dtypes(include=["O", "category"]).columns)
+        variables = list(
+            _convert_variables_to_datetime(X)
+            .select_dtypes(include=["O", "category"])
+            .columns
+        )
         if len(variables) == 0:
             raise ValueError(
                 "No categorical variables in this dataframe. Please check the "
@@ -118,8 +122,11 @@ def _find_or_check_categorical_variables(
             )
 
     else:
-        if any(_convert_variables_to_datetime(X, variables)[variables].select_dtypes(
-            exclude=["O", "category"]).columns):
+        if any(
+            _convert_variables_to_datetime(X, variables)[variables]
+            .select_dtypes(exclude=["O", "category"])
+            .columns
+        ):
             raise TypeError(
                 "Some of the variables are not categorical. Please cast them as object "
                 "or category before calling this transformer"
@@ -127,8 +134,8 @@ def _find_or_check_categorical_variables(
 
     return variables
 
-def _convert_variable_to_datetime(
-    X: pd.Series, **kwargs) -> pd.Series:
+
+def _convert_variable_to_datetime(X: pd.Series, **kwargs) -> pd.Series:
     """
     Take a series and attempt to convert its dtype to datetime unless
     its type is numeric. In that case, return the series as is.
@@ -150,20 +157,21 @@ def _convert_variable_to_datetime(
     **
     """
 
-    if X.dtype == np.dtype('datetime64[ns]'):
+    if X.dtype == np.dtype("datetime64[ns]"):
         return X
 
-    if isinstance(X.dtype, (pd.CategoricalDtype,object)):
+    if isinstance(X.dtype, (pd.CategoricalDtype, object)):
         try:
-            X.astype('float64')
+            X.astype("float64")
             return X
         except ValueError:
-            return X.apply(pd.to_datetime, errors='ignore', **kwargs)
+            return X.apply(pd.to_datetime, errors="ignore", **kwargs)
 
     elif np.issubdtype(X.dtype, np.number):
         return X
 
-    return X.apply(pd.to_datetime, errors='ignore', **kwargs)
+    return X.apply(pd.to_datetime, errors="ignore", **kwargs)
+
 
 def _convert_variables_to_datetime(
     X: pd.DataFrame, variables: Variables = None, **kwargs
@@ -175,13 +183,14 @@ def _convert_variables_to_datetime(
     that could be casted into numerical type (see _convert_variable_to_datetime)
     If variables == None, process all the columns in the dataframe.
     """
-    
+
     variables = X.columns if not variables else variables
     X_dt = X.copy()
-    for var in X_dt[variables].select_dtypes(exclude='number'):
+    for var in X_dt[variables].select_dtypes(exclude="number"):
         X_dt[var] = _convert_variable_to_datetime(X[var], **kwargs)
-    
+
     return X_dt
+
 
 def _find_or_check_datetime_variables(
     X: pd.DataFrame, variables: Variables = None
@@ -213,7 +222,11 @@ def _find_or_check_datetime_variables(
         variables = [variables]
 
     elif not variables:
-        variables = list(_convert_variables_to_datetime(X).select_dtypes(include=['datetime64']).columns)
+        variables = list(
+            _convert_variables_to_datetime(X)
+            .select_dtypes(include=["datetime64"])
+            .columns
+        )
         if len(variables) == 0:
             raise ValueError(
                 "No datetime variables in this dataframe. Please check the "
@@ -221,13 +234,18 @@ def _find_or_check_datetime_variables(
             )
 
     else:
-        if any(_convert_variables_to_datetime(X,variables)[variables].select_dtypes(exclude=["datetime64"]).columns):
+        if any(
+            _convert_variables_to_datetime(X, variables)[variables]
+            .select_dtypes(exclude=["datetime64"])
+            .columns
+        ):
             raise TypeError(
                 "Some of the variables are not or could not be converted into datetime."
                 "Please cast them as object or category before calling this transformer"
             )
 
     return variables
+
 
 def _find_all_variables(
     X: pd.DataFrame, variables: Variables = None

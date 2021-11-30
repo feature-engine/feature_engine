@@ -1,70 +1,125 @@
-from pandas.tseries.offsets import FY5253Quarter
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
+from pandas.tseries.offsets import FY5253Quarter
 
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
+    _convert_variable_to_datetime,
+    _convert_variables_to_datetime,
     _find_all_variables,
     _find_or_check_categorical_variables,
-    _find_or_check_numerical_variables,
     _find_or_check_datetime_variables,
-    _convert_variable_to_datetime,
-    _convert_variables_to_datetime
+    _find_or_check_numerical_variables,
 )
 
 
 def test_convert_variable_to_datetime(df_vartypes2):
 
-    #check dtypes upon conversion
-    assert _convert_variable_to_datetime(df_vartypes2.Name).dtype == 'O'
-    assert _convert_variable_to_datetime(df_vartypes2.City.astype('category')).dtype.categories.dtype == 'O'
-    assert _convert_variable_to_datetime(df_vartypes2.Age.astype('category')).dtype.categories.dtype == 'int64'
-    assert _convert_variable_to_datetime(df_vartypes2.dob.astype('category')).dtype.categories.dtype == np.dtype('datetime64[ns]')
-    assert _convert_variable_to_datetime(df_vartypes2.dob).dtype == np.dtype('datetime64[ns]')
-    assert _convert_variable_to_datetime(df_vartypes2.Age).dtype == 'int64'
-    assert _convert_variable_to_datetime(df_vartypes2.City).dtype == 'O'
-    assert _convert_variable_to_datetime(df_vartypes2.doa).dtype == np.dtype('datetime64[ns]')
-    assert _convert_variable_to_datetime(df_vartypes2.doa.astype('category')).dtype.categories.dtype == np.dtype('datetime64[ns]')
+    # check dtypes upon conversion
+    assert _convert_variable_to_datetime(df_vartypes2.Name).dtype == "O"
+    assert (
+        _convert_variable_to_datetime(
+            df_vartypes2.City.astype("category")
+        ).dtype.categories.dtype
+        == "O"
+    )
+    assert (
+        _convert_variable_to_datetime(
+            df_vartypes2.Age.astype("category")
+        ).dtype.categories.dtype
+        == "int64"
+    )
+    assert _convert_variable_to_datetime(
+        df_vartypes2.dob.astype("category")
+    ).dtype.categories.dtype == np.dtype("datetime64[ns]")
+    assert _convert_variable_to_datetime(df_vartypes2.dob).dtype == np.dtype(
+        "datetime64[ns]"
+    )
+    assert _convert_variable_to_datetime(df_vartypes2.Age).dtype == "int64"
+    assert _convert_variable_to_datetime(df_vartypes2.City).dtype == "O"
+    assert _convert_variable_to_datetime(df_vartypes2.doa).dtype == np.dtype(
+        "datetime64[ns]"
+    )
+    assert _convert_variable_to_datetime(
+        df_vartypes2.doa.astype("category")
+    ).dtype.categories.dtype == np.dtype("datetime64[ns]")
 
-    #check different datetime formats passing kwargs
+    # check different datetime formats passing kwargs
     pd.testing.assert_series_equal(
         _convert_variable_to_datetime(df_vartypes2.doa),
-        pd.Series(np.array(['2010-12-01', '1945-02-24', '2100-06-14', '1999-05-17'], dtype=np.datetime64),
-            name = "doa")
+        pd.Series(
+            np.array(
+                ["2010-12-01", "1945-02-24", "2100-06-14", "1999-05-17"],
+                dtype=np.datetime64,
+            ),
+            name="doa",
+        ),
     )
     pd.testing.assert_series_equal(
         _convert_variable_to_datetime(df_vartypes2.dof, dayfirst=True),
-        pd.Series(np.array(['2012-11-10', '2009-09-09', '1995-05-25', '2004-03-17'], dtype=np.datetime64),
-            name = "dof")
+        pd.Series(
+            np.array(
+                ["2012-11-10", "2009-09-09", "1995-05-25", "2004-03-17"],
+                dtype=np.datetime64,
+            ),
+            name="dof",
+        ),
     )
     pd.testing.assert_series_equal(
         _convert_variable_to_datetime(df_vartypes2.dof, yearfirst=True),
-        pd.Series(np.array(['2010-11-12', '2009-09-09', '1995-05-25', '2004-03-17'], dtype=np.datetime64),
-            name= "dof")
+        pd.Series(
+            np.array(
+                ["2010-11-12", "2009-09-09", "1995-05-25", "2004-03-17"],
+                dtype=np.datetime64,
+            ),
+            name="dof",
+        ),
     )
-    
+
 
 def test_convert_variables_to_datetime(df_vartypes2):
-    
+
     vars_to_dt1 = ["Name", "Age", "doa"]
     vars_to_dt2 = ["Name", "Age", "dob"]
-    assert list(_convert_variables_to_datetime(df_vartypes2, vars_to_dt1).dtypes.values) == [
-        'O', 'O', 'int64', 'float64', np.dtype('datetime64[ns]'),
-        np.dtype('datetime64[ns]'), 'O']
-    assert list(_convert_variables_to_datetime(df_vartypes2, vars_to_dt2).dtypes.values) == [
-        'O', 'O', 'int64', 'float64', np.dtype('datetime64[ns]'), 'O', 'O']
+    assert list(
+        _convert_variables_to_datetime(df_vartypes2, vars_to_dt1).dtypes.values
+    ) == [
+        "O",
+        "O",
+        "int64",
+        "float64",
+        np.dtype("datetime64[ns]"),
+        np.dtype("datetime64[ns]"),
+        "O",
+    ]
+    assert list(
+        _convert_variables_to_datetime(df_vartypes2, vars_to_dt2).dtypes.values
+    ) == ["O", "O", "int64", "float64", np.dtype("datetime64[ns]"), "O", "O"]
     assert list(_convert_variables_to_datetime(df_vartypes2, None).dtypes.values) == [
-        'O', 'O', 'int64', 'float64', np.dtype('datetime64[ns]'),
-        np.dtype('datetime64[ns]'), np.dtype('datetime64[ns]')]
+        "O",
+        "O",
+        "int64",
+        "float64",
+        np.dtype("datetime64[ns]"),
+        np.dtype("datetime64[ns]"),
+        np.dtype("datetime64[ns]"),
+    ]
     pd.testing.assert_frame_equal(
-        _convert_variables_to_datetime(df_vartypes2, variables = ["dof"], dayfirst = True),
-        df_vartypes2.drop("dof",axis=1).join(pd.DataFrame(
-                {"dof": np.array(['2012-11-10', '2009-09-09', '1995-05-25', '2004-03-17'],
-                 dtype=np.datetime64)})
-        )
+        _convert_variables_to_datetime(df_vartypes2, variables=["dof"], dayfirst=True),
+        df_vartypes2.drop("dof", axis=1).join(
+            pd.DataFrame(
+                {
+                    "dof": np.array(
+                        ["2012-11-10", "2009-09-09", "1995-05-25", "2004-03-17"],
+                        dtype=np.datetime64,
+                    )
+                }
+            )
+        ),
     )
- 
+
+
 def test_check_input_parameter_variables():
     vars_ls = ["var1", "var2", "var1"]
     vars_int_ls = [0, 1, 2, 3]
@@ -126,7 +181,6 @@ def test_find_or_check_categorical_variables(df_vartypes2, df_numeric_columns):
         assert _find_or_check_categorical_variables(df_vartypes2, vars_mix)
         assert _find_or_check_categorical_variables(df_vartypes2, vars_cat2)
 
-
     with pytest.raises(ValueError):
         assert _find_or_check_categorical_variables(df_vartypes2[vars_noncat1], None)
         assert _find_or_check_categorical_variables(df_vartypes2[vars_noncat2], None)
@@ -134,28 +188,38 @@ def test_find_or_check_categorical_variables(df_vartypes2, df_numeric_columns):
     assert _find_or_check_categorical_variables(df_numeric_columns, [0, 1]) == [0, 1]
     assert _find_or_check_categorical_variables(df_numeric_columns, 1) == [1]
 
-    assert _find_or_check_categorical_variables(df_vartypes2.astype({"Age":'category'}), None) == vars_cat3
-    assert _find_or_check_categorical_variables(df_vartypes2.astype({"Age":'category'}), vars_cat3) == vars_cat3
+    assert (
+        _find_or_check_categorical_variables(
+            df_vartypes2.astype({"Age": "category"}), None
+        )
+        == vars_cat3
+    )
+    assert (
+        _find_or_check_categorical_variables(
+            df_vartypes2.astype({"Age": "category"}), vars_cat3
+        )
+        == vars_cat3
+    )
 
 
 def test_find_or_check_datetime_variables(df_vartypes2):
     vars_dt = ["dob"]
-    var_dt  = "dob"
+    var_dt = "dob"
     vars_nondt = ["Age", "Marks", "Name"]
-    vars_convertible_to_dt = ["dob","doa","dof"]
+    vars_convertible_to_dt = ["dob", "doa", "dof"]
     vars_mix = ["dob", "Age", "Marks"]
 
     assert _find_or_check_datetime_variables(df_vartypes2, vars_dt) == vars_dt
     assert _find_or_check_datetime_variables(df_vartypes2, var_dt) == [var_dt]
-    assert _find_or_check_datetime_variables(df_vartypes2, None) == vars_convertible_to_dt
+    assert (
+        _find_or_check_datetime_variables(df_vartypes2, None) == vars_convertible_to_dt
+    )
 
     with pytest.raises(TypeError):
         _find_or_check_datetime_variables(df_vartypes2, vars_mix)
 
     with pytest.raises(ValueError):
-        _find_or_check_datetime_variables(df_vartypes2.loc[:,vars_nondt], None)
-
-
+        _find_or_check_datetime_variables(df_vartypes2.loc[:, vars_nondt], None)
 
 
 def test_find_all_variables(df_vartypes):
