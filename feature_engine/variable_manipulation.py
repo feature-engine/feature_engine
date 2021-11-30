@@ -127,17 +127,27 @@ def _find_or_check_categorical_variables(
 
     return variables
 
-def _convert_variable_to_datetime(X: pd.Series) -> pd.Series:
+def _convert_variable_to_datetime(
+    X: pd.Series, **kwargs) -> pd.Series:
     """
     Take a series and attempt to convert its dtype to datetime unless
     its type is numeric. In that case, return the series as is.
-    If the type of the series is an object or category, it is processed as follows:
+    If the series type is object or category, it is processed as follows:
         1 if it could be cast as number, return the series as is
         2 otherwise, attempt to convert it to datetime; if pd.to_datetime
           fails the conversion, return the series as is
-    Note: if the series type is a category, it is the dtype of the categories
-    that is converted, not the series itself, which means that the primary type
-    is still going to be categorical.
+
+    Arguments
+    ---------
+    X: pd.Series that may or may not contain values convertible to datetime
+    kwargs: see pd.to_datetime()
+
+    **Notes**
+    if the series type is category, it is the dtype of the categories
+    that is converted, not the series itself This means that the primary type
+    is still going to be category whereas the pd.Series.dtype.categories
+    property is going to have its type converted.
+    **
     """
 
     if X.dtype == np.dtype('datetime64[ns]'):
@@ -148,15 +158,15 @@ def _convert_variable_to_datetime(X: pd.Series) -> pd.Series:
             X.astype('float64')
             return X
         except ValueError:
-            return X.apply(pd.to_datetime, errors='ignore')
+            return X.apply(pd.to_datetime, errors='ignore', **kwargs)
 
     elif np.issubdtype(X.dtype, np.number):
         return X
 
-    return X.apply(pd.to_datetime, errors='ignore')
+    return X.apply(pd.to_datetime, errors='ignore', **kwargs)
 
 def _convert_variables_to_datetime(
-    X: pd.DataFrame, variables: Variables = None
+    X: pd.DataFrame, variables: Variables = None, **kwargs
 ) -> List[Union[str, int]]:
     """
     Takes a dataframe and returns it with object/category features
@@ -166,11 +176,12 @@ def _convert_variables_to_datetime(
     If variables == None, process all the columns in the dataframe.
     """
     
-    variables = X.columns if variables is None else variables
-    for var in X[variables].select_dtypes(exclude='number'):
-        X[var] = _convert_variable_to_datetime(X[var])
+    variables = X.columns if not variables else variables
+    X_dt = X.copy()
+    for var in X_dt[variables].select_dtypes(exclude='number'):
+        X_dt[var] = _convert_variable_to_datetime(X[var], **kwargs)
     
-    return X
+    return X_dt
 
 def _find_or_check_datetime_variables(
     X: pd.DataFrame, variables: Variables = None
