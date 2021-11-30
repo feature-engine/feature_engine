@@ -10,7 +10,7 @@ from feature_engine.datetime import ExtractDateFeatures
 def test_extract_date_features(df_vartypes2):
     original_columns = df_vartypes2.columns
     vars_dt     = ["dob", "doa"]
-    vars_non_dt = ["Name", "Age"]
+    vars_non_dt = ["Name", "City", "Age", "Marks"]
     vars_mix    = ["Name", "Age", "doa"]
     df_transformed_full = _convert_variables_to_datetime(df_vartypes2).join(
         pd.DataFrame({
@@ -78,7 +78,7 @@ def test_extract_date_features(df_vartypes2):
     assert transformer.n_features_in_ == 6
 
     pd.testing.assert_frame_equal(X, df_transformed_full[
-        list(original_columns) + ["dob_year", "doa_year"]
+        vars_non_dt + ["dob_year", "doa_year"]
     ])
 
     #check transformer with specified variables to process
@@ -90,7 +90,7 @@ def test_extract_date_features(df_vartypes2):
     X = transformer.fit_transform(df_vartypes2)
     assert transformer.variables_ == ["doa"]
     pd.testing.assert_frame_equal(
-        X, df_transformed_full[list(original_columns) + ["doa_year"]]
+        X, df_transformed_full[vars_non_dt + ["dob"] + ["doa_year"]]
     )
 
     #check transformer with specified date features to extract
@@ -102,7 +102,7 @@ def test_extract_date_features(df_vartypes2):
     X = transformer.fit_transform(df_vartypes2)
     assert transformer.variables_ == ["dob", "doa"]
     pd.testing.assert_frame_equal(
-        X, df_transformed_full[list(original_columns) + [
+        X, df_transformed_full[vars_non_dt + [
             "dob_semester", "doa_semester",
             "dob_woty", "doa_woty"]]
     )
@@ -115,4 +115,10 @@ def test_extract_date_features(df_vartypes2):
 
     X = transformer.fit_transform(df_vartypes2)
     assert transformer.variables_ == ["dob", "doa"]
-    pd.testing.assert_frame_equal(X, df_transformed_full)
+    pd.testing.assert_frame_equal(X, df_transformed_full.drop(vars_dt, axis=1))
+
+    #check transformer with option to drop datetime features turned off
+    X = ExtractDateFeatures(drop_datetime=False).fit_transform(df_vartypes2)
+    pd.testing.assert_frame_equal(X, df_transformed_full[
+        list(original_columns) + ["dob_year", "doa_year"]
+    ])

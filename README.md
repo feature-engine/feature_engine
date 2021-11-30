@@ -62,6 +62,7 @@ transforming parameters from the data and then transform it.
 * Variable Selection
 * Scikit-learn Wrappers
 * Preprocessing
+* Datetime Feature Extraction (under development)
 
 ### Imputation Methods
 * MeanMedianImputer

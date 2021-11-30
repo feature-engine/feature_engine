@@ -6,14 +6,8 @@ import pandas as pd
 import numpy as np
 
 from feature_engine.base_transformers import DateTimeBaseTransformer
-from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _check_input_parameter_variables
-from feature_engine.dataframe_checks import (
-    _check_contains_inf,
-    _check_contains_na,
-    _check_input_matches_training_df,
-    _is_dataframe,
-)
+from feature_engine.dataframe_checks import _is_dataframe
 
 class ExtractDateFeatures(DateTimeBaseTransformer):
     """
@@ -37,6 +31,14 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
 
     features_to_extract: list, default = "year"
         The list of date features to extract. See supported attribute
+
+    drop_datetime: bool, default = "True"
+        Whether to drop datetime variables from the dataframe, including
+        those that have been converted by the transformer.
+        Note: if you pass a subset of features via the variables argument
+        of the transformer and drop_datetime=True, there might be more 
+        datetime features in the dataframe that will not be dropped
+        upon calling the transform method
 
     Attributes
     ----------
@@ -67,7 +69,8 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        features_to_extract: Union[None, str, List[Union[str, int]]] = "year"
+        features_to_extract: Union[None, str, List[Union[str, int]]] = "year",
+        drop_datetime: bool = True
     ) -> None:
 
         #get the list of supported features from a const variable somewhere?
@@ -78,6 +81,7 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
             "is_weekend", "week_of_the_month"
         ] 
         self.variables  = _check_input_parameter_variables(variables)
+        self.drop_datetime = drop_datetime
         
         if features_to_extract == "all":
             self.features_to_extract = self.supported
@@ -146,5 +150,8 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
         if "week_of_the_month" in self.features_to_extract:
             for var in self.variables_:
                 X[var+"_wotm"] = X[var].dt.day.apply(lambda d: (d-1)//7 + 1)
+
+        if self.drop_datetime:
+            X.drop(self.variables_, axis=1, inplace=True)
 
         return X
