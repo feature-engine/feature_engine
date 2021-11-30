@@ -40,6 +40,9 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
         datetime features in the dataframe that will not be dropped
         upon calling the transform method
 
+    kwargs: 
+        see pd.to_datetime keyword arguments other than "errors"
+
     Attributes
     ----------
     variables:
@@ -70,7 +73,8 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         features_to_extract: Union[None, str, List[Union[str, int]]] = "year",
-        drop_datetime: bool = True
+        drop_datetime: bool = True,
+        **kwargs
     ) -> None:
 
         #get the list of supported features from a const variable somewhere?
@@ -82,6 +86,7 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
         ] 
         self.variables  = _check_input_parameter_variables(variables)
         self.drop_datetime = drop_datetime
+        self.kwargs = kwargs
         
         if features_to_extract == "all":
             self.features_to_extract = self.supported
