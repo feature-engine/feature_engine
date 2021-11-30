@@ -17,6 +17,7 @@ def df_vartypes():
 
     return df
 
+
 @pytest.fixture(scope="module")
 def df_vartypes2():
     data = {
@@ -26,12 +27,13 @@ def df_vartypes2():
         "Marks": [0.9, 0.8, 0.7, 0.6],
         "dob": pd.date_range("2020-02-24", periods=4, freq="D"),
         "doa": ["01-Dec-2010", "24-Feb-1945", "14-Jun-2100", "17-May-1999"],
-        "dof": ["10/11/12", "09/09/09", "05/25/95", "03/17/04"]
+        "dof": ["10/11/12", "09/09/09", "05/25/95", "03/17/04"],
     }
 
     df = pd.DataFrame(data)
 
     return df
+
 
 @pytest.fixture(scope="module")
 def df_numeric_columns():

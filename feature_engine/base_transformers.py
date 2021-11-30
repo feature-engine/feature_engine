@@ -16,9 +16,9 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
-    _find_or_check_numerical_variables,
+    _convert_variables_to_datetime,
     _find_or_check_datetime_variables,
-    _convert_variables_to_datetime
+    _find_or_check_numerical_variables,
 )
 
 
@@ -151,8 +151,8 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
 
 
 class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
-    """shared set-up procedures across datetime transformers
-    """
+    """shared set-up procedures across datetime transformers"""
+
     def _select_variables_from_dict(
         self, X: pd.DataFrame, user_dict_: Dict
     ) -> pd.DataFrame:
