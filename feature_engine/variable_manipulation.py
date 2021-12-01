@@ -154,6 +154,9 @@ def _convert_variable_to_datetime(X: pd.Series, **kwargs) -> pd.Series:
     that is converted, not the series itself This means that the primary type
     is still going to be category whereas the pd.Series.dtype.categories
     property is going to have its type converted.
+
+    Missing values in str/cat objects are going to be replaced by 'NaT'
+    in the converted datetime columns
     **
     """
 

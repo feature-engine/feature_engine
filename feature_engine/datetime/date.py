@@ -47,9 +47,6 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
 
     Attributes
     ----------
-    variables:
-        variable(s) as passed as argument when instantiating the transformer
-
     supported:
         list of supported date features
 
