@@ -144,14 +144,22 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         # check if NaN values were introduced by the encoding
         if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
+            nan_columns = X.columns[X.isnull().any()].tolist()
+            if len(nan_columns) > 1:
+                nan_columns_str = ", ".join(nan_columns)
+            else:
+                nan_columns_str = nan_columns[0]
+
             warnings.warn(
-                "NaN values were introduced in the returned dataframe by the encoder."
+                f"NaN values were detected in the feature(s) titled {nan_column_str}."
                 "This means that some of the categories in the input dataframe were "
                 "not present in the training set used when the fit method was called. "
                 "Thus, mappings for those categories do not exist. Try using the "
                 "RareLabelCategoricalEncoder to remove infrequent categories before "
                 "calling this encoder."
             )
+
+
 
         return X
 
