@@ -52,7 +52,7 @@ class Winsorizer(BaseOutlier):
 
     If `capping_method='iqr'` fold is the value to multiply the IQR.
 
-    If `capping_method='quantile'`, fold is the percentile on each tail that should
+    If `capping_method='quantiles'`, fold is the percentile on each tail that should
     be censored. For example, if fold=0.05, the limits will be the 5th and 95th
     percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
 
@@ -88,11 +88,11 @@ class Winsorizer(BaseOutlier):
         or 3 for the gaussian approximation, or 1.5 or 3 for the IQR proximity
         rule.
 
-        If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if
+        If `capping_method='quantiles'`, then `'fold'` indicates the percentile. So if
         `fold=0.05`, the limits will be the 95th and 5th percentiles.
 
         **Note**: Outliers will be removed up to a maximum of the 20th percentiles on
-        both sides. Thus, when `capping_method='quantile'`, then `'fold'` takes values
+        both sides. Thus, when `capping_method='quantiles'`, then `'fold'` takes values
         between 0 and 0.20.
 
     variables: list, default=None
