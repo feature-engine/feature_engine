@@ -39,6 +39,8 @@ def _define_numerical_dict(dict_: Optional[dict]) -> Optional[dict]:
 def _parse_features_to_extract(feats_requested, feats_supported: List[str]) -> Any:
     """
     Parses argument features_to_extract of ExtractDateTransformer
+    (potentially shares utility with other similar feature
+    extractor transformers)
 
     Parameters
     ----------
@@ -51,11 +53,24 @@ def _parse_features_to_extract(feats_requested, feats_supported: List[str]) -> A
 
     Raises
     ------
+    TypeError
+        If requested features is not a string or list
+        If supported features is not a list of strings
+
     ValueError
         If one or more requested features are not supported
         by the transformer
 
     """
+    if not isinstance(feats_requested, (str, list)):
+        raise TypeError(
+            "feats_requested must be either a str or a list of str"
+        )
+
+    if not isinstance(feats_supported, list) or any(
+        not isinstance(feat, str) for feat in feats_supported
+    ):
+        raise TypeError("feats_supported must be a list of str")
 
     if feats_requested == "all":
         return feats_supported
