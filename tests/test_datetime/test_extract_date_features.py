@@ -62,6 +62,8 @@ def test_extract_date_features(df_vartypes2):
     with pytest.raises(TypeError):
         transformer.fit("not_a_df")
     with pytest.raises(TypeError):
+        ExtractDateFeatures(variables="Age").fit(df_vartypes2)
+    with pytest.raises(TypeError):
         ExtractDateFeatures(variables=vars_mix).fit(df_vartypes2)
     with pytest.raises(ValueError):
         transformer.fit(df_vartypes2[vars_non_dt])

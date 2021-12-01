@@ -2,7 +2,7 @@ import pytest
 
 from feature_engine.parameter_checks import (
     _define_numerical_dict,
-    _parse_features_to_extract
+    _parse_features_to_extract,
 )
 
 
