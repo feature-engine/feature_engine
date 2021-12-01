@@ -226,7 +226,6 @@ def _find_or_check_datetime_variables(
         variables = list(
             X_conv.columns[[hasattr(X_conv[s], "dt") for s in X_conv.columns]]
         )
-        print(variables)
         if len(variables) == 0:
             raise ValueError(
                 "No datetime variables in this dataframe. "
