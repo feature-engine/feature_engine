@@ -160,7 +160,7 @@ def _convert_variable_to_datetime(X: pd.Series, **kwargs) -> pd.Series:
     **
     """
 
-    if X.dtype == np.dtype("datetime64[ns]"):
+    if hasattr(X, "dt"):
         return X
 
     if isinstance(X.dtype, (pd.CategoricalDtype, object)):
@@ -222,28 +222,25 @@ def _find_or_check_datetime_variables(
     """
 
     if not variables:
+        X_conv = _convert_variables_to_datetime(X)
         variables = list(
-            _convert_variables_to_datetime(X)
-            .select_dtypes(include=["datetime64"])
-            .columns
+            X_conv.columns[[hasattr(X_conv[s], "dt") for s in X_conv.columns]]
         )
+        print(variables)
         if len(variables) == 0:
             raise ValueError(
-                "No datetime variables in this dataframe. Please check the "
-                "variables format with pandas dtypes"
+                "No datetime variables in this dataframe. "
+                "Note: purely numeric variables representing dates or times "
+                "will not be treated as datetime by this transformer."
             )
 
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if any(
-        _convert_variables_to_datetime(X, variables)[variables]
-        .select_dtypes(exclude=["datetime64"])
-        .columns
-    ):
+    X_conv = _convert_variables_to_datetime(X, variables)[variables]
+    if not all(hasattr(X_conv[s], "dt") for s in X_conv.columns):
         raise TypeError(
-            "Some of the variables are not or could not be converted into datetime."
-            "Please cast them as object or category before calling this transformer"
+            "Some of the variables are not or could not be converted to datetime. "
         )
 
     return variables
