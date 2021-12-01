@@ -63,9 +63,7 @@ def _parse_features_to_extract(feats_requested, feats_supported: List[str]) -> A
 
     """
     if not isinstance(feats_requested, (str, list)):
-        raise TypeError(
-            "feats_requested must be either a str or a list of str"
-        )
+        raise TypeError("feats_requested must be either a str or a list of str")
 
     if not isinstance(feats_supported, list) or any(
         not isinstance(feat, str) for feat in feats_supported

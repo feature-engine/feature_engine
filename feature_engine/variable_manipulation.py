@@ -221,10 +221,7 @@ def _find_or_check_datetime_variables(
     variables : List of datetime variables
     """
 
-    if isinstance(variables, (str, int)):
-        variables = [variables]
-
-    elif not variables:
+    if not variables:
         variables = list(
             _convert_variables_to_datetime(X)
             .select_dtypes(include=["datetime64"])
@@ -236,16 +233,18 @@ def _find_or_check_datetime_variables(
                 "variables format with pandas dtypes"
             )
 
-    else:
-        if any(
-            _convert_variables_to_datetime(X, variables)[variables]
-            .select_dtypes(exclude=["datetime64"])
-            .columns
-        ):
-            raise TypeError(
-                "Some of the variables are not or could not be converted into datetime."
-                "Please cast them as object or category before calling this transformer"
-            )
+    if isinstance(variables, (str, int)):
+        variables = [variables]
+
+    if any(
+        _convert_variables_to_datetime(X, variables)[variables]
+        .select_dtypes(exclude=["datetime64"])
+        .columns
+    ):
+        raise TypeError(
+            "Some of the variables are not or could not be converted into datetime."
+            "Please cast them as object or category before calling this transformer"
+        )
 
     return variables
 

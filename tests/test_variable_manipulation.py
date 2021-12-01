@@ -77,14 +77,14 @@ def test_convert_variable_to_datetime(df_vartypes2):
     )
 
     # check behavior with missing values
-    series_dt_na = pd.Series(['Dec-1990', np.NaN])
-    series_dt_conv = pd.Series(
-        np.array(['1990-12-01', 'NaT'], dtype=np.datetime64))
+    series_dt_na = pd.Series(["Dec-1990", np.NaN])
+    series_dt_conv = pd.Series(np.array(["1990-12-01", "NaT"], dtype=np.datetime64))
     pd.testing.assert_series_equal(
         _convert_variable_to_datetime(series_dt_na), series_dt_conv
     )
-    pd.testing.assert_series_equal(_convert_variable_to_datetime(
-            series_dt_na.astype('category')), series_dt_conv.astype('category')
+    pd.testing.assert_series_equal(
+        _convert_variable_to_datetime(series_dt_na.astype("category")),
+        series_dt_conv.astype("category"),
     )
 
 
@@ -226,7 +226,8 @@ def test_find_or_check_datetime_variables(df_vartypes2):
     )
 
     with pytest.raises(TypeError):
-        _find_or_check_datetime_variables(df_vartypes2, vars_mix)
+        _find_or_check_datetime_variables(df_vartypes2, variables = "Age")
+        _find_or_check_datetime_variables(df_vartypes2, variables = vars_mix)
 
     with pytest.raises(ValueError):
         _find_or_check_datetime_variables(df_vartypes2.loc[:, vars_nondt], None)
