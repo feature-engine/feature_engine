@@ -226,7 +226,7 @@ class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # find or check for numerical variables
+        # find or check for datetime variables
         self.variables_ = _find_or_check_datetime_variables(X, self.variables)
 
         # check if datetime variables contains na

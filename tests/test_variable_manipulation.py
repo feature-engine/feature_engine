@@ -76,6 +76,17 @@ def test_convert_variable_to_datetime(df_vartypes2):
         ),
     )
 
+    # check behavior with missing values
+    series_dt_na = pd.Series(['Dec-1990', np.NaN])
+    series_dt_conv = pd.Series(
+        np.array(['1990-12-01', 'NaT'], dtype=np.datetime64))
+    pd.testing.assert_series_equal(
+        _convert_variable_to_datetime(series_dt_na), series_dt_conv
+    )
+    pd.testing.assert_series_equal(_convert_variable_to_datetime(
+            series_dt_na.astype('category')), series_dt_conv.astype('category')
+    )
+
 
 def test_convert_variables_to_datetime(df_vartypes2):
 
