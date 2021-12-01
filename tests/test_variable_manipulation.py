@@ -44,6 +44,9 @@ def test_convert_variable_to_datetime(df_vartypes2):
         df_vartypes2.doa.astype("category")
     ).dtype.categories.dtype == np.dtype("datetime64[ns]")
 
+    # add a UTC timezone awareness
+    assert hasattr(_convert_variable_to_datetime(df_vartypes2.dof.add("T12Z")), "dt")
+
     # check different datetime formats passing kwargs
     pd.testing.assert_series_equal(
         _convert_variable_to_datetime(df_vartypes2.doa),
@@ -224,10 +227,14 @@ def test_find_or_check_datetime_variables(df_vartypes2):
     assert (
         _find_or_check_datetime_variables(df_vartypes2, None) == vars_convertible_to_dt
     )
+    assert _find_or_check_datetime_variables(
+        df_vartypes2.join(pd.DataFrame({"dofZ": df_vartypes2.dof.add("T12Z")})),
+        variables=None,
+    ) == vars_convertible_to_dt + ["dofZ"]
 
     with pytest.raises(TypeError):
-        _find_or_check_datetime_variables(df_vartypes2, variables = "Age")
-        _find_or_check_datetime_variables(df_vartypes2, variables = vars_mix)
+        _find_or_check_datetime_variables(df_vartypes2, variables="Age")
+        _find_or_check_datetime_variables(df_vartypes2, variables=vars_mix)
 
     with pytest.raises(ValueError):
         _find_or_check_datetime_variables(df_vartypes2.loc[:, vars_nondt], None)
