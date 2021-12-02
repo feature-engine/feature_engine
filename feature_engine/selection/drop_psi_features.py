@@ -65,7 +65,7 @@ class DropHighPSIFeatures(BaseSelector):
     values in the list, will go to the basis set, and the remaining ones to the test
     set.
 
-    More details in the :ref:`User Guide <psi_selection>`.
+    More details in the :ref:`User Guide <psi selection>`.
 
     References
     ----------
