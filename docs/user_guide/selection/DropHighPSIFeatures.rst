@@ -582,8 +582,6 @@ like 'Retail', 'SME' or 'Wholesale'. In this case, if we indicate ['Retail'] as
 cut-off, observations for Retail will be sent to the basis data set, and those for 'SME'
 and 'Wholesale' will be added to the test set.
 
-#TODO: are be absolutely sure that if we pass 'Retail' the split is alphabetically but if we pass ['Retail'] it uses the list? Do we have a test for this? or can we add one?
-
 Let's show how to set up the transformer in this case. The example data set
 contains 6 randoms variables, a categorical variable with the labels of the
 different categories and 2 category related features.
