@@ -15,10 +15,7 @@ from feature_engine.dataframe_checks import (
     _is_dataframe,
 )
 from feature_engine.validation import _return_tags
-from feature_engine.variable_manipulation import (
-    _find_or_check_datetime_variables,
-    _convert_variables_to_datetime
-)
+from feature_engine.variable_manipulation import _find_or_check_datetime_variables
 
 class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
     """shared set-up procedures across datetime transformers"""
@@ -80,7 +77,13 @@ class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables_)
 
-        X = _convert_variables_to_datetime(X, self.variables_, **self.kwargs)
+        X = pd.concat(
+            [pd.to_datetime(X[variable]) \
+            if variable in self.variables_ \
+            else X[variable] \
+            for variable in X.columns], \
+            axis = 1
+        )
 
         return X
 
