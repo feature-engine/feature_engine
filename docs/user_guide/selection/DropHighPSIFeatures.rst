@@ -124,7 +124,8 @@ that the observations with smaller values in `split_col` will land in the refere
 and those with bigger values will go to the test set.
 
 If the rows in your dataset are sorted in time, this could be a good default option to split the
-dataframe in 2. #TODO: can we add and example of when this would be a suitable option?
+dataframe in 2 and compute the PSI. This will for example be the case if your data set is made
+of several time series.
 
 Proportions of unique observations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -214,6 +215,8 @@ with shifted population (*var_3* in this case).
 .. code:: python
 
     import pandas as pd
+    import seaborn as sns
+
     from sklearn.datasets import make_classification
     from feature_engine.selection import DropHighPSIFeatures
 
@@ -334,13 +337,30 @@ looking at the columns from the `X_transformed` dataframe.
 :class:`DropHighPSIFeatures()` also contains a `fit_transform` method that combines
 the `fit` and the `transform` methods.
 
-#TODO: I would also like to include a plot showing how the distribution of a feature
-changed in time, if we were to add this feature, and also showing how the distribution
-of other features that will not be dropped, does not change. It could be in the form of
-histograms or bar plots of the counts per interval. Up to you.
+The difference in distribution between a non-shifted and
+a shifted distribution is clearly visible when plotting the cumulative density
+function.
+
+For the shifter variable:
+
+.. code:: python
+
+    X['above_cut_off'] = X.index > transformer.cut_off_
+    sns.ecdfplot(data=X, x='var_3', hue='above_cut_off')
+
+and a non-shifted variable (for example *var_1*)
+
+.. code:: python
+
+    sns.ecdfplot(data=X, x='var_1', hue='above_cut_off')
+
+
+.. image:: ../../images/PSI_distribution_case1.png
+
 
 Case 2: split data based on variable (numerical cut_off)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 In the previous example, we wanted to split the input dataframe in 2 datasets, with the
 reference dataset containing 60% of the observations. We let :class:`DropHighPSIFeatures()`
