@@ -3,7 +3,7 @@ classes. Provides the base functionality within the fit() and transform() method
 shared by most transformers, like checking that input is a df, the size, NA, etc.
 """
 
-from typing import Dict, Optional
+from typing import Optional
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -16,6 +16,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_datetime_variables
+
 
 class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
     """shared set-up procedures across datetime transformers"""
@@ -32,7 +33,7 @@ class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
 
         y : Pandas Series, np.array. Default = None
             Parameter is necessary for compatibility with sklearn Pipeline.
-        
+
         Returns
         -------
         X : Pandas DataFrame
@@ -78,11 +79,13 @@ class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
         _check_contains_na(X, self.variables_)
 
         X = pd.concat(
-            [pd.to_datetime(X[variable]) \
-            if variable in self.variables_ \
-            else X[variable] \
-            for variable in X.columns], \
-            axis = 1
+            [
+                pd.to_datetime(X[variable])
+                if variable in self.variables_
+                else X[variable]
+                for variable in X.columns
+            ],
+            axis=1,
         )
 
         return X

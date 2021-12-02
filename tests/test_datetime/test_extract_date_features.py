@@ -7,7 +7,6 @@ from feature_engine.datetime import ExtractDateFeatures
 
 
 def test_extract_date_features(df_vartypes2):
-    original_columns = df_vartypes2.columns
     vars_dt = ["dob", "doa", "dof"]
     vars_non_dt = ["Name", "City", "Age", "Marks"]
     vars_mix = ["Name", "Age", "doa"]
@@ -57,7 +56,7 @@ def test_extract_date_features(df_vartypes2):
     assert transformer.variables is None
     assert transformer.features_to_extract == ["year"]
     assert ExtractDateFeatures(variables="Age").variables == "Age"
-    assert ExtractDateFeatures(variables=["Age","dob"]).variables == ["Age","dob"]
+    assert ExtractDateFeatures(variables=["Age", "dob"]).variables == ["Age", "dob"]
 
     # check exceptions upon calling fit method
     with pytest.raises(TypeError):
@@ -152,21 +151,15 @@ def test_extract_date_features(df_vartypes2):
     # check transformer with option to drop datetime features turned off
     X = ExtractDateFeatures(drop_datetime=False).fit_transform(df_vartypes2)
     pd.testing.assert_frame_equal(
-        X, pd.concat(
-            [df_transformed_full[column] for column in vars_non_dt] + 
-            [pd.to_datetime(df_vartypes2.dob),
-             pd.to_datetime(df_vartypes2.doa), 
-             pd.to_datetime(df_vartypes2.dof)] +
-            [df_transformed_full[years] for years in ["dob_year", "doa_year", "dof_year"]],
-            axis=1
-        )
+        X,
+        pd.concat(
+            [df_transformed_full[column] for column in vars_non_dt]
+            + [
+                pd.to_datetime(df_vartypes2.dob),
+                pd.to_datetime(df_vartypes2.doa),
+                pd.to_datetime(df_vartypes2.dof),
+            ]
+            + [df_transformed_full[y] for y in ["dob_year", "doa_year", "dof_year"]],
+            axis=1,
+        ),
     )
-
-    ## check transformer with pd.to_datetime kwargs wrapped in
-    #X = ExtractDateFeatures(yearfirst=True).fit_transform(df_vartypes2)
-    #pd.testing.assert_frame_equal(
-    #    X,
-    #    df_transformed_full[vars_non_dt + ["dob_year", "doa_year"]].join(
-    #        pd.DataFrame({"dof_year": [2010, 2009, 1995, 2004]})
-    #    ),
-    #)
