@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from feature_engine.base_transformers import DateTimeBaseTransformer
+from feature_engine.datetime.base_transformer import DateTimeBaseTransformer
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.parameter_checks import _parse_features_to_extract
 from feature_engine.variable_manipulation import _check_input_parameter_variables

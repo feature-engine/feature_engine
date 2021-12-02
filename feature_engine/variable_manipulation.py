@@ -206,16 +206,8 @@ def _find_or_check_datetime_variables(
     Parameters
     ----------
     X : pandas DataFrame
-    variables : variable or list of variables. Defaults to None.
-
-    Raises
-    ------
-    ValueError
-        If there are no datetime variables in df or df is empty
-    TypeError
-        If any of the user provided variables are not datetime or
-        [failed to convert str/obj to datetime]?
-
+    variables : variable or list of variables. Defaults to None
+    
     Returns
     -------
     variables : List of datetime variables
