@@ -538,8 +538,25 @@ And the transform method correctly removes the feature.
 
     Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'time'], dtype='object')
 
+The difference in distribution between a non-shifted and
+a shifted distribution is clearly visible when plotting the cumulative density
+function for each of the group.
 
-#TODO: could we plot the feature distribution in time for a feature that changes and one that does not?
+For the shifted variable:
+
+.. code:: python
+
+    X['above_cut_off'] = X.time > pd.to_datetime(transformer.cut_off_)
+    sns.ecdfplot(data=X, x='century', hue='above_cut_off')
+
+and a non-shifted variable (for example *var_2*)
+
+.. code:: python
+
+    sns.ecdfplot(data=X, x='var_2', hue='above_cut_off')
+
+
+.. image:: ../../images/PSI_distribution_case3.png
 
 
 Case 4: split data based on a categorical variable (category or list as cut_off)
@@ -574,6 +591,7 @@ different categories and 2 category related features.
 .. code:: python
 
     import pandas as pd
+    import seaborn as sns
 
     from sklearn.datasets import make_classification
     from feature_engine.selection import DropHighPSIFeatures
@@ -624,7 +642,7 @@ These values are consistent with the features to drop provided by the object.
 
     transformer.features_to_drop_
 
-    ['group_means', 'shifted_features']
+    ['group_means', 'shifted_feature']
 
 And these columns are removed from the original dataframe by the transform
 method that, in the present case, has been applied through the fit_transform
@@ -691,8 +709,25 @@ method.
 
     Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'group'], dtype='object')
 
-#TODO: consider if it is possible to add a plot with a feature distribution that changes and one that does not.
 
+The difference in distribution between a non-shifted and
+a shifted distribution is clearly visible when plotting the cumulative density
+function for each of the group.
+
+For the shifted variable:
+
+.. code:: python
+
+    sns.ecdfplot(data=X, x='shifted_feature', hue='group')
+
+and a non-shifted variable (for example *var_0*)
+
+.. code:: python
+
+    sns.ecdfplot(data=X, x='var_0', hue='group')
+
+
+.. image:: ../../images/PSI_distribution_case4.png
 
 Case 5: split data based on unique values (split_distinct)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -707,12 +742,15 @@ like customers income classes ('1000', '2000', '3000', '4000', ...).
 Split_distinct allows to control the numbers of classes in the basis and test
 dataframes regardless of the number of observations in each class.
 
-#TODO: could we try to capture some of the above example in the toy data?
+This case is illustrated in the toy data for this case. The data set contains
+6 random variable and 1 income variable that is larger for one of the 6 group
+defined (the F group).
 
 .. code:: python
 
-    import pandas as pd
     import numpy as np
+    import pandas as pd
+    import seaborn as sns
 
     from sklearn.datasets import make_classification
     from feature_engine.selection import DropHighPSIFeatures
@@ -785,7 +823,26 @@ method.
 
     Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'group'], dtype='object')
 
-#TODO: Plots if possible.
+
+
+The difference in distribution between a non-shifted and
+a shifted distribution is clearly visible when plotting the cumulative density
+function for each of the group.
+
+For the shifted variable (income):
+
+.. code:: python
+
+    sns.ecdfplot(data=X, x='income', hue='group')
+
+and a non-shifted variable (for example *var_4*)
+
+.. code:: python
+
+    sns.ecdfplot(data=X, x="var_4", hue="group")
+
+
+.. image:: ../../images/PSI_distribution_case5.png
 
 More details
 ~~~~~~~~~~~~
