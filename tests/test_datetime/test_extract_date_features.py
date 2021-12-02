@@ -46,9 +46,12 @@ def test_extract_date_features(df_vartypes2):
 
     # check exceptions upon class instantiation
     with pytest.raises(ValueError):
-        transformer = ExtractDateFeatures(features_to_extract="not_supported")
-    with pytest.raises(ValueError):
-        transformer = ExtractDateFeatures(variables=3.519)
+        assert ExtractDateFeatures(features_to_extract="not_supported")
+        assert ExtractDateFeatures(features_to_extract=["also_not_supp"])
+        assert ExtractDateFeatures(features_to_extract=["year", 1874])
+        assert ExtractDateFeatures(variables=3.519)
+    with pytest.raises(TypeError):
+        assert ExtractDateFeatures(features_to_extract=14198)
 
     # check transformer attributes
     transformer = ExtractDateFeatures()
@@ -57,6 +60,8 @@ def test_extract_date_features(df_vartypes2):
     assert transformer.features_to_extract == ["year"]
     assert ExtractDateFeatures(variables="Age").variables == "Age"
     assert ExtractDateFeatures(variables=["Age", "dob"]).variables == ["Age", "dob"]
+    transformer = ExtractDateFeatures(features_to_extract="all")
+    assert transformer.features_to_extract == transformer.supported
 
     # check exceptions upon calling fit method
     with pytest.raises(TypeError):

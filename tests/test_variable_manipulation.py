@@ -112,10 +112,13 @@ def test_find_or_check_datetime_variables(df_vartypes2):
         _find_or_check_datetime_variables(df_vartypes2, variables=None)
         == vars_convertible_to_dt
     )
-    assert _find_or_check_datetime_variables(
-        df_vartypes2[vars_convertible_to_dt].reindex(columns=["doa", "dob", "dof"]),
-        variables=None,
-    ) == ["doa", "dob", "dof"]
+    assert (
+        _find_or_check_datetime_variables(
+            df_vartypes2[vars_convertible_to_dt].reindex(columns=["doa", "dob", "dof"]),
+            variables=None,
+        )
+        == ["doa", "dob", "dof"]
+    )
 
     # when variables are specified
     assert _find_or_check_categorical_variables(df_vartypes2, var_dt) == [var_dt]

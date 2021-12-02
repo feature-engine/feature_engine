@@ -7,7 +7,6 @@ import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.datetime.base_transformer import DateTimeBaseTransformer
-from feature_engine.parameter_checks import _parse_features_to_extract
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
@@ -71,7 +70,7 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        features_to_extract: Union[str, List[Union[str, int]]] = "year",
+        features_to_extract: Union[str, List[str]] = "year",
         drop_datetime: bool = True,
         **kwargs
     ) -> None:
@@ -88,12 +87,26 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
             "is_weekend",
             "week_of_the_month",
         ]
+
+        if not isinstance(features_to_extract, (str, list)):
+            raise TypeError("features_to_extract must be either a str or a list of str")
+
+        if features_to_extract == "all":
+            features_to_extract = self.supported
+
+        elif isinstance(features_to_extract, str):
+            features_to_extract = [features_to_extract]
+
+        if any(feature not in self.supported for feature in features_to_extract):
+            raise ValueError(
+                "At least one of the requested feature is not supported. "
+                "Supported features are {}.".format(", ".join(self.supported))
+            )
+
         self.variables = _check_input_parameter_variables(variables)
         self.drop_datetime = drop_datetime
         self.kwargs = kwargs
-        self.features_to_extract = _parse_features_to_extract(
-            features_to_extract, self.supported
-        )
+        self.features_to_extract = features_to_extract
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         X = super().fit(X, y)
