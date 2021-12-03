@@ -5,7 +5,6 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.datetime.base_transformer import DateTimeBaseTransformer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
@@ -81,15 +80,15 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
             "week_of_the_year",
             "day_of_the_week",
             "day_of_the_month",
+            "day_of_the_year",
             "is_weekend",
             "week_of_the_month",
         ]
-        
+
         if features_to_extract:
             if not isinstance(features_to_extract, list):
                 raise TypeError("features_to_extract must be a list of strings")
-            elif any(
-                feature not in self.supported for feature in features_to_extract):
+            elif any(feature not in self.supported for feature in features_to_extract):
                 raise ValueError(
                     "At least one of the requested feature is not supported. "
                     "Supported features are {}.".format(", ".join(self.supported))
@@ -133,6 +132,8 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
                     day.astype(np.int64)
             if "day_of_the_month" in self.features_to_extract_:
                 X[str(var) + "_dotm"] = X[var].dt.day
+            if "day_of_the_year" in self.features_to_extract_:
+                X[str(var) + "_doty"] = X[var].dt.dayofyear
             # maybe add option to choose if friday should be considered a w.e. day?
             if "is_weekend" in self.features_to_extract_:
                 X[str(var) + "_is_weekend"] = np.where(

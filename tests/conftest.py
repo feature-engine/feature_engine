@@ -19,15 +19,13 @@ def df_vartypes():
 
 
 @pytest.fixture(scope="module")
-def df_vartypes2():
+def df_datetime():
     data = {
         "Name": ["tom", "nick", "krish", "jack"],
-        "City": ["London", "Manchester", "Liverpool", "Bristol"],
         "Age": [20, 21, 19, 18],
-        "Marks": [0.9, 0.8, 0.7, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=4, freq="D"),
-        "doa": ["01-Dec-2010", "24-Feb-1945", "14-Jun-2100", "17-May-1999"],
-        "dof": ["10/11/12", "09/09/09", "05/25/95", "03/17/04"],
+        "datetime_range": pd.date_range("2020-02-24", periods=4, freq="D"),
+        "date_obj1": ["01-Dec-2010", "24-Feb-1945", "14-Jun-2100", "17-May-1999"],
+        "date_obj2": ["10/11/12", "09/09/09", "05/25/95", "03/17/04"],
     }
 
     df = pd.DataFrame(data)

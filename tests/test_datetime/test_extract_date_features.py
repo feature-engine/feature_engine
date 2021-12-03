@@ -6,55 +6,47 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.datetime import ExtractDateFeatures
 
 
-def test_extract_date_features(df_vartypes2):
-    vars_dt = ["dob", "doa", "dof"]
-    vars_non_dt = ["Name", "City", "Age", "Marks"]
-    vars_mix = ["Name", "Age", "doa"]
-    feats_supported = [
-            "month",
-            "quarter",
-            "semester",
-            "year",
-            "week_of_the_year",
-            "day_of_the_week",
-            "day_of_the_month",
-            "is_weekend",
-            "week_of_the_month",
-        ]
+def test_extract_date_features(df_datetime):
+    vars_dt = ["datetime_range", "date_obj1", "date_obj2"]
+    vars_non_dt = ["Name", "Age"]
+    vars_mix = ["Name", "Age", "date_obj1"]
     feat_names = [
         "month", "quarter", "semester", "year", "woty", "dotw",
-        "dotm", "is_weekend", "wotm"
+        "dotm", "doty", "is_weekend", "wotm"
     ]
-    df_transformed_full = df_vartypes2.join(
+    df_transformed_full = df_datetime.join(
         pd.DataFrame(
             {
-                "dob_month": [2, 2, 2, 2],
-                "dob_quarter": [1, 1, 1, 1],
-                "dob_semester": [1, 1, 1, 1],
-                "dob_year": [2020, 2020, 2020, 2020],
-                "dob_woty": [9, 9, 9, 9],
-                "dob_dotw": [1, 2, 3, 4],
-                "dob_dotm": [24, 25, 26, 27],
-                "dob_is_weekend": [False, False, False, False],
-                "dob_wotm": [4, 4, 4, 4],
-                "doa_month": [12, 2, 6, 5],
-                "doa_quarter": [4, 1, 2, 2],
-                "doa_semester": [2, 1, 1, 1],
-                "doa_year": [2010, 1945, 2100, 1999],
-                "doa_woty": [48, 8, 24, 20],
-                "doa_dotw": [3, 6, 1, 1],
-                "doa_dotm": [1, 24, 14, 17],
-                "doa_is_weekend": [False, True, False, False],
-                "doa_wotm": [1, 4, 2, 3],
-                "dof_month": [10, 9, 5, 3],
-                "dof_quarter": [4, 3, 2, 1],
-                "dof_semester": [2, 2, 1, 1],
-                "dof_year": [2012, 2009, 1995, 2004],
-                "dof_woty": [41, 37, 21, 12],
-                "dof_dotw": [4, 3, 4, 3],
-                "dof_dotm": [11, 9, 25, 17],
-                "dof_is_weekend": [False, False, False, False],
-                "dof_wotm": [2, 2, 4, 3],
+                "datetime_range_month": [2, 2, 2, 2],
+                "datetime_range_quarter": [1, 1, 1, 1],
+                "datetime_range_semester": [1, 1, 1, 1],
+                "datetime_range_year": [2020, 2020, 2020, 2020],
+                "datetime_range_woty": [9, 9, 9, 9],
+                "datetime_range_dotw": [1, 2, 3, 4],
+                "datetime_range_dotm": [24, 25, 26, 27],
+                "datetime_range_doty": [55, 56, 57, 58],
+                "datetime_range_is_weekend": [False, False, False, False],
+                "datetime_range_wotm": [4, 4, 4, 4],
+                "date_obj1_month": [12, 2, 6, 5],
+                "date_obj1_quarter": [4, 1, 2, 2],
+                "date_obj1_semester": [2, 1, 1, 1],
+                "date_obj1_year": [2010, 1945, 2100, 1999],
+                "date_obj1_woty": [48, 8, 24, 20],
+                "date_obj1_dotw": [3, 6, 1, 1],
+                "date_obj1_dotm": [1, 24, 14, 17],
+                "date_obj1_doty": [335, 55, 165, 137],
+                "date_obj1_is_weekend": [False, True, False, False],
+                "date_obj1_wotm": [1, 4, 2, 3],
+                "date_obj2_month": [10, 9, 5, 3],
+                "date_obj2_quarter": [4, 3, 2, 1],
+                "date_obj2_semester": [2, 2, 1, 1],
+                "date_obj2_year": [2012, 2009, 1995, 2004],
+                "date_obj2_woty": [41, 37, 21, 12],
+                "date_obj2_dotw": [4, 3, 4, 3],
+                "date_obj2_dotm": [11, 9, 25, 17],
+                "date_obj2_doty": [285, 252, 145, 77],
+                "date_obj2_is_weekend": [False, False, False, False],
+                "date_obj2_wotm": [2, 2, 4, 3],
             }
         )
     )
@@ -79,11 +71,12 @@ def test_extract_date_features(df_vartypes2):
     assert isinstance(transformer, ExtractDateFeatures)
     assert transformer.variables is None
     assert ExtractDateFeatures(variables="Age").variables == "Age"
-    assert ExtractDateFeatures(variables=["Age", "dob"]).variables == ["Age", "dob"]
-    transformer.fit(df_vartypes2)
+    assert ExtractDateFeatures(variables=["Age", "datetime_range"])\
+        .variables == ["Age", "datetime_range"]
+    transformer.fit(df_datetime)
     assert transformer.features_to_extract_ == transformer.supported
     transformer = ExtractDateFeatures(features_to_extract=["year"])
-    transformer.fit(df_vartypes2)
+    transformer.fit(df_datetime)
     assert transformer.features_to_extract_ == ["year"]
 
     # check exceptions upon calling fit method
@@ -91,56 +84,62 @@ def test_extract_date_features(df_vartypes2):
     with pytest.raises(TypeError):
         transformer.fit("not_a_df")
     with pytest.raises(TypeError):
-        ExtractDateFeatures(variables=["Age"]).fit(df_vartypes2)
+        ExtractDateFeatures(variables=["Age"]).fit(df_datetime)
     with pytest.raises(TypeError):
-        ExtractDateFeatures(variables=vars_mix).fit(df_vartypes2)
+        ExtractDateFeatures(variables=vars_mix).fit(df_datetime)
     with pytest.raises(ValueError):
-        transformer.fit(df_vartypes2[vars_non_dt])
+        transformer.fit(df_datetime[vars_non_dt])
     with pytest.raises(ValueError):
         transformer.fit(dates_nan)
 
     # check exceptions upon calling transform method
-    transformer.fit(df_vartypes2)
+    transformer.fit(df_datetime)
     with pytest.raises(ValueError):
-        transformer.transform(df_vartypes2[vars_dt])
-    df_na = df_vartypes2.copy()
-    df_na.loc[0, "doa"] = np.nan
+        transformer.transform(df_datetime[vars_dt])
+    df_na = df_datetime.copy()
+    df_na.loc[0, "date_obj1"] = np.nan
     with pytest.raises(ValueError):
         transformer.transform(df_na)
     with pytest.raises(NotFittedError):
-        ExtractDateFeatures().transform(df_vartypes2)
+        ExtractDateFeatures().transform(df_datetime)
 
     # check default initialized transformer
     transformer = ExtractDateFeatures()
-    X = transformer.fit_transform(df_vartypes2)
-    assert transformer.variables_ == ["dob", "doa", "dof"]
-    assert transformer.n_features_in_ == 7
+    X = transformer.fit_transform(df_datetime)
+    assert transformer.variables_ == ["datetime_range", "date_obj1", "date_obj2"]
+    assert transformer.n_features_in_ == 5
     pd.testing.assert_frame_equal(
         X, df_transformed_full[vars_non_dt + [
             var + '_' + feat for var in vars_dt for feat in feat_names]]
     )
 
     # check transformer with specified variables to process
-    transformer = ExtractDateFeatures(variables="doa")
+    transformer = ExtractDateFeatures(variables="date_obj1")
     assert isinstance(transformer, ExtractDateFeatures)
-    assert transformer.variables == "doa"
+    assert transformer.variables == "date_obj1"
     assert transformer.features_to_extract is None
 
-    X = transformer.fit_transform(df_vartypes2)
-    assert transformer.variables_ == ["doa"]
+    X = transformer.fit_transform(df_datetime)
+    assert transformer.variables_ == ["date_obj1"]
     pd.testing.assert_frame_equal(
-        X, df_transformed_full[vars_non_dt + ["dob", "dof"] + [
-            "doa_" + feat for feat in feat_names]]
+        X, df_transformed_full[vars_non_dt + ["datetime_range", "date_obj2"] + [
+            "date_obj1_" + feat for feat in feat_names]]
     )
-    X = ExtractDateFeatures(variables=["dob", "dof"]).fit_transform(df_vartypes2)
+    X = ExtractDateFeatures(variables=["datetime_range", "date_obj2"])\
+        .fit_transform(df_datetime)
     pd.testing.assert_frame_equal(
-        X, df_transformed_full[vars_non_dt + ["doa"] + [
-            var + "_" + feat for var in ["dob", "dof"] for feat in feat_names]]
+        X, df_transformed_full[vars_non_dt + ["date_obj1"] + [
+            var + "_" + feat
+            for var in ["datetime_range", "date_obj2"]
+            for feat in feat_names]]
     )
-    X = ExtractDateFeatures(variables=["dof", "doa"]).fit_transform(df_vartypes2)
+    X = ExtractDateFeatures(variables=["date_obj2", "date_obj1"])\
+        .fit_transform(df_datetime)
     pd.testing.assert_frame_equal(
-        X, df_transformed_full[vars_non_dt + ["dob"] + [
-            var + "_" + feat for var in ["dof", "doa"] for feat in feat_names]]
+        X, df_transformed_full[vars_non_dt + ["datetime_range"] + [
+            var + "_" + feat
+            for var in ["date_obj2", "date_obj1"]
+            for feat in feat_names]]
     )
 
     # check transformer with specified date features to extract
@@ -151,39 +150,39 @@ def test_extract_date_features(df_vartypes2):
     assert transformer.variables is None
     assert transformer.features_to_extract == ["semester", "week_of_the_year"]
 
-    X = transformer.fit_transform(df_vartypes2)
-    assert transformer.variables_ == ["dob", "doa", "dof"]
+    X = transformer.fit_transform(df_datetime)
+    assert transformer.variables_ == ["datetime_range", "date_obj1", "date_obj2"]
     pd.testing.assert_frame_equal(
         X,
         df_transformed_full[
             vars_non_dt
             + [
-                "dob_semester",
-                "dob_woty",
-                "doa_semester",
-                "doa_woty",
-                "dof_semester",
-                "dof_woty",
+                "datetime_range_semester",
+                "datetime_range_woty",
+                "date_obj1_semester",
+                "date_obj1_woty",
+                "date_obj2_semester",
+                "date_obj2_woty",
             ]
         ],
     )
 
     # check transformer with option to drop datetime features turned off
     X = ExtractDateFeatures(
-        variables=["dob", "dof"],
+        variables=["datetime_range", "date_obj2"],
         features_to_extract=["week_of_the_year", "quarter"],
-        drop_datetime=False).fit_transform(df_vartypes2)
+        drop_datetime=False).fit_transform(df_datetime)
 
     pd.testing.assert_frame_equal(
         X,
         pd.concat(
             [df_transformed_full[column] for column in vars_non_dt]
-            + [pd.to_datetime(df_vartypes2["dob"]),
-               df_vartypes2["doa"],
-               pd.to_datetime(df_vartypes2["dof"])]
+            + [pd.to_datetime(df_datetime["datetime_range"]),
+               df_datetime["date_obj1"],
+               pd.to_datetime(df_datetime["date_obj2"])]
             + [df_transformed_full[feat] for feat in [
-                var + "_" + feat 
-                for var in ["dob", "dof"] 
+                var + "_" + feat
+                for var in ["datetime_range", "date_obj2"]
                 for feat in ["quarter", "woty"]]],
             axis=1,
         ),

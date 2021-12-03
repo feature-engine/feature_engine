@@ -171,7 +171,7 @@ def _find_or_check_datetime_variables(
 
     if isinstance(variables, (str, int)):
         variables = [variables]
-        
+
     vars_non_dt = [
         column
         for column in variables

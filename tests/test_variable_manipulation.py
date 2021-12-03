@@ -80,65 +80,67 @@ def test_find_or_check_categorical_variables(df_vartypes, df_numeric_columns):
     ]
 
 
-def test_find_or_check_datetime_variables(df_vartypes2):
-    vars_dt = ["dob"]
-    var_dt = "dob"
-    vars_nondt = ["Age", "Marks", "Name"]
-    vars_convertible_to_dt = ["dob", "doa", "dof"]
-    var_convertible_to_dt = "doa"
-    vars_mix = ["dob", "Age", "Marks"]
-    cat_date = pd.DataFrame({"doa_cat": df_vartypes2.doa.astype("category")})
-    tz_date = pd.DataFrame({"dofZ": df_vartypes2.dof.add("T12Z")})
+def test_find_or_check_datetime_variables(df_datetime):
+    vars_dt = ["datetime_range"]
+    var_dt = "datetime_range"
+    vars_nondt = ["Age", "Name"]
+    vars_convertible_to_dt = ["datetime_range", "date_obj1", "date_obj2"]
+    var_convertible_to_dt = "date_obj1"
+    vars_mix = ["datetime_range", "Age"]
+    cat_date = pd.DataFrame(
+        {"date_obj1_cat": df_datetime["date_obj1"].astype("category")})
+    tz_date = pd.DataFrame({"date_obj2Z": df_datetime["date_obj2"].add("T12Z")})
 
     # check errors raised
     with pytest.raises(ValueError):
         assert _find_or_check_datetime_variables(
-            df_vartypes2.loc[:, vars_nondt], variables=None)
+            df_datetime.loc[:, vars_nondt], variables=None)
     with pytest.raises(ValueError):
         assert _find_or_check_datetime_variables(
-            df_vartypes2[vars_nondt].join(cat_date), variables=None)
+            df_datetime[vars_nondt].join(cat_date), variables=None)
     with pytest.raises(TypeError):
-        assert _find_or_check_datetime_variables(df_vartypes2, variables="Age")
+        assert _find_or_check_datetime_variables(df_datetime, variables="Age")
     with pytest.raises(TypeError):
-        assert _find_or_check_datetime_variables(df_vartypes2, variables=vars_nondt)
+        assert _find_or_check_datetime_variables(df_datetime, variables=vars_nondt)
     with pytest.raises(TypeError):
-        assert _find_or_check_datetime_variables(df_vartypes2, variables=vars_mix)
+        assert _find_or_check_datetime_variables(df_datetime, variables=vars_mix)
     with pytest.raises(TypeError):
         assert _find_or_check_datetime_variables(
-            df_vartypes2[vars_convertible_to_dt].join(cat_date),
-            variables=vars_convertible_to_dt + ["doa_cat"])
+            df_datetime[vars_convertible_to_dt].join(cat_date),
+            variables=vars_convertible_to_dt + ["date_obj1_cat"])
 
     # when variables=None
     assert (
-        _find_or_check_datetime_variables(df_vartypes2, variables=None)
+        _find_or_check_datetime_variables(df_datetime, variables=None)
         == vars_convertible_to_dt
     )
     assert (
         _find_or_check_datetime_variables(
-            df_vartypes2[vars_convertible_to_dt].reindex(columns=["doa", "dob", "dof"]),
+            df_datetime[vars_convertible_to_dt].reindex(
+                columns=["date_obj1", "datetime_range", "date_obj2"]),
             variables=None,
         )
-        == ["doa", "dob", "dof"]
+        == ["date_obj1", "datetime_range", "date_obj2"]
     )
 
     # when variables are specified
-    assert _find_or_check_categorical_variables(df_vartypes2, var_dt) == [var_dt]
-    assert _find_or_check_datetime_variables(df_vartypes2, vars_dt) == vars_dt
+    assert _find_or_check_categorical_variables(df_datetime, var_dt) == [var_dt]
+    assert _find_or_check_datetime_variables(df_datetime, vars_dt) == vars_dt
     assert _find_or_check_datetime_variables(
-        df_vartypes2, variables=var_convertible_to_dt
+        df_datetime, variables=var_convertible_to_dt
     ) == [var_convertible_to_dt]
     assert (
         _find_or_check_datetime_variables(
-            df_vartypes2, variables=vars_convertible_to_dt
+            df_datetime, variables=vars_convertible_to_dt
         )
         == vars_convertible_to_dt
     )
     assert (
         _find_or_check_datetime_variables(
-            df_vartypes2.join(tz_date),
+            df_datetime.join(tz_date),
             variables=None,
         )
-        == vars_convertible_to_dt + ["dofZ"]
+        == vars_convertible_to_dt + ["date_obj2Z"]
     )
 
 
