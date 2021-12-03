@@ -47,7 +47,8 @@ class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
         self.variables_ = _find_or_check_datetime_variables(X, self.variables)
 
         # check if datetime variables contains na
-        _check_contains_na(X, self.variables_)
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_)
 
         return X
 
@@ -76,7 +77,8 @@ class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
         _check_input_matches_training_df(X, self.n_features_in_)
 
         # check if dataset contains na
-        _check_contains_na(X, self.variables_)
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_)
 
         X = pd.concat(
             [

@@ -93,19 +93,20 @@ def test_find_or_check_datetime_variables(df_vartypes2):
     # check errors raised
     with pytest.raises(ValueError):
         assert _find_or_check_datetime_variables(
-            df_vartypes2.loc[:, vars_nondt], variables=None
-        )
+            df_vartypes2.loc[:, vars_nondt], variables=None)
+    with pytest.raises(ValueError):
         assert _find_or_check_datetime_variables(
-            df_vartypes2[vars_nondt].join(cat_date), variables=vars_nondt + ["doa_cat"]
-        )
+            df_vartypes2[vars_nondt].join(cat_date), variables=None)
     with pytest.raises(TypeError):
         assert _find_or_check_datetime_variables(df_vartypes2, variables="Age")
+    with pytest.raises(TypeError):
         assert _find_or_check_datetime_variables(df_vartypes2, variables=vars_nondt)
+    with pytest.raises(TypeError):
         assert _find_or_check_datetime_variables(df_vartypes2, variables=vars_mix)
+    with pytest.raises(TypeError):
         assert _find_or_check_datetime_variables(
             df_vartypes2[vars_convertible_to_dt].join(cat_date),
-            variables=vars_convertible_to_dt + ["doa_cat"],
-        )
+            variables=vars_convertible_to_dt + ["doa_cat"])
 
     # when variables=None
     assert (

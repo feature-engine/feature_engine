@@ -43,13 +43,19 @@ def test_extract_date_features(df_vartypes2):
             }
         )
     )
+    dates_nan = pd.DataFrame({"dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan]})
 
     # check exceptions upon class instantiation
     with pytest.raises(ValueError):
         assert ExtractDateFeatures(features_to_extract="not_supported")
+    with pytest.raises(ValueError):
         assert ExtractDateFeatures(features_to_extract=["also_not_supp"])
+    with pytest.raises(ValueError):
         assert ExtractDateFeatures(features_to_extract=["year", 1874])
+    with pytest.raises(ValueError):
         assert ExtractDateFeatures(variables=3.519)
+    with pytest.raises(ValueError):
+        assert ExtractDateFeatures(missing_values="wrong_option")
     with pytest.raises(TypeError):
         assert ExtractDateFeatures(features_to_extract=14198)
 
@@ -64,6 +70,7 @@ def test_extract_date_features(df_vartypes2):
     assert transformer.features_to_extract == transformer.supported
 
     # check exceptions upon calling fit method
+    transformer = ExtractDateFeatures()
     with pytest.raises(TypeError):
         transformer.fit("not_a_df")
     with pytest.raises(TypeError):
@@ -73,9 +80,7 @@ def test_extract_date_features(df_vartypes2):
     with pytest.raises(ValueError):
         transformer.fit(df_vartypes2[vars_non_dt])
     with pytest.raises(ValueError):
-        transformer.fit(
-            pd.DataFrame({"dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan]})
-        )
+        transformer.fit(dates_nan)
 
     # check exceptions upon calling transform method
     transformer.fit(df_vartypes2)
@@ -167,4 +172,11 @@ def test_extract_date_features(df_vartypes2):
             + [df_transformed_full[y] for y in ["dob_year", "doa_year", "dof_year"]],
             axis=1,
         ),
+    )
+
+    # check transformer with allowed nan option
+    transformer = ExtractDateFeatures(missing_values="ignore")
+    pd.testing.assert_frame_equal(
+        transformer.fit_transform(dates_nan),
+        pd.DataFrame({"dates_na_year": [2010, np.nan, 1922, np.nan]})
     )

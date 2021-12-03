@@ -41,9 +41,6 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
         datetime features in the dataframe that will not be dropped
         upon calling the transform method
 
-    kwargs:
-        see pd.to_datetime keyword arguments other than "errors"
-
     Attributes
     ----------
     supported:
@@ -72,7 +69,7 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         features_to_extract: Union[str, List[str]] = "year",
         drop_datetime: bool = True,
-        **kwargs
+        missing_values: str = "raise"
     ) -> None:
 
         # get the list of supported features from a const variable somewhere?
@@ -103,9 +100,12 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
                 "Supported features are {}.".format(", ".join(self.supported))
             )
 
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError("missing_values takes only values 'raise' or 'ignore'")
+
         self.variables = _check_input_parameter_variables(variables)
         self.drop_datetime = drop_datetime
-        self.kwargs = kwargs
+        self.missing_values = missing_values
         self.features_to_extract = features_to_extract
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
