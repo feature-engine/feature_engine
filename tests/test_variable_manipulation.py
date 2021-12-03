@@ -43,7 +43,7 @@ def test_find_or_check_numerical_variables(df_vartypes, df_numeric_columns):
     vars_none = None
 
     assert _find_or_check_numerical_variables(df_vartypes, vars_num) == vars_num
-    assert _find_or_check_numerical_variables(df_vartypes, var_num) == [var_num]
+    assert _find_or_check_numerical_variables(df_vartypes, var_num) == ["Age"]
     assert _find_or_check_numerical_variables(df_vartypes, vars_none) == vars_num
 
     with pytest.raises(TypeError):
@@ -145,7 +145,7 @@ def test_find_or_check_datetime_variables(df_datetime):
 
 
 def test_find_all_variables(df_vartypes):
-    all_vars = list(df_vartypes.columns)
+    all_vars = ["Name", "City", "Age", "Marks", "dob"]
     user_vars = ["Name", "City"]
     non_existing_vars = ["Grades"]
 
