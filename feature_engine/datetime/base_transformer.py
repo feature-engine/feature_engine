@@ -82,7 +82,11 @@ class DateTimeBaseTransformer(BaseEstimator, TransformerMixin):
 
         X = pd.concat(
             [
-                pd.to_datetime(X[variable])
+                pd.to_datetime(
+                    X[variable],
+                    dayfirst=self.dayfirst,
+                    yearfirst=self.yearfirst
+                )
                 if variable in self.variables_
                 else X[variable]
                 for variable in X.columns

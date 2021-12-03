@@ -25,20 +25,31 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
     Parameters
     ----------
     variables: list, default=None
-        The list of variables to impute. If None, the imputer will find and
-        select all datetime variables, including those converted from
-        features of type object/category.
+        The list of variables to extract date features from.
+        If None, the imputer will find and select all datetime variables,
+        including those converted from object-like features.
 
-    features_to_extract: list, default = "year"
-        The list of date features to extract. See supported attribute
+    features_to_extract: list, default=None
+        The list of date features to extract. Defaults to extracting all of
+        the supported features.
+        Note: if you don't specify what features to extract and your dataset
+        contains many datetime variables, its feature space might explode!
 
-    drop_datetime: bool, default = "True"
+    drop_datetime: bool, default="True"
         Whether to drop datetime variables from the dataframe, including
         those that have been converted by the transformer.
         Note: if you pass a subset of features via the variables argument
         of the transformer and drop_datetime=True, there might be more
         datetime features in the dataframe that will not be dropped
-        upon calling the transform method
+        upon calling the transform method.
+
+    dayfirst: bool, default="False"
+        Specify a date parse order for object-like variables. If True,
+        parses the date with the day first.
+
+    yearfirst: bool, default="False"
+        Specify a date parse order for object-like variables. If True,
+        parses the date with the year first.
 
     Attributes
     ----------
@@ -61,6 +72,10 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
         Add the new date features specified in features_to_extract argument
     fit_transform:
         Fit to the data, then transform it.
+
+    See also
+    --------
+    pandas.to_datetime
     """
 
     def __init__(
@@ -68,6 +83,8 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         features_to_extract: List[str] = None,
         drop_datetime: bool = True,
+        dayfirst: bool = False,
+        yearfirst: bool = False,
         missing_values: str = "raise"
     ) -> None:
 
@@ -100,6 +117,8 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
         self.variables = _check_input_parameter_variables(variables)
         self.drop_datetime = drop_datetime
         self.missing_values = missing_values
+        self.dayfirst = dayfirst
+        self.yearfirst = yearfirst
         self.features_to_extract = features_to_extract
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):

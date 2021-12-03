@@ -196,3 +196,22 @@ def test_extract_date_features(df_datetime):
         transformer.fit_transform(dates_nan),
         pd.DataFrame({"dates_na_year": [2010, np.nan, 1922, np.nan]})
     )
+
+    # check transformer with different pd.to_datetime options
+    transformer = ExtractDateFeatures(
+        features_to_extract=["day_of_the_month"],
+        dayfirst=True
+    )
+    pd.testing.assert_frame_equal(
+        transformer.fit_transform(df_datetime[["date_obj2"]]),
+        pd.DataFrame({"date_obj2_dotm": [10, 9, 25, 17]})
+    )
+
+    transformer = ExtractDateFeatures(
+        features_to_extract=["year"],
+        yearfirst=True
+    )
+    pd.testing.assert_frame_equal(
+        transformer.fit_transform(df_datetime[["date_obj2"]]),
+        pd.DataFrame({"date_obj2_year": [2010, 2009, 1995, 2004]})
+    )
