@@ -67,7 +67,7 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        features_to_extract: Union[str, List[str]] = "year",
+        features_to_extract: List[str] = None,
         drop_datetime: bool = True,
         missing_values: str = "raise"
     ) -> None:
@@ -84,21 +84,16 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
             "is_weekend",
             "week_of_the_month",
         ]
-
-        if not isinstance(features_to_extract, (str, list)):
-            raise TypeError("features_to_extract must be either a str or a list of str")
-
-        if features_to_extract == "all":
-            features_to_extract = self.supported
-
-        elif isinstance(features_to_extract, str):
-            features_to_extract = [features_to_extract]
-
-        if any(feature not in self.supported for feature in features_to_extract):
-            raise ValueError(
-                "At least one of the requested feature is not supported. "
-                "Supported features are {}.".format(", ".join(self.supported))
-            )
+        
+        if features_to_extract:
+            if not isinstance(features_to_extract, list):
+                raise TypeError("features_to_extract must be a list of strings")
+            elif any(
+                feature not in self.supported for feature in features_to_extract):
+                raise ValueError(
+                    "At least one of the requested feature is not supported. "
+                    "Supported features are {}.".format(", ".join(self.supported))
+                )
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'")
@@ -111,57 +106,40 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         X = super().fit(X, y)
         self.n_features_in_ = X.shape[1]
+        if self.features_to_extract is None:
+            self.features_to_extract_ = self.supported
+        else:
+            self.features_to_extract_ = self.features_to_extract
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-
-        X = _is_dataframe(X)
         X = super().transform(X)
 
-        # maybe iterate the following with func handles or smth
-        # maybe rearrange final columns so that features extracted from
-        # the same variable are grouped together
-
-        if "month" in self.features_to_extract:
-            for var in self.variables_:
+        for var in self.variables_:
+            if "month" in self.features_to_extract_:
                 X[str(var) + "_month"] = X[var].dt.month
-
-        if "quarter" in self.features_to_extract:
-            for var in self.variables_:
+            if "quarter" in self.features_to_extract_:
                 X[str(var) + "_quarter"] = X[var].dt.quarter
-
-        if "semester" in self.features_to_extract:
-            for var in self.variables_:
-                X[str(var) + "_semester"] = np.where(X[var].dt.month <= 6, 1, 2).astype(
-                    np.int64
-                )
-
-        if "year" in self.features_to_extract:
-            for var in self.variables_:
+            if "semester" in self.features_to_extract_:
+                X[str(var) + "_semester"] = np.where(
+                    X[var].dt.month <= 6, 1, 2).astype(np.int64)
+            if "year" in self.features_to_extract_:
                 X[str(var) + "_year"] = X[var].dt.year
-
-        if "week_of_the_year" in self.features_to_extract:
-            for var in self.variables_:
-                X[str(var) + "_woty"] = X[var].dt.isocalendar().week.astype(np.int64)
-
-        if "day_of_the_week" in self.features_to_extract:
-            for var in self.variables_:
-                X[str(var) + "_dotw"] = X[var].dt.isocalendar().day.astype(np.int64)
-
-        if "day_of_the_month" in self.features_to_extract:
-            for var in self.variables_:
+            if "week_of_the_year" in self.features_to_extract_:
+                X[str(var) + "_woty"] = X[var].dt.isocalendar().\
+                    week.astype(np.int64)
+            if "day_of_the_week" in self.features_to_extract_:
+                X[str(var) + "_dotw"] = X[var].dt.isocalendar().\
+                    day.astype(np.int64)
+            if "day_of_the_month" in self.features_to_extract_:
                 X[str(var) + "_dotm"] = X[var].dt.day
-
-        # maybe add option to choose if friday should be considered a w.e. day?
-        if "is_weekend" in self.features_to_extract:
-            for var in self.variables_:
+            # maybe add option to choose if friday should be considered a w.e. day?
+            if "is_weekend" in self.features_to_extract_:
                 X[str(var) + "_is_weekend"] = np.where(
-                    X[var].dt.isocalendar().day <= 5, False, True
-                )
-
-        if "week_of_the_month" in self.features_to_extract:
-            for var in self.variables_:
-                X[str(var) + "_wotm"] = X[var].dt.day.apply(lambda d: (d - 1) // 7 + 1)
+                    X[var].dt.isocalendar().day <= 5, False, True)
+            if "week_of_the_month" in self.features_to_extract_:
+                X[str(var) + "_wotm"] = X[var].dt.day.apply(
+                    lambda d: (d - 1) // 7 + 1)
 
         if self.drop_datetime:
             X.drop(self.variables_, axis=1, inplace=True)
