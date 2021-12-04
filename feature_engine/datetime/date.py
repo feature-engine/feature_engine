@@ -158,7 +158,7 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
                 X[str(var) + "_woty"] = X[var].dt.isocalendar().\
                     week.astype(np.int64)
             if "day_of_the_week" in self.features_to_extract_:
-                X[str(var) + "_dotw"] = X[var].dt.day_of_week
+                X[str(var) + "_dotw"] = X[var].dt.dayofweek
             if "day_of_the_month" in self.features_to_extract_:
                 X[str(var) + "_dotm"] = X[var].dt.day
             if "day_of_the_year" in self.features_to_extract_:
@@ -166,7 +166,7 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
             # maybe add option to choose if friday should be considered a w.e. day?
             if "weekend" in self.features_to_extract_:
                 X[str(var) + "_weekend"] = np.where(
-                    X[var].dt.day_of_week <= 4, False, True)
+                    X[var].dt.dayofweek <= 4, False, True)
             if "month_start" in self.features_to_extract_:
                 X[str(var) + "_month_start"] = X[var].dt.is_month_start
             if "month_end" in self.features_to_extract_:
