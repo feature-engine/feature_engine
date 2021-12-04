@@ -94,12 +94,20 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
             "quarter",
             "semester",
             "year",
+            "week_of_the_month",
             "week_of_the_year",
             "day_of_the_week",
             "day_of_the_month",
             "day_of_the_year",
             "weekend",
-            "week_of_the_month",
+            "month_start",
+            "month_end",
+            "quarter_start",
+            "quarter_end",
+            "year_start",
+            "year_end",
+            "leap_year",
+            "days_in_month",
         ]
 
         if features_to_extract:
@@ -160,6 +168,22 @@ class ExtractDateFeatures(DateTimeBaseTransformer):
             if "weekend" in self.features_to_extract_:
                 X[str(var) + "_weekend"] = np.where(
                     X[var].dt.isocalendar().day <= 5, False, True)
+            if "month_start" in self.features_to_extract_:
+                X[str(var) + "_month_start"] = X[var].dt.is_month_start
+            if "month_end" in self.features_to_extract_:
+                X[str(var) + "_month_end"] = X[var].dt.is_month_end
+            if "quarter_start" in self.features_to_extract_:
+                X[str(var) + "_quarter_start"] = X[var].dt.is_quarter_start
+            if "quarter_end" in self.features_to_extract_:
+                X[str(var) + "_quarter_end"] = X[var].dt.is_quarter_end
+            if "year_start" in self.features_to_extract_:
+                X[str(var) + "_year_start"] = X[var].dt.is_year_start
+            if "year_end" in self.features_to_extract_:
+                X[str(var) + "_year_end"] = X[var].dt.is_year_end
+            if "leap_year" in self.features_to_extract_:
+                X[str(var) + "_leap_year"] = X[var].dt.is_leap_year
+            if "days_in_month" in self.features_to_extract_:
+                X[str(var) + "_days_in_month"] = X[var].dt.days_in_month
 
         if self.drop_datetime:
             X.drop(self.variables_, axis=1, inplace=True)

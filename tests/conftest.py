@@ -24,8 +24,8 @@ def df_datetime():
         "Name": ["tom", "nick", "krish", "jack"],
         "Age": [20, 21, 19, 18],
         "datetime_range": pd.date_range("2020-02-24", periods=4, freq="D"),
-        "date_obj1": ["01-Dec-2010", "24-Feb-1945", "14-Jun-2100", "17-May-1999"],
-        "date_obj2": ["10/11/12", "09/09/09", "05/25/95", "03/17/04"],
+        "date_obj1": ["01-Jan-2010", "24-Feb-1945", "14-Jun-2100", "17-May-1999"],
+        "date_obj2": ["10/11/12", "12/31/09", "06/30/95", "03/17/04"],
     }
 
     df = pd.DataFrame(data)

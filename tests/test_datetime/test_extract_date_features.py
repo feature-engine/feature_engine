@@ -13,6 +13,9 @@ def test_extract_date_features(df_datetime):
     feat_names = [
         "month", "quarter", "semester", "year", "wotm",
         "woty", "dotw", "dotm", "doty", "weekend",
+        "month_start", "month_end", "quarter_start",
+        "quarter_end", "year_start", "year_end",
+        "leap_year", "days_in_month",
     ]
     df_transformed_full = df_datetime.join(
         pd.DataFrame(
@@ -27,26 +30,50 @@ def test_extract_date_features(df_datetime):
                 "datetime_range_dotm": [24, 25, 26, 27],
                 "datetime_range_doty": [55, 56, 57, 58],
                 "datetime_range_weekend": [False, False, False, False],
-                "date_obj1_month": [12, 2, 6, 5],
-                "date_obj1_quarter": [4, 1, 2, 2],
-                "date_obj1_semester": [2, 1, 1, 1],
+                "datetime_range_month_start": [False, False, False, False],
+                "datetime_range_month_end": [False, False, False, False],
+                "datetime_range_quarter_start": [False, False, False, False],
+                "datetime_range_quarter_end": [False, False, False, False],
+                "datetime_range_year_start": [False, False, False, False],
+                "datetime_range_year_end": [False, False, False, False],
+                "datetime_range_leap_year": [True, True, True, True],
+                "datetime_range_days_in_month": [29, 29, 29, 29],
+                "date_obj1_month": [1, 2, 6, 5],
+                "date_obj1_quarter": [1, 1, 2, 2],
+                "date_obj1_semester": [1, 1, 1, 1],
                 "date_obj1_year": [2010, 1945, 2100, 1999],
                 "date_obj1_wotm": [1, 4, 2, 3],
-                "date_obj1_woty": [48, 8, 24, 20],
-                "date_obj1_dotw": [3, 6, 1, 1],
+                "date_obj1_woty": [53, 8, 24, 20],
+                "date_obj1_dotw": [5, 6, 1, 1],
                 "date_obj1_dotm": [1, 24, 14, 17],
-                "date_obj1_doty": [335, 55, 165, 137],
+                "date_obj1_doty": [1, 55, 165, 137],
                 "date_obj1_weekend": [False, True, False, False],
-                "date_obj2_month": [10, 9, 5, 3],
-                "date_obj2_quarter": [4, 3, 2, 1],
+                "date_obj1_month_start": [True, False, False, False],
+                "date_obj1_month_end": [False, False, False, False],
+                "date_obj1_quarter_start": [True, False, False, False],
+                "date_obj1_quarter_end": [False, False, False, False],
+                "date_obj1_year_start": [True, False, False, False],
+                "date_obj1_year_end": [False, False, False, False],
+                "date_obj1_leap_year": [False, False, False, False],
+                "date_obj1_days_in_month": [31, 28, 30, 31],
+                "date_obj2_month": [10, 12, 6, 3],
+                "date_obj2_quarter": [4, 4, 2, 1],
                 "date_obj2_semester": [2, 2, 1, 1],
                 "date_obj2_year": [2012, 2009, 1995, 2004],
-                "date_obj2_wotm": [2, 2, 4, 3],
-                "date_obj2_woty": [41, 37, 21, 12],
-                "date_obj2_dotw": [4, 3, 4, 3],
-                "date_obj2_dotm": [11, 9, 25, 17],
-                "date_obj2_doty": [285, 252, 145, 77],
+                "date_obj2_wotm": [2, 5, 5, 3],
+                "date_obj2_woty": [41, 53, 26, 12],
+                "date_obj2_dotw": [4, 4, 5, 3],
+                "date_obj2_dotm": [11, 31, 30, 17],
+                "date_obj2_doty": [285, 365, 181, 77],
                 "date_obj2_weekend": [False, False, False, False],
+                "date_obj2_month_start": [False, False, False, False],
+                "date_obj2_month_end": [False, True, True, False],
+                "date_obj2_quarter_start": [False, False, False, False],
+                "date_obj2_quarter_end": [False, True, True, False],
+                "date_obj2_year_start": [False, False, False, False],
+                "date_obj2_year_end": [False, True, False, False],
+                "date_obj2_leap_year": [True, False, False, True],
+                "date_obj2_days_in_month": [31, 31, 30, 31],
             }
         )
     )
@@ -204,7 +231,7 @@ def test_extract_date_features(df_datetime):
     )
     pd.testing.assert_frame_equal(
         transformer.fit_transform(df_datetime[["date_obj2"]]),
-        pd.DataFrame({"date_obj2_dotm": [10, 9, 25, 17]})
+        pd.DataFrame({"date_obj2_dotm": [10, 31, 30, 17]})
     )
 
     transformer = ExtractDateFeatures(
