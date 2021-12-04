@@ -11,8 +11,8 @@ def test_extract_date_features(df_datetime):
     vars_non_dt = ["Name", "Age"]
     vars_mix = ["Name", "Age", "date_obj1"]
     feat_names = [
-        "month", "quarter", "semester", "year", "woty", "dotw",
-        "dotm", "doty", "is_weekend", "wotm"
+        "month", "quarter", "semester", "year", "wotm",
+        "woty", "dotw", "dotm", "doty", "weekend",
     ]
     df_transformed_full = df_datetime.join(
         pd.DataFrame(
@@ -21,32 +21,32 @@ def test_extract_date_features(df_datetime):
                 "datetime_range_quarter": [1, 1, 1, 1],
                 "datetime_range_semester": [1, 1, 1, 1],
                 "datetime_range_year": [2020, 2020, 2020, 2020],
+                "datetime_range_wotm": [4, 4, 4, 4],
                 "datetime_range_woty": [9, 9, 9, 9],
                 "datetime_range_dotw": [1, 2, 3, 4],
                 "datetime_range_dotm": [24, 25, 26, 27],
                 "datetime_range_doty": [55, 56, 57, 58],
-                "datetime_range_is_weekend": [False, False, False, False],
-                "datetime_range_wotm": [4, 4, 4, 4],
+                "datetime_range_weekend": [False, False, False, False],
                 "date_obj1_month": [12, 2, 6, 5],
                 "date_obj1_quarter": [4, 1, 2, 2],
                 "date_obj1_semester": [2, 1, 1, 1],
                 "date_obj1_year": [2010, 1945, 2100, 1999],
+                "date_obj1_wotm": [1, 4, 2, 3],
                 "date_obj1_woty": [48, 8, 24, 20],
                 "date_obj1_dotw": [3, 6, 1, 1],
                 "date_obj1_dotm": [1, 24, 14, 17],
                 "date_obj1_doty": [335, 55, 165, 137],
-                "date_obj1_is_weekend": [False, True, False, False],
-                "date_obj1_wotm": [1, 4, 2, 3],
+                "date_obj1_weekend": [False, True, False, False],
                 "date_obj2_month": [10, 9, 5, 3],
                 "date_obj2_quarter": [4, 3, 2, 1],
                 "date_obj2_semester": [2, 2, 1, 1],
                 "date_obj2_year": [2012, 2009, 1995, 2004],
+                "date_obj2_wotm": [2, 2, 4, 3],
                 "date_obj2_woty": [41, 37, 21, 12],
                 "date_obj2_dotw": [4, 3, 4, 3],
                 "date_obj2_dotm": [11, 9, 25, 17],
                 "date_obj2_doty": [285, 252, 145, 77],
-                "date_obj2_is_weekend": [False, False, False, False],
-                "date_obj2_wotm": [2, 2, 4, 3],
+                "date_obj2_weekend": [False, False, False, False],
             }
         )
     )
