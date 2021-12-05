@@ -103,6 +103,7 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         math_operations: Optional[List[str]] = None,
         new_variables_names: Optional[List[str]] = None,
         missing_values: str = "raise",
+        drop_original: Optional[bool] = False,
     ) -> None:
 
         # check input types
@@ -158,10 +159,14 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
                     "combine."
                 )
 
+        if not isinstance(drop_original, bool):
+            raise TypeError("drop_original takes only boolean values True and False.")
+
         self.variables_to_combine = variables_to_combine
         self.new_variables_names = new_variables_names
         self.math_operations = math_operations
         self.missing_values = missing_values
+        self.drop_original = drop_original
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -250,6 +255,9 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         # combine mathematically
         for new_variable_name, operation in self.combination_dict_.items():
             X[new_variable_name] = X[self.variables_to_combine].agg(operation, axis=1)
+
+        if self.drop_original:
+            X.drop(columns=self.variables_, inplace=True)
 
         return X
 
