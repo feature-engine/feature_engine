@@ -61,6 +61,9 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         contain missing values. If 'ignore', missing data will be ignored when
         performing the calculations.
 
+    drop_original: bool, default=False
+        If True, the original variables to transform will be dropped from the dataframe.
+
     Attributes
     ----------
     combination_dict_:

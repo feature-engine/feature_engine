@@ -65,6 +65,8 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         transformer will return an error if the training or the datasets to transform
         contain missing values.
 
+    drop_original: bool, default=False
+        If True, the original variables to transform will be dropped from the dataframe.
 
     Attributes
     ----------
