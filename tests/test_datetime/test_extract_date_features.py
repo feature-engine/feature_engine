@@ -15,7 +15,8 @@ def test_extract_date_features(df_datetime):
         "woty", "dotw", "dotm", "doty", "weekend",
         "month_start", "month_end", "quarter_start",
         "quarter_end", "year_start", "year_end",
-        "leap_year", "days_in_month",
+        "leap_year", "days_in_month", "hour",
+        "minute", "second",
     ]
     today = pd.Timestamp.today()
     df_transformed_full = df_datetime.join(
@@ -39,6 +40,9 @@ def test_extract_date_features(df_datetime):
                 "datetime_range_year_end": [False, False, False, False],
                 "datetime_range_leap_year": [True, True, True, True],
                 "datetime_range_days_in_month": [29, 29, 29, 29],
+                "datetime_range_hour": [0] * 4,
+                "datetime_range_minute": [0] * 4,
+                "datetime_range_second": [0] * 4,
                 "date_obj1_month": [1, 2, 6, 5],
                 "date_obj1_quarter": [1, 1, 2, 2],
                 "date_obj1_semester": [1, 1, 1, 1],
@@ -57,6 +61,9 @@ def test_extract_date_features(df_datetime):
                 "date_obj1_year_end": [False, False, False, False],
                 "date_obj1_leap_year": [False, False, False, False],
                 "date_obj1_days_in_month": [31, 28, 30, 31],
+                "date_obj1_hour": [0] * 4,
+                "date_obj1_minute": [0] * 4,
+                "date_obj1_second": [0] * 4,
                 "date_obj2_month": [10, 12, 6, 3],
                 "date_obj2_quarter": [4, 4, 2, 1],
                 "date_obj2_semester": [2, 2, 1, 1],
@@ -75,6 +82,9 @@ def test_extract_date_features(df_datetime):
                 "date_obj2_year_end": [False, True, False, False],
                 "date_obj2_leap_year": [True, False, False, True],
                 "date_obj2_days_in_month": [31, 31, 30, 31],
+                "date_obj2_hour": [0] * 4,
+                "date_obj2_minute": [0] * 4,
+                "date_obj2_second": [0] * 4,
                 "time_obj_month": [today.month] * 4,
                 "time_obj_quarter": [today.quarter] * 4,
                 "time_obj_semester": [1 if today.month <=6 else 2] * 4,
@@ -93,6 +103,9 @@ def test_extract_date_features(df_datetime):
                 "time_obj_year_end": [today.is_year_end] * 4,
                 "time_obj_leap_year": [today.is_leap_year] * 4,
                 "time_obj_days_in_month": [today.days_in_month] * 4,
+                "time_obj_hour": [21, 9, 12, 3],
+                "time_obj_minute": [45, 15, 34, 27],
+                "time_obj_second": [23, 33, 59, 2],
             }
         )
     )

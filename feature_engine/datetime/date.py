@@ -117,6 +117,9 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
             "year_end",
             "leap_year",
             "days_in_month",
+            "hour",
+            "minute",
+            "second",
         ]
 
         if features_to_extract:
@@ -230,6 +233,12 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
                 X[str(var) + "_leap_year"] = X[var].dt.is_leap_year
             if "days_in_month" in self.features_to_extract_:
                 X[str(var) + "_days_in_month"] = X[var].dt.days_in_month
+            if "hour" in self.features_to_extract_:
+                X[str(var) + "_hour"] = X[var].dt.hour
+            if "minute" in self.features_to_extract_:
+                X[str(var) + "_minute"] = X[var].dt.minute
+            if "second" in self.features_to_extract_:
+                X[str(var) + "_second"] = X[var].dt.second
 
         if self.drop_datetime:
             X.drop(self.variables_, axis=1, inplace=True)
