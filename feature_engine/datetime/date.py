@@ -23,6 +23,8 @@ from feature_engine.datetime.datetime_constants import (
     FEATURES_FUNCTIONS,
 )
 
+from feature_engine.selection import DropConstantFeatures
+
 
 class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
     """
@@ -98,6 +100,7 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         features_to_extract: List[str] = None,
         drop_datetime: bool = True,
+        drop_constant: bool = True,
         dayfirst: bool = False,
         yearfirst: bool = False,
         missing_values: str = "raise",
@@ -117,6 +120,7 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
 
         self.variables = _check_input_parameter_variables(variables)
         self.drop_datetime = drop_datetime
+        self.drop_constant = drop_constant
         self.missing_values = missing_values
         self.dayfirst = dayfirst
         self.yearfirst = yearfirst
@@ -178,5 +182,14 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
 
         if self.drop_datetime:
             X.drop(self.variables_, axis=1, inplace=True)
+
+        if self.drop_constant:
+            X = DropConstantFeatures(
+                variables=[
+                    str(var) + FEATURES_SUFFIXES[feat]
+                        for feat in self.features_to_extract_
+                        for var in self.variables_
+                ]
+            ).fit_transform(X)
 
         return X
