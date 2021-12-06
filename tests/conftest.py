@@ -26,6 +26,7 @@ def df_datetime():
         "datetime_range": pd.date_range("2020-02-24", periods=4, freq="D"),
         "date_obj1": ["01-Jan-2010", "24-Feb-1945", "14-Jun-2100", "17-May-1999"],
         "date_obj2": ["10/11/12", "12/31/09", "06/30/95", "03/17/04"],
+        "time_obj": ["21:45", "09:15", "12:34", "03:27"],
     }
 
     df = pd.DataFrame(data)

@@ -84,7 +84,7 @@ def test_find_or_check_datetime_variables(df_datetime):
     vars_dt = ["datetime_range"]
     var_dt = "datetime_range"
     vars_nondt = ["Age", "Name"]
-    vars_convertible_to_dt = ["datetime_range", "date_obj1", "date_obj2"]
+    vars_convertible_to_dt = ["datetime_range", "date_obj1", "date_obj2", "time_obj"]
     var_convertible_to_dt = "date_obj1"
     vars_mix = ["datetime_range", "Age"]
     cat_date = pd.DataFrame(
