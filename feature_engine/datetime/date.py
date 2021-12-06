@@ -2,7 +2,6 @@
 
 from typing import List, Optional, Union
 
-import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -15,6 +14,13 @@ from feature_engine.dataframe_checks import (
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_datetime_variables,
+)
+
+from feature_engine.datetime.datetime_constants import (
+    FEATURES_DEFAULT,
+    FEATURES_SUPPORTED,
+    FEATURES_SUFFIXES,
+    FEATURES_FUNCTIONS,
 )
 
 
@@ -97,38 +103,13 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
         missing_values: str = "raise",
     ) -> None:
 
-        # get the list of supported features from a const variable somewhere?
-        self.supported = [
-            "month",
-            "quarter",
-            "semester",
-            "year",
-            "week_of_the_month",
-            "week_of_the_year",
-            "day_of_the_week",
-            "day_of_the_month",
-            "day_of_the_year",
-            "weekend",
-            "month_start",
-            "month_end",
-            "quarter_start",
-            "quarter_end",
-            "year_start",
-            "year_end",
-            "leap_year",
-            "days_in_month",
-            "hour",
-            "minute",
-            "second",
-        ]
-
         if features_to_extract:
             if not isinstance(features_to_extract, list):
                 raise TypeError("features_to_extract must be a list of strings")
-            elif any(feature not in self.supported for feature in features_to_extract):
+            elif any(feat not in FEATURES_SUPPORTED for feat in features_to_extract):
                 raise ValueError(
                     "At least one of the requested feature is not supported. "
-                    "Supported features are {}.".format(", ".join(self.supported))
+                    "Supported features are {}.".format(", ".join(FEATURES_SUPPORTED))
                 )
 
         if missing_values not in ["raise", "ignore"]:
@@ -155,15 +136,7 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
         self.n_features_in_ = X.shape[1]
 
         if self.features_to_extract is None:
-            self.features_to_extract_ = [
-                "month",
-                "year",
-                "day_of_the_week",
-                "day_of_the_month",
-                "hour",
-                "minute",
-                "second",
-            ]
+            self.features_to_extract_ = FEATURES_DEFAULT
         else:
             self.features_to_extract_ = self.features_to_extract
 
@@ -199,52 +172,9 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
 
         # create new features
         for var in self.variables_:
-            if "month" in self.features_to_extract_:
-                X[str(var) + "_month"] = X[var].dt.month
-            if "quarter" in self.features_to_extract_:
-                X[str(var) + "_quarter"] = X[var].dt.quarter
-            if "semester" in self.features_to_extract_:
-                X[str(var) + "_semester"] = np.where(X[var].dt.month <= 6, 1, 2).astype(
-                    np.int64
-                )
-            if "year" in self.features_to_extract_:
-                X[str(var) + "_year"] = X[var].dt.year
-            if "week_of_the_month" in self.features_to_extract_:
-                X[str(var) + "_wotm"] = X[var].dt.day.apply(lambda d: (d - 1) // 7 + 1)
-            if "week_of_the_year" in self.features_to_extract_:
-                X[str(var) + "_woty"] = X[var].dt.isocalendar().week.astype(np.int64)
-            if "day_of_the_week" in self.features_to_extract_:
-                X[str(var) + "_dotw"] = X[var].dt.dayofweek
-            if "day_of_the_month" in self.features_to_extract_:
-                X[str(var) + "_dotm"] = X[var].dt.day
-            if "day_of_the_year" in self.features_to_extract_:
-                X[str(var) + "_doty"] = X[var].dt.dayofyear
-            if "weekend" in self.features_to_extract_:
-                X[str(var) + "_weekend"] = np.where(
-                    X[var].dt.dayofweek <= 4, False, True
-                )
-            if "month_start" in self.features_to_extract_:
-                X[str(var) + "_month_start"] = X[var].dt.is_month_start
-            if "month_end" in self.features_to_extract_:
-                X[str(var) + "_month_end"] = X[var].dt.is_month_end
-            if "quarter_start" in self.features_to_extract_:
-                X[str(var) + "_quarter_start"] = X[var].dt.is_quarter_start
-            if "quarter_end" in self.features_to_extract_:
-                X[str(var) + "_quarter_end"] = X[var].dt.is_quarter_end
-            if "year_start" in self.features_to_extract_:
-                X[str(var) + "_year_start"] = X[var].dt.is_year_start
-            if "year_end" in self.features_to_extract_:
-                X[str(var) + "_year_end"] = X[var].dt.is_year_end
-            if "leap_year" in self.features_to_extract_:
-                X[str(var) + "_leap_year"] = X[var].dt.is_leap_year
-            if "days_in_month" in self.features_to_extract_:
-                X[str(var) + "_days_in_month"] = X[var].dt.days_in_month
-            if "hour" in self.features_to_extract_:
-                X[str(var) + "_hour"] = X[var].dt.hour
-            if "minute" in self.features_to_extract_:
-                X[str(var) + "_minute"] = X[var].dt.minute
-            if "second" in self.features_to_extract_:
-                X[str(var) + "_second"] = X[var].dt.second
+            for feat in self.features_to_extract_:
+                X[str(var) + FEATURES_SUFFIXES[feat]]\
+                    = FEATURES_FUNCTIONS[feat](X[var])
 
         if self.drop_datetime:
             X.drop(self.variables_, axis=1, inplace=True)

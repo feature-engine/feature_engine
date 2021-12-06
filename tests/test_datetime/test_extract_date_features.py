@@ -4,30 +4,17 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.datetime import ExtractDatetimeFeatures
+from feature_engine.datetime.datetime_constants import (
+    FEATURES_DEFAULT,
+    FEATURES_SUFFIXES,
+)
 
 
 def test_extract_date_features(df_datetime):
     vars_dt = ["datetime_range", "date_obj1", "date_obj2", "time_obj"]
     vars_non_dt = ["Name", "Age"]
     vars_mix = ["Name", "Age", "date_obj1"]
-    feats_default = [
-        "month",
-        "year",
-        "day_of_the_week",
-        "day_of_the_month",
-        "hour",
-        "minute",
-        "second",
-    ]
-    feat_names_default = [
-        "month",
-        "year",
-        "dotw",
-        "dotm",
-        "hour",
-        "minute",
-        "second",
-    ]
+    feat_names_default = [FEATURES_SUFFIXES[feat] for feat in FEATURES_DEFAULT]
     today = pd.Timestamp.today()
     df_transformed_full = df_datetime.join(
         pd.DataFrame(
@@ -145,7 +132,7 @@ def test_extract_date_features(df_datetime):
         "datetime_range",
     ]
     transformer.fit(df_datetime)
-    assert transformer.features_to_extract_ == feats_default
+    assert transformer.features_to_extract_ == FEATURES_DEFAULT
     transformer = ExtractDatetimeFeatures(features_to_extract=["year"])
     transformer.fit(df_datetime)
     assert transformer.features_to_extract_ == ["year"]
@@ -188,7 +175,7 @@ def test_extract_date_features(df_datetime):
         X,
         df_transformed_full[
             vars_non_dt
-            + [var + "_" + feat for var in vars_dt for feat in feat_names_default]
+            + [var + feat for var in vars_dt for feat in feat_names_default]
         ],
     )
 
@@ -205,7 +192,7 @@ def test_extract_date_features(df_datetime):
         df_transformed_full[
             vars_non_dt
             + ["datetime_range", "date_obj2", "time_obj"]
-            + ["date_obj1_" + feat for feat in feat_names_default]
+            + ["date_obj1" + feat for feat in feat_names_default]
         ],
     )
     X = ExtractDatetimeFeatures(
@@ -217,7 +204,7 @@ def test_extract_date_features(df_datetime):
             vars_non_dt
             + ["date_obj1", "time_obj"]
             + [
-                var + "_" + feat
+                var + feat
                 for var in ["datetime_range", "date_obj2"]
                 for feat in feat_names_default
             ]
@@ -232,7 +219,7 @@ def test_extract_date_features(df_datetime):
             vars_non_dt
             + ["datetime_range", "time_obj"]
             + [
-                var + "_" + feat
+                var + feat
                 for var in ["date_obj2", "date_obj1"]
                 for feat in feat_names_default
             ]
@@ -279,7 +266,7 @@ def test_extract_date_features(df_datetime):
                 for feat in [
                     var + "_" + feat
                     for var in ["datetime_range", "date_obj2"]
-                    for feat in ["quarter", "woty"]
+                    for feat in ["woty", "quarter"]
                 ]
             ],
             axis=1,
