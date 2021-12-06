@@ -100,7 +100,7 @@ def test_extract_date_features(df_datetime):
                 "time_obj_semester": [1 if today.month <= 6 else 2] * 4,
                 "time_obj_year": [today.year] * 4,
                 "time_obj_wotm": [(today.day - 1) // 7 + 1] * 4,
-                "time_obj_woty": [today.isocalendar().week] * 4,
+                "time_obj_woty": [today.week] * 4,
                 "time_obj_dotw": [today.dayofweek] * 4,
                 "time_obj_dotm": [today.day] * 4,
                 "time_obj_doty": [today.dayofyear] * 4,
