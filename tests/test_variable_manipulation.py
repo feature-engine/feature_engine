@@ -88,16 +88,19 @@ def test_find_or_check_datetime_variables(df_datetime):
     var_convertible_to_dt = "date_obj1"
     vars_mix = ["datetime_range", "Age"]
     cat_date = pd.DataFrame(
-        {"date_obj1_cat": df_datetime["date_obj1"].astype("category")})
+        {"date_obj1_cat": df_datetime["date_obj1"].astype("category")}
+    )
     tz_date = pd.DataFrame({"date_obj2Z": df_datetime["date_obj2"].add("T12Z")})
 
     # check errors raised
     with pytest.raises(ValueError):
         assert _find_or_check_datetime_variables(
-            df_datetime.loc[:, vars_nondt], variables=None)
+            df_datetime.loc[:, vars_nondt], variables=None
+        )
     with pytest.raises(ValueError):
         assert _find_or_check_datetime_variables(
-            df_datetime[vars_nondt].join(cat_date), variables=None)
+            df_datetime[vars_nondt].join(cat_date), variables=None
+        )
     with pytest.raises(TypeError):
         assert _find_or_check_datetime_variables(df_datetime, variables="Age")
     with pytest.raises(TypeError):
@@ -107,7 +110,8 @@ def test_find_or_check_datetime_variables(df_datetime):
     with pytest.raises(TypeError):
         assert _find_or_check_datetime_variables(
             df_datetime[vars_convertible_to_dt].join(cat_date),
-            variables=vars_convertible_to_dt + ["date_obj1_cat"])
+            variables=vars_convertible_to_dt + ["date_obj1_cat"],
+        )
 
     # when variables=None
     assert (
@@ -117,7 +121,8 @@ def test_find_or_check_datetime_variables(df_datetime):
     assert (
         _find_or_check_datetime_variables(
             df_datetime[vars_convertible_to_dt].reindex(
-                columns=["date_obj1", "datetime_range", "date_obj2"]),
+                columns=["date_obj1", "datetime_range", "date_obj2"]
+            ),
             variables=None,
         )
         == ["date_obj1", "datetime_range", "date_obj2"]
@@ -130,9 +135,7 @@ def test_find_or_check_datetime_variables(df_datetime):
         df_datetime, variables=var_convertible_to_dt
     ) == [var_convertible_to_dt]
     assert (
-        _find_or_check_datetime_variables(
-            df_datetime, variables=vars_convertible_to_dt
-        )
+        _find_or_check_datetime_variables(df_datetime, variables=vars_convertible_to_dt)
         == vars_convertible_to_dt
     )
     assert (

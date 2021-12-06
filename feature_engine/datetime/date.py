@@ -14,7 +14,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
-    _find_or_check_datetime_variables
+    _find_or_check_datetime_variables,
 )
 
 
@@ -94,7 +94,7 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
         drop_datetime: bool = True,
         dayfirst: bool = False,
         yearfirst: bool = False,
-        missing_values: str = "raise"
+        missing_values: str = "raise",
     ) -> None:
 
         # get the list of supported features from a const variable somewhere?
@@ -142,7 +142,7 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
         self.features_to_extract = features_to_extract
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
-         # check input dataframe
+        # check input dataframe
         X = _is_dataframe(X)
 
         # find or check for datetime variables
@@ -151,11 +151,19 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
         # check if datetime variables contains na
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
-        
+
         self.n_features_in_ = X.shape[1]
 
         if self.features_to_extract is None:
-            self.features_to_extract_ = self.supported
+            self.features_to_extract_ = [
+                "month",
+                "year",
+                "day_of_the_week",
+                "day_of_the_month",
+                "hour",
+                "minute",
+                "second",
+            ]
         else:
             self.features_to_extract_ = self.features_to_extract
 
@@ -180,9 +188,7 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
         X = pd.concat(
             [
                 pd.to_datetime(
-                    X[variable],
-                    dayfirst=self.dayfirst,
-                    yearfirst=self.yearfirst
+                    X[variable], dayfirst=self.dayfirst, yearfirst=self.yearfirst
                 )
                 if variable in self.variables_
                 else X[variable]
@@ -198,16 +204,15 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
             if "quarter" in self.features_to_extract_:
                 X[str(var) + "_quarter"] = X[var].dt.quarter
             if "semester" in self.features_to_extract_:
-                X[str(var) + "_semester"] = np.where(
-                    X[var].dt.month <= 6, 1, 2).astype(np.int64)
+                X[str(var) + "_semester"] = np.where(X[var].dt.month <= 6, 1, 2).astype(
+                    np.int64
+                )
             if "year" in self.features_to_extract_:
                 X[str(var) + "_year"] = X[var].dt.year
             if "week_of_the_month" in self.features_to_extract_:
-                X[str(var) + "_wotm"] = X[var].dt.day.apply(
-                    lambda d: (d - 1) // 7 + 1)
+                X[str(var) + "_wotm"] = X[var].dt.day.apply(lambda d: (d - 1) // 7 + 1)
             if "week_of_the_year" in self.features_to_extract_:
-                X[str(var) + "_woty"] = X[var].dt.isocalendar().\
-                    week.astype(np.int64)
+                X[str(var) + "_woty"] = X[var].dt.isocalendar().week.astype(np.int64)
             if "day_of_the_week" in self.features_to_extract_:
                 X[str(var) + "_dotw"] = X[var].dt.dayofweek
             if "day_of_the_month" in self.features_to_extract_:
@@ -216,7 +221,8 @@ class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
                 X[str(var) + "_doty"] = X[var].dt.dayofyear
             if "weekend" in self.features_to_extract_:
                 X[str(var) + "_weekend"] = np.where(
-                    X[var].dt.dayofweek <= 4, False, True)
+                    X[var].dt.dayofweek <= 4, False, True
+                )
             if "month_start" in self.features_to_extract_:
                 X[str(var) + "_month_start"] = X[var].dt.is_month_start
             if "month_end" in self.features_to_extract_:

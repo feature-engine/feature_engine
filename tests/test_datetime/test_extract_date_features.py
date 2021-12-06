@@ -10,13 +10,23 @@ def test_extract_date_features(df_datetime):
     vars_dt = ["datetime_range", "date_obj1", "date_obj2", "time_obj"]
     vars_non_dt = ["Name", "Age"]
     vars_mix = ["Name", "Age", "date_obj1"]
-    feat_names = [
-        "month", "quarter", "semester", "year", "wotm",
-        "woty", "dotw", "dotm", "doty", "weekend",
-        "month_start", "month_end", "quarter_start",
-        "quarter_end", "year_start", "year_end",
-        "leap_year", "days_in_month", "hour",
-        "minute", "second",
+    feats_default = [
+        "month",
+        "year",
+        "day_of_the_week",
+        "day_of_the_month",
+        "hour",
+        "minute",
+        "second",
+    ]
+    feat_names_default = [
+        "month",
+        "year",
+        "dotw",
+        "dotm",
+        "hour",
+        "minute",
+        "second",
     ]
     today = pd.Timestamp.today()
     df_transformed_full = df_datetime.join(
@@ -87,7 +97,7 @@ def test_extract_date_features(df_datetime):
                 "date_obj2_second": [0] * 4,
                 "time_obj_month": [today.month] * 4,
                 "time_obj_quarter": [today.quarter] * 4,
-                "time_obj_semester": [1 if today.month <=6 else 2] * 4,
+                "time_obj_semester": [1 if today.month <= 6 else 2] * 4,
                 "time_obj_year": [today.year] * 4,
                 "time_obj_wotm": [(today.day - 1) // 7 + 1] * 4,
                 "time_obj_woty": [today.isocalendar().week] * 4,
@@ -130,10 +140,12 @@ def test_extract_date_features(df_datetime):
     assert isinstance(transformer, ExtractDatetimeFeatures)
     assert transformer.variables is None
     assert ExtractDatetimeFeatures(variables="Age").variables == "Age"
-    assert ExtractDatetimeFeatures(variables=["Age", "datetime_range"])\
-        .variables == ["Age", "datetime_range"]
+    assert ExtractDatetimeFeatures(variables=["Age", "datetime_range"]).variables == [
+        "Age",
+        "datetime_range",
+    ]
     transformer.fit(df_datetime)
-    assert transformer.features_to_extract_ == transformer.supported
+    assert transformer.features_to_extract_ == feats_default
     transformer = ExtractDatetimeFeatures(features_to_extract=["year"])
     transformer.fit(df_datetime)
     assert transformer.features_to_extract_ == ["year"]
@@ -165,11 +177,19 @@ def test_extract_date_features(df_datetime):
     # check default initialized transformer
     transformer = ExtractDatetimeFeatures()
     X = transformer.fit_transform(df_datetime)
-    assert transformer.variables_ == ["datetime_range", "date_obj1", "date_obj2", "time_obj"]
+    assert transformer.variables_ == [
+        "datetime_range",
+        "date_obj1",
+        "date_obj2",
+        "time_obj",
+    ]
     assert transformer.n_features_in_ == 6
     pd.testing.assert_frame_equal(
-        X, df_transformed_full[vars_non_dt + [
-            var + '_' + feat for var in vars_dt for feat in feat_names]]
+        X,
+        df_transformed_full[
+            vars_non_dt
+            + [var + "_" + feat for var in vars_dt for feat in feat_names_default]
+        ],
     )
 
     # check transformer with specified variables to process
@@ -181,33 +201,42 @@ def test_extract_date_features(df_datetime):
     X = transformer.fit_transform(df_datetime)
     assert transformer.variables_ == ["date_obj1"]
     pd.testing.assert_frame_equal(
-        X, df_transformed_full[
-            vars_non_dt +
-            ["datetime_range", "date_obj2", "time_obj"] +
-            ["date_obj1_" + feat for feat in feat_names]
-        ]
+        X,
+        df_transformed_full[
+            vars_non_dt
+            + ["datetime_range", "date_obj2", "time_obj"]
+            + ["date_obj1_" + feat for feat in feat_names_default]
+        ],
     )
-    X = ExtractDatetimeFeatures(variables=["datetime_range", "date_obj2"])\
-        .fit_transform(df_datetime)
+    X = ExtractDatetimeFeatures(
+        variables=["datetime_range", "date_obj2"]
+    ).fit_transform(df_datetime)
     pd.testing.assert_frame_equal(
-        X, df_transformed_full[
-            vars_non_dt +
-            ["date_obj1", "time_obj"] +
-            [var + "_" + feat
-            for var in ["datetime_range", "date_obj2"]
-            for feat in feat_names]
-        ]
+        X,
+        df_transformed_full[
+            vars_non_dt
+            + ["date_obj1", "time_obj"]
+            + [
+                var + "_" + feat
+                for var in ["datetime_range", "date_obj2"]
+                for feat in feat_names_default
+            ]
+        ],
     )
-    X = ExtractDatetimeFeatures(variables=["date_obj2", "date_obj1"])\
-        .fit_transform(df_datetime)
+    X = ExtractDatetimeFeatures(variables=["date_obj2", "date_obj1"]).fit_transform(
+        df_datetime
+    )
     pd.testing.assert_frame_equal(
-        X, df_transformed_full[
-            vars_non_dt +
-            ["datetime_range", "time_obj"] +
-            [var + "_" + feat
-            for var in ["date_obj2", "date_obj1"]
-            for feat in feat_names]
-        ]
+        X,
+        df_transformed_full[
+            vars_non_dt
+            + ["datetime_range", "time_obj"]
+            + [
+                var + "_" + feat
+                for var in ["date_obj2", "date_obj1"]
+                for feat in feat_names_default
+            ]
+        ],
     )
 
     # check transformer with specified date features to extract
@@ -223,59 +252,60 @@ def test_extract_date_features(df_datetime):
     pd.testing.assert_frame_equal(
         X,
         df_transformed_full[
-            vars_non_dt +
-            [var + "_" + feat
-            for var in vars_dt
-            for feat in ["semester", "woty"]]
-        ]
+            vars_non_dt
+            + [var + "_" + feat for var in vars_dt for feat in ["semester", "woty"]]
+        ],
     )
 
     # check transformer with option to drop datetime features turned off
     X = ExtractDatetimeFeatures(
         variables=["datetime_range", "date_obj2"],
         features_to_extract=["week_of_the_year", "quarter"],
-        drop_datetime=False).fit_transform(df_datetime)
+        drop_datetime=False,
+    ).fit_transform(df_datetime)
 
     pd.testing.assert_frame_equal(
         X,
         pd.concat(
             [df_transformed_full[column] for column in vars_non_dt]
-            + [pd.to_datetime(df_datetime["datetime_range"]),
-               df_datetime["date_obj1"],
-               pd.to_datetime(df_datetime["date_obj2"]),
-               df_datetime["time_obj"]]
-            + [df_transformed_full[feat] for feat in [
-                var + "_" + feat
-                for var in ["datetime_range", "date_obj2"]
-                for feat in ["quarter", "woty"]]],
+            + [
+                pd.to_datetime(df_datetime["datetime_range"]),
+                df_datetime["date_obj1"],
+                pd.to_datetime(df_datetime["date_obj2"]),
+                df_datetime["time_obj"],
+            ]
+            + [
+                df_transformed_full[feat]
+                for feat in [
+                    var + "_" + feat
+                    for var in ["datetime_range", "date_obj2"]
+                    for feat in ["quarter", "woty"]
+                ]
+            ],
             axis=1,
         ),
     )
 
     # check transformer with allowed nan option
     transformer = ExtractDatetimeFeatures(
-        features_to_extract=["year"],
-        missing_values="ignore")
+        features_to_extract=["year"], missing_values="ignore"
+    )
     pd.testing.assert_frame_equal(
         transformer.fit_transform(dates_nan),
-        pd.DataFrame({"dates_na_year": [2010, np.nan, 1922, np.nan]})
+        pd.DataFrame({"dates_na_year": [2010, np.nan, 1922, np.nan]}),
     )
 
     # check transformer with different pd.to_datetime options
     transformer = ExtractDatetimeFeatures(
-        features_to_extract=["day_of_the_month"],
-        dayfirst=True
+        features_to_extract=["day_of_the_month"], dayfirst=True
     )
     pd.testing.assert_frame_equal(
         transformer.fit_transform(df_datetime[["date_obj2"]]),
-        pd.DataFrame({"date_obj2_dotm": [10, 31, 30, 17]})
+        pd.DataFrame({"date_obj2_dotm": [10, 31, 30, 17]}),
     )
 
-    transformer = ExtractDatetimeFeatures(
-        features_to_extract=["year"],
-        yearfirst=True
-    )
+    transformer = ExtractDatetimeFeatures(features_to_extract=["year"], yearfirst=True)
     pd.testing.assert_frame_equal(
         transformer.fit_transform(df_datetime[["date_obj2"]]),
-        pd.DataFrame({"date_obj2_year": [2010, 2009, 1995, 2004]})
+        pd.DataFrame({"date_obj2_year": [2010, 2009, 1995, 2004]}),
     )
