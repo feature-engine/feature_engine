@@ -71,12 +71,22 @@ def test_find_or_check_categorical_variables(df_vartypes, df_numeric_columns):
     assert _find_or_check_categorical_variables(df_vartypes, None) == vars_cat
 
     with pytest.raises(TypeError):
+        assert _find_or_check_categorical_variables(df_vartypes, "Marks")
+
+    with pytest.raises(TypeError):
+        assert _find_or_check_categorical_variables(df_numeric_columns, 3)
+
+    with pytest.raises(TypeError):
+        assert _find_or_check_categorical_variables(df_numeric_columns, [0, 2])
+
+    with pytest.raises(TypeError):
         assert _find_or_check_categorical_variables(df_vartypes, vars_mix)
 
     with pytest.raises(ValueError):
         assert _find_or_check_categorical_variables(df_vartypes[["Age", "Marks"]], None)
 
     assert _find_or_check_categorical_variables(df_numeric_columns, [0, 1]) == [0, 1]
+    assert _find_or_check_categorical_variables(df_numeric_columns, 0) == [0]
     assert _find_or_check_categorical_variables(df_numeric_columns, 1) == [1]
 
     df_vartypes["Age"] = df_vartypes["Age"].astype("category")
