@@ -45,6 +45,15 @@ def test_find_or_check_numerical_variables(df_vartypes, df_numeric_columns):
     assert _find_or_check_numerical_variables(df_vartypes, vars_none) == vars_num
 
     with pytest.raises(TypeError):
+        assert _find_or_check_numerical_variables(df_vartypes, "City")
+
+    with pytest.raises(TypeError):
+        assert _find_or_check_numerical_variables(df_numeric_columns, 0)
+
+    with pytest.raises(TypeError):
+        assert _find_or_check_numerical_variables(df_numeric_columns, [1, 3])
+
+    with pytest.raises(TypeError):
         assert _find_or_check_numerical_variables(df_vartypes, vars_mix)
 
     with pytest.raises(ValueError):

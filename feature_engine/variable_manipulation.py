@@ -62,7 +62,7 @@ def _find_or_check_numerical_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    elif not variables:
+    if variables is None or len(variables) == 0:
         # find numerical variables in dataset
         variables = list(X.select_dtypes(include="number").columns)
         if len(variables) == 0:
@@ -73,7 +73,7 @@ def _find_or_check_numerical_variables(
 
     else:
         # check that user entered variables are of type numerical
-        if any(X[variables].select_dtypes(exclude="number").columns):
+        if len(X[variables].select_dtypes(exclude="number").columns) > 0:
             raise TypeError(
                 "Some of the variables are not numerical. Please cast them as "
                 "numerical before using this transformer"
@@ -109,7 +109,7 @@ def _find_or_check_categorical_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    elif not variables:
+    if variables is None or len(variables) == 0:
         variables = list(X.select_dtypes(include=["O", "category"]).columns)
         if len(variables) == 0:
             raise ValueError(
@@ -118,7 +118,7 @@ def _find_or_check_categorical_variables(
             )
 
     else:
-        if any(X[variables].select_dtypes(exclude=["O", "category"]).columns):
+        if len(X[variables].select_dtypes(exclude=["O", "category"]).columns) > 0:
             raise TypeError(
                 "Some of the variables are not categorical. Please cast them as object "
                 "or category before calling this transformer"
