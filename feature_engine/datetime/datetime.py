@@ -111,7 +111,9 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
                     "features_to_extract must be a list of strings or 'all'. "
                     f"Got {features_to_extract} instead."
                 )
-            elif any(feat not in FEATURES_SUPPORTED for feat in features_to_extract):
+            elif isinstance(features_to_extract, list) and any(
+                feat not in FEATURES_SUPPORTED for feat in features_to_extract
+            ):
                 raise ValueError(
                     "Some of the requested features are not supported. "
                     "Supported features are {}.".format(", ".join(FEATURES_SUPPORTED))

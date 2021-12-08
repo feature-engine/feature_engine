@@ -236,6 +236,11 @@ def test_extract_date_features(df_datetime):
             ]
         ],
     )
+    # check transformer with features_extract = ALL
+    pd.testing.assert_frame_equal(
+        DatetimeFeatures(features_to_extract="all").fit_transform(df_datetime),
+        df_transformed_full.drop(vars_dt, axis=1)
+    )
 
     # check transformer with specified date features to extract
     transformer = DatetimeFeatures(
