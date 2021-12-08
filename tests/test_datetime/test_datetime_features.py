@@ -124,40 +124,6 @@ def test_extract_date_features(df_datetime):
             }
         )
     )
-    non_constant_features = [
-        "datetime_range_dotw",
-        "datetime_range_dotm",
-        "datetime_range_doty",
-        "date_obj1_month",
-        "date_obj1_quarter",
-        "date_obj1_year",
-        "date_obj1_wotm",
-        "date_obj1_woty",
-        "date_obj1_dotw",
-        "date_obj1_dotm",
-        "date_obj1_doty",
-        "date_obj1_weekend",
-        "date_obj1_month_start",
-        "date_obj1_quarter_start",
-        "date_obj1_days_in_month",
-        "date_obj2_month",
-        "date_obj2_quarter",
-        "date_obj2_semester",
-        "date_obj2_year",
-        "date_obj2_wotm",
-        "date_obj2_woty",
-        "date_obj2_dotw",
-        "date_obj2_dotm",
-        "date_obj2_doty",
-        "date_obj2_month_end",
-        "date_obj2_quarter_end",
-        "date_obj2_year_end",
-        "date_obj2_leap_year",
-        "date_obj2_days_in_month",
-        "time_obj_hour",
-        "time_obj_minute",
-        "time_obj_second",
-    ]
     dates_nan = pd.DataFrame({"dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan]})
 
     # check transformer attributes
@@ -217,7 +183,6 @@ def test_extract_date_features(df_datetime):
                 var + feat
                 for var in vars_dt
                 for feat in feat_names_default
-                if var + feat in non_constant_features
             ]
         ],
     )
@@ -238,7 +203,6 @@ def test_extract_date_features(df_datetime):
             + [
                 "date_obj1" + feat
                 for feat in feat_names_default
-                if "date_obj1" + feat in non_constant_features
             ]
         ],
     )
@@ -254,7 +218,6 @@ def test_extract_date_features(df_datetime):
                 var + feat
                 for var in ["datetime_range", "date_obj2"]
                 for feat in feat_names_default
-                if var + feat in non_constant_features
             ]
         ],
     )
@@ -270,7 +233,6 @@ def test_extract_date_features(df_datetime):
                 var + feat
                 for var in ["date_obj2", "date_obj1"]
                 for feat in feat_names_default
-                if var + feat in non_constant_features
             ]
         ],
     )
@@ -293,7 +255,6 @@ def test_extract_date_features(df_datetime):
                 var + "_" + feat
                 for var in vars_dt
                 for feat in ["semester", "woty"]
-                if var + "_" + feat in non_constant_features
             ]
         ],
     )
@@ -309,19 +270,13 @@ def test_extract_date_features(df_datetime):
         X,
         pd.concat(
             [df_transformed_full[column] for column in vars_non_dt]
-            + [
-                pd.to_datetime(df_datetime["datetime_range"]),
-                df_datetime["date_obj1"],
-                pd.to_datetime(df_datetime["date_obj2"]),
-                df_datetime["time_obj"],
-            ]
+            + [df_datetime[var] for var in vars_dt]
             + [
                 df_transformed_full[feat]
                 for feat in [
                     var + "_" + feat
                     for var in ["datetime_range", "date_obj2"]
                     for feat in ["woty", "quarter"]
-                    if var + "_" + feat in non_constant_features
                 ]
             ],
             axis=1,
@@ -350,16 +305,4 @@ def test_extract_date_features(df_datetime):
     pd.testing.assert_frame_equal(
         transformer.fit_transform(df_datetime[["date_obj2"]]),
         pd.DataFrame({"date_obj2_year": [2010, 2009, 1995, 2004]}),
-    )
-
-    # check transformer with drop_constant turned off
-    transformer = DatetimeFeatures(
-        features_to_extract=["day_of_the_week", "quarter_start", "hour"],
-        drop_constant=False,
-    )
-    pd.testing.assert_frame_equal(
-        transformer.fit_transform(df_datetime[["time_obj"]]),
-        df_transformed_full[
-            ["time_obj_dotw", "time_obj_quarter_start", "time_obj_hour"]
-        ],
     )

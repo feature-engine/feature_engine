@@ -103,7 +103,10 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
     ) -> None:
 
         if features_to_extract:
-            if not isinstance(features_to_extract, list) or features_to_extract != 'all':
+            if not (
+                isinstance(features_to_extract, list)
+                or features_to_extract == 'all'
+            ):
                 raise ValueError(
                     "features_to_extract must be a list of strings or 'all'. "
                     f"Got {features_to_extract} instead."

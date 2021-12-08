@@ -97,7 +97,7 @@ def test_find_or_check_datetime_variables(df_datetime):
         assert _find_or_check_datetime_variables(
             df_datetime.loc[:, vars_nondt], variables=None
         )
-        
+
     # errors when vars entered by user are not datetime
     with pytest.raises(TypeError):
         assert _find_or_check_datetime_variables(df_datetime, variables="Age")

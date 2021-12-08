@@ -5,7 +5,6 @@ from typing import Any, List, Union
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from pandas.api.types import is_numeric_dtype as is_numeric
-from pandas.api.types import is_object_dtype as is_object
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
