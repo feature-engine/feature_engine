@@ -41,7 +41,7 @@ The PSI is determined as:
 
     PSI = \sum_{i=1}^n (test_i - basis_i) . ln(\frac{test_i}{basis_i})
 
-where `basis` and `test` are the reference and "evaluation" datasets, respectively, and `i`
+where `basis` and `test` are the "reference" and "evaluation" datasets, respectively, and `i`
 refers to the interval.
 
 In other words, the PSI determines the difference in the proportion of observations in each
@@ -169,7 +169,7 @@ dataframe, and the remaining to the test set.
 If we pass a list of values in the `cut_off` all observations which values are included in the
 list will go into the reference data set, and the remaining to the test set. This split is useful
 if we have a categorical variable indicating a portfolio from which the observations have been collected.
-For example, if we set `split_col=portfolio` and `cut_off=['port_1`, 'port_2']`, all observations
+For example, if we set `split_col='portfolio'` and `cut_off=['port_1', 'port_2']`, all observations
 that belong to the first and second portfolio will be sent to the reference data set, and the observations
 from other portfolios to the test set.
 
@@ -192,7 +192,7 @@ Examples
 --------
 
 The versatility of the class lies in the different options to split the input dataframe
-in a reference or basis data set with the "expected" distributions and a test set, which
+in a reference or basis data set with the "expected" distributions, and a test set which
 will be evaluated against the reference.
 
 After splitting the data, :class:`DropHighPSIFeatures()` goes ahead and compares the
@@ -210,7 +210,7 @@ the option to select a variable in `split_col` or leave it to None. In the latte
 dataframe index will be used to split.
 
 Let's first create a toy dataframe containing 5 random variables and 1 variable
-with shifted population (*var_3* in this case).
+with a shift in its distribution (*var_3* in this case).
 
 .. code:: python
 
@@ -251,9 +251,9 @@ The value of `split_frac` tells :class:`DropHighPSIFeatures()` to split X accord
 60% - 40% ratio. The `fit()` method performs the split of the dataframe and the calculation
 of the PSI.
 
-Because we created random variables, these features to have low PSI values.
-However, we manually added a distribution shift for the *var_3* variable
-and therefore expect the PSI for that particular feature only to be above the
+Because we created random variables, these features will have low PSI values (i.e., no
+distribution change). However, we manually added a distribution shift in the variable *var_3*
+and therefore expect the PSI for this particular feature to be above the
 0.25 PSI threshold.
 
 The PSI values are accessible through the `psi_values_` attribute:
@@ -341,7 +341,7 @@ The difference in distribution between a non-shifted and
 a shifted distribution is clearly visible when plotting the cumulative density
 function.
 
-For the shifter variable:
+For the shifted variable:
 
 .. code:: python
 
@@ -542,19 +542,20 @@ The difference in distribution between a non-shifted and
 a shifted distribution is clearly visible when plotting the cumulative density
 function for each of the group.
 
-For the shifted variable:
+We can plot the cumulative distribution of the shifted variable like this:
 
 .. code:: python
 
     X['above_cut_off'] = X.time > pd.to_datetime(transformer.cut_off_)
     sns.ecdfplot(data=X, x='century', hue='above_cut_off')
 
-and a non-shifted variable (for example *var_2*)
+and the distribution of a non-shifted variable, for example *var_2*, like this:
 
 .. code:: python
 
     sns.ecdfplot(data=X, x='var_2', hue='above_cut_off')
 
+And below we can compare both plots:
 
 .. image:: ../../images/PSI_distribution_case3.png
 
@@ -570,10 +571,10 @@ a categorical variable. The cut-off can then be defined in two ways:
 
 In the first case, the column with the categorical variable is sorted alphabetically and
 the split is determined by the cut-off. We recommend being very careful when using a single
-label or category as cut-off, because alphabetical sorting in combination with a cut-off does
+category as cut-off, because alphabetical sorting in combination with a cut-off does
 not always provide obvious results. In other words, for this way of splitting the data to
 be meaningful, the alphabetical order of the categories in the reference variable should have
-to have an intrinsic meaning.
+an intrinsic meaning.
 
 A better purpose for splitting the data based on a categorical variable would be to pass a
 list with the values of the variable that want in the reference dataframe. A real life
@@ -581,6 +582,9 @@ example for this case is the computation of the PSI between different customer s
 like 'Retail', 'SME' or 'Wholesale'. In this case, if we indicate ['Retail'] as
 cut-off, observations for Retail will be sent to the basis data set, and those for 'SME'
 and 'Wholesale' will be added to the test set.
+
+Split passing a category value
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Let's show how to set up the transformer in this case. The example data set
 contains 6 randoms variables, a categorical variable with the labels of the
@@ -618,7 +622,7 @@ with values that come before C, alphabetically, will be allocated to the referen
     transformer = DropHighPSIFeatures(split_col='group', cut_off='C')
     X_transformed = transformer.fit_transform(X)
 
-The PSI values are provided in the psi_values method.
+The PSI values are provided in the `psi_values_` attribute.
 
 .. code:: python
 
@@ -633,7 +637,8 @@ The PSI values are provided in the psi_values method.
     'group_means': 6.601444547497699,
     'shifted_feature': 0.48428009522119164}
 
-These values are consistent with the features to drop provided by the object.
+From these values we see that the last 2 features should be removed. We can corroborate
+that in the `features_to_drop_` attribute:
 
 
 .. code:: python
@@ -644,7 +649,7 @@ These values are consistent with the features to drop provided by the object.
 
 And these columns are removed from the original dataframe by the transform
 method that, in the present case, has been applied through the fit_transform
-method.
+method a couple of block cells above.
 
 
 .. code:: python
@@ -654,12 +659,15 @@ method.
     Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'group'], dtype='object')
 
 
-The second option consists in passing a list of values to `cut_off`.
-Let's use the same data set and set up :class:`DropHighPSIFeatures()` so that
-it splits the rows of the X dataframe according to the list ['A', 'C', 'E']).
+Split passing a list of categories
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This means that the PSI's will be computed by comparing two dataframes: one
-containing only the values A, C and E for the *group* variable and one containing
+Instead of passing a category value, we can instead pass a list of values to the `cut_off`.
+Using the same data set let's set up the :class:`DropHighPSIFeatures()` to split
+the dataframe according to the list ['A', 'C', 'E'] for the categorical variable *group*.
+
+In this case, the PSI's will be computed by comparing two dataframes: the first one
+containing only the values A, C and E for the *group* variable and the second one containing
 only the values B and D.
 
 .. code:: python
@@ -682,7 +690,7 @@ only the values B and D.
     'shifted_features': 0.3683642099948127}
 
 
-Here again, the object will remove the *group_means* and the *shifted_feature* columns
+Here again, the object will remove the *group_means* and the *shifted_features* columns
 from the dataframe.
 Also it is worth noticing that the PSI values of the `trans` object differ from
 those of the `transform` object with exception of the *group_means* variable.
@@ -697,8 +705,7 @@ for that particular variable.
     ['group_means', 'shifted_features']
 
 And these columns are removed from the original dataframe by the transform
-method that, in the present case, has been applied through the fit_transform
-method.
+method that has been applied through the `fit_transform` method.
 
 
 .. code:: python
@@ -708,22 +715,24 @@ method.
     Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'group'], dtype='object')
 
 
-The difference in distribution between a non-shifted and
-a shifted distribution is clearly visible when plotting the cumulative density
-function for each of the group.
+In the following plots, we can compare the distribution of a feature with high PSI and
+one with low PSI, in the different categories of the categorical variable.
 
-For the shifted variable:
+With this code we plot the cumulative distribution of a feature which distribution is
+different among the different categories of the variable:
 
 .. code:: python
 
     sns.ecdfplot(data=X, x='shifted_feature', hue='group')
 
-and a non-shifted variable (for example *var_0*)
+With this code we plot the cumulative distribution of a feature which distribution is
+the same across the different categories of the categorical variable:
 
 .. code:: python
 
     sns.ecdfplot(data=X, x='var_0', hue='group')
 
+And below we can compare the plots of both features:
 
 .. image:: ../../images/PSI_distribution_case4.png
 
@@ -767,7 +776,8 @@ defined (the F group).
 
     # And an income variable that is category dependent.
     np.random.seed(0)
-    X['income'] = np.random.uniform(1000, 2000, 500).tolist() + np.random.uniform(1250, 2250, 500).tolist()
+    X['income'] = np.random.uniform(1000, 2000, 500).tolist() +
+                  np.random.uniform(1250, 2250, 500).tolist()
 
     # Shuffle the dataframe to make the dataset more real life case.
     X = X.sample(frac=1).reset_index(drop=True)
@@ -776,11 +786,11 @@ defined (the F group).
 The `group` column contains 500 observations in the (A, B, C, D, E)
 group and 500 in the (F) group.
 
-When we pass the `split_distinct=True` argument when initializing
-the `DropHighPSIFeatures` object, the two dataframe used to compute the
-PSI values contain the same number of unique values in the `group`
-column (i.e. one contains 300 rows associated to groups A, B and C
-while the other contains 700 rows associated to groups D, E and F).
+When we pass `split_distinct=True` when initializing
+the `DropHighPSIFeatures` object, the two dataframes used to compute the
+PSI will contain the same number of **unique** values in the `group`
+column (i.e., one dataframe will contain 300 rows associated to groups A, B and C
+while the other will contain 700 rows associated to groups D, E and F).
 
 .. code:: python
 
@@ -789,7 +799,7 @@ while the other contains 700 rows associated to groups D, E and F).
 
     transformer.psi_values_
 
-This yields the following PSI values.
+This yields the following PSI values:
 
 .. code:: python
 
@@ -801,6 +811,8 @@ This yields the following PSI values.
     'var_5': 0.04119583769297253,
     'income': 0.46191580731264914}
 
+And we can find the feature that will be dropped, income, here:
+
 .. code:: python
 
     transformer.features_to_drop_
@@ -808,9 +820,7 @@ This yields the following PSI values.
         ['income']
 
 
-And these columns are removed from the original dataframe by the transform
-method that, in the present case, has been applied through the fit_transform
-method.
+The former feature will be removed from the dataset when calling the `transform()` method.
 
 
 .. code:: python
