@@ -160,7 +160,7 @@ def _find_or_check_datetime_variables(
     elif isinstance(variables, (str, int)):
 
         if is_datetime(X[variables]) or (
-            is_object(X[variables])
+            not is_numeric(X[variables])
             and is_datetime(pd.to_datetime(X[variables], errors="ignore"))
         ):
             variables = [variables]
