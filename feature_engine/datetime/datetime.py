@@ -103,7 +103,10 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
     ) -> None:
 
         if features_to_extract:
-            if not isinstance(features_to_extract, list) or features_to_extract != 'all':
+            if (
+                not isinstance(features_to_extract, list)
+                or features_to_extract != "all"
+            ):
                 raise ValueError(
                     "features_to_extract must be a list of strings or 'all'. "
                     f"Got {features_to_extract} instead."
@@ -183,8 +186,9 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         # create new features
         for var in self.variables_:
             for feat in self.features_to_extract_:
-                X[str(var) + FEATURES_SUFFIXES[feat]]\
-                    = FEATURES_FUNCTIONS[feat](datetime_df[var])
+                X[str(var) + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[feat](
+                    datetime_df[var]
+                )
 
         if self.drop_original:
             X.drop(self.variables_, axis=1, inplace=True)
