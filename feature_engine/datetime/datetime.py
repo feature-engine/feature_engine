@@ -26,7 +26,7 @@ from feature_engine.datetime.datetime_constants import (
 from feature_engine.selection import DropConstantFeatures
 
 
-class ExtractDatetimeFeatures(BaseEstimator, TransformerMixin):
+class DatetimeFeatures(BaseEstimator, TransformerMixin):
     """
     ExtractDatetimeFeatures extract various date and time features from
     datetime variables present in the dataset, adding new columns
