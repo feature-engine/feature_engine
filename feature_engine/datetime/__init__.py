@@ -1,5 +1,5 @@
-"The module datetime does smth about dates and times"
+"The module datetime computes features from dates and times."
 
-from .date import ExtractDatetimeFeatures
+from .datetime import DatetimeFeatures
 
-__all__ = ["ExtractDatetimeFeatures"]
+__all__ = ["DatetimeFeatures"]

@@ -3,11 +3,29 @@ import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.datetime import ExtractDatetimeFeatures
+from feature_engine.datetime import DatetimeFeatures
 from feature_engine.datetime.datetime_constants import (
     FEATURES_DEFAULT,
     FEATURES_SUFFIXES,
 )
+
+
+def test_raises_error_when_wrong_input_params():
+    # check exceptions upon class instantiation
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(features_to_extract=["not_supported"])
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(features_to_extract=["year", 1874])
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(features_to_extract="year")
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(features_to_extract=14198)
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(variables=3.519)
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(missing_values="wrong_option")
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(drop_original="wrong_option")
 
 
 def test_extract_date_features(df_datetime):
@@ -142,43 +160,29 @@ def test_extract_date_features(df_datetime):
     ]
     dates_nan = pd.DataFrame({"dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan]})
 
-    # check exceptions upon class instantiation
-    with pytest.raises(ValueError):
-        assert ExtractDatetimeFeatures(features_to_extract=["not_supported"])
-    with pytest.raises(ValueError):
-        assert ExtractDatetimeFeatures(features_to_extract=["year", 1874])
-    with pytest.raises(ValueError):
-        assert ExtractDatetimeFeatures(variables=3.519)
-    with pytest.raises(ValueError):
-        assert ExtractDatetimeFeatures(missing_values="wrong_option")
-    with pytest.raises(TypeError):
-        assert ExtractDatetimeFeatures(features_to_extract="year")
-    with pytest.raises(TypeError):
-        assert ExtractDatetimeFeatures(features_to_extract=14198)
-
     # check transformer attributes
-    transformer = ExtractDatetimeFeatures()
-    assert isinstance(transformer, ExtractDatetimeFeatures)
+    transformer = DatetimeFeatures()
+    assert isinstance(transformer, DatetimeFeatures)
     assert transformer.variables is None
-    assert ExtractDatetimeFeatures(variables="Age").variables == "Age"
-    assert ExtractDatetimeFeatures(variables=["Age", "datetime_range"]).variables == [
+    assert DatetimeFeatures(variables="Age").variables == "Age"
+    assert DatetimeFeatures(variables=["Age", "datetime_range"]).variables == [
         "Age",
         "datetime_range",
     ]
     transformer.fit(df_datetime)
     assert transformer.features_to_extract_ == FEATURES_DEFAULT
-    transformer = ExtractDatetimeFeatures(features_to_extract=["year"])
+    transformer = DatetimeFeatures(features_to_extract=["year"])
     transformer.fit(df_datetime)
     assert transformer.features_to_extract_ == ["year"]
 
     # check exceptions upon calling fit method
-    transformer = ExtractDatetimeFeatures()
+    transformer = DatetimeFeatures()
     with pytest.raises(TypeError):
         transformer.fit("not_a_df")
     with pytest.raises(TypeError):
-        ExtractDatetimeFeatures(variables=["Age"]).fit(df_datetime)
+        DatetimeFeatures(variables=["Age"]).fit(df_datetime)
     with pytest.raises(TypeError):
-        ExtractDatetimeFeatures(variables=vars_mix).fit(df_datetime)
+        DatetimeFeatures(variables=vars_mix).fit(df_datetime)
     with pytest.raises(ValueError):
         transformer.fit(df_datetime[vars_non_dt])
     with pytest.raises(ValueError):
@@ -193,10 +197,10 @@ def test_extract_date_features(df_datetime):
     with pytest.raises(ValueError):
         transformer.transform(df_na)
     with pytest.raises(NotFittedError):
-        ExtractDatetimeFeatures().transform(df_datetime)
+        DatetimeFeatures().transform(df_datetime)
 
     # check default initialized transformer
-    transformer = ExtractDatetimeFeatures()
+    transformer = DatetimeFeatures()
     X = transformer.fit_transform(df_datetime)
     assert transformer.variables_ == [
         "datetime_range",
@@ -219,8 +223,8 @@ def test_extract_date_features(df_datetime):
     )
 
     # check transformer with specified variables to process
-    transformer = ExtractDatetimeFeatures(variables="date_obj1")
-    assert isinstance(transformer, ExtractDatetimeFeatures)
+    transformer = DatetimeFeatures(variables="date_obj1")
+    assert isinstance(transformer, DatetimeFeatures)
     assert transformer.variables == "date_obj1"
     assert transformer.features_to_extract is None
 
@@ -238,7 +242,7 @@ def test_extract_date_features(df_datetime):
             ]
         ],
     )
-    X = ExtractDatetimeFeatures(
+    X = DatetimeFeatures(
         variables=["datetime_range", "date_obj2"]
     ).fit_transform(df_datetime)
     pd.testing.assert_frame_equal(
@@ -254,7 +258,7 @@ def test_extract_date_features(df_datetime):
             ]
         ],
     )
-    X = ExtractDatetimeFeatures(variables=["date_obj2", "date_obj1"]).fit_transform(
+    X = DatetimeFeatures(variables=["date_obj2", "date_obj1"]).fit_transform(
         df_datetime
     )
     pd.testing.assert_frame_equal(
@@ -272,10 +276,10 @@ def test_extract_date_features(df_datetime):
     )
 
     # check transformer with specified date features to extract
-    transformer = ExtractDatetimeFeatures(
+    transformer = DatetimeFeatures(
         features_to_extract=["semester", "week_of_the_year"]
     )
-    assert isinstance(transformer, ExtractDatetimeFeatures)
+    assert isinstance(transformer, DatetimeFeatures)
     assert transformer.variables is None
     assert transformer.features_to_extract == ["semester", "week_of_the_year"]
 
@@ -295,10 +299,10 @@ def test_extract_date_features(df_datetime):
     )
 
     # check transformer with option to drop datetime features turned off
-    X = ExtractDatetimeFeatures(
+    X = DatetimeFeatures(
         variables=["datetime_range", "date_obj2"],
         features_to_extract=["week_of_the_year", "quarter"],
-        drop_datetime=False,
+        drop_original=False,
     ).fit_transform(df_datetime)
 
     pd.testing.assert_frame_equal(
@@ -325,7 +329,7 @@ def test_extract_date_features(df_datetime):
     )
 
     # check transformer with allowed nan option
-    transformer = ExtractDatetimeFeatures(
+    transformer = DatetimeFeatures(
         features_to_extract=["year"], missing_values="ignore"
     )
     pd.testing.assert_frame_equal(
@@ -334,7 +338,7 @@ def test_extract_date_features(df_datetime):
     )
 
     # check transformer with different pd.to_datetime options
-    transformer = ExtractDatetimeFeatures(
+    transformer = DatetimeFeatures(
         features_to_extract=["day_of_the_month"], dayfirst=True
     )
     pd.testing.assert_frame_equal(
@@ -342,14 +346,14 @@ def test_extract_date_features(df_datetime):
         pd.DataFrame({"date_obj2_dotm": [10, 31, 30, 17]}),
     )
 
-    transformer = ExtractDatetimeFeatures(features_to_extract=["year"], yearfirst=True)
+    transformer = DatetimeFeatures(features_to_extract=["year"], yearfirst=True)
     pd.testing.assert_frame_equal(
         transformer.fit_transform(df_datetime[["date_obj2"]]),
         pd.DataFrame({"date_obj2_year": [2010, 2009, 1995, 2004]}),
     )
 
     # check transformer with drop_constant turned off
-    transformer = ExtractDatetimeFeatures(
+    transformer = DatetimeFeatures(
         features_to_extract=["day_of_the_week", "quarter_start", "hour"],
         drop_constant=False,
     )
