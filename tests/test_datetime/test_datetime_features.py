@@ -10,6 +10,24 @@ from feature_engine.datetime.datetime_constants import (
 )
 
 
+def test_raises_error_when_wrong_input_params():
+    # check exceptions upon class instantiation
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(features_to_extract=["not_supported"])
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(features_to_extract=["year", 1874])
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(features_to_extract="year")
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(features_to_extract=14198)
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(variables=3.519)
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(missing_values="wrong_option")
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(drop_original="wrong_option")
+
+
 def test_extract_date_features(df_datetime):
     vars_dt = ["datetime_range", "date_obj1", "date_obj2", "time_obj"]
     vars_non_dt = ["Name", "Age"]
@@ -141,20 +159,6 @@ def test_extract_date_features(df_datetime):
         "time_obj_second",
     ]
     dates_nan = pd.DataFrame({"dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan]})
-
-    # check exceptions upon class instantiation
-    with pytest.raises(ValueError):
-        assert DatetimeFeatures(features_to_extract=["not_supported"])
-    with pytest.raises(ValueError):
-        assert DatetimeFeatures(features_to_extract=["year", 1874])
-    with pytest.raises(ValueError):
-        assert DatetimeFeatures(variables=3.519)
-    with pytest.raises(ValueError):
-        assert DatetimeFeatures(missing_values="wrong_option")
-    with pytest.raises(TypeError):
-        assert DatetimeFeatures(features_to_extract="year")
-    with pytest.raises(TypeError):
-        assert DatetimeFeatures(features_to_extract=14198)
 
     # check transformer attributes
     transformer = DatetimeFeatures()
@@ -298,7 +302,7 @@ def test_extract_date_features(df_datetime):
     X = DatetimeFeatures(
         variables=["datetime_range", "date_obj2"],
         features_to_extract=["week_of_the_year", "quarter"],
-        drop_datetime=False,
+        drop_original=False,
     ).fit_transform(df_datetime)
 
     pd.testing.assert_frame_equal(
