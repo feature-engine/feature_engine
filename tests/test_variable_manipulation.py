@@ -57,6 +57,9 @@ def test_find_or_check_numerical_variables(df_vartypes, df_numeric_columns):
         assert _find_or_check_numerical_variables(df_vartypes, vars_mix)
 
     with pytest.raises(ValueError):
+        assert _find_or_check_numerical_variables(df_vartypes, variables=[])
+
+    with pytest.raises(ValueError):
         assert _find_or_check_numerical_variables(df_vartypes[["Name", "City"]], None)
 
     assert _find_or_check_numerical_variables(df_numeric_columns, [2, 3]) == [2, 3]
@@ -81,6 +84,9 @@ def test_find_or_check_categorical_variables(df_vartypes, df_numeric_columns):
 
     with pytest.raises(TypeError):
         assert _find_or_check_categorical_variables(df_vartypes, vars_mix)
+
+    with pytest.raises(ValueError):
+        assert _find_or_check_categorical_variables(df_vartypes, variables=[])
 
     with pytest.raises(ValueError):
         assert _find_or_check_categorical_variables(df_vartypes[["Age", "Marks"]], None)

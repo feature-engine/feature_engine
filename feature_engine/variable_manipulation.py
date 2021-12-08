@@ -4,6 +4,10 @@ from typing import Any, List, Union
 
 import pandas as pd
 
+from pandas.api.types import is_numeric_dtype as is_numeric
+from pandas.api.types import is_categorical_dtype as is_categorical
+from pandas.api.types import is_object_dtype as is_object
+
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
@@ -59,10 +63,7 @@ def _find_or_check_numerical_variables(
     variables: List of numerical variables
     """
 
-    if isinstance(variables, (str, int)):
-        variables = [variables]
-
-    if variables is None or len(variables) == 0:
+    if variables is None:
         # find numerical variables in dataset
         variables = list(X.select_dtypes(include="number").columns)
         if len(variables) == 0:
@@ -71,9 +72,18 @@ def _find_or_check_numerical_variables(
                 "format with pandas dtypes"
             )
 
+    elif isinstance(variables, (str, int)):
+        if is_numeric(X[variables]):
+            variables = [variables]
+        else:
+            raise TypeError("The variable entered is not numeric.")
+
     else:
+        if len(variables) == 0:
+            raise ValueError("The indicated list of variables is empty.")
+
         # check that user entered variables are of type numerical
-        if len(X[variables].select_dtypes(exclude="number").columns) > 0:
+        elif len(X[variables].select_dtypes(exclude="number").columns) > 0:
             raise TypeError(
                 "Some of the variables are not numerical. Please cast them as "
                 "numerical before using this transformer"
@@ -106,22 +116,30 @@ def _find_or_check_categorical_variables(
     variables : List of categorical variables
     """
 
-    if isinstance(variables, (str, int)):
-        variables = [variables]
-
-    if variables is None or len(variables) == 0:
+    if variables is None:
+        # find numerical variables in dataset
         variables = list(X.select_dtypes(include=["O", "category"]).columns)
         if len(variables) == 0:
             raise ValueError(
-                "No categorical variables in this dataframe. Please check the "
-                "variables format with pandas dtypes"
+                "No categorical variables in this dataframe. Please check variable"
+                "format with pandas dtypes"
             )
 
+    elif isinstance(variables, (str, int)):
+        if is_categorical(X[variables]) or is_object(X[variables]):
+            variables = [variables]
+        else:
+            raise TypeError("The variable entered is not categorical.")
+
     else:
-        if len(X[variables].select_dtypes(exclude=["O", "category"]).columns) > 0:
+        if len(variables) == 0:
+            raise ValueError("The indicated list of variables is empty.")
+
+        # check that user entered variables are of type numerical
+        elif len(X[variables].select_dtypes(exclude=["O", "category"]).columns) > 0:
             raise TypeError(
-                "Some of the variables are not categorical. Please cast them as object "
-                "or category before calling this transformer"
+                "Some of the variables are not categorical. Please cast them as "
+                "categorical before using this transformer"
             )
 
     return variables
