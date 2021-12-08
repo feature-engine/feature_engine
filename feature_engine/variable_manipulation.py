@@ -146,7 +146,7 @@ def _find_or_check_datetime_variables(
     variables : List of datetime variables.
     """
 
-    if not variables:
+    if variables is None:
         variables = [
             column
             for column in X.select_dtypes(exclude="number").columns
@@ -168,6 +168,9 @@ def _find_or_check_datetime_variables(
             raise TypeError("The variable entered is not datetime.")
 
     else:
+        if len(variables) == 0:
+            raise ValueError("The indicated list of variables is empty.")
+
         # check that the variables entered by the user are datetime
         vars_non_dt = [
             column

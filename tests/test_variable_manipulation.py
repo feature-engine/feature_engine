@@ -106,6 +106,10 @@ def test_find_or_check_datetime_variables(df_datetime):
     with pytest.raises(TypeError):
         assert _find_or_check_datetime_variables(df_datetime, variables=vars_mix)
 
+    # error when user enters empty list
+    with pytest.raises(ValueError):
+        assert _find_or_check_datetime_variables(df_datetime, variables=[])
+
     # when variables=None
     assert (
         _find_or_check_datetime_variables(df_datetime, variables=None)
