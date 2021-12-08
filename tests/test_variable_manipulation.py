@@ -143,13 +143,16 @@ def test_find_or_check_datetime_variables(df_datetime):
         == vars_convertible_to_dt + ["date_obj2Z"]
     )
     # vars cast as categorical
-    assert _find_or_check_datetime_variables(
-            cat_date, variables="date_obj1_cat"
-        ) == ["date_obj1_cat"]
-    assert _find_or_check_datetime_variables(
+    assert _find_or_check_datetime_variables(cat_date, variables="date_obj1_cat") == [
+        "date_obj1_cat"
+    ]
+    assert (
+        _find_or_check_datetime_variables(
             df_datetime[vars_convertible_to_dt].join(cat_date),
             variables=vars_convertible_to_dt + ["date_obj1_cat"],
-        ) == vars_convertible_to_dt + ["date_obj1_cat"]
+        )
+        == vars_convertible_to_dt + ["date_obj1_cat"]
+    )
 
 
 def test_find_all_variables(df_vartypes):

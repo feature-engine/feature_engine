@@ -11,16 +11,15 @@ from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
     _is_dataframe,
 )
+from feature_engine.datetime.datetime_constants import (
+    FEATURES_DEFAULT,
+    FEATURES_FUNCTIONS,
+    FEATURES_SUFFIXES,
+    FEATURES_SUPPORTED,
+)
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_datetime_variables,
-)
-
-from feature_engine.datetime.datetime_constants import (
-    FEATURES_DEFAULT,
-    FEATURES_SUPPORTED,
-    FEATURES_SUFFIXES,
-    FEATURES_FUNCTIONS,
 )
 
 
@@ -104,8 +103,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
         if features_to_extract:
             if not (
-                isinstance(features_to_extract, list)
-                or features_to_extract == 'all'
+                isinstance(features_to_extract, list) or features_to_extract == "all"
             ):
                 raise ValueError(
                     "features_to_extract must be a list of strings or 'all'. "
