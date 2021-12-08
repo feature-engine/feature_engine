@@ -124,8 +124,8 @@ that the observations with smaller values in `split_col` will land in the refere
 and those with bigger values will go to the test set.
 
 If the rows in your dataset are sorted in time, this could be a good default option to split the
-dataframe in 2 and compute the PSI. This will for example be the case if your data set is made
-of several time series.
+dataframe in 2 and compute the PSI. This will for example be the case if your data set contains
+daily (or any other frequency) sales information on a company's products.
 
 Proportions of unique observations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -692,10 +692,6 @@ only the values B and D.
 
 Here again, the object will remove the *group_means* and the *shifted_features* columns
 from the dataframe.
-Also it is worth noticing that the PSI values of the `trans` object differ from
-those of the `transform` object with exception of the *group_means* variable.
-The reason for the latter effect lies in the small number of distinct values
-for that particular variable.
 
 
 .. code:: python
@@ -851,18 +847,3 @@ and a non-shifted variable (for example *var_4*)
 
 
 .. image:: ../../images/PSI_distribution_case5.png
-
-More details
-~~~~~~~~~~~~
-
-#TODO: it would be great to have a jupyter notebook with a real life dataset and some plots
-showcasing the power of this class. If we do add a notebook, we would link it here.
-
-If not, we should remove the More details section, and we can add the notebook at a later stage
-
-In this notebook, we show how to use :class:`DropHighPSIFeatures()`.
-
-If we detail very well how to use all parameters here, we may not need a notebook.
-Notebooks are located here:
-
-https://github/feature-engine/feature-engine-examples/blob/main/selection/
