@@ -180,4 +180,4 @@ def _find_all_variables(
         # call pandas to test if variables entered by user are in df
         X[variables]
 
-    return variablesgit
+    return variables
