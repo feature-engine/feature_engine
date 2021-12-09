@@ -201,7 +201,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         # find categorical and numerical variables
         self.variables_categorical_ = list(X.select_dtypes(include="O").columns)
         self.variables_numerical_ = list(
-            X.select_dtypes(include=["float", "integer"]).columns
+            X.select_dtypes(include="number").columns
         )
 
         # obtain cross-validation indeces
