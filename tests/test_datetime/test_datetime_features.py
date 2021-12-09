@@ -221,6 +221,19 @@ def test_extract_specified_datetime_features(df_datetime, df_datetime_transforme
     )
 
 
+def test_extract_features_from_categorical_variable(
+    df_datetime, df_datetime_transformed
+):
+    cat_date = pd.DataFrame(
+        {"date_obj1": df_datetime["date_obj1"].astype("category")}
+    )
+    X = DatetimeFeatures(variables="date_obj1").fit_transform(cat_date)
+    pd.testing.assert_frame_equal(
+        X,
+        df_datetime_transformed[["date_obj1" + feat for feat in feat_names_default]]
+    )
+
+
 def test_extract_features_without_dropping_original_variables(
     df_datetime, df_datetime_transformed
 ):
