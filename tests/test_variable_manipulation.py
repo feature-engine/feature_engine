@@ -151,7 +151,7 @@ def test_find_or_check_datetime_variables(df_datetime):
     )
 
     # when variables are specified
-    assert _find_or_check_categorical_variables(df_datetime, var_dt_str) == [var_dt_str]
+    assert _find_or_check_datetime_variables(df_datetime, var_dt_str) == [var_dt_str]
     assert _find_or_check_datetime_variables(df_datetime, var_dt) == var_dt
     assert _find_or_check_datetime_variables(
         df_datetime, variables=var_convertible_to_dt

@@ -3,11 +3,9 @@
 from typing import Any, List, Union
 
 import pandas as pd
+from pandas.api.types import is_categorical_dtype as is_categorical
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from pandas.api.types import is_numeric_dtype as is_numeric
-
-from pandas.api.types import is_numeric_dtype as is_numeric
-from pandas.api.types import is_categorical_dtype as is_categorical
 from pandas.api.types import is_object_dtype as is_object
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -192,18 +190,19 @@ def _find_or_check_datetime_variables(
             raise ValueError("The indicated list of variables is empty.")
 
         # check that the variables entered by the user are datetime
-        vars_non_dt = [
-            column
-            for column in variables
-            if is_numeric(X[column])
-            or (
-                not is_datetime(X[column])
-                and not is_datetime(pd.to_datetime(X[column], errors="ignore"))
-            )
-        ]
+        else:
+            vars_non_dt = [
+                column
+                for column in variables
+                if is_numeric(X[column])
+                or (
+                    not is_datetime(X[column])
+                    and not is_datetime(pd.to_datetime(X[column], errors="ignore"))
+                )
+            ]
 
-        if len(vars_non_dt) > 0:
-            raise TypeError("Some of the variables are not datetime.")
+            if len(vars_non_dt) > 0:
+                raise TypeError("Some of the variables are not datetime.")
 
     return variables
 
