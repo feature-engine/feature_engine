@@ -234,6 +234,23 @@ def test_extract_features_from_categorical_variable(
     )
 
 
+def test_extract_features_from_different_timezones(
+    df_datetime, df_datetime_transformed
+):
+    time_zones = [4, -1, 9, -7]
+    tz_time = pd.DataFrame(
+        {"time_obj": df_datetime["time_obj"].add(['+4', '-1', '+9', '-7'])}
+    )
+    X = DatetimeFeatures(variables="time_obj", features_to_extract=["hour"]) \
+        .fit_transform(tz_time)
+    pd.testing.assert_frame_equal(
+        X,
+        df_datetime_transformed[["time_obj_hour"]].apply(
+            lambda x: x.subtract(time_zones)
+        )
+    )
+
+
 def test_extract_features_without_dropping_original_variables(
     df_datetime, df_datetime_transformed
 ):

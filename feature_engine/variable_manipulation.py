@@ -169,7 +169,7 @@ def _find_or_check_datetime_variables(
             column
             for column in X.select_dtypes(exclude="number").columns
             if is_datetime(X[column])
-            or is_datetime(pd.to_datetime(X[column], errors="ignore"))
+            or is_datetime(pd.to_datetime(X[column], errors="ignore", utc=True))
         ]
 
         if len(variables) == 0:
@@ -179,7 +179,7 @@ def _find_or_check_datetime_variables(
 
         if is_datetime(X[variables]) or (
             not is_numeric(X[variables])
-            and is_datetime(pd.to_datetime(X[variables], errors="ignore"))
+            and is_datetime(pd.to_datetime(X[variables], errors="ignore", utc=True))
         ):
             variables = [variables]
         else:
@@ -197,7 +197,9 @@ def _find_or_check_datetime_variables(
                 if is_numeric(X[column])
                 or (
                     not is_datetime(X[column])
-                    and not is_datetime(pd.to_datetime(X[column], errors="ignore"))
+                    and not is_datetime(
+                        pd.to_datetime(X[column], errors="ignore", utc=True)
+                    )
                 )
             ]
 

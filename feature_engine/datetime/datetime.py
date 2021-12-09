@@ -176,7 +176,8 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         datetime_df = pd.concat(
             [
                 pd.to_datetime(
-                    X[variable], dayfirst=self.dayfirst, yearfirst=self.yearfirst
+                    X[variable], dayfirst=self.dayfirst,
+                    yearfirst=self.yearfirst, utc=True
                 )
                 for variable in self.variables_
             ],

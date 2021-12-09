@@ -115,7 +115,9 @@ def test_find_or_check_datetime_variables(df_datetime):
     cat_date = pd.DataFrame(
         {"date_obj1_cat": df_datetime["date_obj1"].astype("category")}
     )
-    tz_date = pd.DataFrame({"date_obj2Z": df_datetime["date_obj2"].add("T12Z")})
+    tz_time = pd.DataFrame(
+        {"time_objTZ": df_datetime["time_obj"].add(['+5', '+11', '-3', '-8'])}
+    )
 
     # error when df has no datetime variables
     with pytest.raises(ValueError):
@@ -162,10 +164,10 @@ def test_find_or_check_datetime_variables(df_datetime):
     )
     assert (
         _find_or_check_datetime_variables(
-            df_datetime.join(tz_date),
+            df_datetime.join(tz_time),
             variables=None,
         )
-        == vars_convertible_to_dt + ["date_obj2Z"]
+        == vars_convertible_to_dt + ["time_objTZ"]
     )
     # vars cast as categorical
     assert _find_or_check_datetime_variables(cat_date, variables="date_obj1_cat") == [
