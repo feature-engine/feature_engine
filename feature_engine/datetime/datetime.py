@@ -66,6 +66,10 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         Specify a date parse order for object-like variables. If True,
         parses the date with the year first.
 
+    time_aware: bool, default=None
+        Whether the datetime variables should be treated as time_aware
+        or not.
+
     Attributes
     ----------
 
@@ -98,6 +102,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         drop_original: bool = True,
         dayfirst: bool = False,
         yearfirst: bool = False,
+        time_aware: bool = None,
         missing_values: str = "raise",
     ) -> None:
 
@@ -133,6 +138,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         self.missing_values = missing_values
         self.dayfirst = dayfirst
         self.yearfirst = yearfirst
+        self.time_aware = time_aware
         self.features_to_extract = features_to_extract
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -177,7 +183,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
             [
                 pd.to_datetime(
                     X[variable], dayfirst=self.dayfirst,
-                    yearfirst=self.yearfirst, utc=True
+                    yearfirst=self.yearfirst, utc=self.time_aware
                 )
                 for variable in self.variables_
             ],

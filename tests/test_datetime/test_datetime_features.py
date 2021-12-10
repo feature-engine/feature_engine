@@ -41,6 +41,7 @@ def test_default_attributes():
     assert transformer.variables is None
     assert transformer.features_to_extract is None
     assert transformer.drop_original
+    assert transformer.time_aware is None
     assert not transformer.dayfirst
     assert not transformer.yearfirst
     assert transformer.missing_values == "raise"
@@ -241,7 +242,10 @@ def test_extract_features_from_different_timezones(
     tz_time = pd.DataFrame(
         {"time_obj": df_datetime["time_obj"].add(['+4', '-1', '+9', '-7'])}
     )
-    X = DatetimeFeatures(variables="time_obj", features_to_extract=["hour"]) \
+    X = DatetimeFeatures(
+            variables="time_obj",
+            features_to_extract=["hour"],
+            time_aware=True) \
         .fit_transform(tz_time)
     pd.testing.assert_frame_equal(
         X,
@@ -249,6 +253,12 @@ def test_extract_features_from_different_timezones(
             lambda x: x.subtract(time_zones)
         )
     )
+    with pytest.raises(AttributeError):
+        assert DatetimeFeatures(
+            variables="time_obj",
+            features_to_extract=["hour"],
+            time_aware=False) \
+            .fit_transform(tz_time)
 
 
 def test_extract_features_without_dropping_original_variables(
