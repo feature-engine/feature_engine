@@ -118,6 +118,7 @@ transforming parameters from the data and then transform it.
  * SelectByTargetMeanPerformance
  * RecursiveFeatureElimination
  * RecursiveFeatureAddition
+ * DropHighPSIFeatures
 
 ### Preprocessing
  * MatchVariables

@@ -30,29 +30,6 @@ class DropHighPSIFeatures(BaseSelector):
     shift in its distribution; a feature with high PSI could therefore be considered
     unstable.
 
-    To compute the PSI the transformer splits the training dataset in two: a basis data
-    set and a test set. The basis data set is assumed to contain the expected or
-    original feature distributions. The test set will be assessed against the basis
-    data set.
-
-    In Credit Risk, eliminating features with high PSI is commonly done and usually
-    required by the Regulator.
-
-    To determine the PSI, continuous features are sorted into discrete intervals, the
-    fraction of observations per interval is then determined, and finally those values
-    are compared between the basis and test sets, to obtain the PSI.
-
-    In other words, the PSI is computed as follows:
-
-    - Define the bins into which the observations will be sorted (uses the basis set).
-    - Sort the feature values into those bins (in both basis and test sets).
-    - Determine the fraction of observations within each bin.
-    - Compute the PSI.
-
-    The PSI is determined as:
-
-    PSI = \sum_{i=1}^n (test_i - basis_i) . ln(\frac{test_i}{basis_i})
-
     A bigger PSI value indicates a bigger shift in the feature distribution.
 
     Different thresholds can be used to assess the magnitude of the distribution shift
@@ -61,15 +38,6 @@ class DropHighPSIFeatures(BaseSelector):
     - Below 10%, the variable has not experienced a significant shift.
     - Above 25%, the variable has experienced a major shift.
     - Between those two values, the shift is intermediate.
-
-    When working with PSI, it is worth highlighting the following:
-
-    - The PSI is not symmetric; switching the order of the basis and test dataframes
-    will lead to different PSI values.
-    - The number of bins has an impact on the PSI values.
-    - The PSI is a suitable metric for numerical features (i.e., either continuous or
-    with high cardinality). For categorical or discrete features, the change in
-    distributions is better assessed with Chi-squared.
 
     To compute the PSI the DropHighPSIFeatures splits the dataset in two:
 
@@ -80,31 +48,29 @@ class DropHighPSIFeatures(BaseSelector):
     Second, the user has the option to specify a proportion of observations to put in
     each data set, or alternatively, provide a cut-off value.
 
-    If the user specifies a proportion through the split_frac parameter, the data will
-    be sorted to accommodate that proportion. If split_frac is 0.5, 50% of the
-    observations will go to either basis or test sets. If split_frac is 0.6, 60% of the
-    samples will go to the basis data set and the remaining 40% to the test set.
+    If the user specifies a proportion through the `split_frac` parameter, the data will
+    be sorted to accommodate that proportion. If `split_frac` is 0.5, 50% of the
+    observations will go to either basis or test sets. If `split_frac` is 0.6, 60% of
+    the samples will go to the basis data set and the remaining 40% to the test set.
 
-    If the user defines a numeric cut-off value or a specific date using the cut_off
+    If `split_distinct` is True, the data will be sorted considering unique values in
+    the selected variables. Check the parameter below for more details.
+
+    If the user defines a numeric cut-off value or a specific date using the `cut_off`
     parameter, the observations with value <= cut-off will go to the basis data set and
     the remaining ones to the test set. For categorical values this means they are
     sorted alphabetically and cut accordingly.
 
-    If the user passes a list of values in the cut-off, the observations with the
+    If the user passes a list of values in the `cut-off`, the observations with the
     values in the list, will go to the basis set, and the remaining ones to the test
     set.
-
-    For more details check the parameter definitions below.
-
 
     References
     ----------
     https://scholarworks.wmich.edu/cgi/viewcontent.cgi?article=4249&context=dissertations
 
-
     Parameters
     ----------
-
     split_col: string or int, default=None.
         The variable that will be used to split the dataset into the basis and test
         sets. If None, the dataframe index will be used. `split_col` can be a numerical,
@@ -210,8 +176,6 @@ class DropHighPSIFeatures(BaseSelector):
 
     See Also
     --------
-    To know more about discretization visit:
-
     feature_engine.discretisation.EqualFrequencyDiscretiser
     feature_engine.discretisation.EqualWidthDiscretiser
     """
@@ -477,10 +441,10 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Split the original dataframe
         if isinstance(self.cut_off_, list):
-            is_within_cut_off = reference.isin(self.cut_off_)
+            is_within_cut_off = np.array(reference.isin(self.cut_off_))
 
         else:
-            is_within_cut_off = reference <= self.cut_off_
+            is_within_cut_off = np.array(reference <= self.cut_off_)
 
         basis_df = X[is_within_cut_off]
         test_df = X[~is_within_cut_off]

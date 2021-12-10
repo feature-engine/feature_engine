@@ -367,7 +367,8 @@ def test_calculation_df_split_with_different_variable_types(df_mixed_types):
 type_test = [
     ("A", 14, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]),
     ("B", 1, [0, 3, 4, 7, 8, 11, 12, 15, 16, 19]),
-    ("C", ["A"], [0, 4, 8, 12, 16]),
+    ("C", ["B"], [1, 5, 9, 13, 17]),
+    ("C", "B", [0, 1, 4, 5, 8, 9, 12, 13, 16, 17]),
     ("time", date(2019, 1, 4), [0, 1, 2, 3]),
 ]
 
@@ -462,6 +463,49 @@ def test_split_by_list(df_mixed_types, col, cut_off_list):
     pd.testing.assert_frame_equal(
         b, df_mixed_types[~df_mixed_types[col].isin(cut_off_list)]
     )
+
+
+# Tests for split on index on shuffled dataframe
+def test_split_shuffled_df_default(df):
+    """Test the default parameters when the index is shuffled."""
+    # Shuffle the dataframe
+    df_shuffled = df.sample(frac=1)
+    test = DropHighPSIFeatures()
+    base, test = test._split_dataframe(df_shuffled)
+
+    # The base dataframe should contain indexes from 0 to 499
+    set(base.index) == {_ for _ in range(0, 500)}
+
+    # The test dataframe should contain indexes from 500 to 999
+    set(test.index) == {_ for _ in range(500, 999)}
+
+
+def test_split_shuffled_df_split_frac(df):
+    """Test split_frac when the index is shuffled."""
+    # Shuffle the dataframe
+    df_shuffled = df.sample(frac=1)
+    test = DropHighPSIFeatures(split_frac=0.6)
+    base, test = test._split_dataframe(df_shuffled)
+
+    # The base dataframe should contain indexes from 0 to 599
+    set(base.index) == {_ for _ in range(0, 600)}
+
+    # The test dataframe should contain indexes from 600 to 999
+    set(test.index) == {_ for _ in range(600, 999)}
+
+
+def test_split_shuffled_df_cut_off(df):
+    """Test the cut_off when the index is shuffled."""
+    # Shuffle the dataframe
+    df_shuffled = df.sample(frac=1)
+    test = DropHighPSIFeatures(cut_off=250)
+    base, test = test._split_dataframe(df_shuffled)
+
+    # The base dataframe should contain indexes from 0 to 250
+    set(base.index) == {_ for _ in range(0, 251)}
+
+    # The test dataframe should contain indexes from 251 to 999
+    set(test.index) == {_ for _ in range(251, 999)}
 
 
 # ===== end of tests for _split_dataframe() =======

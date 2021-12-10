@@ -50,7 +50,7 @@ number of NA in each feature from the correlated group and keep the one with les
 **Example**
 
 Let's see how to use :class:`SmartCorrelatedSelection` in a toy example. Let's create a
-toy dataframe with 4 correlated featutes:
+toy dataframe with 4 correlated features:
 
 .. code:: python
 
@@ -68,7 +68,7 @@ toy dataframe with 4 correlated featutes:
                                    class_sep=2,
                                    random_state=1)
 
-        # trasform arrays into pandas df and series
+        # transform arrays into pandas df and series
         colnames = ['var_'+str(i) for i in range(12)]
         X = pd.DataFrame(X, columns=colnames)
         return X
