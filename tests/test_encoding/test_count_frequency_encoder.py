@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.encoding import CountFrequencyEncoder
+from feature_engine.encoding import CountFrequencyEncoder, BaseCategoricalTransformer
 
 
 def test_encode_1_variable_with_counts(df_enc):
@@ -238,3 +238,10 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     encoder = CountFrequencyEncoder(encoding_method="frequency", variables=["var_A"])
     X = encoder.fit_transform(df_enc_category_dtypes)
     assert X["var_A"].dtypes == float
+
+
+def test_base_categorical_transformer_detect_nan(df_enc):
+
+    transformer = BaseCategoricalTransformer()
+    transf_df = transformer.fit_transform(df_enc)
+    pass
