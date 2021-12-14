@@ -17,3 +17,4 @@ Full API documentation for Feature-engine transformers.
    selection/index
    preprocessing/index
    wrappers/index
+   datetime/index

@@ -32,11 +32,11 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
     present in object-like variables.
 
     **Notes**
+
     Day of the month extraction isn't supported by panda modules.
     This transformer implements a workaround that counts how many blocks
     of 7 days have passed in a given month.
     A more serious approach based on the calendar should be implemented
-    ***
 
     Parameters
     ----------

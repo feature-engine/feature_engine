@@ -19,3 +19,4 @@ and feature engineering transformations in general, as well as additional exampl
    selection/index
    preprocessing/index
    wrappers/index
+   datetime/index
