@@ -1,7 +1,7 @@
 .. -*- mode: rst -*-
 
-Categorical Variable Encoding
-=============================
+Categorical Encoding
+====================
 
 Feature-engine's categorical encoders replace variable strings by estimated or
 arbitrary numbers.

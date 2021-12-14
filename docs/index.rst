@@ -22,12 +22,13 @@ transform the data.
 Feature-engine includes transformers for:
 
 - Missing data imputation
-- Categorical variable encoding
+- Categorical encoding
 - Discretisation
-- Variable transformation
 - Outlier capping or removal
+- Variable transformation
 - Variable combination
 - Variable selection
+- Datetime features
 - Preprocessing
 
 Feature-engine allows you to select the variables you want to transform **within** each
@@ -114,8 +115,8 @@ Missing Data Imputation: Imputers
 - :doc:`api_doc/imputation/AddMissingIndicator`: adds a binary missing indicator to flag observations with missing data
 - :doc:`api_doc/imputation/DropMissingData`: removes observations (rows) containing missing values from dataframe
 
-Categorical Variable Encoders: Encoders
----------------------------------------
+Categorical Encoders: Encoders
+------------------------------
 
 - :doc:`api_doc/encoding/OneHotEncoder`: performs one hot encoding, optional: of popular categories
 - :doc:`api_doc/encoding/CountFrequencyEncoder`: replaces categories by the observation count or percentage
@@ -125,16 +126,6 @@ Categorical Variable Encoders: Encoders
 - :doc:`api_doc/encoding/PRatioEncoder`: replaces categories by a ratio of probabilities
 - :doc:`api_doc/encoding/DecisionTreeEncoder`: replaces categories by predictions of a decision tree
 - :doc:`api_doc/encoding/RareLabelEncoder`: groups infrequent categories
-
-Numerical Variable Transformation: Transformers
------------------------------------------------
-
-- :doc:`api_doc/transformation/LogTransformer`: performs logarithmic transformation of numerical variables
-- :doc:`api_doc/transformation/LogCpTransformer`: performs logarithmic transformation after adding a constant value
-- :doc:`api_doc/transformation/ReciprocalTransformer`: performs reciprocal transformation of numerical variables
-- :doc:`api_doc/transformation/PowerTransformer`: performs power transformation of numerical variables
-- :doc:`api_doc/transformation/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables
-- :doc:`api_doc/transformation/YeoJohnsonTransformer`: performs Yeo-Johnson transformation of numerical variables
 
 Variable Discretisation: Discretisers
 -------------------------------------
@@ -150,6 +141,16 @@ Outlier Capping or Removal
 -  :doc:`api_doc/outliers/ArbitraryOutlierCapper`: caps maximum and minimum values at user defined values
 -  :doc:`api_doc/outliers/Winsorizer`: caps maximum or minimum values using statistical parameters
 -  :doc:`api_doc/outliers/OutlierTrimmer`: removes outliers from the dataset
+
+Numerical Transformation: Transformers
+--------------------------------------
+
+- :doc:`api_doc/transformation/LogTransformer`: performs logarithmic transformation of numerical variables
+- :doc:`api_doc/transformation/LogCpTransformer`: performs logarithmic transformation after adding a constant value
+- :doc:`api_doc/transformation/ReciprocalTransformer`: performs reciprocal transformation of numerical variables
+- :doc:`api_doc/transformation/PowerTransformer`: performs power transformation of numerical variables
+- :doc:`api_doc/transformation/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables
+- :doc:`api_doc/transformation/YeoJohnsonTransformer`: performs Yeo-Johnson transformation of numerical variables
 
 Mathematical Combination:
 -------------------------
