@@ -133,26 +133,37 @@ def test_attributes_upon_fitting(df_datetime):
     assert transformer.variables_ == ["date_obj1", "time_obj"]
     assert transformer.features_to_extract_ == ["year", "quarter_end", "second"]
 
-
-def test_raises_error_when_transforming(df_datetime):
-    # trying to transform before fitting
-    with pytest.raises(NotFittedError):
-        DatetimeFeatures().transform(df_datetime)
+@pytest.mark.parametrize(
+    "_not_a_df", _not_a_df
+)
+def test_raises_error_when_transforming_not_a_df(_not_a_df, df_datetime):
     transformer = DatetimeFeatures()
     transformer.fit(df_datetime)
     # trying to transform not a df
     with pytest.raises(TypeError):
-        transformer.transform("not_a_df")
-    with pytest.raises(TypeError):
-        transformer.transform([1, 2, 3, "some_data"])
-    with pytest.raises(TypeError):
-        transformer.transform(pd.Series([-2, 1.5, 8.94], name="not_a_df"))
+        transformer.transform(_not_a_df)
+
+
+def test_raises_error_when_transform_df_with_different_n_variables(df_datetime):
+    transformer = DatetimeFeatures()
+    transformer.fit(df_datetime)
     # different number of columns than the df used to fit
     with pytest.raises(ValueError):
         transformer.transform(df_datetime[vars_dt])
+
+
+def test_raises_error_when_nan_in_transform_df(df_datetime):
+    transformer = DatetimeFeatures()
+    transformer.fit(df_datetime)
     # dataset containing nans
     with pytest.raises(ValueError):
-        DatetimeFeatures().fit_transform(dates_nan)
+        DatetimeFeatures().transform(dates_nan)
+
+
+def test_raises_non_fitted_error(df_datetime):
+    # trying to transform before fitting
+    with pytest.raises(NotFittedError):
+        DatetimeFeatures().transform(df_datetime)
 
 
 def test_extract_datetime_features_with_default_options(
