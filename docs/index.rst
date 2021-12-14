@@ -173,6 +173,9 @@ Feature Selection:
 - :doc:`api_doc/selection/RecursiveFeatureElimination`: selects features recursively, by evaluating model performance
 - :doc:`api_doc/selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
 
+Datetime:
+---------
+- :doc:`api_doc/datetime/DatetimeFeatures`: extract features from datetime variables
 
 Preprocessing:
 --------------
