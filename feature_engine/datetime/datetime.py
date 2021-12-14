@@ -26,58 +26,77 @@ from feature_engine.variable_manipulation import (
 
 class DatetimeFeatures(BaseEstimator, TransformerMixin):
     """
-    ExtractDatetimeFeatures extract various date and time features from
-    datetime variables present in the dataset, adding new columns
-    accordingly. The transformer is able to extract datetime information
-    present in object-like variables.
+    DatetimeFeatures extracts date and time features from datetime variables, adding
+    new columns to the dataset. DatetimeFeatures is able to extract datetime
+    information from existing datetime or object-like variables.
 
-    **Notes**
+    DatetimeFeatures uses pandas.to_datetime to convert object variables to datetime
+    and pandas.dt to extract the features from datetime.
 
-    Day of the month extraction isn't supported by panda modules.
-    This transformer implements a workaround that counts how many blocks
-    of 7 days have passed in a given month.
-    A more serious approach based on the calendar should be implemented
+    The transformer supports the extraction of the following features:
+
+    - "month"
+    - "quarter"
+    - "semester"
+    - "year"
+    - "week_of_the_month"
+    - "week_of_the_year"
+    - "day_of_the_week"
+    - "day_of_the_month"
+    - "day_of_the_year"
+    - "weekend"
+    - "month_start"
+    - "month_end"
+    - "quarter_start"
+    - "quarter_end"
+    - "year_start"
+    - "year_end"
+    - "leap_year"
+    - "days_in_month"
+    - "hour"
+    - "minute"
+    - "second"
+
+    More details in the :ref:`User Guide <datetime_features>`.
 
     Parameters
     ----------
     variables: list, default=None
-        The list of variables to extract date features from.
-        If None, the imputer will find and select all datetime variables,
-        including those converted from object-like features.
+        The list of variables to extract date and time features from.
+        If None, the transformer will find and select all datetime variables,
+        including variables of type object that can be converted to datetime.
 
     features_to_extract: list, default=None
-        The list of date features to extract. Defaults to month, year, of
-
-        Note: if you don't specify what features to extract and your dataset
-        contains many datetime variables, its feature space might explode!
+        The list of date features to extract. If None, the following features will be
+        extracted: "month", "year", "day_of_the_week", "day_of_the_month", "hour",
+        "minute" and "second". If "all", all supported features will be extracted.
+        Alternatively, you can pass a list with the names of the supported features
+        you want to extract.
 
     drop_original: bool, default="True"
-        Whether to drop datetime variables from the dataframe, including
-        those that have been converted by the transformer.
-        Note: if you pass a subset of features via the variables argument
-        of the transformer and drop_datetime=True, there might be more
-        datetime features in the dataframe that will not be dropped
-        upon calling the transform method.
+        If True, the original datetime variables will be dropped from the dataframe.
 
     dayfirst: bool, default="False"
-        Specify a date parse order for object-like variables. If True,
-        parses the date with the day first.
+        Specify a date parse order if arg is str or its list-likes. If True, parses
+        dates with the day first, eg 10/11/12 is parsed as 2012-11-10.
 
     yearfirst: bool, default="False"
-        Specify a date parse order for object-like variables. If True,
-        parses the date with the year first.
+        Specify a date parse order if arg is str or its list-likes.
+
+        - If True parses dates with the year first, eg 10/11/12 is parsed as 2010-11-12.
+        - If both dayfirst and yearfirst are True, yearfirst is preceded.
 
     utc: bool, default=None
-        Whether the datetime variables should be treated as time_aware
-        or not.
+        Return UTC DatetimeIndex if True (converting any tz-aware datetime.datetime
+        objects as well).
 
     Attributes
     ----------
-
-    Available upon calling the fit method:
-
     variables_:
-        List of variables from which to extract date features
+        List of variables from which date and time features will be extracted.
+
+    features_to_extract_:
+        The date and time features that will be extracted from each variable.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -85,15 +104,16 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
     Methods
     -------
     fit:
-        Find the variables from which to extract date features
+        This transformer does not learn parameters.
     transform:
-        Add the new datetime features specified in features_to_extract argument
+        Add the date and time features.
     fit_transform:
         Fit to the data, then transform it.
 
     See also
     --------
     pandas.to_datetime
+    pandas.dt
     """
 
     def __init__(
@@ -148,6 +168,21 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         self.features_to_extract = features_to_extract
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+        """
+        This transformer does not learn any parameter.
+
+        Finds datetime variables or checks that the variables selected by the user
+        can be converted to datetime.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The training input samples. Can be the entire dataframe, not just the
+            variables to transform.
+
+        y: pandas Series, default=None
+            It is not needed in this transformer. You can pass y or None.
+        """
         # check input dataframe
         X = _is_dataframe(X)
 
@@ -170,6 +205,19 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Extract the date and time features and add them to the dataframe.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The data to transform.
+
+        Returns
+        -------
+        X_new: Pandas dataframe, shape = [n_samples, n_features x n_df_features]
+            The dataframe with the original variables plus the new variables.
+        """
 
         # Check method fit has been called
         check_is_fitted(self)
