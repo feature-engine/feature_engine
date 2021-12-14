@@ -2,7 +2,8 @@ import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.encoding import CountFrequencyEncoder, BaseCategoricalTransformer
+from feature_engine.encoding import CountFrequencyEncoder
+from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 
 
 def test_encode_1_variable_with_counts(df_enc):
@@ -242,6 +243,8 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 
 def test_base_categorical_transformer_detect_nan(df_enc):
 
-    transformer = BaseCategoricalTransformer()
-    transf_df = transformer.fit_transform(df_enc)
-    pass
+    with pytest.raises(UserWarning) as exc_info:
+        transformer = BaseCategoricalTransformer()
+        transf_df = transformer.fit_transform(df_enc)
+
+    assert "NaN values were introduced in the feature(s)" in exc_info.value
