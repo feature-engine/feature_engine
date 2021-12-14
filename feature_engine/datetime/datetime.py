@@ -98,11 +98,11 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        features_to_extract: Union[str, List[str]] = None,
+        features_to_extract: Union[None, str, List[str]] = None,
         drop_original: bool = True,
         dayfirst: bool = False,
         yearfirst: bool = False,
-        utc: bool = None,
+        utc: Union[None, bool] = None,
         missing_values: str = "raise",
     ) -> None:
 
