@@ -158,7 +158,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
                 "not present in the training set used when the fit method was called. "
                 "Thus, mappings for those categories do not exist. Try using the "
                 "RareLabelCategoricalEncoder to remove infrequent categories before "
-                "calling this encoder."
+                "calling this encoder.", UserWarning
             )
 
         return X
