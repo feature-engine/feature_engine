@@ -15,24 +15,32 @@ vars_non_dt = ["Name", "Age"]
 feat_names_default = [FEATURES_SUFFIXES[feat] for feat in FEATURES_DEFAULT]
 dates_nan = pd.DataFrame({"dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan]})
 
+# _false_input_params = [
+#     (["not_supported"], ["year", 1874], "year", 14198),
+#     (3.519, [1, -1.09, "var3"],  [True, False], {True}),
+#     ("wrong_option", 1, [True, False], {True}),
+# ]
 
-def test_raises_error_when_wrong_input_params():
+_false_input_params = [
+    (["not_supported"], 3.519, "wrong_option"),
+    (["year", 1874], [1, -1.09, "var3"],  1),
+    ("year", [3.5], [True, False]),
+    (14198, [0.1, False], {True})
+]
+
+@pytest.mark.parametrize(
+    "_features_to_extract, _variables, _other_params", _false_input_params
+)
+def test_raises_error_when_wrong_input_params(
+        _features_to_extract, _variables, _other_params):
     with pytest.raises(ValueError):
-        assert DatetimeFeatures(features_to_extract=["not_supported"])
+        assert DatetimeFeatures(features_to_extract=_features_to_extract)
     with pytest.raises(ValueError):
-        assert DatetimeFeatures(features_to_extract=["year", 1874])
+        assert DatetimeFeatures(variables=_variables)
     with pytest.raises(ValueError):
-        assert DatetimeFeatures(features_to_extract="year")
+        assert DatetimeFeatures(missing_values=_other_params)
     with pytest.raises(ValueError):
-        assert DatetimeFeatures(features_to_extract=14198)
-    with pytest.raises(ValueError):
-        assert DatetimeFeatures(variables=3.519)
-    with pytest.raises(ValueError):
-        assert DatetimeFeatures(variables=[1, -1.09, "var3"])
-    with pytest.raises(ValueError):
-        assert DatetimeFeatures(missing_values="wrong_option")
-    with pytest.raises(ValueError):
-        assert DatetimeFeatures(drop_original="wrong_option")
+        assert DatetimeFeatures(drop_original=_other_params)
 
 
 def test_default_attributes():
