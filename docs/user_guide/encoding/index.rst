@@ -3,8 +3,8 @@
 .. currentmodule:: feature_engine.encoding
 
 
-Categorical Variable Encoding
-=============================
+Categorical Encoding
+====================
 
 Feature-engine's categorical encoders replace variable strings by estimated or
 arbitrary numbers. The following image summarizes the main encoder’s functionality.
