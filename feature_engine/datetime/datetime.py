@@ -159,7 +159,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
         if self.features_to_extract is None:
             self.features_to_extract_ = FEATURES_DEFAULT
-        elif self.features_to_extract == "all":
+        elif isinstance(self.features_to_extract, str):
             self.features_to_extract_ = FEATURES_SUPPORTED
         else:
             self.features_to_extract_ = self.features_to_extract
