@@ -102,7 +102,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         drop_original: bool = True,
         dayfirst: bool = False,
         yearfirst: bool = False,
-        time_aware: bool = None,
+        time_aware: bool = False,
         missing_values: str = "raise",
     ) -> None:
 
@@ -131,6 +131,11 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
             raise ValueError(
                 "drop_original takes only booleans True or False. "
                 f"Got {drop_original} instead."
+            )
+        if not isinstance(time_aware, bool):
+            raise ValueError(
+                "time_aware takes only booleans True or False. "
+                f"Got {time_aware} instead."
             )
 
         self.variables = _check_input_parameter_variables(variables)

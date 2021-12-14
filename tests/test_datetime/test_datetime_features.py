@@ -41,6 +41,8 @@ def test_raises_error_when_wrong_input_params(
         assert DatetimeFeatures(missing_values=_other_params)
     with pytest.raises(ValueError):
         assert DatetimeFeatures(drop_original=_other_params)
+    with pytest.raises(ValueError):
+        assert DatetimeFeatures(time_aware=_other_params)
 
 
 def test_default_attributes():
