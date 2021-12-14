@@ -126,10 +126,18 @@ def test_warning_if_transform_df_contains_categories_not_present_in_fit_df(
 ):
     # test case 4: when dataset to be transformed contains categories not present
     # in training dataset
-    with pytest.warns(UserWarning):
+
+    msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
+
+    with pytest.warns(UserWarning) as record:
         encoder = MeanEncoder()
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         encoder.transform(df_enc_rare[["var_A", "var_B"]])
+
+    # check that only one warning was raised
+    assert len(record) == 1
+    # check that the message matches
+    assert record[0].message.args[0] == msg
 
 
 def test_fit_raises_error_if_df_contains_na(df_enc_na):

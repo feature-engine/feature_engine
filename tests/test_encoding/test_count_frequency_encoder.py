@@ -3,7 +3,6 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import CountFrequencyEncoder
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 
 
 def test_encode_1_variable_with_counts(df_enc):
@@ -123,10 +122,17 @@ def test_error_if_input_df_contains_categories_not_present_in_fit_df(
 ):
     # test case 3: when dataset to be transformed contains categories not present in
     # training dataset
-    with pytest.warns(UserWarning):
+    msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
+
+    with pytest.warns(UserWarning) as record:
         encoder = CountFrequencyEncoder()
         encoder.fit(df_enc)
         encoder.transform(df_enc_rare)
+
+    # check that only one warning was raised
+    assert len(record) == 1
+    # check that the message matches
+    assert record[0].message.args[0] == msg
 
 
 def test_fit_raises_error_if_df_contains_na(df_enc_na):
@@ -239,12 +245,3 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     encoder = CountFrequencyEncoder(encoding_method="frequency", variables=["var_A"])
     X = encoder.fit_transform(df_enc_category_dtypes)
     assert X["var_A"].dtypes == float
-
-
-def test_base_categorical_transformer_detect_nan(df_enc):
-
-    with pytest.raises(UserWarning) as exc_info:
-        transformer = BaseCategoricalTransformer()
-        transf_df = transformer.fit_transform(df_enc)
-
-    assert "NaN values were introduced in the feature(s)" in exc_info.value
