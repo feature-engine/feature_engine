@@ -15,11 +15,6 @@ vars_non_dt = ["Name", "Age"]
 feat_names_default = [FEATURES_SUFFIXES[feat] for feat in FEATURES_DEFAULT]
 dates_nan = pd.DataFrame({"dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan]})
 
-# _false_input_params = [
-#     (["not_supported"], ["year", 1874], "year", 14198),
-#     (3.519, [1, -1.09, "var3"],  [True, False], {True}),
-#     ("wrong_option", 1, [True, False], {True}),
-# ]
 
 _false_input_params = [
     (["not_supported"], 3.519, "wrong_option"),
@@ -43,7 +38,7 @@ def test_raises_error_when_wrong_input_params(
     with pytest.raises(ValueError):
         assert DatetimeFeatures(drop_original=_other_params)
     with pytest.raises(ValueError):
-        assert DatetimeFeatures(time_aware=_other_params)
+        assert DatetimeFeatures(utc=_other_params)
 
 
 def test_default_params():
@@ -52,7 +47,7 @@ def test_default_params():
     assert transformer.variables is None
     assert transformer.features_to_extract is None
     assert transformer.drop_original
-    assert transformer.time_aware is False
+    assert transformer.utc is None
     assert transformer.dayfirst is False
     assert transformer.yearfirst is False
     assert transformer.missing_values == "raise"
@@ -275,14 +270,15 @@ def test_extract_features_from_different_timezones(
         df_datetime, df_datetime_transformed
 ):
     time_zones = [4, -1, 9, -7]
-    tz_time = pd.DataFrame(
+    tz_df = pd.DataFrame(
         {"time_obj": df_datetime["time_obj"].add(['+4', '-1', '+9', '-7'])}
     )
-    X = DatetimeFeatures(
+    transformer = DatetimeFeatures(
         variables="time_obj",
         features_to_extract=["hour"],
-        time_aware=True) \
-        .fit_transform(tz_time)
+        utc=True)
+    X = transformer.fit_transform(tz_df)
+
     pd.testing.assert_frame_equal(
         X,
         df_datetime_transformed[["time_obj_hour"]].apply(
@@ -293,8 +289,8 @@ def test_extract_features_from_different_timezones(
         assert DatetimeFeatures(
             variables="time_obj",
             features_to_extract=["hour"],
-            time_aware=False) \
-            .fit_transform(tz_time)
+            utc=False) \
+            .fit_transform(tz_df)
 
 
 def test_extract_features_without_dropping_original_variables(
