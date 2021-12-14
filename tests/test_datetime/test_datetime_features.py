@@ -293,6 +293,52 @@ def test_extract_features_from_different_timezones(
             .fit_transform(tz_df)
 
 
+def test_extract_features_from_localized_tz_variables():
+    tz_df = pd.DataFrame({'date_var': [
+        '2018-10-28 01:30:00',
+        '2018-10-28 02:00:00',
+        '2018-10-28 02:30:00',
+        '2018-10-28 02:00:00',
+        '2018-10-28 02:30:00',
+        '2018-10-28 03:00:00',
+        '2018-10-28 03:30:00']})
+
+    tz_df['date_var'] = pd.to_datetime(tz_df['date_var']).dt.tz_localize(tz='US/Eastern')
+
+    # when utc is None
+    transformer = DatetimeFeatures(features_to_extract=['hour']).fit(tz_df)
+
+    # init params
+    assert transformer.variables is None
+    assert transformer.utc is None
+    assert transformer.features_to_extract == ['hour']
+    # fit attr
+    assert transformer.variables_ == ['date_var']
+    assert transformer.features_to_extract_ == ['hour']
+    assert transformer.n_features_in_ == 1
+    # transform
+    X = transformer.transform(tz_df)
+    df_expected = pd.DataFrame({'date_var_hour': [1,2,2,2,2,3,3]})
+    pd.testing.assert_frame_equal(X, df_expected)
+
+    # when utc is True
+    transformer = DatetimeFeatures(
+        features_to_extract=['hour'], utc=True).fit(tz_df)
+
+    # init params
+    assert transformer.variables is None
+    assert transformer.utc is True
+    assert transformer.features_to_extract == ['hour']
+    # fit attr
+    assert transformer.variables_ == ['date_var']
+    assert transformer.features_to_extract_ == ['hour']
+    assert transformer.n_features_in_ == 1
+    # transform
+    X = transformer.transform(tz_df)
+    df_expected = pd.DataFrame({'date_var_hour': [5,6,6,6,6,7,7]})
+    pd.testing.assert_frame_equal(X, df_expected)
+
+
 def test_extract_features_without_dropping_original_variables(
         df_datetime, df_datetime_transformed
 ):
