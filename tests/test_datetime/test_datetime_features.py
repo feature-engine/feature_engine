@@ -60,6 +60,7 @@ def test_default_params():
 
 _variables = [0, [0, 1, 9, 23], "var_str", ["var_str1", "var_str2"], [0, 1, "var3", 3]]
 
+
 @pytest.mark.parametrize(
     "_variables", _variables
 )
@@ -75,15 +76,24 @@ def test_features_to_extract_param():
     assert DatetimeFeatures(features_to_extract="all").features_to_extract == "all"
 
 
-def test_raises_error_when_fitting(df_datetime):
+_not_a_df = [
+    "not_a_df",
+    [1, 2, 3, "some_data"],
+    pd.Series([-2, 1.5, 8.94], name="not_a_df"),
+]
+
+
+@pytest.mark.parametrize(
+    "_not_a_df", _not_a_df
+)
+def test_raises_error_when_fitting_not_a_df(_not_a_df):
     transformer = DatetimeFeatures()
     # trying to fit not a df
     with pytest.raises(TypeError):
-        transformer.fit("not_a_df")
-    with pytest.raises(TypeError):
-        transformer.fit([1, 2, 3, "some_data"])
-    with pytest.raises(TypeError):
-        transformer.fit(pd.Series([-2, 1.5, 8.94], name="not_a_df"))
+        transformer.fit(_not_a_df)
+
+
+def test_raises_error_when_variables_not_datetime(df_datetime):
     # asking for not datetime variable(s)
     with pytest.raises(TypeError):
         DatetimeFeatures(variables=["Age"]).fit(df_datetime)
@@ -92,6 +102,9 @@ def test_raises_error_when_fitting(df_datetime):
     # passing a df that contains no datetime variables
     with pytest.raises(ValueError):
         DatetimeFeatures().fit(df_datetime[["Name", "Age"]])
+
+
+def test_raises_error_when_df_has_nan():
     # dataset containing nans
     with pytest.raises(ValueError):
         DatetimeFeatures().fit(dates_nan)
