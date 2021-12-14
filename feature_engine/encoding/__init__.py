@@ -11,7 +11,6 @@ from .probability_ratio import PRatioEncoder
 from .rare_label import RareLabelEncoder
 from .woe import WoEEncoder
 
-
 __all__ = [
     "CountFrequencyEncoder",
     "DecisionTreeEncoder",
