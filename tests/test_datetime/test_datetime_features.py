@@ -51,9 +51,9 @@ def test_default_attributes():
     assert transformer.variables is None
     assert transformer.features_to_extract is None
     assert transformer.drop_original
-    assert transformer.time_aware is None
-    assert not transformer.dayfirst
-    assert not transformer.yearfirst
+    assert transformer.time_aware is False
+    assert transformer.dayfirst is False
+    assert transformer.yearfirst is False
     assert transformer.missing_values == "raise"
 
 
