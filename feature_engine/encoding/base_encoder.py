@@ -152,7 +152,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
                 nan_columns_str = nan_columns[0]
 
             warnings.warn(
-                f"NaN values were introduced in the feature(s) titled "
+                f"NaN values were introduced in the feature(s) "
                 f"{nan_columns_str} during the encoding."
                 "This means that some of the categories in the input dataframe were "
                 "not present in the training set used when the fit method was called. "
