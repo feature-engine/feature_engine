@@ -111,24 +111,27 @@ def test_raises_error_when_df_has_nan():
 
 
 def test_attributes_upon_fitting(df_datetime):
-    assert DatetimeFeatures().fit(df_datetime).variables_ == vars_dt
-    assert DatetimeFeatures(variables="date_obj1").fit(df_datetime).variables_ == [
-        "date_obj1"
-    ]
-    assert DatetimeFeatures(variables=["date_obj1", "time_obj"]).fit(
-        df_datetime
-    ).variables_ == ["date_obj1", "time_obj"]
-    assert DatetimeFeatures().fit(df_datetime).features_to_extract_ == FEATURES_DEFAULT
-    assert (
-            DatetimeFeatures(features_to_extract="all")
-            .fit(df_datetime)
-            .features_to_extract_
-            == FEATURES_SUPPORTED
+    transformer = DatetimeFeatures()
+    transformer.fit(df_datetime)
+
+    assert transformer.variables_ == vars_dt
+    assert transformer.features_to_extract_ == FEATURES_DEFAULT
+    assert transformer.n_features_in_ == df_datetime.shape[1]
+
+    transformer = DatetimeFeatures(variables="date_obj1", features_to_extract="all")
+    transformer.fit(df_datetime)
+
+    assert transformer.variables_ == ["date_obj1"]
+    assert transformer.features_to_extract_ == FEATURES_SUPPORTED
+
+    transformer = DatetimeFeatures(
+        variables=["date_obj1", "time_obj"],
+        features_to_extract=["year", "quarter_end", "second"],
     )
-    assert DatetimeFeatures(features_to_extract=["year", "quarter_end", "second"]).fit(
-        df_datetime
-    ).features_to_extract_ == ["year", "quarter_end", "second"]
-    assert DatetimeFeatures().fit(df_datetime).n_features_in_ == df_datetime.shape[1]
+    transformer.fit(df_datetime)
+
+    assert transformer.variables_ == ["date_obj1", "time_obj"]
+    assert transformer.features_to_extract_ == ["year", "quarter_end", "second"]
 
 
 def test_raises_error_when_transforming(df_datetime):
