@@ -277,10 +277,13 @@ def test_extract_features_from_different_timezones(
             lambda x: x.subtract(time_zones)
         ),
     )
-    with pytest.raises(ValueError):
+    exp_err_msg = "ValueError: variable(s) time_obj " \
+        "could not be converted to datetime. Try setting utc=True"
+    with pytest.raises(ValueError) as errinfo:
         assert DatetimeFeatures(
             variables="time_obj", features_to_extract=["hour"], utc=False
         ).fit_transform(tz_df)
+    assert str(errinfo.value) == exp_err_msg
 
 
 def test_extract_features_from_localized_tz_variables():

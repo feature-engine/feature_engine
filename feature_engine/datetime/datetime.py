@@ -196,10 +196,12 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
             axis=1,
         )
 
-        if any(not is_datetime(datetime_df[var]) for var in datetime_df.columns):
+        non_dt_columns = datetime_df.columns[~datetime_df.apply(is_datetime)].tolist()
+        if non_dt_columns:
             raise ValueError(
-                "ValueError: variables x, y and z could not be converted to datetime. "
-                "Try setting utc=True"
+                "ValueError: variable(s) " +
+                (len(non_dt_columns) * '{} ').format(*non_dt_columns) +
+                "could not be converted to datetime. Try setting utc=True"
             )
 
         # create new features
