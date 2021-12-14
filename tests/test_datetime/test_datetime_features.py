@@ -277,7 +277,7 @@ def test_extract_features_from_different_timezones(
             lambda x: x.subtract(time_zones)
         ),
     )
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         assert DatetimeFeatures(
             variables="time_obj", features_to_extract=["hour"], utc=False
         ).fit_transform(tz_df)

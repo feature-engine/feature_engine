@@ -3,6 +3,7 @@
 from typing import List, Optional, Union
 
 import pandas as pd
+from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -194,6 +195,12 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
             ],
             axis=1,
         )
+
+        if any(not is_datetime(datetime_df[var]) for var in datetime_df.columns):
+            raise ValueError(
+                "ValueError: variables x, y and z could not be converted to datetime. "
+                "Try setting utc=True"
+            )
 
         # create new features
         for var in self.variables_:
