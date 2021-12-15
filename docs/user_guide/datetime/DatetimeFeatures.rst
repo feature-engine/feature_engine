@@ -610,9 +610,7 @@ one obtained in **Case 2**.
 More details
 ^^^^^^^^^^^^
 
-You can find creative ways to use the :class:`DatetimeFeatures()` in the
-following Jupyter notebook.
+You can find additional examples with a real dataset on how to use
+:class:`DatetimeFeatures()` in the following Jupyter notebook.
 
-#TODO: change the link below to your notebook:
-
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/creation/MathematicalCombination.ipynb>`_
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/datetime/DatetimeFeatures.ipynb>`_
