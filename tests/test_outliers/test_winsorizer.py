@@ -165,17 +165,20 @@ def test_quantile_capping_both_tails_with_fold_15_percent(df_normal_dist):
 
 
 def test_indicators_are_added(df_normal_dist):
-    transformer = Winsorizer(tail="both", capping_method="quantiles", fold=0.1)
+    transformer = Winsorizer(
+        tail="both", capping_method="quantiles", fold=0.1, add_indicators=True)
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 3 * df_normal_dist.shape[1]
     assert np.all(X[df_normal_dist.shape[1]:].sum(axis=0) > 0)
 
-    transformer = Winsorizer(tail="left", capping_method="quantiles", fold=0.1)
+    transformer = Winsorizer(
+        tail="left", capping_method="quantiles", fold=0.1, add_indicators=True)
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 2 * df_normal_dist.shape[1]
     assert np.all(X[df_normal_dist.shape[1]:].sum(axis=0) > 0)
 
-    transformer = Winsorizer(tail="right", capping_method="quantiles", fold=0.1)
+    transformer = Winsorizer(
+        tail="right", capping_method="quantiles", fold=0.1, add_indicators=True)
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 2 * df_normal_dist.shape[1]
     assert np.all(X[df_normal_dist.shape[1]:].sum(axis=0) > 0)
