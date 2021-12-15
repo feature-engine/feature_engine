@@ -259,10 +259,10 @@ class Winsorizer(WinsorizerBase):
         X_out = super().transform(X)
         if self.add_indicators:
             if self.tail in ["left", "both"]:
-                X_low = X_out < X
+                X_low = X_out > X
                 X_low.columns = [str(cl) + "_low" for cl in X.columns.values]
             if self.tail in ["right", "both"]:
-                X_high = X_out > X
+                X_high = X_out < X
                 X_high.columns = [str(cl) + "_high" for cl in X.columns.values]
             if self.tail in ["left", "both"]:
                 X_out = pd.concat([X_out, X_low], axis=1)
