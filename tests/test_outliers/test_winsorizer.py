@@ -163,6 +163,21 @@ def test_quantile_capping_both_tails_with_fold_15_percent(df_normal_dist):
     assert np.round(X["var"].max(), 3) <= np.round(0.11823196128033647, 3)
     assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.11823196128033647, 3)
 
+def test_indicators_are_added(df_normal_dist):
+    transformer = Winsorizer(tail="both", capping_method="quantiles", fold=0.1)
+    X = transformer.fit_transform(df_normal_dist)
+    assert X.shape[1] == 3 * df_normal_dist.shape[1]
+    assert np.all(X[df_normal_dist.shape[1]:].sum(axis=0) > 0)
+
+    transformer = Winsorizer(tail="left", capping_method="quantiles", fold=0.1)
+    X = transformer.fit_transform(df_normal_dist)
+    assert X.shape[1] == 2 * df_normal_dist.shape[1]
+    assert np.all(X[df_normal_dist.shape[1]:].sum(axis=0) > 0)
+
+    transformer = Winsorizer(tail="right", capping_method="quantiles", fold=0.1)
+    X = transformer.fit_transform(df_normal_dist)
+    assert X.shape[1] == 2 * df_normal_dist.shape[1]
+    assert np.all(X[df_normal_dist.shape[1]:].sum(axis=0) > 0)
 
 def test_transformer_ignores_na_in_df(df_na):
     # test case 7: dataset contains na and transformer is asked to ignore them
