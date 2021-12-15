@@ -67,8 +67,8 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
             The dataframe with the capped variables.
 
             **Note:** for 'Winsorizer()' with 'add_indicators=True', the
-            output shape will be '[n_samples, 2*n_features]' or '[n_samples, 3*n_features]'
-            depending on the tail mode.
+            output shape will be '[n_samples, 2*n_features]' or
+            '[n_samples, 3*n_features]' depending on the tail mode.
         """
 
         # check if class was fitted

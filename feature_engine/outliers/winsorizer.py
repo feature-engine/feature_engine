@@ -121,6 +121,7 @@ class WinsorizerBase(BaseOutlier):
 
         return self
 
+
 class Winsorizer(WinsorizerBase):
     """
     The Winsorizer() caps maximum and/or minimum values of a variable at automatically
