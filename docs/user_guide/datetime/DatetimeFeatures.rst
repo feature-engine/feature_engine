@@ -39,6 +39,9 @@ will be cast as integer.
 
 .. code:: python
 
+    import pandas as pd
+    from feature_engine.datetime import DatetimeFeatures
+
     toy_df = pd.DataFrame({
         "var_date1": ['May-1989', 'Dec-2020', 'Jan-1999', 'Feb-2002'],
         "var_date2": ['06/21/12', '02/10/98', '08/03/10', '10/31/20'],
