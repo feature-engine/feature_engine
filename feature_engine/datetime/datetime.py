@@ -76,6 +76,12 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
     drop_original: bool, default="True"
         If True, the original datetime variables will be dropped from the dataframe.
 
+    missing_values: string, default='raise'
+        Indicates if missing values should be ignored or raised. If 'raise' the
+        transformer will return an error if the the datasets to `fit` or `transform`
+        contain missing values. If 'ignore', missing data will be ignored when
+        performing the feature extraction.
+
     dayfirst: bool, default="False"
         Specify a date parse order if arg is str or its list-likes. If True, parses
         dates with the day first, eg 10/11/12 is parsed as 2012-11-10.
@@ -121,10 +127,11 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         features_to_extract: Union[None, str, List[str]] = None,
         drop_original: bool = True,
+        missing_values: str = "raise",
         dayfirst: bool = False,
         yearfirst: bool = False,
         utc: Union[None, bool] = None,
-        missing_values: str = "raise",
+
     ) -> None:
 
         if features_to_extract:
@@ -143,16 +150,18 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
                     "Supported features are {}.".format(", ".join(FEATURES_SUPPORTED))
                 )
 
-        if missing_values not in ["raise", "ignore"]:
-            raise ValueError(
-                "missing_values takes only values 'raise' or 'ignore'. "
-                f"Got {missing_values} instead."
-            )
         if not isinstance(drop_original, bool):
             raise ValueError(
                 "drop_original takes only booleans True or False. "
                 f"Got {drop_original} instead."
             )
+
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError(
+                "missing_values takes only values 'raise' or 'ignore'. "
+                f"Got {missing_values} instead."
+            )
+
         if utc is not None and not isinstance(utc, bool):
             raise ValueError(
                 "utc takes only booleans or None. "
