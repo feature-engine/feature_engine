@@ -1,125 +1,12 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import List, Union
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import (
-    _check_contains_inf,
-    _check_contains_na,
-    _is_dataframe,
-)
-from feature_engine.outliers.base_outlier import BaseOutlier
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_numerical_variables,
-)
-
-
-class WinsorizerBase(BaseOutlier):
-    def __init__(
-        self,
-        capping_method: str = "gaussian",
-        tail: str = "right",
-        fold: Union[int, float] = 3,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        missing_values: str = "raise",
-    ) -> None:
-
-        if capping_method not in ["gaussian", "iqr", "quantiles"]:
-            raise ValueError(
-                "capping_method takes only values 'gaussian', 'iqr' or 'quantiles'"
-            )
-
-        if tail not in ["right", "left", "both"]:
-            raise ValueError("tail takes only values 'right', 'left' or 'both'")
-
-        if fold <= 0:
-            raise ValueError("fold takes only positive numbers")
-
-        if capping_method == "quantiles" and fold > 0.2:
-            raise ValueError(
-                "with capping_method ='quantiles', fold takes values between 0 and "
-                "0.20 only."
-            )
-
-        if missing_values not in ["raise", "ignore"]:
-            raise ValueError("missing_values takes only values 'raise' or 'ignore'")
-
-        self.capping_method = capping_method
-        self.tail = tail
-        self.fold = fold
-        self.variables = _check_input_parameter_variables(variables)
-        self.missing_values = missing_values
-
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
-        """
-        Learn the values that should be used to replace outliers.
-
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-
-        y : pandas Series, default=None
-            y is not needed in this transformer. You can pass y or None.
-        """
-
-        # check input dataframe
-        X = _is_dataframe(X)
-
-        # find or check for numerical variables
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
-
-        if self.missing_values == "raise":
-            # check if dataset contains na
-            _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.variables_)
-
-        self.right_tail_caps_ = {}
-        self.left_tail_caps_ = {}
-
-        # estimate the end values
-        if self.tail in ["right", "both"]:
-            if self.capping_method == "gaussian":
-                self.right_tail_caps_ = (
-                    X[self.variables_].mean() + self.fold * X[self.variables_].std()
-                ).to_dict()
-
-            elif self.capping_method == "iqr":
-                IQR = X[self.variables_].quantile(0.75) - X[self.variables_].quantile(
-                    0.25
-                )
-                self.right_tail_caps_ = (
-                    X[self.variables_].quantile(0.75) + (IQR * self.fold)
-                ).to_dict()
-
-            elif self.capping_method == "quantiles":
-                self.right_tail_caps_ = (
-                    X[self.variables_].quantile(1 - self.fold).to_dict()
-                )
-
-        if self.tail in ["left", "both"]:
-            if self.capping_method == "gaussian":
-                self.left_tail_caps_ = (
-                    X[self.variables_].mean() - self.fold * X[self.variables_].std()
-                ).to_dict()
-
-            elif self.capping_method == "iqr":
-                IQR = X[self.variables_].quantile(0.75) - X[self.variables_].quantile(
-                    0.25
-                )
-                self.left_tail_caps_ = (
-                    X[self.variables_].quantile(0.25) - (IQR * self.fold)
-                ).to_dict()
-
-            elif self.capping_method == "quantiles":
-                self.left_tail_caps_ = X[self.variables_].quantile(self.fold).to_dict()
-
-        self.n_features_in_ = X.shape[1]
-
-        return self
+from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.outliers.base_outlier import WinsorizerBase
 
 
 class Winsorizer(WinsorizerBase):
@@ -201,9 +88,9 @@ class Winsorizer(WinsorizerBase):
         between 0 and 0.20.
 
     add_indicators: bool, default=False
-        Whether to add indicator variables indicating in each variable was capped.
-        If passing 'True', will output these with the same names as the input
-        variables plus suffizes '_low' and '_high'.
+        Whether to add indicator variables to flag the capped outliers.
+        If 'True', binary variables will be added to flag outliers on the left and right
+        tails of the distribution. One binary variable per tail, per variable.
 
     variables: list, default=None
         The list of variables for which the outliers will be capped. If None,
@@ -250,24 +137,42 @@ class Winsorizer(WinsorizerBase):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
     ) -> None:
+        if not isinstance(add_indicators, bool):
+            raise ValueError("add_indicators takes only booleans True and False")
         super().__init__(capping_method, tail, fold, variables, missing_values)
         self.add_indicators = add_indicators
 
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Cap the variable values.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The data to be transformed.
+
+        Returns
+        -------
+        X_new: pandas dataframe of shape = [n_samples, n_features + n_ind]
+            The dataframe with the capped variables and indicators.
+            The number of output variables depends on the values for 'tail' and
+            'add_indicators': if passing 'add_indicators=False', will be equal
+            to 'n_features', otherwise, will have an additional indicator column
+            per processed feature for each tail.
+        """
         X = _is_dataframe(X)
         X_out = super().transform(X)
         if self.add_indicators:
+            X = X[self.variables_]
+            X_out_filtered = X_out[self.variables_]
             if self.tail in ["left", "both"]:
-                X_low = X_out > X
-                X_low.columns = [str(cl) + "_low" for cl in X.columns.values]
+                X_left = X_out_filtered > X
+                X_left.columns = [str(cl) + "_left" for cl in self.variables_]
             if self.tail in ["right", "both"]:
-                X_high = X_out < X
-                X_high.columns = [str(cl) + "_high" for cl in X.columns.values]
+                X_right = X_out_filtered < X
+                X_right.columns = [str(cl) + "_right" for cl in self.variables_]
             if self.tail in ["left", "both"]:
-                X_out = pd.concat([X_out, X_low], axis=1)
+                X_out = pd.concat([X_out, X_left], axis=1)
             if self.tail in ["right", "both"]:
-                X_out = pd.concat([X_out, X_high], axis=1)
+                X_out = pd.concat([X_out, X_right], axis=1)
         return X_out
-
-    transform.__doc__ = BaseOutlier.transform.__doc__

@@ -184,6 +184,26 @@ def test_indicators_are_added(df_normal_dist):
     assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
 
 
+def test_indicators_filter_variables(df_vartypes):
+    transformer = Winsorizer(
+        variables=["Age", "Marks"],
+        tail="both",
+        capping_method="quantiles",
+        fold=0.1,
+        add_indicators=True
+    )
+    X = transformer.fit_transform(df_vartypes)
+    assert X.shape[1] == df_vartypes.shape[1] + 4
+
+    transformer.set_params(tail="left")
+    X = transformer.fit_transform(df_vartypes)
+    assert X.shape[1] == df_vartypes.shape[1] + 2
+
+    transformer.set_params(tail="right")
+    X = transformer.fit_transform(df_vartypes)
+    assert X.shape[1] == df_vartypes.shape[1] + 2
+
+
 def test_transformer_ignores_na_in_df(df_na):
     # test case 7: dataset contains na and transformer is asked to ignore them
     transformer = Winsorizer(
@@ -245,6 +265,15 @@ def test_error_if_fold_value_not_permitted():
 def test_error_if_capping_method_quantiles_and_fold_value_not_permitted():
     with pytest.raises(ValueError):
         Winsorizer(capping_method="quantiles", fold=0.3)
+
+
+def test_error_if_add_incators_not_permitted():
+    with pytest.raises(ValueError):
+        Winsorizer(add_indicators=-1)
+    with pytest.raises(ValueError):
+        Winsorizer(add_indicators=())
+    with pytest.raises(ValueError):
+        Winsorizer(add_indicators=[True])
 
 
 def test_fit_raises_error_if_na_in_inut_df(df_na):
