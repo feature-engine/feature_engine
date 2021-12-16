@@ -363,10 +363,10 @@ We can also extract all supported features automatically.
     1 2018-01-01 01:00:00  12/01/90 23:01:02  02/28/97 10:10:55              1
     2 2018-01-01 02:00:00  04/25/01 11:59:21  11/11/03 17:30:00              1
 
-       var_dt1_quarter  var_dt1_semester  var_dt1_year  var_dt1_wotm  \
-    0                1                 1          2018             1
-    1                1                 1          2018             1
-    2                1                 1          2018             1
+       var_dt1_quarter  var_dt1_semester  var_dt1_year  \
+    0                1                 1          2018
+    1                1                 1          2018
+    2                1                 1          2018
 
        var_dt1_woty  var_dt1_dotw  ...  var_dt1_month_end  var_dt1_quarter_start  \
     0             1             0  ...                  0                      1
@@ -400,7 +400,6 @@ We can find the group of features extracted by the transformer in its attribute.
      'quarter',
      'semester',
      'year',
-     'week_of_the_month',
      'week_of_the_year',
      'day_of_the_week',
      'day_of_the_month',
