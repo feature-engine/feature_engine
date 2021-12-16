@@ -5,8 +5,18 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
+from sklearn.utils.validation import check_is_fitted
+
+from feature_engine.dataframe_checks import (
+    _check_contains_na,
+    _check_input_matches_training_df,
+    _is_dataframe,
+)
+
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.dataframe_checks import _check_contains_na
+
+import warnings
 
 
 class BaseDiscretizer(BaseNumericalTransformer):
@@ -14,6 +24,43 @@ class BaseDiscretizer(BaseNumericalTransformer):
 
     def __init__(self):
         pass
+
+    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Checks that the input is a dataframe and of the same size than the one used
+        in the fit method. Checks absence of NA.
+
+        Parameters
+        ----------
+        X: Pandas DataFrame
+
+        Raises
+        ------
+        TypeError
+            If the input is not a Pandas DataFrame
+        ValueError
+            - If the variable(s) contain null values.
+            - If the df has different number of features than the df used in fit()
+
+        Returns
+        -------
+        X: Pandas DataFrame
+            The same dataframe entered by the user.
+        """
+
+        # Check method fit has been called
+        check_is_fitted(self)
+
+        # check that input is a dataframe
+        X = _is_dataframe(X)
+
+        # Check input data contains same number of columns as df used to fit
+        _check_input_matches_training_df(X, self.n_features_in_)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables_)
+
+        return X
 
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
