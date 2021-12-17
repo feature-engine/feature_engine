@@ -54,14 +54,15 @@ transforming parameters from the data and then transform it.
 ## Current Feature-engine's transformers include functionality for:
 
 * Missing Data Imputation
-* Categorical Variable Encoding
-* Outlier Capping or Removal
+* Categorical Encoding
 * Discretisation
-* Numerical Variable Transformation
+* Outlier Capping or Removal
+* Variable Transformation
 * Variable Creation
 * Variable Selection
-* Scikit-learn Wrappers
+* Datetime Feature Extraction
 * Preprocessing
+* Scikit-learn Wrappers
 
 ### Imputation Methods
 * MeanMedianImputer
@@ -82,16 +83,16 @@ transforming parameters from the data and then transform it.
 * RareLabelEncoder
 * DecisionTreeEncoder
 
-### Outlier Handling methods
-* Winsorizer
-* ArbitraryOutlierCapper
-* OutlierTrimmer
-
 ### Discretisation methods
 * EqualFrequencyDiscretiser
 * EqualWidthDiscretiser
 * DecisionTreeDiscretiser
 * ArbitraryDiscreriser
+
+### Outlier Handling methods
+* Winsorizer
+* ArbitraryOutlierCapper
+* OutlierTrimmer
 
 ### Variable Transformation methods
 * LogTransformer

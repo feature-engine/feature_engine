@@ -10,10 +10,11 @@ Full API documentation for Feature-engine transformers.
 
    imputation/index
    encoding/index
-   transformation/index
    discretisation/index
    outliers/index
+   transformation/index
    creation/index
    selection/index
+   datetime/index
    preprocessing/index
    wrappers/index
