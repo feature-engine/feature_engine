@@ -123,7 +123,10 @@ def _find_or_check_categorical_variables(
             column
             for column in X.select_dtypes(exclude="number")
             if is_object(X[column])
-            and not is_datetime(pd.to_datetime(X[column], errors="ignore", utc=True))
+            and (
+                is_numeric(pd.to_numeric(X[column], errors="ignore"))
+                or not is_datetime(pd.to_datetime(X[column], errors="ignore", utc=True))
+            )
             or (
                 is_categorical(X[column])
                 and (
@@ -143,7 +146,10 @@ def _find_or_check_categorical_variables(
     elif isinstance(variables, (str, int)):
         if (
             is_object(X[variables])
-            and not is_datetime(pd.to_datetime(X[variables], errors="ignore"))
+            and (
+                is_numeric(pd.to_numeric(X[variables], errors="ignore"))
+                or not is_datetime(pd.to_datetime(X[variables], errors="ignore"))
+            )
             or (
                 is_categorical(X[variables])
                 and (
@@ -169,8 +175,11 @@ def _find_or_check_categorical_variables(
                 for column in variables
                 if not (
                     is_object(X[column])
-                    and not is_datetime(
-                        pd.to_datetime(X[column], errors="ignore", utc=True)
+                    and (
+                        is_numeric(pd.to_numeric(X[column], errors="ignore"))
+                        or not is_datetime(
+                            pd.to_datetime(X[column], errors="ignore", utc=True)
+                        )
                     )
                 )
                 and not (

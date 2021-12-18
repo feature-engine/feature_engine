@@ -126,6 +126,17 @@ def test_find_or_check_categorical_variables(
     df_datetime["datetime_range"] = df_datetime["datetime_range"].astype("category")
     assert _find_or_check_categorical_variables(df_datetime, None) == ["Name"]
 
+    df_vartypes["Marks"] = df_vartypes["Marks"].astype("O")
+    assert _find_or_check_categorical_variables(df_vartypes, "Marks") == ["Marks"]
+    assert _find_or_check_categorical_variables(df_vartypes, ["Name", "Marks"]) == [
+        "Name",
+        "Marks",
+    ]
+    assert _find_or_check_categorical_variables(df_vartypes, None) == vars_cat + [
+        "Age",
+        "Marks",
+    ]
+
     tz_time = pd.DataFrame(
         {"time_objTZ": df_datetime["time_obj"].add(["+5", "+11", "-3", "-8"])}
     )
