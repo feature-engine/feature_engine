@@ -77,7 +77,7 @@ class BaseDiscretizer(BaseNumericalTransformer):
             The dataframe containing the categories replaced by numbers.
         """
 
-        X = X._self
+        X = self._check_transform_input_and_state(X)
 
         # check if NaN values were introduced by the encoding
         if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
