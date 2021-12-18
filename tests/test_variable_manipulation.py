@@ -68,15 +68,27 @@ def test_find_or_check_numerical_variables(df_vartypes, df_numeric_columns):
     assert _find_or_check_numerical_variables(df_numeric_columns, 2) == [2]
 
 
-def test_find_or_check_categorical_variables(df_vartypes, df_numeric_columns):
+def test_find_or_check_categorical_variables(
+    df_vartypes, df_datetime, df_numeric_columns
+):
     vars_cat = ["Name", "City"]
     vars_mix = ["Age", "Marks", "Name"]
 
     assert _find_or_check_categorical_variables(df_vartypes, vars_cat) == vars_cat
     assert _find_or_check_categorical_variables(df_vartypes, None) == vars_cat
+    assert _find_or_check_categorical_variables(df_datetime, None) == ["Name"]
 
     with pytest.raises(TypeError):
         assert _find_or_check_categorical_variables(df_vartypes, "Marks")
+
+    with pytest.raises(TypeError):
+        assert _find_or_check_categorical_variables(df_datetime, "datetime_range")
+
+    with pytest.raises(TypeError):
+        assert _find_or_check_categorical_variables(df_datetime, "date_obj1")
+
+    with pytest.raises(TypeError):
+        assert _find_or_check_categorical_variables(df_datetime, ["Name", "date_obj2"])
 
     with pytest.raises(TypeError):
         assert _find_or_check_categorical_variables(df_numeric_columns, 3)
@@ -93,16 +105,32 @@ def test_find_or_check_categorical_variables(df_vartypes, df_numeric_columns):
     with pytest.raises(ValueError):
         assert _find_or_check_categorical_variables(df_vartypes[["Age", "Marks"]], None)
 
+    with pytest.raises(ValueError):
+        assert _find_or_check_categorical_variables(
+            df_datetime[["date_obj1", "time_obj"]], None
+        )
+
     assert _find_or_check_categorical_variables(df_numeric_columns, [0, 1]) == [0, 1]
     assert _find_or_check_categorical_variables(df_numeric_columns, 0) == [0]
     assert _find_or_check_categorical_variables(df_numeric_columns, 1) == [1]
 
     df_vartypes["Age"] = df_vartypes["Age"].astype("category")
+    assert _find_or_check_categorical_variables(df_vartypes, "Age") == ["Age"]
     assert _find_or_check_categorical_variables(df_vartypes, None) == vars_cat + ["Age"]
     assert _find_or_check_categorical_variables(df_vartypes, ["Name", "Age"]) == [
         "Name",
         "Age",
     ]
+    df_datetime["date_obj1"] = df_datetime["date_obj1"].astype("category")
+    assert _find_or_check_categorical_variables(df_datetime, None) == ["Name"]
+    df_datetime["datetime_range"] = df_datetime["datetime_range"].astype("category")
+    assert _find_or_check_categorical_variables(df_datetime, None) == ["Name"]
+
+    tz_time = pd.DataFrame(
+        {"time_objTZ": df_datetime["time_obj"].add(["+5", "+11", "-3", "-8"])}
+    )
+    with pytest.raises(ValueError):
+        assert _find_or_check_categorical_variables(tz_time, None)
 
 
 def test_find_or_check_datetime_variables(df_datetime):
@@ -116,7 +144,7 @@ def test_find_or_check_datetime_variables(df_datetime):
         {"date_obj1_cat": df_datetime["date_obj1"].astype("category")}
     )
     tz_time = pd.DataFrame(
-        {"time_objTZ": df_datetime["time_obj"].add(['+5', '+11', '-3', '-8'])}
+        {"time_objTZ": df_datetime["time_obj"].add(["+5", "+11", "-3", "-8"])}
     )
 
     # error when df has no datetime variables
