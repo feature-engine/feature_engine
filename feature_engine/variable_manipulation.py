@@ -93,6 +93,20 @@ def _find_or_check_numerical_variables(
     return variables
 
 
+def contains_categorical(column: pd.Series) -> bool:
+    return is_object(column) and (
+            is_numeric(pd.to_numeric(column, errors="ignore"))
+            or not is_datetime(pd.to_datetime(column, errors="ignore", utc=True))
+        ) or (
+            is_categorical(column) and (
+                is_numeric(column.dtype.categories)
+                or not is_datetime(
+                    pd.to_datetime(column, errors="ignore", utc=True)
+                )
+            )
+        )
+
+
 def _find_or_check_categorical_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
@@ -120,22 +134,8 @@ def _find_or_check_categorical_variables(
     if variables is None:
         # find categorical variables in dataset
         variables = [
-            column
-            for column in X.select_dtypes(exclude="number")
-            if is_object(X[column])
-            and (
-                is_numeric(pd.to_numeric(X[column], errors="ignore"))
-                or not is_datetime(pd.to_datetime(X[column], errors="ignore", utc=True))
-            )
-            or (
-                is_categorical(X[column])
-                and (
-                    is_numeric(X[column].dtype.categories)
-                    or not is_datetime(
-                        pd.to_datetime(X[column], errors="ignore", utc=True)
-                    )
-                )
-            )
+            column for column in X.select_dtypes(exclude="number").columns
+            if contains_categorical(X[column])
         ]
         if len(variables) == 0:
             raise ValueError(
@@ -144,22 +144,7 @@ def _find_or_check_categorical_variables(
             )
 
     elif isinstance(variables, (str, int)):
-        if (
-            is_object(X[variables])
-            and (
-                is_numeric(pd.to_numeric(X[variables], errors="ignore"))
-                or not is_datetime(pd.to_datetime(X[variables], errors="ignore"))
-            )
-            or (
-                is_categorical(X[variables])
-                and (
-                    is_numeric(X[variables].dtype.categories)
-                    or not is_datetime(
-                        pd.to_datetime(X[variables], errors="ignore", utc=True)
-                    )
-                )
-            )
-        ):
+        if contains_categorical(X[variables]):
             variables = [variables]
         else:
             raise TypeError("The variable entered is not categorical.")
@@ -171,26 +156,8 @@ def _find_or_check_categorical_variables(
         # check that user entered variables are of type categorical
         else:
             vars_non_cat = [
-                column
-                for column in variables
-                if not (
-                    is_object(X[column])
-                    and (
-                        is_numeric(pd.to_numeric(X[column], errors="ignore"))
-                        or not is_datetime(
-                            pd.to_datetime(X[column], errors="ignore", utc=True)
-                        )
-                    )
-                )
-                and not (
-                    is_categorical(X[column])
-                    and (
-                        is_numeric(X[column].dtype.categories)
-                        or not is_datetime(
-                            pd.to_datetime(X[column], errors="ignore", utc=True)
-                        )
-                    )
-                )
+                column for column in variables
+                if not contains_categorical(X[column])
             ]
             if len(vars_non_cat) > 0:
                 raise TypeError(
