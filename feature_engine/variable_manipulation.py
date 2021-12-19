@@ -144,7 +144,7 @@ def _find_or_check_categorical_variables(
             )
 
     elif isinstance(variables, (str, int)):
-        if contains_categorical(X[variables]):
+        if is_categorical(X[variables]) or is_object(X[variables]):
             variables = [variables]
         else:
             raise TypeError("The variable entered is not categorical.")
@@ -155,11 +155,7 @@ def _find_or_check_categorical_variables(
 
         # check that user entered variables are of type categorical
         else:
-            vars_non_cat = [
-                column for column in variables
-                if not contains_categorical(X[column])
-            ]
-            if len(vars_non_cat) > 0:
+            if len(X[variables].select_dtypes(exclude=["O", "category"]).columns) > 0:
                 raise TypeError(
                     "Some of the variables are not categorical. Please cast them as "
                     "categorical or object before using this transformer."
