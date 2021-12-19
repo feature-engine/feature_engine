@@ -80,6 +80,8 @@ def test_find_or_check_categorical_variables(
     with pytest.raises(TypeError):
         assert _find_or_check_categorical_variables(df_datetime, "datetime_range")
     with pytest.raises(TypeError):
+        assert _find_or_check_categorical_variables(df_datetime, ["datetime_range"])
+    with pytest.raises(TypeError):
         assert _find_or_check_categorical_variables(df_numeric_columns, 3)
     with pytest.raises(TypeError):
         assert _find_or_check_categorical_variables(df_numeric_columns, [0, 2])
@@ -113,7 +115,7 @@ def test_find_or_check_categorical_variables(
         "date_obj1",
     ]
 
-    # vars specified, index is numeric
+    # vars specified, column name is integer
     assert _find_or_check_categorical_variables(df_numeric_columns, [0, 1]) == [0, 1]
     assert _find_or_check_categorical_variables(df_numeric_columns, 0) == [0]
     assert _find_or_check_categorical_variables(df_numeric_columns, 1) == [1]
