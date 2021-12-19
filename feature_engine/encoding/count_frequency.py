@@ -97,6 +97,7 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
         encoding_method: str = "count",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
+        rare_labels: str = "ignore"
     ) -> None:
 
         if encoding_method not in ["count", "frequency"]:
@@ -109,6 +110,7 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
         self.encoding_method = encoding_method
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
+        self.rare_labels = rare_labels
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
