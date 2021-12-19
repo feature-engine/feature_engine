@@ -100,6 +100,7 @@ class WoEEncoder(BaseCategoricalTransformer):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
+        rare_labels: str = "ignore"
     ) -> None:
 
         if not isinstance(ignore_format, bool):
@@ -107,6 +108,7 @@ class WoEEncoder(BaseCategoricalTransformer):
 
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
+        self.rare_labels = rare_labels
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
