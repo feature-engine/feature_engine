@@ -12,10 +12,11 @@ and feature engineering transformations in general, as well as additional exampl
 
    imputation/index
    encoding/index
-   transformation/index
    discretisation/index
    outliers/index
+   transformation/index
    creation/index
    selection/index
+   datetime/index
    preprocessing/index
    wrappers/index

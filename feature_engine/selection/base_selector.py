@@ -25,7 +25,9 @@ def get_feature_importances(estimator):
         else:
             importances = np.linalg.norm(coef_, axis=0, ord=len(estimator.coef_))
 
-    return list(importances)
+        importances = list(importances)
+
+    return importances
 
 
 class BaseSelector(BaseEstimator, TransformerMixin):
