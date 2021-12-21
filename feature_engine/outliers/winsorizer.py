@@ -12,7 +12,7 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
 class Winsorizer(WinsorizerBase):
     """
     The Winsorizer() caps maximum and/or minimum values of a variable at automatically
-    determined values.
+    determined values, and optionally adds indicators.
 
     The values to cap variables are determined using:
 
@@ -138,13 +138,16 @@ class Winsorizer(WinsorizerBase):
         missing_values: str = "raise",
     ) -> None:
         if not isinstance(add_indicators, bool):
-            raise ValueError("add_indicators takes only booleans True and False")
+            raise ValueError(
+                "add_indicators takes only booleans True and False"
+                f"Got {add_indicators} instead."
+            )
         super().__init__(capping_method, tail, fold, variables, missing_values)
         self.add_indicators = add_indicators
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Cap the variable values.
+        Cap the variable values. Optionally, add outlier indicators.
 
         Parameters
         ----------
@@ -160,19 +163,29 @@ class Winsorizer(WinsorizerBase):
             to 'n_features', otherwise, will have an additional indicator column
             per processed feature for each tail.
         """
-        X = _is_dataframe(X)
-        X_out = super().transform(X)
-        if self.add_indicators:
-            X = X[self.variables_]
+        if not self.add_indicators:
+            return super().transform(X)
+        else:
+            X_orig = _is_dataframe(X)
+            X_out = super().transform(X_orig)
+            X_orig = X_orig[self.variables_]
             X_out_filtered = X_out[self.variables_]
+
             if self.tail in ["left", "both"]:
-                X_left = X_out_filtered > X
+                X_left = X_out_filtered > X_orig
                 X_left.columns = [str(cl) + "_left" for cl in self.variables_]
             if self.tail in ["right", "both"]:
-                X_right = X_out_filtered < X
+                X_right = X_out_filtered < X_orig
                 X_right.columns = [str(cl) + "_right" for cl in self.variables_]
-            if self.tail in ["left", "both"]:
+            if self.tail == "left":
                 X_out = pd.concat([X_out, X_left], axis=1)
-            if self.tail in ["right", "both"]:
+            elif self.tail == "right":
                 X_out = pd.concat([X_out, X_right], axis=1)
+            else:
+                X_both = pd.concat([X_left, X_right], axis=1)
+                X_both = X_both[[
+                    cl1 for cl2 in zip(X_left.columns.values, X_right.columns.values)
+                    for cl1 in cl2
+                ]]
+                X_out = pd.concat([X_out, X_both], axis=1)
         return X_out
