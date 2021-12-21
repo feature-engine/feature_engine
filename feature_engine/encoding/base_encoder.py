@@ -157,8 +157,10 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
                     f"{nan_columns_str}."
                 )
             elif self.rare_labels == "raise":
-                raise ValueError("Cannot transform dataframe because "
-                                 "NaN values were introduced.")
+                raise ValueError(
+                    "During the encoding, NaN values were introduced in the feature(s) "
+                    f"{nan_columns_str}."
+                )
 
         return X
 
