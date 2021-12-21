@@ -123,7 +123,6 @@ def test_error_if_input_df_contains_categories_not_present_in_fit_df(
     # test case 3: when dataset to be transformed contains categories not present in
     # training dataset
     msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
-    error_msg = "Cannot transform dataframe because NaN values were introduced."
     encoder = CountFrequencyEncoder()
 
     if encoder.rare_labels == "ignore":
@@ -144,7 +143,7 @@ def test_error_if_input_df_contains_categories_not_present_in_fit_df(
         # check that only one error was raised
         assert len(record) == 1
         # check that the error message matches
-        assert record[0].message.args[0] == error_msg
+        assert record[0].message.args[0] == msg
 
 
 def test_fit_raises_error_if_df_contains_na(df_enc_na):
