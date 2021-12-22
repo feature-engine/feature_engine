@@ -4,10 +4,10 @@
 import numpy as np
 import pandas as pd
 
-from feature_engine.outliers import Winsorizer
+from feature_engine.outliers.base_outlier import WinsorizerBase
 
 
-class OutlierTrimmer(Winsorizer):
+class OutlierTrimmer(WinsorizerBase):
     """The OutlierTrimmer() removes observations with outliers from the dataset.
 
     The OutlierTrimmer() first calculates the maximum and /or minimum values

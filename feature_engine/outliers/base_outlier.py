@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
+from typing import List, Optional, Union
 
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
@@ -10,6 +11,10 @@ from feature_engine.dataframe_checks import (
     _is_dataframe,
 )
 from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
+)
 
 
 class BaseOutlier(BaseEstimator, TransformerMixin):
@@ -89,3 +94,108 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
     def _more_tags(self):
         return _return_tags()
+
+
+class WinsorizerBase(BaseOutlier):
+    def __init__(
+        self,
+        capping_method: str = "gaussian",
+        tail: str = "right",
+        fold: Union[int, float] = 3,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_values: str = "raise",
+    ) -> None:
+
+        if capping_method not in ["gaussian", "iqr", "quantiles"]:
+            raise ValueError(
+                "capping_method takes only values 'gaussian', 'iqr' or 'quantiles'"
+            )
+
+        if tail not in ["right", "left", "both"]:
+            raise ValueError("tail takes only values 'right', 'left' or 'both'")
+
+        if fold <= 0:
+            raise ValueError("fold takes only positive numbers")
+
+        if capping_method == "quantiles" and fold > 0.2:
+            raise ValueError(
+                "with capping_method ='quantiles', fold takes values between 0 and "
+                "0.20 only."
+            )
+
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError("missing_values takes only values 'raise' or 'ignore'")
+
+        self.capping_method = capping_method
+        self.tail = tail
+        self.fold = fold
+        self.variables = _check_input_parameter_variables(variables)
+        self.missing_values = missing_values
+
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+        """
+        Learn the values that should be used to replace outliers.
+
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The training input samples.
+
+        y : pandas Series, default=None
+            y is not needed in this transformer. You can pass y or None.
+        """
+
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # find or check for numerical variables
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+
+        if self.missing_values == "raise":
+            # check if dataset contains na
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
+
+        self.right_tail_caps_ = {}
+        self.left_tail_caps_ = {}
+
+        # estimate the end values
+        if self.tail in ["right", "both"]:
+            if self.capping_method == "gaussian":
+                self.right_tail_caps_ = (
+                    X[self.variables_].mean() + self.fold * X[self.variables_].std()
+                ).to_dict()
+
+            elif self.capping_method == "iqr":
+                IQR = X[self.variables_].quantile(0.75) - X[self.variables_].quantile(
+                    0.25
+                )
+                self.right_tail_caps_ = (
+                    X[self.variables_].quantile(0.75) + (IQR * self.fold)
+                ).to_dict()
+
+            elif self.capping_method == "quantiles":
+                self.right_tail_caps_ = (
+                    X[self.variables_].quantile(1 - self.fold).to_dict()
+                )
+
+        if self.tail in ["left", "both"]:
+            if self.capping_method == "gaussian":
+                self.left_tail_caps_ = (
+                    X[self.variables_].mean() - self.fold * X[self.variables_].std()
+                ).to_dict()
+
+            elif self.capping_method == "iqr":
+                IQR = X[self.variables_].quantile(0.75) - X[self.variables_].quantile(
+                    0.25
+                )
+                self.left_tail_caps_ = (
+                    X[self.variables_].quantile(0.25) - (IQR * self.fold)
+                ).to_dict()
+
+            elif self.capping_method == "quantiles":
+                self.left_tail_caps_ = X[self.variables_].quantile(self.fold).to_dict()
+
+        self.n_features_in_ = X.shape[1]
+
+        return self
