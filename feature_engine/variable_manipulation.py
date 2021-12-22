@@ -93,6 +93,25 @@ def _find_or_check_numerical_variables(
     return variables
 
 
+def _is_categorical_and_is_not_datetime(column: pd.Series) -> bool:
+
+    # check for datetime only if object cannot be cast as numeric because
+    # if it could pd.to_datetime would convert it to datetime regardless
+    if is_object(column):
+        is_categorical_and_is_not_datetime = is_numeric(
+            pd.to_numeric(column, errors="ignore")
+        ) or not is_datetime(pd.to_datetime(column, errors="ignore", utc=True))
+
+    # check for datetime only if the type of the categories is not numeric
+    # because pd.to_datetime throws an error when it is an integer
+    elif is_categorical(column):
+        is_categorical_and_is_not_datetime = is_numeric(
+            column.dtype.categories
+        ) or not is_datetime(pd.to_datetime(column, errors="ignore", utc=True))
+
+    return is_categorical_and_is_not_datetime
+
+
 def _find_or_check_categorical_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
@@ -119,7 +138,11 @@ def _find_or_check_categorical_variables(
 
     if variables is None:
         # find categorical variables in dataset
-        variables = list(X.select_dtypes(include=["O", "category"]).columns)
+        variables = [
+            column
+            for column in X.select_dtypes(include=["O", "category"]).columns
+            if _is_categorical_and_is_not_datetime(X[column])
+        ]
         if len(variables) == 0:
             raise ValueError(
                 "No categorical variables found in this dataframe. Please check "
@@ -136,7 +159,7 @@ def _find_or_check_categorical_variables(
         if len(variables) == 0:
             raise ValueError("The list of variables is empty.")
 
-        # check that user entered variables are of type numerical
+        # check that user entered variables are of type categorical
         else:
             if len(X[variables].select_dtypes(exclude=["O", "category"]).columns) > 0:
                 raise TypeError(
