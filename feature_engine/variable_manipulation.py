@@ -170,6 +170,25 @@ def _find_or_check_categorical_variables(
     return variables
 
 
+def _is_categorical_and_is_datetime(column: pd.Series) -> bool:
+
+    # check for datetime only if object cannot be cast as numeric because
+    # if it could pd.to_datetime would convert it to datetime regardless
+    if is_object(column):
+        is_categorical_and_is_datetime = not is_numeric(
+            pd.to_numeric(column, errors="ignore")
+        ) and is_datetime(pd.to_datetime(column, errors="ignore", utc=True))
+
+    # check for datetime only if the type of the categories is not numeric
+    # because pd.to_datetime throws an error when it is an integer
+    elif is_categorical(column):
+        is_categorical_and_is_datetime = not is_numeric(
+            column.dtype.categories
+        ) and is_datetime(pd.to_datetime(column, errors="ignore", utc=True))
+
+    return is_categorical_and_is_datetime
+
+
 def _find_or_check_datetime_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
@@ -191,8 +210,7 @@ def _find_or_check_datetime_variables(
         variables = [
             column
             for column in X.select_dtypes(exclude="number").columns
-            if is_datetime(X[column])
-            or is_datetime(pd.to_datetime(X[column], errors="ignore", utc=True))
+            if is_datetime(X[column]) or _is_categorical_and_is_datetime(X[column])
         ]
 
         if len(variables) == 0:
@@ -202,7 +220,7 @@ def _find_or_check_datetime_variables(
 
         if is_datetime(X[variables]) or (
             not is_numeric(X[variables])
-            and is_datetime(pd.to_datetime(X[variables], errors="ignore", utc=True))
+            and _is_categorical_and_is_datetime(X[variables])
         ):
             variables = [variables]
         else:
@@ -216,14 +234,9 @@ def _find_or_check_datetime_variables(
         else:
             vars_non_dt = [
                 column
-                for column in variables
+                for column in X[variables].select_dtypes(exclude="datetime")
                 if is_numeric(X[column])
-                or (
-                    not is_datetime(X[column])
-                    and not is_datetime(
-                        pd.to_datetime(X[column], errors="ignore", utc=True)
-                    )
-                )
+                or not _is_categorical_and_is_datetime(X[column])
             ]
 
             if len(vars_non_dt) > 0:
