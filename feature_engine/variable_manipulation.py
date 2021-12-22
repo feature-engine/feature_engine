@@ -93,23 +93,31 @@ def _find_or_check_numerical_variables(
     return variables
 
 
+def _is_convertible_to_num(column: pd.Series) -> bool:
+    return is_numeric(pd.to_numeric(column, errors="ignore"))
+
+
+def _is_convertible_to_dt(column: pd.Series) -> bool:
+    return is_datetime(pd.to_datetime(column, errors="ignore", utc=True))
+
+
+def _is_categories_num(column: pd.Series) -> bool:
+    return is_numeric(column.dtype.categories)
+
+
 def _is_categorical_and_is_not_datetime(column: pd.Series) -> bool:
 
     # check for datetime only if object cannot be cast as numeric because
     # if it could pd.to_datetime would convert it to datetime regardless
     if is_object(column):
-        is_categorical_and_is_not_datetime = is_numeric(
-            pd.to_numeric(column, errors="ignore")
-        ) or not is_datetime(pd.to_datetime(column, errors="ignore", utc=True))
+        is_cat = _is_convertible_to_num(column) or not _is_convertible_to_dt(column)
 
     # check for datetime only if the type of the categories is not numeric
     # because pd.to_datetime throws an error when it is an integer
     elif is_categorical(column):
-        is_categorical_and_is_not_datetime = is_numeric(
-            column.dtype.categories
-        ) or not is_datetime(pd.to_datetime(column, errors="ignore", utc=True))
+        is_cat = _is_categories_num(column) or not _is_convertible_to_dt(column)
 
-    return is_categorical_and_is_not_datetime
+    return is_cat
 
 
 def _find_or_check_categorical_variables(
@@ -175,18 +183,14 @@ def _is_categorical_and_is_datetime(column: pd.Series) -> bool:
     # check for datetime only if object cannot be cast as numeric because
     # if it could pd.to_datetime would convert it to datetime regardless
     if is_object(column):
-        is_categorical_and_is_datetime = not is_numeric(
-            pd.to_numeric(column, errors="ignore")
-        ) and is_datetime(pd.to_datetime(column, errors="ignore", utc=True))
+        is_dt = not _is_convertible_to_num(column) and _is_convertible_to_dt(column)
 
     # check for datetime only if the type of the categories is not numeric
     # because pd.to_datetime throws an error when it is an integer
     elif is_categorical(column):
-        is_categorical_and_is_datetime = not is_numeric(
-            column.dtype.categories
-        ) and is_datetime(pd.to_datetime(column, errors="ignore", utc=True))
+        is_dt = not _is_categories_num(column) and _is_convertible_to_dt(column)
 
-    return is_categorical_and_is_datetime
+    return is_dt
 
 
 def _find_or_check_datetime_variables(
