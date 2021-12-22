@@ -3,6 +3,7 @@
 
 from typing import List, Union
 
+import numpy as np
 import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
@@ -178,11 +179,11 @@ class Winsorizer(WinsorizerBase):
                 X_right = X_out_filtered < X_orig
                 X_right.columns = [str(cl) + "_right" for cl in self.variables_]
             if self.tail == "left":
-                X_out = pd.concat([X_out, X_left], axis=1)
+                X_out = pd.concat([X_out, X_left.astype(np.float64)], axis=1)
             elif self.tail == "right":
-                X_out = pd.concat([X_out, X_right], axis=1)
+                X_out = pd.concat([X_out, X_right.astype(np.float64)], axis=1)
             else:
-                X_both = pd.concat([X_left, X_right], axis=1)
+                X_both = pd.concat([X_left, X_right], axis=1).astype(np.float64)
                 X_both = X_both[[
                     cl1 for cl2 in zip(X_left.columns.values, X_right.columns.values)
                     for cl1 in cl2

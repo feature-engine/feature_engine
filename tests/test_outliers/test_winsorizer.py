@@ -214,7 +214,7 @@ def test_indicators_are_correct():
     )
     df = pd.DataFrame({"col": np.arange(100).astype(np.float64)})
     df_out = transformer.fit_transform(df)
-    expected_ind = np.r_[np.repeat(True, 10), np.repeat(False, 90)]
+    expected_ind = np.r_[np.repeat(True, 10), np.repeat(False, 90)].astype(np.float64)
     pd.testing.assert_frame_equal(
         df_out.drop("col", axis=1),
         df.assign(col_left=expected_ind).drop("col", axis=1)
@@ -222,7 +222,7 @@ def test_indicators_are_correct():
 
     transformer.set_params(tail="right")
     df_out = transformer.fit_transform(df)
-    expected_ind = np.r_[np.repeat(False, 90), np.repeat(True, 10)]
+    expected_ind = np.r_[np.repeat(False, 90), np.repeat(True, 10)].astype(np.float64)
     pd.testing.assert_frame_equal(
         df_out.drop("col", axis=1),
         df.assign(col_right=expected_ind).drop("col", axis=1)
@@ -230,8 +230,12 @@ def test_indicators_are_correct():
 
     transformer.set_params(tail="both")
     df_out = transformer.fit_transform(df)
-    expected_ind_left = np.r_[np.repeat(True, 10), np.repeat(False, 90)]
-    expected_ind_right = np.r_[np.repeat(False, 90), np.repeat(True, 10)]
+    expected_ind_left = np.r_[
+        np.repeat(True, 10), np.repeat(False, 90)
+    ].astype(np.float64)
+    expected_ind_right = np.r_[
+        np.repeat(False, 90), np.repeat(True, 10)
+    ].astype(np.float64)
     pd.testing.assert_frame_equal(
         df_out.drop("col", axis=1),
         df.assign(
