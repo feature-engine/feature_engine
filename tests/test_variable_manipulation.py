@@ -133,9 +133,16 @@ def test_find_or_check_categorical_variables(
     # object-like datetime
     df_datetime["date_obj1"] = df_datetime["date_obj1"].astype("category")
     assert _find_or_check_categorical_variables(df_datetime, None) == ["Name"]
+    assert _find_or_check_categorical_variables(df_datetime, ["Name", "date_obj1"]) == [
+        "Name",
+        "date_obj1",
+    ]
     # datetime64
     df_datetime["datetime_range"] = df_datetime["datetime_range"].astype("category")
     assert _find_or_check_categorical_variables(df_datetime, None) == ["Name"]
+    assert _find_or_check_categorical_variables(
+        df_datetime, ["Name", "datetime_range"]
+    ) == ["Name", "datetime_range"]
 
     # numeric var cast as object
     df_vartypes["Marks"] = df_vartypes["Marks"].astype("O")
