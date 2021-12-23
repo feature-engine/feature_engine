@@ -1,7 +1,7 @@
 .. -*- mode: rst -*-
 
-Version 0.6.1 and previous
-==========================
+Version 0.6.X
+=============
 
 Version 0.6.1
 -------------

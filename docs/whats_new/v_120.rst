@@ -1,0 +1,62 @@
+Version 1.2.X
+=============
+
+Version 1.2.0
+-------------
+
+Deployed: 3rd January 2022
+
+Contributors
+~~~~~~~~~~~~
+
+    - Edoardo Argiolas
+    - gverbock
+    - Thibault Blanc
+    - David Cortes
+    - Morgan Sell
+    - Kevin Kurek
+    - Soledad Galli
+
+In this big release, we add 3 new transformers, we expand the functionality of existing
+classes, we add information about citing Feature-engine and we expand the documentation
+with a new look, extended user guide with examples, and more details on how to
+contribute to the project.
+
+Thank you so much to the contributors for making this massive release possible!
+
+Thank you to reviewers **Nicolas Galli** and **Chris Samiullah** for useful advice on
+various PRs.
+
+New transformers
+~~~~~~~~~~~~~~~~
+
+    - **DatetimeFeatures**: extracts date and time features from datetime variables (**Edoardo Argiolas**)
+    - **DropHishPSIFeatures**: finds and drops features with high population stability index (**gverbock**)
+    - **Matchvariables**: ensures that the same variables observed in the train set are present in the test set (**Thibault Blanc**)
+
+New Functionality
+~~~~~~~~~~~~~~~~~
+
+    - The **Winsorizer** can now add binary variable indicators to flag outlier values (**David Cortes**)
+    - The **DropMissingData** now allows to drop rows based on % of missing data (**Kevin Kurek**)
+    - **Categorical encoders** can now either raise a warning or an error when encoding categories not seen in the train set (**Morgan Sell**)
+
+Bug fix
+~~~~~~~
+    - All **Encoders** are now able to exclude datetime variables cast as object or categorical when searching for categorical variables automatically (**Edoardo Argiolas**)
+    - All transformers will now raise an error when users pass an empty list to the variables parameter (**Edoardo Argiolas**)
+    - All transformers now check the variable type when user passes a single variable to the variables parameter (**Edoardo Argiolas**)
+
+
+Documentation
+~~~~~~~~~~~~~
+    - We changed the template to pydata (**Soledad Galli**)
+    - We split the information about transformers into a user guide and an API (**Soledad Galli**)
+    - The API documentation shows how to use the transformers (**Soledad Galli**)
+    - The user guide expands the API docs with plenty of examples and tips on when and how to use the transformers (**Soledad Galli**)
+    - We expanded the contribute section with plenty of details on how to make a contribution and how to check your code is top notch (**Soledad Galli**)
+    - You can now sponsor Feature-engine (**Soledad Galli**)
+    - You can now cite our JOSS article when using Feature-engine (**Soledad Galli**)
+    - We added plenty of examples on how to use the new class DropHighPSIFeatures (**gverbock**)
+    - We included various examples on how to extract date and time features using the new DatetimeFeatures class (**Edoardo Argiolas**)
+    - We added a Jupyter notebook with a demo of the new DatetimeFeatures class (**Edoardo Argiolas**)
