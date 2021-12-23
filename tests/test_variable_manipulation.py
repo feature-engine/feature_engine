@@ -237,22 +237,26 @@ def test_find_or_check_datetime_variables(df_datetime):
         == vars_convertible_to_dt
     )
 
-    # int var cast as categorical
-    df_datetime["Age"] = df_datetime["Age"].astype("category")
-    with pytest.raises(TypeError):
-        assert _find_or_check_datetime_variables(df_datetime, variables="Age")
-    with pytest.raises(TypeError):
-        assert _find_or_check_datetime_variables(df_datetime, variables=["Age"])
-    with pytest.raises(ValueError) as errinfo:
-        assert _find_or_check_datetime_variables(df_datetime[["Age"]], variables=None)
-    assert str(errinfo.value) == "No datetime variables found in this dataframe."
-    assert (
-        _find_or_check_datetime_variables(df_datetime, variables=None)
-        == vars_convertible_to_dt
-    )
 
-    # numeric var cast as object
+@pytest.fixture()
+def cast_age_as_cat(df_datetime):
+    df_datetime["Age"] = df_datetime["Age"].astype("category")
+    return df_datetime
+
+
+@pytest.fixture()
+def cast_age_as_obj(df_datetime):
     df_datetime["Age"] = df_datetime["Age"].astype("O")
+    return df_datetime
+
+
+@pytest.mark.parametrize(
+    "df_age_cast_as_categorical", ["cast_age_as_cat", "cast_age_as_obj"]
+)
+def test_dt_checker_when_numeric_is_cast_as_category_or_object(
+    df_age_cast_as_categorical, request
+):
+    df_datetime = request.getfixturevalue(df_age_cast_as_categorical)
     with pytest.raises(TypeError):
         assert _find_or_check_datetime_variables(df_datetime, variables="Age")
     with pytest.raises(TypeError):
@@ -260,10 +264,12 @@ def test_find_or_check_datetime_variables(df_datetime):
     with pytest.raises(ValueError) as errinfo:
         assert _find_or_check_datetime_variables(df_datetime[["Age"]], variables=None)
     assert str(errinfo.value) == "No datetime variables found in this dataframe."
-    assert (
-        _find_or_check_datetime_variables(df_datetime, variables=None)
-        == vars_convertible_to_dt
-    )
+    assert _find_or_check_datetime_variables(df_datetime, variables=None) == [
+        "datetime_range",
+        "date_obj1",
+        "date_obj2",
+        "time_obj",
+    ]
 
 
 def test_find_all_variables(df_vartypes):
