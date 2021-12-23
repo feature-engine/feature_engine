@@ -68,6 +68,12 @@ def test_find_or_check_numerical_variables(df_vartypes, df_numeric_columns):
     assert _find_or_check_numerical_variables(df_numeric_columns, 2) == [2]
 
 
+def _cast_var_as_type(df, var, new_type):
+    df_copy = df.copy()
+    df_copy[var] = df[var].astype(new_type)
+    return df_copy
+
+
 def test_find_or_check_categorical_variables(
     df_vartypes, df_datetime, df_numeric_columns
 ):
@@ -120,15 +126,6 @@ def test_find_or_check_categorical_variables(
     assert _find_or_check_categorical_variables(df_numeric_columns, 0) == [0]
     assert _find_or_check_categorical_variables(df_numeric_columns, 1) == [1]
 
-    # numeric var cast as category
-    df_vartypes["Age"] = df_vartypes["Age"].astype("category")
-    assert _find_or_check_categorical_variables(df_vartypes, "Age") == ["Age"]
-    assert _find_or_check_categorical_variables(df_vartypes, None) == vars_cat + ["Age"]
-    assert _find_or_check_categorical_variables(df_vartypes, ["Name", "Age"]) == [
-        "Name",
-        "Age",
-    ]
-
     # datetime vars cast as category
     # object-like datetime
     df_datetime["date_obj1"] = df_datetime["date_obj1"].astype("category")
@@ -144,18 +141,6 @@ def test_find_or_check_categorical_variables(
         df_datetime, ["Name", "datetime_range"]
     ) == ["Name", "datetime_range"]
 
-    # numeric var cast as object
-    df_vartypes["Marks"] = df_vartypes["Marks"].astype("O")
-    assert _find_or_check_categorical_variables(df_vartypes, "Marks") == ["Marks"]
-    assert _find_or_check_categorical_variables(df_vartypes, ["Name", "Marks"]) == [
-        "Name",
-        "Marks",
-    ]
-    assert _find_or_check_categorical_variables(df_vartypes, None) == vars_cat + [
-        "Age",
-        "Marks",
-    ]
-
     # time-aware datetime var
     tz_time = pd.DataFrame(
         {"time_objTZ": df_datetime["time_obj"].add(["+5", "+11", "-3", "-8"])}
@@ -165,6 +150,26 @@ def test_find_or_check_categorical_variables(
     assert _find_or_check_categorical_variables(tz_time, "time_objTZ") == ["time_objTZ"]
 
 
+@pytest.mark.parametrize(
+    "_num_var, _cat_type",
+    [("Age", "category"), ("Age", "O"), ("Marks", "category"), ("Marks", "O")],
+)
+def test_find_or_check_categorical_variables_when_numeric_is_cast_as_category_or_object(
+    df_vartypes, _num_var, _cat_type
+):
+    df_vartypes = _cast_var_as_type(df_vartypes, _num_var, _cat_type)
+    assert _find_or_check_categorical_variables(df_vartypes, _num_var) == [_num_var]
+    assert _find_or_check_categorical_variables(df_vartypes, None) == [
+        "Name",
+        "City",
+        _num_var,
+    ]
+    assert _find_or_check_categorical_variables(df_vartypes, ["Name", _num_var]) == [
+        "Name",
+        _num_var,
+    ]
+
+
 def test_find_or_check_datetime_variables(df_datetime):
     var_dt = ["datetime_range"]
     var_dt_str = "datetime_range"
@@ -172,9 +177,6 @@ def test_find_or_check_datetime_variables(df_datetime):
     vars_convertible_to_dt = ["datetime_range", "date_obj1", "date_obj2", "time_obj"]
     var_convertible_to_dt = "date_obj1"
     vars_mix = ["datetime_range", "Age"]
-    cat_date = pd.DataFrame(
-        {"date_obj1_cat": df_datetime["date_obj1"].astype("category")}
-    )
     tz_time = pd.DataFrame(
         {"time_objTZ": df_datetime["time_obj"].add(["+5", "+11", "-3", "-8"])}
     )
@@ -229,17 +231,38 @@ def test_find_or_check_datetime_variables(df_datetime):
         )
         == vars_convertible_to_dt + ["time_objTZ"]
     )
-    # vars cast as categorical
-    assert _find_or_check_datetime_variables(cat_date, variables="date_obj1_cat") == [
-        "date_obj1_cat"
+
+    # datetime var cast as categorical
+    df_datetime["date_obj1"] = df_datetime["date_obj1"].astype("category")
+    assert _find_or_check_datetime_variables(df_datetime, variables="date_obj1") == [
+        "date_obj1"
     ]
     assert (
-        _find_or_check_datetime_variables(
-            df_datetime[vars_convertible_to_dt].join(cat_date),
-            variables=vars_convertible_to_dt + ["date_obj1_cat"],
-        )
-        == vars_convertible_to_dt + ["date_obj1_cat"]
+        _find_or_check_datetime_variables(df_datetime, variables=vars_convertible_to_dt)
+        == vars_convertible_to_dt
     )
+
+
+@pytest.mark.parametrize("_num_var, _cat_type", [("Age", "category"), ("Age", "O")])
+def test_find_or_check_datetime_variables_when_numeric_is_cast_as_category_or_object(
+    df_datetime, _num_var, _cat_type
+):
+    df_datetime = _cast_var_as_type(df_datetime, _num_var, _cat_type)
+    with pytest.raises(TypeError):
+        assert _find_or_check_datetime_variables(df_datetime, variables=_num_var)
+    with pytest.raises(TypeError):
+        assert _find_or_check_datetime_variables(df_datetime, variables=[_num_var])
+    with pytest.raises(ValueError) as errinfo:
+        assert _find_or_check_datetime_variables(
+            df_datetime[[_num_var]], variables=None
+        )
+    assert str(errinfo.value) == "No datetime variables found in this dataframe."
+    assert _find_or_check_datetime_variables(df_datetime, variables=None) == [
+        "datetime_range",
+        "date_obj1",
+        "date_obj2",
+        "time_obj",
+    ]
 
 
 def test_find_all_variables(df_vartypes):
