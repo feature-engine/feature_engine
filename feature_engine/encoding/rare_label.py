@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class RareLabelEncoder(BaseCategoricalTransformer):
@@ -117,15 +116,11 @@ class RareLabelEncoder(BaseCategoricalTransformer):
             if max_n_categories < 0 or not isinstance(max_n_categories, int):
                 raise ValueError("max_n_categories takes only positive integer numbers")
 
-        if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False")
-
+        super().__init__(variables, ignore_format)
         self.tol = tol
         self.n_categories = n_categories
         self.max_n_categories = max_n_categories
         self.replace_with = replace_with
-        self.variables = _check_input_parameter_variables(variables)
-        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

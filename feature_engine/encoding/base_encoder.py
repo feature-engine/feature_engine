@@ -19,7 +19,36 @@ from feature_engine.variable_manipulation import (
 
 
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
-    """shared set-up checks and methods across categorical transformers"""
+    """shared set-up checks and methods across categorical transformers
+
+    Parameters
+    ----------
+    variables: list, default=None
+        The list of categorical variables that will be encoded. If None, the
+        encoder will find and transform all variables of type object or categorical by
+        default. You can also make the transformer accept numerical variables, see the
+        next parameter.
+
+    ignore_format: bool, default=False
+        Whether the format in which the categorical variables are cast should be
+        ignored. If False, the encoder will automatically select variables of type
+        object or categorical, or check that the variables entered by the user are of
+        type object or categorical. If True, the encoder will select all variables or
+        accept all variables entered by the user, including those cast as numeric.
+    """
+
+    def __init__(
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        ignore_format: bool = False,
+    ) -> None:
+
+        if not isinstance(ignore_format, bool):
+            raise ValueError("ignore_format takes only booleans True and False. "
+                             f"Got {ignore_format} instead.")
+
+        self.variables = _check_input_parameter_variables(variables)
+        self.ignore_format = ignore_format
 
     def _check_fit_input_and_variables(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -232,15 +261,11 @@ class BaseCategorical(BaseCategoricalTransformer):
         rare_labels: str = "ignore",
     ) -> None:
 
-        if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False")
-
         if rare_labels not in ["raise", "ignore"]:
             raise ValueError(
                 "rare_labels takes only values 'raise' and 'ignore ."
                 f"Got {rare_labels} instead."
             )
 
-        self.variables = _check_input_parameter_variables(variables)
-        self.ignore_format = ignore_format
+        super().__init__(variables, ignore_format)
         self.rare_labels = rare_labels
