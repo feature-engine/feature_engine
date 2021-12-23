@@ -20,10 +20,37 @@ import warnings
 
 
 class BaseDiscretizer(BaseNumericalTransformer):
-    """ Share set-up checks and methods across numerical discretizers"""
+    """
+    Share set-up checks and methods across numerical discretizers
 
-    def __init__(self):
-        pass
+    Parameters
+    ----------
+    return_object: bool, default=False
+        Whether the the discrete variable should be returned as numeric or as
+        object. If you would like to proceed with the engineering of the variable as if
+        it was categorical, use True. Alternatively, keep the default to False.
+
+    return_boundaries : bool, default=False
+        Whether the output should be the interval boundaries. If True, it returns
+        the interval boundaries. If False, it returns integers.
+
+
+    """
+
+    def __init__(
+            self,
+            return_object: bool = False,
+            return_boundaries: bool = False,
+    ) -> None:
+
+        if not isinstance(return_object, bool):
+            raise ValueError("return_object must be True or False")
+
+        if not isinstance(return_boundaries, bool):
+            raise ValueError("return_boundaries must be True or False")
+
+        self.return_object = return_object
+        self.return_boundaries = return_boundaries
 
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """
