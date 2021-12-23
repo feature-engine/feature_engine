@@ -5,11 +5,10 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.encoding.base_encoder import BaseCategorical
 
 
-class CountFrequencyEncoder(BaseCategoricalTransformer):
+class CountFrequencyEncoder(BaseCategorical):
     """
     The CountFrequencyEncoder() replaces categories by either the count or the
     percentage of observations per category.
@@ -54,6 +53,12 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
         object or categorical, or check that the variables entered by the user are of
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.
+
+    rare_labels: string, default='ignore'
+        Indicates what to do, when categories not present in the train set are
+        encountered during transform. If 'raise', then rare categories will raise an
+        error. If 'ignore', then rare categories will be set as NaN and a warning will
+        be raised instead.
 
     Attributes
     ----------
@@ -104,13 +109,9 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
             raise ValueError(
                 "encoding_method takes only values 'count' and 'frequency'"
             )
-        if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False")
+        super().__init__(variables, ignore_format, rare_labels)
 
         self.encoding_method = encoding_method
-        self.variables = _check_input_parameter_variables(variables)
-        self.ignore_format = ignore_format
-        self.rare_labels = rare_labels
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -151,11 +152,11 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
 
         return X
 
-    transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
+    transform.__doc__ = BaseCategorical.transform.__doc__
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().inverse_transform(X)
 
         return X
 
-    inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
+    inverse_transform.__doc__ = BaseCategorical.inverse_transform.__doc__
