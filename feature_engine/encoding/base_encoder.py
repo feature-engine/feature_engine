@@ -229,17 +229,18 @@ class BaseCategorical(BaseCategoricalTransformer):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        rare_labels: str = "ignore"
+        rare_labels: str = "ignore",
     ) -> None:
 
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
 
         if rare_labels not in ["raise", "ignore"]:
-            raise ValueError("rare_labels takes only values 'raise' and 'ignore ." 
-                             f"Got {rare_labels} instead.")
+            raise ValueError(
+                "rare_labels takes only values 'raise' and 'ignore ."
+                f"Got {rare_labels} instead."
+            )
 
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
         self.rare_labels = rare_labels
-
