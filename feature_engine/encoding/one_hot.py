@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class OneHotEncoder(BaseCategoricalTransformer):
@@ -146,14 +145,10 @@ class OneHotEncoder(BaseCategoricalTransformer):
         if not isinstance(drop_last_binary, bool):
             raise ValueError("drop_last_binary takes only True or False")
 
-        if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False")
-
+        super().__init__(variables, ignore_format)
         self.top_categories = top_categories
         self.drop_last = drop_last
         self.drop_last_binary = drop_last_binary
-        self.variables = _check_input_parameter_variables(variables)
-        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
