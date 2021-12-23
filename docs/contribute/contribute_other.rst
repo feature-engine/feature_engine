@@ -38,7 +38,7 @@ Donate
 ------
 
 If Feature-engine is helping your organization save money, time, effort, and frustrations,
-and be more productive, consider `sponsoring the maintainer <https://github.com/sponsors/solegalli>`_.
+and be more productive, consider `sponsoring us <https://github.com/sponsors/solegalli>`_.
 This is a great way to show your appreciation. Thank you!
 
 For all of this, get in touch with the maintainer via `LinkedIn <https://www.linkedin.com/in/soledad-galli/>`_.

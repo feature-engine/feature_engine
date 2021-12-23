@@ -222,7 +222,7 @@ For more details on how to contribute check the contributing page. Click on the
 Donate
 ~~~~~~
 
-`Sponsor the maintainer <https://github.com/sponsors/solegalli>`_ to support her continue expanding
+`Sponsor us <https://github.com/sponsors/solegalli>`_ to support us continue expanding
 Feature-engine.
 
 Open Source
