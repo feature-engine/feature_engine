@@ -66,7 +66,8 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         contain missing values.
 
     drop_original: bool, default=False
-        If True, the original variables to transform will be dropped from the dataframe.
+        If True, the original variables will be dropped from the dataframe
+        after their combination.
 
     Attributes
     ----------
@@ -296,7 +297,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         if self.drop_original:
             X.drop(
                 columns=pd.unique(self.variables_to_combine + self.reference_variables),
-                inplace=True
+                inplace=True,
             )
 
         return X
