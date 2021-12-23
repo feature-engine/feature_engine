@@ -4,6 +4,7 @@ intervals.
 """
 
 from .arbitrary import ArbitraryDiscretiser
+from .base_discretiser import BaseDiscretiser
 from .decision_tree import DecisionTreeDiscretiser
 from .equal_frequency import EqualFrequencyDiscretiser
 from .equal_width import EqualWidthDiscretiser
@@ -13,4 +14,7 @@ __all__ = [
     "EqualFrequencyDiscretiser",
     "EqualWidthDiscretiser",
     "ArbitraryDiscretiser",
+    "BaseDiscretiser",
 ]
+
+
