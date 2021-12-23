@@ -33,6 +33,9 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
 
     More details in the :ref:`User Guide <count_freq_encoder>`.
 
+    See BaseCategoricalTransformer() docstring for the explanations of the inherited init params,
+    i.e., 'ignore_format' and 'variables'.
+
     Parameters
     ----------
     encoding_method: str, default='count'
@@ -41,19 +44,6 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
         **'count'**: number of observations per category
 
         **'frequency'**: percentage of observations per category
-
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
-
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
@@ -95,8 +85,6 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
     def __init__(
         self,
         encoding_method: str = "count",
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        ignore_format: bool = False,
         rare_labels: str = "ignore"
     ) -> None:
 
@@ -104,12 +92,8 @@ class CountFrequencyEncoder(BaseCategoricalTransformer):
             raise ValueError(
                 "encoding_method takes only values 'count' and 'frequency'"
             )
-        if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False")
 
         self.encoding_method = encoding_method
-        self.variables = _check_input_parameter_variables(variables)
-        self.ignore_format = ignore_format
         self.rare_labels = rare_labels
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
