@@ -32,20 +32,11 @@ class MeanEncoder(BaseCategoricalTransformer):
 
     More details in the :ref:`User Guide <mean_encoder>`.
 
+    See BaseCategoricalTransformer() docstring for the explanations of the inherited init params,
+    i.e., 'ignore_format' and 'variables'.
+
     Parameters
     ----------
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
-
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
@@ -93,16 +84,9 @@ class MeanEncoder(BaseCategoricalTransformer):
 
     def __init__(
         self,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        ignore_format: bool = False,
         rare_labels: str = "ignore"
     ) -> None:
 
-        if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False")
-
-        self.variables = _check_input_parameter_variables(variables)
-        self.ignore_format = ignore_format
         self.rare_labels = rare_labels
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
