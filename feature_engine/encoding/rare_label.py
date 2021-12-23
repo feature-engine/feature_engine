@@ -31,15 +31,14 @@ class RareLabelEncoder(BaseCategoricalTransformer):
     encoder will find and encode all categorical variables (type 'object' or
     'categorical').
 
-    With `ignore_format=True` you have the option to encode numerical variables as well.
-    The procedure is identical, you can either enter the list of variables to encode, or
-    the transformer will automatically select all variables.
-
     The encoder first finds the frequent labels for each variable (fit). The encoder
     then groups the infrequent labels under the new label 'Rare' or by another user
     defined string (transform).
 
     More details in the :ref:`User Guide <rarelabel_encoder>`.
+
+    See BaseCategoricalTransformer() docstring for the explanations of the inherited init params,
+    i.e., 'ignore_format' and 'variables'.
 
 
     Parameters
@@ -61,19 +60,6 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
     replace_with: string, intege or float, default='Rare'
         The value that will be used to replace infrequent categories.
-
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
-
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
@@ -103,8 +89,6 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         n_categories: int = 10,
         max_n_categories: Optional[int] = None,
         replace_with: Union[str, int, float] = "Rare",
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        ignore_format: bool = False,
     ) -> None:
 
         if tol < 0 or tol > 1:
@@ -117,15 +101,10 @@ class RareLabelEncoder(BaseCategoricalTransformer):
             if max_n_categories < 0 or not isinstance(max_n_categories, int):
                 raise ValueError("max_n_categories takes only positive integer numbers")
 
-        if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False")
-
         self.tol = tol
         self.n_categories = n_categories
         self.max_n_categories = max_n_categories
         self.replace_with = replace_with
-        self.variables = _check_input_parameter_variables(variables)
-        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
