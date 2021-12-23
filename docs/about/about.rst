@@ -135,3 +135,8 @@ maintaining the project.
 
 |
 |
+
+Individual Sponsors
+-------------------
+
+.. include:: sponsors.rst
