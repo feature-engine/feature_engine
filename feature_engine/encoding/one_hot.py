@@ -28,6 +28,10 @@ class OneHotEncoder(BaseCategoricalTransformer):
     encoder will find and encode all categorical variables (type 'object' or
     'categorical').
 
+    With `ignore_format=True` you have the option to encode numerical variables as well.
+    The procedure is identical, you can either enter the list of variables to encode, or
+    the transformer will automatically select all variables.
+
     The encoder first finds the categories to be encoded for each variable (fit). The
     encoder then creates one dummy variable per category for each variable
     (transform).
@@ -45,9 +49,6 @@ class OneHotEncoder(BaseCategoricalTransformer):
     apply the transform() method. In their place, the binary variables are returned.
 
     More details in the :ref:`User Guide <onehot_encoder>`.
-
-    See BaseCategoricalTransformer() docstring for the explanations of the inherited init params,
-    i.e., 'ignore_format' and 'variables'.
 
     Parameters
     ----------
@@ -70,6 +71,19 @@ class OneHotEncoder(BaseCategoricalTransformer):
         created by one hot encoding can be completely redundant. Setting this parameter
         to `True`, will ensure that for every binary variable in the dataset, only 1
         dummy is created.
+
+    variables: list, default=None
+        The list of categorical variables that will be encoded. If None, the
+        encoder will find and transform all variables of type object or categorical by
+        default. You can also make the transformer accept numerical variables, see the
+        next parameter.
+
+    ignore_format: bool, default=False
+        Whether the format in which the categorical variables are cast should be
+        ignored. If False, the encoder will automatically select variables of type
+        object or categorical, or check that the variables entered by the user are of
+        type object or categorical. If True, the encoder will select all variables or
+        accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
@@ -119,6 +133,8 @@ class OneHotEncoder(BaseCategoricalTransformer):
         top_categories: Optional[int] = None,
         drop_last: bool = False,
         drop_last_binary: bool = False,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        ignore_format: bool = False,
     ) -> None:
 
         if top_categories and not isinstance(top_categories, int):
@@ -130,9 +146,14 @@ class OneHotEncoder(BaseCategoricalTransformer):
         if not isinstance(drop_last_binary, bool):
             raise ValueError("drop_last_binary takes only True or False")
 
+        if not isinstance(ignore_format, bool):
+            raise ValueError("ignore_format takes only booleans True and False")
+
         self.top_categories = top_categories
         self.drop_last = drop_last
         self.drop_last_binary = drop_last_binary
+        self.variables = _check_input_parameter_variables(variables)
+        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

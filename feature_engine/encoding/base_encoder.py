@@ -14,41 +14,11 @@ from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _find_all_variables,
     _find_or_check_categorical_variables,
-    _check_input_parameter_variables
 )
 
 
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
-    """
-    BaseCategoricalTransformer() is the parent class to the encoders.
-    It shares set-up checks and methods across categorical transformer.
-
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
-
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
-
-
-    """
-    def __init__(
-            self,
-            variables: Union[None, int, str, List[Union[str, int]]] = None,
-            ignore_format: bool = False
-    ) -> None:
-
-        if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False")
-
-        self.variables = _check_input_parameter_variables(variables)
-        self.ignore_format = ignore_format
+    """shared set-up checks and methods across categorical transformers"""
 
     def _check_fit_input_and_variables(self, X: pd.DataFrame) -> pd.DataFrame:
         """
