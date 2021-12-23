@@ -55,7 +55,7 @@ class WoEEncoder(BaseCategorical):
         accept all variables entered by the user, including those cast as numeric.
 
     rare_labels: string, default='ignore'
-        Indicates what to do, when categories not present in the train set are
+        Indicates what to do when categories not present in the train set are
         encountered during transform. If 'raise', then rare categories will raise an
         error. If 'ignore', then rare categories will be set as NaN and a warning will
         be raised instead.
