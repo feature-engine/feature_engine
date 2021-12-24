@@ -146,10 +146,8 @@ def test_warning_if_transform_df_contains_categories_not_present_in_fit_df(
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         encoder.transform(df_enc_rare[["var_A", "var_B"]])
 
-    # check that only one error was raised
-    assert len(record) == 1
     # check that the error message matches
-    assert record[0].message.args[0] == msg
+    assert str(record.value) == msg
 
 
 def test_fit_raises_error_if_df_contains_na(df_enc_na):

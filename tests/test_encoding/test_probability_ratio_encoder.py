@@ -277,7 +277,5 @@ def test_warn_if_transform_df_contains_categories_not_seen_in_fit(df_enc, df_enc
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         encoder.transform(df_enc_rare[["var_A", "var_B"]])
 
-    # check that only one error was raised
-    assert len(record) == 1
     # check that the error message matches
-    assert record[0].message.args[0] == msg
+    assert str(record.value) == msg
