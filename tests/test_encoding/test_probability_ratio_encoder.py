@@ -260,12 +260,24 @@ def test_warn_if_transform_df_contains_categories_not_seen_in_fit(df_enc, df_enc
     # in training dataset
     msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
 
-    encoder = PRatioEncoder(variables=None)
+    # check for warning when rare_labels equals 'ignore'
     with pytest.warns(UserWarning) as record:
+        encoder = PRatioEncoder(rare_labels="ignore")
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         encoder.transform(df_enc_rare[["var_A", "var_B"]])
 
     # check that only one warning was raised
     assert len(record) == 1
     # check that the message matches
+    assert record[0].message.args[0] == msg
+
+    # check for error when rare_labels equals 'raise'
+    with pytest.raises(ValueError) as record:
+        encoder = PRatioEncoder(r(rare_labels="raise")
+        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+        encoder.transform(df_enc_rare[["var_A", "var_B"]])
+
+    # check that only one error was raised
+    assert len(record) == 1
+    # check that the error message matches
     assert record[0].message.args[0] == msg

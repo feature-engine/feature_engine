@@ -129,6 +129,7 @@ def test_warning_if_transform_df_contains_categories_not_present_in_fit_df(
 
     msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
 
+    # check for warning when rare_labels equals 'ignore'
     with pytest.warns(UserWarning) as record:
         encoder = MeanEncoder(rare_labels="ignore")
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
