@@ -122,28 +122,30 @@ def test_error_if_input_df_contains_categories_not_present_in_fit_df(
 ):
     # test case 3: when dataset to be transformed contains categories not present in
     # training dataset
+
     msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
-    encoder = CountFrequencyEncoder()
 
-    if encoder.rare_labels == "ignore":
-        with pytest.warns(UserWarning) as record:
-            encoder.fit(df_enc)
-            encoder.transform(df_enc_rare)
+    # check for warning when rare_labels equals 'ignore'
+    with pytest.warns(UserWarning) as record:
+        encoder = CountFrequencyEncoder(rare_labels="ignore")
+        encoder.fit(df_enc)
+        encoder.transform(df_enc_rare)
 
-        # check that only one warning was raised
-        assert len(record) == 1
-        # check that the message matches
-        assert record[0].message.args[0] == msg
+    # check that only one warning was raised
+    assert len(record) == 1
+    # check that the message matches
+    assert record[0].message.args[0] == msg
 
-    elif encoder.rare_labels == "raise":
-        with pytest.raises(ValueError) as record:
-            encoder.fit(df_enc)
-            encoder.transform(df_enc_rare)
+    # check for error when rare_labels equals 'raise'
+    with pytest.raises(ValueError) as record:
+        encoder = CountFrequencyEncoder(rare_labels="raise")
+        encoder.fit(df_enc)
+        encoder.transform(df_enc_rare)
 
-        # check that only one error was raised
-        assert len(record) == 1
-        # check that the error message matches
-        assert record[0].message.args[0] == msg
+    # check that only one error was raised
+    assert len(record) == 1
+    # check that the error message matches
+    assert record[0].message.args[0] == msg
 
 
 def test_fit_raises_error_if_df_contains_na(df_enc_na):
