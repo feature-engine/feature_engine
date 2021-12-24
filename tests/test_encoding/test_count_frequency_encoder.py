@@ -139,13 +139,12 @@ def test_error_if_input_df_contains_categories_not_present_in_fit_df(
     # check for error when rare_labels equals 'raise'
     with pytest.raises(ValueError) as record:
         encoder = CountFrequencyEncoder(rare_labels="raise")
+
         encoder.fit(df_enc)
         encoder.transform(df_enc_rare)
 
-    # check that only one error was raised
-    assert len(record) == 1
     # check that the error message matches
-    assert record[0].message.args[0] == msg
+    assert str(record.value) == msg
 
 
 def test_fit_raises_error_if_df_contains_na(df_enc_na):

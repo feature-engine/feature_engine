@@ -86,11 +86,8 @@ def test_error_if_input_df_contains_categories_not_present_in_training_df(
         encoder.fit(df_enc)
         encoder.transform(df_enc_rare)
 
-    # check that only one warning was raised
-    assert len(record) == 1
-    # check that the message matches
-    assert record[0].message.args[0] == msg
-
+    # check that the error message matches
+    assert str(record.value) == msg
 
 def test_non_fitted_error(df_enc):
     with pytest.raises(NotFittedError):
