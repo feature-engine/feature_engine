@@ -119,6 +119,13 @@ def test_default_parameters(df_vartypes):
     pd.testing.assert_frame_equal(X, ref)
 
 
+def test_error_when_drop_original_not_bool():
+    with pytest.raises(TypeError):
+        MathematicalCombination(
+            variables_to_combine=["Age", "Marks"], drop_original="not_a_bool"
+        )
+
+
 def test_error_when_variables_to_combine_not_numeric(df_vartypes):
     transformer = MathematicalCombination(variables_to_combine=["Name", "Age", "Marks"])
     with pytest.raises(TypeError):
@@ -323,4 +330,26 @@ def test_no_error_when_null_values_in_variable(df_vartypes):
         }
     )
     # transform params
+    pd.testing.assert_frame_equal(X, ref)
+
+
+def test_drop_original_variables(df_vartypes):
+    transformer = MathematicalCombination(
+        variables_to_combine=["Age", "Marks"],
+        math_operations=["sum", "mean"],
+        drop_original=True,
+    )
+
+    X = transformer.fit_transform(df_vartypes)
+
+    ref = pd.DataFrame.from_dict(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "sum(Age-Marks)": [20.9, 21.8, 19.7, 18.6],
+            "mean(Age-Marks)": [10.45, 10.9, 9.85, 9.3],
+        }
+    )
+
     pd.testing.assert_frame_equal(X, ref)
