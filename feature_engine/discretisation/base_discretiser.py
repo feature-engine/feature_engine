@@ -116,5 +116,5 @@ class BaseDiscretiser(BaseNumericalTransformer):
                 nan_columns_str = nan_columns[0]
 
             warnings.warn(
-                f"NaN values were introduced in the feature(s) "
-                f"{nan_columns_str} during the encoding."
+                f"During the discretisation, NaN values were introduced in the feature(s) "
+                f"{nan_columns_str}."
