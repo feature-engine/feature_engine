@@ -163,7 +163,10 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
             raise ValueError("missing_values takes only values 'raise' or 'ignore'")
 
         if not isinstance(drop_original, bool):
-            raise TypeError("drop_original takes only boolean values True and False.")
+            raise TypeError(
+                "drop_original takes only boolean values True and False. "
+                f"Got {drop_original} instead."
+            )
 
         self.reference_variables = reference_variables
         self.variables_to_combine = variables_to_combine
