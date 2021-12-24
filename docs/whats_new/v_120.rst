@@ -31,7 +31,7 @@ various PRs.
 New transformers
 ~~~~~~~~~~~~~~~~
 
-    - **DatetimeFeatures**: extracts date and time features from datetime variables (`Edoardo Argiolas <https://github.com/dodoarg>`_).
+    - **DatetimeFeatures**: extracts date and time features from datetime variables (`Edoardo Argiolas <https://github.com/dodoarg>`_)
     - **DropHishPSIFeatures**: finds and drops features with high population stability index (`gverbock <https://github.com/gverbock>`_)
     - **Matchvariables**: ensures that the same variables observed in the train set are present in the test set (`Thibault Blanc <https://github.com/thibaultbl>`_)
 
@@ -41,6 +41,7 @@ Enhancements
     - The **Winsorizer** can now add binary variable indicators to flag outlier values (`David Cortes <https://github.com/david-cortes>`_)
     - The **DropMissingData** now allows to drop rows based on % of missing data (`Kevin Kurek <https://github.com/kevinkurek>`_)
     - **Categorical encoders** can now either raise a warning or an error when encoding categories not seen in the train set (`Morgan Sell <https://github.com/Morgan-Sell>`_)
+    - **CombineWithReferenceFeature** and **MathematicalCombination** have now the option to drop the original input variables after the feature creation (`Edoardo Argiolas <https://github.com/dodoarg>`_)
 
 Bug fixes
 ~~~~~~~~~
