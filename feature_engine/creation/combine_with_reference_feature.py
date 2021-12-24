@@ -65,6 +65,9 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         transformer will return an error if the training or the datasets to transform
         contain missing values.
 
+    drop_original: bool, default=False
+        If True, the original variables will be dropped from the dataframe
+        after their combination.
 
     Attributes
     ----------
@@ -98,6 +101,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         operations: List[str] = ["sub"],
         new_variables_names: Optional[List[str]] = None,
         missing_values: str = "ignore",
+        drop_original: bool = False,
     ) -> None:
 
         # check input types
@@ -158,11 +162,18 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'")
 
+        if not isinstance(drop_original, bool):
+            raise TypeError(
+                "drop_original takes only boolean values True and False. "
+                f"Got {drop_original} instead."
+            )
+
         self.reference_variables = reference_variables
         self.variables_to_combine = variables_to_combine
         self.new_variables_names = new_variables_names
         self.operations = operations
         self.missing_values = missing_values
+        self.drop_original = drop_original
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -285,6 +296,12 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         # replace created variable names with user ones.
         if self.new_variables_names:
             X.columns = original_col_names + self.new_variables_names
+
+        if self.drop_original:
+            X.drop(
+                columns=set(self.variables_to_combine + self.reference_variables),
+                inplace=True,
+            )
 
         return X
 

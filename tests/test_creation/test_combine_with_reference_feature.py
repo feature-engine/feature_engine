@@ -70,6 +70,15 @@ def test_error_if_new_variable_names_of_wrong_type():
         )
 
 
+def test_error_when_drop_original_not_bool():
+    with pytest.raises(TypeError):
+        CombineWithReferenceFeature(
+            variables_to_combine=["Age"],
+            reference_variables=["Marks"],
+            drop_original="not_a_bool"
+        )
+
+
 def test_error_when_variables_to_combine_not_numeric(df_vartypes):
     transformer = CombineWithReferenceFeature(
         variables_to_combine=["Name", "Age", "Marks"],
@@ -190,4 +199,28 @@ def test_user_enters_output_variable_names(df_vartypes):
     assert transformer.n_features_in_ == 5
 
     # transform params
+    pd.testing.assert_frame_equal(X, ref)
+
+
+def test_drop_original_variables(df_vartypes):
+    transformer = CombineWithReferenceFeature(
+        variables_to_combine=["Age", "Marks"],
+        reference_variables=["Age", "Marks"],
+        drop_original=True
+    )
+
+    X = transformer.fit_transform(df_vartypes)
+
+    ref = pd.DataFrame.from_dict(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "Age_sub_Age": [0, 0, 0, 0],
+            "Marks_sub_Age": [-19.1, -20.2, -18.3, -17.4],
+            "Age_sub_Marks": [19.1, 20.2, 18.3, 17.4],
+            "Marks_sub_Marks": [0.0, 0.0, 0.0, 0.0],
+        }
+    )
+
     pd.testing.assert_frame_equal(X, ref)
