@@ -19,7 +19,7 @@ from feature_engine.dataframe_checks import _check_contains_na
 import warnings
 
 
-class BaseDiscretizer(BaseNumericalTransformer):
+class BaseDiscretiser(BaseNumericalTransformer):
     """
     Share set-up checks and methods across numerical discretizers
 

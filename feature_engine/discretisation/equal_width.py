@@ -5,11 +5,11 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.discretisation import BaseDiscretiser
 
 
-class EqualWidthDiscretiser(BaseNumericalTransformer):
+class EqualWidthDiscretiser(BaseDiscretiser):
     """
     The EqualWidthDiscretiser() divides continuous numerical variables into
     intervals of the same width, that is, equidistant intervals. Note that the
@@ -90,23 +90,16 @@ class EqualWidthDiscretiser(BaseNumericalTransformer):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         bins: int = 10,
-        return_object: bool = False,
-        return_boundaries: bool = False,
     ) -> None:
 
         if not isinstance(bins, int):
             raise ValueError("q must be an integer")
 
-        if not isinstance(return_object, bool):
-            raise ValueError("return_object must be True or False")
-
-        if not isinstance(return_boundaries, bool):
-            raise ValueError("return_boundaries must be True or False")
+        super().__init__(return_object, return_boundaries)
 
         self.bins = bins
         self.variables = _check_input_parameter_variables(variables)
-        self.return_object = return_object
-        self.return_boundaries = return_boundaries
+
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

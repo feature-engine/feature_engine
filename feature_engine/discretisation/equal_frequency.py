@@ -7,9 +7,10 @@ import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.discretisation import BaseDiscretiser
 
 
-class EqualFrequencyDiscretiser(BaseNumericalTransformer):
+class EqualFrequencyDiscretiser(BaseDiscretiser):
     """
     The EqualFrequencyDiscretiser() divides continuous numerical variables
     into contiguous equal frequency intervals, that is, intervals that contain
@@ -81,23 +82,16 @@ class EqualFrequencyDiscretiser(BaseNumericalTransformer):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         q: int = 10,
-        return_object: bool = False,
-        return_boundaries: bool = False,
     ) -> None:
 
         if not isinstance(q, int):
             raise ValueError("q must be an integer")
 
-        if not isinstance(return_object, bool):
-            raise ValueError("return_object must be True or False")
-
-        if not isinstance(return_boundaries, bool):
-            raise ValueError("return_boundaries must be True or False")
-
+        super().__init__(return_object, return_boundaries)
+        
         self.q = q
         self.variables = _check_input_parameter_variables(variables)
-        self.return_object = return_object
-        self.return_boundaries = return_boundaries
+
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

@@ -7,9 +7,10 @@ import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.validation import _return_tags
+from feature_engine.discretisation import BaseDiscretiser
 
 
-class ArbitraryDiscretiser(BaseNumericalTransformer):
+class ArbitraryDiscretiser(BaseDiscretiser):
     """
     The ArbitraryDiscretiser() divides numerical variables into intervals which limits
     are determined by the user. Thus, it works only with numerical variables.
@@ -67,8 +68,6 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
     def __init__(
         self,
         binning_dict: Dict[Union[str, int], List[Union[str, int]]],
-        return_object: bool = False,
-        return_boundaries: bool = False,
     ) -> None:
 
         if not isinstance(binning_dict, dict):
@@ -76,12 +75,10 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
                 "Please provide at a dictionary with the interval limits per variable"
             )
 
-        if not isinstance(return_object, bool):
-            raise ValueError("return_object must be True or False")
+        super().__init__(return_object, return_boundaries)
 
         self.binning_dict = binning_dict
-        self.return_object = return_object
-        self.return_boundaries = return_boundaries
+
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
