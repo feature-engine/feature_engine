@@ -72,8 +72,8 @@ def test_error_if_input_df_contains_categories_not_present_in_training_df(
     # check for warning when rare_labels equals 'ignore'
     with pytest.warns(UserWarning) as record:
         encoder = OrdinalEncoder(rare_labels="ignore")
-        encoder.fit(df_enc)
-        encoder.transform(df_enc_rare)
+        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+        encoder.transform(df_enc_rare[["var_A", "var_B"]])
 
     # check that only one warning was raised
     assert len(record) == 1
@@ -83,11 +83,12 @@ def test_error_if_input_df_contains_categories_not_present_in_training_df(
     # check for error when rare_labels equals 'raise'
     with pytest.raises(ValueError) as record:
         encoder = OrdinalEncoder(rare_labels="raise")
-        encoder.fit(df_enc)
-        encoder.transform(df_enc_rare)
+        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+        encoder.transform(df_enc_rare[["var_A", "var_B"]])
 
     # check that the error message matches
     assert str(record.value) == msg
+
 
 def test_non_fitted_error(df_enc):
     with pytest.raises(NotFittedError):
