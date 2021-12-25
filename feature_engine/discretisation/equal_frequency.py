@@ -7,7 +7,7 @@ import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
-from feature_engine.discretisation import BaseDiscretiser
+from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 
 
 class EqualFrequencyDiscretiser(BaseDiscretiser):

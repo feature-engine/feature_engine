@@ -1,22 +1,18 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
-
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_input_matches_training_df,
     _is_dataframe,
 )
-
-from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.dataframe_checks import _check_contains_na
-
-import warnings
 
 
 class BaseDiscretiser(BaseNumericalTransformer):
@@ -41,6 +37,7 @@ class BaseDiscretiser(BaseNumericalTransformer):
             self,
             return_object: bool = False,
             return_boundaries: bool = False,
+            errors: str = "ignore",
     ) -> None:
 
         if not isinstance(return_object, bool):
@@ -49,8 +46,13 @@ class BaseDiscretiser(BaseNumericalTransformer):
         if not isinstance(return_boundaries, bool):
             raise ValueError("return_boundaries must be True or False")
 
+        if errors not in ["ignore", "raise"]:
+            raise ValueError("errors only takes values 'ignore' and 'raise'."
+                             f"Got {errors} instead.")
+
         self.return_object = return_object
         self.return_boundaries = return_boundaries
+        self.errors = errors
 
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """

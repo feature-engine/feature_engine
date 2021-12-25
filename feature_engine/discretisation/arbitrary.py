@@ -6,8 +6,8 @@ from typing import Dict, List, Optional, Union
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.validation import _return_tags
-from feature_engine.discretisation import BaseDiscretiser
 
 
 class ArbitraryDiscretiser(BaseDiscretiser):
