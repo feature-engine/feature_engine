@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.datasets import load_boston
 
 from feature_engine.discretisation import ArbitraryDiscretiser
+
 
 
 def test_arbitrary_discretiser():
@@ -34,3 +36,35 @@ def test_arbitrary_discretiser():
     )
     X = transformer.fit_transform(data)
     pd.testing.assert_frame_equal(X, data_t1)
+
+
+def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
+    # test case 4: when dataset contains na, transform method
+
+    msg = "During the discretisation, NaN values were introduced " \
+          "in the feature(s) var_A."
+
+    # check for warning when errors equals 'ignore'
+    with pytest.warns(UserWarning) as record:
+        transformer = ArbitraryDiscretiser(errors="ignore")
+        transformer.fit(df_enc)
+        transformer.transform(df_enc_na)
+
+    # check that only one warning was raised
+    assert len(record) == 1
+    # check that message matches
+    assert record[0].message.args[0] == msg
+
+    # check for error when errors equals 'raise'
+    with pytest.raises(ValueError) as record:
+        transformer = ArbitraryDiscretiser(errors="raise")
+        transformer.fit(df_enc)
+        transformer.transform(df_enc_na)
+
+    # check that error message matches
+    assert str(record.value) == msg
+
+
+def test_error_if_errors_not_permitted_value():
+    with pytest.raises(ValueError):
+        ArbitraryDiscretiser(errors="medialuna")
