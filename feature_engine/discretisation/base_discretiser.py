@@ -41,13 +41,15 @@ class BaseDiscretiser(BaseNumericalTransformer):
     ) -> None:
 
         if not isinstance(return_object, bool):
-            raise ValueError("return_object must be True or False")
+            raise ValueError("return_object must be True or False. "
+                             f"Got {return_object} instead.")
 
         if not isinstance(return_boundaries, bool):
-            raise ValueError("return_boundaries must be True or False")
+            raise ValueError("return_boundaries must be True or False. "
+                             f"Got {return_boundaries} instead.")
 
         if errors not in ["ignore", "raise"]:
-            raise ValueError("errors only takes values 'ignore' and 'raise'."
+            raise ValueError("errors only takes values 'ignore' and 'raise'. "
                              f"Got {errors} instead.")
 
         self.return_object = return_object
