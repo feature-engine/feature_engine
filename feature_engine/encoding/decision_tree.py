@@ -174,7 +174,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
             encoding_method=self.encoding_method,
             variables=self.variables_,
             ignore_format=self.ignore_format,
-            rare_labels="raise",
+            errors="raise",
         )
 
         # initialize decision tree discretiser
