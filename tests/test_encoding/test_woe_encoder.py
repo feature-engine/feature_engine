@@ -112,6 +112,7 @@ def test_warn_if_transform_df_contains_categories_not_seen_in_fit(df_enc, df_enc
     # check that the error message matches
     assert str(record.value) == msg
 
+
 def test_error_if_target_not_binary():
     # test case 4: the target is not binary
     encoder = WoEEncoder(variables=None)
