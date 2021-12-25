@@ -30,6 +30,23 @@ class BaseDiscretiser(BaseNumericalTransformer):
         Whether the output should be the interval boundaries. If True, it returns
         the interval boundaries. If False, it returns integers.
 
+    Attributes
+    ----------
+    binner_dict_:
+        Dictionary with the interval limits per variable.
+
+    variables_:
+         The variables that will be discretised.
+
+    Methods
+    -------
+    transform:
+        Sort continuous variable values into the intervals.
+
+    See Also
+    --------
+    pandas.cut
+
 
     """
 
@@ -71,7 +88,23 @@ class BaseDiscretiser(BaseNumericalTransformer):
             The dataframe containing the categories replaced by numbers.
         """
 
+        # check input dataframe and if class was fitted
         X = super().transform(X)
+
+        # transform variables
+        if self.return_boundaries:
+            for feature in self.variables_:
+                X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
+
+        else:
+            for feature in self.variables_:
+                X[feature] = pd.cut(
+                    X[feature], self.binner_dict_[feature], labels=False
+                )
+
+            # return object
+            if self.return_object:
+                X[self.variables_] = X[self.variables_].astype("O")
 
         # check if NaN values were introduced by the discretisation procedure
         if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
