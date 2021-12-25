@@ -117,23 +117,8 @@ class ArbitraryDiscretiser(BaseDiscretiser):
             The transformed data with the discrete variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = super().transform(X)
-
         # transform variables
-        if self.return_boundaries:
-            for feature in self.variables_:
-                X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
-
-        else:
-            for feature in self.variables_:
-                X[feature] = pd.cut(
-                    X[feature], self.binner_dict_[feature], labels=False
-                )
-
-            # return object
-            if self.return_object:
-                X[self.variables_] = X[self.variables_].astype("O")
+        X = super().transform(X)
 
         return X
 
