@@ -279,3 +279,8 @@ def test_warn_if_transform_df_contains_categories_not_seen_in_fit(df_enc, df_enc
 
     # check that the error message matches
     assert str(record.value) == msg
+
+
+def test_error_if_rare_labels_not_permitted_value():
+    with pytest.raises(ValueError):
+        PRatioEncoder(rare_labels="empanada")
