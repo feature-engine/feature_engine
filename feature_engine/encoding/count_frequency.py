@@ -54,7 +54,7 @@ class CountFrequencyEncoder(BaseCategorical):
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
-    rare_labels: string, default='ignore'
+    errors: string, default='ignore'
         Indicates what to do when categories not present in the train set are
         encountered during transform. If 'raise', then rare categories will raise an
         error. If 'ignore', then rare categories will be set as NaN and a warning will
@@ -102,14 +102,14 @@ class CountFrequencyEncoder(BaseCategorical):
         encoding_method: str = "count",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        rare_labels: str = "ignore"
+        errors: str = "ignore"
     ) -> None:
 
         if encoding_method not in ["count", "frequency"]:
             raise ValueError(
                 "encoding_method takes only values 'count' and 'frequency'"
             )
-        super().__init__(variables, ignore_format, rare_labels)
+        super().__init__(variables, ignore_format, errors)
 
         self.encoding_method = encoding_method
 

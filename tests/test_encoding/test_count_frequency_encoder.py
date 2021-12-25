@@ -127,7 +127,7 @@ def test_error_if_input_df_contains_categories_not_present_in_fit_df(
 
     # check for warning when rare_labels equals 'ignore'
     with pytest.warns(UserWarning) as record:
-        encoder = CountFrequencyEncoder(rare_labels="ignore")
+        encoder = CountFrequencyEncoder(errors="ignore")
         encoder.fit(df_enc)
         encoder.transform(df_enc_rare)
 
@@ -138,7 +138,7 @@ def test_error_if_input_df_contains_categories_not_present_in_fit_df(
 
     # check for error when rare_labels equals 'raise'
     with pytest.raises(ValueError) as record:
-        encoder = CountFrequencyEncoder(rare_labels="raise")
+        encoder = CountFrequencyEncoder(errors="raise")
 
         encoder.fit(df_enc)
         encoder.transform(df_enc_rare)
@@ -261,4 +261,4 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 
 def test_error_if_rare_labels_not_permitted_value():
     with pytest.raises(ValueError):
-        CountFrequencyEncoder(rare_labels="empanada")
+        CountFrequencyEncoder(errors="empanada")
