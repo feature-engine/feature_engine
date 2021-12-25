@@ -71,9 +71,9 @@ class BaseDiscretiser(BaseNumericalTransformer):
             The dataframe containing the categories replaced by numbers.
         """
 
-        X = self._check_transform_input_and_state(X)
+        X = super().transform(X)
 
-        # check if NaN values were introduced by the encoding
+        # check if NaN values were introduced by the discretisation procedure
         if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
             # obtain the name(s) of the columns have null values
             nan_columns = X.columns[X.isnull().any()].tolist()
