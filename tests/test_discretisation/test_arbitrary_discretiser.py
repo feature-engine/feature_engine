@@ -38,7 +38,7 @@ def test_arbitrary_discretiser():
     pd.testing.assert_frame_equal(X, data_t1)
 
 
-def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
+def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
     # test case 4: when dataset contains na, transform method
 
     msg = "During the discretisation, NaN values were introduced " \
@@ -47,8 +47,8 @@ def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
     # check for warning when errors equals 'ignore'
     with pytest.warns(UserWarning) as record:
         transformer = ArbitraryDiscretiser(errors="ignore")
-        transformer.fit(df_enc)
-        transformer.transform(df_enc_na)
+        transformer.fit(df_vartypes)
+        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
     # check that only one warning was raised
     assert len(record) == 1
@@ -58,13 +58,13 @@ def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
     # check for error when errors equals 'raise'
     with pytest.raises(ValueError) as record:
         transformer = ArbitraryDiscretiser(errors="raise")
-        transformer.fit(df_enc)
-        transformer.transform(df_enc_na)
+        transformer.fit(df_vartypes)
+        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
     # check that error message matches
     assert str(record.value) == msg
 
 
-def test_error_if_errors_not_permitted_value():
+def test_error_if_not_permitted_value_is_errors():
     with pytest.raises(ValueError):
         ArbitraryDiscretiser(errors="medialuna")
