@@ -181,12 +181,12 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
             else:
                 nan_columns_str = nan_columns[0]
 
-            if self.rare_labels == "ignore":
+            if self.errors == "ignore":
                 warnings.warn(
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."
                 )
-            elif self.rare_labels == "raise":
+            elif self.errors == "raise":
                 raise ValueError(
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."
@@ -263,9 +263,9 @@ class BaseCategorical(BaseCategoricalTransformer):
 
         if errors not in ["raise", "ignore"]:
             raise ValueError(
-                "rare_labels takes only values 'raise' and 'ignore ."
+                "errors takes only values 'raise' and 'ignore ."
                 f"Got {errors} instead."
             )
 
         super().__init__(variables, ignore_format)
-        self.rare_labels = errors
+        self.errors = errors
