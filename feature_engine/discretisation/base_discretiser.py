@@ -17,7 +17,7 @@ from feature_engine.dataframe_checks import (
 
 class BaseDiscretiser(BaseNumericalTransformer):
     """
-    Share set-up checks and methods across numerical discretizers
+    Share set-up checks and methods across numerical discretisers
 
     Parameters
     ----------
@@ -75,7 +75,8 @@ class BaseDiscretiser(BaseNumericalTransformer):
 
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Replace categories with the learned parameters.
+        """
+        Replace categories with the learned parameters.
 
         Parameters
         ----------
@@ -115,14 +116,17 @@ class BaseDiscretiser(BaseNumericalTransformer):
             else:
                 nan_columns_str = nan_columns[0]
 
-        if self.errors == "ignore":
-            warnings.warn(
-                f"During the discretisation, NaN values were introduced in the feature(s) "
-                f"{nan_columns_str}."
-            )
+            if self.errors == "ignore":
+                warnings.warn(
+                    f"During the discretisation, NaN values were introduced in the feature(s) "
+                    f"{nan_columns_str}."
+                )
 
-        elif self.errors == "raise":
-            raise ValueError(
-                "During the discretisation, NaN values were introduced in the feature(s)"
-                f"{nan_columns_str}"
-            )
+            elif self.errors == "raise":
+                raise ValueError(
+                    "During the discretisation, NaN values were introduced in the feature(s)"
+                    f"{nan_columns_str}"
+                )
+
+        return X
+    
