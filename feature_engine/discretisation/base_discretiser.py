@@ -129,4 +129,3 @@ class BaseDiscretiser(BaseNumericalTransformer):
                 )
 
         return X
-    
