@@ -58,13 +58,37 @@ def test_error_if_input_df_contains_na_in_fit(df_na):
 
 def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
     # test case 4: when dataset contains na, transform method
-    with pytest.raises(ValueError):
-        transformer = EqualFrequencyDiscretiser()
+    msg = "During the discretisation, NaN values were introduced " \
+          "in the feature(s) var_A."
+
+    # check for warning when errors equals 'ignore'
+    with pytest.warns(UserWarning) as record:
+        transformer = EqualFrequencyDiscretiser(errors="ignore")
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
+
+    # check there is only one error
+    assert len(record) == 1
+    # check that message matches
+    assert record[0].value.args[0] == msg
+
+    # check for error when errors equals 'raise'
+    with pytest.raises(ValueError) as record:
+        transformer = EqualFrequencyDiscretiser(errors="raise")
+        transformer.fit(df_vartypes)
+        transformer.transform(df_na["Name", "City", "Age", "Marks", "dob"])
+
+    # check that message matches
+    assert str(record.value) == msg
 
 
 def test_non_fitted_error(df_vartypes):
     with pytest.raises(NotFittedError):
         transformer = EqualFrequencyDiscretiser()
         transformer.transform(df_vartypes)
+
+
+def test_error_if_not_permitted_value_is_errors():
+    with pytest.raises(ValueError):
+        EqualFrequencyDiscretiser(errors="medialuna")
+
