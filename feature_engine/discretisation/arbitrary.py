@@ -103,6 +103,7 @@ class ArbitraryDiscretiser(BaseDiscretiser):
 
         return self
 
+
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Sort the variable values into the intervals.
 
