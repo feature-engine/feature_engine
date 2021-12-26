@@ -50,7 +50,7 @@ def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
-    # check that only one warning was raised
+    # check that only one warning was returned
     assert len(record) == 1
     # check that message matches
     assert record[0].message.args[0] == msg
