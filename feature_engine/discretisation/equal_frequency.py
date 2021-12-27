@@ -123,23 +123,3 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         self.n_features_in_ = X.shape[1]
 
         return self
-
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Sort the variable values into the intervals.
-
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The data to transform.
-
-        Returns
-        -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
-            The transformed data with the discrete variables.
-        """
-
-        # transform variables
-        X = super().transform(X)
-
-
-        return X

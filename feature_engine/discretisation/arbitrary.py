@@ -104,25 +104,6 @@ class ArbitraryDiscretiser(BaseDiscretiser):
         return self
 
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Sort the variable values into the intervals.
-
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The dataframe to be transformed.
-
-        Returns
-        -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
-            The transformed data with the discrete variables.
-        """
-
-        # transform variables
-        X = super().transform(X)
-
-        return X
-
     def _more_tags(self):
         tags_dict = _return_tags()
         # add additional test that fails
