@@ -75,18 +75,16 @@ class BaseDiscretiser(BaseNumericalTransformer):
 
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """
-        Replace categories with the learned parameters.
+        """Sort the variable values into the intervals.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
-            The dataset to transform.
-
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The data to transform.
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features].
-            The dataframe containing the categories replaced by numbers.
+        X_new: pandas dataframe of shape = [n_samples, n_features]
+            The transformed data with the discrete variables.
         """
 
         # check input dataframe and if class was fitted
