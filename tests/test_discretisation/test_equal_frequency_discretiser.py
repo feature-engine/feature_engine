@@ -58,6 +58,14 @@ def test_error_if_input_df_contains_na_in_fit(df_na):
 
 def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
     # test case 4: when dataset contains na, transform method
+    with pytest.raises(ValueError):
+        transformer = EqualFrequencyDiscretiser()
+        transformer.fit(df_vartypes)
+        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
+
+
+def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
+    # test case 5: when NA is introduced by the transformation
     msg = "During the discretisation, NaN values were introduced " \
           "in the feature(s) var_A."
 
