@@ -52,14 +52,14 @@ def test_error_if_return_object_not_bool():
 def test_error_if_input_df_contains_na_in_fit(df_na):
     # test case 3: when dataset contains na, fit method
     with pytest.raises(ValueError):
-        transformer = EqualFrequencyDiscretiser()
+        transformer = EqualFrequencyDiscretiser(q=10, variables=None)
         transformer.fit(df_na)
 
 
 def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
     # test case 4: when dataset contains na, transform method
     with pytest.raises(ValueError):
-        transformer = EqualFrequencyDiscretiser()
+        transformer = EqualFrequencyDiscretiser(q=10, variables=None)
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
@@ -71,7 +71,7 @@ def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
 
     # check for warning when errors equals 'ignore'
     with pytest.warns(UserWarning) as record:
-        transformer = EqualFrequencyDiscretiser(errors="ignore")
+        transformer = EqualFrequencyDiscretiser(q=10, variables=None, errors="ignore")
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
@@ -82,7 +82,7 @@ def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
 
     # check for error when errors equals 'raise'
     with pytest.raises(ValueError) as record:
-        transformer = EqualFrequencyDiscretiser(errors="raise")
+        transformer = EqualFrequencyDiscretiser(q=10, variables=None, errors="raise")
         transformer.fit(df_vartypes)
         transformer.transform(df_na["Name", "City", "Age", "Marks", "dob"])
 
