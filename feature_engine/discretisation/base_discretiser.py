@@ -116,14 +116,14 @@ class BaseDiscretiser(BaseNumericalTransformer):
 
             if self.errors == "ignore":
                 warnings.warn(
-                    f"During the discretisation, NaN values were introduced in the feature(s) "
-                    f"{nan_columns_str}."
+                    f"During the discretisation, NaN values were introduced in "
+                    f"the feature(s) {nan_columns_str}."
                 )
 
             elif self.errors == "raise":
                 raise ValueError(
-                    "During the discretisation, NaN values were introduced in the feature(s)"
-                    f"{nan_columns_str}"
+                    "During the discretisation, NaN values were introduced in "
+                    f"the feature(s) {nan_columns_str}."
                 )
 
         return X
