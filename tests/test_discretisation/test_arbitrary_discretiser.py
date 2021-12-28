@@ -8,7 +8,9 @@ from feature_engine.discretisation import ArbitraryDiscretiser
 
 
 def test_arbitrary_discretiser():
-    boston_dataset = load_boston()
+    data_url = "http://lib.stat.cmu.edu/datasets/boston"
+    raw_df = pd.read_csv(data_url, sep="\s+", skiprows=22, header=None)
+    boston_dataset = np.hstack([raw_df.values[::2, :], raw_df.values[1::2, :2]])
     data = pd.DataFrame(boston_dataset.data, columns=boston_dataset.feature_names)
     user_dict = {"LSTAT": [0, 10, 20, 30, np.Inf]}
 
@@ -40,8 +42,10 @@ def test_arbitrary_discretiser():
 
 def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
     # test case 4: when dataset contains na, transform method
+    age_dict = {"Age": [0, 10, 20, 30, np.Inf]}
+
     with pytest.raises(ValueError):
-        transformer = ArbitraryDiscretiser()
+        transformer = ArbitraryDiscretiser(binning_dict=age_dict)
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
@@ -50,10 +54,11 @@ def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
     # test case 5: when NA is introduced by the transformation
     msg = "During the discretisation, NaN values were introduced " \
           "in the feature(s) var_A."
+    age_dict = {"Age": [0, 10, 20, 30, np.Inf]}
 
     # check for warning when errors equals 'ignore'
     with pytest.warns(UserWarning) as record:
-        transformer = ArbitraryDiscretiser(errors="ignore")
+        transformer = ArbitraryDiscretiser(binning_dict=age_dict, errors="ignore")
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
@@ -64,7 +69,7 @@ def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
 
     # check for error when errors equals 'raise'
     with pytest.raises(ValueError) as record:
-        transformer = ArbitraryDiscretiser(errors="raise")
+        transformer = ArbitraryDiscretiser(binning_dict=age_dict, errors="raise")
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
@@ -73,5 +78,6 @@ def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
 
 
 def test_error_if_not_permitted_value_is_errors():
+    age_dict = {"Age": [0, 10, 20, 30, np.Inf]}
     with pytest.raises(ValueError):
-        ArbitraryDiscretiser(errors="medialuna")
+        ArbitraryDiscretiser(binning_dict=age_dict, errors="medialuna")
