@@ -9,14 +9,18 @@ from feature_engine.discretisation import ArbitraryDiscretiser
 
 def test_arbitrary_discretiser():
     california_dataset = fetch_california_housing()
-    data = pd.DataFrame(california_dataset.data, columns=california_dataset.feature_names)
+    data = pd.DataFrame(california_dataset.data,
+                        columns=california_dataset.feature_names)
     user_dict = {"HouseAge": [0, 20, 40, 60, np.Inf]}
 
     data_t1 = data.copy()
     data_t2 = data.copy()
     # HouseAge is the median house age in the block group.
-    data_t1["HouseAge"] = pd.cut(data["HouseAge"], bins=[0, 20, 40, 60, np.Inf])
-    data_t2["HouseAge"] = pd.cut(data["HouseAge"], bins=[0, 20, 40, 60, np.Inf], labels=False)
+    data_t1["HouseAge"] = pd.cut(data["HouseAge"],
+                                 bins=[0, 20, 40, 60, np.Inf])
+    data_t2["HouseAge"] = pd.cut(data["HouseAge"],
+                                 bins=[0, 20, 40, 60, np.Inf],
+                                 labels=False)
 
     transformer = ArbitraryDiscretiser(
         binning_dict=user_dict, return_object=False, return_boundaries=False
@@ -57,7 +61,10 @@ def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
 
     # check for warning when errors equals 'ignore'
     with pytest.warns(UserWarning) as record:
-        transformer = ArbitraryDiscretiser(binning_dict=age_dict, errors="ignore")
+        transformer = ArbitraryDiscretiser(
+            binning_dict=age_dict,
+            errors="ignore"
+        )
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
@@ -68,7 +75,10 @@ def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
 
     # check for error when errors equals 'raise'
     with pytest.raises(ValueError) as record:
-        transformer = ArbitraryDiscretiser(binning_dict=age_dict, errors="raise")
+        transformer = ArbitraryDiscretiser(
+            binning_dict=age_dict,
+            errors="raise"
+        )
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 

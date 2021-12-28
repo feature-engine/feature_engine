@@ -63,6 +63,7 @@ def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
+
 def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
     # test case 5: when NA is introduced by the transformation
     msg = "During the discretisation, NaN values were introduced " \
@@ -97,4 +98,4 @@ def test_non_fitted_error(df_vartypes):
 
 def test_error_if_not_permitted_value_is_errors():
     with pytest.raises(ValueError):
-        transformer = EqualWidthDiscretiser(errors="medialuna")
+        EqualWidthDiscretiser(errors="medialuna")

@@ -99,4 +99,3 @@ def test_non_fitted_error(df_vartypes):
 def test_error_if_not_permitted_value_is_errors():
     with pytest.raises(ValueError):
         EqualFrequencyDiscretiser(errors="medialuna")
-
