@@ -505,6 +505,9 @@ will be done comparing the periods up to the French revolution and after.
     transformer = DropHighPSIFeatures(split_col='time', cut_off=date(1789, 7, 14))
     transformer.fit(X)
 
+**Important**: if the date variable is in pandas or NumPy datetime format, you may need
+to pass the cut_off value as `pd.to_datetime(1789-07-14)`.
+
 The PSI values shows the *century* variables in unstable as its value is above
 the 0.25 threshold.
 
@@ -847,3 +850,14 @@ and a non-shifted variable (for example *var_4*)
 
 
 .. image:: ../../images/PSI_distribution_case5.png
+
+
+More details
+^^^^^^^^^^^^
+
+In this notebook, we show how to use :class:`DropHighPSIFeatures` on a real dataset and
+give more detail about the underlying base and reference sub-dataframes used to
+determine the PSI.
+
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Drop-High-PSI-Features.ipynb>`_
+
