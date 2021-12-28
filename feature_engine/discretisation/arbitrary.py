@@ -70,6 +70,7 @@ class ArbitraryDiscretiser(BaseDiscretiser):
         binning_dict: Dict[Union[str, int], List[Union[str, int]]],
         return_object: bool = False,
         return_boundaries: bool = False,
+        errors: str = "ignore",
     ) -> None:
 
         if not isinstance(binning_dict, dict):
@@ -77,7 +78,7 @@ class ArbitraryDiscretiser(BaseDiscretiser):
                 "Please provide at a dictionary with the interval limits per variable"
             )
 
-        super().__init__(return_object, return_boundaries)
+        super().__init__(return_object, return_boundaries, errors)
 
         self.binning_dict = binning_dict
 
