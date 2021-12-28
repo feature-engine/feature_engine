@@ -68,6 +68,8 @@ class ArbitraryDiscretiser(BaseDiscretiser):
     def __init__(
         self,
         binning_dict: Dict[Union[str, int], List[Union[str, int]]],
+        return_object: bool = False,
+        return_boundaries: bool = False,
     ) -> None:
 
         if not isinstance(binning_dict, dict):

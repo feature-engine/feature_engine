@@ -82,6 +82,8 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         q: int = 10,
+        return_object: bool = False,
+        return_boundaries: bool = False,
     ) -> None:
 
         if not isinstance(q, int):
