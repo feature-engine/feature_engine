@@ -5,7 +5,6 @@ from typing import Dict, List, Optional, Union
 
 import pandas as pd
 
-from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.validation import _return_tags
 
@@ -82,7 +81,6 @@ class ArbitraryDiscretiser(BaseDiscretiser):
 
         self.binning_dict = binning_dict
 
-
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         This transformer does not learn any parameter.
@@ -105,7 +103,6 @@ class ArbitraryDiscretiser(BaseDiscretiser):
         self.n_features_in_ = X.shape[1]
 
         return self
-
 
     def _more_tags(self):
         tags_dict = _return_tags()

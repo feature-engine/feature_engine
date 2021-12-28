@@ -5,7 +5,6 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 
@@ -94,7 +93,6 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         
         self.q = q
         self.variables = _check_input_parameter_variables(variables)
-
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

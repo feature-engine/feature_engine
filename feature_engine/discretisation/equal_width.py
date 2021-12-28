@@ -103,7 +103,6 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         self.bins = bins
         self.variables = _check_input_parameter_variables(variables)
 
-
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learn the boundaries of the equal width intervals / bins for each

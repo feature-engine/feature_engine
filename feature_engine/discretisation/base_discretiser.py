@@ -2,17 +2,10 @@
 # License: BSD 3 clause
 
 import warnings
-from typing import List, Optional, Union
 
 import pandas as pd
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.dataframe_checks import (
-    _check_contains_na,
-    _check_input_matches_training_df,
-    _is_dataframe,
-)
 
 
 class BaseDiscretiser(BaseNumericalTransformer):
@@ -72,7 +65,6 @@ class BaseDiscretiser(BaseNumericalTransformer):
         self.return_object = return_object
         self.return_boundaries = return_boundaries
         self.errors = errors
-
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Sort the variable values into the intervals.
