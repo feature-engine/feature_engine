@@ -34,7 +34,7 @@ def test_automatically_find_variables_and_return_as_numeric(df_normal_dist):
 
 
 def test_automatically_find_variables_and_return_as_object(df_normal_dist):
-    transformer = EqualWidthDiscretiser(bins=10, variables=None, return_object=True)
+    transformer = EqualWidthDiscretiser(return_object=True)
     X = transformer.fit_transform(df_normal_dist)
     assert X["var"].dtypes == "O"
 
