@@ -59,7 +59,7 @@ def test_error_if_input_df_contains_na_in_fit(df_na):
 def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
     # test case 4: when dataset contains na, transform method
     with pytest.raises(ValueError):
-        transformer = EqualFrequencyDiscretiser()
+        transformer = EqualWidthDiscretiser()
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
