@@ -1,17 +1,15 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.datasets import load_boston
+from sklearn.datasets import fetch_california_housing
 
 from feature_engine.discretisation import ArbitraryDiscretiser
 
 
 
 def test_arbitrary_discretiser():
-    data_url = "http://lib.stat.cmu.edu/datasets/boston"
-    raw_df = pd.read_csv(data_url, sep="\s+", skiprows=22, header=None)
-    boston_dataset = np.hstack([raw_df.values[::2, :], raw_df.values[1::2, :2]])
-    data = pd.DataFrame(boston_dataset.data, columns=boston_dataset.feature_names)
+    california_dataset = fetch_california_housing()
+    data = pd.DataFrame(california_dataset.data, columns=california_dataset.feature_names)
     user_dict = {"LSTAT": [0, 10, 20, 30, np.Inf]}
 
     data_t1 = data.copy()
