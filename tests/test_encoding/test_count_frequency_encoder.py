@@ -122,10 +122,29 @@ def test_error_if_input_df_contains_categories_not_present_in_fit_df(
 ):
     # test case 3: when dataset to be transformed contains categories not present in
     # training dataset
-    with pytest.warns(UserWarning):
-        encoder = CountFrequencyEncoder()
+
+    msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
+
+    # check for warning when rare_labels equals 'ignore'
+    with pytest.warns(UserWarning) as record:
+        encoder = CountFrequencyEncoder(errors="ignore")
         encoder.fit(df_enc)
         encoder.transform(df_enc_rare)
+
+    # check that only one warning was raised
+    assert len(record) == 1
+    # check that the message matches
+    assert record[0].message.args[0] == msg
+
+    # check for error when rare_labels equals 'raise'
+    with pytest.raises(ValueError) as record:
+        encoder = CountFrequencyEncoder(errors="raise")
+
+        encoder.fit(df_enc)
+        encoder.transform(df_enc_rare)
+
+    # check that the error message matches
+    assert str(record.value) == msg
 
 
 def test_fit_raises_error_if_df_contains_na(df_enc_na):
@@ -238,3 +257,8 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     encoder = CountFrequencyEncoder(encoding_method="frequency", variables=["var_A"])
     X = encoder.fit_transform(df_enc_category_dtypes)
     assert X["var_A"].dtypes == float
+
+
+def test_error_if_rare_labels_not_permitted_value():
+    with pytest.raises(ValueError):
+        CountFrequencyEncoder(errors="empanada")

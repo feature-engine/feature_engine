@@ -67,10 +67,27 @@ def test_error_if_input_df_contains_categories_not_present_in_training_df(
 ):
     # test case 4: when dataset to be transformed contains categories not present
     # in training dataset
-    with pytest.warns(UserWarning):
-        encoder = OrdinalEncoder(encoding_method="arbitrary")
-        encoder.fit(df_enc)
-        encoder.transform(df_enc_rare)
+    msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
+
+    # check for warning when rare_labels equals 'ignore'
+    with pytest.warns(UserWarning) as record:
+        encoder = OrdinalEncoder(errors="ignore")
+        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+        encoder.transform(df_enc_rare[["var_A", "var_B"]])
+
+    # check that only one warning was raised
+    assert len(record) == 1
+    # check that the message matches
+    assert record[0].message.args[0] == msg
+
+    # check for error when rare_labels equals 'raise'
+    with pytest.raises(ValueError) as record:
+        encoder = OrdinalEncoder(errors="raise")
+        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+        encoder.transform(df_enc_rare[["var_A", "var_B"]])
+
+    # check that the error message matches
+    assert str(record.value) == msg
 
 
 def test_non_fitted_error(df_enc):
@@ -156,3 +173,8 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]], check_dtype=False)
     assert X["var_A"].dtypes == int
+
+
+def test_error_if_rare_labels_not_permitted_value():
+    with pytest.raises(ValueError):
+        OrdinalEncoder(errors="empanada")

@@ -6,12 +6,11 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
+from feature_engine.encoding.base_encoder import BaseCategorical
 from feature_engine.validation import _return_tags
-from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
-class PRatioEncoder(BaseCategoricalTransformer):
+class PRatioEncoder(BaseCategorical):
     """
     The PRatioEncoder() replaces categories by the ratio of the probability of the
     target = 1 and the probability of the target = 0.
@@ -72,6 +71,12 @@ class PRatioEncoder(BaseCategoricalTransformer):
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
+    errors: string, default='ignore'
+        Indicates what to do when categories not present in the train set are
+        encountered during transform. If 'raise', then rare categories will raise an
+        error. If 'ignore', then rare categories will be set as NaN and a warning will
+        be raised instead.
+
     Attributes
     ----------
     encoder_dict_:
@@ -110,6 +115,7 @@ class PRatioEncoder(BaseCategoricalTransformer):
         encoding_method: str = "ratio",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
+        errors: str = "ignore"
     ) -> None:
 
         if encoding_method not in ["ratio", "log_ratio"]:
@@ -117,12 +123,9 @@ class PRatioEncoder(BaseCategoricalTransformer):
                 "encoding_method takes only values 'ratio' and 'log_ratio'"
             )
 
-        if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False")
+        super().__init__(variables, ignore_format, errors)
 
         self.encoding_method = encoding_method
-        self.variables = _check_input_parameter_variables(variables)
-        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -198,14 +201,14 @@ class PRatioEncoder(BaseCategoricalTransformer):
 
         return X
 
-    transform.__doc__ = BaseCategoricalTransformer.transform.__doc__
+    transform.__doc__ = BaseCategorical.transform.__doc__
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = super().inverse_transform(X)
 
         return X
 
-    inverse_transform.__doc__ = BaseCategoricalTransformer.inverse_transform.__doc__
+    inverse_transform.__doc__ = BaseCategorical.inverse_transform.__doc__
 
     def _more_tags(self):
         tags_dict = _return_tags()
