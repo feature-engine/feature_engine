@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.pipeline import Pipeline
+from sklearn.base import is_classifier, is_regressor
 
 from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
