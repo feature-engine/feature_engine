@@ -6,7 +6,6 @@ from sklearn.datasets import fetch_california_housing
 from feature_engine.discretisation import ArbitraryDiscretiser
 
 
-
 def test_arbitrary_discretiser():
     california_dataset = fetch_california_housing()
     data = pd.DataFrame(california_dataset.data,
