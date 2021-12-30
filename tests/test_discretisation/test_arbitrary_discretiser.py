@@ -55,7 +55,7 @@ def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
 def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
     # test case 5: when NA is introduced by the transformation
     msg = "During the discretisation, NaN values were introduced " \
-          "in the feature(s) var_A."
+          "in the feature(s) Age, Marks."
     age_dict = {"Age": [0, 10, 20, 30, np.Inf]}
 
     # check for warning when errors equals 'ignore'
