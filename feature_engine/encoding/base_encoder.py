@@ -174,8 +174,12 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         # check if NaN values were introduced by the encoding
         if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
+
             # obtain the name(s) of the columns have null values
-            nan_columns = X.columns[X.isnull().any()].tolist()
+            tmp = X[self.encoder_dict_.keys()].copy()
+
+            nan_columns = tmp.columns[tmp.isnull().any()].tolist()
+
             if len(nan_columns) > 1:
                 nan_columns_str = ", ".join(nan_columns)
             else:
