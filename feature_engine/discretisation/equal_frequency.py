@@ -89,7 +89,7 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
             raise ValueError(f"q must be an integer. Got {q} instead.")
 
         super().__init__(return_object, return_boundaries)
-        
+
         self.q = q
         self.variables = _check_input_parameter_variables(variables)
 

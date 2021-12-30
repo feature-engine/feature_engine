@@ -86,8 +86,10 @@ class ArbitraryDiscretiser(BaseDiscretiser):
             )
 
         if errors not in ["ignore", "raise"]:
-            raise ValueError("errors only takes values 'ignore' and 'raise'. "
-                             f"Got {errors} instead.")
+            raise ValueError(
+                "errors only takes values 'ignore' and 'raise'. "
+                f"Got {errors} instead."
+            )
 
         super().__init__(return_object, return_boundaries)
 

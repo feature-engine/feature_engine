@@ -28,18 +28,21 @@ class BaseDiscretiser(BaseNumericalTransformer):
     """
 
     def __init__(
-            self,
-            return_object: bool = False,
-            return_boundaries: bool = False,
+        self,
+        return_object: bool = False,
+        return_boundaries: bool = False,
     ) -> None:
 
         if not isinstance(return_object, bool):
-            raise ValueError("return_object must be True or False. "
-                             f"Got {return_object} instead.")
+            raise ValueError(
+                "return_object must be True or False. " f"Got {return_object} instead."
+            )
 
         if not isinstance(return_boundaries, bool):
-            raise ValueError("return_boundaries must be True or False. "
-                             f"Got {return_boundaries} instead.")
+            raise ValueError(
+                "return_boundaries must be True or False. "
+                f"Got {return_boundaries} instead."
+            )
 
         self.return_object = return_object
         self.return_boundaries = return_boundaries
