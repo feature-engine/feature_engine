@@ -39,6 +39,12 @@ class ArbitraryDiscretiser(BaseDiscretiser):
         Whether the output, that is the bins, should be the interval boundaries. If
         True, it returns the interval boundaries. If False, it returns integers.
 
+    errors: string, default='ignore'
+        Indicates what to do if no value is assigned to one or more intervals in a
+        variable during transform(). If 'raise', empty intervals will raise an error.
+        If 'ignore', emtpy intervals are returned as NaN and a warning will be raised
+        instead.
+
     Attributes
     ----------
     binner_dict_:
@@ -74,7 +80,8 @@ class ArbitraryDiscretiser(BaseDiscretiser):
 
         if not isinstance(binning_dict, dict):
             raise ValueError(
-                "Please provide at a dictionary with the interval limits per variable"
+                "binning_dict must be a dictionary with the interval limits per "
+                f"variable. Got {binning_dict} instead."
             )
 
         super().__init__(return_object, return_boundaries, errors)

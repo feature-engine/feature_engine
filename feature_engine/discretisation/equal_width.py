@@ -51,6 +51,12 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         Whether the output should be the interval boundaries. If True, it returns
         the interval boundaries. If False, it returns integers.
 
+    errors: string, default='ignore'
+        Indicates what to do if no value is assigned to one or more intervals in a
+        variable during transform(). If 'raise', empty intervals will raise an error.
+        If 'ignore', emtpy intervals are returned as NaN and a warning will be raised
+        instead.
+
     Attributes
     ----------
     binner_dict_:
@@ -96,7 +102,7 @@ class EqualWidthDiscretiser(BaseDiscretiser):
     ) -> None:
 
         if not isinstance(bins, int):
-            raise ValueError("q must be an integer")
+            raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
         super().__init__(return_object, return_boundaries, errors)
 
