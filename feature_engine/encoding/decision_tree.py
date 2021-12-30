@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.pipeline import Pipeline
-from sklearn.base import is_classifier, is_regressor
+from sklearn.base import is_classifier
 from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.discretisation import DecisionTreeDiscretiser
@@ -143,11 +143,11 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
         if not check_estimator(estimator):
             raise ValueError(
-                "Estimator must be a scikit-learn. "
-                "Current estimator is not."
+                "Estimator must be a scikit-learn object. "
+                "Current estimator does not comply with scikit-learn conventions."
             )
 
-        self.is_classifier = is_classifier(estimator)
+        self.is_classification = is_classifier(estimator)
         self.encoding_method = encoding_method
         self.cv = cv
         self.scoring = scoring
