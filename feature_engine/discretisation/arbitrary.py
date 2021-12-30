@@ -1,8 +1,8 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Dict, List, Optional, Union
 import warnings
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 

@@ -1,7 +1,7 @@
 import numpy as np
-from numpy.random import default_rng
 import pandas as pd
 import pytest
+from numpy.random import default_rng
 from scipy.stats import skewnorm
 from sklearn.datasets import fetch_california_housing
 
