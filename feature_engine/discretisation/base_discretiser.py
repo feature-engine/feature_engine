@@ -10,7 +10,7 @@ from feature_engine.base_transformers import BaseNumericalTransformer
 
 class BaseDiscretiser(BaseNumericalTransformer):
     """
-    Share set-up checks and methods across numerical discretisers
+    Shared set-up checks and methods across numerical discretisers.
 
     Parameters
     ----------
@@ -19,28 +19,20 @@ class BaseDiscretiser(BaseNumericalTransformer):
         object. If you would like to proceed with the engineering of the variable as if
         it was categorical, use True. Alternatively, keep the default to False.
 
-    return_boundaries : bool, default=False
+    return_boundaries: bool, default=False
         Whether the output should be the interval boundaries. If True, it returns
         the interval boundaries. If False, it returns integers.
 
-    Attributes
-    ----------
-    binner_dict_:
-        Dictionary with the interval limits per variable.
-
-    variables_:
-         The variables that will be discretised.
+    errors: string, default='ignore'
+        Indicates what to do if no value is assigned to one or more intervals in a
+        variable during transform(). If 'raise', empty intervals will raise an error.
+        If 'ignore', emtpy intervals are returned as NaN and a warning will be raised
+        instead.
 
     Methods
     -------
     transform:
         Sort continuous variable values into the intervals.
-
-    See Also
-    --------
-    pandas.cut
-
-
     """
 
     def __init__(
@@ -73,6 +65,7 @@ class BaseDiscretiser(BaseNumericalTransformer):
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
+
         Returns
         -------
         X_new: pandas dataframe of shape = [n_samples, n_features]
@@ -97,7 +90,7 @@ class BaseDiscretiser(BaseNumericalTransformer):
             if self.return_object:
                 X[self.variables_] = X[self.variables_].astype("O")
 
-        # check if NaN values were introduced by the discretisation procedure
+        # check if NaN values were introduced by the discretisation procedure.
         if X[self.binner_dict_.keys()].isnull().sum().sum() > 0:
             # obtain the name(s) of the columns have null values
             nan_columns = X.columns[X.isnull().any()].tolist()
