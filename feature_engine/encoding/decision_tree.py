@@ -6,6 +6,7 @@ from typing import List, Optional, Union
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.base import is_classifier, is_regressor
+from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
@@ -130,20 +131,26 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     def __init__(
         self,
+        estimator: object = None,
         encoding_method: str = "arbitrary",
         cv: int = 3,
         scoring: str = "neg_mean_squared_error",
         param_grid: Optional[dict] = None,
-        regression: bool = True,
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
     ) -> None:
 
+        if not check_estimator(estimator):
+            raise ValueError(
+                "Estimator must be a scikit-learn. "
+                "Current estimator is not."
+            )
+
+        self.is_classifier = is_classifier(estimator)
         self.encoding_method = encoding_method
         self.cv = cv
         self.scoring = scoring
-        self.regression = regression
         self.param_grid = param_grid
         self.random_state = random_state
         self.variables = _check_input_parameter_variables(variables)
