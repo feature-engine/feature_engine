@@ -1,6 +1,8 @@
 import numpy as np
+from numpy.random import default_rng
 import pandas as pd
 import pytest
+from scipy.stats import skewnorm
 from sklearn.datasets import fetch_california_housing
 
 from feature_engine.discretisation import ArbitraryDiscretiser
@@ -43,7 +45,7 @@ def test_arbitrary_discretiser():
 
 
 def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
-    # test case 4: when dataset contains na, transform method
+    # test case 1: when dataset contains na, transform method
     age_dict = {"Age": [0, 10, 20, 30, np.Inf]}
 
     with pytest.raises(ValueError):
@@ -52,20 +54,42 @@ def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
 
-def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
-    # test case 5: when NA is introduced by the transformation
+def test_error_when_nan_introduced_during_transform():
+    # test error when NA are introduced during the discretisation.
+    rng = default_rng()
+
+    # create dataframe with 2 variables, 1 normal and 1 skewed
+    random = skewnorm.rvs(a=-50, loc=4, size=100)
+    random = random - min(random)  # Shift so the minimum value is equal to zero.
+
+    train = pd.concat([
+        pd.Series(rng.standard_normal(100)),
+        pd.Series(random),
+    ], axis=1)
+
+    train.columns = ['var_a', 'var_b']
+
+    # create a dataframe with 2 variables normally distributed
+    test = pd.concat([
+        pd.Series(rng.standard_normal(100)),
+        pd.Series(rng.standard_normal(100)),
+    ], axis=1)
+
+    test.columns = ['var_a', 'var_b']
+
     msg = "During the discretisation, NaN values were introduced " \
-          "in the feature(s) Age, Marks."
-    age_dict = {"Age": [0, 10, 20, 30, np.Inf]}
+          "in the feature(s) var_b."
+
+    limits_dict = {'var_a':[-5, -2, 0, 2, 5], 'var_b':[-0, 2, 5]}
 
     # check for warning when errors equals 'ignore'
     with pytest.warns(UserWarning) as record:
         transformer = ArbitraryDiscretiser(
-            binning_dict=age_dict,
+            binning_dict=limits_dict,
             errors="ignore"
         )
-        transformer.fit(df_vartypes)
-        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
+        transformer.fit(train)
+        transformer.transform(test)
 
     # check that only one warning was returned
     assert len(record) == 1
@@ -75,11 +99,11 @@ def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
     # check for error when errors equals 'raise'
     with pytest.raises(ValueError) as record:
         transformer = ArbitraryDiscretiser(
-            binning_dict=age_dict,
+            binning_dict=limits_dict,
             errors="raise"
         )
-        transformer.fit(df_vartypes)
-        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
+        transformer.fit(train)
+        transformer.transform(test)
 
     # check that error message matches
     assert str(record.value) == msg
