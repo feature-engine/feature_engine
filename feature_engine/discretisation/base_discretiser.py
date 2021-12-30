@@ -1,8 +1,6 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-import warnings
-
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
@@ -23,12 +21,6 @@ class BaseDiscretiser(BaseNumericalTransformer):
         Whether the output should be the interval boundaries. If True, it returns
         the interval boundaries. If False, it returns integers.
 
-    errors: string, default='ignore'
-        Indicates what to do if no value is assigned to one or more intervals in a
-        variable during transform(). If 'raise', empty intervals will raise an error.
-        If 'ignore', emtpy intervals are returned as NaN and a warning will be raised
-        instead.
-
     Methods
     -------
     transform:
@@ -39,7 +31,6 @@ class BaseDiscretiser(BaseNumericalTransformer):
             self,
             return_object: bool = False,
             return_boundaries: bool = False,
-            errors: str = "ignore",
     ) -> None:
 
         if not isinstance(return_object, bool):
@@ -50,13 +41,8 @@ class BaseDiscretiser(BaseNumericalTransformer):
             raise ValueError("return_boundaries must be True or False. "
                              f"Got {return_boundaries} instead.")
 
-        if errors not in ["ignore", "raise"]:
-            raise ValueError("errors only takes values 'ignore' and 'raise'. "
-                             f"Got {errors} instead.")
-
         self.return_object = return_object
         self.return_boundaries = return_boundaries
-        self.errors = errors
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Sort the variable values into the intervals.
@@ -89,26 +75,5 @@ class BaseDiscretiser(BaseNumericalTransformer):
             # return object
             if self.return_object:
                 X[self.variables_] = X[self.variables_].astype("O")
-
-        # check if NaN values were introduced by the discretisation procedure.
-        if X[self.binner_dict_.keys()].isnull().sum().sum() > 0:
-            # obtain the name(s) of the columns have null values
-            nan_columns = X.columns[X.isnull().any()].tolist()
-            if len(nan_columns) > 1:
-                nan_columns_str = ", ".join(nan_columns)
-            else:
-                nan_columns_str = nan_columns[0]
-
-            if self.errors == "ignore":
-                warnings.warn(
-                    f"During the discretisation, NaN values were introduced in "
-                    f"the feature(s) {nan_columns_str}."
-                )
-
-            elif self.errors == "raise":
-                raise ValueError(
-                    "During the discretisation, NaN values were introduced in "
-                    f"the feature(s) {nan_columns_str}."
-                )
 
         return X

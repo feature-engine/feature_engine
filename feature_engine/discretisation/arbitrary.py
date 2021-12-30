@@ -2,6 +2,7 @@
 # License: BSD 3 clause
 
 from typing import Dict, List, Optional, Union
+import warnings
 
 import pandas as pd
 
@@ -84,9 +85,14 @@ class ArbitraryDiscretiser(BaseDiscretiser):
                 f"variable. Got {binning_dict} instead."
             )
 
-        super().__init__(return_object, return_boundaries, errors)
+        if errors not in ["ignore", "raise"]:
+            raise ValueError("errors only takes values 'ignore' and 'raise'. "
+                             f"Got {errors} instead.")
+
+        super().__init__(return_object, return_boundaries)
 
         self.binning_dict = binning_dict
+        self.errors = errors
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -110,6 +116,36 @@ class ArbitraryDiscretiser(BaseDiscretiser):
         self.n_features_in_ = X.shape[1]
 
         return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+
+        X = super().transform(X)
+
+        # check if NaN values were introduced by the discretisation procedure.
+        if X[self.variables_].isnull().sum().sum() > 0:
+
+            # obtain the name(s) of the columns with null values
+            tmp = X[self.variables_].copy()
+            nan_columns = tmp.columns[tmp.isnull().any()].tolist()
+
+            if len(nan_columns) > 1:
+                nan_columns_str = ", ".join(nan_columns)
+            else:
+                nan_columns_str = nan_columns[0]
+
+            if self.errors == "ignore":
+                warnings.warn(
+                    f"During the discretisation, NaN values were introduced in "
+                    f"the feature(s) {nan_columns_str}."
+                )
+
+            elif self.errors == "raise":
+                raise ValueError(
+                    "During the discretisation, NaN values were introduced in "
+                    f"the feature(s) {nan_columns_str}."
+                )
+
+        return X
 
     def _more_tags(self):
         tags_dict = _return_tags()
