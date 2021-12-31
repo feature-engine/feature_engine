@@ -41,10 +41,10 @@ class ArbitraryDiscretiser(BaseDiscretiser):
         True, it returns the interval boundaries. If False, it returns integers.
 
     errors: string, default='ignore'
-        Indicates what to do if no value is assigned to one or more intervals in a
-        variable during transform(). If 'raise', empty intervals will raise an error.
-        If 'ignore', emtpy intervals are returned as NaN and a warning will be raised
-        instead.
+        Indicates what to do when a value is outside the limits indicated in the
+        'binning_dict'. If 'raise', the transformation will raise an error.
+        If 'ignore', values outside the limits are returned as NaN
+        and a warning will be raised instead.
 
     Attributes
     ----------
@@ -120,8 +120,6 @@ class ArbitraryDiscretiser(BaseDiscretiser):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-
-        X = super().transform(X)
 
         # check if NaN values were introduced by the discretisation procedure.
         if X[self.variables_].isnull().sum().sum() > 0:
