@@ -5,8 +5,8 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine.variable_manipulation import _check_input_parameter_variables
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 class EqualWidthDiscretiser(BaseDiscretiser):
@@ -92,13 +92,12 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         bins: int = 10,
         return_object: bool = False,
         return_boundaries: bool = False,
-        errors: str = "ignore",
     ) -> None:
 
         if not isinstance(bins, int):
-            raise ValueError("q must be an integer")
+            raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
-        super().__init__(return_object, return_boundaries, errors)
+        super().__init__(return_object, return_boundaries)
 
         self.bins = bins
         self.variables = _check_input_parameter_variables(variables)

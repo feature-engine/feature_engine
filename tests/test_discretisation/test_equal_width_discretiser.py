@@ -34,7 +34,7 @@ def test_automatically_find_variables_and_return_as_numeric(df_normal_dist):
 
 
 def test_automatically_find_variables_and_return_as_object(df_normal_dist):
-    transformer = EqualWidthDiscretiser(return_object=True)
+    transformer = EqualWidthDiscretiser(bins=10, variables=None, return_object=True)
     X = transformer.fit_transform(df_normal_dist)
     assert X["var"].dtypes == "O"
 
@@ -64,38 +64,7 @@ def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
 
-def test_error_when_nan_introduced_during_transform(df_vartypes, df_na):
-    # test case 5: when NA is introduced by the transformation
-    msg = "During the discretisation, NaN values were introduced " \
-          "in the feature(s) var_A."
-
-    # check warning message when errors equals 'ignore'
-    with pytest.warns(UserWarning) as record:
-        transformer = EqualWidthDiscretiser(errors="ignore")
-        transformer.fit(df_vartypes)
-        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
-
-    # check that only one warning was returned
-    assert len(record) == 1
-    # check that message matches
-    assert record[0].message.args[0] == msg
-
-    # check error message when errors equals 'raise'
-    with pytest.raises(ValueError) as record:
-        transformer = EqualWidthDiscretiser(errors="raise")
-        transformer.fit(df_vartypes)
-        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
-
-    # check that message matches
-    assert str(record.value) == msg
-
-
 def test_non_fitted_error(df_vartypes):
     with pytest.raises(NotFittedError):
         transformer = EqualWidthDiscretiser()
         transformer.transform(df_vartypes)
-
-
-def test_error_if_not_permitted_value_is_errors():
-    with pytest.raises(ValueError):
-        EqualWidthDiscretiser(errors="medialuna")
