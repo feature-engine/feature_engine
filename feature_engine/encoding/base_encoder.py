@@ -44,8 +44,10 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
     ) -> None:
 
         if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False. "
-                             f"Got {ignore_format} instead.")
+            raise ValueError(
+                "ignore_format takes only booleans True and False. "
+                f"Got {ignore_format} instead."
+            )
 
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
@@ -176,9 +178,11 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
 
             # obtain the name(s) of the columns have null values
-            tmp = X[self.encoder_dict_.keys()].copy()
-
-            nan_columns = tmp.columns[tmp.isnull().any()].tolist()
+            nan_columns = (
+                X[self.encoder_dict_.keys()]
+                .columns[X[self.encoder_dict_.keys()].isnull().any()]
+                .tolist()
+            )
 
             if len(nan_columns) > 1:
                 nan_columns_str = ", ".join(nan_columns)
