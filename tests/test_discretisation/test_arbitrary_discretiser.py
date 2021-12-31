@@ -88,7 +88,7 @@ def test_error_when_nan_introduced_during_transform():
         "in the feature(s) var_b."
     )
 
-    limits_dict = {"var_a": [-5, -2, 0, 2, 5], "var_b": [-0, 2, 5]}
+    limits_dict = {"var_a": [-5, -2, 0, 2, 5], "var_b": [0, 2, 5]}
 
     # check for warning when errors equals 'ignore'
     with pytest.warns(UserWarning) as record:
