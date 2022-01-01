@@ -5,8 +5,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.pipeline import Pipeline
-from sklearn.base import is_classifier
-from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.multiclass import type_of_target, check_classification_targets
 
 from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
@@ -83,7 +82,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
-    target_values: Pandas Series, default=None
+    target_variables: list, default=None
         The response/target variables of the Sklearn estimator model. These values
         are to be predicted by the estimator.
 
@@ -148,12 +147,18 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        target_values: pd.Series = None,
+        target_variables: Union[None, int, str, List[Union[str, int]]] = None,
         is_regression: bool = False,
     ) -> None:
 
-        if is_regression
-        self.is_classification = is_classifier(estimator)
+        if is_regression and type_of_target(target_variables) == "binary":
+            raise ValueError(f"'is_regression' is {is_regression} and target "
+                             f"variables are a binary. These two parameter settings "
+                             f"are not compatible.")
+
+        if not is_regression:
+            check_classification_targets(target_variables)
+
         self.encoding_method = encoding_method
         self.cv = cv
         self.scoring = scoring
