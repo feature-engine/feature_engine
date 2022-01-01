@@ -121,6 +121,7 @@ class ArbitraryDiscretiser(BaseDiscretiser):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
 
+        X = super().transform(X)
         # check if NaN values were introduced by the discretisation procedure.
         if X[self.variables_].isnull().sum().sum() > 0:
 

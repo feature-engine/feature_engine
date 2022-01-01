@@ -17,12 +17,14 @@ def test_arbitrary_discretiser():
 
     data_t1 = data.copy()
     data_t2 = data.copy()
+
     # HouseAge is the median house age in the block group.
     data_t1["HouseAge"] = pd.cut(data["HouseAge"], bins=[0, 20, 40, 60, np.Inf])
     data_t2["HouseAge"] = pd.cut(
         data["HouseAge"], bins=[0, 20, 40, 60, np.Inf], labels=False
     )
-
+    print(data_t1.head())
+    print(data_t2.head())
     transformer = ArbitraryDiscretiser(
         binning_dict=user_dict, return_object=False, return_boundaries=False
     )
