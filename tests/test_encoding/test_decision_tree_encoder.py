@@ -14,7 +14,9 @@ def test_encoding_method_param(df_enc):
 
     # ordered encoding
     encoder = DecisionTreeEncoder(
-        encoding_method="ordered", is_regression=False, target_variables=df_enc["target"]
+        encoding_method="ordered",
+        is_regression=False,
+        target_variables=df_enc["target"]
     )
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     assert encoder.encoder_[0].encoding_method == "ordered"
@@ -22,8 +24,10 @@ def test_encoding_method_param(df_enc):
     # incorrect input
     with pytest.raises(ValueError):
         encoder = DecisionTreeEncoder(
-            encoding_method="other", is_regression=False, target_variables=df_enc["target"]
-    )
+            encoding_method="other",
+            is_regression=False,
+            target_variables=df_enc["target"]
+        )
         encoder.fit(df_enc, df_enc["target"])
 
 
@@ -82,7 +86,9 @@ def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
 
 def test_classification_ignore_format(df_enc_numeric):
     encoder = DecisionTreeEncoder(
-        is_regression=False, ignore_format=True, target_variables=df_enc_numeric["target"]
+        is_regression=False,
+        ignore_format=True,
+        target_variables=df_enc_numeric["target"]
     )
     encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
     X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
@@ -131,7 +137,7 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 def test_error_is_regression_true_and_target_variable_binary(df_enc):
     with pytest.raises(ValueError):
         DecisionTreeEncoder(
-            is_regression=True,target_variables=df_enc["target"]
+            is_regression=True, target_variables=df_enc["target"]
         )
 
 
