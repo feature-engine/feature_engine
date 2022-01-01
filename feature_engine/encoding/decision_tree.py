@@ -166,6 +166,8 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         self.random_state = random_state
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
+        self.target_variables = target_variables
+        self.is_regression = is_regression
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -203,7 +205,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
             scoring=self.scoring,
             variables=self.variables_,
             param_grid=param_grid,
-            regression=self.regression,
+            regression=self.is_regression,
             random_state=self.random_state,
         )
 
