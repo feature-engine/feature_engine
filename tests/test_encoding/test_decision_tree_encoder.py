@@ -142,7 +142,9 @@ def test_error_is_regression_true_and_target_variable_binary(df_enc):
 
 
 def test_error_is_regression_false_and_target_variable_continuous(df_enc_numeric):
+    random = np.random.RandomState(42)
+    y = random.normal(0, 10, len(df_enc_numeric))
     with pytest.raises(ValueError):
         DecisionTreeEncoder(
-            is_regression=False, target_variables=df_enc_numeric["target"]
+            is_regression=False, target_variables=y
         )
