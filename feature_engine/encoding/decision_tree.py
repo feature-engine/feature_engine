@@ -83,6 +83,16 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
+    target_values: Pandas Series, default=None
+        The response/target variables of the Sklearn estimator model. These values
+        are to be predicted by the estimator.
+
+    is_regression: bool, default=False
+        The parameter should be set to True if the 'target_value' series comprises
+        continuous variables for a regression model. Otherwise, the 'is_regression'
+        should equal False as the `target_value` series comprises variables for a
+        binary or multiclass classification model.
+
     Attributes
     ----------
     encoder_:
@@ -131,7 +141,6 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
     def __init__(
         self,
-        estimator: object = None,
         encoding_method: str = "arbitrary",
         cv: int = 3,
         scoring: str = "neg_mean_squared_error",
@@ -139,14 +148,11 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
+        target_values: pd.Series = None,
+        is_regression: bool = False,
     ) -> None:
 
-        if not check_estimator(estimator):
-            raise ValueError(
-                "Estimator must be a scikit-learn object. "
-                "Current estimator does not comply with scikit-learn conventions."
-            )
-
+        if is_regression
         self.is_classification = is_classifier(estimator)
         self.encoding_method = encoding_method
         self.cv = cv
