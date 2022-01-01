@@ -13,13 +13,17 @@ def test_encoding_method_param(df_enc):
     assert encoder.encoder_[0].encoding_method == "arbitrary"
 
     # ordered encoding
-    encoder = DecisionTreeEncoder(encoding_method="ordered")
+    encoder = DecisionTreeEncoder(
+        encoding_method="ordered", is_regression=False, target_variables=df_enc["target"]
+    )
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     assert encoder.encoder_[0].encoding_method == "ordered"
 
     # incorrect input
     with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder(encoding_method="other")
+        encoder = DecisionTreeEncoder(
+            encoding_method="other", is_regression=False, target_variables=df_enc["target"]
+    )
         encoder.fit(df_enc, df_enc["target"])
 
 
@@ -40,7 +44,7 @@ def test_regression(df_enc):
     random = np.random.RandomState(42)
     y = random.normal(0, 0.1, len(df_enc))
     encoder = DecisionTreeEncoder(
-        is_regression=True, random_state=random, target_variables=df_enc["target"]
+        is_regression=True, random_state=random, target_variables=y
     )
     encoder.fit(df_enc[["var_A", "var_B"]], y)
     X = encoder.transform(df_enc[["var_A", "var_B"]])
@@ -55,7 +59,9 @@ def test_regression(df_enc):
 
 def test_non_fitted_error(df_enc):
     with pytest.raises(NotFittedError):
-        encoder = DecisionTreeEncoder()
+        encoder = DecisionTreeEncoder(
+            is_regression=False, target_variables=df_enc["target"]
+        )
         encoder.transform(df_enc)
 
 
@@ -91,7 +97,10 @@ def test_regression_ignore_format(df_enc_numeric):
     random = np.random.RandomState(42)
     y = random.normal(0, 0.1, len(df_enc_numeric))
     encoder = DecisionTreeEncoder(
-        is_regression=True, random_state=random, ignore_format=True
+        is_regression=True,
+        random_state=random,
+        ignore_format=True,
+        target_variables=y,
     )
     encoder.fit(df_enc_numeric[["var_A", "var_B"]], y)
     X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
@@ -106,7 +115,9 @@ def test_regression_ignore_format(df_enc_numeric):
 
 def test_variables_cast_as_category(df_enc_category_dtypes):
     df = df_enc_category_dtypes.copy()
-    encoder = DecisionTreeEncoder(is_regression=False)
+    encoder = DecisionTreeEncoder(
+        is_regression=False, target_variables=df_enc_category_dtypes["target"]
+    )
     encoder.fit(df[["var_A", "var_B"]], df["target"])
     X = encoder.transform(df[["var_A", "var_B"]])
 
@@ -118,9 +129,6 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 
 
 def test_error_is_regression_true_and_target_variable_binary(df_enc):
-    msg = "'is_regression' is True and target variables are a binary. These two " \
-          "parameter settings are not compatible."
-
     with pytest.raises(ValueError):
         DecisionTreeEncoder(
             is_regression=True,
