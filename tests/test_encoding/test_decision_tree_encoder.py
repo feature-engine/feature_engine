@@ -120,11 +120,13 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 
 def test_error_is_regression_true_and_target_variable_binary(df_enc):
     with pytest.raises(ValueError):
-        DecisionTreeEncoder(regression=True)
+        encoder = DecisionTreeEncoder(regression=True)
+        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
 
 
 def test_error_is_regression_false_and_target_variable_continuous(df_enc_numeric):
     random = np.random.RandomState(42)
     y = random.normal(0, 10, len(df_enc_numeric))
     with pytest.raises(ValueError):
-        DecisionTreeEncoder(regression=False)
+        encoder = DecisionTreeEncoder(regression=False)
+        encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
