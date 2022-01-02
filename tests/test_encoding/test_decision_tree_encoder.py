@@ -8,33 +8,23 @@ from feature_engine.encoding import DecisionTreeEncoder
 
 def test_encoding_method_param(df_enc):
     # defaults
-    encoder = DecisionTreeEncoder(target_variables=df_enc["target"])
+    encoder = DecisionTreeEncoder()
     encoder.fit(df_enc, df_enc["target"])
     assert encoder.encoder_[0].encoding_method == "arbitrary"
 
     # ordered encoding
-    encoder = DecisionTreeEncoder(
-        encoding_method="ordered",
-        regression=False,
-        target_variables=df_enc["target"]
-    )
+    encoder = DecisionTreeEncoder(encoding_method="ordered")
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     assert encoder.encoder_[0].encoding_method == "ordered"
 
     # incorrect input
     with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder(
-            encoding_method="other",
-            regression=False,
-            target_variables=df_enc["target"]
-        )
+        encoder = DecisionTreeEncoder(encoding_method="other")
         encoder.fit(df_enc, df_enc["target"])
 
 
 def test_classification(df_enc):
-    encoder = DecisionTreeEncoder(
-        regression=False, target_variables=df_enc["target"]
-    )
+    encoder = DecisionTreeEncoder(regression=False)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     X = encoder.transform(df_enc[["var_A", "var_B"]])
 
@@ -48,7 +38,7 @@ def test_regression(df_enc):
     random = np.random.RandomState(42)
     y = random.normal(0, 0.1, len(df_enc))
     encoder = DecisionTreeEncoder(
-        regression=True, random_state=random, target_variables=y
+        regression=True, random_state=random,
     )
     encoder.fit(df_enc[["var_A", "var_B"]], y)
     X = encoder.transform(df_enc[["var_A", "var_B"]])
@@ -63,9 +53,7 @@ def test_regression(df_enc):
 
 def test_non_fitted_error(df_enc):
     with pytest.raises(NotFittedError):
-        encoder = DecisionTreeEncoder(
-            regression=False, target_variables=df_enc["target"]
-        )
+        encoder = DecisionTreeEncoder()
         encoder.transform(df_enc)
 
 
@@ -88,7 +76,6 @@ def test_classification_ignore_format(df_enc_numeric):
     encoder = DecisionTreeEncoder(
         regression=False,
         ignore_format=True,
-        target_variables=df_enc_numeric["target"]
     )
     encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
     X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
@@ -106,7 +93,6 @@ def test_regression_ignore_format(df_enc_numeric):
         regression=True,
         random_state=random,
         ignore_format=True,
-        target_variables=y,
     )
     encoder.fit(df_enc_numeric[["var_A", "var_B"]], y)
     X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
@@ -121,9 +107,7 @@ def test_regression_ignore_format(df_enc_numeric):
 
 def test_variables_cast_as_category(df_enc_category_dtypes):
     df = df_enc_category_dtypes.copy()
-    encoder = DecisionTreeEncoder(
-        regression=False, target_variables=df_enc_category_dtypes["target"]
-    )
+    encoder = DecisionTreeEncoder(regression=False)
     encoder.fit(df[["var_A", "var_B"]], df["target"])
     X = encoder.transform(df[["var_A", "var_B"]])
 
@@ -136,15 +120,11 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 
 def test_error_is_regression_true_and_target_variable_binary(df_enc):
     with pytest.raises(ValueError):
-        DecisionTreeEncoder(
-            regression=True, target_variables=df_enc["target"]
-        )
+        DecisionTreeEncoder(regression=True)
 
 
 def test_error_is_regression_false_and_target_variable_continuous(df_enc_numeric):
     random = np.random.RandomState(42)
     y = random.normal(0, 10, len(df_enc_numeric))
     with pytest.raises(ValueError):
-        DecisionTreeEncoder(
-            regression=False, target_variables=y
-        )
+        DecisionTreeEncoder(regression=False)
