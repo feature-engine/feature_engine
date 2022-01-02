@@ -126,8 +126,9 @@ class ArbitraryDiscretiser(BaseDiscretiser):
         if X[self.variables_].isnull().sum().sum() > 0:
 
             # obtain the name(s) of the columns with null values
-            nan_columns = X[self.variables_].columns[X[self.variables_]
-                .isnull().any()].tolist()
+            nan_columns = X[self.variables_] \
+                                .columns[X[self.variables_].isnull().any()] \
+                                .tolist()
 
             if len(nan_columns) > 1:
                 nan_columns_str = ", ".join(nan_columns)
