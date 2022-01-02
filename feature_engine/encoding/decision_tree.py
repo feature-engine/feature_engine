@@ -86,7 +86,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         The response/target variables of the Sklearn estimator model. These values
         are to be predicted by the estimator.
 
-    is_regression: bool, default=False
+    regression: bool, default=False
         The parameter should be set to True if the 'target_value' series comprises
         continuous variables for a regression model. Otherwise, the 'is_regression'
         should equal False as the `target_value` series comprises variables for a
@@ -148,15 +148,15 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
         target_variables: Union[None, int, str, List[Union[str, int]]] = None,
-        is_regression: bool = False,
+        regression: bool = False,
     ) -> None:
 
-        if is_regression and type_of_target(target_variables) == "binary":
-            raise ValueError(f"'is_regression' is {is_regression} and target "
+        if regression is True and type_of_target(target_variables) == "binary":
+            raise ValueError(f"'regression' is {regression} and target "
                              f"variables are a binary. These two parameter settings "
                              f"are not compatible.")
 
-        if not is_regression:
+        if regression is False:
             check_classification_targets(target_variables)
 
         self.encoding_method = encoding_method
@@ -167,7 +167,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
         self.target_variables = target_variables
-        self.is_regression = is_regression
+        self.regression = regression
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -205,7 +205,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
             scoring=self.scoring,
             variables=self.variables_,
             param_grid=param_grid,
-            regression=self.is_regression,
+            regression=self.regression,
             random_state=self.random_state,
         )
 
