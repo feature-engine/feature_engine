@@ -83,10 +83,9 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         accept all variables entered by the user, including those cast as numeric.
 
     regression: bool, default=False
-        The parameter should be set to True if the 'target_value' series comprises
-        continuous variables for a regression model. Otherwise, the 'is_regression'
-        should equal False as the `target_value` series comprises variables for a
-        binary or multiclass classification model.
+        The parameter should be set to True if the target variables comprise
+        continuous variables. Otherwise, the 'is_regression'should equal False as the
+        target variables comprise binary or multiclass values.
 
     Attributes
     ----------
@@ -153,7 +152,6 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         self.random_state = random_state
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
-        self.target_variables = target_variables
         self.regression = regression
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
