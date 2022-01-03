@@ -120,6 +120,17 @@ class ArbitraryDiscretiser(BaseDiscretiser):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Sort the variable values into the intervals.
+
+       Parameters
+       ----------
+       X: pandas dataframe of shape = [n_samples, n_features]
+           The dataframe to be transformed.
+       Returns
+       -------
+       X_new: pandas dataframe of shape = [n_samples, n_features]
+           The transformed data with the discrete variables.
+       """
 
         X = super().transform(X)
         # check if NaN values were introduced by the discretisation procedure.
