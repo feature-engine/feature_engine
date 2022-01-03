@@ -169,9 +169,8 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         if self.regression is True:
             if type_of_target(y) == "binary":
                 raise ValueError("Trying to fit a regression to a binary target is not "
-                                 "allowed by this transformer. Check the target values or "
-                                 "set regression to False.")
-                                
+                                 "allowed by this transformer. Check the target values "
+                                 "or set regression to False.")
 
         else:
             check_classification_targets(y)
