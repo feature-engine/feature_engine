@@ -82,11 +82,6 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         type object or categorical. If True, the encoder will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
-    regression: bool, default=False
-        The parameter should be set to True if the target variables comprise
-        continuous variables. Otherwise, the 'is_regression'should equal False as the
-        target variables comprise binary or multiclass values.
-
     Attributes
     ----------
     encoder_:
@@ -139,20 +134,21 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         cv: int = 3,
         scoring: str = "neg_mean_squared_error",
         param_grid: Optional[dict] = None,
+        regression: bool = False,
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        regression: bool = False,
+
     ) -> None:
 
         self.encoding_method = encoding_method
         self.cv = cv
         self.scoring = scoring
         self.param_grid = param_grid
+        self.regression = regression
         self.random_state = random_state
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
-        self.regression = regression
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -170,12 +166,13 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         """
 
         # confirm model type and target variables are compatible.
-        if self.regression is True and type_of_target(y) == "binary":
-            raise ValueError(f"'regression' is {self.regression} and target "
-                             f"variables are a binary. These two parameter settings "
-                             f"are not compatible.")
+        if self.regression is True:
+            if type_of_target(y) == "binary":
+                raise ValueError(f"'regression' is {self.regression} and target "
+                                 f"variables are a binary. These two parameter settings "
+                                 f"are not compatible.")
 
-        if self.regression is False:
+        else:
             check_classification_targets(y)
 
         # check input dataframe
