@@ -57,7 +57,7 @@ second datetime variable in our dataset.
 
     dtfs = DatetimeFeatures(
         variables="var_date2",
-        features_to_extract=["month", "month_end", "day_of_the_year"]
+        features_to_extract=["month", "month_end", "day_of_year"]
     )
 
     df_transf = dtfs.fit_transform(toy_df)
@@ -66,11 +66,11 @@ second datetime variable in our dataset.
 
 .. code:: python
 
-      var_date1  var_date2_month  var_date2_month_end  var_date2_doty
-    0  May-1989                6                    0             173
-    1  Dec-2020                2                    0              41
-    2  Jan-1999                8                    0             215
-    3  Feb-2002               10                    1             305
+      var_date1  var_date2_month  var_date2_month_end  var_date2_day_of_year
+    0  May-1989                6                    0                    173
+    1  Dec-2020                2                    0                     41
+    2  Jan-1999                8                    0                    215
+    3  Feb-2002               10                    1                    305
 
 
 With `transform()`, the features extracted from the datetime variable are added to the
@@ -214,7 +214,7 @@ And now we mistakenly extract only date features.
 .. code:: python
 
     dfts = DatetimeFeatures(
-        features_to_extract=["year", "month", "day_of_the_week"],
+        features_to_extract=["year", "month", "day_of_week"],
     )
     df_transf = dfts.fit_transform(toy_df)
 
@@ -222,17 +222,17 @@ And now we mistakenly extract only date features.
 
 .. code:: python
 
-      not_a_dt  var_time1_year  var_time1_month  var_time1_dotw  var_time2_year  \
-    0      not            2021               12               2            2021
-    1        a            2021               12               2            2021
-    2     date            2021               12               2            2021
-    3     time            2021               12               2            2021
+      not_a_dt  var_time1_year  var_time1_month  var_time1_day_of_week  var_time2_year \
+    0      not            2021               12                      2            2021
+    1        a            2021               12                      2            2021
+    2     date            2021               12                      2            2021
+    3     time            2021               12                      2            2021
 
-       var_time2_month  var_time2_dotw
-    0               12               2
-    1               12               2
-    2               12               2
-    3               12               2
+       var_time2_month  var_time2_day_of_week
+    0               12                      2
+    1               12                      2
+    2               12                      2
+    3               12                      2
 
 The transformer will still create features derived from today's date (the date of
 creating the docs).
@@ -313,15 +313,15 @@ To do this, we leave the parameter `features_to_extract` to `None`.
     1 2018-01-01 01:00:00  12/01/90 23:01:02  02/28/97 10:10:55              1
     2 2018-01-01 02:00:00  04/25/01 11:59:21  11/11/03 17:30:00              1
 
-       var_dt1_year  var_dt1_dotw  var_dt1_dotm  var_dt1_hour  var_dt1_minute  \
-    0          2018             0             1             0               0
-    1          2018             0             1             1               0
-    2          2018             0             1             2               0
+       var_dt1_year  var_dt1_day_of_week  var_dt1_day_of_month  var_dt1_hour  \
+    0          2018                    0                     1             0
+    1          2018                    0                                   1
+    2          2018                    0                  1                2
 
-       var_dt1_second
-    0               0
-    1               0
-    2               0
+        var_dt1_minute    var_dt1_second
+    0               0                  0
+    1               0                  0
+    2               0                  0
 
 Our new dataset contains the original features plus the new variables extracted
 from them.
@@ -336,8 +336,8 @@ We can find the group of features extracted by the transformer in its attribute.
 
     ['month',
      'year',
-     'day_of_the_week',
-     'day_of_the_month',
+     'day_of_week',
+     'day_of_month',
      'hour',
      'minute',
      'second']
@@ -368,10 +368,10 @@ We can also extract all supported features automatically.
     1                1                 1          2018
     2                1                 1          2018
 
-       var_dt1_woty  var_dt1_dotw  ...  var_dt1_month_end  var_dt1_quarter_start  \
-    0             1             0  ...                  0                      1
-    1             1             0  ...                  0                      1
-    2             1             0  ...                  0                      1
+       var_dt1_week  var_dt1_day_of_week  ...  var_dt1_month_end  var_dt1_quarter_start  \
+    0             1                    0  ...                  0                      1
+    1             1                    0  ...                  0                      1
+    2             1                    0  ...                  0                      1
 
        var_dt1_quarter_end  var_dt1_year_start  var_dt1_year_end  \
     0                    0                   1                 0
@@ -400,10 +400,10 @@ We can find the group of features extracted by the transformer in its attribute.
      'quarter',
      'semester',
      'year',
-     'week_of_the_year',
-     'day_of_the_week',
-     'day_of_the_month',
-     'day_of_the_year',
+     'week',
+     'day_of_week',
+     'day_of_month',
+     'day_of_year',
      'weekend',
      'month_start',
      'month_end',
@@ -467,11 +467,11 @@ from the dataset.
 
 .. code:: python
 
-       var_date_month  var_date_year  var_date_dotw  var_date_dotm  \
-    0               6           2012              3             21
-    1               2           1998              1             10
-    2               8           2010              1              3
-    3              10           2020              5             31
+       var_date_month  var_date_year  var_date_day_of_week  var_date_day_of_month  \
+    0               6           2012                     3                     21
+    1               2           1998                     1                     10
+    2               8           2010                     1                      3
+    3              10           2020                     5                     31
 
        var_time1_hour  var_time1_minute  var_time1_second  var_dt_month  \
     0              12                34                45             8
@@ -479,17 +479,17 @@ from the dataset.
     2              11                59                21             4
     3               8                44                23             4
 
-       var_dt_year  var_dt_dotw  var_dt_dotm  var_dt_hour  var_dt_minute  \
-    0         2000            3           31           12             34
-    1         1990            5            1           23              1
-    2         2001            2           25           11             59
-    3         2001            2           25           11             59
+       var_dt_year  var_dt_day_of_week  var_dt_day_of_month  var_dt_hour  \
+    0         2000                   3                   31           12
+    1         1990                   5                    1           23
+    2         2001                   2                   25           11
+    3         2001                   2                   25           11
 
-       var_dt_second
-    0             45
-    1              2
-    2             21
-    3             21
+       var_dt_minute   var_dt_second
+    0             34              45
+    1              1               2
+    2             59              21
+    3             59              21
 
 As you can see, we do not have the constant features in the transformed dataset.
 
@@ -562,7 +562,7 @@ timezone.
     toy_df = pd.DataFrame({"var_tz": var_tz})
 
     dfts = DatetimeFeatures(
-        features_to_extract=["day_of_the_month", "hour"],
+        features_to_extract=["day_of_month", "hour"],
         drop_original=False,
         utc=True,
     )
@@ -573,10 +573,10 @@ timezone.
 
 .. code:: python
 
-                         var_tz  var_tz_dotm  var_tz_hour
-    0 2000-08-31 12:34:45-04:00           31           16
-    1 1990-12-01 23:01:02-05:00            2            4
-    2 2001-04-25 11:59:21-04:00           25           15
+                         var_tz  var_tz_day_of_month  var_tz_hour
+    0 2000-08-31 12:34:45-04:00                   31           16
+    1 1990-12-01 23:01:02-05:00                    2            4
+    2 2001-04-25 11:59:21-04:00                   25           15
 
 
 **Case 3**: given a variable like *var_tz* in the example above, we now want
@@ -587,7 +587,7 @@ is the default option.
 .. code:: python
 
     dfts = DatetimeFeatures(
-        features_to_extract=["day_of_the_month", "hour"],
+        features_to_extract=["day_of_month", "hour"],
         drop_original=False,
         utc=None,
     )
@@ -598,10 +598,10 @@ is the default option.
 
 .. code:: python
 
-                         var_tz  var_tz_dotm  var_tz_hour
-    0 2000-08-31 12:34:45-04:00           31           12
-    1 1990-12-01 23:01:02-05:00            1           23
-    2 2001-04-25 11:59:21-04:00           25           11
+                         var_tz  var_tz_day_of_month  var_tz_hour
+    0 2000-08-31 12:34:45-04:00                   31           12
+    1 1990-12-01 23:01:02-05:00                    1           23
+    2 2001-04-25 11:59:21-04:00                   25           11
 
 Note that the hour extracted from the variable differ in this dataframe respect to the
 one obtained in **Case 2**.
