@@ -1,0 +1,68 @@
+Version 1.2.X
+=============
+
+Version 1.2.0
+-------------
+
+Deployed: 4th January 2022
+
+Contributors
+~~~~~~~~~~~~
+
+    - `Edoardo Argiolas <https://github.com/dodoarg>`_
+    - `gverbock <https://github.com/gverbock>`_
+    - `Thibault Blanc <https://github.com/thibaultbl>`_
+    - `David Cortes <https://github.com/david-cortes>`_
+    - `Morgan Sell <https://github.com/Morgan-Sell>`_
+    - `Kevin Kurek <https://github.com/kevinkurek>`_
+    - `Soledad Galli <https://github.com/solegalli>`_
+
+In this big release, we add 3 new transformers, we expand the functionality of existing
+classes, we add information about citing Feature-engine and we expand the documentation
+with a new look, extended user guide with examples, and more details on how to
+contribute to the project.
+
+Thank you so much to the contributors for making this massive release possible!
+
+Thank you to reviewers `Nicolas Galli <https://github.com/nicogalli>`_ and
+`Chris Samiullah <https://github.com/christophergs>`_ for useful advice on
+various PRs.
+
+New transformers
+~~~~~~~~~~~~~~~~
+
+    - **DatetimeFeatures**: extracts date and time features from datetime variables (`Edoardo Argiolas <https://github.com/dodoarg>`_)
+    - **DropHishPSIFeatures**: finds and drops features with high population stability index (`gverbock <https://github.com/gverbock>`_)
+    - **Matchvariables**: ensures that the same variables observed in the train set are present in the test set (`Thibault Blanc <https://github.com/thibaultbl>`_)
+
+Enhancements
+~~~~~~~~~~~~
+
+    - The **Winsorizer** can now add binary variable indicators to flag outlier values (`David Cortes <https://github.com/david-cortes>`_)
+    - The **DropMissingData** now allows to drop rows based on % of missing data (`Kevin Kurek <https://github.com/kevinkurek>`_)
+    - **Categorical encoders** can now either raise a warning or an error when encoding categories not seen in the train set (`Morgan Sell <https://github.com/Morgan-Sell>`_)
+    - The **ArbitraryDiscretiser** can now either raise a warning or an error when values fall outside the limits entered by the user (`Morgan Sell <https://github.com/Morgan-Sell>`_)
+    - **CombineWithReferenceFeature** and **MathematicalCombination** have now the option to drop the original input variables after the feature creation (`Edoardo Argiolas <https://github.com/dodoarg>`_)
+
+Bug fixes
+~~~~~~~~~
+
+    - All **Encoders** are now able to exclude datetime variables cast as object or categorical when searching for categorical variables automatically (`Edoardo Argiolas <https://github.com/dodoarg>`_)
+    - All transformers will now raise an error when users pass an empty list to the variables parameter (`Edoardo Argiolas <https://github.com/dodoarg>`_)
+    - All transformers now check the variable type when user passes a single variable to the variables parameter (`Edoardo Argiolas <https://github.com/dodoarg>`_)
+
+
+Documentation
+~~~~~~~~~~~~~
+    - We changed the template to pydata (`Soledad Galli <https://github.com/solegalli>`_)
+    - We split the information about transformers into a user guide and an API (`Soledad Galli <https://github.com/solegalli>`_)
+    - The API documentation shows how to use the transformers (`Soledad Galli <https://github.com/solegalli>`_)
+    - The user guide expands the API docs with plenty of examples and tips on when and how to use the transformers (`Soledad Galli <https://github.com/solegalli>`_)
+    - We expanded the contribute section with plenty of details on how to make a contribution and how to check your code is top notch (`Soledad Galli <https://github.com/solegalli>`_)
+    - You can now sponsor Feature-engine (`Soledad Galli <https://github.com/solegalli>`_)
+    - You can now cite our JOSS article when using Feature-engine (`Soledad Galli <https://github.com/solegalli>`_)
+    - We added plenty of examples on how to use the new class DropHighPSIFeatures (`gverbock <https://github.com/gverbock>`_)
+    - We included various examples on how to extract date and time features using the new DatetimeFeatures class (`Edoardo Argiolas <https://github.com/dodoarg>`_)
+    - We included examples on how to use the new class MatchVariables (`Thibault Blanc <https://github.com/thibaultbl>`_)
+    - We added a Jupyter notebook with a demo of the new DatetimeFeatures class (`Edoardo Argiolas <https://github.com/dodoarg>`_)
+    - We added a Jupyter notebook with a demo of the new DropHighPSIFeatures class (`Soledad Galli <https://github.com/solegalli>`_)

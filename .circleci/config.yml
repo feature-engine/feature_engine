@@ -153,4 +153,4 @@ workflows:
           filters:
             branches:
               only:
-                - 1.1.X
+                - 1.2.X
