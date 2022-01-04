@@ -5,7 +5,7 @@ from setuptools import find_packages, setup
 # Package meta-data.
 NAME = "feature_engine"
 DESCRIPTION = "Feature engineering package with Scikit-learn's fit transform functionality"
-URL = "http://github.com/solegalli/feature_engine"
+URL = "http://github.com/feature-engine/feature_engine"
 EMAIL = "solegalli@protonmail.com"
 AUTHOR = "Soledad Galli"
 REQUIRES_PYTHON = ">=3.6.0"
