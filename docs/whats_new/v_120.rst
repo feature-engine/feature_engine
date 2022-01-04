@@ -24,7 +24,7 @@ contribute to the project.
 
 Thank you so much to the contributors for making this massive release possible!
 
-Thank you to reviewers `Nicolas Gallli <https://github.com/nicogalli>`_ and
+Thank you to reviewers `Nicolas Galli <https://github.com/nicogalli>`_ and
 `Chris Samiullah <https://github.com/christophergs>`_ for useful advice on
 various PRs.
 
@@ -41,6 +41,7 @@ Enhancements
     - The **Winsorizer** can now add binary variable indicators to flag outlier values (`David Cortes <https://github.com/david-cortes>`_)
     - The **DropMissingData** now allows to drop rows based on % of missing data (`Kevin Kurek <https://github.com/kevinkurek>`_)
     - **Categorical encoders** can now either raise a warning or an error when encoding categories not seen in the train set (`Morgan Sell <https://github.com/Morgan-Sell>`_)
+    - The **ArbitraryDiscretiser** can now either raise a warning or an error when values fall outside the limits entered by the user (`Morgan Sell <https://github.com/Morgan-Sell>`_)
     - **CombineWithReferenceFeature** and **MathematicalCombination** have now the option to drop the original input variables after the feature creation (`Edoardo Argiolas <https://github.com/dodoarg>`_)
 
 Bug fixes
@@ -64,3 +65,4 @@ Documentation
     - We included various examples on how to extract date and time features using the new DatetimeFeatures class (`Edoardo Argiolas <https://github.com/dodoarg>`_)
     - We included examples on how to use the new class MatchVariables (`Thibault Blanc <https://github.com/thibaultbl>`_)
     - We added a Jupyter notebook with a demo of the new DatetimeFeatures class (`Edoardo Argiolas <https://github.com/dodoarg>`_)
+    - We added a Jupyter notebook with a demo of the new DropHighPSIFeatures class (`Soledad Galli <https://github.com/solegalli>`_)
