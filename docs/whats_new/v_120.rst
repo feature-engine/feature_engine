@@ -4,7 +4,7 @@ Version 1.2.X
 Version 1.2.0
 -------------
 
-Deployed: 3rd January 2022
+Deployed: 4th January 2022
 
 Contributors
 ~~~~~~~~~~~~
