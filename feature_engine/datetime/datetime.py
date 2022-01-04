@@ -39,11 +39,10 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
     - "quarter"
     - "semester"
     - "year"
-    - "week_of_the_month"
-    - "week_of_the_year"
-    - "day_of_the_week"
-    - "day_of_the_month"
-    - "day_of_the_year"
+    - "week"
+    - "day_of_week"
+    - "day_of_month"
+    - "day_of_year"
     - "weekend"
     - "month_start"
     - "month_end"
@@ -68,7 +67,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
     features_to_extract: list, default=None
         The list of date features to extract. If None, the following features will be
-        extracted: "month", "year", "day_of_the_week", "day_of_the_month", "hour",
+        extracted: "month", "year", "day_of_week", "day_of_month", "hour",
         "minute" and "second". If "all", all supported features will be extracted.
         Alternatively, you can pass a list with the names of the supported features
         you want to extract.

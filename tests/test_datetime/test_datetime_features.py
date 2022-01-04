@@ -226,25 +226,25 @@ def test_extract_all_datetime_features(df_datetime, df_datetime_transformed):
 
 def test_extract_specified_datetime_features(df_datetime, df_datetime_transformed):
     X = DatetimeFeatures(
-        features_to_extract=["semester", "week_of_the_year"]
+        features_to_extract=["semester", "week"]
     ).fit_transform(df_datetime)
     pd.testing.assert_frame_equal(
         X,
         df_datetime_transformed[
             vars_non_dt
-            + [var + "_" + feat for var in vars_dt for feat in ["semester", "woty"]]
+            + [var + "_" + feat for var in vars_dt for feat in ["semester", "week"]]
         ],
     )
 
     # different order than they appear in the glossary
-    X = DatetimeFeatures(features_to_extract=["hour", "day_of_the_week"]).fit_transform(
+    X = DatetimeFeatures(features_to_extract=["hour", "day_of_week"]).fit_transform(
         df_datetime
     )
     pd.testing.assert_frame_equal(
         X,
         df_datetime_transformed[
             vars_non_dt
-            + [var + "_" + feat for var in vars_dt for feat in ["hour", "dotw"]]
+            + [var + "_" + feat for var in vars_dt for feat in ["hour", "day_of_week"]]
         ],
     )
 
@@ -343,7 +343,7 @@ def test_extract_features_without_dropping_original_variables(
 ):
     X = DatetimeFeatures(
         variables=["datetime_range", "date_obj2"],
-        features_to_extract=["week_of_the_year", "quarter"],
+        features_to_extract=["week", "quarter"],
         drop_original=False,
     ).fit_transform(df_datetime)
 
@@ -357,7 +357,7 @@ def test_extract_features_without_dropping_original_variables(
                 for feat in [
                     var + "_" + feat
                     for var in ["datetime_range", "date_obj2"]
-                    for feat in ["woty", "quarter"]
+                    for feat in ["week", "quarter"]
                 ]
             ],
             axis=1,
@@ -377,11 +377,11 @@ def test_extract_features_from_variables_containing_nans():
 
 def test_extract_features_with_different_datetime_parsing_options(df_datetime):
     X = DatetimeFeatures(
-        features_to_extract=["day_of_the_month"], dayfirst=True
+        features_to_extract=["day_of_month"], dayfirst=True
     ).fit_transform(df_datetime[["date_obj2"]])
     pd.testing.assert_frame_equal(
         X,
-        pd.DataFrame({"date_obj2_dotm": [10, 31, 30, 17]}),
+        pd.DataFrame({"date_obj2_day_of_month": [10, 31, 30, 17]}),
     )
 
     X = DatetimeFeatures(features_to_extract=["year"], yearfirst=True).fit_transform(
