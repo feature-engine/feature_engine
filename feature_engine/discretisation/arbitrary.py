@@ -129,7 +129,7 @@ class ArbitraryDiscretiser(BaseDiscretiser):
 
        Returns
        -------
-       X: pandas dataframe of shape = [n_samples, n_features]
+       X_new: pandas dataframe of shape = [n_samples, n_features]
            The transformed data with the discrete variables.
        """
 
