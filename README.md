@@ -14,7 +14,7 @@
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.03642/status.svg)](https://doi.org/10.21105/joss.03642)
 
 
-[<img src="./docs/images/logo/FeatureEngine.png" width="248">](http://feature-engine.readthedocs.io)
+[<img src="https://github.com/feature-engine/feature_engine/blob/main/docs/images/logo/FeatureEngine.png" width="248">](http://feature-engine.readthedocs.io)
 
 Feature-engine is a Python library with multiple transformers to engineer and select features for use in machine learning models. 
 Feature-engine's transformers follow Scikit-learn's functionality with fit() and transform() methods to learn the 
@@ -218,5 +218,5 @@ BSD 3-Clause
 
 ## Donate
 
-[Sponsor the maintainer](https://github.com/sponsors/solegalli) to support her continue expanding 
+[Sponsor us](https://github.com/sponsors/solegalli) to support her continue expanding 
 Feature-engine.
