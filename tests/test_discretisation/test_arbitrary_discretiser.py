@@ -1,19 +1,28 @@
 import numpy as np
 import pandas as pd
-from sklearn.datasets import load_boston
+import pytest
+from numpy.random import default_rng
+from scipy.stats import skewnorm
+from sklearn.datasets import fetch_california_housing
 
 from feature_engine.discretisation import ArbitraryDiscretiser
 
 
 def test_arbitrary_discretiser():
-    boston_dataset = load_boston()
-    data = pd.DataFrame(boston_dataset.data, columns=boston_dataset.feature_names)
-    user_dict = {"LSTAT": [0, 10, 20, 30, np.Inf]}
+    california_dataset = fetch_california_housing()
+    data = pd.DataFrame(
+        california_dataset.data, columns=california_dataset.feature_names
+    )
+    user_dict = {"HouseAge": [0, 20, 40, 60, np.Inf]}
 
     data_t1 = data.copy()
     data_t2 = data.copy()
-    data_t1["LSTAT"] = pd.cut(data["LSTAT"], bins=[0, 10, 20, 30, np.Inf])
-    data_t2["LSTAT"] = pd.cut(data["LSTAT"], bins=[0, 10, 20, 30, np.Inf], labels=False)
+
+    # HouseAge is the median house age in the block group.
+    data_t1["HouseAge"] = pd.cut(data["HouseAge"], bins=[0, 20, 40, 60, np.Inf])
+    data_t2["HouseAge"] = pd.cut(
+        data["HouseAge"], bins=[0, 20, 40, 60, np.Inf], labels=False
+    )
 
     transformer = ArbitraryDiscretiser(
         binning_dict=user_dict, return_object=False, return_boundaries=False
@@ -24,7 +33,7 @@ def test_arbitrary_discretiser():
     assert transformer.return_object is False
     assert transformer.return_boundaries is False
     # fit params
-    assert transformer.variables_ == ["LSTAT"]
+    assert transformer.variables_ == ["HouseAge"]
     assert transformer.binner_dict_ == user_dict
     # transform params
     pd.testing.assert_frame_equal(X, data_t2)
@@ -34,3 +43,76 @@ def test_arbitrary_discretiser():
     )
     X = transformer.fit_transform(data)
     pd.testing.assert_frame_equal(X, data_t1)
+
+
+def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
+    # test case 1: when dataset contains na, transform method
+    age_dict = {"Age": [0, 10, 20, 30, np.Inf]}
+
+    with pytest.raises(ValueError):
+        transformer = ArbitraryDiscretiser(binning_dict=age_dict)
+        transformer.fit(df_vartypes)
+        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
+
+
+def test_error_when_nan_introduced_during_transform():
+    # test error when NA are introduced during the discretisation.
+    rng = default_rng()
+
+    # create dataframe with 2 variables, 1 normal and 1 skewed
+    random = skewnorm.rvs(a=-50, loc=4, size=100)
+    random = random - min(random)  # Shift so the minimum value is equal to zero.
+
+    train = pd.concat(
+        [
+            pd.Series(rng.standard_normal(100)),
+            pd.Series(random),
+        ],
+        axis=1,
+    )
+
+    train.columns = ["var_a", "var_b"]
+
+    # create a dataframe with 2 variables normally distributed
+    test = pd.concat(
+        [
+            pd.Series(rng.standard_normal(100)),
+            pd.Series(rng.standard_normal(100)),
+        ],
+        axis=1,
+    )
+
+    test.columns = ["var_a", "var_b"]
+
+    msg = (
+        "During the discretisation, NaN values were introduced "
+        "in the feature(s) var_b."
+    )
+
+    limits_dict = {"var_a": [-5, -2, 0, 2, 5], "var_b": [0, 2, 5]}
+
+    # check for warning when errors equals 'ignore'
+    with pytest.warns(UserWarning) as record:
+        transformer = ArbitraryDiscretiser(binning_dict=limits_dict, errors="ignore")
+        transformer.fit(train)
+        transformer.transform(test)
+
+    # check that only one warning was returned
+    assert len(record) == 1
+    # check that message matches
+    assert record[0].message.args[0] == msg
+
+    # check for error when errors equals 'raise'
+    with pytest.raises(ValueError) as record:
+        transformer = ArbitraryDiscretiser(binning_dict=limits_dict, errors="raise")
+        transformer.fit(train)
+        transformer.transform(test)
+
+    # check that error message matches
+    assert str(record.value) == msg
+
+
+def test_error_if_not_permitted_value_is_errors():
+    age_dict = {"Age": [0, 10, 20, 30, np.Inf]}
+    with pytest.raises(ValueError):
+        ArbitraryDiscretiser(binning_dict=age_dict, errors="medialuna")

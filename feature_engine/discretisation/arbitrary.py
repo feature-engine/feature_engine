@@ -1,15 +1,16 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import Dict, List, Optional, Union
 
 import pandas as pd
 
-from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.validation import _return_tags
 
 
-class ArbitraryDiscretiser(BaseNumericalTransformer):
+class ArbitraryDiscretiser(BaseDiscretiser):
     """
     The ArbitraryDiscretiser() divides numerical variables into intervals which limits
     are determined by the user. Thus, it works only with numerical variables.
@@ -38,6 +39,12 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
     return_boundaries: bool, default=False
         Whether the output, that is the bins, should be the interval boundaries. If
         True, it returns the interval boundaries. If False, it returns integers.
+
+    errors: string, default='ignore'
+        Indicates what to do when a value is outside the limits indicated in the
+        'binning_dict'. If 'raise', the transformation will raise an error.
+        If 'ignore', values outside the limits are returned as NaN
+        and a warning will be raised instead.
 
     Attributes
     ----------
@@ -69,19 +76,25 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
         binning_dict: Dict[Union[str, int], List[Union[str, int]]],
         return_object: bool = False,
         return_boundaries: bool = False,
+        errors: str = "ignore",
     ) -> None:
 
         if not isinstance(binning_dict, dict):
             raise ValueError(
-                "Please provide at a dictionary with the interval limits per variable"
+                "binning_dict must be a dictionary with the interval limits per "
+                f"variable. Got {binning_dict} instead."
             )
 
-        if not isinstance(return_object, bool):
-            raise ValueError("return_object must be True or False")
+        if errors not in ["ignore", "raise"]:
+            raise ValueError(
+                "errors only takes values 'ignore' and 'raise'. "
+                f"Got {errors} instead."
+            )
+
+        super().__init__(return_object, return_boundaries)
 
         self.binning_dict = binning_dict
-        self.return_object = return_object
-        self.return_boundaries = return_boundaries
+        self.errors = errors
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -109,34 +122,42 @@ class ArbitraryDiscretiser(BaseNumericalTransformer):
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Sort the variable values into the intervals.
 
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The dataframe to be transformed.
+       Parameters
+       ----------
+       X: pandas dataframe of shape = [n_samples, n_features]
+           The dataframe to be transformed.
 
-        Returns
-        -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
-            The transformed data with the discrete variables.
-        """
+       Returns
+       -------
+       X_new: pandas dataframe of shape = [n_samples, n_features]
+           The transformed data with the discrete variables.
+       """
 
-        # check input dataframe and if class was fitted
         X = super().transform(X)
+        # check if NaN values were introduced by the discretisation procedure.
+        if X[self.variables_].isnull().sum().sum() > 0:
 
-        # transform variables
-        if self.return_boundaries:
-            for feature in self.variables_:
-                X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
+            # obtain the name(s) of the columns with null values
+            nan_columns = (
+                X[self.variables_].columns[X[self.variables_].isnull().any()].tolist()
+            )
 
-        else:
-            for feature in self.variables_:
-                X[feature] = pd.cut(
-                    X[feature], self.binner_dict_[feature], labels=False
+            if len(nan_columns) > 1:
+                nan_columns_str = ", ".join(nan_columns)
+            else:
+                nan_columns_str = nan_columns[0]
+
+            if self.errors == "ignore":
+                warnings.warn(
+                    f"During the discretisation, NaN values were introduced in "
+                    f"the feature(s) {nan_columns_str}."
                 )
 
-            # return object
-            if self.return_object:
-                X[self.variables_] = X[self.variables_].astype("O")
+            elif self.errors == "raise":
+                raise ValueError(
+                    "During the discretisation, NaN values were introduced in "
+                    f"the feature(s) {nan_columns_str}."
+                )
 
         return X
 
