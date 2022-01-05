@@ -8,18 +8,22 @@ from feature_engine.encoding import DecisionTreeEncoder
 
 def test_encoding_method_param(df_enc):
     # defaults
-    encoder = DecisionTreeEncoder()
+    encoder = DecisionTreeEncoder(regression=False)
     encoder.fit(df_enc, df_enc["target"])
     assert encoder.encoder_[0].encoding_method == "arbitrary"
 
     # ordered encoding
-    encoder = DecisionTreeEncoder(encoding_method="ordered")
+    encoder = DecisionTreeEncoder(
+        encoding_method="ordered", regression=False
+    )
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     assert encoder.encoder_[0].encoding_method == "ordered"
 
     # incorrect input
     with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder(encoding_method="other")
+        encoder = DecisionTreeEncoder(
+            encoding_method="other", regression=False
+        )
         encoder.fit(df_enc, df_enc["target"])
 
 
