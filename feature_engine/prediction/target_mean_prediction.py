@@ -17,12 +17,22 @@ from feature_engine.discretisation import (
 )
 from feature_engine.encoding import MeanEncoder
 
+
 class TargetMeanPredictor(ClassifierMixin, RegressorMixin):
     """
 
     Parameters
     ----------
+    variable_type: str, default="categorical"
+        Indicate whether the variable is categorical or numeric.
 
+    bins: int, default=5
+        If the dataset contains numerical variables, the number of bins into which
+        the values will be sorted.
+
+    strategy: str, default='equal_width'
+        Whether to create the bins for discretization of numerical variables of
+        equal width ('equal_width') or equal frequency ('equal_frequency').
 
     Attributes
     ----------
@@ -46,8 +56,20 @@ class TargetMeanPredictor(ClassifierMixin, RegressorMixin):
 
     """
 
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+        variable_type: str = "categorical",
+        bins: int = 5,
+        strategy: str = "equal-width",
+    ):
+        # add check for 'variable_type' value - categorical or numeric
+        # add check that 'variable_type' and 'strategy' comply
+        #   - "categorical" and "mean-encoder" -> no bueno.
+        #   - consider automating later
+
+        self.variable_type = variable_type
+        self.bins = bins
+        self.strategy = strategy
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> pd.DataFrame:
         """
