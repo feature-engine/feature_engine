@@ -23,8 +23,6 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
     Parameters
     ----------
-    variable_type: str, default="categorical"
-        Indicate whether the variable is categorical or numeric.
 
     bins: int, default=5
         If the dataset contains numerical variables, the number of bins into which
@@ -62,18 +60,17 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
     def __init__(
         self,
-        regression: bool = True,
         bins: int = 5,
-        strategy: str = "equal-width",
+        numeric_var_strategy: str = "equal-width",
     ):
-        # add check for 'variable_type' value - categorical or numeric
-        # add check that 'variable_type' and 'strategy' comply
-        #   - "categorical" and "mean-encoder" -> no bueno.
-        #   - consider automating later
 
-        self.regression = regression
+        if numeric_var_strategy not in ("equal-width", "equal-distance"):
+            raise ValueError(
+                "numeric_var_strategy must be 'equal-width' or 'equal-distance'."
+            )
+
         self.bins = bins
-        self.strategy = strategy
+        self.numeric_var_strategy = numeric_var_strategy
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> pd.DataFrame:
         """
@@ -97,9 +94,9 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
             y = pd.Series(y)
 
         if self.regression is True:
-            if self.strategy == "equal-width":
+            if self.numeric_var_strategy == "equal-width":
                 transformer = EqualWidthDiscretiser()
-            elif self.strategy == "equal-distance":
+            elif self.numeric_var_strategy == "equal-distance":
                 transformer = EqualFrequencyDiscretiser()
 
             transformer.fit(X, y)
