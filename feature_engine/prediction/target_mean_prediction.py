@@ -96,9 +96,14 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-
         if self.regression is True:
-            pass
+            if self.strategy == "equal-width":
+                transformer = EqualWidthDiscretiser()
+            elif self.strategy == "equal-distance":
+                transformer = EqualFrequencyDiscretiser()
+
+            transformer.fit(X, y)
+            X = transformer.transform(X)
 
 
 
