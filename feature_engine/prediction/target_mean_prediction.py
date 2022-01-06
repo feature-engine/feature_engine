@@ -28,7 +28,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         If the dataset contains numerical variables, the number of bins into which
         the values will be sorted.
 
-    numeric_var_strategy: str, default='equal_width'
+    strategy: str, default='equal_width'
         Whether to create the bins for discretization of numerical variables using
         equal width ('equal_width') or equal frequency ('equal_frequency').
 
@@ -68,20 +68,20 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
     def __init__(
         self,
         bins: int = 5,
-        numeric_var_strategy: str = "equal-width",
+        strategy: str = "equal-width",
         ignore_format: bool = False,
     ):
 
-        if numeric_var_strategy not in ("equal-width", "equal-distance"):
+        if strategy not in ("equal-width", "equal-distance"):
             raise ValueError(
-                "numeric_var_strategy must be 'equal-width' or 'equal-distance'."
+                "strategy must be 'equal-width' or 'equal-distance'."
             )
 
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
 
         self.bins = bins
-        self.numeric_var_strategy = numeric_var_strategy
+        self.strategy = strategy
         self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> pd.DataFrame:
@@ -109,6 +109,16 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         self.variables_categorical_ = list(X.select_dtypes(include="category").columns)
         self.variables_numerical_ = list(X.select_dtypes(include="number").columns)
 
+        # transform categorical variables using the MeanEncoder
+        encoder = MeanEncoder(variables=self.variables_numerical_)
+
+        # discretise the numerical variables using the EqualWithDiscretiser or EqualDistanceDiscretiser.
+        if self.strategy == "equal-width":
+            discretiser = EqualWidthDiscretiser(variables=self.variables_categorical_)
+        else:
+            discretiser = EqualFrequencyDiscretiser(variables=self.variables_categorical_)
+        # derive the mean target value for bin
+        return self
 
     def predict(self, X: pd.DataFrame) -> pd.Series:
         """
