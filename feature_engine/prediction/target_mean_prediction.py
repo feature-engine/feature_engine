@@ -18,7 +18,7 @@ from feature_engine.discretisation import (
 from feature_engine.encoding import MeanEncoder
 
 
-class TargetMeanPredictor(ClassifierMixin, RegressorMixin):
+class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
     """
 
     Parameters
@@ -40,7 +40,9 @@ class TargetMeanPredictor(ClassifierMixin, RegressorMixin):
 
     Methods
     -------
+    fit:
 
+    predict:
 
     Notes
     -----
@@ -48,7 +50,9 @@ class TargetMeanPredictor(ClassifierMixin, RegressorMixin):
 
     See Also
     --------
-
+    feature_engine.encoding.MeanEncoder
+    feature_engine.discretisation.EqualWidthDiscretiser
+    feature_engine.discretisation.EqualFrequencyDiscretiser
 
     References
     ----------
@@ -58,7 +62,7 @@ class TargetMeanPredictor(ClassifierMixin, RegressorMixin):
 
     def __init__(
         self,
-        variable_type: str = "categorical",
+        regression: bool = True,
         bins: int = 5,
         strategy: str = "equal-width",
     ):
@@ -67,7 +71,7 @@ class TargetMeanPredictor(ClassifierMixin, RegressorMixin):
         #   - "categorical" and "mean-encoder" -> no bueno.
         #   - consider automating later
 
-        self.variable_type = variable_type
+        self.regression = regression
         self.bins = bins
         self.strategy = strategy
 
@@ -83,7 +87,22 @@ class TargetMeanPredictor(ClassifierMixin, RegressorMixin):
         y : pandas series of shape = [n_samples,]
             The target variable.
         """
-        pass
+        # check if dataframe
+        _is_dataframe(X)
+
+        # check for NaN values
+        _check_contains_na(X)
+
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
+
+        if self.regression is True:
+            pass
+
+
+
+
 
     def predict(self, X: pd.DataFrame) -> pd.Series:
         """
