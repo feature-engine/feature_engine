@@ -79,7 +79,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
-        
+
         self.bins = bins
         self.numeric_var_strategy = numeric_var_strategy
         self.ignore_format = ignore_format
@@ -105,17 +105,9 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        if self.regression is True:
-            if self.numeric_var_strategy == "equal-width":
-                transformer = EqualWidthDiscretiser()
-            elif self.numeric_var_strategy == "equal-distance":
-                transformer = EqualFrequencyDiscretiser()
-
-            transformer.fit(X, y)
-            X = transformer.transform(X)
-
-
-
+        # identify categorical and numerical variables
+        self.variables_categorical_ = list(X.select_dtypes(include="category").columns)
+        self.variables_numerical_ = list(X.select_dtypes(include="number").columns)
 
 
     def predict(self, X: pd.DataFrame) -> pd.Series:
