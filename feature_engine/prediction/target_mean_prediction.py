@@ -28,9 +28,16 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         If the dataset contains numerical variables, the number of bins into which
         the values will be sorted.
 
-    strategy: str, default='equal_width'
-        Whether to create the bins for discretization of numerical variables of
+    numeric_var_strategy: str, default='equal_width'
+        Whether to create the bins for discretization of numerical variables using
         equal width ('equal_width') or equal frequency ('equal_frequency').
+
+    ignore_format: bool, default=False
+        Whether the format in which the categorical variables are cast should be
+        ignored. If False, the encoder will automatically select variables of type
+        object or categorical, or check that the variables entered by the user are of
+        type object or categorical. If True, the encoder will select all variables or
+        accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
@@ -62,6 +69,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         self,
         bins: int = 5,
         numeric_var_strategy: str = "equal-width",
+        ignore_format: bool = False,
     ):
 
         if numeric_var_strategy not in ("equal-width", "equal-distance"):
@@ -69,8 +77,12 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
                 "numeric_var_strategy must be 'equal-width' or 'equal-distance'."
             )
 
+        if not isinstance(ignore_format, bool):
+            raise ValueError("ignore_format takes only booleans True and False")
+        
         self.bins = bins
         self.numeric_var_strategy = numeric_var_strategy
+        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> pd.DataFrame:
         """
