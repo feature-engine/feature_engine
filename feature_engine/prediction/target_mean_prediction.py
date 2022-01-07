@@ -1,6 +1,8 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
+from typing import List, Union
+
 import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.validation import check_is_fitted
@@ -16,13 +18,20 @@ from feature_engine.discretisation import (
     EqualWidthDiscretiser
 )
 from feature_engine.encoding import MeanEncoder
-
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_all_variables,
+)
+Variables = Union[None, int, str, List[str, int]]
 
 class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
     """
 
     Parameters
     ----------
+    variables: list, default=None
+        The list of variables to evaluate. If None, the transformer will evaluate all
+        variables in the dataset.
 
     bins: int, default=5
         If the dataset contains numerical variables, the number of bins into which
@@ -67,11 +76,15 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
     def __init__(
         self,
+        varaibles: Variables = None,
         bins: int = 5,
         strategy: str = "equal-width",
         ignore_format: bool = False,
     ):
 
+        if not isinstance(bins, int):
+            raise TypeError("'bins' only accepts integers.")
+        
         if strategy not in ("equal-width", "equal-distance"):
             raise ValueError(
                 "strategy must be 'equal-width' or 'equal-distance'."
@@ -80,6 +93,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
 
+        self.variables = _check_input_parameter_variables(variables)
         self.bins = bins
         self.strategy = strategy
         self.ignore_format = ignore_format
