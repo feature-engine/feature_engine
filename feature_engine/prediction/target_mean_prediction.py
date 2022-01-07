@@ -110,14 +110,20 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         self.variables_numerical_ = list(X.select_dtypes(include="number").columns)
 
         # transform categorical variables using the MeanEncoder
-        encoder = MeanEncoder(variables=self.variables_numerical_)
+        # Should I make this a distinct method?
+        self.encoder = MeanEncoder(variables=self.variables_numerical_)
+        self.encoder.fit(X, y)
 
         # discretise the numerical variables using the EqualWithDiscretiser or EqualDistanceDiscretiser.
+        # Should I make this a distinct method?
         if self.strategy == "equal-width":
-            discretiser = EqualWidthDiscretiser(variables=self.variables_categorical_)
+            self.discretiser = EqualWidthDiscretiser(variables=self.variables_categorical_)
         else:
-            discretiser = EqualFrequencyDiscretiser(variables=self.variables_categorical_)
-        # derive the mean target value for bin
+            self.discretiser = EqualFrequencyDiscretiser(variables=self.variables_categorical_)
+
+        self.discretiser.fit(X, y)
+
+
         return self
 
     def predict(self, X: pd.DataFrame) -> pd.Series:
