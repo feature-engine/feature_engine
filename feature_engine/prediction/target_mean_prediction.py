@@ -76,7 +76,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
     def __init__(
         self,
-        varaibles: Variables = None,
+        variables: Variables = None,
         bins: int = 5,
         strategy: str = "equal-width",
         ignore_format: bool = False,
@@ -84,7 +84,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
         if not isinstance(bins, int):
             raise TypeError("'bins' only accepts integers.")
-        
+
         if strategy not in ("equal-width", "equal-distance"):
             raise ValueError(
                 "strategy must be 'equal-width' or 'equal-distance'."
@@ -125,17 +125,26 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
         # transform categorical variables using the MeanEncoder
         # Should I make this a distinct method?
-        self.encoder = MeanEncoder(variables=self.variables_numerical_)
+        self.encoder = MeanEncoder(variables=self.variables_categorical_)
         self.encoder.fit(X, y)
 
         # discretise the numerical variables using the EqualWithDiscretiser or EqualDistanceDiscretiser.
         # Should I make this a distinct method?
         if self.strategy == "equal-width":
-            self.discretiser = EqualWidthDiscretiser(variables=self.variables_categorical_)
+            self.discretiser = EqualWidthDiscretiser(variables=self.variables_numerical_)
         else:
-            self.discretiser = EqualFrequencyDiscretiser(variables=self.variables_categorical_)
+            self.discretiser = EqualFrequencyDiscretiser(variables=self.variables_numerical_)
 
         self.discretiser.fit(X, y)
+        X_discretised = self.discretiser.transform(X)
+
+        self.disc_mean_dict_ = {}
+
+        temp = pd.concat([X_discretised, y], axis=1)
+        temp.columns = list(X.columns, "target")
+
+        for var in self.variables_numerical_:
+            self.disc_mean_dict_[var] = temp.groupby(var)["target"].mean().to_dict()
 
 
         return self
@@ -150,8 +159,11 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
         Return
         -------
-        y : pandas series of (n_samples,)
-            Mean target values.
+        X_new: pandas dataframe of shape = [n_samples, n_features]
+            Values are the mean values associated with the corresponding encode or discretised bin
 
         """
-        pass
+        _check_input_matches_training_df(X)
+
+
+
