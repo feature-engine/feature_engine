@@ -124,13 +124,16 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         self.X_fit_cols = list(X.columns)
 
         # identify categorical and numerical variables
-        self.variables_categorical_ = list(X.select_dtypes(include="category").columns)
+        self.variables_categorical_ = list(X.select_dtypes(include="object").columns)
         self.variables_numerical_ = list(X.select_dtypes(include="number").columns)
 
         # transform categorical variables using the MeanEncoder
         # Should I make this a distinct method?
         self.encoder = MeanEncoder(variables=self.variables_categorical_)
         self.encoder.fit(X, y)
+
+        X_encoded = self.encoder.transform(X)
+        X_encoded = X_encoded[self.variables_categorical_]
 
         # discretise the numerical variables using the EqualWithDiscretiser or EqualDistanceDiscretiser.
         # Should I make this a distinct method?
@@ -141,11 +144,11 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
         self.discretiser.fit(X, y)
         X_discretised = self.discretiser.transform(X)
+        X_discretised = X_discretised[self.variables_numerical_]
 
         self.disc_mean_dict_ = {}
-
-        temp = pd.concat([X_discretised, y], axis=1)
-        temp.columns = list(X.columns, "target")
+        temp = pd.concat([X_encoded, X_discretised, y], axis=1)
+        temp.columns = list(X_encoded.columns) + list(X_discretised) + ["target"]
 
         for var in self.variables_numerical_:
             self.disc_mean_dict_[var] = temp.groupby(var)["target"].mean().to_dict()
