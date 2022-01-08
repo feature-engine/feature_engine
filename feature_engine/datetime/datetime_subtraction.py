@@ -265,7 +265,7 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         # Add new features and values into the DataFrame. Set the output units.
         for reference in self.reference_variables:
             varname = [
-                str(var) + "_sub_" + str(reference)
+                str(var) + "_sub_" + str(reference) + '_' + self.output_unit
                 for var in self.variables_to_combine
             ]
             X[varname] = \
