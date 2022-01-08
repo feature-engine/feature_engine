@@ -10,7 +10,7 @@ def test_target_mean_predictor_fit(df_pred):
         bins=5,
         strategy="equal-width"
     )
-    predictor.fit(df_pred, df_pred["target"])
+    predictor.fit(df_pred, df_pred["Marks"])
 
     # test init params
     assert predictor.variables == ["City", "Studies", "Age"]
