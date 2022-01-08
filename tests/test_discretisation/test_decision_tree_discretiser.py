@@ -104,3 +104,17 @@ def test_non_fitted_error(df_vartypes):
     with pytest.raises(NotFittedError):
         transformer = EqualWidthDiscretiser()
         transformer.transform(df_vartypes)
+
+
+def test_error_when_regression_is_true_and_target_is_binary(df_enc_numeric):
+    with pytest.raises(ValueError):
+        encoder = DecisionTreeDiscretiser(regression=True)
+        encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
+
+
+def test_error_when_regression_is_false_and_target_is_continuous(df_enc_numeric):
+    random = np.random.RandomState(42)
+    y = random.normal(0, 10, len(df_enc_numeric))
+    with pytest.raises(ValueError):
+        encoder = DecisionTreeDiscretiser(regression=False)
+        encoder.fit(df_enc_numeric[["var_A", "var_B"]], y)
