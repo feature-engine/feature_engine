@@ -102,6 +102,8 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         """
         Fit predictor per variables.
 
+        QUESTION: Does X accept the entire dataframe or just on feature?
+
         Parameters
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
@@ -118,6 +120,8 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
+
+        self.X_fit_cols = list(X.columns)
 
         # identify categorical and numerical variables
         self.variables_categorical_ = list(X.select_dtypes(include="category").columns)
@@ -149,21 +153,29 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
         return self
 
-    def predict(self, X: pd.DataFrame) -> pd.Series:
+    def predict(self, X: pd.Series) -> pd.Series:
         """
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
-            The inputs uses to derive the predictions.
+        X : pandas dataframe of shape = [n_samples, ]
+            The input series which must have the same name as one of the features in the
+            dataframe that was used to fit the predictor.
 
         Return
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
+        X_new: pandas dataframe of shape = [n_samples, ]
             Values are the mean values associated with the corresponding encode or discretised bin
 
         """
-        _check_input_matches_training_df(X)
+        # check if is pandas series w/ a name that matches
+
+        if not isinstance(X, pd.Series):
+            raise TypeError("fit() method only accepts pandas series.")
+
+        if X.name not in (self.X_fit_cols):
+            raise ValueError("Series name does not match the dataframe features that were used to "
+                             "fit the predictor.")
 
 
 
