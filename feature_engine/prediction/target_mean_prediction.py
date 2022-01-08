@@ -22,7 +22,7 @@ from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
 )
-Variables = Union[None, int, str, List[str, int]]
+
 
 class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
     """
@@ -76,7 +76,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
     def __init__(
         self,
-        variables: Variables = None,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
         bins: int = 5,
         strategy: str = "equal-width",
         ignore_format: bool = False,
@@ -116,7 +116,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         _is_dataframe(X)
 
         # check for NaN values
-        _check_contains_na(X)
+        _check_contains_na(X, self.variables)
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
