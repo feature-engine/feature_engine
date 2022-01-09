@@ -1,6 +1,7 @@
 # Authors: kylegilde <kylegilde@gmail.com>
 
 from typing import List, Optional, Union
+import itertools
 
 import numpy as np
 import pandas as pd
@@ -42,18 +43,12 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         If None, the transformer will find and select all datetime variables,
         including variables of type object that can be converted to datetime.
 
-        If the same variable in `variables_to_combine` is also in `reference_variables`,
-        it will not be subtracted.
-
     reference_variables: list
         The list of datetime reference variables that will be  subtracted from the
          `variables_to_combine`.
 
          If None, the transformer will find and select all datetime
          variables, including variables of type object that can be converted to datetime.
-
-        If the same variable in `reference_variables` is also in `variables_to_combine`,
-        it will not be subtracted.
 
     output_unit: string, default='D'
         The string representation of the output unit of the datetime differences.
@@ -62,6 +57,13 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         `h` for hour, `m` for minute, `s` for second, `ms` for millisecond,
         `us` or `μs` for microsecond, `ns` for nanosecond, `ps` for picosecond,
         `fs` for femtosecond and `as` for attosecond.
+
+    dedupe_variable_pairs: bool, default=False
+        If `True`, the pairs of variables created from `variables_to_combine` and `reference_variables`
+        will be de-duplicated in two ways: variable pairs consisting of the same variables and
+        one variable pair if it matches another pair when sorted. Setting this to `True` will be
+        useful if you don't provide any lists to `variables_to_combine` and `reference_variables`
+        and want to create a subtraction feature for every unique pair of datetime variables.
 
     new_variables_names: list, default=None
         Names of the new variables. If passing a list with the names for the new
@@ -117,6 +119,7 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         variables_to_combine: List[Union[str, int]] = None,
         reference_variables: List[Union[str, int]] = None,
         output_unit: str = 'D',
+        dedupe_variable_pairs: bool = False,
         new_variables_names: Optional[List[str]] = None,
         missing_values: str = "ignore",
         drop_original: bool = False,
@@ -174,9 +177,16 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
                 f"Got {drop_original} instead."
             )
 
+        if not isinstance(dedupe_variable_pairs, bool):
+            raise TypeError(
+                "dedupe_variable_pairs takes only boolean values True and False. "
+                f"Got {dedupe_variable_pairs} instead."
+            )
+
         self.reference_variables = reference_variables
         self.variables_to_combine = variables_to_combine
         self.output_unit = output_unit
+        self.dedupe_variable_pairs = dedupe_variable_pairs
         self.new_variables_names = new_variables_names
         self.missing_values = missing_values
         self.drop_original = drop_original
@@ -218,6 +228,15 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
             _check_contains_inf(X, self.reference_variables)
             _check_contains_inf(X, self.variables_to_combine)
+
+        self.variable_pairs = list(itertools.product(self.variables_to_combine,
+                                                     self.reference_variables))
+
+        if self.dedupe_variable_pairs:
+            # remove the pairs consisting of the same elements
+            # then sort the tuple values and dedupe them
+            self.variable_pairs =\
+                list({tuple(sorted([var1, var2])) for var1, var2 in self.variable_pairs if var1 != var2})
 
         self.n_features_in_ = X.shape[1]
 
@@ -275,19 +294,15 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
         original_col_names = X.columns.tolist()
 
-        # Add new features and values into the DataFrame. Set the output units.
-        for reference in self.reference_variables:
+        # subtract each pair of variables and convert the values to the output unit
+        for var1, var2 in self.variable_pairs:
 
-            varname = [
-                str(var) + "_sub_" + str(reference) + '_' + self.output_unit
-                for var in self.variables_to_combine
-            ]
+            varname = str(var1) + "_sub_" + str(var2) + '_' + self.output_unit
 
             X[varname] = \
-                datetime_df[self.variables_to_combine]\
-                .sub(datetime_df[reference], axis=0)\
-                .pipe(lambda df: df / np.timedelta64(1, self.output_unit))
-                    # .div(np.timedelta64, 1, self.output_unit)
+                datetime_df[var1]\
+                .sub(datetime_df[var2])\
+                .pipe(lambda s: s / np.timedelta64(1, self.output_unit))
 
         # replace created variable names with user ones.
         if self.new_variables_names:
