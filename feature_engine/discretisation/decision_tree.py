@@ -144,7 +144,6 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
                 raise ValueError("Trying to fit a regression to a binary target is not "
                                  "allowed by this transformer. Check the target values "
                                  "or set regression to False.")
-
         else:
             check_classification_targets(y)
 
