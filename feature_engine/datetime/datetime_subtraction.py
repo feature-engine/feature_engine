@@ -2,6 +2,7 @@
 
 from typing import List, Optional, Union
 
+import numpy as np
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -41,6 +42,9 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         If None, the transformer will find and select all datetime variables,
         including variables of type object that can be converted to datetime.
 
+        If the same variable in `variables_to_combine` is also in `reference_variables`,
+        it will not be subtracted.
+
     reference_variables: list
         The list of datetime reference variables that will be  subtracted from the
          `variables_to_combine`.
@@ -48,9 +52,16 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
          If None, the transformer will find and select all datetime
          variables, including variables of type object that can be converted to datetime.
 
-    output_unit: string, default='days'
-        Indicates the units to use for the difference values. Possible output units include
-        `days`, `microseconds`, `nanoseconds` and `seconds`.
+        If the same variable in `reference_variables` is also in `variables_to_combine`,
+        it will not be subtracted.
+
+    output_unit: string, default='D'
+        The string representation of the output unit of the datetime differences.
+        The default is `D` for day. This parameter is passed to numpy.timedelta64.
+        Other possible values are  `Y` for year, `M` for month,  `W` for week,
+        `h` for hour, `m` for minute, `s` for second, `ms` for millisecond,
+        `us` or `μs` for microsecond, `ns` for nanosecond, `ps` for picosecond,
+        `fs` for femtosecond and `as` for attosecond.
 
     new_variables_names: list, default=None
         Names of the new variables. If passing a list with the names for the new
@@ -105,7 +116,7 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         self,
         variables_to_combine: List[Union[str, int]] = None,
         reference_variables: List[Union[str, int]] = None,
-        output_unit: str = 'days',
+        output_unit: str = 'D',
         new_variables_names: Optional[List[str]] = None,
         missing_values: str = "ignore",
         drop_original: bool = False,
@@ -135,9 +146,11 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
                     "with the binary operations."
                 )
 
-        if output_unit not in ['days', 'microseconds', 'nanoseconds', 'seconds']:
-            raise ValueError("output_unit takes only values 'days', 'microseconds', "
-                             "'nanoseconds', or 'seconds'")
+        valid_output_units = {'D', 'Y', 'M', 'W', 'h', 'm', 's', 'ms', 'us', 'μs', 'ns',
+                              'ps', 'fs', 'as'}
+
+        if output_unit not in valid_output_units:
+            raise ValueError(f"output_unit accepts the following values: {valid_output_units}")
 
         if new_variables_names:
             if len(new_variables_names) != (
@@ -264,14 +277,17 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
         # Add new features and values into the DataFrame. Set the output units.
         for reference in self.reference_variables:
+
             varname = [
                 str(var) + "_sub_" + str(reference) + '_' + self.output_unit
                 for var in self.variables_to_combine
             ]
+
             X[varname] = \
                 datetime_df[self.variables_to_combine]\
                 .sub(datetime_df[reference], axis=0)\
-                .apply(lambda col: getattr(col.dt, self.output_unit))
+                .pipe(lambda df: df / np.timedelta64(1, self.output_unit))
+                    # .div(np.timedelta64, 1, self.output_unit)
 
         # replace created variable names with user ones.
         if self.new_variables_names:
