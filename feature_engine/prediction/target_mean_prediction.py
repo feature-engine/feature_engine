@@ -115,8 +115,8 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         # check if dataframe
         _is_dataframe(X)
 
-        # check for NaN values
-        _check_contains_na(X, self.variables)
+        # Should I check for NaNs at this point?
+        #_check_contains_na(X, self.variables)
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
