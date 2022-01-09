@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-
+import random
 
 @pytest.fixture(scope="module")
 def df_vartypes():
@@ -213,5 +213,23 @@ def df_normal_dist():
     s = np.random.normal(mu, sigma, 100)
     df = pd.DataFrame(s)
     df.columns = ["var"]
+
+    return df
+
+
+@pytest.fixture(scope="module")
+def df_discretise():
+    np.random.seed(42)
+    mu1, sigma1 = 0, 3
+    s1 = np.random.normal(mu1, sigma1, 20)
+    mu2, sigma2 = 3, 5
+    s2 = np.random.normal(mu2, sigma2, 20)
+    data = {
+        "var_A": s1,
+        "var_B": s2,
+        "target": [0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1]
+    }
+
+    df = pd.DataFrame(data)
 
     return df
