@@ -115,13 +115,17 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         # check if dataframe
         _is_dataframe(X)
 
-        # Should I check for NaNs at this point?
-        #_check_contains_na(X, self.variables)
-
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        self.X_fit_cols = list(X.columns)
+        # check variables
+        self.variables_ = _find_all_variables(X, self.variables)
+
+        # check if df contains na
+        _check_contains_na(X, self.variables_)
+
+        self.n_features_in_ = X.shape[1]
+
 
         # identify categorical and numerical variables
         self.variables_categorical_ = list(X.select_dtypes(include="object").columns)
@@ -138,9 +142,15 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         # discretise the numerical variables using the EqualWithDiscretiser or EqualDistanceDiscretiser.
         # Should I make this a distinct method?
         if self.strategy == "equal-width":
-            self.discretiser = EqualWidthDiscretiser(variables=self.variables_numerical_)
+            self.discretiser = EqualWidthDiscretiser(
+                variables=self.variables_numerical_,
+                bins=self.bins,
+            )
         else:
-            self.discretiser = EqualFrequencyDiscretiser(variables=self.variables_numerical_)
+            self.discretiser = EqualFrequencyDiscretiser(
+                variables=self.variables_numerical_,
+                bins=self.bins,
+            )
 
         self.discretiser.fit(X, y)
         X_discretised = self.discretiser.transform(X)
