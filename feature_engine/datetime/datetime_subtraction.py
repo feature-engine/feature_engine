@@ -232,15 +232,17 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
             _check_contains_inf(X, self.reference_variables)
             _check_contains_inf(X, self.variables_to_combine)
 
-        self.variable_pairs = list(itertools.product(self.variables_to_combine,
-                                                     self.reference_variables))
+        variable_pairs = list(itertools.product(self.variables_to_combine,
+                                                self.reference_variables))
 
         if self.dedupe_variable_pairs:
             # remove the pairs consisting of the same elements
             # then sort the tuple values and dedupe them
-            self.variable_pairs =\
-                list({tuple(sorted([var1, var2])) for var1, var2 in self.variable_pairs
+            variable_pairs =\
+                list({tuple(sorted([var1, var2])) for var1, var2 in variable_pairs
                       if var1 != var2})
+
+        self.variable_pairs = variable_pairs
 
         self.n_features_in_ = X.shape[1]
 
