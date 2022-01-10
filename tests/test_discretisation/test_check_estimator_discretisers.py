@@ -13,7 +13,7 @@ from feature_engine.discretisation import (
 @pytest.mark.parametrize(
     "Estimator",
     [
-        DecisionTreeDiscretiser(),
+        DecisionTreeDiscretiser(regression=False),
         EqualFrequencyDiscretiser(),
         EqualWidthDiscretiser(),
         ArbitraryDiscretiser(binning_dict={"0": [-np.Inf, 0, np.Inf]}),

@@ -8,27 +8,23 @@ from feature_engine.encoding import DecisionTreeEncoder
 
 def test_encoding_method_param(df_enc):
     # defaults
-    encoder = DecisionTreeEncoder(regression=False)
+    encoder = DecisionTreeEncoder()
     encoder.fit(df_enc, df_enc["target"])
     assert encoder.encoder_[0].encoding_method == "arbitrary"
 
     # ordered encoding
-    encoder = DecisionTreeEncoder(
-        encoding_method="ordered", regression=False
-    )
+    encoder = DecisionTreeEncoder(encoding_method="ordered")
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     assert encoder.encoder_[0].encoding_method == "ordered"
 
     # incorrect input
     with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder(
-            encoding_method="other", regression=False
-        )
+        encoder = DecisionTreeEncoder(encoding_method="other")
         encoder.fit(df_enc, df_enc["target"])
 
 
 def test_classification(df_enc):
-    encoder = DecisionTreeEncoder(regression=False)
+    encoder = DecisionTreeEncoder()
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     X = encoder.transform(df_enc[["var_A", "var_B"]])
 
@@ -111,7 +107,7 @@ def test_regression_ignore_format(df_enc_numeric):
 
 def test_variables_cast_as_category(df_enc_category_dtypes):
     df = df_enc_category_dtypes.copy()
-    encoder = DecisionTreeEncoder(regression=False)
+    encoder = DecisionTreeEncoder()
     encoder.fit(df[["var_A", "var_B"]], df["target"])
     X = encoder.transform(df[["var_A", "var_B"]])
 
@@ -132,5 +128,5 @@ def test_error_when_regression_is_false_and_target_is_continuous(df_enc_numeric)
     random = np.random.RandomState(42)
     y = random.normal(0, 10, len(df_enc_numeric))
     with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder(regression=False)
+        encoder = DecisionTreeEncoder()
         encoder.fit(df_enc_numeric[["var_A", "var_B"]], y)
