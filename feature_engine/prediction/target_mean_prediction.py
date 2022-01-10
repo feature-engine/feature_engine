@@ -166,7 +166,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
         return self
 
-    def predict(self, X: pd.Series) -> pd.Series:
+    def predict(self, X: pd.DataFrame, variable_name: str) -> pd.Series:
         """
 
         Parameters
@@ -175,20 +175,38 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
             The input series which must have the same name as one of the features in the
             dataframe that was used to fit the predictor.
 
+        variable_name: str
+            The variable the method should transform and return.
+
         Return
         -------
-        X_new: pandas dataframe of shape = [n_samples, ]
-            Values are the mean values associated with the corresponding encode or discretised bin
+        X_prediction: pandas series of shape = [n_samples, ]
+            Values are the mean values associated with the corresponding encoded or discretised bin
 
         """
+        # NOTES:
+        # - X needs to be a dataframe to be compatible w/ the BaseEncoder()
+        # - X needs to match the shape of the dataframe used in fit()
+
         # check if is pandas series w/ a name that matches
+        #
+        # if not isinstance(X, pd.Series):
+        #     raise TypeError("fit() method only accepts pandas series.")
 
-        if not isinstance(X, pd.Series):
-            raise TypeError("fit() method only accepts pandas series.")
-
-        if X.name not in (self.X_fit_cols):
+        if variable_name not in (self.variables_):
             raise ValueError("Series name does not match the dataframe features that were used to "
-                             "fit the predictor.")
+                             "fit the predictor. The variables that were fitted to the predictor: "
+                             f"{self.varialbes_}.")
 
+        # use fitted encoder to return the corresponding mean for each category
+        if variable_name in self.variables_categorical_:
+            X_prediction = self.encoder.transform(X)
 
+        # transform the numerical to the appropriate discretised bin.
+        # replace the bin index w/ the corresponding mean value.
+        else:
+            X_transformed = self.discretiser.transform(X)
+            X_prediction = X_transformed.apply(lambda bin_idx: self.disc_mean_dict_[bin_idx])
+
+        return X_prediction[variable_name]
 
