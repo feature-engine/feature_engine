@@ -27,8 +27,8 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
     of variables and one or more reference features. It adds one or more additional
     features to the dataframe with the result of the operations.
 
-    In other words, DatetimeSubtraction() subtracts a group of features from a group of reference variables, and returns the
-    result as new variables in the dataframe.
+    In other words, DatetimeSubtraction() subtracts a group of features from a group of
+    reference variables, and returns the result as new variables in the dataframe.
 
     The transformed dataframe will contain the additional features indicated in the
     new_variables_name list plus the original set of variables.
@@ -38,17 +38,18 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
     Parameters
     ----------
     variables_to_combine: list
-        The list of datetime variables that the reference variables will be subtracted from.
+        The list of datetime variables that the reference variables will be subtracted
+        from.
 
-        If None, the transformer will find and select all datetime variables,
-        including variables of type object that can be converted to datetime.
+        If an empty list is provided, the transformer will find and select all datetime
+        variables, including variables of type object that can be converted to datetime.
 
     reference_variables: list
         The list of datetime reference variables that will be  subtracted from the
          `variables_to_combine`.
 
-         If None, the transformer will find and select all datetime
-         variables, including variables of type object that can be converted to datetime.
+         If an empty list is provided, the transformer will find and select all datetime
+         variables, including variables of type object that can be converted to datetime
 
     output_unit: string, default='D'
         The string representation of the output unit of the datetime differences.
@@ -59,17 +60,18 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         `fs` for femtosecond and `as` for attosecond.
 
     dedupe_variable_pairs: bool, default=False
-        If `True`, the pairs of variables created from `variables_to_combine` and `reference_variables`
-        will be de-duplicated in two ways: variable pairs consisting of the same variables and
-        one variable pair if it matches another pair when sorted. Setting this to `True` will be
-        useful if you don't provide any lists to `variables_to_combine` and `reference_variables`
-        and want to create a subtraction feature for every unique pair of datetime variables.
+        If `True`, the pairs of variables created from `variables_to_combine` and
+        `reference_variables` will be de-duplicated in two ways: variable pairs
+        consisting of the same variables and one variable pair if it matches another
+        pair when sorted. Setting this to `True` will be useful if you provide any empty
+        lists to `variables_to_combine` and `reference_variables` and want to create a
+        subtraction feature for every unique pair of datetime variables.
 
     new_variables_names: list, default=None
         Names of the new variables. If passing a list with the names for the new
         features (recommended), you must enter as many names as new features created
-        by the transformer. The number of new features is the number of `reference_variables`
-        times the number of `variables_to_combine`.
+        by the transformer. The number of new features is the number of
+        `reference_variables` times the number of `variables_to_combine`.
 
         If `new_variable_names` is None, the transformer will assign an arbitrary name
         to the features. The name will be var + `_sub_` + ref_var.
@@ -116,8 +118,8 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        variables_to_combine: List[Union[str, int]] = None,
-        reference_variables: List[Union[str, int]] = None,
+        variables_to_combine: List[Union[str, int]],
+        reference_variables: List[Union[str, int]],
         output_unit: str = 'D',
         dedupe_variable_pairs: bool = False,
         new_variables_names: Optional[List[str]] = None,
@@ -153,7 +155,8 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
                               'ps', 'fs', 'as'}
 
         if output_unit not in valid_output_units:
-            raise ValueError(f"output_unit accepts the following values: {valid_output_units}")
+            raise ValueError(f"output_unit accepts the following values: "
+                             f"{valid_output_units}")
 
         if new_variables_names:
             if len(new_variables_names) != (
@@ -236,7 +239,8 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
             # remove the pairs consisting of the same elements
             # then sort the tuple values and dedupe them
             self.variable_pairs =\
-                list({tuple(sorted([var1, var2])) for var1, var2 in self.variable_pairs if var1 != var2})
+                list({tuple(sorted([var1, var2])) for var1, var2 in self.variable_pairs
+                      if var1 != var2})
 
         self.n_features_in_ = X.shape[1]
 
