@@ -1,6 +1,6 @@
 # Authors: kylegilde <kylegilde@gmail.com>
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, cast, Tuple
 import itertools
 
 import numpy as np
@@ -41,14 +41,14 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         The list of datetime variables that the reference variables will be subtracted
         from.
 
-        If an empty list is provided, the transformer will find and select all datetime
+        If None, the transformer will find and select all datetime
         variables, including variables of type object that can be converted to datetime.
 
     reference_variables: list
         The list of datetime reference variables that will be  subtracted from the
          `variables_to_combine`.
 
-         If an empty list is provided, the transformer will find and select all datetime
+         If None, the transformer will find and select all datetime
          variables, including variables of type object that can be converted to datetime
 
     output_unit: string, default='D'
@@ -102,6 +102,17 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
+    reference_variables_:
+        Contains either the `reference_variables` list that was provided or the
+        datetime variables that were found if `reference_variables` was `None`.
+
+    variables_to_combine_:
+        Contains either the `variables_to_combine` list that was provided or the
+        datetime variables that were found if `variables_to_combine` was `None`.
+
+    variable_pairs_:
+        The list of pairs of variables (tuples) that were subtracted.
+
     n_features_in_:
         The number of features in the train set used in fit.
 
@@ -118,8 +129,8 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        variables_to_combine: List[Union[str, int]],
-        reference_variables: List[Union[str, int]],
+        variables_to_combine: Optional[List[Union[str, int]]] = None,
+        reference_variables: Optional[List[Union[str, int]]] = None,
         output_unit: str = 'D',
         dedupe_variable_pairs: bool = False,
         new_variables_names: Optional[List[str]] = None,
@@ -158,7 +169,7 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
             raise ValueError(f"output_unit accepts the following values: "
                              f"{valid_output_units}")
 
-        if new_variables_names:
+        if new_variables_names and reference_variables and variables_to_combine:
             if len(new_variables_names) != (
                 len(reference_variables) * len(variables_to_combine)
             ):
@@ -215,34 +226,37 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # find or check for datetime variables to combine
-        self.variables_to_combine = _find_or_check_datetime_variables(
+        self.variables_to_combine_ = _find_or_check_datetime_variables(
             X, self.variables_to_combine
         )
 
         # find or check for datetime reference variables
-        self.reference_variables = _find_or_check_datetime_variables(
+        self.reference_variables_ = _find_or_check_datetime_variables(
             X, self.reference_variables
         )
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.reference_variables)
-            _check_contains_na(X, self.variables_to_combine)
+            _check_contains_na(X, self.reference_variables_)
+            _check_contains_na(X, self.variables_to_combine_)
 
-            _check_contains_inf(X, self.reference_variables)
-            _check_contains_inf(X, self.variables_to_combine)
+            _check_contains_inf(X, self.reference_variables_)
+            _check_contains_inf(X, self.variables_to_combine_)
 
-        variable_pairs = list(itertools.product(self.variables_to_combine,
-                                                self.reference_variables))
+        variable_pairs = list(itertools.product(self.reference_variables_,
+                                                self.variables_to_combine_))
 
         if self.dedupe_variable_pairs:
             # remove the pairs consisting of the same elements
             # then sort the tuple values and dedupe them
-            variable_pairs =\
-                list({tuple(sorted([var1, var2])) for var1, var2 in variable_pairs
-                      if var1 != var2})
+            variable_pairs = \
+                cast(
+                    List[Tuple[Union[str, int], Union[str, int]]],
+                    list({tuple(sorted([var1, var2])) for var1, var2 in variable_pairs
+                          if var1 != var2})
+                )
 
-        self.variable_pairs = variable_pairs
+        self.variable_pairs_ = variable_pairs
 
         self.n_features_in_ = X.shape[1]
 
@@ -274,14 +288,15 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.reference_variables)
-            _check_contains_na(X, self.variables_to_combine)
+            _check_contains_na(X, self.variables_to_combine_)
+            _check_contains_na(X, self.variables_to_combine_)
 
-            _check_contains_inf(X, self.reference_variables)
-            _check_contains_inf(X, self.variables_to_combine)
+            _check_contains_inf(X, self.variables_to_combine_)
+            _check_contains_inf(X, self.variables_to_combine_)
 
         # convert datetime variables
-        datetime_variables = set(self.variables_to_combine + self.reference_variables)
+        datetime_variables = set(self.variables_to_combine_ +
+                                 self.variables_to_combine_)
 
         datetime_df = X[datetime_variables].apply(pd.to_datetime,
                                                   dayfirst=self.dayfirst,
@@ -301,7 +316,7 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         original_col_names = X.columns.tolist()
 
         # subtract each pair of variables and convert the values to the output unit
-        for var1, var2 in self.variable_pairs:
+        for var1, var2 in self.variable_pairs_:
 
             varname = str(var1) + "_sub_" + str(var2) + '_' + self.output_unit
 
