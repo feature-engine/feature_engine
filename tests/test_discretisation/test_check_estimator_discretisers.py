@@ -21,3 +21,4 @@ from feature_engine.discretisation import (
 )
 def test_all_transformers(Estimator):
     return check_estimator(Estimator)
+
