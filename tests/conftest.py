@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-import random
+
 
 @pytest.fixture(scope="module")
 def df_vartypes():
