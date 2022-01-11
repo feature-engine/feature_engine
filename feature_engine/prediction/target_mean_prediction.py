@@ -211,3 +211,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
         return X_prediction[variable_name]
 
+    def _make_categorical_pipeline(self):
+
+        return MeanEncoder(variables=self.variables_categorical_)
+
