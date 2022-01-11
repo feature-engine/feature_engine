@@ -24,7 +24,7 @@ def test_encoding_method_param(df_enc):
 
 
 def test_classification(df_enc):
-    encoder = DecisionTreeEncoder()
+    encoder = DecisionTreeEncoder(regression=False)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     X = encoder.transform(df_enc[["var_A", "var_B"]])
 
@@ -107,7 +107,7 @@ def test_regression_ignore_format(df_enc_numeric):
 
 def test_variables_cast_as_category(df_enc_category_dtypes):
     df = df_enc_category_dtypes.copy()
-    encoder = DecisionTreeEncoder()
+    encoder = DecisionTreeEncoder(regression=False)
     encoder.fit(df[["var_A", "var_B"]], df["target"])
     X = encoder.transform(df[["var_A", "var_B"]])
 
@@ -124,9 +124,9 @@ def test_error_when_regression_is_true_and_target_is_binary(df_enc):
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
 
 
-def test_error_when_regression_is_false_and_target_is_continuous(df_enc_numeric):
+def test_error_when_regression_is_false_and_target_is_continuous(df_enc):
     random = np.random.RandomState(42)
-    y = random.normal(0, 10, len(df_enc_numeric))
+    y = random.normal(0, 10, len(df_enc))
     with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder()
+        encoder = DecisionTreeEncoder(regression=False)
         encoder.fit(df_enc_numeric[["var_A", "var_B"]], y)
