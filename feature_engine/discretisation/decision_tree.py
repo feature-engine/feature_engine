@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Union
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.utils.multiclass import type_of_target, check_classification_targets
+from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.variable_manipulation import (
@@ -141,9 +141,11 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         # confirm model type and target variables are compatible.
         if self.regression is True:
             if type_of_target(y) == "binary":
-                raise ValueError("Trying to fit a regression to a binary target is not "
-                                 "allowed by this transformer. Check the target values "
-                                 "or set regression to False.")
+                raise ValueError(
+                    "Trying to fit a regression to a binary target is not "
+                    "allowed by this transformer. Check the target values "
+                    "or set regression to False."
+                )
         else:
             check_classification_targets(y)
 
