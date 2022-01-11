@@ -8,18 +8,18 @@ from feature_engine.encoding import DecisionTreeEncoder
 
 def test_encoding_method_param(df_enc):
     # defaults
-    encoder = DecisionTreeEncoder()
+    encoder = DecisionTreeEncoder(regression=False)
     encoder.fit(df_enc, df_enc["target"])
     assert encoder.encoder_[0].encoding_method == "arbitrary"
 
     # ordered encoding
-    encoder = DecisionTreeEncoder(encoding_method="ordered")
+    encoder = DecisionTreeEncoder(encoding_method="ordered", regression=False)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     assert encoder.encoder_[0].encoding_method == "ordered"
 
     # incorrect input
     with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder(encoding_method="other")
+        encoder = DecisionTreeEncoder(encoding_method="other", regression=False)
         encoder.fit(df_enc, df_enc["target"])
 
 
@@ -38,7 +38,8 @@ def test_regression(df_enc):
     random = np.random.RandomState(42)
     y = random.normal(0, 0.1, len(df_enc))
     encoder = DecisionTreeEncoder(
-        regression=True, random_state=random,
+        regression=True,
+        random_state=random,
     )
     encoder.fit(df_enc[["var_A", "var_B"]], y)
     X = encoder.transform(df_enc[["var_A", "var_B"]])
@@ -60,15 +61,15 @@ def test_non_fitted_error(df_enc):
 def test_fit_raises_error_if_df_contains_na(df_enc_na):
     # test case 4: when dataset contains na, fit method
     with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder()
-        encoder.fit(df_enc_na)
+        encoder = DecisionTreeEncoder(regression=False)
+        encoder.fit(df_enc_na[["var_A", "var_B"]], df_enc_na["target"])
 
 
 def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
     # test case 4: when dataset contains na, transform method
     with pytest.raises(ValueError):
         encoder = DecisionTreeEncoder()
-        encoder.fit(df_enc_na[["var_A", "var_B"]], df_enc_na["target"])
+        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         encoder.transform(df_enc_na)
 
 
