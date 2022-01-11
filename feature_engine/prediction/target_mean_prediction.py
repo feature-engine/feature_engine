@@ -129,37 +129,16 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         self.variables_categorical_ = list(X.select_dtypes(include="object").columns)
         self.variables_numerical_ = list(X.select_dtypes(include="number").columns)
 
-        # transform categorical variables using the MeanEncoder
-        # Should I make this a distinct method?
-        self.encoder = MeanEncoder(variables=self.variables_categorical_)
-        self.encoder.fit(X, y)
+        # transform categorical and numerical variables, where appropriate
+        if self.variables_categorical_ and self.variables_numerical_:
+            _pipeline = self._make_combined_pipeline()
 
-        X_encoded = self.encoder.transform(X)
-        X_encoded = X_encoded[self.variables_categorical_]
+        elif self.variables_categorical_:
+            _pipeline = self._make_categorical_pipeline()
 
-        # discretise the numerical variables using the EqualWithDiscretiser or EqualDistanceDiscretiser.
-        # Should I make this a distinct method?
-        if self.strategy == "equal-width":
-            self.discretiser = EqualWidthDiscretiser(
-                variables=self.variables_numerical_,
-                bins=self.bins,
-            )
         else:
-            self.discretiser = EqualFrequencyDiscretiser(
-                variables=self.variables_numerical_,
-                bins=self.bins,
-            )
+            _pipeline = self._make_numerical_pipeline()
 
-        self.discretiser.fit(X, y)
-        X_discretised = self.discretiser.transform(X)
-        X_discretised = X_discretised[self.variables_numerical_]
-
-        self.disc_mean_dict_ = {}
-        temp = pd.concat([X_encoded, X_discretised, y], axis=1)
-        temp.columns = list(X_encoded.columns) + list(X_discretised) + ["target"]
-
-        for var in self.variables_numerical_:
-            self.disc_mean_dict_[var] = temp.groupby(var)["target"].mean().to_dict()
 
         # check if df contains na
         _check_contains_na(X, self.variables_)
@@ -238,7 +217,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
         return MeanEncoder(variables=self.variables_categorical_)
 
-    def _make_combine_pipeline(self):
+    def _make_combined_pipeline(self):
 
         if self.strategy == "equal-width":
             discretiser = EqualWidthDiscretiser(
