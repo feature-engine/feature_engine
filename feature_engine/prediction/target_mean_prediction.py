@@ -228,7 +228,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         _pipeline_numerical = Pipeline(
             [
                 ("discretisation": discretiser),
-                ("encoder": encoder)
+                ("encoder": encoder),
             ]
         )
 
@@ -238,5 +238,28 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
         return MeanEncoder(variables=self.variables_categorical_)
 
-    def _make_combine_pipeline
+    def _make_combine_pipeline(self):
+
+        if self.strategy == "equal-width":
+            discretiser = EqualWidthDiscretiser(
+                bins=self.bins, variables=self.variables_numerical_, return_object=True
+            )
+        else:
+            discretiser = EqualFrequencyDiscretiser(
+                q=self.bins, variables=self.variables_numerical_, return_object=True
+            )
+
+        encoder_num = MeanEncoder(variables=self.variables_numerical_)
+        encoder_cat = MeanEncoder(variables=self.variables_categorical__)
+
+        _pipeline_combined = Pipeline(
+            [
+                ("discretisation": discretiser),
+                ("encoder_num": encoder_num),
+                ("encoder_cat": encoder_cat),
+            ]
+        )
+
+        return _pipeline_combined
+
 
