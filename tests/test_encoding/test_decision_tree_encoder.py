@@ -129,4 +129,4 @@ def test_error_when_regression_is_false_and_target_is_continuous(df_enc):
     y = random.normal(0, 10, len(df_enc))
     with pytest.raises(ValueError):
         encoder = DecisionTreeEncoder(regression=False)
-        encoder.fit(df_enc_numeric[["var_A", "var_B"]], y)
+        encoder.fit(df_enc[["var_A", "var_B"]], y)
