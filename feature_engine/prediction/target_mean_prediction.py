@@ -5,6 +5,7 @@ from typing import List, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
@@ -211,7 +212,31 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
 
         return X_prediction[variable_name]
 
+    def _make_numerical_pipeline(self):
+
+        if self.strategy == "equal-width":
+            discretiser = EqualWidthDiscretiser(
+                bins=self.bins, variables=self.variables_numerical_, return_object=True
+            )
+        else:
+            discretiser = EqualFrequencyDiscretiser(
+                q=self.bins, variables=self.variables_numerical_, return_object=True
+            )
+
+        encoder = MeanEncoder(variables=self.variables_numerical_)
+
+        _pipeline_numerical = Pipeline(
+            [
+                ("discretisation": discretiser),
+                ("encoder": encoder)
+            ]
+        )
+
+        return _pipeline_numerical
+
     def _make_categorical_pipeline(self):
 
         return MeanEncoder(variables=self.variables_categorical_)
+
+    def _make_combine_pipeline
 
