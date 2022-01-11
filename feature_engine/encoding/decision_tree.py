@@ -134,11 +134,10 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         cv: int = 3,
         scoring: str = "neg_mean_squared_error",
         param_grid: Optional[dict] = None,
-        regression: bool = False,
+        regression: bool = True,
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-
     ) -> None:
 
         self.encoding_method = encoding_method
