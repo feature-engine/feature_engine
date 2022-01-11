@@ -119,13 +119,10 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
             y = pd.Series(y)
 
         # check variables
-        self.variables_ = _find_all_variables(X, self.variables)
-
-        # check if df contains na
-        _check_contains_na(X, self.variables_)
-
-        self.n_features_in_ = X.shape[1]
-
+        if self.variables is None:
+            self.variables_ = list(X.columns)
+        else:
+            self.variables_ = _find_all_variables(X, self.variables)
 
         # identify categorical and numerical variables
         self.variables_categorical_ = list(X.select_dtypes(include="object").columns)
@@ -163,6 +160,10 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         for var in self.variables_numerical_:
             self.disc_mean_dict_[var] = temp.groupby(var)["target"].mean().to_dict()
 
+        # check if df contains na
+        _check_contains_na(X, self.variables_)
+
+        self.n_features_in_ = X.shape[1]
 
         return self
 
