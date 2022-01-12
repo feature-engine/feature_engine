@@ -116,7 +116,7 @@ def df_discretise():
     data = {
         "var_A": s1,
         "var_B": s2,
-        "target": [0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1]
+        "target": [0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
     }
 
     df = pd.DataFrame(data)
