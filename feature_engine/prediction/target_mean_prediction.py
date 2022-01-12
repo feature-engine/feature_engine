@@ -84,7 +84,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
     ):
 
         if not isinstance(bins, int):
-            raise TypeError("'bins' only accepts integers.")
+            raise TypeError(f"Got {bins} bins instead of an integer.")
 
         if strategy not in ("equal-width", "equal-distance"):
             raise ValueError(
@@ -102,8 +102,6 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> pd.DataFrame:
         """
         Fit predictor per variables.
-
-        QUESTION: Does X accept the entire dataframe or just on feature?
 
         Parameters
         ----------
