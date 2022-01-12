@@ -41,13 +41,6 @@ class TargetMeanPredictor(BaseEstimator):
     strategy: str, default='equal_width'
         Whether the bins should of equal width ('equal_width') or equal frequency ('equal_frequency').
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
-
     Attributes
     ----------
 
