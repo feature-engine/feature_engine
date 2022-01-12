@@ -143,19 +143,17 @@ class TargetMeanPredictor(BaseEstimator):
         # - X needs to be a dataframe to be compatible w/ the BaseEncoder()
         # - X needs to match the shape of the dataframe used in fit()
 
-        # check if is pandas series w/ a name that matches
-        #
-        # if not isinstance(X, pd.Series):
-        #     raise TypeError("fit() method only accepts pandas series.")
 
-        if variable_name not in (self.variables_):
-            raise ValueError("Series name does not match the dataframe features that were used to "
-                             "fit the predictor. The variables that were fitted to the predictor: "
-                             f"{self.varialbes_}.")
+        # check method fit has been called
+        check_is_fitted(self)
 
-        # use fitted encoder to return the corresponding mean for each category
-        if variable_name in self.variables_categorical_:
-            X_prediction = self.encoder.transform(X)
+        # check that input is a dataframe
+        _is_dataframe(X)
+
+        # Check input data contains same number of columns as df used to fit
+        _check_input_matches_training_df(X, self.n_features_in_)
+
+
 
         # transform the numerical to the appropriate discretised bin.
         # replace the bin index w/ the corresponding mean value.
