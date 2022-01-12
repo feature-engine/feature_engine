@@ -175,7 +175,7 @@ class TargetMeanPredictor(BaseEstimator):
                 q=self.bins, variables=self.variables_numerical_, return_object=True
             )
 
-        encoder = MeanEncoder(variables=self.variables_numerical_)
+        encoder = MeanEncoder(variables=self.variables_numerical_, errors="raise")
 
         _pipeline_numerical = Pipeline(
             [
@@ -188,7 +188,7 @@ class TargetMeanPredictor(BaseEstimator):
 
     def _make_categorical_pipeline(self):
 
-        return MeanEncoder(variables=self.variables_categorical_)
+        return MeanEncoder(variables=self.variables_categorical_, errors="raise")
 
     def _make_combined_pipeline(self):
 
@@ -201,8 +201,8 @@ class TargetMeanPredictor(BaseEstimator):
                 q=self.bins, variables=self.variables_numerical_, return_object=True
             )
 
-        encoder_num = MeanEncoder(variables=self.variables_numerical_)
-        encoder_cat = MeanEncoder(variables=self.variables_categorical__)
+        encoder_num = MeanEncoder(variables=self.variables_numerical_, errors="raise")
+        encoder_cat = MeanEncoder(variables=self.variables_categorical_, errors="raise")
 
         _pipeline_combined = Pipeline(
             [
