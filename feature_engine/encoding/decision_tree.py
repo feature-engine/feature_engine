@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.pipeline import Pipeline
+from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
 from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
@@ -160,6 +161,18 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
             The target variable. Required to train the decision tree and for
             ordered ordinal encoding.
         """
+
+        # confirm model type and target variables are compatible.
+        if self.regression is True:
+            if type_of_target(y) == "binary":
+                raise ValueError(
+                    "Trying to fit a regression to a binary target is not "
+                    "allowed by this transformer. Check the target values "
+                    "or set regression to False."
+                )
+
+        else:
+            check_classification_targets(y)
 
         # check input dataframe
         X = self._check_fit_input_and_variables(X)
