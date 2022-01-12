@@ -116,6 +116,7 @@ class TargetMeanPredictor(BaseEstimator):
         else:
             _pipeline = self._make_numerical_pipeline()
 
+        _pipeline.fit(X, y)
 
         self.n_features_in_ = X.shape[1]
 
@@ -161,7 +162,7 @@ class TargetMeanPredictor(BaseEstimator):
             X_transformed = self.discretiser.transform(X)
             X_prediction = X_transformed.apply(lambda bin_idx: self.disc_mean_dict_[bin_idx])
 
-        return X_prediction[variable_name]
+
 
     def _make_numerical_pipeline(self):
 
