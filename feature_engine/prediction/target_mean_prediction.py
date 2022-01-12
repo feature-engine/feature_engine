@@ -129,7 +129,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         self.variables_categorical_ = list(X.select_dtypes(include="object").columns)
         self.variables_numerical_ = list(X.select_dtypes(include="number").columns)
 
-        # transform categorical and numerical variables, where appropriate
+        # encode categorical variables and discretise numerical variables
         if self.variables_categorical_ and self.variables_numerical_:
             _pipeline = self._make_combined_pipeline()
 
