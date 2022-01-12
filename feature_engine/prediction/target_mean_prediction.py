@@ -25,7 +25,7 @@ from feature_engine.variable_manipulation import (
 )
 
 
-class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
+class TargetMeanPredictor(BaseEstimator):
     """
 
     Parameters
@@ -39,8 +39,7 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         the values will be sorted.
 
     strategy: str, default='equal_width'
-        Whether to create the bins for discretization of numerical variables using
-        equal width ('equal_width') or equal frequency ('equal_frequency').
+        Whether the bins should of equal width ('equal_width') or equal frequency ('equal_frequency').
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
@@ -80,7 +79,6 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         bins: int = 5,
         strategy: str = "equal-width",
-        ignore_format: bool = False,
     ):
 
         if not isinstance(bins, int):
@@ -91,13 +89,9 @@ class TargetMeanPredictor(BaseEstimator, ClassifierMixin, RegressorMixin):
                 "strategy must be 'equal-width' or 'equal-distance'."
             )
 
-        if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False")
-
         self.variables = _check_input_parameter_variables(variables)
         self.bins = bins
         self.strategy = strategy
-        self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> pd.DataFrame:
         """
