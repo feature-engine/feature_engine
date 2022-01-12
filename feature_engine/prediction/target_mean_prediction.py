@@ -103,8 +103,8 @@ class TargetMeanPredictor(BaseEstimator):
         self.variables_ = _find_all_variables(X, self.variables)
 
         # identify categorical and numerical variables
-        self.variables_categorical_ = list(X.select_dtypes(include="object").columns)
-        self.variables_numerical_ = list(X.select_dtypes(include="number").columns)
+        self.variables_categorical_ = list(X[self.variables_].select_dtypes(include="object").columns)
+        self.variables_numerical_ = list(X[self.variables_].select_dtypes(include="number").columns)
 
         # encode categorical variables and discretise numerical variables
         if self.variables_categorical_ and self.variables_numerical_:
@@ -116,9 +116,6 @@ class TargetMeanPredictor(BaseEstimator):
         else:
             _pipeline = self._make_numerical_pipeline()
 
-
-        # check if df contains na
-        _check_contains_na(X, self.variables_)
 
         self.n_features_in_ = X.shape[1]
 
