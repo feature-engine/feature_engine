@@ -4,7 +4,7 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
@@ -98,17 +98,9 @@ class TargetMeanPredictor(BaseEstimator):
         y : pandas series of shape = [n_samples,]
             The target variable.
         """
-        # check if dataframe
-        _is_dataframe(X)
-
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
 
         # check variables
-        if self.variables is None:
-            self.variables_ = list(X.columns)
-        else:
-            self.variables_ = _find_all_variables(X, self.variables)
+        self.variables_ = _find_all_variables(X, self.variables)
 
         # identify categorical and numerical variables
         self.variables_categorical_ = list(X.select_dtypes(include="object").columns)
