@@ -37,3 +37,15 @@ def df_pred():
     df = pd.DataFrame(data)
 
     return df
+
+
+@pytest.fixture(scope="module")
+def df_pred_small():
+    data = {
+        "City": ["London", "London", "Liverpool", "Manchester", "Bristol", "Manchester"],
+        "Age": [29, 39, 49, 25, 35, 55],
+    }
+
+    df = pd.DataFrame(data)
+
+    return df
