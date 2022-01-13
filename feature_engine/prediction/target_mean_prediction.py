@@ -167,14 +167,14 @@ class TargetMeanPredictor(BaseEstimator):
         """
         Create pipeline for a dataframe solely comprised of numerical variables 
         using a discretiser and encoder.
-        """"
+        """
 
         encoder = MeanEncoder(variables=self.variables_numerical_, errors="raise")
 
         _pipeline_numerical = Pipeline(
             [
-                ("discretisation": self._make_disretiser()),
-                ("encoder": encoder),
+                ("discretisation", self._make_disretiser()),
+                ("encoder", encoder),
             ]
         )
 
@@ -194,9 +194,9 @@ class TargetMeanPredictor(BaseEstimator):
 
         _pipeline_combined = Pipeline(
             [
-                ("discretisation": self._make_discretiser()),
-                ("encoder_num": encoder_num),
-                ("encoder_cat": encoder_cat),
+                ("discretisation", self._make_discretiser()),
+                ("encoder_num", encoder_num),
+                ("encoder_cat", encoder_cat),
             ]
         )
 
