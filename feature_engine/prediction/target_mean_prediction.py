@@ -5,6 +5,7 @@ from typing import List, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator
+from sklearn.metrics import r2_score
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
@@ -132,12 +133,9 @@ class TargetMeanPredictor(BaseEstimator):
             The input series which must have the same name as one of the features in the
             dataframe that was used to fit the predictor.
 
-        variable_name: str
-            The variable the method should transform and return.
-
         Return
         -------
-        X_prediction: pandas series of shape = [n_samples, ]
+        X_tr: pandas series of shape = [n_samples, ]
             Values are the mean values associated with the corresponding encoded or discretised bin
 
         """
@@ -217,3 +215,19 @@ class TargetMeanPredictor(BaseEstimator):
 
         return discretiser
 
+def r2_score(self, X: pd.DataFrame, y: pd.Series, sample_weight: float = None):
+    """
+    Returns the coefficient of determination, which represents the proportion of the variation
+    in 'y' that can be predicted by 'X'.
+
+    Parameters
+    ----------
+    X : pandas dataframe of shape = [n_samples, n_features]
+        Test samples.
+
+    y : pandas series of shape = [n_samples, ]
+
+    """
+
+    y_pred = self.predict(X)
+    return r2_score(y, y_pred, sample_weight=sample_weight)
