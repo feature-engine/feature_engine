@@ -40,7 +40,8 @@ class TargetMeanPredictor(BaseEstimator):
         the values will be sorted.
 
     strategy: str, default='equal_width'
-        Whether the bins should of equal width ('equal_width') or equal frequency ('equal_frequency').
+        Whether the bins should of equal width ('equal_width') or equal frequency
+        ('equal_frequency').
 
     Attributes
     ----------
@@ -104,8 +105,12 @@ class TargetMeanPredictor(BaseEstimator):
         self.variables_ = _find_all_variables(X, self.variables)
 
         # identify categorical and numerical variables
-        self.variables_categorical_ = list(X[self.variables_].select_dtypes(include="object").columns)
-        self.variables_numerical_ = list(X[self.variables_].select_dtypes(include="number").columns)
+        self.variables_categorical_ = list(
+            X[self.variables_].select_dtypes(include="object").columns
+        )
+        self.variables_numerical_ = list(
+            X[self.variables_].select_dtypes(include="number").columns
+        )
 
         # encode categorical variables and discretise numerical variables
         if self.variables_categorical_ and self.variables_numerical_:
@@ -136,7 +141,8 @@ class TargetMeanPredictor(BaseEstimator):
         Return
         -------
         X_tr: pandas series of shape = [n_samples, ]
-            Values are the mean values associated with the corresponding encoded or discretised bin
+            Values are the mean values associated with the corresponding encoded or
+            discretised bin.
 
         """
         # NOTES:
@@ -242,7 +248,8 @@ class TargetMeanPredictor(BaseEstimator):
         y_pred = self.predict(X)
         return r2_score(y, y_pred, sample_weight=sample_weight)
 
-    def mean_accuracy_score(self, X: pd.DataFrame, y: pd.Series, sample_weight: float = None) -> float:
+    def mean_accuracy_score(self, X: pd.DataFrame, y: pd.Series,
+                            sample_weight: float = None) -> float:
         """
         Derives the mean accuracy of the given test data and labels.
 
