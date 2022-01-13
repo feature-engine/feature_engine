@@ -32,6 +32,7 @@ def df_pred():
         ],
         "Age": [20, 44, 19, 33, 51, 40, 41, 37, 30, 54],
         "Marks": [1.0, 0.8, 0.6, 0.1, 0.3, 0.4, 0.8, 0.6, 0.5, 0.2],
+        "Plays_Football": [1, 1, 1, 0, 0, 1, 0, 1, 0, 0],
     }
 
     df = pd.DataFrame(data)
@@ -47,6 +48,7 @@ def df_pred_small():
         "Studies": ["Masters", "Bachelor", "Bachelor", "PhD", "Phd", "Masters"],
         "Age": [29, 39, 49, 25, 35, 55],
         "Marks": [0.9, 0.6, 0.1, 0.5, 0.3, 0.8],
+        "Plays_Football": [0, 1, 1, 0, 1, 1],
     }
 
     df = pd.DataFrame(data)
