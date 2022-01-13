@@ -156,30 +156,18 @@ class TargetMeanPredictor(BaseEstimator):
 
 
 
-        # transform the numerical to the appropriate discretised bin.
-        # replace the bin index w/ the corresponding mean value.
-        else:
-            X_transformed = self.discretiser.transform(X)
-            X_prediction = X_transformed.apply(lambda bin_idx: self.disc_mean_dict_[bin_idx])
-
-
 
     def _make_numerical_pipeline(self):
-
-        if self.strategy == "equal-width":
-            discretiser = EqualWidthDiscretiser(
-                bins=self.bins, variables=self.variables_numerical_, return_object=True
-            )
-        else:
-            discretiser = EqualFrequencyDiscretiser(
-                q=self.bins, variables=self.variables_numerical_, return_object=True
-            )
+        """
+        Create pipeline for a dataframe solely comprised of numerical variables 
+        using a discretiser and encoder.
+        """"
 
         encoder = MeanEncoder(variables=self.variables_numerical_, errors="raise")
 
         _pipeline_numerical = Pipeline(
             [
-                ("discretisation": discretiser),
+                ("discretisation": self._make_disretiser()),
                 ("encoder": encoder),
             ]
         )
@@ -187,26 +175,20 @@ class TargetMeanPredictor(BaseEstimator):
         return _pipeline_numerical
 
     def _make_categorical_pipeline(self):
+        """
+        Instantiate the encoder for a dataframe solely comprised of categorical variables.
+        """
 
         return MeanEncoder(variables=self.variables_categorical_, errors="raise")
 
     def _make_combined_pipeline(self):
-
-        if self.strategy == "equal-width":
-            discretiser = EqualWidthDiscretiser(
-                bins=self.bins, variables=self.variables_numerical_, return_object=True
-            )
-        else:
-            discretiser = EqualFrequencyDiscretiser(
-                q=self.bins, variables=self.variables_numerical_, return_object=True
-            )
 
         encoder_num = MeanEncoder(variables=self.variables_numerical_, errors="raise")
         encoder_cat = MeanEncoder(variables=self.variables_categorical_, errors="raise")
 
         _pipeline_combined = Pipeline(
             [
-                ("discretisation": discretiser),
+                ("discretisation": self._make_discretiser()),
                 ("encoder_num": encoder_num),
                 ("encoder_cat": encoder_cat),
             ]
@@ -214,4 +196,19 @@ class TargetMeanPredictor(BaseEstimator):
 
         return _pipeline_combined
 
+    def _make_discretiser(self):
+        """
+
+
+        """
+        if self.strategy == "equal-width":
+            discretiser = EqualWidthDiscretiser(
+                bins=self.bins, variables=self.variables_numerical_, return_object=True
+            )
+        else:
+            discretiser = EqualFrequencyDiscretiser(
+                q=self.bins, variables=self.variables_numerical_, return_object=True
+        )
+
+        return discretiser
 
