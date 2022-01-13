@@ -5,7 +5,7 @@ from typing import List, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator
-from sklearn.metrics import r2_score
+from sklearn.metrics import accuracy_score, r2_score
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
@@ -215,7 +215,8 @@ class TargetMeanPredictor(BaseEstimator):
 
         return discretiser
 
-def r2_score(self, X: pd.DataFrame, y: pd.Series, sample_weight: float = None):
+
+def r_sqrd_score(self, X: pd.DataFrame, y: pd.Series, sample_weight: float = None) -> float:
     """
     Returns the coefficient of determination, which represents the proportion of the variation
     in 'y' that can be predicted by 'X'.
@@ -226,8 +227,44 @@ def r2_score(self, X: pd.DataFrame, y: pd.Series, sample_weight: float = None):
         Test samples.
 
     y : pandas series of shape = [n_samples, ]
+        True lables for 'X'.
+
+    sample_weight : pandas series of shape [n_samples, ], default=None
+        Sample weights.
+
+    Returns
+    --------
+    r2_score : float
+        Linear correlation between 'y' and 'y_pred'.
 
     """
+    # Should we use the same or different nomenclature as sklearn?
 
     y_pred = self.predict(X)
     return r2_score(y, y_pred, sample_weight=sample_weight)
+
+
+def mean_accuracy_score(self, X: pd.DataFrame, y: pd.Series, sample_weight: float = None) -> float:
+    """
+    Derives the mean accuracy of the given test data and labels.
+
+    Parameters
+    ----------
+    X : pandas dataframe of shape = [n_samples, n_features]
+        Test samples.
+
+    y : pandas series of shape = [n_samples, ]
+
+    sample_weight : pandas series of shape [n_samples, ], default=None
+        Sample weights.
+
+    Returns
+    --------
+    accuracy_score : float
+        Mean accuracy of 'self.predict(X)' and 'y'.
+
+    """
+    # Should we use the same or different nomenclature as sklearn?
+
+    y_pred = self.predict(X)
+    return accuracy_score(y, y_pred, sample_weight=sample_weight)
