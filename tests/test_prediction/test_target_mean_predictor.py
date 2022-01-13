@@ -19,8 +19,9 @@ def test_target_mean_predictor_fit(df_pred):
     assert predictor.strategy == "equal-width"
     # test fit params
     assert predictor.variables_ == ["City", "Age"]
-    assert predictor.disc_mean_dict_ == {"Age": {0: 0.8, 1: 0.3, 2: 0.5, 3: 0.8, 4: 0.25}}
-    assert predictor.encoder.encoder_dict_ == {
+    assert predictor._pipeline["discretisation"].variables == ["Age"]
+    assert predictor._pipeline["encoder_num"].encoder_dict_ == {"Age": {0: 0.8, 1: 0.3, 2: 0.5, 3: 0.8, 4: 0.25}}
+    assert predictor._pipeline["encoder_cat"].encoder_dict_ == {
         "City": {"Bristol": 0.1,
                  "Liverpool": 0.5333333333333333,
                  "London": 0.6666666666666666,
