@@ -215,7 +215,6 @@ class TargetMeanPredictor(BaseEstimator):
 
         return discretiser
 
-
     def r_squared_score(self, X: pd.DataFrame, y: pd.Series, sample_weight: float = None) -> float:
         """
         Returns the coefficient of determination, which represents the proportion of the variation
@@ -242,7 +241,6 @@ class TargetMeanPredictor(BaseEstimator):
 
         y_pred = self.predict(X)
         return r2_score(y, y_pred, sample_weight=sample_weight)
-
 
     def mean_accuracy_score(self, X: pd.DataFrame, y: pd.Series, sample_weight: float = None) -> float:
         """
