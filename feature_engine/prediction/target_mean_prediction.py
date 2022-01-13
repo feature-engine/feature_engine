@@ -116,13 +116,14 @@ class TargetMeanPredictor(BaseEstimator):
         else:
             _pipeline = self._make_numerical_pipeline()
 
-        _pipeline.fit(X, y)
+        self._pipeline = _pipeline
+        self._pipeline.fit(X, y)
 
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def predict(self, X: pd.DataFrame, variable_name: str) -> pd.Series:
+    def predict(self, X: pd.DataFrame) -> pd.Series:
         """
 
         Parameters
@@ -154,8 +155,13 @@ class TargetMeanPredictor(BaseEstimator):
         # Check input data contains same number of columns as df used to fit
         _check_input_matches_training_df(X, self.n_features_in_)
 
+        # transform dataframe
+        X_tr = self._pipeline.transform(X)
 
+        # calculate the average of each observation
+        predictions = X_tr[self.variables_].mean(axis=1)
 
+        return predictions
 
     def _make_numerical_pipeline(self):
         """
@@ -198,8 +204,7 @@ class TargetMeanPredictor(BaseEstimator):
 
     def _make_discretiser(self):
         """
-
-
+        Instantiate either EqualWidthDiscretiser or EqualFrequencyDiscretiser.
         """
         if self.strategy == "equal-width":
             discretiser = EqualWidthDiscretiser(
