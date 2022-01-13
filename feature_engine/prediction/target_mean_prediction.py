@@ -31,8 +31,8 @@ class TargetMeanPredictor(BaseEstimator):
     Parameters
     ----------
     variables: list, default=None
-        The list of variables to evaluate. If None, the transformer will evaluate all
-        variables in the dataset.
+        The list of input variables. If None, the estimator will evaluate will use all
+        variables as input fetures.
 
     bins: int, default=5
         If the dataset contains numerical variables, the number of bins into which
