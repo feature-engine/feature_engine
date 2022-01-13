@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+
 @pytest.fixture(scope="module")
 def df_pred():
     data = {
