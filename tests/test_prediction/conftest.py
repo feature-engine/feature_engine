@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -6,7 +5,18 @@ import pytest
 @pytest.fixture(scope="module")
 def df_pred():
     data = {
-        "Name": ["tom", "nick", "krish", "megan", "peter", "jordan", "fred", "sam", "alexa", "brittany"],
+        "Name": [
+            "tom",
+            "nick",
+            "krish",
+            "megan",
+            "peter",
+            "jordan",
+            "fred",
+            "sam",
+            "alexa",
+            "brittany"
+        ],
         "City": [
             "London",
             "Manchester",
@@ -44,7 +54,14 @@ def df_pred():
 def df_pred_small():
     data = {
         "Names": ["louis", "michael", "arnold", "joyce", "claire", "allison"],
-        "City": ["London", "London", "Liverpool", "Manchester", "Bristol", "Manchester"],
+        "City": [
+            "London",
+            "London",
+            "Liverpool",
+            "Manchester",
+            "Bristol",
+            "Manchester"
+        ],
         "Studies": ["Masters", "Bachelor", "Bachelor", "PhD", "Phd", "Masters"],
         "Age": [29, 39, 49, 25, 35, 55],
         "Marks": [0.9, 0.6, 0.1, 0.5, 0.3, 0.8],
