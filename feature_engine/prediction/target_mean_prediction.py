@@ -145,11 +145,6 @@ class TargetMeanPredictor(BaseEstimator):
             discretised bin.
 
         """
-        # NOTES:
-        # - X needs to be a dataframe to be compatible w/ the BaseEncoder()
-        # - X needs to match the shape of the dataframe used in fit()
-
-
         # check method fit has been called
         check_is_fitted(self)
 
@@ -221,10 +216,11 @@ class TargetMeanPredictor(BaseEstimator):
 
         return discretiser
 
-    def r_squared_score(self, X: pd.DataFrame, y: pd.Series, sample_weight: float = None) -> float:
+    def r_squared_score(self, X: pd.DataFrame, y: pd.Series,
+                        sample_weight: float = None) -> float:
         """
-        Returns the coefficient of determination, which represents the proportion of the variation
-        in 'y' that can be predicted by 'X'.
+        Returns the coefficient of determination, which represents the proportion of
+        the variation in 'y' that can be predicted by 'X'.
 
         Parameters
         ----------
