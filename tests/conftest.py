@@ -215,4 +215,3 @@ def df_normal_dist():
     df.columns = ["var"]
 
     return df
-
