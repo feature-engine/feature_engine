@@ -4,10 +4,11 @@ from feature_engine.prediction import TargetMeanPredictor
 
 
 def test_target_mean_predictor_fit(df_pred):
+    # Case 1: check all init params and class attributes
     predictor = TargetMeanPredictor(
         variables=None,
         bins=5,
-        strategy="equal-width"
+        strategy="equal_width"
     )
 
     predictor.fit(df_pred[["City", "Age"]], df_pred["Marks"])
@@ -32,10 +33,11 @@ def test_target_mean_predictor_fit(df_pred):
 
 
 def test_target_mean_predictor_transformation(df_pred, df_pred_small):
+    # Case 2: Check transformation
     predictor = TargetMeanPredictor(
         variables=None,
         bins=5,
-        strategy="equal-width"
+        strategy="equal_width"
     )
 
     predictor.fit(df_pred[["City", "Age"]], df_pred["Marks"])
@@ -48,10 +50,11 @@ def test_target_mean_predictor_transformation(df_pred, df_pred_small):
 
 
 def test_regression_score_calculation_with_equal_distance(df_pred, df_pred_small):
+    # Case 3: check score() method
     predictor = TargetMeanPredictor(
         variables=None,
         bins=5,
-        strategy="equal-distance"
+        strategy="equal_distance"
     )
 
     predictor.fit(df_pred[["City", "Age"]], df_pred["Marks"])
@@ -63,3 +66,20 @@ def test_regression_score_calculation_with_equal_distance(df_pred, df_pred_small
 
     # test R-Squared calc
     assert r2.round(6) == -0.022365
+
+
+def test_predictor_with_all_numerical_variables(df_pred, df_pred_small):
+    # Case 4: Check predictor when all variables are numerical
+    predictor = TargetMeanPredictorTest(
+        variables=None,
+        bins=3,
+        strategy="equal_width"
+    )
+
+    predictor.fit(df_pred[["Age", "Height_cm"]], df_pred["Marks"])
+    r2 = predictor.score(
+        df_pred_small[["Age", "Height_cm"]], df_pred_small["Marks"], regression=True
+    )
+
+    # test R-Squared calc
+    assert r2.round(6) == 0.132319
