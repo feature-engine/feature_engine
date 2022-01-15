@@ -10,8 +10,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
-    _check_contains_inf,
-    _check_contains_na,
     _check_input_matches_training_df,
     _is_dataframe,
 )
@@ -167,7 +165,6 @@ class TargetMeanPredictor(BaseEstimator):
         Create pipeline for a dataframe solely comprised of numerical variables 
         using a discretiser and encoder.
         """
-
         encoder = MeanEncoder(variables=self.variables_numerical_, errors="raise")
 
         _pipeline_numerical = Pipeline(
@@ -184,7 +181,9 @@ class TargetMeanPredictor(BaseEstimator):
         Instantiate the encoder for a dataframe solely comprised of categorical variables.
         """
 
-        return MeanEncoder(variables=self.variables_categorical_, errors="raise")
+        return MeanEncoder(
+            variables=self.variables_categorical_, errors="raise"
+        )
 
     def _make_combined_pipeline(self):
 
@@ -216,7 +215,7 @@ class TargetMeanPredictor(BaseEstimator):
 
         return discretiser
 
-    def r_squared_score(self, X: pd.DataFrame, y: pd.Series,
+    def r_squared_score(self, X: pd.DataFrame, y: pd.Series, \
                         sample_weight: float = None) -> float:
         """
         Returns the coefficient of determination, which represents the proportion of
