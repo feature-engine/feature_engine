@@ -71,15 +71,15 @@ class TargetMeanPredictor(BaseEstimator):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         bins: int = 5,
-        strategy: str = "equal-width",
+        strategy: str = "equal_width",
     ):
 
         if not isinstance(bins, int):
             raise TypeError(f"Got {bins} bins instead of an integer.")
 
-        if strategy not in ("equal-width", "equal-distance"):
+        if strategy not in ("equal_width", "equal_distance"):
             raise ValueError(
-                "strategy must be 'equal-width' or 'equal-distance'."
+                "strategy must be 'equal_width' or 'equal_distance'."
             )
 
         self.variables = _check_input_parameter_variables(variables)
@@ -205,7 +205,7 @@ class TargetMeanPredictor(BaseEstimator):
         """
         Instantiate either EqualWidthDiscretiser or EqualFrequencyDiscretiser.
         """
-        if self.strategy == "equal-width":
+        if self.strategy == "equal_width":
             discretiser = EqualWidthDiscretiser(
                 bins=self.bins, variables=self.variables_numerical_, return_object=True
             )

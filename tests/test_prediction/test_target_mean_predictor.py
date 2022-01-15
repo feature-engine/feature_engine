@@ -47,7 +47,7 @@ def test_target_mean_predictor_transformation(df_pred, df_pred_small):
     )).all()
 
 
-def test_r2_score_calculation_with_equal_distance(df_pred, df_pred_small):
+def test_regression_score_calculation_with_equal_distance(df_pred, df_pred_small):
     predictor = TargetMeanPredictor(
         variables=None,
         bins=5,
@@ -55,8 +55,11 @@ def test_r2_score_calculation_with_equal_distance(df_pred, df_pred_small):
     )
 
     predictor.fit(df_pred[["City", "Age"]], df_pred["Marks"])
-    r2 = predictor.r_squared_score(df_pred_small[["City", "Age"]],
-                                   df_pred_small["Marks"]).round(6)
+    r2 = predictor.score(
+        df_pred_small[["City", "Age"]],
+        df_pred_small["Marks"],
+        regression=True
+    )
 
     # test R-Squared calc
-    assert r2 == -0.022365
+    assert r2.round(6) == -0.022365
