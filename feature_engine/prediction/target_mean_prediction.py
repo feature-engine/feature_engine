@@ -162,7 +162,7 @@ class TargetMeanPredictor(BaseEstimator):
 
     def _make_numerical_pipeline(self):
         """
-        Create pipeline for a dataframe solely comprised of numerical variables 
+        Create pipeline for a dataframe solely comprised of numerical variables
         using a discretiser and encoder.
         """
         encoder = MeanEncoder(variables=self.variables_numerical_, errors="raise")
@@ -178,7 +178,8 @@ class TargetMeanPredictor(BaseEstimator):
 
     def _make_categorical_pipeline(self):
         """
-        Instantiate the encoder for a dataframe solely comprised of categorical variables.
+        Instantiate the encoder for a dataframe solely comprised of categorical
+        variables.
         """
 
         return MeanEncoder(
@@ -211,11 +212,11 @@ class TargetMeanPredictor(BaseEstimator):
         else:
             discretiser = EqualFrequencyDiscretiser(
                 q=self.bins, variables=self.variables_numerical_, return_object=True
-        )
+            )
 
         return discretiser
 
-    def r_squared_score(self, X: pd.DataFrame, y: pd.Series, \
+    def r_squared_score(self, X: pd.DataFrame, y: pd.Series,
                         sample_weight: float = None) -> float:
         """
         Returns the coefficient of determination, which represents the proportion of
