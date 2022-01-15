@@ -169,7 +169,7 @@ class TargetMeanPredictor(BaseEstimator):
 
         _pipeline_numerical = Pipeline(
             [
-                ("discretisation", self._make_disretiser()),
+                ("discretisation", self._make_discretiser()),
                 ("encoder", encoder),
             ]
         )
@@ -246,8 +246,6 @@ class TargetMeanPredictor(BaseEstimator):
             (2) Mean accuracy of 'self.predict(X)' and 'y'.
 
         """
-        # Should we use the same or different nomenclature as sklearn?
-
         y_pred = self.predict(X)
 
         if regression:
