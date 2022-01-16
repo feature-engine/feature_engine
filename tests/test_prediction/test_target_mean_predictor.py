@@ -78,8 +78,8 @@ def test_predictor_with_all_numerical_variables(df_pred, df_pred_small):
         strategy="equal_width"
     )
 
-    predictor.fit(df_pred[["Age", "Height_cm"]], df_pred["Marks"])
-    r2 = predictor.score(
+    transformer.fit(df_pred[["Age", "Height_cm"]], df_pred["Marks"])
+    r2 = transformer.score(
         df_pred_small[["Age", "Height_cm"]], df_pred_small["Marks"], regression=True
     )
 
@@ -121,6 +121,7 @@ def test_incorrect_strategy_during_instantiation(df_pred):
     # 'strategy' param
     with pytest.raises(ValueError):
         transformer = TargetMeanPredictor(strategy="arbitrary")
+        transformer.fit(df_pred[["City", "Studies"]], df_pred["Marks"])
 
 
 def test_incorrect_bin_value_during_instantiation(df_pred):
@@ -128,6 +129,7 @@ def test_incorrect_bin_value_during_instantiation(df_pred):
     # 'bins' param
     with pytest.raises(ValueError):
         transformer = TargetMeanPredictor(bins="lamp")
+        transformer.fit(df_pred[["City", "Studies"]], df_pred["Marks"])
 
 
 def test_error_if_df_contains_na_in_fit(df_enc_na):
@@ -148,9 +150,13 @@ def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
 
 def test_predictor_with_one_numerical_variable(df_pred, df_pred_small):
     # case 11: class properly executes w/ one numerical variable
+    """
     transformer = TargetMeanPredictor()
     transformer.fit(df_pred["Age"], df_pred["Height_cm"])
-    r2 = transformer(df_pred_small["Age"], df_pred_small["Height_cm"])
+    r2 = transformer.score(
+        df_pred_small["Age"], df_pred_small["Height_cm"], regression=True
+    )
+    """
 
 
 def test_error_when_x_is_not_a_dataframe(df_pred):
