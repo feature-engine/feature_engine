@@ -110,17 +110,37 @@ def test_predictor_with_all_categorical_variables(df_pred, df_pred_small):
 
 
 def test_non_fitted_error(df_pred):
+    # case 6: test if transformer has been fitted
     with pytest.raises(NotFittedError):
         transformer = TargetMeanPredictor()
         transformer.predict(df_pred[["Studies", "Age"]])
 
 
 def test_incorrect_strategy_during_instantiation(df_pred):
+    # case 7: test if inappropriate value has been inputted for the
+    # 'strategy' param
     with pytest.raises(ValueError):
         transformer = TargetMeanPredictor(strategy="arbitrary")
 
 
 def test_incorrect_bin_value_during_instantiation(df_pred):
+    # case 8: test if an inappropriate value has been inputted for the
+    # 'bins' param
     with pytest.raises(ValueError):
         transformer = TargetMeanPredictor(bins="lamp")
 
+
+def test_error_if_df_contains_na_in_fit(df_enc_na):
+    # case 9: when dataset contains na, fit method
+    with pytest.raises(ValueError):
+        transformer = TargetMeanPredictor()
+        transformer.fit(df_enc_na[["var_A", "var_B"]], df_enc_na["target"])
+
+
+def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
+    # case 10: when dataset contains na, transform method
+    with pytest.raises(ValueError):
+        transformer = TargetMeanPredictor()
+        transformer.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+        y_pred = transformer.predict(df_enc_na[["var_A", "var_B"]])
+        return y_pred
