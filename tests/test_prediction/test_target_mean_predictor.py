@@ -144,3 +144,21 @@ def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
         transformer.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         y_pred = transformer.predict(df_enc_na[["var_A", "var_B"]])
         return y_pred
+
+
+def test_predictor_with_one_numerical_variable(df_pred, df_pred_small):
+    # case 11: class properly executes w/ one numerical variable
+    transformer = TargetMeanPredictor()
+    transformer.fit(df_pred["Age"], df_pred["Height_cm"])
+    r2 = transformer(df_pred_small["Age"], df_pred_small["Height_cm"])
+
+
+def test_error_when_x_is_not_a_dataframe(df_pred):
+    # case 12: return error if 'X' is not a dataframe
+    msg = "X is not a pandas dataframe. The dataset should be a pandas dataframe."
+    with pytest.raises(TypeError) as record:
+        transformer = TargetMeanPredictor()
+        transformer.fit(df_pred["Studies"], df_pred["Marks"])
+
+    # check that error message matches
+    assert str(record.value) == msg
