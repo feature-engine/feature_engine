@@ -219,9 +219,9 @@ class TargetMeanPredictor(BaseEstimator):
     def score(self, X: pd.DataFrame, y: pd.Series, regression: bool = True,
               sample_weight: float = None) -> float:
         """
-        Returns either (1) the coefficient of determination, which represents the proportion
-        of the variation in 'y' that can be predicted by 'X'; or (2) mean accuracy score,
-        which
+        Returns either (1) the coefficient of determination, which represents the
+        proportion of the variation in 'y' that can be predicted by 'X'; or
+        (2) mean accuracy score.
 
         Parameters
         ----------
