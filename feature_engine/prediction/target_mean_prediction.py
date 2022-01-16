@@ -98,6 +98,8 @@ class TargetMeanPredictor(BaseEstimator):
         y : pandas series of shape = [n_samples,]
             The target variable.
         """
+        # check if 'X' is a dataframe
+        _is_dataframe(X)
 
         # check variables
         self.variables_ = _find_all_variables(X, self.variables)
@@ -254,4 +256,3 @@ class TargetMeanPredictor(BaseEstimator):
             score = accuracy_score(y, y_pred, sample_weight=sample_weight)
 
         return score
-
