@@ -10,7 +10,6 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
-    _check_contains_inf,
     _check_contains_na,
     _check_input_matches_training_df,
     _is_dataframe,
@@ -37,19 +36,16 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
+    reference_variables: list
+        The list of datetime reference variables that will be subtracted from the
+        `variables_to_combine`. If None, the transformer will find and select all
+        datetime variables, including variables of type object that can be converted
+        to datetime.
+
     variables_to_combine: list
         The list of datetime variables that the reference variables will be subtracted
-        from.
-
-        If None, the transformer will find and select all datetime
+        from. If None, the transformer will find and select all datetime
         variables, including variables of type object that can be converted to datetime.
-
-    reference_variables: list
-        The list of datetime reference variables that will be  subtracted from the
-         `variables_to_combine`.
-
-         If None, the transformer will find and select all datetime
-         variables, including variables of type object that can be converted to datetime
 
     output_unit: string, default='D'
         The string representation of the output unit of the datetime differences.
@@ -61,11 +57,8 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
     dedupe_variable_pairs: bool, default=False
         If `True`, the pairs of variables created from `variables_to_combine` and
-        `reference_variables` will be de-duplicated in two ways: variable pairs
-        consisting of the same variables and one variable pair if it matches another
-        pair when sorted. Setting this to `True` will be useful if you provide any empty
-        lists to `variables_to_combine` and `reference_variables` and want to create a
-        subtraction feature for every unique pair of datetime variables.
+        `reference_variables` will be de-duplicated if one variable pair matches another
+        pair when sorted.
 
     new_variables_names: list, default=None
         Names of the new variables. If passing a list with the names for the new
@@ -74,7 +67,7 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         `reference_variables` times the number of `variables_to_combine`.
 
         If `new_variable_names` is None, the transformer will assign an arbitrary name
-        to the features. The name will be var + `_sub_` + ref_var.
+        to the features. The name will be var + `_sub_` + ref_var + '_' + `output_unit`.
 
     missing_values: string, default='ignore'
         Indicates if missing values should be ignored or raised. If 'ignore', the
@@ -111,7 +104,8 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         datetime variables that were found if `variables_to_combine` was `None`.
 
     variable_pairs_:
-        The list of pairs of variables (tuples) that were subtracted.
+        The list of pairs of variables (tuples) that were subtracted. Any pairs
+        containing the same variable will be removed.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -129,8 +123,8 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        variables_to_combine: Optional[List[Union[str, int]]] = None,
         reference_variables: Optional[List[Union[str, int]]] = None,
+        variables_to_combine: Optional[List[Union[str, int]]] = None,
         output_unit: str = 'D',
         dedupe_variable_pairs: bool = False,
         new_variables_names: Optional[List[str]] = None,
@@ -240,21 +234,26 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
             _check_contains_na(X, self.reference_variables_)
             _check_contains_na(X, self.variables_to_combine_)
 
-            _check_contains_inf(X, self.reference_variables_)
-            _check_contains_inf(X, self.variables_to_combine_)
-
-        variable_pairs = list(itertools.product(self.reference_variables_,
-                                                self.variables_to_combine_))
+        # create all of the variable pairs
+        # exclude any pairs containing the same variable
+        variable_pairs = \
+            [(var1, var2) for var1, var2 in
+             itertools.product(self.reference_variables_, self.variables_to_combine_)
+             if var1 != var2]
 
         if self.dedupe_variable_pairs:
-            # remove the pairs consisting of the same elements
-            # then sort the tuple values and dedupe them
+            # sort the tuple values and dedupe them
             variable_pairs = \
                 cast(
                     List[Tuple[Union[str, int], Union[str, int]]],
-                    list({tuple(sorted([var1, var2])) for var1, var2 in variable_pairs
-                          if var1 != var2})
+                    list({tuple(sorted([var1, var2])) for var1, var2 in variable_pairs})
                 )
+
+        if self.new_variables_names:
+            if len(self.new_variables_names) != len(variable_pairs):
+                raise ValueError(f'The number of new variable names '
+                                 f'({len(self.new_variables_names)}) must match the'
+                                 f'number of variable pairs ({len(variable_pairs)})')
 
         self.variable_pairs_ = variable_pairs
 
@@ -288,14 +287,11 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
         # check if dataset contains na
         if self.missing_values == "raise":
+            _check_contains_na(X, self.reference_variables_)
             _check_contains_na(X, self.variables_to_combine_)
-            _check_contains_na(X, self.variables_to_combine_)
-
-            _check_contains_inf(X, self.variables_to_combine_)
-            _check_contains_inf(X, self.variables_to_combine_)
 
         # convert datetime variables
-        datetime_variables = set(self.variables_to_combine_ +
+        datetime_variables = set(self.reference_variables_ +
                                  self.variables_to_combine_)
 
         datetime_df = X[datetime_variables].apply(pd.to_datetime,
@@ -306,7 +302,7 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
         # find any non-datetime columns
         non_dt_columns = datetime_df.apply(is_datetime).loc[lambda x: ~x].index.tolist()
-        if non_dt_columns:
+        if len(non_dt_columns) > 0:
             raise ValueError(
                 "ValueError: variable(s) " +
                 (len(non_dt_columns) * '{} ').format(*non_dt_columns) +
