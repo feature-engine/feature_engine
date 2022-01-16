@@ -18,7 +18,7 @@ def test_target_mean_predictor_fit(df_pred):
     # test init params
     assert transformer.variables is None
     assert transformer.bins == 5
-    assert transformer.strategy == "equal-width"
+    assert transformer.strategy == "equal_width"
     # test fit params
     assert transformer.variables_ == ["City", "Age"]
     assert transformer._pipeline["discretisation"].variables == ["Age"]
@@ -72,7 +72,7 @@ def test_regression_score_calculation_with_equal_distance(df_pred, df_pred_small
 
 def test_predictor_with_all_numerical_variables(df_pred, df_pred_small):
     # Case 4: Check predictor when all variables are numerical
-    transformer = TargetMeanPredictorTest(
+    transformer = TargetMeanPredictor(
         variables=None,
         bins=3,
         strategy="equal_width"
@@ -127,9 +127,12 @@ def test_incorrect_strategy_during_instantiation(df_pred):
 def test_incorrect_bin_value_during_instantiation(df_pred):
     # case 8: test if an inappropriate value has been inputted for the
     # 'bins' param
-    with pytest.raises(ValueError):
+    msg = "Got lamp bins instead of an integer."
+    with pytest.raises(TypeError) as record:
         transformer = TargetMeanPredictor(bins="lamp")
         transformer.fit(df_pred[["City", "Studies"]], df_pred["Marks"])
+
+    assert str(record.value) == msg
 
 
 def test_error_if_df_contains_na_in_fit(df_enc_na):
