@@ -128,8 +128,8 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         output_unit: str = 'D',
         dedupe_variable_pairs: bool = False,
         new_variables_names: Optional[List[str]] = None,
-        missing_values: str = "ignore",
-        drop_original: bool = False,
+        missing_values: str = "raise",
+        drop_original: bool = True,
         dayfirst: bool = False,
         yearfirst: bool = False,
         utc: Union[None, bool] = None,
@@ -147,11 +147,11 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
                 )
 
         if reference_variables:
-            if not isinstance(variables_to_combine, list) or not all(
-                isinstance(var, (int, str)) for var in variables_to_combine
+            if not isinstance(reference_variables, list) or not all(
+                isinstance(var, (int, str)) for var in reference_variables
             ):
                 raise ValueError(
-                    "variables_to_combine takes a list of strings or integers "
+                    "reference_variables takes a list of strings or integers "
                     "corresponding to the names of the variables to combine "
                     "with the binary operations."
                 )
