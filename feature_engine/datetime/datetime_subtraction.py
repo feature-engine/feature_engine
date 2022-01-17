@@ -243,10 +243,13 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
         if self.dedupe_variable_pairs:
             # sort the tuple values and dedupe them
+            # use dict.fromkeys instead of set to make the order of the tuples
+            # deterministic
             variable_pairs = \
                 cast(
                     List[Tuple[Union[str, int], Union[str, int]]],
-                    list({tuple(sorted([var1, var2])) for var1, var2 in variable_pairs})
+                    list(dict.fromkeys(tuple(sorted([var1, var2])) for var1, var2
+                                       in variable_pairs))
                 )
 
         if self.new_variables_names:
