@@ -20,43 +20,47 @@ from feature_engine.prediction.base_predictor import BaseTargetMeanEstimator
 class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
     """
 
-        Parameters
-        ----------
-        variables: list, default=None
-            The list of input variables. If None, the estimator will evaluate will use all
-            variables as input fetures.
+    Parameters
+    ----------
+    variables: list, default=None
+        The list of input variables. If None, the estimator will evaluate will use all
+        variables as input fetures.
 
-        bins: int, default=5
-            If the dataset contains numerical variables, the number of bins into which
-            the values will be sorted.
+    bins: int, default=5
+        If the dataset contains numerical variables, the number of bins into which
+        the values will be sorted.
 
-        strategy: str, default='equal_width'
-            Whether the bins should of equal width ('equal_width') or equal frequency
-            ('equal_frequency').
+    strategy: str, default='equal_width'
+        Whether the bins should of equal width ('equal_width') or equal frequency
+        ('equal_frequency').
 
-        Attributes
-        ----------
+    Attributes
+    ----------
+    variables_:
+    The group of variables that will be transformed.
 
+    pipeline:
+        An assembly of a dicretiser and/or encoder that transforms the data.
 
-        Methods
-        -------
-        fit:
+    Methods
+    -------
+    predict:
+        Returns the mean of the labels of the corresponding (discretised) bin
+        or category.
 
-        predict:
-
-        Notes
-        -----
-
-
-        See Also
-        --------
-
-
-        References
-        ----------
+    Notes
+    -----
 
 
-        """
+    See Also
+    --------
+
+
+    References
+    ----------
+
+
+    """
 
     def __init__(
             self,
@@ -82,7 +86,7 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
 
         Return
         -------
-        X_tr: pandas series of shape = [n_samples, ]
+        predictions: pandas series of shape = [n_samples, ]
             Values are the mean values associated with the corresponding encoded or
             discretised bin.
 

@@ -45,8 +45,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         The group of numerical variables that will be transformed.
 
     pipeline:
-        An assembly of transformers, i.e., EqualDistanceDiscretiser,
-        EqualWidthDiscretiser, and/or MeanEncoder.
+        An assembly of a dicretiser and/or encoder that transforms the data.
 
     n_features_in_:
         The number of features in the train set used in fit.
