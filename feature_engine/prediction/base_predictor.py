@@ -16,7 +16,7 @@ from feature_engine.discretisation import (
 )
 from feature_engine.encoding import MeanEncoder
 
-class BaseTargetMeanPredictor(BaseEstimator):
+class BaseTargetMeanEstimator(BaseEstimator):
     """
 
     Parameters
@@ -35,27 +35,44 @@ class BaseTargetMeanPredictor(BaseEstimator):
 
     Attributes
     ----------
+    variables_:
+        The group of variables that will be transformed.
+
+    variables_categorical_:
+        The group of categorical variables that will be transformed.
+
+    variables_numerical_:
+        The group of numerical variables that will be transformed.
+
+    pipeline:
+        An assembly of transformers, i.e., EqualDistanceDiscretiser,
+        EqualWidthDiscretiser, and/or MeanEncoder.
+
+    n_features_in_:
+        The number of features in the train set used in fit.
 
 
     Methods
     -------
     fit:
+        Learn the target mean for each bin or category in each variable for numerical
+        or categorical variables, respectively.
 
     Notes
-       -----
+    -----
 
 
-       See Also
-       --------
-       feature_engine.encoding.MeanEncoder
-       feature_engine.discretisation.EqualWidthDiscretiser
-       feature_engine.discretisation.EqualFrequencyDiscretiser
+    See Also
+    --------
+    feature_engine.encoding.MeanEncoder
+    feature_engine.discretisation.EqualWidthDiscretiser
+    feature_engine.discretisation.EqualFrequencyDiscretiser
 
-       References
-       ----------
+    References
+    ----------
 
 
-       """
+    """
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
