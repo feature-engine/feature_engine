@@ -1,4 +1,5 @@
 import pandas as pd
+from pandas import Timestamp
 import pytest
 
 
@@ -88,4 +89,44 @@ def df_datetime_transformed(df_datetime):
         "time_obj_second": [23, 33, 59, 2],
     }
     df = df_datetime.join(pd.DataFrame(data))
+    return df
+
+
+@pytest.fixture(scope="module")
+def df_datetime_sub_transformed(df_datetime):
+    data = {
+        'Name': ['tom', 'nick', 'krish', 'jack'],
+        'Age': [20, 21, 19, 18],
+        'datetime_range_sub_date_obj1_D': [3706.0, 27394.0, -29328.0, 7591.0],
+        'datetime_range_sub_date_obj2_D': [2692.0, 3708.0, 9007.0, 5825.0],
+        'datetime_range_sub_time_obj_D': [-692.9065162037037,
+                                          -691.3857986111111,
+                                          -690.5242939814815,
+                                          -689.1437731481482],
+        'date_obj1_sub_datetime_range_D': [-3706.0, -27394.0, 29328.0, -7591.0],
+        'date_obj1_sub_date_obj2_D': [-1014.0, -23686.0, 38335.0, -1766.0],
+        'date_obj1_sub_time_obj_D': [-4398.906516203704,
+                                     -28085.38579861111,
+                                     28637.47570601852,
+                                     -8280.143773148147],
+        'date_obj2_sub_datetime_range_D': [-2692.0, -3708.0, -9007.0, -5825.0],
+        'date_obj2_sub_date_obj1_D': [1014.0, 23686.0, -38335.0, 1766.0],
+        'date_obj2_sub_time_obj_D': [-3384.9065162037036,
+                                     -4399.385798611111,
+                                     -9697.524293981482,
+                                     -6514.143773148148],
+        'time_obj_sub_datetime_range_D': [692.9065162037037,
+                                          691.3857986111111,
+                                          690.5242939814815,
+                                          689.1437731481482],
+        'time_obj_sub_date_obj1_D': [4398.906516203704,
+                                     28085.38579861111,
+                                     -28637.47570601852,
+                                     8280.143773148147],
+        'time_obj_sub_date_obj2_D': [3384.9065162037036,
+                                     4399.385798611111,
+                                     9697.524293981482,
+                                     6514.143773148148]
+    }
+    df = pd.DataFrame(data)
     return df
