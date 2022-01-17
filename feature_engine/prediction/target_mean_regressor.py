@@ -5,8 +5,6 @@ from typing import List, Union
 
 import pandas as pd
 from sklearn.base import RegressorMixin
-from sklearn.metrics import accuracy_score, r2_score
-from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
