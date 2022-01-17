@@ -35,7 +35,6 @@ var_pairs_deduped = \
      ]
 
 
-
 def test_default_params():
     transformer = DatetimeSubtraction()
     assert isinstance(transformer, DatetimeSubtraction)
@@ -166,12 +165,10 @@ def test_attributes_upon_fitting(df_datetime):
     assert transformer.reference_variables_ == ["date_obj1", "time_obj"]
     assert transformer.variables_to_combine_ == ["date_obj2", "datetime_range"]
     assert transformer.variable_pairs_ == \
-            [
-                ('date_obj1', 'date_obj2'),
-                ('date_obj1', 'datetime_range'),
-                ('time_obj', 'date_obj2'),
-                ('time_obj', 'datetime_range')
-             ]
+            [('date_obj1', 'date_obj2'),
+            ('date_obj1', 'datetime_range'),
+            ('time_obj', 'date_obj2'),
+            ('time_obj', 'datetime_range')]
 
 
 @pytest.mark.parametrize("_not_a_df", _not_a_df)
@@ -205,7 +202,7 @@ def test_raises_non_fitted_error(df_datetime):
         DatetimeSubtraction().transform(df_datetime)
 
 
-def test_extract_all_datetime_features(df_datetime, df_datetime_sub_transformed):
+def test_datetime_subtraction(df_datetime, df_datetime_sub_transformed):
     X = DatetimeSubtraction().fit_transform(df_datetime)
     pd.testing.assert_frame_equal(X, df_datetime_sub_transformed)
 

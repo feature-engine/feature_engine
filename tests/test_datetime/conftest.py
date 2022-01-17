@@ -1,5 +1,4 @@
 import pandas as pd
-from pandas import Timestamp
 import pytest
 
 
