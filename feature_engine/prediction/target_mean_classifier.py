@@ -46,6 +46,9 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         Returns the mean of the labels of the corresponding (discretised) bin
         or category.
 
+    predict_proba:
+
+
     Notes
     -----
 
@@ -97,3 +100,20 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
 
         # Check input data contains same number of columns as df used to fit
         _check_input_matches_training_df(X, self.n_features_in_)
+
+    def predict_proba(self, X: pd.DataFrame) -> pd.Series:
+        """
+
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, ]
+            The input series which must have the same name as one of the features in the
+            dataframe that was used to fit the predictor.
+
+        Return
+        -------
+        prob_predictions: pandas series of shape = [n_samples, ]
+
+
+        """
+        pass
