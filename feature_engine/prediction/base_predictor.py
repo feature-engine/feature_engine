@@ -5,6 +5,7 @@ from typing import List, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator
+from sklearn.pipeline import Pipeline
 
 from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
@@ -15,6 +16,11 @@ from feature_engine.discretisation import (
     EqualWidthDiscretiser
 )
 from feature_engine.encoding import MeanEncoder
+
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_all_variables,
+)
 
 class BaseTargetMeanEstimator(BaseEstimator):
     """
