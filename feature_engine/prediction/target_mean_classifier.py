@@ -102,6 +102,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         # Check input data contains same number of columns as df used to fit
         _check_input_matches_training_df(X, self.n_features_in_)
 
+
     def predict_proba(self, X: pd.DataFrame) -> pd.Series:
         """
 
