@@ -8,29 +8,32 @@ from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
 
 from feature_engine.dataframe_checks import (
-    _check_input_matches_training_df,
+    _check_contains_inf,
+    _check_contains_na,
     _is_dataframe,
 )
 from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
-    EqualWidthDiscretiser
+    EqualWidthDiscretiser,
 )
 from feature_engine.encoding import MeanEncoder
-
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
-    _find_all_variables,
+    _find_categorical_and_numerical_variables,
 )
 
 
 class BaseTargetMeanEstimator(BaseEstimator):
     """
+    Calculates the mean target value per category or per bin of a variable or group of
+    variables. Works with numerical and categorical variables. If variables are
+    numerical, the values are first sorted into bins of equal-width or equal-frequency.
 
     Parameters
     ----------
     variables: list, default=None
-        The list of input variables. If None, the estimator will evaluate will use all
-        variables as input fetures.
+        The list of input variables. If None, the estimator will use all variables as
+        input features (except datetime).
 
     bins: int, default=5
         If the dataset contains numerical variables, the number of bins into which
@@ -42,31 +45,23 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
     Attributes
     ----------
-    variables_:
-        The group of variables that will be transformed.
-
     variables_categorical_:
-        The group of categorical variables that will be transformed.
+        The group of categorical input variables that will be used for prediction.
 
     variables_numerical_:
-        The group of numerical variables that will be transformed.
+        The group of numerical input variables that will be used for prediction.
 
-    pipeline:
-        An assembly of a dicretiser and/or encoder that transforms the data.
+    pipeline_:
+        A Sickit-learn Pipeline with a dicretiser and/or encoder. Used to determine the
+        mean target value per category or bin, per variable.
 
     n_features_in_:
         The number of features in the train set used in fit.
 
-
     Methods
     -------
     fit:
-        Learn the target mean for each bin or category in each variable for numerical
-        or categorical variables, respectively.
-
-    Notes
-    -----
-
+        Learn the mean target value per category or per bin, for each variable.
 
     See Also
     --------
@@ -76,9 +71,13 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
     References
     ----------
+    Adapted from:
 
-
+    .. [1] Miller, et al. "Predicting customer behaviour: The University of Melbourne’s
+        KDD Cup report". JMLR Workshop and Conference Proceeding. KDD 2009
+        http://proceedings.mlr.press/v7/miller09/miller09.pdf
     """
+
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
@@ -87,20 +86,21 @@ class BaseTargetMeanEstimator(BaseEstimator):
     ):
 
         if not isinstance(bins, int):
-            raise TypeError(f"Got {bins} bins instead of an integer.")
+            raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
-        if strategy not in ("equal_width", "equal_distance"):
+        if strategy not in ["equal_width", "equal_frequency"]:
             raise ValueError(
-                "strategy must be 'equal_width' or 'equal_distance'."
+                "strategy takes only values equal_width or equal_frequency. Got "
+                f"{strategy} instead."
             )
 
         self.variables = _check_input_parameter_variables(variables)
         self.bins = bins
         self.strategy = strategy
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None) -> pd.DataFrame:
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Fit predictor per variables.
+        Learn mean target value per category or bin.
 
         Parameters
         ----------
@@ -113,29 +113,30 @@ class BaseTargetMeanEstimator(BaseEstimator):
         # check if 'X' is a dataframe
         _is_dataframe(X)
 
-        # check variables
-        self.variables_ = _find_all_variables(X, self.variables)
-
         # identify categorical and numerical variables
-        self.variables_categorical_ = list(
-            X[self.variables_].select_dtypes(include="object").columns
-        )
-        self.variables_numerical_ = list(
-            X[self.variables_].select_dtypes(include="number").columns
-        )
+        (
+            self.variables_categorical_,
+            self.variables_numerical_,
+        ) = _find_categorical_and_numerical_variables(X, self.variables)
+
+        # check for missing values
+        _check_contains_na(X, self.variables_numerical_)
+        _check_contains_na(X, self.variables_categorical_)
+
+        # check inf
+        _check_contains_inf(X, self.variables_numerical_)
 
         # encode categorical variables and discretise numerical variables
         if self.variables_categorical_ and self.variables_numerical_:
-            pipeline = self._make_combined_pipeline()
+            self.pipeline = self._make_combined_pipeline()
 
         elif self.variables_categorical_:
-            pipeline = self._make_categorical_pipeline()
+            self.pipeline = self._make_categorical_pipeline()
 
         else:
-            pipeline = self._make_numerical_pipeline()
+            self.pipeline = self._make_numerical_pipeline()
 
-        self.pipeline = pipeline
-        self.pipeline.fit(X, y)
+        self.pipeline_.fit(X, y)
 
         self.n_features_in_ = X.shape[1]
 
@@ -144,47 +145,46 @@ class BaseTargetMeanEstimator(BaseEstimator):
     def _make_numerical_pipeline(self):
         """
         Create pipeline for a dataframe solely comprised of numerical variables
-        using a discretiser and encoder.
+        using a discretiser and an encoder.
         """
         encoder = MeanEncoder(variables=self.variables_numerical_, errors="raise")
 
-        _pipeline_numerical = Pipeline(
+        pipeline = Pipeline(
             [
-                ("discretisation", self._make_discretiser()),
+                ("discretiser", self._make_discretiser()),
                 ("encoder", encoder),
             ]
         )
 
-        return _pipeline_numerical
+        return pipeline
 
     def _make_categorical_pipeline(self):
         """
-        Instantiate the encoder for a dataframe solely comprised of categorical
-        variables.
+        Instantiate the target mean encoder. Used when all variables are categorical.
         """
 
-        return MeanEncoder(
-            variables=self.variables_categorical_, errors="raise"
-        )
+        pipeline = MeanEncoder(variables=self.variables_categorical_, errors="raise")
+
+        return pipeline
 
     def _make_combined_pipeline(self):
 
         encoder_num = MeanEncoder(variables=self.variables_numerical_, errors="raise")
         encoder_cat = MeanEncoder(variables=self.variables_categorical_, errors="raise")
 
-        _pipeline_combined = Pipeline(
+        pipeline = Pipeline(
             [
-                ("discretisation", self._make_discretiser()),
+                ("discretiser", self._make_discretiser()),
                 ("encoder_num", encoder_num),
                 ("encoder_cat", encoder_cat),
             ]
         )
 
-        return _pipeline_combined
+        return pipeline
 
     def _make_discretiser(self):
         """
-        Instantiate either EqualWidthDiscretiser or EqualFrequencyDiscretiser.
+        Instantiate the EqualWidthDiscretiser or EqualFrequencyDiscretiser.
         """
         if self.strategy == "equal_width":
             discretiser = EqualWidthDiscretiser(
