@@ -22,6 +22,7 @@ from feature_engine.variable_manipulation import (
     _find_all_variables,
 )
 
+
 class BaseTargetMeanEstimator(BaseEstimator):
     """
 
