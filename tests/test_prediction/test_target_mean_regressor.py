@@ -2,12 +2,12 @@ import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.prediction import TargetMeanPredictor
+from feature_engine.prediction import TargetMeanRegressor
 
 
 def test_target_mean_predictor_fit(df_pred):
     # Case 1: check all init params and class attributes
-    transformer = TargetMeanPredictor(
+    transformer = TargetMeanRegressor(
         variables=None,
         bins=5,
         strategy="equal_width"
@@ -36,7 +36,7 @@ def test_target_mean_predictor_fit(df_pred):
 
 def test_target_mean_predictor_transformation(df_pred, df_pred_small):
     # Case 2: Check transformation
-    transformer = TargetMeanPredictor(
+    transformer = TargetMeanRegressor(
         variables=None,
         bins=5,
         strategy="equal_width"
@@ -53,7 +53,7 @@ def test_target_mean_predictor_transformation(df_pred, df_pred_small):
 
 def test_regression_score_calculation_with_equal_distance(df_pred, df_pred_small):
     # Case 3: check score() method
-    transformer = TargetMeanPredictor(
+    transformer = TargetMeanRegressor(
         variables=None,
         bins=5,
         strategy="equal_distance"
@@ -72,7 +72,7 @@ def test_regression_score_calculation_with_equal_distance(df_pred, df_pred_small
 
 def test_predictor_with_all_numerical_variables(df_pred, df_pred_small):
     # Case 4: Check predictor when all variables are numerical
-    transformer = TargetMeanPredictor(
+    transformer = TargetMeanRegressor(
         variables=None,
         bins=3,
         strategy="equal_width"
@@ -90,7 +90,7 @@ def test_predictor_with_all_numerical_variables(df_pred, df_pred_small):
 def test_predictor_with_all_categorical_variables(df_pred, df_pred_small):
     # Case 5: Check predictor when all variables are categorical
     """
-    transformer = TargetMeanPredictorTest(
+    transformer = TargetMeanRegressorTest(
         variables=None,
         bins=3,
         strategy="equal_width"
@@ -112,7 +112,7 @@ def test_predictor_with_all_categorical_variables(df_pred, df_pred_small):
 def test_non_fitted_error(df_pred):
     # case 6: test if transformer has been fitted
     with pytest.raises(NotFittedError):
-        transformer = TargetMeanPredictor()
+        transformer = TargetMeanRegressor()
         transformer.predict(df_pred[["Studies", "Age"]])
 
 
@@ -120,7 +120,7 @@ def test_incorrect_strategy_during_instantiation(df_pred):
     # case 7: test if inappropriate value has been inputted for the
     # 'strategy' param
     with pytest.raises(ValueError):
-        transformer = TargetMeanPredictor(strategy="arbitrary")
+        transformer = TargetMeanRegressor(strategy="arbitrary")
         transformer.fit(df_pred[["City", "Studies"]], df_pred["Marks"])
 
 
@@ -129,7 +129,7 @@ def test_incorrect_bin_value_during_instantiation(df_pred):
     # 'bins' param
     msg = "Got lamp bins instead of an integer."
     with pytest.raises(TypeError) as record:
-        transformer = TargetMeanPredictor(bins="lamp")
+        transformer = TargetMeanRegressor(bins="lamp")
         transformer.fit(df_pred[["City", "Studies"]], df_pred["Marks"])
 
     assert str(record.value) == msg
@@ -138,14 +138,14 @@ def test_incorrect_bin_value_during_instantiation(df_pred):
 def test_error_if_df_contains_na_in_fit(df_enc_na):
     # case 9: when dataset contains na, fit method
     with pytest.raises(ValueError):
-        transformer = TargetMeanPredictor()
+        transformer = TargetMeanRegressor()
         transformer.fit(df_enc_na[["var_A", "var_B"]], df_enc_na["target"])
 
 
 def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
     # case 10: when dataset contains na, transform method
     with pytest.raises(ValueError):
-        transformer = TargetMeanPredictor()
+        transformer = TargetMeanRegressor()
         transformer.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         y_pred = transformer.predict(df_enc_na[["var_A", "var_B"]])
         return y_pred
@@ -154,7 +154,7 @@ def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
 def test_predictor_with_one_numerical_variable(df_pred, df_pred_small):
     # case 11: class properly executes w/ one numerical variable
     """
-    transformer = TargetMeanPredictor()
+    transformer = TargetMeanRegressor()
     transformer.fit(df_pred["Age"], df_pred["Height_cm"])
     r2 = transformer.score(
         df_pred_small["Age"], df_pred_small["Height_cm"], regression=True
@@ -166,7 +166,7 @@ def test_error_when_x_is_not_a_dataframe(df_pred):
     # case 12: return error if 'X' is not a dataframe
     msg = "X is not a pandas dataframe. The dataset should be a pandas dataframe."
     with pytest.raises(TypeError) as record:
-        transformer = TargetMeanPredictor()
+        transformer = TargetMeanRegressor()
         transformer.fit(df_pred["Studies"], df_pred["Marks"])
 
     # check that error message matches
