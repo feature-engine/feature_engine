@@ -62,8 +62,7 @@ def test_regression_score_calculation_with_equal_distance(df_pred, df_pred_small
     transformer.fit(df_pred[["City", "Age"]], df_pred["Marks"])
     r2 = transformer.score(
         df_pred_small[["City", "Age"]],
-        df_pred_small["Marks"],
-        regression=True
+        df_pred_small["Marks"]
     )
 
     # test R-Squared calc
@@ -80,7 +79,7 @@ def test_predictor_with_all_numerical_variables(df_pred, df_pred_small):
 
     transformer.fit(df_pred[["Age", "Height_cm"]], df_pred["Marks"])
     r2 = transformer.score(
-        df_pred_small[["Age", "Height_cm"]], df_pred_small["Marks"], regression=True
+        df_pred_small[["Age", "Height_cm"]], df_pred_small["Marks"]
     )
 
     # test R-Squared calc
@@ -162,7 +161,7 @@ def test_predictor_with_one_numerical_variable(df_pred, df_pred_small):
     """
 
 
-def test_error_when_x_is_not_a_dataframe(df_pred):
+def test_error_when_x_in_fit_method_is_not_a_dataframe(df_pred):
     # case 12: return error if 'X' is not a dataframe
     msg = "X is not a pandas dataframe. The dataset should be a pandas dataframe."
     with pytest.raises(TypeError) as record:
