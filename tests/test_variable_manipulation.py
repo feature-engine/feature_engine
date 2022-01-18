@@ -275,3 +275,18 @@ def test_find_all_variables(df_vartypes):
 
     with pytest.raises(KeyError):
         assert _find_all_variables(df_vartypes, non_existing_vars)
+
+
+#TODO
+# add tests for new function: find_numerical_and_categorical_variables
+# test the following:
+# user passes 1 variable that is categorical
+# user passes 1 variable that is numerical
+# user passes q variable in format datetime, function raises error
+# user passes None, df contains both numerical and categorical
+# user passes None, df contains numerical
+# user passes None, df contains categorical
+# user passes empty list, function raises error
+# user passes list with num and cat vars
+# user passes list with cat vars
+# user passes list with num vars
