@@ -5,6 +5,7 @@ from typing import List, Union
 
 import pandas as pd
 from sklearn.base import RegressorMixin
+
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
@@ -67,10 +68,11 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
             strategy: str = "equal_width",
     ):
 
-        super(BaseTargetMeanEstimator, self).init(
+        BaseTargetMeanEstimator.__init__(
+            self,
             variables,
             bins,
-            strategy
+            strategy,
         )
 
     def predict(self, X: pd.DataFrame) -> pd.Series:
