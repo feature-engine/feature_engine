@@ -70,10 +70,11 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
             strategy: str = "equal_width",
     ):
 
-        super(BaseTargetMeanEstimator, self).init(
+        BaseTargetMeanEstimator.__init__(
+            self,
             variables,
             bins,
-            strategy
+            strategy,
         )
 
     def predict(self, X: pd.DataFrame) -> pd.Series:
