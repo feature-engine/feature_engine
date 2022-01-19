@@ -121,8 +121,11 @@ class DropCorrelatedFeatures(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
+        # TODO: Refactor the code and put the function elsewhere
+        self.variables_ = [var for var in self.variables if var in X.columns]
+
         # find all numerical variables or check those entered are in the dataframe
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         if self.missing_values == "raise":
             # check if dataset contains na
