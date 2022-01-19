@@ -1,6 +1,5 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -134,7 +133,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
             Returns the probability of the sample for each class in the model, where
             classes are ordered as they are in self.classes_.
         """
-        prob = super()._predict(X)
+        prob = self._predict(X)
 
         # TODO: check that this outputs a numpy array with 2 columns and
         # the second column is the prob of class 1.
