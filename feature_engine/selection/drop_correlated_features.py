@@ -10,8 +10,10 @@ from feature_engine.dataframe_checks import (
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
+    _filter_out_variables_not_in_dataframe,
     _find_or_check_numerical_variables,
 )
+
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -92,6 +94,7 @@ class DropCorrelatedFeatures(BaseSelector):
         method: str = "pearson",
         threshold: float = 0.8,
         missing_values: str = "ignore",
+        confirm_variables: bool = False,
     ):
 
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
@@ -104,6 +107,7 @@ class DropCorrelatedFeatures(BaseSelector):
         self.method = method
         self.threshold = threshold
         self.missing_values = missing_values
+        self.confirm_variables = confirm_variables
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -121,8 +125,11 @@ class DropCorrelatedFeatures(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # TODO: Refactor the code and put the function elsewhere
-        self.variables_ = [var for var in self.variables if var in X.columns]
+        # If required exclude variables that are not in the input dataframe
+        if self.confirm_variables:
+            self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
+        else:
+            self.variables_ = self.variables
 
         # find all numerical variables or check those entered are in the dataframe
         self.variables_ = _find_or_check_numerical_variables(X, self.variables_)

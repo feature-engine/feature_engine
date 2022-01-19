@@ -283,3 +283,32 @@ def _find_all_variables(
         X[variables]
 
     return variables
+
+
+def _filter_out_variables_not_in_dataframe(X, variable_list):
+    """Filter out variables that are not present in the dataframe.
+
+    The function removed the variables defined in the arguments that
+    are not present in the input dataframe.
+
+    Parameters
+    ----------
+    X :  pandas DataFrame
+    variables : List of variables.
+
+    Raises
+    ------
+    ValueError
+        If there are no categorical variables in df or df is empty.
+
+    Returns
+    -------
+    filtered_variables : List of variables present in variables and in the
+    input dataframe.
+    """
+    filtered_variables = [var for var in variable_list if var in X.columns]
+
+    if len(filtered_variables) == 0:
+        raise ValueError("The indicated list of variables is empty.")
+
+    return filtered_variables
