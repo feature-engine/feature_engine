@@ -4,12 +4,7 @@
 import pandas as pd
 from sklearn.base import RegressorMixin
 from sklearn.utils.multiclass import type_of_target
-from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import (
-    _check_input_matches_training_df,
-    _is_dataframe,
-)
 from feature_engine.prediction.base_predictor import BaseTargetMeanEstimator
 
 
@@ -19,13 +14,15 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
     per category or bin, across a group of variables.
 
     First, it calculates the mean target value per category or per bin for each
-    variable. The final estimation, is the average of the target mean values across
+    variable. The final estimation is the average of the target mean values across
     variables.
 
-    The TargetMeanRegressor takes both numerical and categorical variables as input. If
-    variables are numerical, the values are first sorted into bins of equal-width or
+    The TargetMeanRegressor takes both numerical and categorical variables as input.
+    For numerical variables, the values are first sorted into bins of equal-width or
     equal-frequency. Then, the mean target value is estimated for each bin. If the
-    variable is categorical, the mean target value is estimated for each category.
+    variables are categorical, the mean target value is estimated for each category.
+    Finally, the estimator takes the average of the mean target value across the
+    input variables.
 
     Parameters
     ----------
@@ -82,7 +79,7 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Learn mean target value per category or bin.
+        Learn the mean target value per category or bin.
 
         Parameters
         ----------
@@ -100,9 +97,7 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
                 "or set regression to False."
             )
 
-        super().fit(X, y)
-
-        return self
+        return super().fit(X, y)
 
     def predict(self, X: pd.DataFrame) -> pd.Series:
         """
@@ -120,21 +115,4 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
             discretised bin.
 
         """
-        # check method fit has been called
-        check_is_fitted(self)
-
-        # check that input is a dataframe
-        _is_dataframe(X)
-
-        # Check input data contains same number of columns as df used to fit
-        _check_input_matches_training_df(X, self.n_features_in_)
-
-        # transform dataframe
-        X_tr = self.pipeline.transform(X)
-
-        # calculate the average for each observation
-        predictions = X_tr[
-            self.variables_numerical_ + self.variables_categorical_
-        ].mean(axis=1)
-
-        return predictions
+        return self._predict(X)

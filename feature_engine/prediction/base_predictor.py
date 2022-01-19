@@ -6,10 +6,12 @@ from typing import List, Union
 import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
+    _check_input_matches_training_df,
     _is_dataframe,
 )
 from feature_engine.discretisation import (
@@ -62,6 +64,8 @@ class BaseTargetMeanEstimator(BaseEstimator):
     -------
     fit:
         Learn the mean target value per category or per bin, for each variable.
+    predict:
+        Predict using the average of the target mean value across variables.
 
     See Also
     --------
@@ -100,7 +104,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Learn mean target value per category or bin.
+        Learn the mean target value per category or bin.
 
         Parameters
         ----------
@@ -126,12 +130,12 @@ class BaseTargetMeanEstimator(BaseEstimator):
         # check inf
         _check_contains_inf(X, self.variables_numerical_)
 
-        # encode categorical variables and discretise numerical variables
+        # pipeline with discretiser and encoder
         if self.variables_categorical_ and self.variables_numerical_:
-            self.pipeline = self._make_combined_pipeline()
+            self.pipeline_ = self._make_combined_pipeline()
 
         elif self.variables_categorical_:
-            self.pipeline = self._make_categorical_pipeline()
+            self.pipeline_ = self._make_categorical_pipeline()
 
         else:
             self.pipeline = self._make_numerical_pipeline()
@@ -196,3 +200,36 @@ class BaseTargetMeanEstimator(BaseEstimator):
             )
 
         return discretiser
+
+    def _predict(self, X: pd.DataFrame) -> pd.Series:
+        """
+        Predict using the average of the target mean value across variables.
+
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The input samples.
+
+        Return
+        -------
+        y_pred: pandas series of shape = [n_samples, ]
+            The mean target value per observation.
+        """
+        # check method fit has been called
+        check_is_fitted(self)
+
+        # check that input is a dataframe
+        _is_dataframe(X)
+
+        # Check input data contains same number of columns as df used to fit
+        _check_input_matches_training_df(X, self.n_features_in_)
+
+        # transform dataframe
+        X_tr = self.pipeline.transform(X)
+
+        # calculate the average for each observation
+        predictions = X_tr[
+            self.variables_numerical_ + self.variables_categorical_
+        ].mean(axis=1)
+
+        return predictions
