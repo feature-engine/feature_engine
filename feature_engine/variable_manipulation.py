@@ -309,6 +309,8 @@ def _filter_out_variables_not_in_dataframe(X, variable_list):
     filtered_variables = [var for var in variable_list if var in X.columns]
 
     if len(filtered_variables) == 0:
-        raise ValueError("The indicated list of variables is empty.")
+        raise ValueError(
+            "After filtering no variable remaining. At least 1 is required."
+        )
 
     return filtered_variables
