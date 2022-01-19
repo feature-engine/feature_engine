@@ -19,3 +19,40 @@ from feature_engine.variable_manipulation import (
     _find_or_check_categorical_variables,
     _check_input_parameter_variables,
 )
+
+class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
+    """
+
+
+    Parameters
+    ----------
+
+
+    Attributes
+    ----------
+
+
+    Methods
+    -------
+
+
+    Notes
+    -----
+
+
+    See Also
+    --------
+
+
+    References
+    ----------
+
+    """
+
+    def __init__(
+        self,
+        keep_original: bool = True,
+
+    ) -> None:
+        pass
+
