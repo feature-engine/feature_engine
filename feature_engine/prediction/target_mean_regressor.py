@@ -110,9 +110,8 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
 
         Return
         -------
-        predictions: pandas series of shape = [n_samples, ]
-            Values are the mean values associated with the corresponding encoded or
-            discretised bin.
-
+        y_pred: ndarray of shape (n_samples,)
+            Returns predicted values.
         """
+        #TODO: ensure the return is a numpy array of 1 dimension
         return self._predict(X)
