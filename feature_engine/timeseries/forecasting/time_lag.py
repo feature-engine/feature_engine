@@ -5,6 +5,8 @@ import warnings
 from typing import List, Union
 
 import pandas as pd
+from pandas.tseries.offsets import DateOffset
+from pandas.tseries.frequencies import to_offset
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -73,6 +75,8 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
                 f"'num_periods' is {num_periods}. The variable must be an integer."
             )
 
+        date_offset = to_offset(freq=freq)
+        
         if axis not in (0, 1):
             raise ValueError(
                 f"'axis' is {axis}. The variable must be 0 or 1."
@@ -88,3 +92,27 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         self.axis = axis
         self.keep_original = keep_original
 
+    def transform(self, df):
+        """
+        Parameters
+        ----------
+
+
+        Returns
+        -------
+
+
+        """
+        pass
+
+
+    def lag_time(self, df):
+        """
+        Parameters
+        ----------
+
+
+        Returns
+        -------
+
+        """
