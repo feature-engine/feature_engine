@@ -20,13 +20,23 @@ from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
 )
 
+
 class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
     """
 
-
     Parameters
     ----------
+    periods: int, default=1
+        Number of periods to shift. Can be positive or negative.
 
+    freq: str, default=None
+        Optional increment to use from the tseries module or time rule.
+
+    axis: int, default=1
+        Shift direction. Index is '0'. Columns are '1'.
+
+    keep_original: bool, default=True
+        Determines whether the dataframe keeps the original columns that are transformed.
 
     Attributes
     ----------
@@ -51,14 +61,14 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        num_periods: int = 1,
+        periods: int = 1,
         freq: str = None,
         axis: int = 0,
         keep_original: bool = True,
 
     ) -> None:
 
-        if not isinstance(num_periods, int):
+        if not isinstance(periods, int):
             raise ValueError(
                 f"'num_periods' is {num_periods}. The variable must be an integer."
             )
@@ -72,4 +82,9 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
             raise ValueError(
                 f"'keep_original' is {keep_original}. The variable must be boolean."
             )
+
+        self.periods = periods
+        self.freq = freq
+        self.axis = axis
+        self.keep_original = keep_original
 
