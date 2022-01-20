@@ -3,6 +3,7 @@ import pytest
 
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
+    _filter_out_variables_not_in_dataframe,
     _find_all_variables,
     _find_or_check_categorical_variables,
     _find_or_check_datetime_variables,
@@ -275,3 +276,15 @@ def test_find_all_variables(df_vartypes):
 
     with pytest.raises(KeyError):
         assert _find_all_variables(df_vartypes, non_existing_vars)
+
+
+def test_filter_out_variables_not_in_dataframe():
+
+    df = pd.DataFrame(columns=["A", "B", "C", "D", "E"])
+    variables = ["A", "C", "B", "G", "H"]
+    overlap = ["A", "C", "B"]
+
+    assert _filter_out_variables_not_in_dataframe(df, variables) == overlap
+
+    with pytest.raises(ValueError):
+        assert _filter_out_variables_not_in_dataframe(df, ["X", "Y"])

@@ -285,7 +285,7 @@ def _find_all_variables(
     return variables
 
 
-def _filter_out_variables_not_in_dataframe(X, variable_list):
+def _filter_out_variables_not_in_dataframe(X, variables):
     """Filter out variables that are not present in the dataframe.
 
     The function removed the variables defined in the arguments that
@@ -306,7 +306,7 @@ def _filter_out_variables_not_in_dataframe(X, variable_list):
     filtered_variables : List of variables present in variables and in the
     input dataframe.
     """
-    filtered_variables = [var for var in variable_list if var in X.columns]
+    filtered_variables = [var for var in variables if var in X.columns]
 
     if len(filtered_variables) == 0:
         raise ValueError(

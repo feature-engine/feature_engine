@@ -48,7 +48,7 @@ def df_correlated_double():
 
 def test_default_params(df_correlated_single):
     transformer = DropCorrelatedFeatures(
-        variables=None, method="pearson", threshold=0.8
+        variables=None, method="pearson", threshold=0.8, confirm_variables=False
     )
     X = transformer.fit_transform(df_correlated_single)
 
@@ -59,6 +59,7 @@ def test_default_params(df_correlated_single):
     assert transformer.method == "pearson"
     assert transformer.threshold == 0.8
     assert transformer.variables is None
+    assert transformer.confirm_variables is False
 
     # test fit attrs
     assert transformer.variables_ == [
@@ -102,6 +103,25 @@ def test_lower_threshold(df_correlated_single):
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2", "var_4"}]
     # test transform output
     pd.testing.assert_frame_equal(X, df)
+
+
+def test_confirm_variables_argument(df_correlated_single):
+    """Test the confirm_variable argument."""
+    # Test confirm_variables set to True allows to deal with elements of
+    # variables that are not in the dataframe to fit.
+    variables = ["var_1", "var_3", "var_5", "var_1000"]
+
+    transformer = DropCorrelatedFeatures(variables=variables, confirm_variables=True)
+    transformer.fit(df_correlated_single)
+
+    assert transformer.variables_ == ["var_1", "var_3", "var_5"]
+
+    # Test the default values gives an error when an element of variables is
+    # not present in the dataframe to fit.
+    with pytest.raises(KeyError):
+        assert DropCorrelatedFeatures(variables=variables, confirm_variables=False).fit(
+            df_correlated_single
+        )
 
 
 def test_more_than_1_correlated_group(df_correlated_double):
