@@ -51,8 +51,25 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
+        num_periods: int = 1,
+        freq: str = None,
+        axis: int = 0,
         keep_original: bool = True,
 
     ) -> None:
-        pass
+
+        if not isinstance(num_periods, int):
+            raise ValueError(
+                f"'num_periods' is {num_periods}. The variable must be an integer."
+            )
+
+        if axis not in (0, 1):
+            raise ValueError(
+                f"'axis' is {axis}. The variable must be 0 or 1."
+            )
+
+        if not isinstance(keep_original):
+            raise ValueError(
+                f"'keep_original' is {keep_original}. The variable must be boolean."
+            )
 
