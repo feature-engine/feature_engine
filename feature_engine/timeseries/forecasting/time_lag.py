@@ -110,6 +110,9 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         """
         # check if 'df' is a dataframe
         _is_dataframe(df)
+
+        # check variables
+        self.variables_ = _find_all_variables(df, self.variables)
         pass
 
     def lag_time(self, df):
@@ -123,20 +126,17 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
         """
 
-    def rename_columns(self, col_names: list = None):
+    def rename_variables(self, col_names: list = None):
         """
-        Create column names for the transformed features using the provided init params.
+        Renames variables by adding the time-lag interval.
 
         Parameters
         ----------
-        col_names: list default=None
-            Names of the features from the dataframe that is being transformed.
-
 
         Returns
         -------
-        col_names_tr: list
-            Names of the features with the time-lag interval that is used in the transformation.
+        variables_lag: list
+            Names of the variables with the time-lag interval that is used in the transformation.
 
         """
 
@@ -145,6 +145,6 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         else:
             lag_str = f"_lag_{self.freq}"
 
-        col_names_tr = [name + lag_str for name in col_names]
+        variables_lag = [name + lag_str for name in self.variables_]
 
-        return col_names_tr
+        return variables_lag
