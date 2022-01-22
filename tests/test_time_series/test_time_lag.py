@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from feature_engine.timeseries import TimeSeriesLagTransformer
+from feature_engine.timeseries.forecasting import TimeSeriesLagTransformer
 
 
 def test_time_lag_period_shift(df_time):
