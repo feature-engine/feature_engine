@@ -1,4 +1,4 @@
-# Authors: Soledad Galli <solegalli@protonmail.com>
+# Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
 import warnings
@@ -37,6 +37,9 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
     axis: int, default=1
         Shift direction. Index is '0'. Columns are '1'.
 
+    fill_value: [int, float, str], default=None
+        Character to be used to fill missing values.
+        
     keep_original: bool, default=True
         Determines whether the dataframe keeps the original columns that are transformed.
 
@@ -66,6 +69,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         periods: int = 1,
         freq: str = None,
         axis: int = 0,
+        fill_value: [int, str] = None,
         keep_original: bool = True,
 
     ) -> None:
@@ -76,7 +80,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
             )
 
         date_offset = to_offset(freq=freq)
-        
+
         if axis not in (0, 1):
             raise ValueError(
                 f"'axis' is {axis}. The variable must be 0 or 1."
@@ -90,6 +94,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         self.periods = periods
         self.freq = freq
         self.axis = axis
+        self.fill_value = fill_value
         self.keep_original = keep_original
 
     def transform(self, df):
@@ -104,7 +109,6 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
         """
         pass
-
 
     def lag_time(self, df):
         """
