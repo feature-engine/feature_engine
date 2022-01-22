@@ -66,6 +66,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
         periods: int = 1,
         freq: str = None,
         axis: int = 0,
@@ -89,6 +90,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
                 f"'keep_original' is {keep_original}. The variable must be boolean."
             )
 
+        self.variables = _check_input_parameter_variables(variables)
         self.periods = periods
         self.freq = freq
         self.axis = axis
@@ -106,6 +108,8 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
 
         """
+        # check if 'df' is a dataframe
+        _is_dataframe(df)
         pass
 
     def lag_time(self, df):
@@ -137,11 +141,10 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         """
 
         if self.freq is None:
-            lag_str = f"_{self.periods}pds"
+            lag_str = f"_lag_{self.periods}pds"
         else:
-            lag_str = f"_{self.freq}"
+            lag_str = f"_lag_{self.freq}"
 
         col_names_tr = [name + lag_str for name in col_names]
 
         return col_names_tr
-    
