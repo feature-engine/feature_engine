@@ -118,3 +118,30 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         -------
 
         """
+
+    def rename_columns(self, col_names: list = None):
+        """
+        Create column names for the transformed features using the provided init params.
+
+        Parameters
+        ----------
+        col_names: list default=None
+            Names of the features from the dataframe that is being transformed.
+
+
+        Returns
+        -------
+        col_names_tr: list
+            Names of the features with the time-lag interval that is used in the transformation.
+
+        """
+
+        if self.freq is None:
+            lag_str = f"_{self.periods}pds"
+        else:
+            lag_str = f"_{self.freq}"
+
+        col_names_tr = [name + lag_str for name in col_names]
+
+        return col_names_tr
+    
