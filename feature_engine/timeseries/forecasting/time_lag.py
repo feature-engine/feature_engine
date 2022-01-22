@@ -39,7 +39,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
     fill_value: [int, float, str], default=None
         Character to be used to fill missing values.
-        
+
     keep_original: bool, default=True
         Determines whether the dataframe keeps the original columns that are transformed.
 
@@ -79,14 +79,12 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
                 f"'num_periods' is {num_periods}. The variable must be an integer."
             )
 
-        date_offset = to_offset(freq=freq)
-
         if axis not in (0, 1):
             raise ValueError(
                 f"'axis' is {axis}. The variable must be 0 or 1."
             )
 
-        if not isinstance(keep_original):
+        if not isinstance(keep_original, bool):
             raise ValueError(
                 f"'keep_original' is {keep_original}. The variable must be boolean."
             )
