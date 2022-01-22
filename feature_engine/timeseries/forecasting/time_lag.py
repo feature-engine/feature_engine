@@ -129,7 +129,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         tmp.columns = self.rename_variables()
 
         if self.keep_original:
-            df = df.merge(tmp, left_index=True, right_index=True, how="left")
+            df = df[self.variables_].merge(tmp, left_index=True, right_index=True, how="left")
         else:
             df = tmp.copy()
 
