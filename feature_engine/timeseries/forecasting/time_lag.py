@@ -135,17 +135,6 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
         return df
 
-    def lag_time(self, df):
-        """
-        Parameters
-        ----------
-
-
-        Returns
-        -------
-
-        """
-
     def rename_variables(self):
         """
         Renames variables by adding the time-lag interval.
