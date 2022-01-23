@@ -79,6 +79,8 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
                 f"an integer."
             )
 
+        # add check for 'freq' param
+
         if axis not in (0, 1):
             raise ValueError(
                 f"'axis' is {axis}. The variable must be 0 or 1."
@@ -117,6 +119,8 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         _is_dataframe(df)
 
         # check if index is a datetime object
+        # Should we check more than first index value?
+        # Could use a list comprehension to check all values, but that will be expensive.
         if not isinstance(df.index[0], datetime.datetime):
             raise ValueError(
                 "Dataframe's index is not a datetime object. Transformer requires"
