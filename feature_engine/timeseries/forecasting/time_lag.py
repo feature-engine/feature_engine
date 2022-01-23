@@ -77,7 +77,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
         if not isinstance(periods, int):
             raise ValueError(
-                f"'num_periods' is {num_periods}. The variable must be an integer."
+                f"'num_periods' is {periods}. The variable must be an integer."
             )
 
         if axis not in (0, 1):
