@@ -61,3 +61,33 @@ def test_time_lag_frequency_shift_and_ignore_original_data(df_time):
     )
 
     assert df_tr.head(5) == expected_results_df
+
+
+def test_time_lag_fill_value(df_time):
+    transformer = TimeSeriesLagTransformer(
+        periods=2,
+        fill_value="test_fill",
+        keep_original=True
+    )
+    df_tr = transformer.transform(df_time)
+    date_time = [
+        pd.Timestamp('2020-05-15 12:00:00'),
+        pd.Timestamp('2020-05-15 12:15:00'),
+        pd.Timestamp('2020-05-15 12:30:00'),
+        pd.Timestamp('2020-05-15 12:45:00'),
+        pd.Timestamp('2020-05-15 13:00:00'),
+    ]
+    expected_results = {
+        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62],
+        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61],
+        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42],
+        "ambient_temp_lag_2pds": ['test_fill', 'test_fill', 31.31, 31.51, 32.15],
+        "module_temp_lag_2pds": ['test_fill', 'test_fill', 49.18, 49.84, 52.35],
+        "irradiation_lag_2pds": ['test_fill', 'test_fill', 0.51, 0.79, 0.65],
+    }
+    expected_results_df = pd.DataFrame(
+        data=expected_results,
+        index=date_time
+    )
+
+    assert df_tr.head(5) == expected_results_df
