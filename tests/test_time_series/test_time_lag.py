@@ -99,6 +99,7 @@ def test_incorrect_periods_during_installation(df_time):
     # the 'periods' param
     with pytest.raises(ValueError):
         transformer = TimeSeriesLagTransformer(periods="cumbia")
+        transformer.transform(df_time)
 
 
 def test_incorrect_axis_during_installation(df_time):
@@ -106,6 +107,7 @@ def test_incorrect_axis_during_installation(df_time):
     # the 'axis' param
     with pytest.raises(ValueError):
         transformer = TimeSeriesLagTransformer(axis="cumbia")
+        transformer.transform(df_time)
 
 
 def test_incorrect_keep_original_during_installation(df_time):
@@ -113,6 +115,7 @@ def test_incorrect_keep_original_during_installation(df_time):
     # the 'keep_original' param
     with pytest.raises(ValueError):
         transformer = TimeSeriesLagTransformer(keep_original="cumbia")
+        transformer.transform(df_time)
 
 
 def test_error_when_df_in_transform_is_not_a_dataframe(df_time):
