@@ -5,7 +5,7 @@ from feature_engine.timeseries.forecasting import TimeSeriesLagTransformer
 
 
 def test_time_lag_period_shift_and_keep_original_data(df_time):
-    # Case 1: The lag is correctly performed using the 'period' param.
+    # case 1: The lag is correctly performed using the 'period' param.
     transformer = TimeSeriesLagTransformer(
         variables=["ambient_temp", "module_temp"],
         periods=3,
@@ -36,7 +36,7 @@ def test_time_lag_period_shift_and_keep_original_data(df_time):
 
 
 def test_time_lag_frequency_shift_and_ignore_original_data(df_time):
-    # Case 2: Data is properly transformed using the 'freq' param.
+    # case 2: Data is properly transformed using the 'freq' param.
     transformer = TimeSeriesLagTransformer(
         freq="1h",
         keep_original=False
@@ -64,6 +64,7 @@ def test_time_lag_frequency_shift_and_ignore_original_data(df_time):
 
 
 def test_time_lag_fill_value(df_time):
+    # case 3: test that the NaN values are correctly filled
     transformer = TimeSeriesLagTransformer(
         periods=2,
         fill_value="test_fill",
@@ -91,3 +92,10 @@ def test_time_lag_fill_value(df_time):
     )
 
     assert df_tr.head(5) == expected_results_df
+
+
+def test_incorrect_periods_during_installation(df_time):
+    # case 4: test warning when inappropriate value has been inputted for
+    # the 'periods' param
+    with pytest.raises(ValueError):
+        transformer = TimeSeriesLagTransformer(periods="sauerkraut")
