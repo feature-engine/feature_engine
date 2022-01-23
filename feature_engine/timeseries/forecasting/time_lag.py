@@ -12,14 +12,10 @@ from sklearn.utils.validation import check_is_fitted
 from datetime import datetime
 
 from feature_engine.dataframe_checks import (
-    _check_contains_na,
-    _check_input_matches_training_df,
     _is_dataframe,
 )
-from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _find_all_variables,
-    _find_or_check_categorical_variables,
     _check_input_parameter_variables,
 )
 
@@ -42,7 +38,8 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         Character to be used to fill missing values.
 
     keep_original: bool, default=True
-        Determines whether the dataframe keeps the original columns that are transformed.
+        Determines whether the dataframe keeps the original columns
+        that are transformed.
 
     Attributes
     ----------
@@ -78,7 +75,8 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
         if not isinstance(periods, int):
             raise ValueError(
-                f"'num_periods' is {periods}. The variable must be an integer."
+                f"'num_periods' is {periods}. The variable must be "
+                f"an integer."
             )
 
         if axis not in (0, 1):
@@ -88,7 +86,8 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
         if not isinstance(keep_original, bool):
             raise ValueError(
-                f"'keep_original' is {keep_original}. The variable must be boolean."
+                f"'keep_original' is {keep_original}. The variable must "
+                f"be boolean."
             )
 
         self.variables = _check_input_parameter_variables(variables)
@@ -110,13 +109,13 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         Returns
         -------
         df_new: pandas dataframe
-            The dataframe comprised of only the transformed variables or the original dataframe
-            plus the transformed variables.
+            The dataframe comprised of only the transformed variables or
+            the original dataframe plus the transformed variables.
 
         """
         # check if 'df' is a dataframe
         _is_dataframe(df)
-        
+
         # check if index is a datetime object
         if not isinstance(df.index[0], datetime.datetime):
             raise ValueError(
@@ -137,7 +136,9 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         tmp.columns = self.rename_variables()
 
         if self.keep_original:
-            df = df[self.variables_].merge(tmp, left_index=True, right_index=True, how="left")
+            df = df[self.variables_].merge(
+                tmp, left_index=True, right_index=True, how="left"
+            )
         else:
             df = tmp.copy()
 
@@ -153,7 +154,8 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         Returns
         -------
         variables_lag: list
-            Names of the variables with the time-lag interval that is used in the transformation.
+            Names of the variables with the time-lag interval that is
+            used in the transformation.
 
         """
 
