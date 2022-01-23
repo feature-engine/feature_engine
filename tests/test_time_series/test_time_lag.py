@@ -98,4 +98,18 @@ def test_incorrect_periods_during_installation(df_time):
     # case 4: test warning when inappropriate value has been inputted for
     # the 'periods' param
     with pytest.raises(ValueError):
-        transformer = TimeSeriesLagTransformer(periods="sauerkraut")
+        transformer = TimeSeriesLagTransformer(periods="cumbia")
+
+
+def test_incorrect_axis_during_installation(df_time):
+    # case 4: test warning when inappropriate value has been inputted for
+    # the 'periods' param
+    with pytest.raises(ValueError):
+        transformer = TimeSeriesLagTransformer(axis="cumbia")
+
+
+def test_incorrect_keep_original_during_installation(df_time):
+    # case 4: test warning when inappropriate value has been inputted for
+    # the 'periods' param
+    with pytest.raises(ValueError):
+        transformer = TimeSeriesLagTransformer(keep_original="cumbia")
