@@ -24,8 +24,8 @@ def test_time_lag_period_shift_and_keep_original_data(df_time):
     expected_results = {
         "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62],
         "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61],
-        "ambient_temp_lag_3pds": [nan, nan, nan, 31.31, 31.51],
-        "module_temp_lag_3pds": [nan, nan, nan, 49.18, 49.84],
+        "ambient_temp_lag_3pds": ['nan', 'nan', 'nan', 31.31, 31.51],
+        "module_temp_lag_3pds": ['nan', 'nan', 'nan', 49.18, 49.84],
     }
     expected_results_df = pd.DataFrame(
         data=expected_results,
