@@ -95,21 +95,32 @@ def test_time_lag_fill_value(df_time):
 
 
 def test_incorrect_periods_during_installation(df_time):
-    # case 4: test warning when inappropriate value has been inputted for
+    # case 4: return error when inappropriate value has been inputted for
     # the 'periods' param
     with pytest.raises(ValueError):
         transformer = TimeSeriesLagTransformer(periods="cumbia")
 
 
 def test_incorrect_axis_during_installation(df_time):
-    # case 4: test warning when inappropriate value has been inputted for
-    # the 'periods' param
+    # case 5: return error when inappropriate value has been inputted for
+    # the 'axis' param
     with pytest.raises(ValueError):
         transformer = TimeSeriesLagTransformer(axis="cumbia")
 
 
 def test_incorrect_keep_original_during_installation(df_time):
-    # case 4: test warning when inappropriate value has been inputted for
-    # the 'periods' param
+    # case 6: return error when inappropriate value has been inputted for
+    # the 'keep_original' param
     with pytest.raises(ValueError):
         transformer = TimeSeriesLagTransformer(keep_original="cumbia")
+
+
+def test_error_when_df_in_transform_is_not_a_dataframe(df_time):
+    # case 7: return error if 'df' is not a dataframe
+    msg = "df is not a pandas dataframe. The dataset should be a pandas dataframe."
+    with pytest.raises(TypeError) as record:
+        transformer = TimeSeriesLagTransformer(periods=5)
+        transformer.transform(df_time["module_temp"])
+
+    # check that error message matches
+    assert str(record.value) == msg
