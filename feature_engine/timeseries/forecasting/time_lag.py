@@ -1,7 +1,6 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-import warnings
 from typing import List, Union
 
 import pandas as pd
@@ -9,6 +8,8 @@ from pandas.tseries.offsets import DateOffset
 from pandas.tseries.frequencies import to_offset
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
+
+from datetime import datetime
 
 from feature_engine.dataframe_checks import (
     _check_contains_na,
@@ -115,6 +116,13 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         """
         # check if 'df' is a dataframe
         _is_dataframe(df)
+        
+        # check if index is a datetime object
+        if not isinstance(df.index[0], datetime.datetime):
+            raise ValueError(
+                "Dataframe's index is not a datetime object. Transformer requires"
+                "the index to be a datetime object."
+            )
 
         # check variables
         self.variables_ = _find_all_variables(df, self.variables)
