@@ -18,6 +18,7 @@ _not_a_df = [
     df_pred["Studies"],
 ]
 
+
 @pytest.mark.parametrize("_bins, _strategy", _false_input_params)
 def test_raises_error_when_wrong_input_params(_bins, _strategy):
     with pytest.raises(ValueError):
@@ -131,9 +132,9 @@ def test_raises_error_when_df_has_nan(df_enc_na):
 
 def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
     # case 10: when dataset contains na, transform method
+    transformer = TargetMeanRegressor()
+    transformer.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     with pytest.raises(ValueError):
-        transformer = TargetMeanRegressor()
-        transformer.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         transformer.predict(df_enc_na[["var_A", "var_B"]])
 
 
