@@ -7,6 +7,7 @@ from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
+    _filter_out_variables_not_in_dataframe,
     _find_all_variables,
 )
 
@@ -47,6 +48,10 @@ class DropConstantFeatures(BaseSelector):
         Whether the missing values should be raised as error, ignored or included as an
         additional value of the variable. Takes values 'raise', 'ignore', 'include'.
 
+    confirm_variables: bool, default=False
+        If set to True, variables that are not present in the input dataframe will be
+        removed from the list.
+
     Attributes
     ----------
     features_to_drop_:
@@ -78,7 +83,11 @@ class DropConstantFeatures(BaseSelector):
     """
 
     def __init__(
-        self, variables: Variables = None, tol: float = 1, missing_values: str = "raise"
+        self,
+        variables: Variables = None,
+        tol: float = 1,
+        missing_values: str = "raise",
+        confirm_variables: bool = False,
     ):
 
         if not isinstance(tol, (float, int)) or tol < 0 or tol > 1:
@@ -92,6 +101,7 @@ class DropConstantFeatures(BaseSelector):
         self.tol = tol
         self.variables = _check_input_parameter_variables(variables)
         self.missing_values = missing_values
+        self.confirm_variables = confirm_variables
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -108,8 +118,14 @@ class DropConstantFeatures(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
+        # If required exclude variables that are not in the input dataframe
+        if self.confirm_variables:
+            self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
+        else:
+            self.variables_ = self.variables
+
         # find all variables or check those entered are present in the dataframe
-        self.variables_ = _find_all_variables(X, self.variables)
+        self.variables_ = _find_all_variables(X, self.variables_)
 
         if self.missing_values == "raise":
             # check if dataset contains na

@@ -66,6 +66,7 @@ def test_variables_assigned_correctly(df_duplicate_features):
     transformer.fit(df_duplicate_features)
     assert transformer.variables is None
     assert transformer.variables_ == (list(df_duplicate_features.columns))
+    assert transformer.confirm_variables is False
 
 
 def test_fit_attributes(df_duplicate_features):
@@ -104,6 +105,25 @@ def test_with_df_with_na(df_duplicate_features_with_na):
         {"Age", "Age2"},
     ]
     assert transformer.n_features_in_ == 9
+
+
+def test_confirm_variables_argument(df_duplicate_features):
+    """Test the confirm_variable argument."""
+    # Test confirm_variables set to True allows to deal with elements of
+    # variables that are not in the dataframe to fit.
+    variables = ["Name", "dob", "City", "Age", "Age2", "not_existing"]
+
+    transformer = DropDuplicateFeatures(variables=variables, confirm_variables=True)
+    transformer.fit(df_duplicate_features)
+
+    assert transformer.variables_ == ["Name", "dob", "City", "Age", "Age2"]
+
+    # Test the default values gives an error when an element of variables is
+    # not present in the dataframe to fit.
+    with pytest.raises(KeyError):
+        assert DropDuplicateFeatures(variables=variables, confirm_variables=False).fit(
+            df_duplicate_features
+        )
 
 
 def test_error_if_fit_input_not_dataframe():
