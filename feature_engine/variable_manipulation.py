@@ -1,6 +1,6 @@
 """Functions to select certain types of variables."""
 
-from typing import Any, List, Union
+from typing import Any, List, Union, Tuple
 
 import pandas as pd
 from pandas.api.types import is_categorical_dtype as is_categorical
@@ -40,7 +40,7 @@ def _check_input_parameter_variables(variables: Variables) -> Any:
 
 
 def _find_or_check_numerical_variables(
-    X: pd.DataFrame, variables: Variables = None
+        X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
     Checks that variables provided by the user are of type numerical. If None, finds
@@ -106,7 +106,6 @@ def _is_categories_num(column: pd.Series) -> bool:
 
 
 def _is_categorical_and_is_not_datetime(column: pd.Series) -> bool:
-
     # check for datetime only if object cannot be cast as numeric because
     # if it could pd.to_datetime would convert it to datetime regardless
     if is_object(column):
@@ -121,7 +120,7 @@ def _is_categorical_and_is_not_datetime(column: pd.Series) -> bool:
 
 
 def _find_or_check_categorical_variables(
-    X: pd.DataFrame, variables: Variables = None
+        X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
     Checks that variables provided by the user are of type object or categorical.
@@ -179,7 +178,6 @@ def _find_or_check_categorical_variables(
 
 
 def _is_categorical_and_is_datetime(column: pd.Series) -> bool:
-
     # check for datetime only if object cannot be cast as numeric because
     # if it could pd.to_datetime would convert it to datetime regardless
     if is_object(column):
@@ -194,7 +192,7 @@ def _is_categorical_and_is_datetime(column: pd.Series) -> bool:
 
 
 def _find_or_check_datetime_variables(
-    X: pd.DataFrame, variables: Variables = None
+        X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
     Checks that variables provided by the user are of type datetime.
@@ -223,8 +221,8 @@ def _find_or_check_datetime_variables(
     elif isinstance(variables, (str, int)):
 
         if is_datetime(X[variables]) or (
-            not is_numeric(X[variables])
-            and _is_categorical_and_is_datetime(X[variables])
+                not is_numeric(X[variables])
+                and _is_categorical_and_is_datetime(X[variables])
         ):
             variables = [variables]
         else:
@@ -240,7 +238,7 @@ def _find_or_check_datetime_variables(
                 column
                 for column in X[variables].select_dtypes(exclude="datetime")
                 if is_numeric(X[column])
-                or not _is_categorical_and_is_datetime(X[column])
+                   or not _is_categorical_and_is_datetime(X[column])
             ]
 
             if len(vars_non_dt) > 0:
@@ -250,7 +248,7 @@ def _find_or_check_datetime_variables(
 
 
 def _find_all_variables(
-    X: pd.DataFrame, variables: Variables = None
+        X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
     If variables are None, captures all variables in the dataframe in a list.
@@ -283,3 +281,54 @@ def _find_all_variables(
         X[variables]
 
     return variables
+
+
+def _find_categorical_and_numerical_variables(
+        X: pd.DataFrame, variables: Variables = None
+):  # TODO: add typehint to output
+    """
+    Find numerical and categorical variables.
+
+    Parameters
+    ----------
+    X :  pandas DataFrame
+    variables : List of variables. Defaults to None.
+
+    Returns
+    -------
+    variables : Tuple with List of numerical and list of categorical variables.
+    """
+
+    # If the user passes just 1 variable outside a list.
+    if isinstance(variables, (str, int)):
+        if is_categorical(X[variables]) or is_object(X[variables]):
+            variables_cat = [variables]
+        elif is_numeric(X[variables]):
+            variables_num = [variables]
+        else:
+            raise TypeError("The variable entered is neither numerical nor categorical.")
+
+    # If user leaves default None parameter.
+    elif variables is None:
+        # find categorical variables
+        if variables is None:
+            variables_cat = [
+                column
+                for column in X.select_dtypes(include=["O", "category"]).columns
+                if _is_categorical_and_is_not_datetime(X[column])
+            ]
+        # find numerical variables in dataset
+        variables_num = list(X.select_dtypes(include="number").columns)
+
+    # If user passes variable list.
+    else:
+        if len(variables) == 0:
+            raise ValueError("The list of variables is empty.")
+
+        # find categorical variables
+        variables_cat = [var for var in X[variables].select_dtypes(include=["O", "category"]).columns]
+
+        # find numerical variables
+        variables_num = list(X[variables].select_dtypes(include="number").columns)
+
+    return variables_cat, variables_num
