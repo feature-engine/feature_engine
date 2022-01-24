@@ -183,5 +183,10 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         y_pred: ndarray of shape (n_samples,)
             Vector containing the class labels for each sample.
         """
-        # TODO: check that this is a numpy array
-        return np.where(self.predict_proba(X) > 0.5, 1, 0)
+        y_pred = np.where(self.predict_proba(X) > 0.5, 1, 0)
+        if not isinstance(y_pred, np.ndarray):
+            raise ValueError(
+                "'y_pred' is not a numpy array. Prediction must result "
+                "in a numpy array."
+            )
+        return y_pred
