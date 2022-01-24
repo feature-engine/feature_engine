@@ -13,12 +13,22 @@ _false_input_params = [
     (False, "prost"),
 ]
 
+
 @pytest.mark.parametrize("_bins, _strategy", _false_input_params)
 def test_raises_error_when_wrong_input_params(_bins, _strategy):
     with pytest.raises(ValueError):
         assert TargetMeanRegressor(bins=_bins)
     with pytest.raises(ValueError):
         assert TargetMeanRegressor(strategy=_strategy)
+
+
+def test_default_params():
+    transformer = TargetMeanRegressor()
+    assert isinstance(transformer, TargetMeanRegressor)
+    assert transformer.variables is None
+    assert transformer.bins == 5
+    assert transformer.strategy == "equal_width"
+
 
 def test_target_mean_predictor_fit(df_pred):
     # Case 1: check all init params and class attributes
