@@ -5,6 +5,9 @@ import pandas as pd
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import (
+    _filter_out_variables_not_in_dataframe,
+)
 
 
 class DropFeatures(BaseSelector):
@@ -17,6 +20,10 @@ class DropFeatures(BaseSelector):
     ----------
     features_to_drop: str or list
         Variable(s) to be dropped from the dataframe
+
+    confirm_variables: bool, default=False
+        If set to True, variables that are not present in the input dataframe will be
+        removed from the list.
 
     Attributes
     ----------
@@ -37,7 +44,11 @@ class DropFeatures(BaseSelector):
         Fit to data, then transform it.
     """
 
-    def __init__(self, features_to_drop: List[Union[str, int]]):
+    def __init__(
+        self,
+        features_to_drop: List[Union[str, int]],
+        confirm_variables: bool = False,
+    ):
 
         if not isinstance(features_to_drop, list) or len(features_to_drop) == 0:
             raise ValueError(
@@ -46,6 +57,7 @@ class DropFeatures(BaseSelector):
             )
 
         self.features_to_drop = features_to_drop
+        self.confirm_variables = confirm_variables
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -61,11 +73,17 @@ class DropFeatures(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # X[self.features_to_drops] calls to pandas to check if columns are
-        # present in the df.
-        X[self.features_to_drop]
+        # If required exclude variables that are not in the input dataframe
+        if self.confirm_variables:
+            self.features_to_drop_ = _filter_out_variables_not_in_dataframe(
+                X, self.features_to_drop
+            )
+        else:
+            self.features_to_drop_ = self.features_to_drop
 
-        self.features_to_drop_ = self.features_to_drop
+        # X[self.features_to_drop_] calls to pandas to check if columns are
+        # present in the df.
+        X[self.features_to_drop_]
 
         # check user is not removing all columns in the dataframe
         if len(self.features_to_drop) == len(X.columns):

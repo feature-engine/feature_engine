@@ -17,6 +17,7 @@ from feature_engine.discretisation import (
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
+    _filter_out_variables_not_in_dataframe,
     _find_or_check_numerical_variables,
 )
 
@@ -147,6 +148,10 @@ class DropHighPSIFeatures(BaseSelector):
         The list of variables to evaluate. If None, the transformer will evaluate all
         numerical variables in the dataset.
 
+    confirm_variables: bool, default=False
+        If set to True, variables that are not present in the input dataframe will be
+        removed from the list.
+
     Attributes
     ----------
     features_to_drop_:
@@ -193,6 +198,7 @@ class DropHighPSIFeatures(BaseSelector):
         min_pct_empty_bins: float = 0.0001,
         missing_values: str = "raise",
         variables: Variables = None,
+        confirm_variables: bool = False,
     ):
 
         if not isinstance(split_col, (str, int, type(None))):
@@ -257,6 +263,11 @@ class DropHighPSIFeatures(BaseSelector):
                     f"or choose another splitting criteria."
                 )
 
+        if not isinstance(confirm_variables, bool):
+            raise ValueError(
+                f"confirm_variables must be a boolean. Got {confirm_variables} instead."
+            )
+
         # Check the variables before assignment.
         self.variables = _check_input_parameter_variables(variables)
 
@@ -271,6 +282,7 @@ class DropHighPSIFeatures(BaseSelector):
         self.strategy = strategy
         self.min_pct_empty_bins = min_pct_empty_bins
         self.missing_values = missing_values
+        self.confirm_variables = confirm_variables
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -287,8 +299,14 @@ class DropHighPSIFeatures(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
+        # If required exclude variables that are not in the input dataframe
+        if self.confirm_variables:
+            self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
+        else:
+            self.variables_ = self.variables
+
         # find numerical variables or check those entered are present in the dataframe
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         # Remove the split_col from the variables list. It might be added if the
         # variables are not defined at initialization.

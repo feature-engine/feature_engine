@@ -92,6 +92,23 @@ def test_fit_attributes(df):
     assert transformer.n_features_in_ == 8
 
 
+def test_confirm_variables_argument(df):
+    """Test the confirm_variable argument."""
+    # Test confirm_variables set to True allows to deal with elements of
+    # variables that are not in the dataframe to fit.
+    variables = ["var_1", "var_3", "var_5", "var_1000"]
+
+    transformer = DropHighPSIFeatures(variables=variables, confirm_variables=True)
+    transformer.fit(df)
+
+    assert transformer.variables_ == ["var_1", "var_3", "var_5"]
+
+    # Test the default values gives an error when an element of variables is
+    # not present in the dataframe to fit.
+    with pytest.raises(KeyError):
+        assert DropHighPSIFeatures(variables=variables, confirm_variables=False).fit(df)
+
+
 # ================ test init parameters =================
 
 # Define two dictionaries with arguments: one with default values and
@@ -108,6 +125,7 @@ default_dict = {
     "min_pct_empty_bins": 0.0001,
     "missing_values": "raise",
     "variables": None,
+    "confirm_variables": False,
 }
 
 args_dict = {
@@ -122,6 +140,7 @@ args_dict = {
     "min_pct_empty_bins": 0.1,
     "missing_values": "ignore",
     "variables": ["chau", "adios"],
+    "confirm_variables": True,
 }
 
 init_dict = [(None, default_dict), (args_dict, args_dict)]

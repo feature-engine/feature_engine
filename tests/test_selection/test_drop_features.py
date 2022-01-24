@@ -20,12 +20,32 @@ def test_drop_2_variables(df_vartypes):
 
     # init params
     assert transformer.features_to_drop == ["City", "dob"]
+    assert transformer.confirm_variables is False
     # fit attr
     assert transformer.n_features_in_ == 5
     # transform params
     assert X.shape == (4, 3)
     assert type(X) == pd.DataFrame
     pd.testing.assert_frame_equal(X, df)
+
+
+def test_confirm_variables_argument(df_vartypes):
+    """Test the confirm_variable argument."""
+    # Test confirm_variables set to True allows to deal with elements of
+    # variables that are not in the dataframe to fit.
+    to_drop = ["City", "dob", "not_existing"]
+
+    transformer = DropFeatures(features_to_drop=to_drop, confirm_variables=True)
+    transformer.fit(df_vartypes)
+
+    assert transformer.features_to_drop_ == ["City", "dob"]
+
+    # Test the default values gives an error when an element of variables is
+    # not present in the dataframe to fit.
+    with pytest.raises(KeyError):
+        assert DropFeatures(features_to_drop=to_drop, confirm_variables=False).fit(
+            df_vartypes
+        )
 
 
 def test_error_if_non_existing_variables(df_vartypes):
