@@ -140,14 +140,6 @@ def test_non_fitted_error(df_pred):
         transformer.predict(df_pred[["Studies", "Age"]])
 
 
-def test_incorrect_strategy_during_instantiation(df_pred):
-    # case 7: test if inappropriate value has been inputted for the
-    # 'strategy' param
-    with pytest.raises(ValueError):
-        transformer = TargetMeanRegressor(strategy="arbitrary")
-        transformer.fit(df_pred[["City", "Studies"]], df_pred["Marks"])
-
-
 def test_incorrect_bin_value_during_instantiation(df_pred):
     # case 8: test if an inappropriate value has been inputted for the
     # 'bins' param
