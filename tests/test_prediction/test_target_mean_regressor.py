@@ -111,40 +111,18 @@ def test_predictor_with_all_numerical_variables(df_pred, df_pred_small):
     assert r2.round(6) == 0.132319
 
 
-def test_predictor_with_all_categorical_variables(df_pred, df_pred_small):
-    # Case 5: Check predictor when all variables are categorical
-    """
-    transformer = TargetMeanRegressorTest(
-        variables=None,
-        bins=3,
-        strategy="equal_width"
-    )
-
-    transformer.fit(df_pred[["City", "Studies"]], df_pred["Plays_Football"])
-    accuracy_score = transformer.score(
-        df_pred_small[["City", "Studies"]],
-        df_pred_small["Plays_Football"],
-        regression=False
-    )
-
-    # NEED TO UPDATE VALUE
-    assert accuracy_score.round(6) == 0
-    """
-    pass
-
-
 def test_non_fitted_error(df_pred):
     # case 6: test if transformer has been fitted
     with pytest.raises(NotFittedError):
-        transformer = TargetMeanRegressor()
-        transformer.predict(df_pred[["Studies", "Age"]])
+        TargetMeanRegressor().predict(df_pred[["Studies", "Age"]])
 
 
-def test_error_if_df_contains_na_in_fit(df_enc_na):
+def test_raises_error_when_df_has_nan(df_enc_na):
     # case 9: when dataset contains na, fit method
     with pytest.raises(ValueError):
-        transformer = TargetMeanRegressor()
-        transformer.fit(df_enc_na[["var_A", "var_B"]], df_enc_na["target"])
+        TargetMeanRegressor().fit(
+            df_enc_na[["var_A", "var_B"]], df_enc_na["target"]
+        )
 
 
 def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
