@@ -136,6 +136,11 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         prob = self._predict(X)
 
         # TODO: check that this outputs a numpy array with 2 columns and
+        if not isinstance(prob, np.ndarray) or prob.ndim != 2:
+            raise ValueError(
+                "'prob' is not a 2-dimension numpy array. The probability "
+                "predictions must be a 2-dimension numpy array."
+            )
         # the second column is the prob of class 1.
         return np.vstack([1 - prob, prob]).T
 
