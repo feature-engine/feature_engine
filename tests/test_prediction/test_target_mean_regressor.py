@@ -34,7 +34,7 @@ def test_default_params():
     assert transformer.strategy == "equal_width"
 
 
-def test_target_mean_predictor_fit(df_pred):
+def test_attributes_upon_fitting(df_pred):
     # Case 1: check all init params and class attributes
     transformer = TargetMeanRegressor(
         variables=None,
@@ -134,8 +134,7 @@ def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
     with pytest.raises(ValueError):
         transformer = TargetMeanRegressor()
         transformer.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-        y_pred = transformer.predict(df_enc_na[["var_A", "var_B"]])
-        return y_pred
+        transformer.predict(df_enc_na[["var_A", "var_B"]])
 
 
 def test_predictor_with_one_numerical_variable(df_pred, df_pred_small):
@@ -148,8 +147,17 @@ def test_predictor_with_one_numerical_variable(df_pred, df_pred_small):
     )
     """
 
+
 @pytest.mark.parametrize("_not_a_df", _not_a_df)
 def test_raises_error_when_not_fitting_a_df(_not_a_df, df_pred):
     transformer = TargetMeanRegressor()
     with pytest.raises(TypeError):
         transformer.fit(_not_a_df, df_pred["Marks"])
+
+
+@pytest.mark.parametrize("_not_a_df", _not_a_df)
+def test_raises_error_when_not_transforming_a_df(_not_a_df, df_pred):
+    transformer = TargetMeanRegressor()
+    transformer.fit(df_pred["Studies", "Age"], df_pred["Marks"])
+    with pytest.raises(TypeError):
+        transformer.predict(_not_a_df)
