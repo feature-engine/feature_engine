@@ -3,8 +3,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.prediction import TargetMeanRegressor
-
-
+from tests.test_prediction.conftest import df_pred
 
 _false_input_params = [
     ("salsa", "arbitrary"),
@@ -13,6 +12,11 @@ _false_input_params = [
     (False, "prost"),
 ]
 
+_not_a_df = [
+    "not_a_df",
+    [0, -1, -2, "tree"],
+    df_pred["Studies"],
+]
 
 @pytest.mark.parametrize("_bins, _strategy", _false_input_params)
 def test_raises_error_when_wrong_input_params(_bins, _strategy):
@@ -144,13 +148,8 @@ def test_predictor_with_one_numerical_variable(df_pred, df_pred_small):
     )
     """
 
-
-def test_error_when_x_in_fit_method_is_not_a_dataframe(df_pred):
-    # case 12: return error if 'X' is not a dataframe
-    msg = "X is not a pandas dataframe. The dataset should be a pandas dataframe."
-    with pytest.raises(TypeError) as record:
-        transformer = TargetMeanRegressor()
-        transformer.fit(df_pred["Studies"], df_pred["Marks"])
-
-    # check that error message matches
-    assert str(record.value) == msg
+@pytest.mark.parametrize("_not_a_df", _not_a_df)
+def test_raises_error_when_not_fitting_a_df(_not_a_df, df_pred):
+    transformer = TargetMeanRegressor()
+    with pytest.raises(TypeError):
+        transformer.fit(_not_a_df, df_pred["Marks"])
