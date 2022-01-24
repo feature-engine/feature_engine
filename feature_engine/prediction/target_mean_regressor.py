@@ -1,6 +1,7 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
+import numpy as np
 import pandas as pd
 from sklearn.base import RegressorMixin
 from sklearn.utils.multiclass import type_of_target
@@ -113,5 +114,11 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
         y_pred: ndarray of shape (n_samples,)
             Returns predicted values.
         """
-        #TODO: ensure the return is a numpy array of 1 dimension
-        return self._predict(X)
+
+        y_pred = self._predict(X)
+        if not isinstance(y_pred, np.ndarray) or y_pred.ndim != 1:
+            raise ValueError(
+                "y_pred is not a 1-dimension numpy array. Predictions "
+                "must be a one-dimension numpy array."
+            )
+        return y_pred
