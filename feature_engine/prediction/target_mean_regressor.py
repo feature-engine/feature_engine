@@ -118,7 +118,7 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
         y_pred = self._predict(X)
         if not isinstance(y_pred, np.ndarray) or y_pred.ndim != 1:
             raise ValueError(
-                "y_pred is not a 1-dimension numpy array. Predictions "
-                "must be a one-dimension numpy array."
+                "'y_pred' is not a 1-dimension numpy array. Predictions "
+                "must be a 1-dimension numpy array."
             )
         return y_pred
