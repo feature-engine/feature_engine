@@ -5,6 +5,21 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.prediction import TargetMeanRegressor
 
 
+
+_false_input_params = [
+    ("salsa", "arbitrary"),
+    ("33", "mean-encoder"),
+    ([7], True),
+    (False, "prost"),
+]
+
+@pytest.mark.parametrize("_bins, _strategy", _false_input_params)
+def test_raises_error_when_wrong_input_params(_bins, _strategy):
+    with pytest.raises(ValueError):
+        assert TargetMeanRegressor(bins=_bins)
+    with pytest.raises(ValueError):
+        assert TargetMeanRegressor(strategy=_strategy)
+
 def test_target_mean_predictor_fit(df_pred):
     # Case 1: check all init params and class attributes
     transformer = TargetMeanRegressor(
