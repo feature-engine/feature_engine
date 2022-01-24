@@ -140,17 +140,6 @@ def test_non_fitted_error(df_pred):
         transformer.predict(df_pred[["Studies", "Age"]])
 
 
-def test_incorrect_bin_value_during_instantiation(df_pred):
-    # case 8: test if an inappropriate value has been inputted for the
-    # 'bins' param
-    msg = "Got lamp bins instead of an integer."
-    with pytest.raises(TypeError) as record:
-        transformer = TargetMeanRegressor(bins="lamp")
-        transformer.fit(df_pred[["City", "Studies"]], df_pred["Marks"])
-
-    assert str(record.value) == msg
-
-
 def test_error_if_df_contains_na_in_fit(df_enc_na):
     # case 9: when dataset contains na, fit method
     with pytest.raises(ValueError):
