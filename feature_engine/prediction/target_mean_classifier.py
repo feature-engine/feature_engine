@@ -134,12 +134,10 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
             classes are ordered as they are in self.classes_.
         """
         prob = self._predict(X)
-
-        # TODO: check that this outputs a numpy array with 2 columns and
-        if not isinstance(prob, np.ndarray) or prob.ndim != 2:
+        if not isinstance(prob, np.ndarray) or prob.shape[1] != 2:
             raise ValueError(
                 "'prob' is not a 2-dimension numpy array. The probability "
-                "predictions must be a 2-dimension numpy array."
+                "predictions must be a 2-dimension numpy array with 2 columns."
             )
         # the second column is the prob of class 1.
         return np.vstack([1 - prob, prob]).T
@@ -162,8 +160,13 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
             where classes are ordered as they are in self.classes_..
 
         """
-        # TODO: check that this outputs a numpy array with 2 columns
-        return np.log(self.predict_proba(X))
+        log_prob = np.log(self.predict_proba(X))
+        if not isinstance(log_prob, np.ndarray) or log_prob.shape[1] != 2:
+            raise ValueError(
+                "'log_prob' is not a 2-dimension numpy array. The log probability "
+                "predictions must be a 2-dimension numpy array with 2 columns."
+            )
+        return log_prob
 
     def predict(self, X: pd.DataFrame) -> pd.Series:
         """
