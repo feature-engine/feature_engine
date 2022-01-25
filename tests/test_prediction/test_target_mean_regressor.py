@@ -1,7 +1,12 @@
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
+from sklearn.pipeline import Pipeline
 
+from feature_engine.discretisation import (
+    EqualWidthDiscretiser,
+)
+from feature_engine.encoding import MeanEncoder
 from feature_engine.prediction import TargetMeanRegressor
 from tests.test_prediction.conftest import df_pred
 
@@ -43,25 +48,21 @@ def test_attributes_upon_fitting(df_pred):
         strategy="equal_width"
     )
 
-    transformer.fit(df_pred[["City", "Age"]], df_pred["Marks"])
+    transformer.fit(df_pred[["City", "Age", "Studies"]], df_pred["Marks"])
 
     # test init params
     assert transformer.variables is None
     assert transformer.bins == 5
     assert transformer.strategy == "equal_width"
-    # test fit params
-    assert transformer.variables_ == ["City", "Age"]
-    assert transformer.pipeline["discretisation"].variables == ["Age"]
-    assert transformer.pipeline["encoder_num"].encoder_dict_ == {
-        "Age": {0: 0.8, 1: 0.3, 2: 0.5, 3: 0.8, 4: 0.25}
-    }
-    assert transformer.pipeline["encoder_cat"].encoder_dict_ == {
-        "City": {"Bristol": 0.1,
-                 "Liverpool": 0.5333333333333333,
-                 "London": 0.6666666666666666,
-                 "Manchester": 0.5333333333333333,
-                 }
-    }
+    # test attributes
+    assert transformer.variables_categorical_ == ["City", "Studies"]
+    assert transformer.variables_numerical_ == ["Age"]
+    assert transformer.pipeline_ == Pipeline(steps=[
+        ('discretiser', EqualWidthDiscretiser(
+            bins=5, return_object=True, variables=['Age'])),
+        ('encoder_num', MeanEncoder(errors='raise', variables=['Age'])),
+        ('encoder_cat', MeanEncoder(errors='raise', variables=['City', 'Studies']))])
+    assert transformer.n_features_in_ == 3
 
 
 def test_target_mean_predictor_transformation(df_pred, df_pred_small):
