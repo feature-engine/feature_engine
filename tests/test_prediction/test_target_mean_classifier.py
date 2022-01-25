@@ -5,7 +5,6 @@ from sklearn.pipeline import Pipeline
 
 from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
-    EqualWidthDiscretiser,
 )
 from feature_engine.encoding import MeanEncoder
 from feature_engine.prediction import TargetMeanClassifier
