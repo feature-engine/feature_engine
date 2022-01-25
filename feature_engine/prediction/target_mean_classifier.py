@@ -31,7 +31,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         the values will be sorted.
 
     strategy: str, default='equal_width'
-        Whether the bins should of equal width ('equal_width') or equal frequency
+        Whether the bins should be of equal width ('equal_width') or equal frequency
         ('equal_frequency').
 
     Attributes
@@ -46,7 +46,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         A list of class labels known to the classifier.
 
     pipeline_:
-        A Sickit-learn Pipeline with a dicretiser and/or encoder. Used to determine the
+        A Scikit-learn Pipeline with a dicretiser and/or encoder. Used to determine the
         mean target value per category or bin, per variable.
 
     n_features_in_:
@@ -157,7 +157,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         -------
         T: array-like of shape (n_samples, n_classes)
             Returns the log-probability of the sample for each class in the model,
-            where classes are ordered as they are in self.classes_..
+            where classes are ordered as they are in self.classes_.
 
         """
         log_prob = np.log(self.predict_proba(X))
@@ -184,9 +184,9 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
             Vector containing the class labels for each sample.
         """
         y_pred = np.where(self.predict_proba(X) > 0.5, 1, 0)
-        if not isinstance(y_pred, np.ndarray):
+        if not isinstance(y_pred, np.ndarray) or y_pred.ndim != 1:
             raise ValueError(
-                "'y_pred' is not a numpy array. Prediction must result "
-                "in a numpy array."
+                "'y_pred' is not a 1-dimension numpy array. Prediction must result "
+                "in a 1-dimension numpy array."
             )
         return y_pred
