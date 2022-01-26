@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
@@ -47,7 +48,6 @@ def test_attributes_upon_fitting(df_pred):
         bins=5,
         strategy="equal_width"
     )
-
     transformer.fit(df_pred[["City", "Age", "Studies"]], df_pred["Marks"])
 
     # test init params
@@ -57,11 +57,11 @@ def test_attributes_upon_fitting(df_pred):
     # test attributes
     assert transformer.variables_categorical_ == ["City", "Studies"]
     assert transformer.variables_numerical_ == ["Age"]
-    assert transformer.pipeline_ == Pipeline(steps=[
-        ('discretiser', EqualWidthDiscretiser(
-            bins=5, return_object=True, variables=['Age'])),
-        ('encoder_num', MeanEncoder(errors='raise', variables=['Age'])),
-        ('encoder_cat', MeanEncoder(errors='raise', variables=['City', 'Studies']))])
+    assert transformer.pipeline_.named_steps == {
+        'discretiser': EqualWidthDiscretiser(bins=5, return_object=True, variables=['Age']),
+        'encoder_num': MeanEncoder(errors='raise', variables=['Age']),
+        'encoder_cat': MeanEncoder(errors='raise', variables=['City', 'Studies']),
+    }
     assert transformer.n_features_in_ == 3
 
 
@@ -82,12 +82,12 @@ def test_target_mean_predictor_transformation(df_pred, df_pred_small):
     )).all()
 
 
-def test_regression_score_calculation_with_equal_distance(df_pred, df_pred_small):
+def test_regression_score_calculation_with_equal_frequency(df_pred, df_pred_small):
     # Case 3: check score() method
     transformer = TargetMeanRegressor(
         variables=None,
         bins=5,
-        strategy="equal_distance"
+        strategy="equal_frequency"
     )
 
     transformer.fit(df_pred[["City", "Age"]], df_pred["Marks"])
@@ -133,8 +133,11 @@ def test_raises_error_when_df_has_nan(df_enc_na):
 
 def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
     # case 10: when dataset contains na, transform method
+    random = np.random.RandomState(42)
+    y = random.normal(0, 3, len(df_enc))
+
     transformer = TargetMeanRegressor()
-    transformer.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+    transformer.fit(df_enc[["var_A", "var_B"]], y)
     with pytest.raises(ValueError):
         transformer.predict(df_enc_na[["var_A", "var_B"]])
 
@@ -160,6 +163,6 @@ def test_raises_error_when_not_fitting_a_df(_not_a_df, df_pred):
 @pytest.mark.parametrize("_not_a_df", _not_a_df)
 def test_raises_error_when_not_transforming_a_df(_not_a_df, df_pred):
     transformer = TargetMeanRegressor()
-    transformer.fit(df_pred["Studies", "Age"], df_pred["Marks"])
+    transformer.fit(df_pred[["Studies", "Age"]], df_pred["Marks"])
     with pytest.raises(TypeError):
         transformer.predict(_not_a_df)
