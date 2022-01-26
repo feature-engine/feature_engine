@@ -98,10 +98,11 @@ class DropConstantFeatures(BaseSelector):
                 "missing_values takes only values 'raise', 'ignore' or " "'include'."
             )
 
+        super().__init__(confirm_variables)
+
         self.tol = tol
         self.variables = _check_input_parameter_variables(variables)
         self.missing_values = missing_values
-        self.confirm_variables = confirm_variables
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -119,10 +120,7 @@ class DropConstantFeatures(BaseSelector):
         X = _is_dataframe(X)
 
         # If required exclude variables that are not in the input dataframe
-        if self.confirm_variables:
-            self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
-        else:
-            self.variables_ = self.variables
+        self._confirm_variables(X)
 
         # find all variables or check those entered are present in the dataframe
         self.variables_ = _find_all_variables(X, self.variables_)

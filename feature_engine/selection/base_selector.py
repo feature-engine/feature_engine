@@ -7,11 +7,12 @@ from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
     _is_dataframe,
 )
+from feature_engine.variable_manipulation import _filter_out_variables_not_in_dataframe
 from feature_engine.validation import _return_tags
 
 
 def get_feature_importances(estimator):
-    """Retrieve feature importances from a fitted estimator"""
+    """Retrieve feature importance from a fitted estimator"""
 
     importances = getattr(estimator, "feature_importances_", None)
 
@@ -31,7 +32,43 @@ def get_feature_importances(estimator):
 
 
 class BaseSelector(BaseEstimator, TransformerMixin):
-    """Transformation shared by all selectors"""
+    """
+    Shared set-up checks and methods across selectors.
+
+    Parameters
+    ----------
+    confirm_variables: bool, default=False
+        If set to True, variables that are not present in the input dataframe will be
+        removed from the indicated list of variables. See param variables for more
+        details.
+
+    Methods
+    -------
+    transform:
+        Remove non selected features.
+    _confirm_variables:
+        Check that the variables entered by the user exist in the df.
+    """
+
+    def __init__(
+            self,
+            confirm_variables: bool = False,
+    ) -> None:
+
+        if not isinstance(confirm_variables, bool):
+            raise ValueError("confirm_variables takes only values True and False. "
+                             f"Got {confirm_variables} instead.")
+
+        self.confirm_variables = confirm_variables
+
+    def _confirm_variables(self, X):
+        # If required exclude variables that are not in the input dataframe
+        if self.confirm_variables:
+            self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
+        else:
+            self.variables_ = self.variables
+
+        return None
 
     def transform(self, X: pd.DataFrame):
         """

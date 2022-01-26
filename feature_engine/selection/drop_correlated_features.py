@@ -107,11 +107,12 @@ class DropCorrelatedFeatures(BaseSelector):
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
 
+        super().__init__(confirm_variables)
+
         self.variables = _check_input_parameter_variables(variables)
         self.method = method
         self.threshold = threshold
         self.missing_values = missing_values
-        self.confirm_variables = confirm_variables
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -130,10 +131,7 @@ class DropCorrelatedFeatures(BaseSelector):
         X = _is_dataframe(X)
 
         # If required exclude variables that are not in the input dataframe
-        if self.confirm_variables:
-            self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
-        else:
-            self.variables_ = self.variables
+        self._confirm_variables(X)
 
         # find all numerical variables or check those entered are in the dataframe
         self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
