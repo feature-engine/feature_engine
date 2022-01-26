@@ -64,7 +64,20 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         self.confirm_variables = confirm_variables
 
     def _confirm_variables(self, X: pd.DataFrame) -> None:
-        # If required exclude variables that are not in the input dataframe
+        """Ensure all variables included are in the input dataframe.
+
+        This is achieved by filtering out elements of variables that are not
+        present in the columns of the dataframe.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features].
+            The input dataframe.
+
+        Returns
+        -------
+        None
+        """
         if self.confirm_variables:
             self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
         else:

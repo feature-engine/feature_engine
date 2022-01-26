@@ -294,7 +294,7 @@ def _filter_out_variables_not_in_dataframe(X, variables):
     Parameters
     ----------
     X :  pandas DataFrame
-    variables : List of variables.
+    variables : string, int or list of (strings or int).
 
     Raises
     ------
@@ -306,8 +306,14 @@ def _filter_out_variables_not_in_dataframe(X, variables):
     filtered_variables : List of variables present in variables and in the
     input dataframe.
     """
+    # If an integer or a string is provided, convert into a list.
+    if not isinstance(variables, list):
+        variables = [variables]
+
+    # Filter out elements of variables that are not in the dataframe.
     filtered_variables = [var for var in variables if var in X.columns]
 
+    # Raise an error if no column is left to work with.
     if len(filtered_variables) == 0:
         raise ValueError(
             "After filtering no variable remaining. At least 1 is required."
