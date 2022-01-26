@@ -13,7 +13,6 @@ from feature_engine.variable_manipulation import (
     _find_or_check_numerical_variables,
 )
 
-
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 

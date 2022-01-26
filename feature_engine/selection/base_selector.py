@@ -7,8 +7,8 @@ from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
     _is_dataframe,
 )
-from feature_engine.variable_manipulation import _filter_out_variables_not_in_dataframe
 from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import _filter_out_variables_not_in_dataframe
 
 
 def get_feature_importances(estimator):
@@ -51,17 +51,19 @@ class BaseSelector(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-            self,
-            confirm_variables: bool = False,
+        self,
+        confirm_variables: bool = False,
     ) -> None:
 
         if not isinstance(confirm_variables, bool):
-            raise ValueError("confirm_variables takes only values True and False. "
-                             f"Got {confirm_variables} instead.")
+            raise ValueError(
+                "confirm_variables takes only values True and False. "
+                f"Got {confirm_variables} instead."
+            )
 
         self.confirm_variables = confirm_variables
 
-    def _confirm_variables(self, X: pd.DataFrame)-> None:
+    def _confirm_variables(self, X: pd.DataFrame) -> None:
         # If required exclude variables that are not in the input dataframe
         if self.confirm_variables:
             self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
@@ -70,7 +72,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         return None
 
-    def transform(self, X: pd.DataFrame)-> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Return dataframe with selected features.
 

@@ -9,21 +9,18 @@ from sklearn.tree import DecisionTreeRegressor
 
 from feature_engine.selection import RecursiveFeatureAddition
 
-
 _input_params = [
-    (RandomForestClassifier(), 'roc_auc', 3, 0.1, None),
-    (LinearRegression(), "neg_mean_squared_error", KFold(), 0.01, ['var_a', 'var_b']),
-    (DecisionTreeRegressor(), 'r2', StratifiedKFold(), 0.5, ['var_a']),
-    (RandomForestClassifier(), 'accuracy', 5, 0.002, 'var_a'),
+    (RandomForestClassifier(), "roc_auc", 3, 0.1, None),
+    (LinearRegression(), "neg_mean_squared_error", KFold(), 0.01, ["var_a", "var_b"]),
+    (DecisionTreeRegressor(), "r2", StratifiedKFold(), 0.5, ["var_a"]),
+    (RandomForestClassifier(), "accuracy", 5, 0.002, "var_a"),
 ]
 
 
 @pytest.mark.parametrize(
     "_estimator, _scoring, _cv, _threshold, _variables", _input_params
 )
-def test_input_params_assignment(
-    _estimator, _scoring, _cv, _threshold, _variables
-):
+def test_input_params_assignment(_estimator, _scoring, _cv, _threshold, _variables):
     sel = RecursiveFeatureAddition(
         estimator=_estimator,
         scoring=_scoring,
@@ -32,11 +29,11 @@ def test_input_params_assignment(
         variables=_variables,
     )
 
-    assert sel.estimator==_estimator
-    assert sel.scoring==_scoring
-    assert sel.cv==_cv
-    assert sel.threshold==_threshold
-    assert sel.variables==_variables
+    assert sel.estimator == _estimator
+    assert sel.scoring == _scoring
+    assert sel.cv == _cv
+    assert sel.threshold == _threshold
+    assert sel.variables == _variables
 
 
 def test_raises_error_when_no_estimator_passed():
@@ -46,10 +43,12 @@ def test_raises_error_when_no_estimator_passed():
 
 _thresholds = [None, [0.1], "a_string"]
 
+
 @pytest.mark.parametrize("_thresholds", _thresholds)
 def test_raises_threshold_error(_thresholds):
     with pytest.raises(ValueError):
         RecursiveFeatureAddition(RandomForestClassifier(), threshold=_thresholds)
+
 
 _not_a_df = [
     "not_a_df",
@@ -66,15 +65,15 @@ def test_raises_error_when_fitting_not_a_df(_not_a_df):
         transformer.fit(_not_a_df)
 
 
-_variables = ["var_1", ["var_2"],["var_1", "var_2", "var_3", "var_11"], None]
+_variables = ["var_1", ["var_2"], ["var_1", "var_2", "var_3", "var_11"], None]
 
 
 @pytest.mark.parametrize("_variables", _variables)
 def test_variables_params(_variables, df_test):
     X, y = df_test
-    sel = RecursiveFeatureAddition(
-        RandomForestClassifier(), variables=_variables
-    ).fit(X, y)
+    sel = RecursiveFeatureAddition(RandomForestClassifier(), variables=_variables).fit(
+        X, y
+    )
 
     if _variables is not None:
         assert sel.variables == _variables
@@ -87,10 +86,8 @@ def test_variables_params(_variables, df_test):
         assert sel.variables_ == ["var_" + str(i) for i in range(12)]
 
     # test selector excludes non-numerical variables automatically
-    X['cat_var'] =  ['A']*1000
-    sel = RecursiveFeatureAddition(
-        RandomForestClassifier(), variables=None
-    ).fit(X, y)
+    X["cat_var"] = ["A"] * 1000
+    sel = RecursiveFeatureAddition(RandomForestClassifier(), variables=None).fit(X, y)
     assert sel.variables is None
     assert sel.variables_ == ["var_" + str(i) for i in range(12)]
 
@@ -99,7 +96,7 @@ def test_raises_error_when_user_passes_categorical_var(df_test):
     X, y = df_test
 
     # add categorical variable
-    X['cat_var'] = ['A'] * 1000
+    X["cat_var"] = ["A"] * 1000
 
     with pytest.raises(TypeError):
         RecursiveFeatureAddition(
@@ -107,8 +104,9 @@ def test_raises_error_when_user_passes_categorical_var(df_test):
         ).fit(X, y)
 
     with pytest.raises(TypeError):
-        RecursiveFeatureAddition(
-            RandomForestClassifier(), variables="cat_var").fit(X, y)
+        RecursiveFeatureAddition(RandomForestClassifier(), variables="cat_var").fit(
+            X, y
+        )
 
 
 def test_classification_threshold_parameters(df_test):
@@ -168,7 +166,9 @@ def test_regression_cv_3_and_r2(load_diabetes_dataset):
     X, y = load_diabetes_dataset
 
     kfold = KFold(n_splits=3, shuffle=True, random_state=10)
-    sel = RecursiveFeatureAddition(estimator=LinearRegression(), scoring="r2", cv=kfold, threshold=0.001)
+    sel = RecursiveFeatureAddition(
+        estimator=LinearRegression(), scoring="r2", cv=kfold, threshold=0.001
+    )
     sel.fit(X, y)
 
     # expected output
@@ -236,9 +236,6 @@ def test_non_fitted_error(df_test):
     with pytest.raises(NotFittedError):
         sel = RecursiveFeatureAddition(RandomForestClassifier(random_state=1))
         sel.transform(df_test)
-
-
-
 
 
 def test_automatic_variable_selection(df_test):

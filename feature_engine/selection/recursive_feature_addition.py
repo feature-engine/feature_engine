@@ -192,4 +192,3 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
         return X
 
     transform.__doc__ = BaseRecursiveSelector.transform.__doc__
-

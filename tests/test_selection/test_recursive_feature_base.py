@@ -1,4 +1,4 @@
-import numpy as np
+# import numpy as np
 import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
@@ -8,21 +8,18 @@ from sklearn.tree import DecisionTreeRegressor
 
 from feature_engine.selection.base_recursive_selector import BaseRecursiveSelector
 
-
 _input_params = [
-    (RandomForestClassifier(), 'roc_auc', 3, 0.1, None),
-    (LinearRegression(), "neg_mean_squared_error", KFold(), 0.01, ['var_a', 'var_b']),
-    (DecisionTreeRegressor(), 'r2', StratifiedKFold(), 0.5, ['var_a']),
-    (RandomForestClassifier(), 'accuracy', 5, 0.002, 'var_a'),
+    (RandomForestClassifier(), "roc_auc", 3, 0.1, None),
+    (LinearRegression(), "neg_mean_squared_error", KFold(), 0.01, ["var_a", "var_b"]),
+    (DecisionTreeRegressor(), "r2", StratifiedKFold(), 0.5, ["var_a"]),
+    (RandomForestClassifier(), "accuracy", 5, 0.002, "var_a"),
 ]
 
 
 @pytest.mark.parametrize(
     "_estimator, _scoring, _cv, _threshold, _variables", _input_params
 )
-def test_input_params_assignment(
-    _estimator, _scoring, _cv, _threshold, _variables
-):
+def test_input_params_assignment(_estimator, _scoring, _cv, _threshold, _variables):
     sel = BaseRecursiveSelector(
         estimator=_estimator,
         scoring=_scoring,
@@ -31,11 +28,11 @@ def test_input_params_assignment(
         variables=_variables,
     )
 
-    assert sel.estimator==_estimator
-    assert sel.scoring==_scoring
-    assert sel.cv==_cv
-    assert sel.threshold==_threshold
-    assert sel.variables==_variables
+    assert sel.estimator == _estimator
+    assert sel.scoring == _scoring
+    assert sel.cv == _cv
+    assert sel.threshold == _threshold
+    assert sel.variables == _variables
 
 
 def test_raises_error_when_no_estimator_passed():
@@ -45,10 +42,12 @@ def test_raises_error_when_no_estimator_passed():
 
 _thresholds = [None, [0.1], "a_string"]
 
+
 @pytest.mark.parametrize("_thresholds", _thresholds)
 def test_raises_threshold_error(_thresholds):
     with pytest.raises(ValueError):
         BaseRecursiveSelector(RandomForestClassifier(), threshold=_thresholds)
+
 
 _not_a_df = [
     "not_a_df",
@@ -98,7 +97,7 @@ def test_raises_error_when_user_passes_categorical_var(df_test):
     X, y = df_test
 
     # add categorical variable
-    X['cat_var'] = ['A'] * 1000
+    X["cat_var"] = ["A"] * 1000
 
     with pytest.raises(TypeError):
         BaseRecursiveSelector(
@@ -106,5 +105,4 @@ def test_raises_error_when_user_passes_categorical_var(df_test):
         ).fit(X, y)
 
     with pytest.raises(TypeError):
-        BaseRecursiveSelector(
-            RandomForestClassifier(), variables="cat_var").fit(X, y)
+        BaseRecursiveSelector(RandomForestClassifier(), variables="cat_var").fit(X, y)
