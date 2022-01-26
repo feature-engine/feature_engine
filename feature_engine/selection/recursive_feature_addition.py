@@ -172,7 +172,7 @@ class RecursiveFeatureAddition(BaseSelector):
         # There are as many columns as folds.
         for m in model["estimator"]:
 
-            feature_importances_cv[m] = get_feature_importances(m)
+            feature_importances_cv[m.__class__.__name__] = get_feature_importances(m)
 
         # Add the variables as index to feature_importances_cv
         feature_importances_cv.index = self.variables_
