@@ -37,6 +37,7 @@ from feature_engine.selection import (
     SelectBySingleFeaturePerformance,
     SelectByTargetMeanPerformance,
     SmartCorrelatedSelection,
+    DropHighPSIFeatures,
 )
 from feature_engine.transformation import (
     BoxCoxTransformer,
@@ -111,6 +112,7 @@ def test_sklearn_compatible_transformer(estimator, check):
 
 @parametrize_with_checks(
     [
+        DropHighPSIFeatures(bins=3),
         DropFeatures(features_to_drop=["0"]),
         DropConstantFeatures(),
         DropDuplicateFeatures(),

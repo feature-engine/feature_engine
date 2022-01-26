@@ -200,9 +200,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
         # find categorical and numerical variables
         self.variables_categorical_ = list(X.select_dtypes(include="O").columns)
-        self.variables_numerical_ = list(
-            X.select_dtypes(include="number").columns
-        )
+        self.variables_numerical_ = list(X.select_dtypes(include="number").columns)
 
         # obtain cross-validation indeces
         skf = KFold(n_splits=self.cv, shuffle=True, random_state=self.random_state)
