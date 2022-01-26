@@ -20,7 +20,7 @@ _false_input_params = [
 _not_a_df = [
     "not_a_df",
     [0, -1, -2, "tree"],
-    df_pred["Studies"],
+    pd.Series(["pen", "paper", 1984, "desk"], name="office_items"),
 ]
 
 
