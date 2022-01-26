@@ -88,8 +88,8 @@ class BaseTargetMeanEstimator(BaseEstimator):
         bins: int = 5,
         strategy: str = "equal_width",
     ):
-
-        if not isinstance(bins, int):
+        # boolean value can be interpreted as an integer
+        if not isinstance(bins, int) or isinstance(bins, bool):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
         if strategy not in ["equal_width", "equal_frequency"]:
@@ -138,7 +138,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
             self.pipeline_ = self._make_categorical_pipeline()
 
         else:
-            self.pipeline = self._make_numerical_pipeline()
+            self.pipeline_ = self._make_numerical_pipeline()
 
         self.pipeline_.fit(X, y)
 
@@ -225,11 +225,11 @@ class BaseTargetMeanEstimator(BaseEstimator):
         _check_input_matches_training_df(X, self.n_features_in_)
 
         # transform dataframe
-        X_tr = self.pipeline.transform(X)
+        X_tr = self.pipeline_.transform(X)
 
         # calculate the average for each observation
         predictions = X_tr[
             self.variables_numerical_ + self.variables_categorical_
-        ].mean(axis=1)
+        ].mean(axis=1).to_numpy()
 
         return predictions

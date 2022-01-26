@@ -63,3 +63,11 @@ def test_attributes_upon_fitting(df_pred):
         ('encoder_num', MeanEncoder(errors='raise', variables=['Age'])),
         ('encoder_cat', MeanEncoder(errors='raise', variables=['City']))])
     assert transformer.n_features_in_ == 2
+
+
+def test_classifier_prediction_results_with_all_numerical_variables(df_pred, df_pred_small):
+    pass
+
+
+def test_classifier_score_calculation(df_pred, df_pred_small):
+    pass
