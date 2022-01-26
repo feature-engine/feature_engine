@@ -140,30 +140,45 @@ def test_drop_constant_features_with_list_of_variables(df_constant_features):
     pd.testing.assert_frame_equal(X, df)
 
 
-def test_confirm_variables_argument(df_constant_features):
+input_params = [
+    (
+        ["Name", "City", "Age", "Marks", "dob", "const_feat_num", "no_existing"],
+        ["Name", "City", "Age", "Marks", "dob", "const_feat_num"],
+    ),
+    (
+        None,
+        [
+            "Name",
+            "City",
+            "Age",
+            "Marks",
+            "dob",
+            "const_feat_num",
+            "const_feat_cat",
+            "quasi_feat_num",
+            "quasi_feat_cat",
+        ],
+    ),
+]
+
+
+@pytest.mark.parametrize("variables, expected", input_params)
+def test_confirm_variables_argument(df_constant_features, variables, expected):
     """Test the confirm_variable argument."""
     # Test confirm_variables set to True allows to deal with elements of
     # variables that are not in the dataframe to fit.
-    variables = ["Name", "City", "Age", "Marks", "dob", "const_feat_num", "no_existing"]
-
     transformer = DropConstantFeatures(variables=variables, confirm_variables=True)
     transformer.fit(df_constant_features)
 
-    assert transformer.variables_ == [
-        "Name",
-        "City",
-        "Age",
-        "Marks",
-        "dob",
-        "const_feat_num",
-    ]
+    assert transformer.variables_ == expected
 
     # Test the default values gives an error when an element of variables is
     # not present in the dataframe to fit.
-    with pytest.raises(KeyError):
-        assert DropConstantFeatures(variables=variables, confirm_variables=False).fit(
-            df_constant_features
-        )
+    if isinstance(variables, list):
+        with pytest.raises(KeyError):
+            assert DropConstantFeatures(
+                variables=variables, confirm_variables=False
+            ).fit(df_constant_features)
 
 
 def test_error_if_fit_input_not_df():

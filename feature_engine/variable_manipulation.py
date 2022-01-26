@@ -306,7 +306,11 @@ def _filter_out_variables_not_in_dataframe(X, variables):
     filtered_variables : List of variables present in variables and in the
     input dataframe.
     """
-    # If an integer or a string is provided, convert into a list.
+    # When variables is not defined, keep it like this and return None.
+    if variables is None:
+        return None
+
+    # If an integer or a string is provided, convert to a list.
     if not isinstance(variables, list):
         variables = [variables]
 
