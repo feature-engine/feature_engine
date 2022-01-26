@@ -7,7 +7,6 @@ from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
-    _filter_out_variables_not_in_dataframe,
     _find_all_variables,
 )
 
@@ -43,7 +42,8 @@ class DropDuplicateFeatures(BaseSelector):
 
     confirm_variables: bool, default=False
         If set to True, variables that are not present in the input dataframe will be
-        removed from the list.
+        removed from the indicated list of variables. See param variables for more
+        details.
 
     Attributes
     ----------
