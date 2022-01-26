@@ -1,20 +1,10 @@
-from typing import List, Union
-
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import _is_dataframe
-from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
-from feature_engine.validation import _return_tags
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_numerical_variables,
-)
-
-Variables = Union[None, int, str, List[Union[str, int]]]
+from feature_engine.selection.base_recursive_selector import BaseRecursiveSelector
 
 
-class RecursiveFeatureAddition(BaseSelector):
+class RecursiveFeatureAddition(BaseRecursiveSelector):
     """
     RecursiveFeatureAddition() selects features following a recursive addition process.
 
@@ -111,24 +101,6 @@ class RecursiveFeatureAddition(BaseSelector):
         Fit to data, then transform it.
     """
 
-    def __init__(
-        self,
-        estimator,
-        scoring: str = "roc_auc",
-        cv=3,
-        threshold: Union[int, float] = 0.01,
-        variables: Variables = None,
-    ):
-
-        if not isinstance(threshold, (int, float)):
-            raise ValueError("threshold can only be integer or float")
-
-        self.variables = _check_input_parameter_variables(variables)
-        self.estimator = estimator
-        self.scoring = scoring
-        self.threshold = threshold
-        self.cv = cv
-
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Find the important features. Note that the selector trains various models at
@@ -143,42 +115,7 @@ class RecursiveFeatureAddition(BaseSelector):
            Target variable. Required to train the estimator.
         """
 
-        # check input dataframe
-        X = _is_dataframe(X)
-
-        # find numerical variables or check variables entered by user
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
-
-        # train model with all features and cross-validation
-        model = cross_validate(
-            self.estimator,
-            X[self.variables_],
-            y,
-            cv=self.cv,
-            scoring=self.scoring,
-            return_estimator=True,
-        )
-
-        # store initial model performance
-        self.initial_model_performance_ = model["test_score"].mean()
-
-        # Initialize a dataframe that will contain the list of the feature/coeff
-        # importance for each cross validation fold
-        feature_importances_cv = pd.DataFrame()
-
-        # Populate the feature_importances_cv dataframe with columns containing
-        # the feature importance values for each model returned by the cross
-        # validation.
-        # There are as many columns as folds.
-        for m in model["estimator"]:
-
-            feature_importances_cv[m.__class__.__name__] = get_feature_importances(m)
-
-        # Add the variables as index to feature_importances_cv
-        feature_importances_cv.index = self.variables_
-
-        # Aggregate the feature importance returned in each fold
-        self.feature_importances_ = feature_importances_cv.mean(axis=1)
+        X = super().fit(X, y)
 
         # Sort the feature importance values decreasingly
         self.feature_importances_.sort_values(ascending=False, inplace=True)
@@ -254,13 +191,5 @@ class RecursiveFeatureAddition(BaseSelector):
 
         return X
 
-    transform.__doc__ = BaseSelector.transform.__doc__
+    transform.__doc__ = BaseRecursiveSelector.transform.__doc__
 
-    def _more_tags(self):
-        tags_dict = _return_tags()
-        # add additional test that fails
-        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
-        tags_dict["_xfail_checks"][
-            "check_parameters_default_constructible"
-        ] = "transformer has 1 mandatory parameter"
-        return tags_dict
