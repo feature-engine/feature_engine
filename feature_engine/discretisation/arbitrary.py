@@ -8,18 +8,32 @@ import pandas as pd
 
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.validation import _return_tags
+from feature_engine.docstrings import (
+    Substitution,
+    _variables_attribute,
+    _n_features_in,
+    _fit_transform,
+)
 
 
+@Substitution(
+    return_object=BaseDiscretiser._return_object_docstring,
+    return_boundaries=BaseDiscretiser._return_boundaries_docstring,
+    binner_dict_=BaseDiscretiser._binner_dict_docstring,
+    transform=BaseDiscretiser._transform_docstring,
+    variables_=_variables_attribute,
+    n_features_in_=_n_features_in,
+    fit_transform=_fit_transform,
+)
 class ArbitraryDiscretiser(BaseDiscretiser):
     """
     The ArbitraryDiscretiser() divides numerical variables into intervals which limits
     are determined by the user. Thus, it works only with numerical variables.
 
     You need to enter a dictionary with variable names as keys, and a list with
-    the limits of the intervals as values. For example `{'var1':[0, 10, 100, 1000],
-    'var2':[5, 10, 15, 20]}`.
-
-    The ArbitraryDiscretiser() will then sort var1 values into the intervals 0-10,
+    the limits of the intervals as values. For example the key could be the variable
+    name 'var1' and the value the following list: [0, 10, 100, 1000]. The
+    ArbitraryDiscretiser() will then sort var1 values into the intervals 0-10,
     10-100, 100-1000, and var2 into 5-10, 10-15 and 15-20. Similar to `pandas.cut`.
 
     More details in the :ref:`User Guide <arbitrary_discretiser>`.
@@ -27,18 +41,11 @@ class ArbitraryDiscretiser(BaseDiscretiser):
     Parameters
     ----------
     binning_dict: dict
-        The dictionary with the variable to interval limits pairs. A valid dictionary
-        looks like this:
-        `binning_dict = {'var1':[0, 10, 100, 1000], 'var2':[5, 10, 15, 20]}`
+        The dictionary with the variable to interval limits pairs.
 
-    return_object: bool, default=False
-        Whether the the discrete variable should be returned as numeric or as object.
-        If you would like to proceed with the engineering of the variable as if
-        it was categorical, use True. Alternatively, keep the default to False.
+    {return_object}
 
-    return_boundaries: bool, default=False
-        Whether the output, that is the bins, should be the interval boundaries. If
-        True, it returns the interval boundaries. If False, it returns integers.
+    {return_boundaries}
 
     errors: string, default='ignore'
         Indicates what to do when a value is outside the limits indicated in the
@@ -48,23 +55,20 @@ class ArbitraryDiscretiser(BaseDiscretiser):
 
     Attributes
     ----------
-    binner_dict_:
-         Dictionary with the interval limits per variable.
+    {binner_dict_}
 
-    variables_:
-         The variables that will be discretised.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         This transformer does not learn any parameter.
-    transform:
-        Sort variable values into the intervals.
-    fit_transform:
-        Fit to the data, then transform it.
+
+    {transform}
+
+    {fit_transform}
 
     See Also
     --------

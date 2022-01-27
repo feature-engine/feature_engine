@@ -7,23 +7,28 @@ from feature_engine.base_transformers import BaseNumericalTransformer
 
 
 class BaseDiscretiser(BaseNumericalTransformer):
-    """
-    Shared set-up checks and methods across numerical discretisers.
+    """Shared set-up checks and methods across numerical discretisers."""
 
-    Parameters
-    ----------
-    return_object: bool, default=False
+    _return_object_docstring = """return_object: bool, default=False
         Whether the the discrete variable should be returned as numeric or as
         object. If you would like to proceed with the engineering of the variable as if
         it was categorical, use True. Alternatively, keep the default to False.
+        """.rstrip()
 
-    return_boundaries: bool, default=False
+    _return_boundaries_docstring = """return_boundaries: bool, default=False
         Whether the output should be the interval boundaries. If True, it returns
         the interval boundaries. If False, it returns integers.
+        """.rstrip()
 
-    Methods
-    -------
-    transform:
+    _binner_dict_docstring = """binner_dict_:
+         Dictionary with the interval limits per variable.
+         """.rstrip()
+
+    _fit_docstring = """fit:
+        Find the interval limits.
+        """.rstrip()
+
+    _transform_docstring = """transform:
         Sort continuous variable values into the intervals.
     """
 

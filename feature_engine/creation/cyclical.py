@@ -5,8 +5,23 @@ import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.docstrings import (
+    Substitution,
+    _variables_numerical_docstring,
+    _drop_original_docstring,
+    _variables_attribute,
+    _n_features_in,
+    _fit_transform,
+)
 
 
+@Substitution(
+    variables=_variables_numerical_docstring,
+    drop_original=_drop_original_docstring,
+    variables_=_variables_attribute,
+    n_features_in_=_n_features_in,
+    fit_transform=_fit_transform,
+)
 class CyclicalTransformer(BaseNumericalTransformer):
     """
     The CyclicalTransformer() applies cyclical transformations to numerical
@@ -27,29 +42,23 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of numerical variables to transform. If None, the transformer will
-        automatically find and select all numerical variables.
+    {variables}
 
     max_values: dict, default=None
         A dictionary with the maximum value of each variable to transform. Useful when
         the maximum value is not present in the dataset. If None, the transformer will
         automatically find the maximum value of each variable.
 
-    drop_original: bool, default=False
-        If True, the original variables to transform will be dropped from the dataframe.
+    {drop_original}
 
     Attributes
     ----------
     max_values_:
         The maximum value of the cyclical feature.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
-
+    {n_features_in_}
 
     Methods
     -------
@@ -57,9 +66,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
         Learns the maximum values of the cyclical features.
     transform:
         Applies the cyclical transformation.
-    fit_transform:
-        Fit to data, then transform it.
-
+    {fit_transform}
 
     References
     ----------
@@ -67,15 +74,15 @@ class CyclicalTransformer(BaseNumericalTransformer):
     """
 
     def __init__(
-        self,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        max_values: Optional[Dict[str, Union[int, float]]] = None,
-        drop_original: Optional[bool] = False,
+            self,
+            variables: Union[None, int, str, List[Union[str, int]]] = None,
+            max_values: Optional[Dict[str, Union[int, float]]] = None,
+            drop_original: Optional[bool] = False,
     ) -> None:
 
         if max_values:
             if not isinstance(max_values, dict) or not all(
-                isinstance(var, (int, float)) for var in list(max_values.values())
+                    isinstance(var, (int, float)) for var in list(max_values.values())
             ):
                 raise TypeError(
                     "max_values takes a dictionary of strings as keys, "

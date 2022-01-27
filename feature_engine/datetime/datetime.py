@@ -22,8 +22,17 @@ from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_datetime_variables,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _n_features_in,
+    _fit_transform,
+)
 
 
+@Substitution(
+    n_features_in_=_n_features_in,
+    fit_transform=_fit_transform,
+)
 class DatetimeFeatures(BaseEstimator, TransformerMixin):
     """
     DatetimeFeatures extracts date and time features from datetime variables, adding
@@ -103,8 +112,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
     features_to_extract_:
         The date and time features that will be extracted from each variable.
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
@@ -112,8 +120,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         This transformer does not learn parameters.
     transform:
         Add the date and time features.
-    fit_transform:
-        Fit to the data, then transform it.
+    {fit_transform}
 
     See also
     --------

@@ -12,8 +12,17 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
+from feature_engine.docstrings import (
+    Substitution,
+    _n_features_in,
+    _fit_transform,
+)
 
 
+@Substitution(
+    n_features_in_=_n_features_in,
+    fit_transform=_fit_transform,
+)
 class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     """
     CombineWithReferenceFeature() applies basic mathematical operations between a group
@@ -71,8 +80,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
@@ -80,8 +88,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         This transformer does not learn parameters.
     transform:
         Combine the variables with the mathematical operations.
-    fit_transform:
-        Fit to the data, then transform it.
+    {fit_transform}
 
     Notes
     -----
