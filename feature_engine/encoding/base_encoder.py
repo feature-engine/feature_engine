@@ -16,25 +16,28 @@ from feature_engine.variable_manipulation import (
     _find_or_check_categorical_variables,
     _check_input_parameter_variables,
 )
+from feature_engine.docstrings import (
+    Substitution,
+)
+from feature_engine.encoding._docstrings import (
+    _ignore_format_docstring,
+    _variables_docstring,
+    _errors_docstring,
+)
 
 
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+)
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
     """shared set-up checks and methods across categorical transformers
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}.
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
     """
 
     def __init__(
@@ -235,6 +238,11 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         return tags_dict
 
 
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+    errors=_errors_docstring,
+)
 class BaseCategorical(BaseCategoricalTransformer):
     """
     BaseCategorical() is the parent class to some of the encoders.
@@ -242,24 +250,11 @@ class BaseCategorical(BaseCategoricalTransformer):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
 
-    errors: string, default='ignore'
-        Indicates what to do, when categories not present in the train set are
-        encountered during transform. If 'raise', then rare categories will raise an
-        error. If 'ignore', then rare categories will be set as NaN and a warning will
-        be raised instead.
+    {errors}
     """
 
     def __init__(

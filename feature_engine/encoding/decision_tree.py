@@ -10,8 +10,25 @@ from sklearn.utils.multiclass import check_classification_targets, type_of_targe
 from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 from feature_engine.encoding.ordinal import OrdinalEncoder
+from feature_engine.docstrings import (
+    Substitution,
+    _variables_attribute,
+    _n_features_in,
+    _fit_transform,
+)
+from feature_engine.encoding._docstrings import (
+    _ignore_format_docstring,
+    _variables_docstring,
+)
 
 
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+    variables_=_variables_attribute,
+    n_features_in_=_n_features_in,
+    fit_transform=_fit_transform,
+)
 class DecisionTreeEncoder(BaseCategoricalTransformer):
     """
     The DecisionTreeEncoder() encodes categorical variables with predictions
@@ -55,8 +72,8 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     param_grid: dictionary, default=None
         The hyperparameters for the decision tree to test with a grid search. The
         `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
-        DecisionTreeRegressor() or DecisionTreeClassifier(). If None, then
-        `param_grid = {'max_depth': [1, 2, 3, 4]}`.
+        DecisionTreeRegressor() or DecisionTreeClassifier(). If None, then param_grid
+        will optimise the 'max_depth' over `[1, 2, 3, 4]`.
 
     regression: boolean, default=True
         Indicates whether the encoder should train a regression or a classification
@@ -68,38 +85,28 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
 
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
 
     Attributes
     ----------
     encoder_:
         sklearn Pipeline containing the ordinal encoder and the decision tree.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Fit a decision tree per variable.
+
     transform:
         Replace categorical variable by the predictions of the decision tree.
-    fit_transform:
-        Fit to the data, then transform it.
+
+    {fit_transform}
 
     Notes
     -----

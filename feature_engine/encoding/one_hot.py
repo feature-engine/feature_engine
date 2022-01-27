@@ -7,8 +7,25 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
+from feature_engine.docstrings import (
+    Substitution,
+    _variables_attribute,
+    _n_features_in,
+    _fit_transform,
+)
+from feature_engine.encoding._docstrings import (
+    _ignore_format_docstring,
+    _variables_docstring,
+)
 
 
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+    variables_=_variables_attribute,
+    n_features_in_=_n_features_in,
+    fit_transform=_fit_transform,
+)
 class OneHotEncoder(BaseCategoricalTransformer):
     """
     The OneHotEncoder() replaces categorical variables by a set of binary variables
@@ -71,42 +88,32 @@ class OneHotEncoder(BaseCategoricalTransformer):
         to `True`, will ensure that for every binary variable in the dataset, only 1
         dummy is created.
 
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
 
     Attributes
     ----------
     encoder_dict_:
         Dictionary with the categories for which dummy variables will be created.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
     variables_binary_:
         List with binary variables identified in the data. That is, variables with
         only 2 categories.
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn the unique categories per variable
+
     transform:
         Replace the categorical variables by the binary variables.
-    fit_transform:
-        Fit to the data, then transform it.
+
+    {fit_transform}
 
     Notes
     -----
