@@ -16,6 +16,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.variable_manipulation import (
     _find_all_variables,
+    _find_or_check_numerical_variables,
     _check_input_parameter_variables,
 )
 
@@ -44,10 +45,23 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
     Attributes
     ----------
 
+    variables_numerical_:
+        The group of numerical input variables.
+
+    n_features_in_:
+        The number of features in the dataframe.
 
     Methods
     -------
+    fit:
+        Obtain attributes and determine whether the dataframe is eligible to
+        be transformed.
 
+    transform:
+        Perform the time-lag transformation on the provided dataframe.
+
+    rename_variables:
+        Create names for the new time-lagged variables.
 
     Notes
     -----
@@ -103,6 +117,9 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         # check variables
         self.variables_ = _find_all_variables(X, self.variables)
 
+        # identify numerical variables
+        self.variables_numerical_ = _find_or_check_numerical_variables(self.variables)
+
 
         self.n_features_in_ = X.shape[1]
 
@@ -141,18 +158,19 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         tmp = X[self.variables_].shift(
             periods=self.periods,
             freq=self.freq,
-            axis=self.axis,
+            axis=0,
             fill_value=self.fill_value
         )
 
         tmp.columns = self.rename_variables()
 
         if self.drop_original:
+            X = tmp.copy()
+
+        else:
             X = X[self.variables_].merge(
                 tmp, left_index=True, right_index=True, how="left"
             )
-        else:
-            X = tmp.copy()
 
         return X
 
