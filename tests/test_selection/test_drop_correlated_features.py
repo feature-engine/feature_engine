@@ -105,18 +105,41 @@ def test_lower_threshold(df_correlated_single):
     pd.testing.assert_frame_equal(X, df)
 
 
-def test_confirm_variables_argument(df_correlated_single):
+input_params = [
+    (
+        ["var_1", "var_3", "var_5", "var_1000"],
+        ["var_1", "var_3", "var_5"],
+    ),
+    (
+        None,
+        ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"],
+    ),
+    ("var_3", ["var_3"]),
+]
+
+
+@pytest.mark.parametrize("variables, expected", input_params)
+def test_confirm_variables_argument(df_correlated_single, variables, expected):
     """Test the confirm_variable argument."""
     # Test confirm_variables set to True allows to deal with elements of
     # variables that are not in the dataframe to fit.
-    variables = ["var_1", "var_3", "var_5", "var_1000"]
 
     transformer = DropCorrelatedFeatures(variables=variables, confirm_variables=True)
     transformer.fit(df_correlated_single)
 
-    assert transformer.variables_ == ["var_1", "var_3", "var_5"]
+    assert transformer.variables_ == expected
 
-    # Test the default values gives an error when an element of variables is
+
+input_params = [
+    (["var_1", "var_3", "var_5", "var_1000"]),
+    ("var_1000"),
+]
+
+
+@pytest.mark.parametrize("variables", input_params)
+def test_confirm_variables_argument_false(df_correlated_single, variables):
+    """Test the confirm_variable argument when set to False."""
+    # Test the default value gives an error when an element of variables is
     # not present in the dataframe to fit.
     with pytest.raises(KeyError):
         assert DropCorrelatedFeatures(variables=variables, confirm_variables=False).fit(
