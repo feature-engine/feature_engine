@@ -132,7 +132,7 @@ class BaseRecursiveSelector(BaseSelector):
         # self._confirm_variables(X)
 
         # find numerical variables or check variables entered by user
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # train model with all features and cross-validation
         model = cross_validate(
