@@ -9,7 +9,7 @@ def test_time_lag_period_shift_and_keep_original_data(df_time):
     transformer = TimeSeriesLagTransformer(
         variables=["ambient_temp", "module_temp"],
         periods=3,
-        keep_original=True,
+        drop_original=False,
     )
 
     df_tr = transformer.transform(df_time)
@@ -35,11 +35,11 @@ def test_time_lag_period_shift_and_keep_original_data(df_time):
     assert df_tr.head(5) == expected_results_df
 
 
-def test_time_lag_frequency_shift_and_ignore_original_data(df_time):
+def test_time_lag_frequency_shift_and_drop_original_data(df_time):
     # case 2: Data is properly transformed using the 'freq' param.
     transformer = TimeSeriesLagTransformer(
         freq="1h",
-        keep_original=False
+        drop_original=True
     )
     df_tr = transformer.transform(df_time)
 
@@ -68,7 +68,7 @@ def test_time_lag_fill_value(df_time):
     transformer = TimeSeriesLagTransformer(
         periods=2,
         fill_value="test_fill",
-        keep_original=True
+        drop_original=False,
     )
     df_tr = transformer.transform(df_time)
     date_time = [
@@ -112,9 +112,9 @@ def test_incorrect_axis_during_installation(df_time):
 
 def test_incorrect_keep_original_during_installation(df_time):
     # case 6: return error when inappropriate value has been inputted for
-    # the 'keep_original' param
+    # the 'drop_original' param
     with pytest.raises(ValueError):
-        transformer = TimeSeriesLagTransformer(keep_original="cumbia")
+        transformer = TimeSeriesLagTransformer(drop_original="cumbia")
         transformer.transform(df_time)
 
 

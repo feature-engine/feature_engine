@@ -37,7 +37,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
     fill_value: [int, float, str], default=None
         Character to be used to fill missing values.
 
-    keep_original: bool, default=True
+    drop_original: bool, default=True
         Determines whether the dataframe keeps the original columns
         that are transformed.
 
@@ -67,9 +67,8 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         periods: int = 1,
         freq: str = None,
-        axis: int = 0,
         fill_value: [int, str] = None,
-        keep_original: bool = True,
+        drop_original: bool = False,
 
     ) -> None:
 
@@ -79,16 +78,9 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
                 f"an integer."
             )
 
-        # add check for 'freq' param
-
-        if axis not in (0, 1):
+        if not isinstance(drop_original, bool):
             raise ValueError(
-                f"'axis' is {axis}. The variable must be 0 or 1."
-            )
-
-        if not isinstance(keep_original, bool):
-            raise ValueError(
-                f"'keep_original' is {keep_original}. The variable must "
+                f"'drop_original' is {drop_original}. The variable must "
                 f"be boolean."
             )
 
@@ -97,7 +89,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         self.freq = freq
         self.axis = axis
         self.fill_value = fill_value
-        self.keep_original = keep_original
+        self.keep_original = drop_original
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """
