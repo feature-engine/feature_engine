@@ -144,17 +144,6 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         # check if 'X' is a dataframe
         _is_dataframe(X)
 
-        # check if index is a datetime object
-        # Should we check more than first index value?
-        # Could use a list comprehension to check all values, but that will be expensive.
-        if not isinstance(X.index[0], datetime.datetime):
-            raise ValueError(
-                "Dataframe's index is not a datetime object. Transformer requires"
-                "the index to be a datetime object."
-            )
-
-
-
         tmp = X[self.variables_].shift(
             periods=self.periods,
             freq=self.freq,
@@ -168,7 +157,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
             X = tmp.copy()
 
         else:
-            X = X[self.variables_].merge(
+            X = X.merge(
                 tmp, left_index=True, right_index=True, how="left"
             )
 
