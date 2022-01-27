@@ -134,18 +134,16 @@ def test_confirm_variables_argument(df_duplicate_features, variables, expected):
     assert transformer.variables_ == expected
 
 
-# TODO: DropDuplicates does not fail when providing a single string that is not part of the
-# dataframe. Confirm we want to keep this behavior or not.
-input_params = [
-    (["Name", "dob2", "City", "Age", "new_feat"]),
-]
+# TODO: DropDuplicates does not fail when providing a single string that is not part
+# of the dataframe. Confirm we want to keep this behavior or not.
 
 
-@pytest.mark.parametrize("variables", input_params)
-def test_confirm_variables_argument_false(df_duplicate_features, variables):
+def test_confirm_variables_argument_false(df_duplicate_features):
     """Test the confirm_variable argument when set to False."""
     # Test the default value gives an error when an element of variables is
     # not present in the dataframe to fit.
+    variables = ["Name", "dob2", "City", "Age", "new_feat"]
+
     with pytest.raises(KeyError):
         assert DropDuplicateFeatures(variables=variables, confirm_variables=False).fit(
             df_duplicate_features
