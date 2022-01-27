@@ -72,12 +72,6 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
     ) -> None:
 
-        if not isinstance(periods, int):
-            raise ValueError(
-                f"'num_periods' is {periods}. The variable must be "
-                f"an integer."
-            )
-
         if not isinstance(drop_original, bool):
             raise ValueError(
                 f"'drop_original' is {drop_original}. The variable must "
@@ -87,42 +81,64 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         self.variables = _check_input_parameter_variables(variables)
         self.periods = periods
         self.freq = freq
-        self.axis = axis
         self.fill_value = fill_value
-        self.keep_original = drop_original
+        self.drop_original = drop_original
 
-    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+    def fit(self, X: pd.DataFrame) -> None:
         """
         Creates lag
 
         Parameters
         ----------
-        df: pandas dataframe of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
+           The dataframe containing the variables that that will be lagged.
+
+        Returns
+        -------
+
+        """
+        # check if 'X' is a dataframe
+        _is_dataframe(X)
+
+        # check variables
+        self.variables_ = _find_all_variables(X, self.variables)
+
+
+        self.n_features_in_ = X.shape[1]
+
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Creates lag
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe containing the variables that that will be lagged.
 
         Returns
         -------
-        df_new: pandas dataframe
+        X_new: pandas dataframe
             The dataframe comprised of only the transformed variables or
             the original dataframe plus the transformed variables.
 
         """
-        # check if 'df' is a dataframe
-        _is_dataframe(df)
+        # check if 'X' is a dataframe
+        _is_dataframe(X)
 
         # check if index is a datetime object
         # Should we check more than first index value?
         # Could use a list comprehension to check all values, but that will be expensive.
-        if not isinstance(df.index[0], datetime.datetime):
+        if not isinstance(X.index[0], datetime.datetime):
             raise ValueError(
                 "Dataframe's index is not a datetime object. Transformer requires"
                 "the index to be a datetime object."
             )
 
-        # check variables
-        self.variables_ = _find_all_variables(df, self.variables)
 
-        tmp = df[self.variables_].shift(
+
+        tmp = X[self.variables_].shift(
             periods=self.periods,
             freq=self.freq,
             axis=self.axis,
@@ -131,14 +147,14 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
         tmp.columns = self.rename_variables()
 
-        if self.keep_original:
-            df = df[self.variables_].merge(
+        if self.drop_original:
+            X = X[self.variables_].merge(
                 tmp, left_index=True, right_index=True, how="left"
             )
         else:
-            df = tmp.copy()
+            X = tmp.copy()
 
-        return df
+        return X
 
     def rename_variables(self):
         """
