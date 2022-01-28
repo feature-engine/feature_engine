@@ -126,7 +126,7 @@ def test_time_lag_fill_value(df_time):
 
 def test_error_when_df_in_transform_is_not_a_dataframe(df_time):
     # case 7: return error if 'df' is not a dataframe
-    msg = "df is not a pandas dataframe. The dataset should be a pandas dataframe."
+    msg = "X is not a pandas dataframe. The dataset should be a pandas dataframe."
     with pytest.raises(TypeError) as record:
         transformer = TimeSeriesLagTransformer(periods=5)
         transformer.transform(df_time["module_temp"])
