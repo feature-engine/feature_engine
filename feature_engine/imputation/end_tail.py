@@ -11,8 +11,22 @@ from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _variables_attribute,
+    _n_features_in,
+    _fit_transform,
+)
 
 
+@Substitution(
+    variables=BaseImputer._variables_numerical_docstring,
+    imputer_dict_=BaseImputer._imputer_dict_docstring,
+    variables_=_variables_attribute,
+    n_features_in_=_n_features_in,
+    transform=BaseImputer._transform_docstring,
+    fit_transform=_fit_transform,
+)
 class EndTailImputer(BaseImputer):
     """
     The EndTailImputer() replaces missing data by a value at either tail of the
@@ -71,29 +85,25 @@ class EndTailImputer(BaseImputer):
         Factor to multiply the std, the IQR or the Max values. Recommended values
         are 2 or 3 for Gaussian, or 1.5 or 3 for IQR.
 
-    variables: list, default=None
-        The list of variables to impute. If None, the imputer will select
-        all numerical variables.
+    {variables}
 
     Attributes
     ----------
-    imputer_dict_:
-        Dictionary with the values at the end of the distribution per variable.
+    {imputer_dict_}
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn values to replace missing data.
-    transform:
-        Impute missing data.
-    fit_transform:
-        Fit to the data, then transform it.
+
+    {transform}
+
+    {fit_transform}
+
     """
 
     def __init__(

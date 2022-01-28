@@ -9,6 +9,12 @@ import pandas as pd
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.docstrings import (
+    Substitution,
+    _variables_attribute,
+    _n_features_in,
+    _fit_transform,
+)
 
 
 # for RandomSampleImputer
@@ -26,7 +32,12 @@ def _define_seed(
         internal_seed = int(np.round(X.loc[index, seed_variables].product(), 0))
     return internal_seed
 
-
+@Substitution(
+    variables_=_variables_attribute,
+    n_features_in_=_n_features_in,
+    transform=BaseImputer._transform_docstring,
+    fit_transform=_fit_transform,
+)
 class RandomSampleImputer(BaseImputer):
     """
     The RandomSampleImputer() replaces missing data with a random sample extracted from
@@ -75,20 +86,19 @@ class RandomSampleImputer(BaseImputer):
     X_:
         Copy of the training dataframe from which to extract the random samples.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Make a copy of the train set
-    transform:
-        Impute missing data.
-    fit_transform:
-        Fit to the data, then transform it.
+
+    {transform}
+
+    {fit_transform}
+
     """
 
     def __init__(

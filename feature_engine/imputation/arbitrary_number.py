@@ -12,8 +12,23 @@ from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_not_learn,
+    _variables_attribute,
+    _n_features_in,
+    _fit_transform,
+)
 
 
+@Substitution(
+    imputer_dict_=BaseImputer._imputer_dict_docstring,
+    variables_=_variables_attribute,
+    n_features_in_=_n_features_in,
+    fit = _fit_not_learn,
+    transform=BaseImputer._transform_docstring,
+    fit_transform=_fit_transform,
+)
 class ArbitraryNumberImputer(BaseImputer):
     """
     The ArbitraryNumberImputer() replaces missing data by an arbitrary
@@ -41,25 +56,23 @@ class ArbitraryNumberImputer(BaseImputer):
         The dictionary of variables and the arbitrary numbers for their imputation. If
         specified, it overrides the above parameters.
 
+
     Attributes
     ----------
-    imputer_dict_:
-        Dictionary with the values to replace NAs in each variable.
 
-    variables_:
-        The group of variables that will be transformed.
+    {imputer_dict_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {variables_}
+
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        This transformer does not learn parameters.
-    transform:
-        Impute missing data.
-    fit_transform:
-        Fit to the data, then transform it.
+    {fit}
+
+    {transform}
+
+    {fit_transform}
 
     See Also
     --------

@@ -12,8 +12,21 @@ from feature_engine.variable_manipulation import (
     _find_all_variables,
     _find_or_check_categorical_variables,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _variables_attribute,
+    _n_features_in,
+    _fit_transform,
+)
 
 
+@Substitution(
+    imputer_dict_=BaseImputer._imputer_dict_docstring,
+    variables_=_variables_attribute,
+    n_features_in_=_n_features_in,
+    transform=BaseImputer._transform_docstring,
+    fit_transform=_fit_transform,
+)
 class CategoricalImputer(BaseImputer):
     """
     The CategoricalImputer() replaces missing data in categorical variables by an
@@ -59,30 +72,28 @@ class CategoricalImputer(BaseImputer):
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
-        ignored. If false, the encoder will automatically select variables of type
+        ignored. If false, the imputer will automatically select variables of type
         object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
+        type object or categorical. If True, the imputer will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
-    imputer_dict_:
-        Dictionary with most frequent category or arbitrary value per variable.
+    {imputer_dict_}
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn the most frequent category or assign arbitrary value to variable.
-    transform:
-        Impute missing data.
-    fit_transform:
-        Fit to the data, than transform it.
+
+    {transform}
+
+    {fit_transform}
+
     """
 
     def __init__(

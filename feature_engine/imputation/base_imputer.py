@@ -12,6 +12,19 @@ from feature_engine.validation import _return_tags
 class BaseImputer(BaseEstimator, TransformerMixin):
     """shared set-up checks and methods across imputers"""
 
+    _variables_numerical_docstring = """variables: list, default=None
+        The list of variables to impute. If None, the imputer will select
+        all numerical variables.
+        """.rstrip()
+
+    _imputer_dict_docstring = """imputer_dict_:
+        Dictionary with the values to replace missing data in each variable.
+        """.rstrip()
+
+    _transform_docstring = """transform:
+        Impute missing data.
+        """.rstrip()
+
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Check that the input is a dataframe and of the same size than the one used

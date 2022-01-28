@@ -45,6 +45,10 @@ _n_features_in = """n_features_in_:
         """.rstrip()
 
 # Methods
+_fit_not_learn = """fit:
+        This transformer does not learn parameters.
+        """.rstrip()
+
 _fit_transform = """fit_transform:
         Fit to data, then transform it.
         """.rstrip()
