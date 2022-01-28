@@ -29,6 +29,7 @@ def test_default_params():
     assert transformer.freq is None
     assert transformer.drop_original is False
 
+
 def test_time_lag_period_shift_and_keep_original_data(df_time):
     # case 1: The lag is correctly performed using the 'period' param.
     transformer = TimeSeriesLagTransformer(
