@@ -63,10 +63,10 @@ class MatchVariables(BaseEstimator, TransformerMixin):
         The values for the variables that will be added to the transformed dataset.
 
     missing_values: string, default='ignore'
-        Indicates if missing values should be ignored or raised. If 'ignore', the
-        transformer will ignore missing data when transforming the data. If 'raise' the
-        transformer will return an error if the training or the datasets to transform
-        contain missing values.
+        Indicates if missing values should be ignored or raised. If 'raise' the
+        transformer will return an error if the the datasets to `fit` or `transform`
+        contain missing values. If 'ignore', missing data will be ignored when learning
+        parameters or performing the transformation.
 
     verbose: bool, default=True
         If True, the transformer will print out the names of the variables that are

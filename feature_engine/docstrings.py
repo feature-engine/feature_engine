@@ -60,3 +60,7 @@ _fit_transform_docstring = """fit_transform:
         Fit to data, then transform it.
         """.rstrip()
 
+_inverse_transform_docstring = """inverse_transform:
+        Convert the data back to the original representation.
+        """.rstrip()
+
