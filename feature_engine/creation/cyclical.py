@@ -4,19 +4,20 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
-from feature_engine.docstrings import (
-    Substitution,
-    _variables_numerical_docstring,
-    _variables_attribute_docstring,
-    _n_features_in_docstring,
-    _fit_transform_docstring,
-)
-
 from feature_engine.creation._docstring import (
     _drop_original_docstring,
     _transform_docstring,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
+from feature_engine.variable_manipulation import _check_input_parameter_variables
+
+
 @Substitution(
     variables=_variables_numerical_docstring,
     drop_original=_drop_original_docstring,
@@ -78,15 +79,15 @@ class CyclicalTransformer(BaseNumericalTransformer):
     """
 
     def __init__(
-            self,
-            variables: Union[None, int, str, List[Union[str, int]]] = None,
-            max_values: Optional[Dict[str, Union[int, float]]] = None,
-            drop_original: Optional[bool] = False,
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        max_values: Optional[Dict[str, Union[int, float]]] = None,
+        drop_original: Optional[bool] = False,
     ) -> None:
 
         if max_values:
             if not isinstance(max_values, dict) or not all(
-                    isinstance(var, (int, float)) for var in list(max_values.values())
+                isinstance(var, (int, float)) for var in list(max_values.values())
             ):
                 raise TypeError(
                     "max_values takes a dictionary of strings as keys, "

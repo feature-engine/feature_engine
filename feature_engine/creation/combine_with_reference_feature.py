@@ -4,25 +4,25 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine.creation._docstring import (
+    _drop_original_docstring,
+    _missing_values_docstring,
+    _transform_docstring,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     _check_input_matches_training_df,
     _is_dataframe,
 )
-from feature_engine.validation import _return_tags
-from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 from feature_engine.docstrings import (
     Substitution,
-    _n_features_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
+    _n_features_in_docstring,
 )
-from feature_engine.creation._docstring import (
-    _missing_values_docstring,
-    _drop_original_docstring,
-    _transform_docstring,
-)
+from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
 @Substitution(

@@ -7,13 +7,13 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
-from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
 from feature_engine.docstrings import (
     Substitution,
-    _n_features_in_docstring,
     _fit_transform_docstring,
+    _n_features_in_docstring,
 )
+from feature_engine.imputation.base_imputer import BaseImputer
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 @Substitution(

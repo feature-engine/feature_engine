@@ -7,17 +7,17 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.validation import _return_tags
-from feature_engine.variable_manipulation import _check_input_parameter_variables
 from feature_engine.docstrings import (
     Substitution,
-    _variables_numerical_docstring,
-    _variables_attribute_docstring,
-    _n_features_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _inverse_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
 )
+from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 @Substitution(

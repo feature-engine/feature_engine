@@ -166,20 +166,23 @@ def test_quantile_capping_both_tails_with_fold_15_percent(df_normal_dist):
 
 def test_indicators_are_added(df_normal_dist):
     transformer = Winsorizer(
-        tail="both", capping_method="quantiles", fold=0.1, add_indicators=True)
+        tail="both", capping_method="quantiles", fold=0.1, add_indicators=True
+    )
     X = transformer.fit_transform(df_normal_dist)
     # test that the number of output variables is correct
     assert X.shape[1] == 3 * df_normal_dist.shape[1]
     assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
 
     transformer = Winsorizer(
-        tail="left", capping_method="quantiles", fold=0.1, add_indicators=True)
+        tail="left", capping_method="quantiles", fold=0.1, add_indicators=True
+    )
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 2 * df_normal_dist.shape[1]
     assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
 
     transformer = Winsorizer(
-        tail="right", capping_method="quantiles", fold=0.1, add_indicators=True)
+        tail="right", capping_method="quantiles", fold=0.1, add_indicators=True
+    )
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 2 * df_normal_dist.shape[1]
     assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
@@ -191,7 +194,7 @@ def test_indicators_filter_variables(df_vartypes):
         tail="both",
         capping_method="quantiles",
         fold=0.1,
-        add_indicators=True
+        add_indicators=True,
     )
     X = transformer.fit_transform(df_vartypes)
     assert X.shape[1] == df_vartypes.shape[1] + 4
@@ -207,17 +210,13 @@ def test_indicators_filter_variables(df_vartypes):
 
 def test_indicators_are_correct():
     transformer = Winsorizer(
-        tail="left",
-        capping_method="quantiles",
-        fold=0.1,
-        add_indicators=True
+        tail="left", capping_method="quantiles", fold=0.1, add_indicators=True
     )
     df = pd.DataFrame({"col": np.arange(100).astype(np.float64)})
     df_out = transformer.fit_transform(df)
     expected_ind = np.r_[np.repeat(True, 10), np.repeat(False, 90)].astype(np.float64)
     pd.testing.assert_frame_equal(
-        df_out.drop("col", axis=1),
-        df.assign(col_left=expected_ind).drop("col", axis=1)
+        df_out.drop("col", axis=1), df.assign(col_left=expected_ind).drop("col", axis=1)
     )
 
     transformer.set_params(tail="right")
@@ -225,23 +224,22 @@ def test_indicators_are_correct():
     expected_ind = np.r_[np.repeat(False, 90), np.repeat(True, 10)].astype(np.float64)
     pd.testing.assert_frame_equal(
         df_out.drop("col", axis=1),
-        df.assign(col_right=expected_ind).drop("col", axis=1)
+        df.assign(col_right=expected_ind).drop("col", axis=1),
     )
 
     transformer.set_params(tail="both")
     df_out = transformer.fit_transform(df)
-    expected_ind_left = np.r_[
-        np.repeat(True, 10), np.repeat(False, 90)
-    ].astype(np.float64)
-    expected_ind_right = np.r_[
-        np.repeat(False, 90), np.repeat(True, 10)
-    ].astype(np.float64)
+    expected_ind_left = np.r_[np.repeat(True, 10), np.repeat(False, 90)].astype(
+        np.float64
+    )
+    expected_ind_right = np.r_[np.repeat(False, 90), np.repeat(True, 10)].astype(
+        np.float64
+    )
     pd.testing.assert_frame_equal(
         df_out.drop("col", axis=1),
-        df.assign(
-            col_left=expected_ind_left,
-            col_right=expected_ind_right
-        ).drop("col", axis=1)
+        df.assign(col_left=expected_ind_left, col_right=expected_ind_right).drop(
+            "col", axis=1
+        ),
     )
 
 

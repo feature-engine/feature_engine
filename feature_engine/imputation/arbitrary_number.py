@@ -6,18 +6,18 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.parameter_checks import _define_numerical_dict
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
-)
-from feature_engine.docstrings import (
-    Substitution,
-    _fit_not_learn_docstring,
-    _variables_attribute_docstring,
-    _n_features_in_docstring,
-    _fit_transform_docstring,
 )
 
 
@@ -25,7 +25,7 @@ from feature_engine.docstrings import (
     imputer_dict_=BaseImputer._imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
     n_features_in_=_n_features_in_docstring,
-    fit = _fit_not_learn_docstring,
+    fit=_fit_not_learn_docstring,
     transform=BaseImputer._transform_docstring,
     fit_transform=_fit_transform_docstring,
 )

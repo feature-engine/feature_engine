@@ -1,8 +1,9 @@
+from typing import List, Optional, Union
+
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
-from typing import List, Optional, Union
 
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
@@ -108,7 +109,7 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
 class WinsorizerBase(BaseOutlier):
 
-    _intro_docstring = """The extreme values beyond which an observation is considered 
+    _intro_docstring = """The extreme values beyond which an observation is considered
     an outlier are determined using:
 
     - a Gaussian approximation
@@ -147,24 +148,21 @@ class WinsorizerBase(BaseOutlier):
     _capping_method_docstring = """capping_method: str, default='gaussian'
         Desired outlier detection method. Can take 'gaussian', 'iqr' or 'quantiles'.
 
-        The transformer will find the maximum and / or minimum values beyond which a 
+        The transformer will find the maximum and / or minimum values beyond which a
         data point will be considered an outlier using:
-        
         **'gaussian'**: the Gaussian approximation.
-
         **'iqr'**: the IQR proximity rule.
-
         **'quantiles'**: the percentiles.
         """.rstrip()
 
     _tail_docstring = """tail: str, default='right'
-        Whether to look for outliers on the right, left or both tails of the 
+        Whether to look for outliers on the right, left or both tails of the
         distribution. Can take 'left', 'right' or 'both'.
         """.rstrip()
 
     _fold_docstring = """fold: int or float, default=3
         The factor used to multiply the std or IQR to calculate the maximum or minimum
-        allowed values. Recommended values are 2 or 3 for the gaussian approximation, 
+        allowed values. Recommended values are 2 or 3 for the gaussian approximation,
         and 1.5 or 3 for the IQR proximity rule.
 
         If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if

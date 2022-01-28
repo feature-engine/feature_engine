@@ -10,19 +10,17 @@ from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
     _is_dataframe,
 )
-from feature_engine.validation import _return_tags
-from feature_engine.variable_manipulation import (
-    _find_all_variables,
-    _find_or_check_categorical_variables,
-    _check_input_parameter_variables,
-)
-from feature_engine.docstrings import (
-    Substitution,
-)
+from feature_engine.docstrings import Substitution
 from feature_engine.encoding._docstrings import (
+    _errors_docstring,
     _ignore_format_docstring,
     _variables_docstring,
-    _errors_docstring,
+)
+from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_all_variables,
+    _find_or_check_categorical_variables,
 )
 
 

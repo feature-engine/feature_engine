@@ -8,18 +8,18 @@ from sklearn.pipeline import Pipeline
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
 from feature_engine.discretisation import DecisionTreeDiscretiser
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
-from feature_engine.encoding.ordinal import OrdinalEncoder
 from feature_engine.docstrings import (
     Substitution,
-    _variables_attribute_docstring,
-    _n_features_in_docstring,
     _fit_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
 from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
 )
+from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
+from feature_engine.encoding.ordinal import OrdinalEncoder
 
 
 @Substitution(

@@ -7,14 +7,14 @@ from typing import Dict, List, Optional, Union
 import pandas as pd
 
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
-from feature_engine.validation import _return_tags
 from feature_engine.docstrings import (
     Substitution,
-    _variables_attribute_docstring,
-    _n_features_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
+from feature_engine.validation import _return_tags
 
 
 @Substitution(
@@ -127,16 +127,16 @@ class ArbitraryDiscretiser(BaseDiscretiser):
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Sort the variable values into the intervals.
 
-       Parameters
-       ----------
-       X: pandas dataframe of shape = [n_samples, n_features]
-           The dataframe to be transformed.
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The dataframe to be transformed.
 
-       Returns
-       -------
-       X_new: pandas dataframe of shape = [n_samples, n_features]
-           The transformed data with the discrete variables.
-       """
+        Returns
+        -------
+        X_new: pandas dataframe of shape = [n_samples, n_features]
+            The transformed data with the discrete variables.
+        """
 
         X = super().transform(X)
         # check if NaN values were introduced by the discretisation procedure.

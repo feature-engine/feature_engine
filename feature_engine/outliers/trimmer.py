@@ -4,23 +4,23 @@
 import numpy as np
 import pandas as pd
 
-from feature_engine.outliers.base_outlier import WinsorizerBase
 from feature_engine.docstrings import (
     Substitution,
-    _variables_numerical_docstring,
-    _variables_attribute_docstring,
+    _fit_transform_docstring,
     _missing_values_docstring,
     _n_features_in_docstring,
-    _fit_transform_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
 )
+from feature_engine.outliers.base_outlier import WinsorizerBase
 
 
 @Substitution(
     intro_docstring=WinsorizerBase._intro_docstring,
     capping_method=WinsorizerBase._capping_method_docstring,
-    tail = WinsorizerBase._tail_docstring,
-    fold = WinsorizerBase._fold_docstring,
-    variables = _variables_numerical_docstring,
+    tail=WinsorizerBase._tail_docstring,
+    fold=WinsorizerBase._fold_docstring,
+    variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
     right_tail_caps_=WinsorizerBase._right_tail_caps_docstring,
     left_tail_caps_=WinsorizerBase._left_tail_caps_docstring,

@@ -11,18 +11,18 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     _is_dataframe,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _missing_values_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.parameter_checks import _define_numerical_dict
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
-from feature_engine.docstrings import (
-    Substitution,
-    _variables_attribute_docstring,
-    _missing_values_docstring,
-    _n_features_in_docstring,
-    _fit_not_learn_docstring,
-    _fit_transform_docstring,
-)
 
 
 @Substitution(

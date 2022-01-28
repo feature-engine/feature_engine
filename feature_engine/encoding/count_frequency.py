@@ -5,20 +5,20 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine.encoding.base_encoder import BaseCategorical
 from feature_engine.docstrings import (
     Substitution,
-    _variables_attribute_docstring,
-    _n_features_in_docstring,
     _fit_transform_docstring,
     _inverse_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
 from feature_engine.encoding._docstrings import (
-    _ignore_format_docstring,
-    _variables_docstring,
     _errors_docstring,
+    _ignore_format_docstring,
     _transform_docstring,
+    _variables_docstring,
 )
+from feature_engine.encoding.base_encoder import BaseCategorical
 
 
 @Substitution(
@@ -110,7 +110,7 @@ class CountFrequencyEncoder(BaseCategorical):
         encoding_method: str = "count",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore"
+        errors: str = "ignore",
     ) -> None:
 
         if encoding_method not in ["count", "frequency"]:

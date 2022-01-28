@@ -7,23 +7,23 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
-from feature_engine.outliers.base_outlier import WinsorizerBase
 from feature_engine.docstrings import (
     Substitution,
-    _variables_numerical_docstring,
-    _variables_attribute_docstring,
+    _fit_transform_docstring,
     _missing_values_docstring,
     _n_features_in_docstring,
-    _fit_transform_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
 )
+from feature_engine.outliers.base_outlier import WinsorizerBase
 
 
 @Substitution(
     intro_docstring=WinsorizerBase._intro_docstring,
     capping_method=WinsorizerBase._capping_method_docstring,
-    tail = WinsorizerBase._tail_docstring,
-    fold = WinsorizerBase._fold_docstring,
-    variables = _variables_numerical_docstring,
+    tail=WinsorizerBase._tail_docstring,
+    fold=WinsorizerBase._fold_docstring,
+    variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
     right_tail_caps_=WinsorizerBase._right_tail_caps_docstring,
     left_tail_caps_=WinsorizerBase._left_tail_caps_docstring,
@@ -141,9 +141,12 @@ class Winsorizer(WinsorizerBase):
                 X_out = pd.concat([X_out, X_right.astype(np.float64)], axis=1)
             else:
                 X_both = pd.concat([X_left, X_right], axis=1).astype(np.float64)
-                X_both = X_both[[
-                    cl1 for cl2 in zip(X_left.columns.values, X_right.columns.values)
-                    for cl1 in cl2
-                ]]
+                X_both = X_both[
+                    [
+                        cl1
+                        for cl2 in zip(X_left.columns.values, X_right.columns.values)
+                        for cl1 in cl2
+                    ]
+                ]
                 X_out = pd.concat([X_out, X_both], axis=1)
         return X_out

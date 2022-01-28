@@ -7,14 +7,14 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
-from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
 from feature_engine.docstrings import (
     Substitution,
-    _variables_attribute_docstring,
-    _n_features_in_docstring,
     _fit_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
+from feature_engine.imputation.base_imputer import BaseImputer
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 # for RandomSampleImputer
@@ -31,6 +31,7 @@ def _define_seed(
     elif how == "multiply":
         internal_seed = int(np.round(X.loc[index, seed_variables].product(), 0))
     return internal_seed
+
 
 @Substitution(
     variables_=_variables_attribute_docstring,

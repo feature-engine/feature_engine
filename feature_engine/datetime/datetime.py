@@ -18,15 +18,15 @@ from feature_engine.datetime.datetime_constants import (
     FEATURES_SUFFIXES,
     FEATURES_SUPPORTED,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_datetime_variables,
-)
-from feature_engine.docstrings import (
-    Substitution,
-    _n_features_in_docstring,
-    _fit_not_learn_docstring,
-    _fit_transform_docstring,
 )
 
 
@@ -140,7 +140,6 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         dayfirst: bool = False,
         yearfirst: bool = False,
         utc: Union[None, bool] = None,
-
     ) -> None:
 
         if features_to_extract:
@@ -172,10 +171,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
             )
 
         if utc is not None and not isinstance(utc, bool):
-            raise ValueError(
-                "utc takes only booleans or None. "
-                f"Got {utc} instead."
-            )
+            raise ValueError("utc takes only booleans or None. " f"Got {utc} instead.")
 
         self.variables = _check_input_parameter_variables(variables)
         self.drop_original = drop_original
@@ -254,8 +250,10 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         datetime_df = pd.concat(
             [
                 pd.to_datetime(
-                    X[variable], dayfirst=self.dayfirst,
-                    yearfirst=self.yearfirst, utc=self.utc
+                    X[variable],
+                    dayfirst=self.dayfirst,
+                    yearfirst=self.yearfirst,
+                    utc=self.utc,
                 )
                 for variable in self.variables_
             ],
@@ -265,9 +263,9 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         non_dt_columns = datetime_df.columns[~datetime_df.apply(is_datetime)].tolist()
         if non_dt_columns:
             raise ValueError(
-                "ValueError: variable(s) " +
-                (len(non_dt_columns) * '{} ').format(*non_dt_columns) +
-                "could not be converted to datetime. Try setting utc=True"
+                "ValueError: variable(s) "
+                + (len(non_dt_columns) * "{} ").format(*non_dt_columns)
+                + "could not be converted to datetime. Try setting utc=True"
             )
 
         # create new features

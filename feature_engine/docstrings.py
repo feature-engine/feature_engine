@@ -63,4 +63,3 @@ _fit_transform_docstring = """fit_transform:
 _inverse_transform_docstring = """inverse_transform:
         Convert the data back to the original representation.
         """.rstrip()
-
