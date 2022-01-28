@@ -186,6 +186,7 @@ class LogTransformer(BaseNumericalTransformer):
 
         return tags_dict
 
+
 @Substitution(
     variables_=_variables_attribute_docstring,
     n_features_in_=_n_features_in_docstring,
