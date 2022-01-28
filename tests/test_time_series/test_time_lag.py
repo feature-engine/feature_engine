@@ -81,9 +81,9 @@ def test_time_lag_fill_value(df_time):
         "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62],
         "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61],
         "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42],
-        "ambient_temp_lag_2pds": ['test_fill', 'test_fill', 31.31, 31.51, 32.15],
-        "module_temp_lag_2pds": ['test_fill', 'test_fill', 49.18, 49.84, 52.35],
-        "irradiation_lag_2pds": ['test_fill', 'test_fill', 0.51, 0.79, 0.65],
+        "ambient_temp_lag_2pds": ['nan', 'nan', 31.31, 31.51, 32.15],
+        "module_temp_lag_2pds": ['nan', 'nan', 49.18, 49.84, 52.35],
+        "irradiation_lag_2pds": ['nan', 'nan', 0.51, 0.79, 0.65],
     }
     expected_results_df = pd.DataFrame(
         data=expected_results,
