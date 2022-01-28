@@ -15,15 +15,32 @@ from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.parameter_checks import _define_numerical_dict
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
+from feature_engine.docstrings import (
+    Substitution,
+    _variables_attribute,
+    _missing_values,
+    _n_features_in,
+    _fit_not_learn,
+    _fit_transform,
+)
 
 
+@Substitution(
+    missing_values=_missing_values,
+    right_tail_caps_=BaseOutlier._right_tail_caps_docstring,
+    left_tail_caps_=BaseOutlier._left_tail_caps_docstring,
+    variables_=_variables_attribute,
+    n_features_in_=_n_features_in,
+    fit=_fit_not_learn,
+    fit_transform=_fit_transform,
+)
 class ArbitraryOutlierCapper(BaseOutlier):
     """
     The ArbitraryOutlierCapper() caps the maximum or minimum values of a variable
     at an arbitrary value indicated by the user.
 
     You must provide the maximum or minimum values that will be used to cap each
-    variable in a dictionary {feature:capping value}
+    variable in a dictionary feature:capping value.
 
     More details in the :ref:`User Guide <arbitrary_capper>`.
 
@@ -37,33 +54,28 @@ class ArbitraryOutlierCapper(BaseOutlier):
         Dictionary containing user specified capping values for the eft tail of the
         distribution of each variable (minimum values).
 
-    missing_values : string, default='raise'
-        Indicates if missing values should be ignored or raised. If
-        `missing_values='raise'` the transformer will return an error if the
-        training or the datasets to transform contain missing values.
+    {missing_values}
 
     Attributes
     ----------
-    right_tail_caps_:
-        Dictionary with the maximum values at which variables will be capped.
+    {right_tail_caps_}
 
-    left_tail_caps_:
-        Dictionary with the minimum values at which variables will be capped.
+    {left_tail_caps_}
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        This transformer does not learn any parameter.
+
+    {fit}
+
     transform:
         Cap the variables.
-    fit_transform:
-        Fit to the data. Then transform it.
+
+    {fit_transform}
+
     """
 
     def __init__(

@@ -20,6 +20,16 @@ from feature_engine.variable_manipulation import (
 class BaseOutlier(BaseEstimator, TransformerMixin):
     """shared set-up checks and methods across outlier transformers"""
 
+    _right_tail_caps_docstring = """right_tail_caps_:
+        Dictionary with the maximum values beyond which a value will be considered an
+        outlier.
+        """.rstrip()
+
+    _left_tail_caps_docstring = """left_tail_caps_:
+        Dictionary with the minimum values beyond which a value will be considered an
+        outlier.
+        """.rstrip()
+
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """Checks that the input is a dataframe and of the same size than the one used
         in the fit method. Checks absence of NA.
@@ -97,6 +107,74 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
 
 class WinsorizerBase(BaseOutlier):
+
+    _intro_docstring = """The extreme values beyond which an observation is considered 
+    an outlier are determined using:
+
+    - a Gaussian approximation
+    - the inter-quantile range proximity rule (IQR)
+    - percentiles
+
+    **Gaussian limits:**
+
+    - right tail: mean + 3* std
+    - left tail: mean - 3* std
+
+    **IQR limits:**
+
+    - right tail: 75th quantile + 3* IQR
+    - left tail:  25th quantile - 3* IQR
+
+    where IQR is the inter-quartile range: 75th quantile - 25th quantile.
+
+    **percentiles:**
+
+    - right tail: 95th percentile
+    - left tail:  5th percentile
+
+    You can select how far out to cap the maximum or minimum values with the
+    parameter `'fold'`.
+
+    If `capping_method='gaussian'` fold gives the value to multiply the std.
+
+    If `capping_method='iqr'` fold is the value to multiply the IQR.
+
+    If `capping_method='quantiles'`, fold is the percentile on each tail that should
+    be censored. For example, if fold=0.05, the limits will be the 5th and 95th
+    percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
+    """.rstrip()
+
+    _capping_method_docstring = """capping_method: str, default='gaussian'
+        Desired outlier detection method. Can take 'gaussian', 'iqr' or 'quantiles'.
+
+        The transformer will find the maximum and / or minimum values beyond which a 
+        data point will be considered an outlier using:
+        
+        **'gaussian'**: the Gaussian approximation.
+
+        **'iqr'**: the IQR proximity rule.
+
+        **'quantiles'**: the percentiles.
+        """.rstrip()
+
+    _tail_docstring = """tail: str, default='right'
+        Whether to look for outliers on the right, left or both tails of the 
+        distribution. Can take 'left', 'right' or 'both'.
+        """.rstrip()
+
+    _fold_docstring = """fold: int or float, default=3
+        The factor used to multiply the std or IQR to calculate the maximum or minimum
+        allowed values. Recommended values are 2 or 3 for the gaussian approximation, 
+        and 1.5 or 3 for the IQR proximity rule.
+
+        If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if
+        `fold=0.05`, the limits will be the 95th and 5th percentiles.
+
+        **Note**: Outliers will be removed up to a maximum of the 20th percentiles on
+        both sides. Thus, when `capping_method='quantile'`, then `'fold'` takes values
+        between 0 and 0.20.
+        """.rstrip()
+
     def __init__(
         self,
         capping_method: str = "gaussian",
