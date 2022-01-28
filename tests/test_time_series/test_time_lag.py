@@ -22,6 +22,13 @@ def test_raises_error_when_wrong_input_params(
         assert TimeSeriesLagTransformer(drop_original=_drop_original)
 
 
+def test_default_params():
+    transformer = TimeSeriesLagTransformer()
+    assert transformer.variables is None
+    assert transformer.periods == 1
+    assert transformer.freq is None
+    assert transformer.drop_original is False
+
 def test_time_lag_period_shift_and_keep_original_data(df_time):
     # case 1: The lag is correctly performed using the 'period' param.
     transformer = TimeSeriesLagTransformer(
