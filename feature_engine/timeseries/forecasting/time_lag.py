@@ -35,12 +35,6 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
     freq: str, default=None
         Optional increment to use from the tseries module or time rule.
 
-    axis: int, default=1
-        Shift direction. Index is '0'. Columns are '1'.
-
-    fill_value: [int, float, str], default=None
-        Character to be used to fill missing values.
-
     drop_original: bool, default=True
         Determines whether the dataframe keeps the original columns
         that are transformed.
@@ -84,7 +78,6 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         periods: int = 1,
         freq: str = None,
-        fill_value: [int, str] = None,
         drop_original: bool = False,
 
     ) -> None:
@@ -98,7 +91,6 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         self.variables = _check_input_parameter_variables(variables)
         self.periods = periods
         self.freq = freq
-        self.fill_value = fill_value
         self.drop_original = drop_original
 
     def fit(self, X: pd.DataFrame) -> None:
@@ -147,7 +139,6 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
             periods=self.periods,
             freq=self.freq,
             axis=0,
-            fill_value=self.fill_value
         )
 
         tmp.columns = self.rename_variables()
