@@ -144,7 +144,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         tmp.columns = self.rename_variables()
 
         if self.drop_original:
-            X = tmp.copy()
+            X = X.drop(self.variables_, axis=1)
 
         else:
             X = X.merge(
@@ -169,7 +169,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         """
 
         if self.freq is None:
-            lag_str = f"_lag_{self.periods}pds"
+            lag_str = f"_lag_{self.periods}"
         else:
             lag_str = f"_lag_{self.freq}"
 
