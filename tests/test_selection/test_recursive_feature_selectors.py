@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.tree import DecisionTreeRegressor
@@ -247,3 +248,15 @@ def test_feature_KFold_constructor(_selector, _cv, df_test):
 
     assert hasattr(sel, "initial_model_performance_")
     assert hasattr(sel, "feature_importances_")
+
+
+@pytest.mark.parametrize("_selector", _selectors[1:2])
+def test_non_fitted_error(_selector, df_test):
+    # when fit is not called prior to transform
+    with pytest.raises(NotFittedError):
+        sel = _selector(RandomForestClassifier(random_state=1))
+        sel.transform(df_test)
+
+
+# TODO:
+# test n_features_in

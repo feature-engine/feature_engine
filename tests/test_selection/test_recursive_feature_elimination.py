@@ -9,6 +9,11 @@ from sklearn.tree import DecisionTreeRegressor
 
 from feature_engine.selection import RecursiveFeatureElimination
 
+# TODO
+# test performance_drifts_
+# test features_to_drop
+# the above with a mix of classification and regression and different scoring metrics
+
 
 def test_classification_threshold_parameters(df_test):
     X, y = df_test
@@ -132,131 +137,3 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     assert list(sel.performance_drifts_.keys()) == ordered_features
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
-
-
-def test_non_fitted_error(df_test):
-    # when fit is not called prior to transform
-    with pytest.raises(NotFittedError):
-        sel = RecursiveFeatureElimination(RandomForestClassifier(random_state=1))
-        sel.transform(df_test)
-
-
-def test_raises_threshold_error():
-    with pytest.raises(ValueError):
-        RecursiveFeatureElimination(
-            RandomForestClassifier(random_state=1), threshold=None
-        )
-
-
-def test_automatic_variable_selection(load_diabetes_dataset):
-    X, y = load_diabetes_dataset
-
-    # add 2 additional categorical variables, these should not be evaluated by
-    # the selector
-    X["cat_1"] = "cat1"
-    X["cat_2"] = "cat2"
-
-    sel = RecursiveFeatureElimination(
-        estimator=DecisionTreeRegressor(random_state=0),
-        scoring="neg_mean_squared_error",
-        cv=2,
-        threshold=10,
-    )
-    # fit transformer
-    sel.fit(X, y)
-
-    # expected output
-    Xtransformed = X[[0, 2, 3, 5, 6, 7, 8, 9, "cat_1", "cat_2"]].copy()
-
-    # expected ordred features by importance
-    ordered_features = [1, 0, 4, 6, 9, 3, 7, 5, 8, 2]
-
-    # test init params
-    assert sel.variables is None
-    # fit params
-    assert sel.variables_ == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    assert np.round(sel.initial_model_performance_, 0) == -5836.0
-    assert sel.features_to_drop_ == [1, 4]
-    assert list(sel.performance_drifts_.keys()) == ordered_features
-    # test transform output
-    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
-
-
-def test_KFold_generators(df_test):
-
-    X, y = df_test
-
-    # Kfold
-    sel = RecursiveFeatureElimination(
-        RandomForestClassifier(random_state=1),
-        threshold=0.001,
-        cv=KFold(n_splits=3),
-    )
-    sel.fit(X, y)
-    Xtransformed = sel.transform(X)
-
-    # test fit attrs
-    assert sel.initial_model_performance_ > 0.995
-    assert isinstance(sel.features_to_drop_, list)
-    assert all([x for x in sel.features_to_drop_ if x in X.columns])
-    assert len(sel.features_to_drop_) < X.shape[1]
-    assert not Xtransformed.empty
-    assert all([x for x in Xtransformed.columns if x not in sel.features_to_drop_])
-    assert isinstance(sel.performance_drifts_, dict)
-    assert all([x for x in X.columns if x in sel.performance_drifts_.keys()])
-    assert all(
-        [
-            isinstance(sel.performance_drifts_[var], (int, float))
-            for var in sel.performance_drifts_.keys()
-        ]
-    )
-
-    # Stratfied
-    sel = RecursiveFeatureElimination(
-        RandomForestClassifier(random_state=1),
-        threshold=0.001,
-        cv=StratifiedKFold(n_splits=3),
-    )
-    sel.fit(X, y)
-    Xtransformed = sel.transform(X)
-
-    # test fit attrs
-    assert sel.initial_model_performance_ > 0.995
-    assert isinstance(sel.features_to_drop_, list)
-    assert all([x for x in sel.features_to_drop_ if x in X.columns])
-    assert len(sel.features_to_drop_) < X.shape[1]
-    assert not Xtransformed.empty
-    assert all([x for x in Xtransformed.columns if x not in sel.features_to_drop_])
-    assert isinstance(sel.performance_drifts_, dict)
-    assert all([x for x in X.columns if x in sel.performance_drifts_.keys()])
-    assert all(
-        [
-            isinstance(sel.performance_drifts_[var], (int, float))
-            for var in sel.performance_drifts_.keys()
-        ]
-    )
-
-    # None
-    sel = RecursiveFeatureElimination(
-        RandomForestClassifier(random_state=1),
-        threshold=0.001,
-        cv=None,
-    )
-    sel.fit(X, y)
-    Xtransformed = sel.transform(X)
-
-    # test fit attrs
-    assert sel.initial_model_performance_ > 0.995
-    assert isinstance(sel.features_to_drop_, list)
-    assert all([x for x in sel.features_to_drop_ if x in X.columns])
-    assert len(sel.features_to_drop_) < X.shape[1]
-    assert not Xtransformed.empty
-    assert all([x for x in Xtransformed.columns if x not in sel.features_to_drop_])
-    assert isinstance(sel.performance_drifts_, dict)
-    assert all([x for x in X.columns if x in sel.performance_drifts_.keys()])
-    assert all(
-        [
-            isinstance(sel.performance_drifts_[var], (int, float))
-            for var in sel.performance_drifts_.keys()
-        ]
-    )
