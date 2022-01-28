@@ -10,7 +10,9 @@ _false_input_params = [
 ]
 
 
-@pytest.mark.parametrize("_variables, _periods, _drop_original")
+@pytest.mark.parametrize(
+    "_variables, _periods, _drop_original", _false_input_params
+)
 def test_raises_error_when_wrong_input_params(
         _variables, _periods, _drop_original
 ):
@@ -37,7 +39,7 @@ def test_time_lag_period_shift_and_keep_original_data(df_time):
         periods=3,
         drop_original=False,
     )
-
+    transformer.fit(df_time)
     df_tr = transformer.transform(df_time)
 
     date_time = [
@@ -67,6 +69,7 @@ def test_time_lag_frequency_shift_and_drop_original_data(df_time):
         freq="1h",
         drop_original=True
     )
+    transformer.fit(df_time)
     df_tr = transformer.transform(df_time)
 
     date_time = [
@@ -95,7 +98,9 @@ def test_time_lag_fill_value(df_time):
         periods=2,
         drop_original=False,
     )
+    transformer.fit(df_time)
     df_tr = transformer.transform(df_time)
+
     date_time = [
         pd.Timestamp('2020-05-15 12:00:00'),
         pd.Timestamp('2020-05-15 12:15:00'),
@@ -117,22 +122,6 @@ def test_time_lag_fill_value(df_time):
     )
 
     assert df_tr.head(5) == expected_results_df
-
-
-def test_incorrect_periods_during_installation(df_time):
-    # case 4: return error when inappropriate value has been inputted for
-    # the 'periods' param
-    with pytest.raises(ValueError):
-        transformer = TimeSeriesLagTransformer(periods="cumbia")
-        transformer.transform(df_time)
-
-
-def test_incorrect_keep_original_during_installation(df_time):
-    # case 6: return error when inappropriate value has been inputted for
-    # the 'drop_original' param
-    with pytest.raises(ValueError):
-        transformer = TimeSeriesLagTransformer(drop_original="cumbia")
-        transformer.transform(df_time)
 
 
 def test_error_when_df_in_transform_is_not_a_dataframe(df_time):
