@@ -90,8 +90,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     -------
     {fit}
 
-    transform:
-        Create and add the new features.
+    {transform}
 
     {fit_transform}
 
