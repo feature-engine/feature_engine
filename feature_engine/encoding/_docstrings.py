@@ -28,7 +28,3 @@ _errors_docstring = """errors: string, default='ignore'
 _transform_docstring = """transform:
         Encode the categories to numbers.
     """.rstrip()
-
-_inverse_transform_docstring = """inverse_transform:
-        Encode the numbers into the original categories.
-    """.rstrip()

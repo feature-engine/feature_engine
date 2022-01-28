@@ -11,13 +11,13 @@ from feature_engine.docstrings import (
     _variables_attribute_docstring,
     _n_features_in_docstring,
     _fit_transform_docstring,
+    _inverse_transform_docstring,
 )
 from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
     _errors_docstring,
     _transform_docstring,
-    _inverse_transform_docstring,
 )
 
 
