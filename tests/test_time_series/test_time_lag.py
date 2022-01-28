@@ -2,20 +2,21 @@ import pandas as pd
 import pytest
 
 from feature_engine.timeseries.forecasting import TimeSeriesLagTransformer
-
+# TODO: Need to 'freq' variable
 _false_input_params = [
     ([3, 2], "pizza", 9),
     ("mate", ["bombilla", "limpiado"], "cocinado"),
     (True, False, [1984, 1999]),
 ]
 
-
+# TODO: check test
 @pytest.mark.parametrize(
     "_variables, _periods, _drop_original", _false_input_params
 )
 def test_raises_error_when_wrong_input_params(
         _variables, _periods, _drop_original
 ):
+    #TODO: Add test with 'freq' param
     with pytest.raises(ValueError):
         assert TimeSeriesLagTransformer(variables=_variables)
     with pytest.raises(ValueError):
