@@ -67,7 +67,6 @@ def test_time_lag_fill_value(df_time):
     # case 3: test that the NaN values are correctly filled
     transformer = TimeSeriesLagTransformer(
         periods=2,
-        fill_value="test_fill",
         drop_original=False,
     )
     df_tr = transformer.transform(df_time)
@@ -99,14 +98,6 @@ def test_incorrect_periods_during_installation(df_time):
     # the 'periods' param
     with pytest.raises(ValueError):
         transformer = TimeSeriesLagTransformer(periods="cumbia")
-        transformer.transform(df_time)
-
-
-def test_incorrect_axis_during_installation(df_time):
-    # case 5: return error when inappropriate value has been inputted for
-    # the 'axis' param
-    with pytest.raises(ValueError):
-        transformer = TimeSeriesLagTransformer(axis="cumbia")
         transformer.transform(df_time)
 
 
