@@ -15,7 +15,6 @@ from feature_engine.dataframe_checks import (
     _is_dataframe,
 )
 from feature_engine.variable_manipulation import (
-    _find_all_variables,
     _find_or_check_numerical_variables,
     _check_input_parameter_variables,
 )
@@ -26,6 +25,10 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
+    variables: list, default=None
+        The list of numerical variables to transform. If None, the transformer
+        will automatically select all numerical variables.
+
     periods: int, default=1
         Number of periods to shift. Can be positive or negative.
 
@@ -115,11 +118,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         _is_dataframe(X)
 
         # check variables
-        self.variables_ = _find_all_variables(X, self.variables)
-
-        # identify numerical variables
-        self.variables_numerical_ = _find_or_check_numerical_variables(self.variables)
-
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         self.n_features_in_ = X.shape[1]
 
