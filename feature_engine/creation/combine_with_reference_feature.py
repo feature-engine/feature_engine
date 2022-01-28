@@ -14,14 +14,24 @@ from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 from feature_engine.docstrings import (
     Substitution,
-    _n_features_in,
-    _fit_transform,
+    _n_features_in_docstring,
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+)
+from feature_engine.creation._docstring import (
+    _missing_values_docstring,
+    _drop_original_docstring,
+    _transform_docstring,
 )
 
 
 @Substitution(
-    n_features_in_=_n_features_in,
-    fit_transform=_fit_transform,
+    missing_values=_missing_values_docstring,
+    drop_original=_drop_original_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_not_learn_docstring,
+    transform=_transform_docstring,
+    fit_transform=_fit_transform_docstring,
 )
 class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     """
@@ -68,15 +78,9 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         If `new_variable_names` is None, the transformer will assign an arbitrary name
         to the features. The name will be var + operation + ref_var.
 
-    missing_values: string, default='ignore'
-        Indicates if missing values should be ignored or raised. If 'ignore', the
-        transformer will ignore missing data when transforming the data. If 'raise' the
-        transformer will return an error if the training or the datasets to transform
-        contain missing values.
+    {missing_values}
 
-    drop_original: bool, default=False
-        If True, the original variables will be dropped from the dataframe
-        after their combination.
+    {drop_original}
 
     Attributes
     ----------
@@ -84,10 +88,11 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
     Methods
     -------
-    fit:
-        This transformer does not learn parameters.
+    {fit}
+
     transform:
-        Combine the variables with the mathematical operations.
+        Create and add the new features.
+
     {fit_transform}
 
     Notes

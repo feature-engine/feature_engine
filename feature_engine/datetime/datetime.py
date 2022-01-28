@@ -24,14 +24,16 @@ from feature_engine.variable_manipulation import (
 )
 from feature_engine.docstrings import (
     Substitution,
-    _n_features_in,
-    _fit_transform,
+    _n_features_in_docstring,
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
 )
 
 
 @Substitution(
-    n_features_in_=_n_features_in,
-    fit_transform=_fit_transform,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_not_learn_docstring,
+    fit_transform=_fit_transform_docstring,
 )
 class DatetimeFeatures(BaseEstimator, TransformerMixin):
     """
@@ -116,10 +118,11 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
     Methods
     -------
-    fit:
-        This transformer does not learn parameters.
+    {fit}
+
     transform:
         Add the date and time features.
+
     {fit_transform}
 
     See also

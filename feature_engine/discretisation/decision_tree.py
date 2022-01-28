@@ -16,17 +16,17 @@ from feature_engine.variable_manipulation import (
 from feature_engine.docstrings import (
     Substitution,
     _variables_numerical_docstring,
-    _variables_attribute,
-    _n_features_in,
-    _fit_transform,
+    _variables_attribute_docstring,
+    _n_features_in_docstring,
+    _fit_transform_docstring,
 )
 
 
 @Substitution(
     variables=_variables_numerical_docstring,
-    variables_=_variables_attribute,
-    n_features_in_=_n_features_in,
-    fit_transform=_fit_transform,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
 )
 class DecisionTreeDiscretiser(BaseNumericalTransformer):
     """

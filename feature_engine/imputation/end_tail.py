@@ -13,19 +13,19 @@ from feature_engine.variable_manipulation import (
 )
 from feature_engine.docstrings import (
     Substitution,
-    _variables_attribute,
-    _n_features_in,
-    _fit_transform,
+    _variables_attribute_docstring,
+    _n_features_in_docstring,
+    _fit_transform_docstring,
 )
 
 
 @Substitution(
     variables=BaseImputer._variables_numerical_docstring,
     imputer_dict_=BaseImputer._imputer_dict_docstring,
-    variables_=_variables_attribute,
-    n_features_in_=_n_features_in,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
     transform=BaseImputer._transform_docstring,
-    fit_transform=_fit_transform,
+    fit_transform=_fit_transform_docstring,
 )
 class EndTailImputer(BaseImputer):
     """

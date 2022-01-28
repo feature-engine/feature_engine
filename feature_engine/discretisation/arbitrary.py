@@ -10,9 +10,10 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.validation import _return_tags
 from feature_engine.docstrings import (
     Substitution,
-    _variables_attribute,
-    _n_features_in,
-    _fit_transform,
+    _variables_attribute_docstring,
+    _n_features_in_docstring,
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
 )
 
 
@@ -21,9 +22,10 @@ from feature_engine.docstrings import (
     return_boundaries=BaseDiscretiser._return_boundaries_docstring,
     binner_dict_=BaseDiscretiser._binner_dict_docstring,
     transform=BaseDiscretiser._transform_docstring,
-    variables_=_variables_attribute,
-    n_features_in_=_n_features_in,
-    fit_transform=_fit_transform,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_not_learn_docstring,
+    fit_transform=_fit_transform_docstring,
 )
 class ArbitraryDiscretiser(BaseDiscretiser):
     """
@@ -63,8 +65,7 @@ class ArbitraryDiscretiser(BaseDiscretiser):
 
     Methods
     -------
-    fit:
-        This transformer does not learn any parameter.
+    {fit}
 
     {transform}
 

@@ -10,9 +10,9 @@ from feature_engine.encoding.base_encoder import BaseCategorical
 from feature_engine.validation import _return_tags
 from feature_engine.docstrings import (
     Substitution,
-    _variables_attribute,
-    _n_features_in,
-    _fit_transform,
+    _variables_attribute_docstring,
+    _n_features_in_docstring,
+    _fit_transform_docstring,
 )
 from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
@@ -27,9 +27,9 @@ from feature_engine.encoding._docstrings import (
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
     errors=_errors_docstring,
-    variables_=_variables_attribute,
-    n_features_in_=_n_features_in,
-    fit_transform=_fit_transform,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
     transform=_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )

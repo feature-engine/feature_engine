@@ -11,10 +11,10 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
 from feature_engine.docstrings import (
     Substitution,
     _variables_numerical_docstring,
-    _variables_attribute,
-    _missing_values,
-    _n_features_in,
-    _fit_transform,
+    _variables_attribute_docstring,
+    _missing_values_docstring,
+    _n_features_in_docstring,
+    _fit_transform_docstring,
 )
 
 
@@ -24,12 +24,12 @@ from feature_engine.docstrings import (
     tail = WinsorizerBase._tail_docstring,
     fold = WinsorizerBase._fold_docstring,
     variables = _variables_numerical_docstring,
-    missing_values=_missing_values,
+    missing_values=_missing_values_docstring,
     right_tail_caps_=WinsorizerBase._right_tail_caps_docstring,
     left_tail_caps_=WinsorizerBase._left_tail_caps_docstring,
-    variables_=_variables_attribute,
-    n_features_in_=_n_features_in,
-    fit_transform=_fit_transform,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
 )
 class Winsorizer(WinsorizerBase):
     """

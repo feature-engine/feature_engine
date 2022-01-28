@@ -35,7 +35,7 @@ _drop_original_docstring = """drop_original: bool, default=False
         If True, the original variables to transform will be dropped from the dataframe.
     """.rstrip()
 
-_missing_values = """missing_values: string, default='raise'
+_missing_values_docstring = """missing_values: string, default='raise'
         Indicates if missing values should be ignored or raised. If 'raise' the
         transformer will return an error if the the datasets to `fit` or `transform`
         contain missing values. If 'ignore', missing data will be ignored when learning
@@ -43,20 +43,20 @@ _missing_values = """missing_values: string, default='raise'
         """
 
 # Attributes
-_variables_attribute = """variables_:
+_variables_attribute_docstring = """variables_:
         The group of variables that will be transformed.
         """.rstrip()
 
-_n_features_in = """n_features_in_:
+_n_features_in_docstring = """n_features_in_:
         The number of features in the train set used in fit.
         """.rstrip()
 
 # Methods
-_fit_not_learn = """fit:
+_fit_not_learn_docstring = """fit:
         This transformer does not learn parameters.
         """.rstrip()
 
-_fit_transform = """fit_transform:
+_fit_transform_docstring = """fit_transform:
         Fit to data, then transform it.
         """.rstrip()
 

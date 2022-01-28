@@ -8,19 +8,22 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 from feature_engine.docstrings import (
     Substitution,
     _variables_numerical_docstring,
-    _drop_original_docstring,
-    _variables_attribute,
-    _n_features_in,
-    _fit_transform,
+    _variables_attribute_docstring,
+    _n_features_in_docstring,
+    _fit_transform_docstring,
 )
 
-
+from feature_engine.creation._docstring import (
+    _drop_original_docstring,
+    _transform_docstring,
+)
 @Substitution(
     variables=_variables_numerical_docstring,
     drop_original=_drop_original_docstring,
-    variables_=_variables_attribute,
-    n_features_in_=_n_features_in,
-    fit_transform=_fit_transform,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    transform=_transform_docstring,
+    fit_transform=_fit_transform_docstring,
 )
 class CyclicalTransformer(BaseNumericalTransformer):
     """
@@ -64,8 +67,9 @@ class CyclicalTransformer(BaseNumericalTransformer):
     -------
     fit:
         Learns the maximum values of the cyclical features.
-    transform:
-        Applies the cyclical transformation.
+
+    {transform}
+
     {fit_transform}
 
     References

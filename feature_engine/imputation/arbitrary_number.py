@@ -14,20 +14,20 @@ from feature_engine.variable_manipulation import (
 )
 from feature_engine.docstrings import (
     Substitution,
-    _fit_not_learn,
-    _variables_attribute,
-    _n_features_in,
-    _fit_transform,
+    _fit_not_learn_docstring,
+    _variables_attribute_docstring,
+    _n_features_in_docstring,
+    _fit_transform_docstring,
 )
 
 
 @Substitution(
     imputer_dict_=BaseImputer._imputer_dict_docstring,
-    variables_=_variables_attribute,
-    n_features_in_=_n_features_in,
-    fit = _fit_not_learn,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit = _fit_not_learn_docstring,
     transform=BaseImputer._transform_docstring,
-    fit_transform=_fit_transform,
+    fit_transform=_fit_transform_docstring,
 )
 class ArbitraryNumberImputer(BaseImputer):
     """
