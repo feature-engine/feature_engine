@@ -6,7 +6,17 @@ from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.tree import DecisionTreeRegressor
 
+from feature_engine.selection import (
+    RecursiveFeatureAddition,
+    RecursiveFeatureElimination,
+)
 from feature_engine.selection.base_recursive_selector import BaseRecursiveSelector
+
+_selectors = [
+    BaseRecursiveSelector,
+    RecursiveFeatureElimination,
+    RecursiveFeatureAddition,
+]
 
 _input_params = [
     (RandomForestClassifier(), "roc_auc", 3, 0.1, None),
@@ -16,11 +26,14 @@ _input_params = [
 ]
 
 
+@pytest.mark.parametrize("_selector", _selectors)
 @pytest.mark.parametrize(
     "_estimator, _scoring, _cv, _threshold, _variables", _input_params
 )
-def test_input_params_assignment(_estimator, _scoring, _cv, _threshold, _variables):
-    sel = BaseRecursiveSelector(
+def test_input_params_assignment(
+    _selector, _estimator, _scoring, _cv, _threshold, _variables
+):
+    sel = _selector(
         estimator=_estimator,
         scoring=_scoring,
         cv=_cv,
@@ -35,18 +48,20 @@ def test_input_params_assignment(_estimator, _scoring, _cv, _threshold, _variabl
     assert sel.variables == _variables
 
 
-def test_raises_error_when_no_estimator_passed():
+@pytest.mark.parametrize("_selector", _selectors)
+def test_raises_error_when_no_estimator_passed(_selector):
     with pytest.raises(TypeError):
-        BaseRecursiveSelector()
+        _selector()
 
 
 _thresholds = [None, [0.1], "a_string"]
 
 
+@pytest.mark.parametrize("_selector", _selectors)
 @pytest.mark.parametrize("_thresholds", _thresholds)
-def test_raises_threshold_error(_thresholds):
+def test_raises_threshold_error(_selector, _thresholds):
     with pytest.raises(ValueError):
-        BaseRecursiveSelector(RandomForestClassifier(), threshold=_thresholds)
+        _selector(RandomForestClassifier(), threshold=_thresholds)
 
 
 _not_a_df = [
@@ -56,9 +71,10 @@ _not_a_df = [
 ]
 
 
+@pytest.mark.parametrize("_selector", _selectors)
 @pytest.mark.parametrize("_not_a_df", _not_a_df)
-def test_raises_error_when_fitting_not_a_df(_not_a_df):
-    transformer = BaseRecursiveSelector(RandomForestClassifier())
+def test_raises_error_when_fitting_not_a_df(_selector, _not_a_df):
+    transformer = _selector(RandomForestClassifier())
     # trying to fit not a df
     with pytest.raises(TypeError):
         transformer.fit(_not_a_df)
@@ -67,13 +83,12 @@ def test_raises_error_when_fitting_not_a_df(_not_a_df):
 _variables = ["var_1", ["var_2"], ["var_1", "var_2", "var_3", "var_11"], None]
 
 
+@pytest.mark.parametrize("_selector", _selectors)
 @pytest.mark.parametrize("_variables", _variables)
-def test_variables_params(_variables, df_test):
+def test_variables_params(_selector, _variables, df_test):
     X, y = df_test
 
-    sel = BaseRecursiveSelector(RandomForestClassifier(), variables=_variables).fit(
-        X, y
-    )
+    sel = _selector(LogisticRegression(max_iter=2), variables=_variables).fit(X, y)
 
     if _variables is not None:
         assert sel.variables == _variables
@@ -88,27 +103,28 @@ def test_variables_params(_variables, df_test):
 
     # test selector excludes non-numerical variables automatically
     X["cat_var"] = ["A"] * 1000
-    sel = BaseRecursiveSelector(RandomForestClassifier(), variables=None).fit(X, y)
+    sel = _selector(LogisticRegression(max_iter=2), variables=None).fit(X, y)
     assert sel.variables is None
     assert sel.variables_ == ["var_" + str(i) for i in range(12)]
 
 
-def test_raises_error_when_user_passes_categorical_var(df_test):
+@pytest.mark.parametrize("_selector", _selectors)
+def test_raises_error_when_user_passes_categorical_var(_selector, df_test):
     X, y = df_test
 
     # add categorical variable
     X["cat_var"] = ["A"] * 1000
 
     with pytest.raises(TypeError):
-        BaseRecursiveSelector(
+        _selector(
             RandomForestClassifier(), variables=["var_1", "var_2", "cat_var"]
         ).fit(X, y)
 
     with pytest.raises(TypeError):
-        BaseRecursiveSelector(RandomForestClassifier(), variables="cat_var").fit(X, y)
+        _selector(RandomForestClassifier(), variables="cat_var").fit(X, y)
 
 
-_estimators = [
+_estimators_and_results = [
     (
         RandomForestClassifier(random_state=1),
         Lasso(alpha=0.01, random_state=1),
@@ -124,15 +140,18 @@ _estimators = [
 ]
 
 
-@pytest.mark.parametrize("_classifier, _regressor, _roc, _r2", _estimators)
-def test_fit_initial_model_performance(_classifier, _regressor, _roc, _r2, df_test):
+@pytest.mark.parametrize("_selector", _selectors)
+@pytest.mark.parametrize("_classifier, _regressor, _roc, _r2", _estimators_and_results)
+def test_fit_initial_model_performance(
+    _selector, _classifier, _regressor, _roc, _r2, df_test
+):
     X, y = df_test
 
-    sel = BaseRecursiveSelector(_classifier).fit(X, y)
+    sel = _selector(_classifier).fit(X, y)
 
     assert np.round(sel.initial_model_performance_, 4) == _roc
 
-    sel = BaseRecursiveSelector(
+    sel = _selector(
         _regressor,
         scoring="r2",
     ).fit(X, y)
@@ -203,19 +222,28 @@ _estimators_importance = [
 def test_feature_importances(_estimator, _importance, df_test):
     X, y = df_test
 
+    # Test Base Recursive Selector
     sel = BaseRecursiveSelector(_estimator).fit(X, y)
+    assert list(np.round(sel.feature_importances_.values, 4)) == _importance
 
+    sel = RecursiveFeatureAddition(_estimator).fit(X, y)
+    _importance.sort(reverse=True)
+    assert list(np.round(sel.feature_importances_.values, 4)) == _importance
+
+    sel = RecursiveFeatureElimination(_estimator).fit(X, y)
+    _importance.sort(reverse=False)
     assert list(np.round(sel.feature_importances_.values, 4)) == _importance
 
 
 _cv_constructor = [KFold(), StratifiedKFold()]
 
 
+@pytest.mark.parametrize("_selector", _selectors)
 @pytest.mark.parametrize("_cv", _cv_constructor)
-def test_feature_KFold_constructor(_cv, df_test):
+def test_feature_KFold_constructor(_selector, _cv, df_test):
     X, y = df_test
 
-    sel = BaseRecursiveSelector(Lasso(alpha=0.01, random_state=1), cv=_cv).fit(X, y)
+    sel = _selector(Lasso(alpha=0.01, random_state=1), cv=_cv).fit(X, y)
 
     assert hasattr(sel, "initial_model_performance_")
     assert hasattr(sel, "feature_importances_")

@@ -114,7 +114,7 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
            Target variable. Required to train the estimator.
         """
 
-        X = super().fit(X, y)
+        super().fit(X, y)
 
         # Sort the feature importance values increasingly
         self.feature_importances_.sort_values(ascending=True, inplace=True)
