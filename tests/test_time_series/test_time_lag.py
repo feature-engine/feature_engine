@@ -3,6 +3,24 @@ import pytest
 
 from feature_engine.timeseries.forecasting import TimeSeriesLagTransformer
 
+_false_input_params = [
+    ([3, 2], "pizza", 9),
+    ("mate", ["bombilla", "limpiado"], "cocinado"),
+    (True, False, [1984, 1999]),
+]
+
+
+@pytest.mark.parametrize("_variables, _periods, _drop_original")
+def test_raises_error_when_wrong_input_params(
+        _variables, _periods, _drop_original
+):
+    with pytest.raises(ValueError):
+        assert TimeSeriesLagTransformer(variables=_variables)
+    with pytest.raises(ValueError):
+        assert TimeSeriesLagTransformer(periods=_periods)
+    with pytest.raises(ValueError):
+        assert TimeSeriesLagTransformer(drop_original=_drop_original)
+
 
 def test_time_lag_period_shift_and_keep_original_data(df_time):
     # case 1: The lag is correctly performed using the 'period' param.
