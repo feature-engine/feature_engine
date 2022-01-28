@@ -29,7 +29,7 @@ from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 )
 class RareLabelEncoder(BaseCategoricalTransformer):
     """
-    The RareLabelCategoricalEncoder() groups rare or infrequent categories in
+    The RareLabelEncoder() groups rare or infrequent categories in
     a new category called "Rare", or any other name entered by the user.
 
     For example in the variable colour, if the percentage of observations

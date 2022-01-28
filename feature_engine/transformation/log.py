@@ -186,7 +186,12 @@ class LogTransformer(BaseNumericalTransformer):
 
         return tags_dict
 
-
+@Substitution(
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+    inverse_transform=_inverse_transform_docstring,
+)
 class LogCpTransformer(BaseNumericalTransformer):
     """
     The LogCpTransformer() applies the transformation log(x + C), where C is a positive
@@ -225,26 +230,26 @@ class LogCpTransformer(BaseNumericalTransformer):
 
     Attributes
     ----------
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
     C_:
         The constant C to add to each variable. If C = "auto" a dictionary with
         C = abs(min(variable)) + 1.
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn the constant C.
+
     transform:
         Transform the variables with the logarithm of x plus C.
-    fit_transform:
-        Fit to data, then transform it.
-    inverse_transform:
-        Convert the data back to the original representation.
+
+    {fit_transform}
+
+    {inverse_transform}
+
     """
 
     def __init__(

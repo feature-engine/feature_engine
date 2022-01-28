@@ -32,14 +32,14 @@ class CategoricalImputer(BaseImputer):
     The CategoricalImputer() replaces missing data in categorical variables by an
     arbitrary value or by the most frequent category.
 
-    The CategoricalVariableImputer() imputes by default only categorical variables
+    The CategoricalImputer() imputes by default only categorical variables
     (type 'object' or 'categorical'). You can pass a list of variables to impute, or
     alternatively, the encoder will find and impute all categorical variables.
 
     If you want to impute numerical variables with this transformer, there are 2 ways
     of doing it:
 
-    **Option 1**: Cast your numerical variables as object in the input dataframe, before
+    **Option 1**: Cast your numerical variables as object in the input dataframe before
     passing it to the transformer.
 
     **Option 2**: Set `ignore_format=True`. Note that if you do this and do not pass the
@@ -55,8 +55,8 @@ class CategoricalImputer(BaseImputer):
         or 'missing' to impute with an arbitrary value.
 
     fill_value: str, int, float, default='Missing'
-        Only used when `imputation_method='missing'`. User-defined value to replace the
-        missing data.
+        User-defined value to replace missing data. Only used when
+        `imputation_method='missing'`.
 
     variables: list, default=None
         The list of categorical variables that will be imputed. If None, the

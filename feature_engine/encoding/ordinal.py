@@ -33,7 +33,7 @@ from feature_engine.encoding.base_encoder import BaseCategorical
 )
 class OrdinalEncoder(BaseCategorical):
     """
-    The OrdinalCategoricalEncoder() replaces categories by ordinal numbers
+    The OrdinalEncoder() replaces categories by ordinal numbers
     (0, 1, 2, 3, etc). The numbers can be ordered based on the mean of the target
     per category, or assigned arbitrarily.
 

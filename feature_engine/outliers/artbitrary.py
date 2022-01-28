@@ -40,7 +40,8 @@ class ArbitraryOutlierCapper(BaseOutlier):
     at an arbitrary value indicated by the user.
 
     You must provide the maximum or minimum values that will be used to cap each
-    variable in a dictionary feature:capping value.
+    variable in a dictionary containing the features as keys and the capping values as
+    values.
 
     More details in the :ref:`User Guide <arbitrary_capper>`.
 
@@ -48,11 +49,11 @@ class ArbitraryOutlierCapper(BaseOutlier):
     ----------
     max_capping_dict: dictionary, default=None
         Dictionary containing the user specified capping values for the right tail of
-        the distribution of each variable (maximum values).
+        the distribution of each variable to cap (maximum values).
 
     min_capping_dict: dictionary, default=None
         Dictionary containing user specified capping values for the eft tail of the
-        distribution of each variable (minimum values).
+        distribution of each variable to cap (minimum values).
 
     {missing_values}
 

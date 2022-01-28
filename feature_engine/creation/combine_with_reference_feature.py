@@ -61,9 +61,9 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     operations: list, default=['sub']
         The list of basic mathematical operations to be used in the transformation.
 
-        If None, all of ['sub', 'div','add','mul'] will be performed. Alternatively,
+        If None, all of ['sub', 'div', 'add', 'mul'] will be performed. Alternatively,
         you can enter a list of operations to carry out. Each operation should
-        be a string and must be one of the elements in `['sub', 'div','add', 'mul']`.
+        be a string and must be one of the elements in `['sub', 'div', 'add', 'mul']`.
 
         Each operation will result in a new variable that will be added to the
         transformed dataset.
