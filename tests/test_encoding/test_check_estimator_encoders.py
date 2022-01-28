@@ -17,7 +17,7 @@ from feature_engine.encoding import (
     "Estimator",
     [
         CountFrequencyEncoder(ignore_format=True),
-        DecisionTreeEncoder(ignore_format=True),
+        DecisionTreeEncoder(regression=False, ignore_format=True),
         MeanEncoder(ignore_format=True),
         OneHotEncoder(ignore_format=True),
         OrdinalEncoder(ignore_format=True),
