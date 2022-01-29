@@ -64,50 +64,6 @@ def test_raises_threshold_error(_selector, _thresholds):
         _selector(RandomForestClassifier(), threshold=_thresholds)
 
 
-_variables = ["var_1", ["var_2"], ["var_1", "var_2", "var_3", "var_11"], None]
-
-
-@pytest.mark.parametrize("_selector", _selectors)
-@pytest.mark.parametrize("_variables", _variables)
-def test_variables_params(_selector, _variables, df_test):
-    X, y = df_test
-
-    sel = _selector(LogisticRegression(max_iter=2), variables=_variables).fit(X, y)
-
-    if _variables is not None:
-        assert sel.variables == _variables
-
-        if isinstance(_variables, list):
-            assert sel.variables_ == _variables
-        else:
-            assert sel.variables_ == [_variables]
-    else:
-        assert sel.variables is None
-        assert sel.variables_ == ["var_" + str(i) for i in range(12)]
-
-    # test selector excludes non-numerical variables automatically
-    X["cat_var"] = ["A"] * 1000
-    sel = _selector(LogisticRegression(max_iter=2), variables=None).fit(X, y)
-    assert sel.variables is None
-    assert sel.variables_ == ["var_" + str(i) for i in range(12)]
-
-
-@pytest.mark.parametrize("_selector", _selectors)
-def test_raises_error_when_user_passes_categorical_var(_selector, df_test):
-    X, y = df_test
-
-    # add categorical variable
-    X["cat_var"] = ["A"] * 1000
-
-    with pytest.raises(TypeError):
-        _selector(
-            RandomForestClassifier(), variables=["var_1", "var_2", "cat_var"]
-        ).fit(X, y)
-
-    with pytest.raises(TypeError):
-        _selector(RandomForestClassifier(), variables="cat_var").fit(X, y)
-
-
 _estimators_and_results = [
     (
         RandomForestClassifier(random_state=1),
@@ -229,5 +185,7 @@ def test_feature_KFold_constructor(_selector, _cv, df_test):
 
     sel = _selector(Lasso(alpha=0.01, random_state=1), cv=_cv).fit(X, y)
 
+    # TODO: expand this test, maybe to test if is list, or is pd series
+    # or something more detailed.
     assert hasattr(sel, "initial_model_performance_")
     assert hasattr(sel, "feature_importances_")
