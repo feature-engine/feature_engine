@@ -9,7 +9,7 @@ _false_input_params = [
     (True, False, "asado", [1984, 1999]),
 ]
 
-# TODO: check test
+
 @pytest.mark.parametrize(
     "_variables, _periods, _freq, _drop_original",
     _false_input_params
@@ -148,10 +148,4 @@ def test_error_when_df_in_transform_is_not_a_dataframe(df_time):
 
     # check that error message matches
     assert str(record.value) == msg
-
-
-def test_incorrect_freq_during_installation(df_time):
-    # case 6: return error when inappropriate value has been inputted for
-    # the 'freq' param
-    # ADD TEST
-    pass
+    

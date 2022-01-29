@@ -4,12 +4,7 @@
 from typing import List, Union
 
 import pandas as pd
-from pandas.tseries.offsets import DateOffset
-from pandas.tseries.frequencies import to_offset
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
-
-from datetime import datetime
 
 from feature_engine.dataframe_checks import (
     _is_dataframe,
