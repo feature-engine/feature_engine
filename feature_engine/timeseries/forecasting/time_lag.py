@@ -81,7 +81,12 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         drop_original: bool = False,
 
     ) -> None:
-
+        # Prevents True and False passing as 1 and 0.
+        if isinstance(periods, bool):
+            raise ValueError(
+                f"'periods' is {periods}. The variable must be "
+                f"an integer."
+            )
         if not isinstance(drop_original, bool):
             raise ValueError(
                 f"'drop_original' is {drop_original}. The variable must "
