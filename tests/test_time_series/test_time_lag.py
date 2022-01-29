@@ -6,7 +6,7 @@ from feature_engine.timeseries.forecasting import TimeSeriesLagTransformer
 _false_input_params = [
     ([3, 2], "pizza", ["tango", "empanada"], 9),
     ("mate", ["bombilla", "limpiado"], True, "cocinado"),
-    (True, False, "medialuna", [1984, 1999]),
+    (True, False, "asado", [1984, 1999]),
 ]
 
 # TODO: check test
@@ -15,16 +15,24 @@ _false_input_params = [
     _false_input_params
 )
 def test_raises_error_when_wrong_input_params(
-        _variables, _periods, _freq, _drop_original
+        _variables, _periods, _freq, _drop_original, df_time
 ):
+    with pytest.raises(KeyError):
+        transformer1 = TimeSeriesLagTransformer(variables=_variables)
+        transformer1.fit(df_time)
+        transformer1.transform(df_time)
     with pytest.raises(ValueError):
-        assert TimeSeriesLagTransformer(variables=_variables)
+        transformer2 = TimeSeriesLagTransformer(periods=_periods)
+        transformer2.fit(df_time)
+        transformer2.transform(df_time)
+    with pytest.raises((ValueError, TypeError)):
+        transformer3 = TimeSeriesLagTransformer(freq=_freq)
+        transformer3.fit(df_time)
+        transformer3.transform(df_time)
     with pytest.raises(ValueError):
-        assert TimeSeriesLagTransformer(periods=_periods)
-    with pytest.raises(ValueError):
-        assert TimeSeriesLagTransformer(freq=_freq)
-    with pytest.raises(ValueError):
-        assert TimeSeriesLagTransformer(drop_original=_drop_original)
+        transformer4 = TimeSeriesLagTransformer(drop_original=_drop_original)
+        transformer4.fit(df_time)
+        transformer4.transform(df_time)
 
 
 def test_default_params():
