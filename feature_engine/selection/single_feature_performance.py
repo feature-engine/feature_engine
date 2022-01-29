@@ -200,8 +200,8 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["allow_nan"] = (True,)
         # add additional test that fails
-        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
         tags_dict["_xfail_checks"][
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"

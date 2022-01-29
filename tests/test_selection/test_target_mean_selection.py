@@ -1,7 +1,6 @@
 # import numpy as np
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.selection import SelectByTargetMeanPerformance
 
@@ -213,20 +212,3 @@ def test_error_if_y_not_passed(df_test):
     X, y = df_test
     with pytest.raises(TypeError):
         SelectByTargetMeanPerformance().fit(X)
-
-
-def test_error_if_input_not_df(df_test):
-    X, y = df_test
-    with pytest.raises(TypeError):
-        SelectByTargetMeanPerformance().fit(X.to_dict(), y)
-
-
-def test_error_if_fit_input_not_dataframe(df_test):
-    with pytest.raises(TypeError):
-        SelectByTargetMeanPerformance().fit({"Name": ["Karthik"]})
-
-
-def test_not_fitted_error(df_test):
-    with pytest.raises(NotFittedError):
-        transformer = SelectByTargetMeanPerformance()
-        transformer.transform(df_test)

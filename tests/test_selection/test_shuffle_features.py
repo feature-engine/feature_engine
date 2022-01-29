@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.tree import DecisionTreeRegressor
@@ -111,13 +110,6 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     assert sel.features_to_drop_ == [0, 1, 3, 4, 5, 6, 7, 9]
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
-
-
-def test_non_fitted_error(df_test):
-    # when fit is not called prior to transform
-    with pytest.raises(NotFittedError):
-        sel = SelectByShuffling(RandomForestClassifier(random_state=1))
-        sel.transform(df_test)
 
 
 def test_raises_threshold_error():

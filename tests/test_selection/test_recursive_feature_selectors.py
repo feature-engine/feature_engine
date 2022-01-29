@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.tree import DecisionTreeRegressor
@@ -63,22 +62,6 @@ _thresholds = [None, [0.1], "a_string"]
 def test_raises_threshold_error(_selector, _thresholds):
     with pytest.raises(ValueError):
         _selector(RandomForestClassifier(), threshold=_thresholds)
-
-
-_not_a_df = [
-    "not_a_df",
-    [1, 2, 3, "some_data"],
-    pd.Series([-2, 1.5, 8.94], name="not_a_df"),
-]
-
-
-@pytest.mark.parametrize("_selector", _selectors)
-@pytest.mark.parametrize("_not_a_df", _not_a_df)
-def test_raises_error_when_fitting_not_a_df(_selector, _not_a_df):
-    transformer = _selector(RandomForestClassifier())
-    # trying to fit not a df
-    with pytest.raises(TypeError):
-        transformer.fit(_not_a_df)
 
 
 _variables = ["var_1", ["var_2"], ["var_1", "var_2", "var_3", "var_11"], None]
@@ -248,15 +231,3 @@ def test_feature_KFold_constructor(_selector, _cv, df_test):
 
     assert hasattr(sel, "initial_model_performance_")
     assert hasattr(sel, "feature_importances_")
-
-
-@pytest.mark.parametrize("_selector", _selectors[1:2])
-def test_non_fitted_error(_selector, df_test):
-    # when fit is not called prior to transform
-    with pytest.raises(NotFittedError):
-        sel = _selector(RandomForestClassifier(random_state=1))
-        sel.transform(df_test)
-
-
-# TODO:
-# test n_features_in

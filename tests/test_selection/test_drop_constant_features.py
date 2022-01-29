@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.selection import DropConstantFeatures
 
@@ -139,12 +138,6 @@ def test_drop_constant_features_with_list_of_variables(df_constant_features):
     pd.testing.assert_frame_equal(X, df)
 
 
-def test_error_if_fit_input_not_df():
-    # test case 4: input is not a dataframe
-    with pytest.raises(TypeError):
-        DropConstantFeatures().fit({"Name": ["Karthik"]})
-
-
 def test_error_if_tol_out_of_range():
     # test case 5: threshold not between 0 and 1
     with pytest.raises(ValueError):
@@ -183,13 +176,6 @@ def test_error_if_all_constant_and_quasi_constant_features():
                 }
             )
         )
-
-
-def test_non_fitted_error(df_constant_features):
-    # test case 8: when fit is not called prior to transform
-    with pytest.raises(NotFittedError):
-        transformer = DropConstantFeatures()
-        transformer.transform(df_constant_features)
 
 
 def test_missing_values_param():

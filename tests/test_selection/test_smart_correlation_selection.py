@@ -2,7 +2,6 @@ import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import NotFittedError
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from feature_engine.selection import SmartCorrelatedSelection
@@ -296,30 +295,6 @@ def test_error_method_supplied(df_test):
         exceptionmsg
         == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
         + f" '{method}' was supplied"
-    )
-
-
-def test_error_if_fit_input_not_dataframe():
-    with pytest.raises(TypeError):
-        SmartCorrelatedSelection().fit({"Name": [1]})
-
-
-def test_non_fitted_error(df_single):
-    X, y = df_single
-    # when fit is not called prior to transform
-    with pytest.raises(NotFittedError):
-        transformer = SmartCorrelatedSelection()
-        transformer.transform(X)
-
-    transformer = SmartCorrelatedSelection(
-        variables=None,
-        method="pearson",
-        threshold=0.8,
-        missing_values="raise",
-        selection_method="model_performance",
-        estimator=RandomForestClassifier(n_estimators=10, random_state=1),
-        scoring="roc_auc",
-        cv=3,
     )
 
 

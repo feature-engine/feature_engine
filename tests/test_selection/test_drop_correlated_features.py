@@ -1,7 +1,6 @@
 import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.selection import DropCorrelatedFeatures
 
@@ -140,19 +139,6 @@ def test_callable_method(df_correlated_double, random_uniform_method):
     assert len(transformer.features_to_drop_) > 0
     assert len(transformer.variables_) > 0
     assert transformer.n_features_in_ == len(X.columns)
-
-
-def test_error_if_fit_input_not_dataframe():
-    with pytest.raises(TypeError):
-        # Next line needs review
-        DropCorrelatedFeatures().fit({"Name": [1]})
-
-
-def test_non_fitted_error(df_correlated_single):
-    # when fit is not called prior to transform
-    with pytest.raises(NotFittedError):
-        transformer = DropCorrelatedFeatures()
-        transformer.transform(df_correlated_single)
 
 
 def test_error_method_supplied(df_correlated_double):
