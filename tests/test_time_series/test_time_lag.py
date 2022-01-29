@@ -17,7 +17,6 @@ _false_input_params = [
 def test_raises_error_when_wrong_input_params(
         _variables, _periods, _freq, _drop_original
 ):
-    #TODO: Add test with 'freq' param
     with pytest.raises(ValueError):
         assert TimeSeriesLagTransformer(variables=_variables)
     with pytest.raises(ValueError):
@@ -37,7 +36,7 @@ def test_default_params():
 
 
 def test_time_lag_period_shift_and_keep_original_data(df_time):
-    # case 1: The lag is correctly performed using the 'period' param.
+    # The lag is correctly performed using the 'period' param.
     transformer = TimeSeriesLagTransformer(
         variables=["ambient_temp", "module_temp"],
         periods=3,
@@ -69,7 +68,7 @@ def test_time_lag_period_shift_and_keep_original_data(df_time):
 
 
 def test_time_lag_frequency_shift_and_drop_original_data(df_time):
-    # case 2: Data is properly transformed using the 'freq' param.
+    # Data is properly transformed using the 'freq' param.
     transformer = TimeSeriesLagTransformer(
         freq="1h",
         drop_original=True
