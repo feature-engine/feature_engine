@@ -56,6 +56,7 @@ def test_time_lag_period_shift_and_keep_original_data(df_time):
     expected_results = {
         "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62],
         "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61],
+        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42],
         "ambient_temp_lag_3": [np.nan, np.nan, np.nan, 31.31, 31.51],
         "module_temp_lag_3": [np.nan, np.nan, np.nan, 49.18, 49.84],
     }
@@ -77,6 +78,10 @@ def test_time_lag_frequency_shift_and_drop_original_data(df_time):
     df_tr = transformer.transform(df_time)
 
     date_time = [
+        pd.Timestamp('2020-05-15 12:00:00'),
+        pd.Timestamp('2020-05-15 12:15:00'),
+        pd.Timestamp('2020-05-15 12:30:00'),
+        pd.Timestamp('2020-05-15 12:45:00'),
         pd.Timestamp('2020-05-15 13:00:00'),
         pd.Timestamp('2020-05-15 13:15:00'),
         pd.Timestamp('2020-05-15 13:30:00'),
@@ -84,16 +89,19 @@ def test_time_lag_frequency_shift_and_drop_original_data(df_time):
         pd.Timestamp('2020-05-15 14:00:00')
     ]
     expected_results = {
-        "ambient_temp_lag_1h": [31.31, 31.51, 32.15, 32.39, 32.62],
-        "module_temp_lag_1h": [49.18, 49.84, 52.35, 50.63, 49.61],
-        "irradiation_lag_1h": [0.51, 0.79, 0.65, 0.76, 0.42],
+        "ambient_temp_lag_1h": [np.nan, np.nan, np.nan, np.nan,
+                                31.31, 31.51, 32.15, 32.39, 32.62],
+        "module_temp_lag_1h": [np.nan, np.nan, np.nan, np.nan,
+                               49.18, 49.84, 52.35, 50.63, 49.61],
+        "irradiation_lag_1h": [np.nan, np.nan, np.nan, np.nan,
+                               0.51, 0.79, 0.65, 0.76, 0.42],
     }
     expected_results_df = pd.DataFrame(
         data=expected_results,
         index=date_time,
     )
 
-    assert df_tr.head(5).equals(expected_results_df.columns)
+    assert df_tr.head(9).equals(expected_results_df)
 
 
 def test_time_lag_fill_value(df_time):
