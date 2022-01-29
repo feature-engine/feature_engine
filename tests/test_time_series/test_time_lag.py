@@ -104,11 +104,10 @@ def test_time_lag_frequency_shift_and_drop_original_data(df_time):
     assert df_tr.head(9).equals(expected_results_df)
 
 
-def test_time_lag_fill_value(df_time):
-    # case 3: test that the NaN values are correctly filled
+def test_time_lag_periods_drop_original_value(df_time):
     transformer = TimeSeriesLagTransformer(
         periods=2,
-        drop_original=False,
+        drop_original=True,
     )
     transformer.fit(df_time)
     df_tr = transformer.transform(df_time)
@@ -121,9 +120,6 @@ def test_time_lag_fill_value(df_time):
         pd.Timestamp('2020-05-15 13:00:00'),
     ]
     expected_results = {
-        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62],
-        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61],
-        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42],
         "ambient_temp_lag_2": [np.nan, np.nan, 31.31, 31.51, 32.15],
         "module_temp_lag_2": [np.nan, np.nan, 49.18, 49.84, 52.35],
         "irradiation_lag_2": [np.nan, np.nan, 0.51, 0.79, 0.65],
