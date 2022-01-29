@@ -142,16 +142,14 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         )
 
         tmp.columns = self.rename_variables()
+        X = X.merge(
+            tmp, left_index=True, right_index=True, how="left"
+        )
 
         if self.drop_original:
             X = X.drop(self.variables_, axis=1)
 
-        else:
-            X = X.merge(
-                tmp, left_index=True, right_index=True, how="left"
-            )
-
-        return X
+            return X
 
     def rename_variables(self):
         """
