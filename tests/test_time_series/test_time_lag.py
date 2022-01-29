@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -55,15 +56,15 @@ def test_time_lag_period_shift_and_keep_original_data(df_time):
     expected_results = {
         "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62],
         "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61],
-        "ambient_temp_lag_3": ['nan', 'nan', 'nan', 31.31, 31.51],
-        "module_temp_lag_3": ['nan', 'nan', 'nan', 49.18, 49.84],
+        "ambient_temp_lag_3": [np.nan, np.nan, np.nan, 31.31, 31.51],
+        "module_temp_lag_3": [np.nan, np.nan, np.nan, 49.18, 49.84],
     }
     expected_results_df = pd.DataFrame(
         data=expected_results,
         index=date_time
     )
 
-    assert df_tr.head(5) == expected_results_df
+    assert df_tr.head(5).equals(expected_results_df)
 
 
 def test_time_lag_frequency_shift_and_drop_original_data(df_time):
@@ -92,7 +93,7 @@ def test_time_lag_frequency_shift_and_drop_original_data(df_time):
         index=date_time,
     )
 
-    assert df_tr.head(5) == expected_results_df
+    assert df_tr.head(5).equals(expected_results_df.columns)
 
 
 def test_time_lag_fill_value(df_time):
@@ -115,16 +116,16 @@ def test_time_lag_fill_value(df_time):
         "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62],
         "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61],
         "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42],
-        "ambient_temp_lag_2": ['nan', 'nan', 31.31, 31.51, 32.15],
-        "module_temp_lag_2": ['nan', 'nan', 49.18, 49.84, 52.35],
-        "irradiation_lag_2": ['nan', 'nan', 0.51, 0.79, 0.65],
+        "ambient_temp_lag_2": [np.nan, np.nan, 31.31, 31.51, 32.15],
+        "module_temp_lag_2": [np.nan, np.nan, 49.18, 49.84, 52.35],
+        "irradiation_lag_2": [np.nan, np.nan, 0.51, 0.79, 0.65],
     }
     expected_results_df = pd.DataFrame(
         data=expected_results,
         index=date_time
     )
 
-    assert df_tr.head(5) == expected_results_df
+    assert df_tr.head(5).equals(expected_results_df)
 
 
 def test_error_when_df_in_transform_is_not_a_dataframe(df_time):
