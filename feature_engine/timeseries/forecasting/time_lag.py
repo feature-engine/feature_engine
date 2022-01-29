@@ -149,7 +149,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         if self.drop_original:
             X = X.drop(self.variables_, axis=1)
 
-            return X
+        return X
 
     def rename_variables(self):
         """
