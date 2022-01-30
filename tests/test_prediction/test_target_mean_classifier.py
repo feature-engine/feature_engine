@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from sklearn.pipeline import Pipeline
+from sklearn.exceptions import NotFittedError
 
 from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
@@ -98,3 +98,17 @@ def test_classifier_results_with_all_categorical_variables(
 
     # test accuracy score calc
     assert accuracy_score.round(6) == 0.5
+
+
+def test_non_fitted_error(df_pred):
+    # test if transformer has been fitted
+    with pytest.raises(NotFittedError):
+        TargetMeanClassifier().predict(df_pred[["Studies", "Age"]])
+
+
+def test_raises_error_when_df_has_nan(df_enc_na):
+    # Raise error when dataset contains na, fit method
+    with pytest.raises(ValueError):
+        TargetMeanClassifier().fit(
+            df_enc_na[["var_A", "var_B"]], df_enc_na["target"]
+        )
