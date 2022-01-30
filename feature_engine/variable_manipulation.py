@@ -352,7 +352,6 @@ def _find_categorical_and_numerical_variables(
     if isinstance(variables, (str, int)):
 
         if is_categorical(X[variables]) or is_object(X[variables]):
-
             variables_cat = [variables]
             variables_num = []
         elif is_numeric(X[variables]):

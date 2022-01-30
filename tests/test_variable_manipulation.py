@@ -309,24 +309,23 @@ def test_find_categorical_and_numerical_variable_one_cat_var(
 
 def test_find_cat_and_num_vars_one_cat_var(df_enc):
     assert (_find_categorical_and_numerical_variables(
-        df_enc, ["var_A"]) == (["var_A"], [])
+        df_enc, "var_A") == (["var_A"], [])
             )
 
 
 def test_find_cat_and_num_vars_one_num_var(df_enc_numeric):
     assert (_find_categorical_and_numerical_variables(
-        df_enc_numeric, ["var_B"]) == ([], ["var_B"])
+        df_enc_numeric, "var_B") == ([], ["var_B"])
             )
 
 
 def test_error_find_cat_and_num_vars_datetime_var(df_datetime):
-    # COME BACK TO
-    pass
-    # with pytest.raises(TypeError):
-    #     results =_find_categorical_and_numerical_variables(
-    #         df_datetime, ["datetime_range"]
-    #         )
-    #     print(results)
+    # TODO: Fix test. Not returning type error.
+    with pytest.raises(TypeError):
+        res = _find_categorical_and_numerical_variables(
+            df_datetime, ["datetime_range"]
+        )
+
 
 
 def test_find_cat_and_num_vars_df_contains_num_and_cat_vars(
