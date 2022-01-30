@@ -301,10 +301,14 @@ def _find_categorical_and_numerical_variables(
 
     # If the user passes just 1 variable outside a list.
     if isinstance(variables, (str, int)):
+
         if is_categorical(X[variables]) or is_object(X[variables]):
+
             variables_cat = [variables]
+            variables_num = []
         elif is_numeric(X[variables]):
             variables_num = [variables]
+            variables_cat = []
         else:
             raise TypeError("The variable entered is neither numerical "
                             "nor categorical.")
