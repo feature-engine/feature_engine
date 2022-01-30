@@ -279,8 +279,6 @@ def test_find_all_variables(df_vartypes):
         assert _find_all_variables(df_vartypes, non_existing_vars)
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 filter_dict = [
     (
         pd.DataFrame(columns=["A", "B", "C", "D", "E"]),
@@ -308,13 +306,27 @@ def test_find_categorical_and_numerical_variable_one_cat_var(
 ):
     assert (_find_categorical_and_numerical_variables(df_enc, ["var_A"])
             == (["var_A"], []))
+=======
+def test_find_cat_and_num_vars_one_cat_var(df_enc):
+    assert (_find_categorical_and_numerical_variables(
+        df_enc, ["var_A"]) == (["var_A"], [])
+            )
 
 
-def test_find_categorical_and_numerical_variable_one_num_var(
-        df_enc_numeric
-):
-    assert (_find_categorical_and_numerical_variables(df_enc_numeric,
-                ["var_B"]) == ([], ["var_B"]))
+def test_find_cat_and_num_vars_one_num_var(df_enc_numeric):
+    assert (_find_categorical_and_numerical_variables(
+        df_enc_numeric, ["var_B"]) == ([], ["var_B"])
+            )
+
+
+def test_error_find_cat_and_num_vars_datetime_var(df_datetime):
+    with pytest.raises(TypeError):
+        _find_categorical_and_numerical_variables(
+            df_datetime, ["datetime_range"]
+            )
+
+
+# def test_find_categorical_and_numerical_vars_
 
 
 #TODO
