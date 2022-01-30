@@ -334,7 +334,7 @@ def _filter_out_variables_not_in_dataframe(X, variables):
 
 def _find_categorical_and_numerical_variables(
         X: pd.DataFrame, variables: Variables = None
-):  # TODO: add typehint to output
+) -> List[Union[str, int]], List[Union[str, int]]:
     """
     Find numerical and categorical variables.
 
