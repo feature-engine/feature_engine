@@ -8,6 +8,7 @@ from feature_engine.variable_manipulation import (
     _find_or_check_categorical_variables,
     _find_or_check_datetime_variables,
     _find_or_check_numerical_variables,
+    _find_categorical_and_numerical_variables,
 )
 
 
@@ -279,6 +280,7 @@ def test_find_all_variables(df_vartypes):
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 filter_dict = [
     (
         pd.DataFrame(columns=["A", "B", "C", "D", "E"]),
@@ -299,6 +301,20 @@ def test_filter_out_variables_not_in_dataframe(df, variables, overlap, not_in_co
 
     with pytest.raises(ValueError):
         assert _filter_out_variables_not_in_dataframe(df, not_in_col)
+
+
+def test_find_categorical_and_numerical_variable_one_cat_var(
+        df_enc
+):
+    assert (_find_categorical_and_numerical_variables(df_enc, ["var_A"])
+            == (["var_A"], []))
+
+
+def test_find_categorical_and_numerical_variable_one_num_var(
+        df_enc_numeric
+):
+    assert (_find_categorical_and_numerical_variables(df_enc_numeric,
+                ["var_B"]) == ([], ["var_B"]))
 
 
 #TODO
