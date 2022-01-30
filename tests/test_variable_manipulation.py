@@ -306,7 +306,7 @@ def test_find_categorical_and_numerical_variable_one_cat_var(
 ):
     assert (_find_categorical_and_numerical_variables(df_enc, ["var_A"])
             == (["var_A"], []))
-=======
+
 def test_find_cat_and_num_vars_one_cat_var(df_enc):
     assert (_find_categorical_and_numerical_variables(
         df_enc, ["var_A"]) == (["var_A"], [])
@@ -335,6 +335,14 @@ def test_find_cat_and_num_vars_df_contains_num_and_cat(
     assert (_find_categorical_and_numerical_variables(
         df_enc_categorical_and_numeric, None)
         == (["var_A", "var_B"], ["var_C", "var_D", "target"]))
+
+
+def test_find_cat_and_num_vars_df_contains_num_and_cat(
+        df_enc_numeric
+):
+    assert (_find_categorical_and_numerical_variables(
+        df_enc_numeric, None)
+        == ([], ["var_A", "var_B", "target"]))
 
 
 #TODO
