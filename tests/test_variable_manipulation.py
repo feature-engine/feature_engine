@@ -278,19 +278,25 @@ def test_find_all_variables(df_vartypes):
         assert _find_all_variables(df_vartypes, non_existing_vars)
 
 
-def test_find_cat_and_num_vars_one_cat_var(df_enc):
+def test_find_categorical_and_numeric_variables_one_categorical_variables(
+        df_enc
+):
     assert (_find_categorical_and_numerical_variables(
         df_enc, "var_A") == (["var_A"], [])
             )
 
 
-def test_find_cat_and_num_vars_one_num_var(df_enc_numeric):
+def test_find_categorical_and_numerics_variables_one_numeric_variable(
+        df_enc_numeric
+):
     assert (_find_categorical_and_numerical_variables(
         df_enc_numeric, "var_B") == ([], ["var_B"])
             )
 
 
-def test_error_find_cat_and_num_vars_datetime_var(df_datetime):
+def test_error_find_categorical_and_numerical_vars_datetime_var(
+        df_datetime
+):
     # TODO: Fix test. Not returning type error.
     with pytest.raises(TypeError):
         res = _find_categorical_and_numerical_variables(
@@ -298,8 +304,7 @@ def test_error_find_cat_and_num_vars_datetime_var(df_datetime):
         )
 
 
-
-def test_find_cat_and_num_vars_df_contains_num_and_cat_vars(
+def test_find_categorical_and_numeric_vars_df_contains_num_and_cat_vars(
         df_enc_categorical_and_numeric
 ):
     assert (_find_categorical_and_numerical_variables(
@@ -307,7 +312,7 @@ def test_find_cat_and_num_vars_df_contains_num_and_cat_vars(
         == (["var_A", "var_B"], ["var_C", "var_D", "target"]))
 
 
-def test_find_cat_and_num_vars_df_contains_num_vars(
+def test_find_categorical_and_numeric_variables_df_contains_num_vars(
         df_enc_numeric
 ):
     assert (_find_categorical_and_numerical_variables(
@@ -315,7 +320,7 @@ def test_find_cat_and_num_vars_df_contains_num_vars(
         == ([], ["var_A", "var_B", "target"]))
 
 
-def test_find_cat_and_num_vars_df_contains_cat_vars(
+def test_find_categorical_and_numeric_variables_df_contains_cat_vars(
         df_enc
 ):
     df_new = df_enc[["var_A", "var_B"]].copy()
@@ -324,7 +329,7 @@ def test_find_cat_and_num_vars_df_contains_cat_vars(
         == (["var_A", "var_B"], []))
 
 
-def test_error_find_cat_and_num_vars_pass_empty_list(
+def test_error_find_categorical_and_numeric_variables_pass_empty_list(
         df_enc
 ):
     with pytest.raises(ValueError):
@@ -333,7 +338,7 @@ def test_error_find_cat_and_num_vars_pass_empty_list(
         )
 
 
-def test_find_cat_and_num_vars_user_passes_num_and_cat_vars(
+def test_find_categorical_and_numerical_variables_user_passes_num_and_cat_vars(
         df_enc_categorical_and_numeric
 ):
     assert (_find_categorical_and_numerical_variables(
@@ -341,7 +346,7 @@ def test_find_cat_and_num_vars_user_passes_num_and_cat_vars(
         == (["var_A"], ["var_C", "target"]))
 
 
-def test_find_cat_and_num_vars_user_passes_cat_vars(
+def test_find_categorical_and_numeric_variables_user_passes_cat_vars(
         df_enc_categorical_and_numeric
 ):
     assert (_find_categorical_and_numerical_variables(
@@ -349,7 +354,7 @@ def test_find_cat_and_num_vars_user_passes_cat_vars(
         == (["var_A", "var_B"], []))
 
 
-def test_find_cat_and_num_vars_user_passes_num_vars(
+def test_find_categorical_and_numeric_variables_user_passes_num_vars(
         df_enc_categorical_and_numeric
 ):
     assert (_find_categorical_and_numerical_variables(
