@@ -333,6 +333,31 @@ def test_error_find_cat_and_num_vars_pass_empty_list(
             df_enc, []
         )
 
+
+def test_find_cat_and_num_vars_user_passes_num_and_cat_vars(
+        df_enc_categorical_and_numeric
+):
+    assert (_find_categorical_and_numerical_variables(
+        df_enc_categorical_and_numeric, ["var_A", "var_C", "target"])
+        == (["var_A"], ["var_C", "target"]))
+
+
+def test_find_cat_and_num_vars_user_passes_cat_vars(
+        df_enc_categorical_and_numeric
+):
+    assert (_find_categorical_and_numerical_variables(
+        df_enc_categorical_and_numeric, ["var_A", "var_B"])
+        == (["var_A", "var_B"], []))
+
+
+def test_find_cat_and_num_vars_user_passes_num_vars(
+        df_enc_categorical_and_numeric
+):
+    assert (_find_categorical_and_numerical_variables(
+        df_enc_categorical_and_numeric, ["var_C", "target"])
+        == ([], ["var_C", "target"]))
+
+
 #TODO
 # add tests for new function: find_numerical_and_categorical_variables
 # test the following:
