@@ -7,6 +7,7 @@ from feature_engine.variable_manipulation import (
     _find_or_check_categorical_variables,
     _find_or_check_datetime_variables,
     _find_or_check_numerical_variables,
+    _find_categorical_and_numerical_variables,
 )
 
 
@@ -276,6 +277,19 @@ def test_find_all_variables(df_vartypes):
     with pytest.raises(KeyError):
         assert _find_all_variables(df_vartypes, non_existing_vars)
 
+
+def test_find_categorical_and_numerical_variable_one_cat_var(
+        df_enc
+):
+    assert (_find_categorical_and_numerical_variables(df_enc, ["var_A"])
+            == (["var_A"], []))
+
+
+def test_find_categorical_and_numerical_variable_one_num_var(
+        df_enc_numeric
+):
+    assert (_find_categorical_and_numerical_variables(df_enc_numeric,
+                ["var_B"]) == ([], ["var_B"]))
 
 #TODO
 # add tests for new function: find_numerical_and_categorical_variables
