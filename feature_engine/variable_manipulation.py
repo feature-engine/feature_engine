@@ -285,7 +285,7 @@ def _find_all_variables(
 
 def _find_categorical_and_numerical_variables(
         X: pd.DataFrame, variables: Variables = None
-) -> List[Union[str, int]], List[Union[str, int]]:
+) -> (List[Union[str, int]], List[Union[str, int]]):
     """
     Find numerical and categorical variables.
 
