@@ -19,8 +19,7 @@ def test_drop_2_variables(df_vartypes):
 
     # init params
     assert transformer.features_to_drop == ["City", "dob"]
-    # fit attr
-    assert transformer.n_features_in_ == 5
+
     # transform params
     assert X.shape == (4, 3)
     assert type(X) == pd.DataFrame
@@ -63,7 +62,5 @@ def test_drop_2_variables_integer_colnames(df_numeric_columns):
 
     # init params
     assert transformer.features_to_drop == [0, 1]
-    # fit attr
-    assert transformer.n_features_in_ == 5
     # transform params
     pd.testing.assert_frame_equal(X, df)

@@ -57,17 +57,8 @@ def test_default_params(df_correlated_single):
     # test init params
     assert transformer.method == "pearson"
     assert transformer.threshold == 0.8
-    assert transformer.variables is None
 
     # test fit attrs
-    assert transformer.variables_ == [
-        "var_0",
-        "var_1",
-        "var_2",
-        "var_3",
-        "var_4",
-        "var_5",
-    ]
     assert transformer.features_to_drop_ == {"var_2"}
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
     # test transform output
@@ -86,17 +77,8 @@ def test_lower_threshold(df_correlated_single):
     # test init params
     assert transformer.method == "pearson"
     assert transformer.threshold == 0.6
-    assert transformer.variables is None
 
     # test fit attrs
-    assert transformer.variables_ == [
-        "var_0",
-        "var_1",
-        "var_2",
-        "var_3",
-        "var_4",
-        "var_5",
-    ]
     assert transformer.features_to_drop_ == {"var_2", "var_4"}
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2", "var_4"}]
     # test transform output

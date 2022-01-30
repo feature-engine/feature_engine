@@ -30,7 +30,7 @@ def test_df(numeric=True):
 def check_feature_engine_estimator(estimator):
     # TODO: test if this is working
     check_raises_non_fitted_error(estimator)
-    check_raises_error_when_fitting_not_a_df
+    check_raises_error_when_fitting_not_a_df(estimator)
     check_raises_error_when_transforming_not_a_df(estimator)
 
 
@@ -72,6 +72,12 @@ def check_raises_error_when_transforming_not_a_df(estimator):
         # trying to transform not a df
         with pytest.raises(TypeError):
             transformer.fit(not_df)
+
+
+def check_error_if_y_not_passed(estimator):
+    X, y = test_df()
+    with pytest.raises(TypeError):
+        estimator.fit(X)
 
 
 def check_numerical_variables_assignment(estimator):
@@ -180,3 +186,57 @@ def check_all_types_variables_assignment(estimator):
         else:
             assert transformer.variables is None
             assert transformer.variables_ == list(X.columns)
+
+
+def check_takes_cv_constructor(estimator):
+
+    from sklearn.model_selection import KFold, StratifiedKFold
+
+    X, y = test_df()
+
+    cv_constructor_ls = [KFold(n_splits=3), StratifiedKFold(n_splits=3), None]
+
+    for cv_constructor in cv_constructor_ls:
+
+        sel = estimator.set_params(cv=cv_constructor)
+        sel.fit(X, y)
+        Xtransformed = sel.transform(X)
+
+        # test fit attrs
+        if hasattr(sel, "initial_model_performance_"):
+            assert isinstance(sel.initial_model_performance_, (int, float))
+
+        assert isinstance(sel.features_to_drop_, list)
+        assert all([x for x in sel.features_to_drop_ if x in X.columns])
+        assert len(sel.features_to_drop_) < X.shape[1]
+
+        assert not Xtransformed.empty
+        assert all([x for x in Xtransformed.columns if x not in sel.features_to_drop_])
+
+        if hasattr(sel, "performance_drifts_"):
+            assert isinstance(sel.performance_drifts_, dict)
+            assert all([x for x in X.columns if x in sel.performance_drifts_.keys()])
+            assert all(
+                [
+                    isinstance(sel.performance_drifts_[var], (int, float))
+                    for var in sel.performance_drifts_.keys()
+                ]
+            )
+
+        if hasattr(sel, "feature_performance_"):
+            assert isinstance(sel.feature_performance_, dict)
+            assert all([x for x in X.columns if x in sel.feature_performance_.keys()])
+            assert all(
+                [
+                    isinstance(sel.feature_performance_[var], (int, float))
+                    for var in sel.feature_performance_.keys()
+                ]
+            )
+
+
+# ======== input param error checks
+def check_error_param_missing_values(estimator):
+    # param takes values "raise" or "ignore"
+    for value in [2, "hola", False]:
+        with pytest.raises(ValueError):
+            estimator(missing_values=value)

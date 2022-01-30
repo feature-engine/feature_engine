@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
-import pytest
+# import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import KFold, StratifiedKFold
+from sklearn.model_selection import KFold
 from sklearn.tree import DecisionTreeRegressor
 
 from feature_engine.selection import RecursiveFeatureAddition

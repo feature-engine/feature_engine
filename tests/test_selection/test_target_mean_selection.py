@@ -4,6 +4,8 @@ import pytest
 
 from feature_engine.selection import SelectByTargetMeanPerformance
 
+# TODO: we need to expand these tests
+
 
 def test_numerical_variables_roc_auc(df_test):
     X, y = df_test
@@ -206,9 +208,3 @@ def test_error_wrong_params():
         SelectByTargetMeanPerformance(cv="hola")
     with pytest.raises(ValueError):
         SelectByTargetMeanPerformance(cv=1)
-
-
-def test_error_if_y_not_passed(df_test):
-    X, y = df_test
-    with pytest.raises(TypeError):
-        SelectByTargetMeanPerformance().fit(X)

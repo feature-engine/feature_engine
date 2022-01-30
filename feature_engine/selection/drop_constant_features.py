@@ -81,7 +81,12 @@ class DropConstantFeatures(BaseSelector):
         self, variables: Variables = None, tol: float = 1, missing_values: str = "raise"
     ):
 
-        if not isinstance(tol, (float, int)) or tol < 0 or tol > 1:
+        if (
+            not isinstance(tol, (float, int))
+            or isinstance(tol, bool)
+            or tol < 0
+            or tol > 1
+        ):
             raise ValueError("tol must be a float or integer between 0 and 1")
 
         if missing_values not in ["raise", "ignore", "include"]:
