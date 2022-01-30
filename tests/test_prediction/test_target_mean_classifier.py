@@ -121,3 +121,10 @@ def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
 
     with pytest.raises(ValueError):
         transformer.predict(df_enc_na[["var_A", "var_B"]])
+
+
+@pytest.mark.parametrize("_not_a_df", _not_a_df)
+def test_raises_error_when_not_fitting_a_df(_not_a_df, df_pred):
+    transformer = TargetMeanClassifier()
+    with pytest.raises(TypeError):
+        transformer.fit(_not_a_df, df_pred["Plays_Football"])
