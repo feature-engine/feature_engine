@@ -299,7 +299,7 @@ def test_error_find_categorical_and_numerical_vars_datetime_var(
 ):
     # TODO: Fix test. Not returning type error.
     with pytest.raises(TypeError):
-        res = _find_categorical_and_numerical_variables(
+        _find_categorical_and_numerical_variables(
             df_datetime, ["datetime_range"]
         )
 
@@ -362,7 +362,7 @@ def test_find_categorical_and_numeric_variables_user_passes_num_vars(
         == ([], ["var_C", "target"]))
 
 
-#TODO
+#TODO:
 # add tests for new function: find_numerical_and_categorical_variables
 # test the following:
 # user passes 1 variable that is categorical
