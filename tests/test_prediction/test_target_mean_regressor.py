@@ -2,14 +2,13 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
-from sklearn.pipeline import Pipeline
 
 from feature_engine.discretisation import (
     EqualWidthDiscretiser,
 )
+import feature_engine
 from feature_engine.encoding import MeanEncoder
 from feature_engine.prediction import TargetMeanRegressor
-from tests.test_prediction.conftest import df_pred
 
 _false_input_params = [
     ("salsa", "arbitrary"),
@@ -57,11 +56,12 @@ def test_attributes_upon_fitting(df_pred):
     # test attributes
     assert transformer.variables_categorical_ == ["City", "Studies"]
     assert transformer.variables_numerical_ == ["Age"]
-    assert transformer.pipeline_.named_steps == {
-        'discretiser': EqualWidthDiscretiser(bins=5, return_object=True, variables=['Age']),
-        'encoder_num': MeanEncoder(errors='raise', variables=['Age']),
-        'encoder_cat': MeanEncoder(errors='raise', variables=['City', 'Studies']),
-    }
+    assert type(transformer.pipeline_
+                .named_steps["discretiser"]) == EqualWidthDiscretiser
+    assert type(transformer.pipeline_
+                .named_steps["encoder_num"]) == MeanEncoder
+    assert type(transformer.pipeline_
+                .named_steps["encoder_cat"]) == MeanEncoder
     assert transformer.n_features_in_ == 3
 
 
@@ -82,7 +82,9 @@ def test_target_mean_predictor_transformation(df_pred, df_pred_small):
     )).all()
 
 
-def test_regression_score_calculation_with_equal_frequency(df_pred, df_pred_small):
+def test_regression_score_calculation_with_equal_frequency(
+        df_pred, df_pred_small
+):
     # Case 3: check score() method
     transformer = TargetMeanRegressor(
         variables=None,
