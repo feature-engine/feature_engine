@@ -127,9 +127,12 @@ def test_non_fitted_error(df_pred):
 
 def test_raises_error_when_df_has_nan(df_enc_na):
     # case 9: when dataset contains na, fit method
+    random = np.random.RandomState(42)
+    y = random.normal(0, 7, len(df_enc_na))
+
     with pytest.raises(ValueError):
         TargetMeanRegressor().fit(
-            df_enc_na[["var_A", "var_B"]], df_enc_na["target"]
+            df_enc_na[["var_A", "var_B"]], y
         )
 
 
