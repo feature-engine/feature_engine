@@ -112,3 +112,12 @@ def test_raises_error_when_df_has_nan(df_enc_na):
         TargetMeanClassifier().fit(
             df_enc_na[["var_A", "var_B"]], df_enc_na["target"]
         )
+
+
+def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
+    # raise error when dataset contains na, transform method
+    transformer = TargetMeanClassifier()
+    transformer.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+
+    with pytest.raises(ValueError):
+        transformer.predict(df_enc_na[["var_A", "var_B"]])
