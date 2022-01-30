@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 from sklearn.pipeline import Pipeline
 
 from feature_engine.discretisation import (
@@ -8,7 +7,6 @@ from feature_engine.discretisation import (
 )
 from feature_engine.encoding import MeanEncoder
 from feature_engine.prediction import TargetMeanClassifier
-from tests.test_prediction.conftest import df_pred
 
 _false_input_params = [
     ("salsa", "arbitrary"),
@@ -47,7 +45,7 @@ def test_attributes_upon_fitting(df_pred):
         strategy="equal_frequency"
     )
 
-    transformer.fit(df_pred[["City", "Age"]], df_pred["Marks"])
+    transformer.fit(df_pred[["City", "Age"]], df_pred["Plays_Football"])
 
     # test init params
     assert transformer.variables is None
@@ -57,15 +55,18 @@ def test_attributes_upon_fitting(df_pred):
     assert transformer.variables_categorical_ == ["City"]
     assert transformer.variables_numerical_ == ["Age"]
     assert transformer.classes_ == [1, 0]
-    assert transformer.pipeline_ == Pipeline(steps=[
-        ('discretiser', EqualFrequencyDiscretiser(
-            q=7, return_object=True, variables=['Age'])),
-        ('encoder_num', MeanEncoder(errors='raise', variables=['Age'])),
-        ('encoder_cat', MeanEncoder(errors='raise', variables=['City']))])
+    assert type(transformer.pipeline_
+                .named_steps["discretiser"]) == EqualFrequencyDiscretiser
+    assert type(transformer.pipeline_
+                .named_steps["encoder_num"]) == MeanEncoder
+    assert type(transformer.pipeline_
+                .named_steps["encoder_cat"]) == MeanEncoder
     assert transformer.n_features_in_ == 2
 
 
-def test_classifier_prediction_results_with_all_numerical_variables(df_pred, df_pred_small):
+def test_classifier_prediction_results_with_all_numerical_variables(
+        df_pred, df_pred_small
+):
     pass
 
 
