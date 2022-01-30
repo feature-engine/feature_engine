@@ -52,7 +52,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
     transform:
         Perform the time-lag transformation on the provided dataframe.
 
-    rename_variables:
+    _rename_variables:
         Create names for the new time-lagged variables.
 
     Notes
@@ -95,7 +95,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame) -> None:
         """
-        Creates lag
+        Identifies the numerical variables to be transformed.
 
         Parameters
         ----------
@@ -113,8 +113,6 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         self.n_features_in_ = X.shape[1]
-
-        return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -141,7 +139,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
             axis=0,
         )
 
-        tmp.columns = self.rename_variables()
+        tmp.columns = self._rename_variables()
         X = X.merge(
             tmp, left_index=True, right_index=True, how="left"
         )
@@ -151,7 +149,7 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
 
         return X
 
-    def rename_variables(self):
+    def _rename_variables(self):
         """
         Renames variables by adding the time-lag interval.
 
@@ -171,6 +169,6 @@ class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
         else:
             lag_str = f"_lag_{self.freq}"
 
-        variables_lag = [name + lag_str for name in self.variables_]
+        variables_lag = [str(name) + lag_str for name in self.variables_]
 
         return variables_lag
