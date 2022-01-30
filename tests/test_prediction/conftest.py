@@ -63,7 +63,7 @@ def df_pred_small():
             "Bristol",
             "Manchester"
         ],
-        "Studies": ["Masters", "Bachelor", "Bachelor", "PhD", "Phd", "Masters"],
+        "Studies": ["Masters", "Bachelor", "Bachelor", "PhD", "PhD", "Masters"],
         "Age": [29, 39, 49, 25, 35, 55],
         "Height_cm": [155, 170, 168, 184, 190, 174],
         "Marks": [0.9, 0.6, 0.1, 0.5, 0.3, 0.8],
