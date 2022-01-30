@@ -300,7 +300,7 @@ def test_error_find_cat_and_num_vars_datetime_var(df_datetime):
     #     print(results)
 
 
-def test_find_cat_and_num_vars_df_contains_num_and_cat(
+def test_find_cat_and_num_vars_df_contains_num_and_cat_vars(
         df_enc_categorical_and_numeric
 ):
     assert (_find_categorical_and_numerical_variables(
@@ -308,12 +308,21 @@ def test_find_cat_and_num_vars_df_contains_num_and_cat(
         == (["var_A", "var_B"], ["var_C", "var_D", "target"]))
 
 
-def test_find_cat_and_num_vars_df_contains_num_and_cat(
+def test_find_cat_and_num_vars_df_contains_num_vars(
         df_enc_numeric
 ):
     assert (_find_categorical_and_numerical_variables(
         df_enc_numeric, None)
         == ([], ["var_A", "var_B", "target"]))
+
+
+def test_find_cat_and_num_vars_df_contains_cat_vars(
+        df_enc
+):
+    df_new = df_enc[["var_A", "var_B"]].copy()
+    assert (_find_categorical_and_numerical_variables(
+        df_new, None)
+        == (["var_A", "var_B"], []))
 
 #TODO
 # add tests for new function: find_numerical_and_categorical_variables
