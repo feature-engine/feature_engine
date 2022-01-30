@@ -64,7 +64,7 @@ def test_attributes_upon_fitting(df_pred):
     assert transformer.n_features_in_ == 2
 
 
-def test_classifier_prediction_results_with_all_numerical_variables(
+def test_classifier_results_with_all_numerical_variables(
         df_pred, df_pred_small
 ):
     transformer = TargetMeanClassifier(
@@ -78,9 +78,23 @@ def test_classifier_prediction_results_with_all_numerical_variables(
         df_pred_small[["Age", "Height_cm"]], df_pred_small["Plays_Football"]
     )
 
-    # test accuracy score calce
+    # test accuracy score calc
     assert accuracy_score.round(6) == 0.666667
 
 
-def test_classifier_score_calculation(df_pred, df_pred_small):
-    pass
+def test_classifier_results_with_all_categorical_variables(
+        df_pred, df_pred_small
+):
+    transformer = TargetMeanClassifier(
+        variables=None,
+        bins=4,
+        strategy="equal_frequency"
+    )
+
+    transformer.fit(df_pred[["Studies", "City"]], df_pred["Plays_Football"])
+    accuracy_score = transformer.score(
+        df_pred_small[["Studies", "City"]], df_pred_small["Plays_Football"]
+    )
+
+    # test accuracy score calc
+    assert accuracy_score.round(6) == 0.5
