@@ -6,7 +6,6 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.discretisation import (
     EqualWidthDiscretiser,
 )
-import feature_engine
 from feature_engine.encoding import MeanEncoder
 from feature_engine.prediction import TargetMeanRegressor
 
