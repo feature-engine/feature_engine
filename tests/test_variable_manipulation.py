@@ -299,7 +299,8 @@ def test_filter_out_variables_not_in_dataframe(df, variables, overlap, not_in_co
 
     with pytest.raises(ValueError):
         assert _filter_out_variables_not_in_dataframe(df, not_in_col)
-=======
+
+
 #TODO
 # add tests for new function: find_numerical_and_categorical_variables
 # test the following:
@@ -313,4 +314,3 @@ def test_filter_out_variables_not_in_dataframe(df, variables, overlap, not_in_co
 # user passes list with num and cat vars
 # user passes list with cat vars
 # user passes list with num vars
->>>>>>> refactors base perdictor, expands variable detection

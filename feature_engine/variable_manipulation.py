@@ -238,7 +238,7 @@ def _find_or_check_datetime_variables(
                 column
                 for column in X[variables].select_dtypes(exclude="datetime")
                 if is_numeric(X[column])
-                   or not _is_categorical_and_is_datetime(X[column])
+                or not _is_categorical_and_is_datetime(X[column])
             ]
 
             if len(vars_non_dt) > 0:
@@ -334,7 +334,7 @@ def _filter_out_variables_not_in_dataframe(X, variables):
 
 def _find_categorical_and_numerical_variables(
         X: pd.DataFrame, variables: Variables = None
-) -> (List[Union[str, int]], List[Union[str, int]]):
+) -> Tuple[List[Union[str, int]], List[Union[str, int]]]:
     """
     Find numerical and categorical variables.
 
@@ -355,7 +355,8 @@ def _find_categorical_and_numerical_variables(
         elif is_numeric(X[variables]):
             variables_num = [variables]
         else:
-            raise TypeError("The variable entered is neither numerical nor categorical.")
+            raise TypeError("The variable entered is neither numerical "
+                            "nor categorical.")
 
     # If user leaves default None parameter.
     elif variables is None:
@@ -375,7 +376,8 @@ def _find_categorical_and_numerical_variables(
             raise ValueError("The list of variables is empty.")
 
         # find categorical variables
-        variables_cat = [var for var in X[variables].select_dtypes(include=["O", "category"]).columns]
+        variables_cat = [var for var in X[variables]
+            .select_dtypes(include=["O", "category"]).columns]
 
         # find numerical variables
         variables_num = list(X[variables].select_dtypes(include="number").columns)
