@@ -324,6 +324,15 @@ def test_find_cat_and_num_vars_df_contains_cat_vars(
         df_new, None)
         == (["var_A", "var_B"], []))
 
+
+def test_error_find_cat_and_num_vars_pass_empty_list(
+        df_enc
+):
+    with pytest.raises(ValueError):
+        _find_categorical_and_numerical_variables(
+            df_enc, []
+        )
+
 #TODO
 # add tests for new function: find_numerical_and_categorical_variables
 # test the following:
