@@ -47,6 +47,11 @@ class DropConstantFeatures(BaseSelector):
         Whether the missing values should be raised as error, ignored or included as an
         additional value of the variable. Takes values 'raise', 'ignore', 'include'.
 
+    confirm_variables: bool, default=False
+        If set to True, variables that are not present in the input dataframe will be
+        removed from the indicated list of variables. See param variables for more
+        details.
+
     Attributes
     ----------
     features_to_drop_:

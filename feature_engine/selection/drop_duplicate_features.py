@@ -40,6 +40,11 @@ class DropDuplicateFeatures(BaseSelector):
         Takes values 'raise' and 'ignore'. Whether the missing values should be raised
         as error or ignored when finding duplicated features.
 
+    confirm_variables: bool, default=False
+        If set to True, variables that are not present in the input dataframe will be
+        removed from the indicated list of variables. See param variables for more
+        details.
+
     Attributes
     ----------
     features_to_drop_:

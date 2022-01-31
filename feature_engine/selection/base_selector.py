@@ -61,7 +61,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         self.confirm_variables = confirm_variables
 
-    def _confirm_variables(self, X):
+    def _confirm_variables(self, X: pd.DataFrame)-> None:
         # If required exclude variables that are not in the input dataframe
         if self.confirm_variables:
             self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
@@ -70,7 +70,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         return None
 
-    def transform(self, X: pd.DataFrame):
+    def transform(self, X: pd.DataFrame)-> pd.DataFrame:
         """
         Return dataframe with selected features.
 

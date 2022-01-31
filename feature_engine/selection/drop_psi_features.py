@@ -147,6 +147,11 @@ class DropHighPSIFeatures(BaseSelector):
         The list of variables to evaluate. If None, the transformer will evaluate all
         numerical variables in the dataset.
 
+    confirm_variables: bool, default=False
+        If set to True, variables that are not present in the input dataframe will be
+        removed from the indicated list of variables. See param variables for more
+        details.
+
     Attributes
     ----------
     features_to_drop_:
