@@ -47,9 +47,9 @@ def check_feature_engine_estimator(estimator):
 
     if hasattr(estimator, "cv"):
         check_takes_cv_constructor(estimator)
-    # TODO: need to change the below from object to instantiated class
-    # if hasattr(estimator, "missing_values"):
-    #     check_error_param_missing_values(estimator)
+
+    if hasattr(estimator, "missing_values"):
+        check_error_param_missing_values(estimator)
 
 
 def check_raises_non_fitted_error(estimator):
