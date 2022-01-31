@@ -257,6 +257,8 @@ class DropHighPSIFeatures(BaseSelector):
                     f"or choose another splitting criteria."
                 )
 
+        super().__init__(confirm_variables)
+
         # Check the variables before assignment.
         self.variables = _check_input_parameter_variables(variables)
 
@@ -286,6 +288,9 @@ class DropHighPSIFeatures(BaseSelector):
         """
         # check input dataframe
         X = _is_dataframe(X)
+
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
 
         # find numerical variables or check those entered are present in the dataframe
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)

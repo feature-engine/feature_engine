@@ -19,7 +19,12 @@ def test_drop_2_variables(df_vartypes):
 
     # init params
     assert transformer.features_to_drop == ["City", "dob"]
+<<<<<<< HEAD
 
+=======
+    # fit attr
+    assert transformer.n_features_in_ == 5
+>>>>>>> 35aa2e1... creates abstraction for confirm variables
     # transform params
     assert X.shape == (4, 3)
     assert type(X) == pd.DataFrame

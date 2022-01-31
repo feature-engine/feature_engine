@@ -69,6 +69,8 @@ class DropDuplicateFeatures(BaseSelector):
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
 
+        super().__init__(confirm_variables)
+
         self.variables = _check_input_parameter_variables(variables)
         self.missing_values = missing_values
 
@@ -86,6 +88,9 @@ class DropDuplicateFeatures(BaseSelector):
 
         # check input dataframe
         X = _is_dataframe(X)
+
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
 
         # find all variables or check those entered are in the dataframe
         self.variables_ = _find_all_variables(X, self.variables)
