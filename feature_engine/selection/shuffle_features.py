@@ -242,6 +242,8 @@ class SelectByShuffling(BaseSelector):
 
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
+        tags_dict["requires_y"] = True
         # add additional test that fails
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
         tags_dict["_xfail_checks"][

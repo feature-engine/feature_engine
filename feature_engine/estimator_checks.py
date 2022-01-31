@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from sklearn.base import clone
 from sklearn.datasets import make_classification
 from sklearn.exceptions import NotFittedError
 
@@ -28,15 +29,32 @@ def test_df(numeric=True):
 
 
 def check_feature_engine_estimator(estimator):
-    # TODO: test if this is working
     check_raises_non_fitted_error(estimator)
     check_raises_error_when_fitting_not_a_df(estimator)
     check_raises_error_when_transforming_not_a_df(estimator)
 
+    tags = estimator._more_tags()
+    if "requires_y" in tags.keys():
+        check_error_if_y_not_passed(estimator)
+
+    if hasattr(estimator, "variables"):
+        if tags["variables"]=="numerical":
+            check_numerical_variables_assignment(estimator)
+        elif tags["variables"]=="categorical":
+            check_categorical_variables_assignment(estimator)
+        elif tags["variables"] == "all":
+            check_all_types_variables_assignment(estimator)
+
+    if hasattr(estimator, "cv"):
+        check_takes_cv_constructor(estimator)
+    # TODO: need to change the below from object to instantiated class
+    # if hasattr(estimator, "missing_values"):
+    #     check_error_param_missing_values(estimator)
+
 
 def check_raises_non_fitted_error(estimator):
     X, y = test_df()
-    transformer = estimator
+    transformer = clone(estimator)
     # test when fit is not called prior to transform
     with pytest.raises(NotFittedError):
         transformer.transform(X)
@@ -49,7 +67,7 @@ def check_raises_error_when_fitting_not_a_df(estimator):
         pd.Series([-2, 1.5, 8.94], name="not_a_df"),
     ]
 
-    transformer = estimator
+    transformer = clone(estimator)
     for not_df in _not_a_df:
         # trying to fit not a df
         with pytest.raises(TypeError):
@@ -65,7 +83,7 @@ def check_raises_error_when_transforming_not_a_df(estimator):
         pd.Series([-2, 1.5, 8.94], name="not_a_df"),
     ]
 
-    transformer = estimator
+    transformer = clone(estimator)
     transformer.fit(X, y)
 
     for not_df in _not_a_df:
@@ -76,6 +94,7 @@ def check_raises_error_when_transforming_not_a_df(estimator):
 
 def check_error_if_y_not_passed(estimator):
     X, y = test_df()
+    estimator = clone(estimator)
     with pytest.raises(TypeError):
         estimator.fit(X)
 
@@ -88,7 +107,7 @@ def check_numerical_variables_assignment(estimator):
     _input_vars_ls = ["var_1", ["var_2"], ["var_1", "var_2", "var_3", "var_11"], None]
 
     # the estimator
-    transformer = estimator
+    transformer = clone(estimator)
 
     for input_vars in _input_vars_ls:
         # set the different input var examples
@@ -125,7 +144,7 @@ def check_categorical_variables_assignment(estimator):
     _input_vars_ls = ["cat_var", ["cat_var"], ["cat_var", "cat_var2"], None]
 
     # the estimator
-    transformer = estimator
+    transformer = clone(estimator)
 
     for input_vars in _input_vars_ls:
         # set the different input var examples
@@ -167,7 +186,7 @@ def check_all_types_variables_assignment(estimator):
     ]
 
     # the estimator
-    transformer = estimator
+    transformer = clone(estimator)
 
     for input_vars in _input_vars_ls:
         # set the different input var examples
@@ -193,6 +212,8 @@ def check_takes_cv_constructor(estimator):
     from sklearn.model_selection import KFold, StratifiedKFold
 
     X, y = test_df()
+
+    estimator = clone(estimator)
 
     cv_constructor_ls = [KFold(n_splits=3), StratifiedKFold(n_splits=3), None]
 
@@ -237,6 +258,7 @@ def check_takes_cv_constructor(estimator):
 # ======== input param error checks
 def check_error_param_missing_values(estimator):
     # param takes values "raise" or "ignore"
+    estimator = clone(estimator)
     for value in [2, "hola", False]:
         with pytest.raises(ValueError):
-            estimator(missing_values=value)
+            estimator.__class__(missing_values=value)

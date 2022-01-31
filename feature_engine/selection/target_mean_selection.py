@@ -16,6 +16,7 @@ from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
 )
+from feature_engine.validation import _return_tags
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -310,3 +311,11 @@ class SelectByTargetMeanPerformance(BaseSelector):
         return X
 
     transform.__doc__ = BaseSelector.transform.__doc__
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "all"
+        tags_dict["requires_y"] = True
+
+        return tags_dict
