@@ -9,12 +9,25 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
 
 
+@Substitution(
+    variables=_variables_numerical_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class DecisionTreeDiscretiser(BaseNumericalTransformer):
     """
     The DecisionTreeDiscretiser() replaces numerical variables by discrete, i.e.,
@@ -35,9 +48,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of numerical variables to transform. If None, the discretiser will
-        automatically select all numerical variables.
+    {variables}
 
     cv: int, default=3
         Desired cross-validation fold to fit the decision tree.
@@ -51,9 +62,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     param_grid: dictionary, default=None
         The hyperparameters for the decision tree to test with a grid search. The
         `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
-        DecisionTreeRegressor() or DecisionTreeClassifier().
-
-        If None, then `param_grid = {'max_depth': [1, 2, 3, 4]}`.
+        DecisionTreeRegressor() or DecisionTreeClassifier(). If None, then param_grid
+        will optimise the 'max_depth' over `[1, 2, 3, 4]`.
 
     regression: boolean, default=True
         Indicates whether the discretiser should train a regression or a classification
@@ -73,11 +83,9 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     scores_dict_:
         Dictionary with the score of the best decision tree per variable.
 
-    variables_:
-         The variables that will be discretised.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
@@ -85,8 +93,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         Fit a decision tree per variable.
     transform:
         Replace continuous variable values by the predictions of the decision tree.
-    fit_transform:
-        Fit to the data, then transform it.
+    {fit_transform}
 
     See Also
     --------

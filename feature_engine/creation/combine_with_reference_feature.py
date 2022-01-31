@@ -4,16 +4,35 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine.creation._docstring import (
+    _drop_original_docstring,
+    _missing_values_docstring,
+    _transform_docstring,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     _check_input_matches_training_df,
     _is_dataframe,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
+@Substitution(
+    missing_values=_missing_values_docstring,
+    drop_original=_drop_original_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_not_learn_docstring,
+    transform=_transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     """
     CombineWithReferenceFeature() applies basic mathematical operations between a group
@@ -42,9 +61,9 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     operations: list, default=['sub']
         The list of basic mathematical operations to be used in the transformation.
 
-        If None, all of ['sub', 'div','add','mul'] will be performed. Alternatively,
+        If None, all of ['sub', 'div', 'add', 'mul'] will be performed. Alternatively,
         you can enter a list of operations to carry out. Each operation should
-        be a string and must be one of the elements in `['sub', 'div','add', 'mul']`.
+        be a string and must be one of the elements in `['sub', 'div', 'add', 'mul']`.
 
         Each operation will result in a new variable that will be added to the
         transformed dataset.
@@ -59,29 +78,21 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         If `new_variable_names` is None, the transformer will assign an arbitrary name
         to the features. The name will be var + operation + ref_var.
 
-    missing_values: string, default='ignore'
-        Indicates if missing values should be ignored or raised. If 'ignore', the
-        transformer will ignore missing data when transforming the data. If 'raise' the
-        transformer will return an error if the training or the datasets to transform
-        contain missing values.
+    {missing_values}
 
-    drop_original: bool, default=False
-        If True, the original variables will be dropped from the dataframe
-        after their combination.
+    {drop_original}
 
     Attributes
     ----------
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        This transformer does not learn parameters.
-    transform:
-        Combine the variables with the mathematical operations.
-    fit_transform:
-        Fit to the data, then transform it.
+    {fit}
+
+    {transform}
+
+    {fit_transform}
 
     Notes
     -----

@@ -225,9 +225,9 @@ def test_extract_all_datetime_features(df_datetime, df_datetime_transformed):
 
 
 def test_extract_specified_datetime_features(df_datetime, df_datetime_transformed):
-    X = DatetimeFeatures(
-        features_to_extract=["semester", "week"]
-    ).fit_transform(df_datetime)
+    X = DatetimeFeatures(features_to_extract=["semester", "week"]).fit_transform(
+        df_datetime
+    )
     pd.testing.assert_frame_equal(
         X,
         df_datetime_transformed[
@@ -277,8 +277,10 @@ def test_extract_features_from_different_timezones(
             lambda x: x.subtract(time_zones)
         ),
     )
-    exp_err_msg = "ValueError: variable(s) time_obj " \
+    exp_err_msg = (
+        "ValueError: variable(s) time_obj "
         "could not be converted to datetime. Try setting utc=True"
+    )
     with pytest.raises(ValueError) as errinfo:
         assert DatetimeFeatures(
             variables="time_obj", features_to_extract=["hour"], utc=False

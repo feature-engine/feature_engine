@@ -7,10 +7,23 @@ import pandas as pd
 import scipy.stats as stats
 
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
+@Substitution(
+    variables=_variables_numerical_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class BoxCoxTransformer(BaseNumericalTransformer):
     """
     The BoxCoxTransformer() applies the BoxCox transformation to numerical
@@ -39,29 +52,26 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of numerical variables to transform. If None, the transformer will
-        automatically find and select all numerical variables.
+    {variables}
 
     Attributes
     ----------
     lambda_dict_:
         Dictionary with the best BoxCox exponent per variable.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn the optimal lambda for the BoxCox transformation.
+
     transform:
         Apply the BoxCox transformation.
-    fit_transform:
-        Fit to data, then transform it.
+
+    {fit_transform}
 
     References
     ----------

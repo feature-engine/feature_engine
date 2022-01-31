@@ -7,10 +7,19 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
+@Substitution(
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class AddMissingIndicator(BaseImputer):
     """
     The AddMissingIndicator() adds binary variables that indicate if data is
@@ -50,17 +59,18 @@ class AddMissingIndicator(BaseImputer):
     variables_:
         List of variables for which the missing indicators will be created.
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Find the variables for which the missing indicators will be created
+
     transform:
         Add the missing indicators.
-    fit_transform:
-        Fit to the data, then transform it.
+
+    {fit_transform}
+
     """
 
     def __init__(

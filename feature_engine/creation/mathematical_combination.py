@@ -4,16 +4,35 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine.creation._docstring import (
+    _drop_original_docstring,
+    _missing_values_docstring,
+    _transform_docstring,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     _check_input_matches_training_df,
     _is_dataframe,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
+@Substitution(
+    missing_values=_missing_values_docstring,
+    drop_original=_drop_original_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_not_learn_docstring,
+    transform=_transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class MathematicalCombination(BaseEstimator, TransformerMixin):
     """
     MathematicalCombination() applies basic mathematical operations to multiple
@@ -55,11 +74,9 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         to the newly created features starting by the name of the mathematical
         operation, followed by the variables combined separated by -.
 
-    missing_values: string, default='raise'
-        Indicates if missing values should be ignored or raised. If 'raise' the
-        transformer will return an error if the the datasets to `fit` or `transform`
-        contain missing values. If 'ignore', missing data will be ignored when
-        performing the calculations.
+    {missing_values}
+
+    {drop_original}
 
     Attributes
     ----------
@@ -70,17 +87,15 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         List with the mathematical operations to be applied to the
         `variables_to_combine`.
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        This transformer does not learn parameters.
-    transform:
-        Combine the variables with the mathematical operations.
-    fit_transform:
-        Fit to the data, then transform it.
+    {fit}
+
+    {transform}
+
+    {fit_transform}
 
     Notes
     -----
