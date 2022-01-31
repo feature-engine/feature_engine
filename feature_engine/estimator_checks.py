@@ -38,9 +38,9 @@ def check_feature_engine_estimator(estimator):
         check_error_if_y_not_passed(estimator)
 
     if hasattr(estimator, "variables"):
-        if tags["variables"]=="numerical":
+        if tags["variables"] == "numerical":
             check_numerical_variables_assignment(estimator)
-        elif tags["variables"]=="categorical":
+        elif tags["variables"] == "categorical":
             check_categorical_variables_assignment(estimator)
         elif tags["variables"] == "all":
             check_all_types_variables_assignment(estimator)
@@ -208,7 +208,6 @@ def check_all_types_variables_assignment(estimator):
 
 
 def check_takes_cv_constructor(estimator):
-
     from sklearn.model_selection import KFold, StratifiedKFold
 
     X, y = test_df()

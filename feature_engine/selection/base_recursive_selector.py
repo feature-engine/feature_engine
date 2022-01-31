@@ -161,8 +161,6 @@ class BaseRecursiveSelector(BaseSelector):
         tags_dict["variables"] = "numerical"
         tags_dict["requires_y"] = True
         # add additional test that fails
-        # tags_dict["_xfail_checks"]["check_estimators_nan_inf"] =
-        # "transformer allows NA"
         tags_dict["_xfail_checks"][
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
