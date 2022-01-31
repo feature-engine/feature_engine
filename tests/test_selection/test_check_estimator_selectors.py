@@ -44,3 +44,11 @@ def test_check_estimator_from_feature_engine(estimator):
     if estimator.__class__.__name__ == "DropFeatures":
         estimator.set_params(features_to_drop=["var_1"])
     return check_feature_engine_estimator(estimator)
+
+
+@pytest.mark.parametrize("estimator", _estimators[7:10])
+def test_raises_error_when_no_estimator_passed(estimator):
+    # this selectors need an estimator as an input param
+    # test error otherwise.
+    with pytest.raises(TypeError):
+        estimator()

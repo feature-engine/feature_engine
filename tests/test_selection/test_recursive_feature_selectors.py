@@ -47,12 +47,6 @@ def test_input_params_assignment(
     assert sel.variables == _variables
 
 
-@pytest.mark.parametrize("_selector", _selectors)
-def test_raises_error_when_no_estimator_passed(_selector):
-    with pytest.raises(TypeError):
-        _selector()
-
-
 _thresholds = [None, [0.1], "a_string"]
 
 
@@ -172,19 +166,3 @@ def test_feature_importances(_estimator, _importance, df_test):
     sel = RecursiveFeatureElimination(_estimator).fit(X, y)
     _importance.sort(reverse=False)
     assert list(np.round(sel.feature_importances_.values, 4)) == _importance
-
-
-_cv_constructor = [KFold(), StratifiedKFold()]
-
-
-@pytest.mark.parametrize("_selector", _selectors)
-@pytest.mark.parametrize("_cv", _cv_constructor)
-def test_feature_KFold_constructor(_selector, _cv, df_test):
-    X, y = df_test
-
-    sel = _selector(Lasso(alpha=0.01, random_state=1), cv=_cv).fit(X, y)
-
-    # TODO: expand this test, maybe to test if is list, or is pd series
-    # or something more detailed.
-    assert hasattr(sel, "initial_model_performance_")
-    assert hasattr(sel, "feature_importances_")
