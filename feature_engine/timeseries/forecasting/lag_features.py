@@ -15,7 +15,7 @@ from feature_engine.variable_manipulation import (
 )
 
 
-class TimeSeriesLagTransformer(BaseEstimator, TransformerMixin):
+class LagFeatures(BaseEstimator, TransformerMixin):
     """
 
     Parameters

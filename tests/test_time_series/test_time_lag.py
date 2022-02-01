@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from feature_engine.timeseries.forecasting import TimeSeriesLagTransformer
+from feature_engine.timeseries.forecasting import LagFeatures
 _false_input_params = [
     ([3, 2], "pizza", ["tango", "empanada"], 9),
     ("mate", ["bombilla", "limpiado"], True, "cocinado"),
@@ -18,25 +18,25 @@ def test_raises_error_when_wrong_input_params(
         _variables, _periods, _freq, _drop_original, df_time
 ):
     with pytest.raises(KeyError):
-        transformer1 = TimeSeriesLagTransformer(variables=_variables)
+        transformer1 = LagFeatures(variables=_variables)
         transformer1.fit(df_time)
         transformer1.transform(df_time)
     with pytest.raises(ValueError):
-        transformer2 = TimeSeriesLagTransformer(periods=_periods)
+        transformer2 = LagFeatures(periods=_periods)
         transformer2.fit(df_time)
         transformer2.transform(df_time)
     with pytest.raises((ValueError, TypeError)):
-        transformer3 = TimeSeriesLagTransformer(freq=_freq)
+        transformer3 = LagFeatures(freq=_freq)
         transformer3.fit(df_time)
         transformer3.transform(df_time)
     with pytest.raises(ValueError):
-        transformer4 = TimeSeriesLagTransformer(drop_original=_drop_original)
+        transformer4 = LagFeatures(drop_original=_drop_original)
         transformer4.fit(df_time)
         transformer4.transform(df_time)
 
 
 def test_default_params():
-    transformer = TimeSeriesLagTransformer()
+    transformer = LagFeatures()
     assert transformer.variables is None
     assert transformer.periods == 1
     assert transformer.freq is None
@@ -45,7 +45,7 @@ def test_default_params():
 
 def test_time_lag_period_shift_and_keep_original_data(df_time):
     # The lag is correctly performed using the 'period' param.
-    transformer = TimeSeriesLagTransformer(
+    transformer = LagFeatures(
         variables=["ambient_temp", "module_temp"],
         periods=3,
         drop_original=False,
@@ -77,7 +77,7 @@ def test_time_lag_period_shift_and_keep_original_data(df_time):
 
 def test_time_lag_frequency_shift_and_drop_original_data(df_time):
     # Data is properly transformed using the 'freq' param.
-    transformer = TimeSeriesLagTransformer(
+    transformer = LagFeatures(
         freq="1h",
         drop_original=True
     )
@@ -112,7 +112,7 @@ def test_time_lag_frequency_shift_and_drop_original_data(df_time):
 
 
 def test_time_lag_periods_drop_original_value(df_time):
-    transformer = TimeSeriesLagTransformer(
+    transformer = LagFeatures(
         periods=2,
         drop_original=True,
     )
@@ -143,7 +143,7 @@ def test_error_when_df_in_transform_is_not_a_dataframe(df_time):
     # case 7: return error if 'df' is not a dataframe
     msg = "X is not a pandas dataframe. The dataset should be a pandas dataframe."
     with pytest.raises(TypeError) as record:
-        transformer = TimeSeriesLagTransformer(periods=5)
+        transformer = LagFeatures(periods=5)
         transformer.transform(df_time["module_temp"])
 
     # check that error message matches
