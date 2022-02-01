@@ -7,6 +7,23 @@ from sklearn.model_selection import cross_validate
 from sklearn.utils.validation import check_random_state
 
 from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine.selection._docstring import (
+    _cv_docstring,
+    _estimator_docstring,
+    _features_to_drop_docstring,
+    _fit_docstring,
+    _initial_model_performance_docstring,
+    _scoring_docstring,
+    _threshold_docstring,
+    _transform_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
@@ -17,6 +34,21 @@ from feature_engine.variable_manipulation import (
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
+@Substitution(
+    estimator=_estimator_docstring,
+    scoring=_scoring_docstring,
+    threshold=_threshold_docstring,
+    cv=_cv_docstring,
+    variables=_variables_numerical_docstring,
+    # confirm_variables=BaseRecursiveSelector._confirm_variables,
+    initial_model_performance_=_initial_model_performance_docstring,
+    features_to_drop_=_features_to_drop_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_docstring,
+    transform=_transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class SelectByShuffling(BaseSelector):
     """
     SelectByShuffling() selects features by determining the drop in machine learning
@@ -43,73 +75,39 @@ class SelectByShuffling(BaseSelector):
 
     Parameters
     ----------
-    estimator: object
-        A Scikit-learn estimator for regression or classification.
+    {estimator}
 
-    variables: str or list, default=None
-        The list of variable(s) to be shuffled from the dataframe.
-        If None, the transformer will shuffle all numerical variables in the dataset.
+    {variables}
 
-    scoring: str, default='roc_auc'
-        Desired metric to optimise the performance for the estimator. Comes from
-        sklearn.metrics. See the model evaluation documentation for more options:
-        https://scikit-learn.org/stable/modules/model_evaluation.html
+    {scoring}
 
-    threshold: float, int, default = None
-        The value that defines if a feature will be kept or removed. Note that for
-        metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
-        between 0 and 1. For metrics like the mean_square_error and the
-        root_mean_square_error the threshold might be a big number. The threshold can
-        be defined by the user. If None, the selector will select features which
-        performance drift is smaller than the mean performance drift across all
-        features.
+    {threshold}
 
-    cv: int, cross-validation generator or an iterable, default=3
-        Determines the cross-validation splitting strategy. Possible inputs for cv are:
-
-            - None, to use cross_validate's default 5-fold cross validation
-
-            - int, to specify the number of folds in a (Stratified)KFold,
-
-            - CV splitter
-                - (https://scikit-learn.org/stable/glossary.html#term-CV-splitter)
-
-            - An iterable yielding (train, test) splits as arrays of indices.
-
-        For int/None inputs, if the estimator is a classifier and y is either binary or
-        multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
-        splitters are instantiated with `shuffle=False` so the splits will be the same
-        across calls. For more details check Scikit-learn's `cross_validate`'s
-        documentation.
+    {cv}
 
     random_state: int, default=None
         Controls the randomness when shuffling features.
 
     Attributes
     ----------
-    initial_model_performance_:
-        Performance of the model trained using the original dataset.
+    {initial_model_performance_}
 
     performance_drifts_:
         Dictionary with the performance drift per shuffled feature.
 
-    features_to_drop_:
-        List with the features to remove from the dataset.
+    {features_to_drop_}
 
-    variables_:
-        The variables that will be considered for the feature selection.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        Find the important features.
-    transform:
-        Reduce X to the selected features.
-    fit_transform:
-        Fit to data, then transform it.
+    {fit}
+
+    {transform}
+
+    {fit_transform}
 
     Notes
     -----
@@ -190,7 +188,6 @@ class SelectByShuffling(BaseSelector):
 
         # shuffle features and save feature performance drift into a dict
         for feature in self.variables_:
-
             X_shuffled = X[self.variables_].copy()
 
             # shuffle individual feature

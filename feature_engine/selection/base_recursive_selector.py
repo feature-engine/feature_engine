@@ -62,10 +62,10 @@ class BaseRecursiveSelector(BaseSelector):
 
     Attributes
     ----------
-    initial_model_performance_ :
+    initial_model_performance_:
         Performance of the model trained using the original dataset.
 
-    feature_importances_ :
+    feature_importances_:
         Pandas Series with the feature importance (comes from step 2)
 
     performance_drifts_:
@@ -85,6 +85,20 @@ class BaseRecursiveSelector(BaseSelector):
     fit:
         Find the important features.
     """
+
+    _estimator_docstring = """estimator: object
+        A Scikit-learn estimator for regression or classification.
+        The estimator must have either a `feature_importances` or `coef_` attribute
+        after fitting.
+        """.rstrip()
+
+    _feature_importances_docstring = """feature_importances_:
+        Pandas Series with the feature importance (comes from step 2)
+        """.rstrip()
+
+    _performance_drifts_docstring = """performance_drifts_:
+        Dictionary with the performance drift per examined feature (comes from step 5).
+        """.rstrip()
 
     def __init__(
         self,

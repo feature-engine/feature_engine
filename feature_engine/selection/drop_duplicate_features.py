@@ -24,7 +24,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 @Substitution(
-    _confirm_variables=BaseSelector._confirm_variables,
+    confirm_variables=BaseSelector._confirm_variables,
     variables=_variables_all_docstring,
     missing_values=_missing_values_docstring,
     variables_=_variables_attribute_docstring,
