@@ -39,13 +39,14 @@ class BaseSelector(BaseEstimator, TransformerMixin):
     ----------
     confirm_variables: bool, default=False
         If set to True, variables that are not present in the input dataframe will be
-        removed from the indicated list of variables. See param variables for more
+        removed from the indicated list of variables. See parameter variables for more
         details.
 
     Methods
     -------
     transform:
         Remove non selected features.
+
     _confirm_variables:
         Check that the variables entered by the user exist in the df.
     """
@@ -61,8 +62,8 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         self.confirm_variables = confirm_variables
 
-    def _confirm_variables(self, X: pd.DataFrame)-> None:
-        # If required exclude variables that are not in the input dataframe
+    def _confirm_variables(self, X: pd.DataFrame) -> None:
+        # If required, exclude variables that are not in the input dataframe
         if self.confirm_variables:
             self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
         else:
@@ -70,7 +71,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         return None
 
-    def transform(self, X: pd.DataFrame)-> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Return dataframe with selected features.
 
