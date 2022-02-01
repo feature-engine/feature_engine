@@ -1,12 +1,16 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Union
+from typing import List, Union, Optional
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na,
+    _check_input_matches_training_df,
     _is_dataframe,
 )
 from feature_engine.variable_manipulation import (
@@ -17,14 +21,17 @@ from feature_engine.docstrings import (
     Substitution,
     _variables_numerical_docstring,
     _drop_original_docstring,
+    _missing_values_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
 )
 
+
 @Substitution(
-    variables = _variables_numerical_docstring,
-    drop_original = _drop_original_docstring,
+    variables=_variables_numerical_docstring,
+    missing_values=_missing_values_docstring,
+    drop_original=_drop_original_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
@@ -36,12 +43,16 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     ----------
     {variables}
 
-    periods: int, default=1
-        Number of periods to shift. Can be positive or negative.
+    periods: int, list of ints, default=1
+        Number of periods to shift. Can be positive or negative. If list, features will
+        be created for each one of the periods.
 
-    freq: str, default=None
+    freq: str, list of str, default=None
         Offset to use from the tseries module or time rule. See parameter `freq` in
-        `pandas.shift`. It is the same functionality.
+        `pandas.shift`. It is the same functionality. If list, features will
+        be created for each one of the frequency values in the list.
+
+    {missing_values}
 
     {drop_original}
 
@@ -75,42 +86,48 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-        self,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        periods: int = 1,
-        freq: str = None,
-        drop_original: bool = False,
+            self,
+            variables: Union[None, int, str, List[Union[str, int]]] = None,
+            periods: int = 1,
+            freq: str = None,
+            missing_values: str = 'raise',
+            drop_original: bool = False,
 
     ) -> None:
         # Prevents True and False passing as 1 and 0.
-        if isinstance(periods, bool):
+        if not isinstance(periods, (int, list)):
             raise ValueError(
-                f"'periods' is {periods}. The variable must be "
-                f"an integer."
+                f"`periods` must be an integer or a list of integers. Got {periods} "
+                f"instead."
             )
+
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError("missing_values takes only values 'raise' or 'ignore'."
+                             f"Got {missing_values} instead.")
+
         if not isinstance(drop_original, bool):
             raise ValueError(
-                f"'drop_original' is {drop_original}. The variable must "
-                f"be boolean."
+                "drop_original takes only boolean values True and False. "
+                f"Got {drop_original} instead."
             )
 
         self.variables = _check_input_parameter_variables(variables)
         self.periods = periods
         self.freq = freq
+        self.missing_values = missing_values
         self.drop_original = drop_original
 
-    def fit(self, X: pd.DataFrame) -> None:
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Identifies the numerical variables to be transformed.
+        This transformer does not learn parameters.
 
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
-           The dataframe containing the variables that that will be lagged.
+            The training dataset.
 
-        Returns
-        -------
-
+        y: pandas Series, default=None
+            y is not needed in this imputation. You can pass None or y.
         """
         # check if 'X' is a dataframe
         _is_dataframe(X)
@@ -118,26 +135,43 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         # check variables
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
+        # check if dataset contains na
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
+
         self.n_features_in_ = X.shape[1]
+
+        return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Creates lag
+        Adds lag features.
 
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
-            The dataframe containing the variables that that will be lagged.
+            The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe
-            The dataframe comprised of only the transformed variables or
-            the original dataframe plus the transformed variables.
-
+        X_new: Pandas dataframe, shape = [n_samples, n_features + n_operations]
+            The dataframe with the original variables plus the new variables.
         """
+        # Check method fit has been called
+        check_is_fitted(self)
+
         # check if 'X' is a dataframe
         _is_dataframe(X)
+
+        # Check if input data contains same number of columns as dataframe used to fit.
+        _check_input_matches_training_df(X, self.n_features_in_)
+
+        # check if dataset contains na
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_to_combine)
+            _check_contains_inf(X, self.variables_to_combine)
+
 
         tmp = X[self.variables_].shift(
             periods=self.periods,
