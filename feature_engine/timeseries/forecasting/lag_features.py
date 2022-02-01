@@ -1,7 +1,7 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -13,18 +13,18 @@ from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
     _is_dataframe,
 )
-from feature_engine.variable_manipulation import (
-    _find_or_check_numerical_variables,
-    _check_input_parameter_variables,
-)
 from feature_engine.docstrings import (
     Substitution,
-    _variables_numerical_docstring,
     _drop_original_docstring,
-    _missing_values_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
+    _missing_values_docstring,
     _n_features_in_docstring,
+    _variables_numerical_docstring,
+)
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
 )
 
 
@@ -49,8 +49,9 @@ class LagFeatures(BaseEstimator, TransformerMixin):
 
     freq: str, list of str, default=None
         Offset to use from the tseries module or time rule. See parameter `freq` in
-        `pandas.shift`. It is the same functionality. If list, features will
-        be created for each one of the frequency values in the list.
+        `pandas.shift`. It is the same functionality. If freq is not None, then this
+        parameter overrides the parameter `periods`. If freq is a list, lag features
+        will be created for each one of the frequency values in the list.
 
     {missing_values}
 
@@ -86,13 +87,12 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-            self,
-            variables: Union[None, int, str, List[Union[str, int]]] = None,
-            periods: int = 1,
-            freq: str = None,
-            missing_values: str = 'raise',
-            drop_original: bool = False,
-
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        periods: int = 1,
+        freq: str = None,
+        missing_values: str = "raise",
+        drop_original: bool = False,
     ) -> None:
         # Prevents True and False passing as 1 and 0.
         if not isinstance(periods, (int, list)):
@@ -102,8 +102,10 @@ class LagFeatures(BaseEstimator, TransformerMixin):
             )
 
         if missing_values not in ["raise", "ignore"]:
-            raise ValueError("missing_values takes only values 'raise' or 'ignore'."
-                             f"Got {missing_values} instead.")
+            raise ValueError(
+                "missing_values takes only values 'raise' or 'ignore'."
+                f"Got {missing_values} instead."
+            )
 
         if not isinstance(drop_original, bool):
             raise ValueError(
@@ -172,43 +174,82 @@ class LagFeatures(BaseEstimator, TransformerMixin):
             _check_contains_na(X, self.variables_to_combine)
             _check_contains_inf(X, self.variables_to_combine)
 
+        if isinstance(self.freq, list):
+            df_ls = []
+            for fr in self.freq:
+                tmp = X[self.variables_].shift(
+                    freq=fr,
+                    axis=0,
+                )
+                df_ls.append(tmp)
+            tmp = pd.concat(df_ls, axis=1)
 
-        tmp = X[self.variables_].shift(
-            periods=self.periods,
-            freq=self.freq,
-            axis=0,
-        )
+        elif isinstance(self.periods, list):
+            df_ls = []
+            for pr in self.periods:
+                tmp = X[self.variables_].shift(
+                    periods=pr,
+                    axis=0,
+                )
+                df_ls.append(tmp)
+            tmp = pd.concat(df_ls, axis=1)
 
-        tmp.columns = self._rename_variables()
-        X = X.merge(
-            tmp, left_index=True, right_index=True, how="left"
-        )
+        else:
+            tmp = X[self.variables_].shift(
+                periods=self.periods,
+                freq=self.freq,
+                axis=0,
+            )
+
+        tmp.columns = self.get_feature_names_out()
+
+        X = X.merge(tmp, left_index=True, right_index=True, how="left")
 
         if self.drop_original:
             X = X.drop(self.variables_, axis=1)
 
         return X
 
-    def _rename_variables(self):
-        """
-        Renames variables by adding the time-lag interval.
+    def get_feature_names_out(self, input_features=None):
+        """Get output feature names for transformation.
 
         Parameters
         ----------
+        input_features : array-like of str or None, default=None
+            Input features. If `input_features` is `None` then the names for all the
+            created features is returned. Alternatively, only the names for the
+            indicated features is returned.
 
         Returns
         -------
-        variables_lag: list
-            Names of the variables with the time-lag interval that is
-            used in the transformation.
-
+        feature_names_out : list of str objects
+            Transformed feature names.
         """
+        check_is_fitted(self)
 
-        if self.freq is None:
-            lag_str = f"_lag_{self.periods}"
+        # variable names will be created just for input_features.
+        if input_features is None:
+            input_features = self.variables_
+
+        if isinstance(self.freq, list):
+            feature_names = [
+                str(feature) + f"_lag_{fr}"
+                for fr in self.freq
+                for feature in input_features
+            ]
+        elif self.freq is not None:
+            feature_names = [
+                str(feature) + f"_lag_{self.freq}" for feature in input_features
+            ]
+        elif isinstance(self.periods, list):
+            feature_names = [
+                str(feature) + f"_lag_{pr}"
+                for pr in self.perdiods
+                for feature in input_features
+            ]
         else:
-            lag_str = f"_lag_{self.freq}"
+            feature_names = [
+                str(feature) + f"_lag_{self.periods}" for feature in input_features
+            ]
 
-        variables_lag = [str(name) + lag_str for name in self.variables_]
-
-        return variables_lag
+        return feature_names
