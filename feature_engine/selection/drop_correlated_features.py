@@ -7,6 +7,16 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     _is_dataframe,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine.selection._docstring import (
+    _missing_values_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -16,6 +26,14 @@ from feature_engine.variable_manipulation import (
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
+@Substitution(
+    _confirm_variables=BaseSelector._confirm_variables,
+    variables=_variables_numerical_docstring,
+    missing_values=_missing_values_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class DropCorrelatedFeatures(BaseSelector):
     """
     DropCorrelatedFeatures() finds and removes correlated features. Correlation is
@@ -29,9 +47,7 @@ class DropCorrelatedFeatures(BaseSelector):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of variables to evaluate. If None, the transformer will evaluate all
-        numerical variables in the dataset.
+    {variables}
 
     method: string or callable, default='pearson'
         Can take 'pearson', 'spearman', 'kendall' or callable. It refers to the
@@ -48,14 +64,9 @@ class DropCorrelatedFeatures(BaseSelector):
         The correlation threshold above which a feature will be deemed correlated with
         another one and removed from the dataset.
 
-    missing_values: str, default=ignore
-        Takes values 'raise' and 'ignore'. Whether the missing values should be raised
-        as error or ignored when determining correlation.
+    {missing_values}
 
-    confirm_variables: bool, default=False
-        If set to True, variables that are not present in the input dataframe will be
-        removed from the indicated list of variables. See param variables for more
-        details.
+    {confirm_variables}
 
     Attributes
     ----------
@@ -65,20 +76,19 @@ class DropCorrelatedFeatures(BaseSelector):
     correlated_feature_sets_:
         Groups of correlated features. Each list is a group of correlated features.
 
-    variables_:
-        The variables that will be considered for the feature selection.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Find correlated features.
+
     transform:
         Remove correlated features.
-    fit_transform:
-        Fit to the data. Then transform it.
+
+    {fit_transform}
 
     Notes
     -----
@@ -97,6 +107,7 @@ class DropCorrelatedFeatures(BaseSelector):
         method: str = "pearson",
         threshold: float = 0.8,
         missing_values: str = "ignore",
+        confirm_variables: bool = False,
     ):
 
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
@@ -132,7 +143,7 @@ class DropCorrelatedFeatures(BaseSelector):
         self._confirm_variables(X)
 
         # find all numerical variables or check those entered are in the dataframe
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         if self.missing_values == "raise":
             # check if dataset contains na
