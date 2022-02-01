@@ -141,6 +141,7 @@ def test_error_method_supplied(df_correlated_double):
         + f" '{method}' was supplied"
     )
 
+
 input_params = [
     (
         ["var_1", "var_3", "var_5", "var_1000"],

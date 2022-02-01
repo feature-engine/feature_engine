@@ -89,6 +89,7 @@ def test_fit_attributes(df):
     assert transformer.psi_values_ == pytest.approx(expected_psi, 12)
     assert transformer.features_to_drop_ == ["drift_1", "drift_2"]
 
+
 input_params = [
     (
         ["var_1", "var_3", "var_5", "var_1000"],
