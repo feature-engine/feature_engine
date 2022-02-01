@@ -13,47 +13,53 @@ from feature_engine.variable_manipulation import (
     _find_or_check_numerical_variables,
     _check_input_parameter_variables,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _variables_numerical_docstring,
+    _drop_original_docstring,
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+)
 
-
+@Substitution(
+    variables = _variables_numerical_docstring,
+    drop_original = _drop_original_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_not_learn_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class LagFeatures(BaseEstimator, TransformerMixin):
     """
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of numerical variables to transform. If None, the transformer
-        will automatically select all numerical variables.
+    {variables}
 
     periods: int, default=1
         Number of periods to shift. Can be positive or negative.
 
     freq: str, default=None
-        Optional increment to use from the tseries module or time rule.
+        Offset to use from the tseries module or time rule. See parameter `freq` in
+        `pandas.shift`. It is the same functionality.
 
-    drop_original: bool, default=True
-        Determines whether the dataframe keeps the original columns
-        that are transformed.
+    {drop_original}
 
     Attributes
     ----------
+    variables_:
+        The group of variables that will be lagged.
 
-    variables_numerical_:
-        The group of numerical input variables.
-
-    n_features_in_:
-        The number of features in the dataframe.
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        Obtain attributes and determine whether the dataframe is eligible to
-        be transformed.
+    {fit}
 
     transform:
-        Perform the time-lag transformation on the provided dataframe.
+        Add the lagged features.
 
-    _rename_variables:
-        Create names for the new time-lagged variables.
+    {fit_transform}
 
     Notes
     -----
@@ -61,7 +67,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
 
     See Also
     --------
-
+    pandas.shift()
 
     References
     ----------
