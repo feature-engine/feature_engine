@@ -28,7 +28,7 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
     variables=_variables_numerical_docstring,
     # confirm_variables=BaseRecursiveSelector._confirm_variables,
     initial_model_performance_=_initial_model_performance_docstring,
-    feature_importances=BaseRecursiveSelector._feature_importances_docstring,
+    feature_importances_=BaseRecursiveSelector._feature_importances_docstring,
     performance_drifts_=BaseRecursiveSelector._performance_drifts_docstring,
     features_to_drop_=_features_to_drop_docstring,
     variables_=_variables_attribute_docstring,
