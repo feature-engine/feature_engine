@@ -3,6 +3,16 @@ from typing import List, Union
 import pandas as pd
 
 from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine.selection._docstring import (
+    _missing_values_docstring,
+    _variables_all_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
@@ -13,6 +23,14 @@ from feature_engine.variable_manipulation import (
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
+@Substitution(
+    _confirm_variables=BaseSelector._confirm_variables,
+    variables=_variables_all_docstring,
+    missing_values=_missing_values_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class DropDuplicateFeatures(BaseSelector):
     """
     DropDuplicateFeatures() finds and removes duplicated features in a dataframe.
@@ -32,18 +50,11 @@ class DropDuplicateFeatures(BaseSelector):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of variables to evaluate. If None, the transformer will evaluate all
-        variables in the dataset.
+    {variables}
 
-    missing_values : str, default=ignore
-        Takes values 'raise' and 'ignore'. Whether the missing values should be raised
-        as error or ignored when finding duplicated features.
+    {missing_values}
 
-    confirm_variables: bool, default=False
-        If set to True, variables that are not present in the input dataframe will be
-        removed from the indicated list of variables. See param variables for more
-        details.
+    {confirm_variables}
 
     Attributes
     ----------
@@ -53,23 +64,27 @@ class DropDuplicateFeatures(BaseSelector):
     duplicated_feature_sets_:
         Groups of duplicated features. Each list is a group of duplicated features.
 
-    variables_:
-        The variables that will be considered for the feature selection.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Find duplicated features.
+
     transform:
         Remove duplicated features.
-    fit_transform:
-        Fit to data. Then transform it.
+
+    {fit_transform}
     """
 
-    def __init__(self, variables: Variables = None, missing_values: str = "ignore"):
+    def __init__(
+        self,
+        variables: Variables = None,
+        missing_values: str = "ignore",
+        confirm_variables: bool = False,
+    ):
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
@@ -98,7 +113,7 @@ class DropDuplicateFeatures(BaseSelector):
         self._confirm_variables(X)
 
         # find all variables or check those entered are in the dataframe
-        self.variables_ = _find_all_variables(X, self.variables)
+        self.variables_ = _find_all_variables(X, self.variables_)
 
         if self.missing_values == "raise":
             # check if dataset contains na
