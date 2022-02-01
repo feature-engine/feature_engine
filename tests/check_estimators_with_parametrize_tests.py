@@ -47,7 +47,7 @@ from feature_engine.transformation import (
     YeoJohnsonTransformer,
 )
 from feature_engine.wrappers import SklearnTransformerWrapper
-
+from feature_engine.timeseries.forecasting import LagFeatures
 
 # imputation
 @parametrize_with_checks(
@@ -144,4 +144,10 @@ def test_sklearn_compatible_selectors(estimator, check):
 # wrappers
 @parametrize_with_checks([SklearnTransformerWrapper(SimpleImputer())])
 def test_sklearn_compatible_wrapper(estimator, check):
+    check(estimator)
+
+
+# forecasting
+@parametrize_with_checks([LagFeatures(missing_values="ignore")])
+def test_sklearn_compatible_forecasters(estimator, check):
     check(estimator)
