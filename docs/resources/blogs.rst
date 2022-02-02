@@ -19,6 +19,7 @@ Blogs
 Videos
 ------
 
+- `Streamlining Feature Engineering Pipelines with Feature-engine <https://www.youtube.com/watch?v=0V3_uXX30Ko>`_, Data Science Festival, 2020.
 - `Optimising Feature Engineering Pipelines with Feature-engine <https://www.youtube.com/watch?v=qT-3KUaFYmk/>`_, Pydata Cambridge 2020, from minute 51:43.
 
 
