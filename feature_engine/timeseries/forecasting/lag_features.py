@@ -91,7 +91,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         periods: int = 1,
-        freq: str = None,
+        freq: Union[str, List[str]] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
