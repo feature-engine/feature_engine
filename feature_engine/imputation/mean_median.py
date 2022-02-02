@@ -6,6 +6,12 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -13,6 +19,14 @@ from feature_engine.variable_manipulation import (
 )
 
 
+@Substitution(
+    variables=BaseImputer._variables_numerical_docstring,
+    imputer_dict_=BaseImputer._imputer_dict_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    transform=BaseImputer._transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class MeanMedianImputer(BaseImputer):
     """
     The MeanMedianImputer() replaces missing data by the mean or median value of the
@@ -29,29 +43,25 @@ class MeanMedianImputer(BaseImputer):
     imputation_method: str, default='median'
         Desired method of imputation. Can take 'mean' or 'median'.
 
-    variables: list, default=None
-        The list of variables to impute. If None, the imputer will impute
-        all numerical variables.
+    {variables}
 
     Attributes
     ----------
-    imputer_dict_:
-        Dictionary with the mean or median values per variable.
+    {imputer_dict_}
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn the mean or median values.
-    transform:
-        Impute missing data.
-    fit_transform:
-        Fit to the data, then transform it.
+
+    {transform}
+
+    {fit_transform}
+
     """
 
     def __init__(

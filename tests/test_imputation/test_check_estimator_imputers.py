@@ -17,7 +17,7 @@ from feature_engine.imputation import (
     [
         MeanMedianImputer(),
         ArbitraryNumberImputer(),
-        CategoricalImputer(ignore_format=True),
+        CategoricalImputer(fill_value=0, ignore_format=True),
         EndTailImputer(),
         AddMissingIndicator(),
         RandomSampleImputer(),

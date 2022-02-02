@@ -145,6 +145,6 @@ class DropDuplicateFeatures(BaseSelector):
 
     def _more_tags(self):
         tags_dict = _return_tags()
-        # add additional test that fails
-        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "all"
         return tags_dict

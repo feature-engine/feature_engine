@@ -6,10 +6,33 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _inverse_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
+from feature_engine.encoding._docstrings import (
+    _errors_docstring,
+    _ignore_format_docstring,
+    _transform_docstring,
+    _variables_docstring,
+)
 from feature_engine.encoding.base_encoder import BaseCategorical
 from feature_engine.validation import _return_tags
 
 
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+    errors=_errors_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+    transform=_transform_docstring,
+    inverse_transform=_inverse_transform_docstring,
+)
 class PRatioEncoder(BaseCategorical):
     """
     The PRatioEncoder() replaces categories by the ratio of the probability of the
@@ -58,46 +81,31 @@ class PRatioEncoder(BaseCategorical):
 
         **'log_ratio'**: log probability ratio
 
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
 
-    errors: string, default='ignore'
-        Indicates what to do when categories not present in the train set are
-        encountered during transform. If 'raise', then rare categories will raise an
-        error. If 'ignore', then rare categories will be set as NaN and a warning will
-        be raised instead.
+    {errors}
 
     Attributes
     ----------
     encoder_dict_:
         Dictionary with the probability ratio per category per variable.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn probability ratio per category, per variable.
-    transform:
-        Encode categories into numbers.
-    fit_transform:
-        Fit to the data, then transform it.
-    inverse_transform:
-        Encode the numbers into the original categories.
+
+    {transform}
+
+    {fit_transform}
+
+    {inverse_transform}
 
     Notes
     -----
@@ -115,7 +123,7 @@ class PRatioEncoder(BaseCategorical):
         encoding_method: str = "ratio",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore"
+        errors: str = "ignore",
     ) -> None:
 
         if encoding_method not in ["ratio", "log_ratio"]:

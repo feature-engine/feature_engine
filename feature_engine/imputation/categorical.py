@@ -6,6 +6,12 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -14,19 +20,26 @@ from feature_engine.variable_manipulation import (
 )
 
 
+@Substitution(
+    imputer_dict_=BaseImputer._imputer_dict_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    transform=BaseImputer._transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class CategoricalImputer(BaseImputer):
     """
     The CategoricalImputer() replaces missing data in categorical variables by an
     arbitrary value or by the most frequent category.
 
-    The CategoricalVariableImputer() imputes by default only categorical variables
+    The CategoricalImputer() imputes by default only categorical variables
     (type 'object' or 'categorical'). You can pass a list of variables to impute, or
     alternatively, the encoder will find and impute all categorical variables.
 
     If you want to impute numerical variables with this transformer, there are 2 ways
     of doing it:
 
-    **Option 1**: Cast your numerical variables as object in the input dataframe, before
+    **Option 1**: Cast your numerical variables as object in the input dataframe before
     passing it to the transformer.
 
     **Option 2**: Set `ignore_format=True`. Note that if you do this and do not pass the
@@ -42,8 +55,8 @@ class CategoricalImputer(BaseImputer):
         or 'missing' to impute with an arbitrary value.
 
     fill_value: str, int, float, default='Missing'
-        Only used when `imputation_method='missing'`. User-defined value to replace the
-        missing data.
+        User-defined value to replace missing data. Only used when
+        `imputation_method='missing'`.
 
     variables: list, default=None
         The list of categorical variables that will be imputed. If None, the
@@ -59,30 +72,28 @@ class CategoricalImputer(BaseImputer):
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
-        ignored. If false, the encoder will automatically select variables of type
+        ignored. If false, the imputer will automatically select variables of type
         object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
+        type object or categorical. If True, the imputer will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
     Attributes
     ----------
-    imputer_dict_:
-        Dictionary with most frequent category or arbitrary value per variable.
+    {imputer_dict_}
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn the most frequent category or assign arbitrary value to variable.
-    transform:
-        Impute missing data.
-    fit_transform:
-        Fit to the data, than transform it.
+
+    {transform}
+
+    {fit_transform}
+
     """
 
     def __init__(

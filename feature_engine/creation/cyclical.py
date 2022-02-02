@@ -4,9 +4,28 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine.creation._docstring import (
+    _drop_original_docstring,
+    _transform_docstring,
+)
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
+@Substitution(
+    variables=_variables_numerical_docstring,
+    drop_original=_drop_original_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    transform=_transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class CyclicalTransformer(BaseNumericalTransformer):
     """
     The CyclicalTransformer() applies cyclical transformations to numerical
@@ -27,39 +46,32 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of numerical variables to transform. If None, the transformer will
-        automatically find and select all numerical variables.
+    {variables}
 
     max_values: dict, default=None
         A dictionary with the maximum value of each variable to transform. Useful when
         the maximum value is not present in the dataset. If None, the transformer will
         automatically find the maximum value of each variable.
 
-    drop_original: bool, default=False
-        If True, the original variables to transform will be dropped from the dataframe.
+    {drop_original}
 
     Attributes
     ----------
     max_values_:
         The maximum value of the cyclical feature.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
-
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learns the maximum values of the cyclical features.
-    transform:
-        Applies the cyclical transformation.
-    fit_transform:
-        Fit to data, then transform it.
 
+    {transform}
+
+    {fit_transform}
 
     References
     ----------

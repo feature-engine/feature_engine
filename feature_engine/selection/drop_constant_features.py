@@ -81,7 +81,12 @@ class DropConstantFeatures(BaseSelector):
         self, variables: Variables = None, tol: float = 1, missing_values: str = "raise"
     ):
 
-        if not isinstance(tol, (float, int)) or tol < 0 or tol > 1:
+        if (
+            not isinstance(tol, (float, int))
+            or isinstance(tol, bool)
+            or tol < 0
+            or tol > 1
+        ):
             raise ValueError("tol must be a float or integer between 0 and 1")
 
         if missing_values not in ["raise", "ignore", "include"]:
@@ -160,8 +165,9 @@ class DropConstantFeatures(BaseSelector):
 
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "all"
         # add additional test that fails
-        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
         tags_dict["_xfail_checks"][
             "check_fit2d_1feature"
         ] = "the transformer needs at least 2 columns to compare, ok to fail"

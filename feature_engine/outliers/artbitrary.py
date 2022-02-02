@@ -11,19 +11,37 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     _is_dataframe,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _missing_values_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.parameter_checks import _define_numerical_dict
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
+@Substitution(
+    missing_values=_missing_values_docstring,
+    right_tail_caps_=BaseOutlier._right_tail_caps_docstring,
+    left_tail_caps_=BaseOutlier._left_tail_caps_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_not_learn_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class ArbitraryOutlierCapper(BaseOutlier):
     """
     The ArbitraryOutlierCapper() caps the maximum or minimum values of a variable
     at an arbitrary value indicated by the user.
 
     You must provide the maximum or minimum values that will be used to cap each
-    variable in a dictionary {feature:capping value}
+    variable in a dictionary containing the features as keys and the capping values as
+    values.
 
     More details in the :ref:`User Guide <arbitrary_capper>`.
 
@@ -31,39 +49,34 @@ class ArbitraryOutlierCapper(BaseOutlier):
     ----------
     max_capping_dict: dictionary, default=None
         Dictionary containing the user specified capping values for the right tail of
-        the distribution of each variable (maximum values).
+        the distribution of each variable to cap (maximum values).
 
     min_capping_dict: dictionary, default=None
         Dictionary containing user specified capping values for the eft tail of the
-        distribution of each variable (minimum values).
+        distribution of each variable to cap (minimum values).
 
-    missing_values : string, default='raise'
-        Indicates if missing values should be ignored or raised. If
-        `missing_values='raise'` the transformer will return an error if the
-        training or the datasets to transform contain missing values.
+    {missing_values}
 
     Attributes
     ----------
-    right_tail_caps_:
-        Dictionary with the maximum values at which variables will be capped.
+    {right_tail_caps_}
 
-    left_tail_caps_:
-        Dictionary with the minimum values at which variables will be capped.
+    {left_tail_caps_}
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        This transformer does not learn any parameter.
+
+    {fit}
+
     transform:
         Cap the variables.
-    fit_transform:
-        Fit to the data. Then transform it.
+
+    {fit_transform}
+
     """
 
     def __init__(

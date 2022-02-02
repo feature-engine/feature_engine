@@ -63,10 +63,10 @@ class MatchVariables(BaseEstimator, TransformerMixin):
         The values for the variables that will be added to the transformed dataset.
 
     missing_values: string, default='ignore'
-        Indicates if missing values should be ignored or raised. If 'ignore', the
-        transformer will ignore missing data when transforming the data. If 'raise' the
-        transformer will return an error if the training or the datasets to transform
-        contain missing values.
+        Indicates if missing values should be ignored or raised. If 'raise' the
+        transformer will return an error if the the datasets to `fit` or `transform`
+        contain missing values. If 'ignore', missing data will be ignored when learning
+        parameters or performing the transformation.
 
     verbose: bool, default=True
         If True, the transformer will print out the names of the variables that are
@@ -100,16 +100,20 @@ class MatchVariables(BaseEstimator, TransformerMixin):
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
                 "missing_values takes only values 'raise' or 'ignore'."
-                f"Got '{missing_values} instead.")
+                f"Got '{missing_values} instead."
+            )
 
         if not isinstance(verbose, bool):
-            raise ValueError("verbose takes only booleans True and False."
-                             f"Got '{verbose} instead.")
+            raise ValueError(
+                "verbose takes only booleans True and False." f"Got '{verbose} instead."
+            )
 
         # note: np.nan is an instance of float!!!
         if not isinstance(fill_value, (str, int, float)):
-            raise ValueError("fill_value takes integers, floats or strings."
-                             f"Got '{fill_value} instead.")
+            raise ValueError(
+                "fill_value takes integers, floats or strings."
+                f"Got '{fill_value} instead."
+            )
 
         self.fill_value = fill_value
         self.missing_values = missing_values
@@ -169,12 +173,15 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
         if self.verbose:
             if len(_columns_to_add) > 0:
-                print("The following variables are added to the DataFrame: "
-                      f"{_columns_to_add}")
+                print(
+                    "The following variables are added to the DataFrame: "
+                    f"{_columns_to_add}"
+                )
             if len(_columns_to_drop) > 0:
                 print(
                     "The following variables are dropped from the DataFrame: "
-                    f"{_columns_to_drop}")
+                    f"{_columns_to_drop}"
+                )
 
         X = X.drop(_columns_to_drop, axis=1)
 
@@ -191,7 +198,8 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
         msg = (
             "transformer takes categorical variables, and inf cannot be determined"
-            "on these variables. Thus, check is not implemented")
+            "on these variables. Thus, check is not implemented"
+        )
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = msg
 
         return tags_dict

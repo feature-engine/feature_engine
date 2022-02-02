@@ -6,10 +6,19 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
+@Substitution(
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class DropMissingData(BaseImputer):
     """
     DropMissingData() will delete rows containing missing values. It provides
@@ -53,8 +62,7 @@ class DropMissingData(BaseImputer):
         when the latter is `None`, or when only a subset of the indicated variables
         show NA in the train set if `missing_only=True`.
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
@@ -62,8 +70,9 @@ class DropMissingData(BaseImputer):
         Find the variables for which missing data should be evaluated.
     transform:
         Remove rows with missing data.
-    fit_transform:
-        Fit to the data, then transform it.
+
+    {fit_transform}
+
     return_na_data:
         Returns a dataframe with the rows that contain missing data.
     """

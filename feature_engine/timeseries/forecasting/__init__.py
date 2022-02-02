@@ -1,7 +1,7 @@
-# Transformers to be used when performing time-series forecasting
+""" Transformers that create features for time-series test_forecasting."""
 
-from .time_lag import TimeSeriesLagTransformer
+from .lag_features import LagFeatures
 
 __all__ = [
-    "TimeSeriesLagTransformer",
+    "LagFeatures",
 ]
