@@ -35,12 +35,28 @@ def test_raises_error_when_wrong_input_params(
         transformer4.transform(df_time)
 
 
-def test_default_params():
-    transformer = LagFeatures()
-    assert transformer.variables is None
-    assert transformer.periods == 1
-    assert transformer.freq is None
-    assert transformer.drop_original is False
+_test_init_params = [
+    ("empanada", 3, "1d", True),
+    (["che", "medialuna"], [2, 4, 6], ["1h", "30m", "4h"], True)
+    (None, None, None, False)
+]
+
+@pytest.mark.parametrize(
+    "_variables, _periods, _freq, _drop_original", _test_init_params
+)
+def test_class_initiation_params(
+        _variables, _periods, _freq, _drop_original
+):
+    transformer = LagFeatures(
+        variables=_variables,
+        periods=_periods,
+        freq=_freq,
+        drop_original=_drop_original
+    )
+    assert transformer.variables == _variables
+    assert transformer.periods == _periods
+    assert transformer.freq == _freq
+    assert transformer.drop_original == _drop_original
 
 
 def test_time_lag_period_shift_and_keep_original_data(df_time):
