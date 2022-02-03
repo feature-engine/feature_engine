@@ -283,7 +283,7 @@ def test_find_all_variables(df_vartypes):
         assert _find_all_variables(df_vartypes, non_existing_vars)
 
 
-_categorical_numerical_vars = [
+_cat_num_vars = [
     (df_enc, "var_A", ["var_A"], []),
     (df_enc_numeric, "var_B", [], ["var_B"]),
     # TODO: Datetime test
