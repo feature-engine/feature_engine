@@ -96,7 +96,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         drop_original: bool = False,
     ) -> None:
         # Prevents True and False passing as 1 and 0.
-        if not isinstance(periods, (int, list)):
+        if not isinstance(periods, (int, list, None)):
             raise ValueError(
                 f"`periods` must be an integer or a list of integers. Got {periods} "
                 f"instead."
