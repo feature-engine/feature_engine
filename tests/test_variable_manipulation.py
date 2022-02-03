@@ -286,6 +286,7 @@ def test_find_all_variables(df_vartypes):
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 filter_dict = [
     (
         pd.DataFrame(columns=["A", "B", "C", "D", "E"]),
@@ -317,7 +318,7 @@ def test_find_categorical_and_numerical_variable_one_cat_var(
 
 def test_find_categorical_and_numeric_variables_one_categorical_variables(
         df_enc
-_categorical_numerical_vars = [
+_cat_num_vars = [
     (df_enc, "var_A", ["var_A"], []),
     (df_enc_numeric, "var_B", [], ["var_B"]),
     # TODO: Datetime test
