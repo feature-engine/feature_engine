@@ -36,26 +36,28 @@ def test_raises_error_when_wrong_input_params(
 
 
 _test_init_params = [
-    ("empanada", 3, "1d", True),
-    (["che", "medialuna"], [2, 4, 6], ["1h", "30m", "4h"], True),
-    (None, None, None, False),
+    ("empanada", 3, "1d", "raise", True),
+    (["che", "medialuna"], [2, 4, 6], ["1h", "30m", "4h"], "ignore", True),
+    (None, None, None, "raise", False),
 ]
 
 @pytest.mark.parametrize(
-    "_variables, _periods, _freq, _drop_original", _test_init_params
+    "_variables, _periods, _freq, _missing_values, _drop_original", _test_init_params
 )
-def test_class_initiation_params(
-        _variables, _periods, _freq, _drop_original
+def test_different_types_for_init_params(
+        _variables, _periods, _freq, _missing_values, _drop_original
 ):
     transformer = LagFeatures(
         variables=_variables,
         periods=_periods,
         freq=_freq,
+        missing_values=_missing_values,
         drop_original=_drop_original
     )
     assert transformer.variables == _variables
     assert transformer.periods == _periods
     assert transformer.freq == _freq
+    assert transformer.missing_values == _missing_values
     assert transformer.drop_original == _drop_original
 
 
