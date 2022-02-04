@@ -115,7 +115,11 @@ class BaseTargetMeanEstimator(BaseEstimator):
             The target variable.
         """
         # check if 'X' is a dataframe
-        _is_dataframe(X)
+        X = _is_dataframe(X)
+
+        # TODO: create check_X_y in dataframe_checks.py
+        # Check that X and y have the correct shapes
+        # X, y = check_X_y(X, y, dtype=None)
 
         # identify categorical and numerical variables
         (
@@ -219,7 +223,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        _is_dataframe(X)
+        X = _is_dataframe(X)
 
         # Check input data contains same number of columns as df used to fit
         _check_input_matches_training_df(X, self.n_features_in_)
