@@ -101,21 +101,27 @@ class LagFeatures(BaseEstimator, TransformerMixin):
                 f"`periods` must be an integer or a list of integers. Got {periods} "
                 f"instead."
             )
-
-        if type(periods) == int:
-            if periods < 0:
-                raise ValueError(
-                    f"periods must be equal or greater than 0. Got {periods} "
-                    f"instead."
-                )
-
-        if type(periods) == list:
-            for period in periods:
-                if period < 0:
+        else:
+            if isinstance(periods, int):
+                if periods < 0:
                     raise ValueError(
-                        f"periods must be equal or greater than 0. Got {period} "
-                        f"for one of the periods values instead."
+                        f"periods must be equal or greater than 0. Got {periods} "
+                        f"instead."
                     )
+
+            elif isinstance(periods, list):
+                for period in periods:
+                    if isinstance(period, int):
+                        if period < 0:
+                            raise ValueError(
+                                f"periods must be equal or greater than 0. Got {period} "
+                                f"for one of the periods values instead."
+                            )
+                    else:
+                        raise ValueError(
+                            f"periods must be an integer or list of integers. Got {period} "
+                            f"as one of elements in periods instead."
+                        )
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
