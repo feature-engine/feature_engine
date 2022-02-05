@@ -109,7 +109,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
 
         # if target has values other than 0 and 1, we need to remap the values,
         # to be able to compute meaningful averages.
-        if any(x for x in y.unique() if x not in [0, 1]):
+        if any(x for x in self.classes_ if x not in [0, 1]):
             y = np.where(y == unique_labels(y)[0], 0, 1)
 
         super().fit(X, y)
