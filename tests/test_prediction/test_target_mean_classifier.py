@@ -95,7 +95,7 @@ def test_classifier_results_with_all_categorical_variables(
     accuracy_score = transformer.score(
         df_pred_small[["Studies", "City"]], df_pred_small["Plays_Football"]
     )
-    
+
     # test accuracy score calc
     assert accuracy_score.round(6) == 0.5
 

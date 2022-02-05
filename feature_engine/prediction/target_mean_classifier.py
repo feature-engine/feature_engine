@@ -4,6 +4,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import ClassifierMixin
+from sklearn.utils.multiclass import unique_labels
 
 from feature_engine.prediction.base_predictor import BaseTargetMeanEstimator
 
@@ -98,7 +99,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
             The target variable.
         """
         # check that y is binary
-        self.classes_ = list(y.unique())
+        self.classes_ = unique_labels(y)
 
         if len(self.classes_) > 2:
             raise ValueError(
@@ -109,7 +110,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         # if target has values other than 0 and 1, we need to remap the values,
         # to be able to compute meaningful averages.
         if any(x for x in y.unique() if x not in [0, 1]):
-            y = np.where(y == y.unique()[0], 0, 1)
+            y = np.where(y == unique_labels(y)[0], 0, 1)
 
         super().fit(X, y)
 
@@ -134,13 +135,6 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
             classes are ordered as they are in self.classes_.
         """
         prob = self._predict(X)
-        # TODO: Discuss w/ Soledad
-        # if not isinstance(prob, np.ndarray) or prob.shape[1] != 2:
-        #     raise ValueError(
-        #         "'prob' is not a 2-dimension numpy array. The probability "
-        #         "predictions must be a 2-dimension numpy array with 2 columns."
-        #     )
-        # the second column is the prob of class 1.
         return np.vstack([1 - prob, prob]).T
 
     def predict_log_proba(self, X: pd.DataFrame) -> pd.Series:
@@ -162,12 +156,6 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
 
         """
         log_prob = np.log(self.predict_proba(X))
-        # TODO: Discuss w/ Soledad
-        # if not isinstance(log_prob, np.ndarray) or log_prob.shape[1] != 2:
-        #     raise ValueError(
-        #         "'log_prob' is not a 2-dimension numpy array. The log probability "
-        #         "predictions must be a 2-dimension numpy array with 2 columns."
-        #     )
         return log_prob
 
     def predict(self, X: pd.DataFrame) -> pd.Series:
@@ -185,11 +173,5 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         y_pred: ndarray of shape (n_samples,)
             Vector containing the class labels for each sample.
         """
-        y_pred = np.where(self.predict_proba(X) > 0.5, 1, 0)
-        # TODO: Discuss w/ Soledad
-        # if not isinstance(y_pred, np.ndarray) or y_pred.ndim != 1:
-        #     raise ValueError(
-        #         "'y_pred' is not a 1-dimension numpy array. Prediction must result "
-        #         "in a 1-dimension numpy array."
-        #     )
+        y_pred = np.where(self._predict(X) > 0.5, self.classes_[1], self.classes_[0])
         return y_pred[:, 0]
