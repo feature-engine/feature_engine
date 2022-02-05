@@ -174,4 +174,4 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
             Vector containing the class labels for each sample.
         """
         y_pred = np.where(self._predict(X) > 0.5, self.classes_[1], self.classes_[0])
-        return y_pred[:, 0]
+        return y_pred

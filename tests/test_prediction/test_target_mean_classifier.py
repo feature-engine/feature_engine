@@ -92,12 +92,35 @@ def test_classifier_results_with_all_categorical_variables(
     )
 
     transformer.fit(df_pred[["Studies", "City"]], df_pred["Plays_Football"])
+    pred = transformer.predict(df_pred_small[["Studies", "City"]])
+    prob = transformer.predict_proba(df_pred_small[["Studies", "City"]])
+    log_prob = transformer.predict_log_proba(df_pred_small[["Studies", "City"]])
+
     accuracy_score = transformer.score(
         df_pred_small[["Studies", "City"]], df_pred_small["Plays_Football"]
     )
-
+    # test predict results
+    assert pred.tolist() == [0, 0, 1, 1, 0, 0]
+    # test predict_proba results
+    assert prob.round(6).tolist() == [
+        [0.666667, 0.333333],
+        [0.583333, 0.416667],
+        [0.25, 0.75],
+        [0.333333, 0.666667],
+        [0.5, 0.5],
+        [0.666667, 0.333333]
+    ]
+    # test predict_log_proba results
+    assert log_prob.round(6).tolist() == [
+        [-0.405465, -1.098612],
+        [-0.538997, -0.875469],
+        [-1.386294, -0.287682],
+        [-1.098612, -0.405465],
+        [-0.693147, -0.693147],
+        [-0.405465, -1.098612]
+    ]
     # test accuracy score calc
-    assert accuracy_score.round(6) == 0.5
+    assert accuracy_score.round(6) == 0.333333
 
 
 def test_non_fitted_error(df_pred):
