@@ -205,7 +205,6 @@ def test_classifier_results_with_three_or_more_variables(
     log_prob = transformer.predict_log_proba(
         df_pred_small[["Studies", "City", "Age", "Height_cm"]]
     )
-
     accuracy_score = transformer.score(
         df_pred_small[["Studies", "City", "Age", "Height_cm"]], df_pred_small["Plays_Football"]
     )
