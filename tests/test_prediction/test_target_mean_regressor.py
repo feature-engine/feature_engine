@@ -92,11 +92,14 @@ def test_regression_score_calculation_with_equal_frequency(
     )
 
     transformer.fit(df_pred[["City", "Age"]], df_pred["Marks"])
+    pred = transformer.predict(df_pred_small[["City", "Age"]])
+
     r2 = transformer.score(
         df_pred_small[["City", "Age"]],
         df_pred_small["Marks"]
     )
-
+    # test predict
+    assert pred.round(6).tolist() == [0.483333, 0.583333, 0.391667, 0.666667, 0.2, 0.391667]
     # test R-Squared calc
     assert r2.round(6) == -0.022365
 
