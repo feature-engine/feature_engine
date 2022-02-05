@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
@@ -54,7 +55,7 @@ def test_attributes_upon_fitting(df_pred):
     # test attributes
     assert transformer.variables_categorical_ == ["City"]
     assert transformer.variables_numerical_ == ["Age"]
-    assert transformer.classes_ == [1, 0]
+    assert transformer.classes_.tolist() == [0, 1]
     assert type(transformer.pipeline_
                 .named_steps["discretiser"]) == EqualFrequencyDiscretiser
     assert type(transformer.pipeline_
@@ -74,12 +75,35 @@ def test_classifier_results_with_all_numerical_variables(
     )
 
     transformer.fit(df_pred[["Age", "Height_cm"]], df_pred["Plays_Football"])
+    pred = transformer.predict(df_pred_small[["Age", "Height_cm"]])
+    prob = transformer.predict_proba(df_pred_small[["Age", "Height_cm"]])
+    log_prob = transformer.predict_log_proba(df_pred_small[["Age", "Height_cm"]])
     accuracy_score = transformer.score(
         df_pred_small[["Age", "Height_cm"]], df_pred_small["Plays_Football"]
     )
 
+    # test predict results
+    assert pred.tolist() == [0, 1, 0, 0, 0, 0]
+    # test predict_proba results
+    assert prob.round(6).tolist() == [
+        [0.5, 0.5],
+        [0.416667, 0.583333],
+        [0.75, 0.25],
+        [0.75, 0.25],
+        [0.75, 0.25],
+        [0.833333, 0.166667]
+    ]
+    # test predict_log_proba results
+    assert log_prob.round(6).tolist() == [
+        [-0.693147, -0.693147],
+        [-0.875469, -0.538997],
+        [-0.287682, -1.386294],
+        [-0.287682, -1.386294],
+        [-0.287682, -1.386294],
+        [-0.182322, -1.791759]
+    ]
     # test accuracy score calc
-    assert accuracy_score.round(6) == 0.666667
+    assert accuracy_score.round(6) == 0.5
 
 
 def test_classifier_results_with_all_categorical_variables(
