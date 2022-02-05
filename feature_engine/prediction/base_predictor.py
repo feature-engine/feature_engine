@@ -6,7 +6,7 @@ from typing import List, Union
 import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
@@ -117,10 +117,10 @@ class BaseTargetMeanEstimator(BaseEstimator):
         # check if 'X' is a dataframe
         X = _is_dataframe(X)
 
-        # TODO: create check_X_y in dataframe_checks.py
-        # Check that X and y have the correct shapes
+        # Check X and y for consistent length
         # X, y = check_X_y(X, y, dtype=None)
-
+        # X = pd.DataFrame(X)
+        # y = pd.DataFrame(y)
         # identify categorical and numerical variables
         (
             self.variables_categorical_,
