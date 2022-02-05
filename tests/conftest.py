@@ -215,23 +215,3 @@ def df_normal_dist():
     df.columns = ["var"]
 
     return df
-
-
-@pytest.fixture(scope="module")
-def df_enc_categorical_and_numeric():
-    np.random.seed(0)
-    sample_size = 20
-    var_c = list(np.random.randint(-33, 33, sample_size))
-    mu, sigma = 0, 3
-    var_d = list(np.random.normal(mu, sigma, sample_size))
-    df = {
-        "var_A": ["B"] * 9 + ["A"] * 6 + ["C"] * 4 + ["D"] * 1,
-        "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-        "var_C": var_c,
-        "var_D": var_d,
-        "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-    }
-
-    df = pd.DataFrame(df)
-
-    return df
