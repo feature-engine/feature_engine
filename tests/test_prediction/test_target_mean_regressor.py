@@ -145,7 +145,7 @@ def test_regressor_with_two_variables(df_pred, df_pred_small):
 
 
 def test_regressor_with_three_or_more_variables(df_pred, df_pred_small):
-    # Case 5: Check predictor with two variables
+    # Case 6: Check predictor with three or more variables
     transformer = TargetMeanRegressor(
         variables=None,
         bins=4,
