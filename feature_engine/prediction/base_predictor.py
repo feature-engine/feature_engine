@@ -132,7 +132,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         _check_contains_na(X, self.variables_categorical_)
 
         # check inf
-        _check_contains_inf(X, self.variables_numerical_)da
+        _check_contains_inf(X, self.variables_numerical_)
         # pipeline with discretiser and encoder
         if self.variables_categorical_ and self.variables_numerical_:
             self.pipeline_ = self._make_combined_pipeline()
