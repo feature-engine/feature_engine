@@ -104,7 +104,7 @@ def test_regression_score_calculation_with_equal_frequency(
     assert r2.round(6) == -0.022365
 
 
-def test_predictor_with_all_numerical_variables(df_pred, df_pred_small):
+def test_regressor_with_two_variables(df_pred, df_pred_small):
     # Case 4: Check predictor when all variables are numerical
     transformer = TargetMeanRegressor(
         variables=None,
@@ -113,10 +113,13 @@ def test_predictor_with_all_numerical_variables(df_pred, df_pred_small):
     )
 
     transformer.fit(df_pred[["Age", "Height_cm"]], df_pred["Marks"])
+    pred = transformer.predict(df_pred_small[["Age", "Height_cm"]])
     r2 = transformer.score(
         df_pred_small[["Age", "Height_cm"]], df_pred_small["Marks"]
     )
 
+    # test predict
+    assert pred.round(6).tolist() == [0.575, 0.5475, 0.526667, 0.566667, 0.454167, 0.526667]
     # test R-Squared calc
     assert r2.round(6) == 0.132319
 
