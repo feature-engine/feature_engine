@@ -65,7 +65,7 @@ def test_attributes_upon_fitting(df_pred):
     assert transformer.n_features_in_ == 2
 
 
-def test_classifier_results_with_all_numerical_variables(
+def test_classifier_results_with_two_numerical_variables(
         df_pred, df_pred_small
 ):
     transformer = TargetMeanClassifier(
@@ -106,7 +106,7 @@ def test_classifier_results_with_all_numerical_variables(
     assert accuracy_score.round(6) == 0.5
 
 
-def test_classifier_results_with_all_categorical_variables(
+def test_classifier_results_with_two_categorical_variables(
         df_pred, df_pred_small
 ):
     transformer = TargetMeanClassifier(
