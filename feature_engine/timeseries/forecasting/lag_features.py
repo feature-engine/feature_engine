@@ -245,7 +245,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         elif isinstance(self.periods, list):
             feature_names = [
                 str(feature) + f"_lag_{pr}"
-                for pr in self.perdiods
+                for pr in self.periods
                 for feature in input_features
             ]
         else:
