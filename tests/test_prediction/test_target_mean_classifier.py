@@ -147,6 +147,92 @@ def test_classifier_results_with_all_categorical_variables(
     assert accuracy_score.round(6) == 0.333333
 
 
+def test_classifier_results_with_one_variable(
+        df_pred, df_pred_small
+):
+    transformer = TargetMeanClassifier(
+        variables=None,
+        bins=4,
+        strategy="equal_frequency"
+    )
+
+    transformer.fit(df_pred[["Studies"]], df_pred["Plays_Football"])
+    pred = transformer.predict(df_pred_small[["Studies"]])
+    prob = transformer.predict_proba(df_pred_small[["Studies"]])
+    log_prob = transformer.predict_log_proba(df_pred_small[["Studies"]])
+
+    accuracy_score = transformer.score(
+        df_pred_small[["Studies"]], df_pred_small["Plays_Football"]
+    )
+    # test predict results
+    assert pred.tolist() == [0, 0, 0, 1, 1, 0]
+    # test predict_proba results
+    assert prob.round(6).tolist() == [
+        [0.666667, 0.333333],
+        [0.5, 0.5],
+        [0.5, 0.5],
+        [0.0, 1.0],
+        [0.0, 1.0],
+        [0.666667, 0.333333]
+    ]
+    # test predict_log_proba results
+    assert log_prob.round(6).tolist() == [
+        [-0.405465, -1.098612],
+        [-0.693147, -0.693147],
+        [-0.693147, -0.693147],
+        [-float("inf"), 0.0],
+        [-float("inf"), 0.0],
+        [-0.405465, -1.098612]
+    ]
+    # test accuracy score calc
+    assert accuracy_score.round(6) == 0.333333
+
+
+def test_classifier_results_with_three_or_more_variables(
+        df_pred, df_pred_small
+):
+    transformer = TargetMeanClassifier(
+        variables=None,
+        bins=4,
+        strategy="equal_frequency"
+    )
+
+    transformer.fit(
+        df_pred[["Studies", "City", "Age", "Height_cm"]], df_pred["Plays_Football"]
+    )
+    pred = transformer.predict(df_pred_small[["Studies", "City", "Age", "Height_cm"]])
+    prob = transformer.predict_proba(df_pred_small[["Studies", "City", "Age", "Height_cm"]])
+    log_prob = transformer.predict_log_proba(
+        df_pred_small[["Studies", "City", "Age", "Height_cm"]]
+    )
+
+    accuracy_score = transformer.score(
+        df_pred_small[["Studies", "City", "Age", "Height_cm"]], df_pred_small["Plays_Football"]
+    )
+    # test predict results
+    assert pred.tolist() == [0, 0, 0, 1, 1, 0]
+    # test predict_proba results
+    assert prob.round(6).tolist() == [
+        [0.5, 0.5],
+        [0.666667, 0.333333],
+        [0.541667, 0.458333],
+        [0.333333, 0.666667],
+        [0.458333, 0.541667],
+        [0.625, 0.375]
+    ]
+    # test predict_log_proba results
+    assert log_prob.round(6).tolist() == [
+        [-0.693147, -0.693147],
+        [-0.405465, -1.098612],
+        [-0.613104, -0.780159],
+        [-1.098612, -0.405465],
+        [-0.780159, -0.613104],
+        [-0.470004, -0.980829]
+    ]
+    # test accuracy score calc
+    assert accuracy_score.round(6) == 0.333333
+
+
 def test_non_fitted_error(df_pred):
     # test if transformer has been fitted
     with pytest.raises(NotFittedError):
