@@ -327,7 +327,7 @@ _cat_num_vars = [
 ]
 
 @pytest.mark.parametrize(
-    "_df, _variables, _categorical_vars, _numerical_vars", _categorical_numerical_vars
+    "_df, _variables, _categorical_vars, _numerical_vars", _cat_num_vars
 )
 def test_find_categorical_and_numeric_vars_pass_diff_var_permutations(
         _df, _variables, _categorical_vars, _numerical_vars
@@ -385,27 +385,27 @@ def test_error_find_categorical_and_numeric_variables_pass_empty_list(
 
 
 def test_find_categorical_and_numerical_variables_user_passes_num_and_cat_vars(
-        df_enc_categorical_and_numeric
+        df_vartypes
 ):
     assert (_find_categorical_and_numerical_variables(
-        df_enc_categorical_and_numeric, ["var_A", "var_C", "target"])
-        == (["var_A"], ["var_C", "target"]))
+        df_vartypes, ["Name", "Age", "City", "Marks"])
+        == (["Name", "City"], ["Age", "Marks"]))
 
 
 def test_find_categorical_and_numeric_variables_user_passes_cat_vars(
-        df_enc_categorical_and_numeric
+        df_vartypes
 ):
     assert (_find_categorical_and_numerical_variables(
-        df_enc_categorical_and_numeric, ["var_A", "var_B"])
-        == (["var_A", "var_B"], []))
+        df_vartypes, ["Name", "Marks"])
+        == (["Name", "Marks"], []))
 
 
 def test_find_categorical_and_numeric_variables_user_passes_num_vars(
-        df_enc_categorical_and_numeric
+        df_vartypes
 ):
     assert (_find_categorical_and_numerical_variables(
-        df_enc_categorical_and_numeric, ["var_C", "target"])
-        == ([], ["var_C", "target"]))
+        df_vartypes, ["Age", "Marks"])
+        == ([], ["Age", "Marks"]))
 
 
 #TODO:
