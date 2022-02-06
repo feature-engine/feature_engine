@@ -99,7 +99,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         if not periods is None and not freq is None:
             raise ValueError(
                 f"Both periods and freq should should noth have values, "
-                f"either one param or the other. Got {periods} for "
+                f"only one of the two params. Got {periods} for "
                 f"periods and {freq} for freq."
             )
         # Prevents True and False passing as 1 and 0.
