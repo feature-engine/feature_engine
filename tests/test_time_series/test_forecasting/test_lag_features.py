@@ -13,9 +13,11 @@ _false_input_params = [
 ]
 
 _test_types_init_params = [
-    ("empanada", 3, "1d", "raise", True),
-    (["che", "medialuna"], [2, 4, 6], ["1h", "30m", "4h"], "ignore", True),
+    ("empanada", 3, None, "raise", True),
+    (["che", "medialuna"], None, ["1h", "30m", "4h"], "ignore", True),
     (None, None, None, "raise", False),
+    ("pasta", [2, 4, 6], None, "raise", False),
+    ("jamon", None, "1d", "ignore", True),
 ]
 
 
@@ -181,6 +183,7 @@ def test_time_lag_periods_drop_original_value(df_time):
     assert df_tr.head(5).equals(expected_results_df)
 
 
+# TODO: Need to expand
 def test_get_feature_names_out(df_time):
     transformer = LagFeatures(
         freq="1h",
@@ -192,3 +195,11 @@ def test_get_feature_names_out(df_time):
     assert feature_names == (
         ["ambient_temp_lag_1h", "module_temp_lag_1h", "irradiation_lag_1h"]
     )
+
+
+def test_error_if_periods_and_freq_have_values(df_time):
+    with pytest.raises(ValueError):
+        LagFeatures(
+            periods=[3, 6, 9],
+            freq=["1h", "2h"]
+        )
