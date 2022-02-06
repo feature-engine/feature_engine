@@ -19,6 +19,7 @@ from feature_engine.docstrings import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _missing_values_docstring,
+    _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_numerical_docstring,
 )
@@ -33,6 +34,7 @@ from feature_engine.variable_manipulation import (
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
@@ -51,9 +53,9 @@ class LagFeatures(BaseEstimator, TransformerMixin):
 
     freq: str, list of str, default=None
         Offset to use from the tseries module or time rule. See parameter `freq` in
-        `pandas.shift`. It is the same functionality. If freq is not None, then this
-        parameter overrides the parameter `periods`. If freq is a list, lag features
-        will be created for each one of the frequency values in the list.
+        `pandas.shift`. It is the same functionality. If freq is a list, lag features
+        will be created for each one of the frequency values in the list. If freq is not
+        None, then this parameter overrides the parameter `periods`.
 
     {missing_values}
 
@@ -63,6 +65,8 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     ----------
     variables_:
         The group of variables that will be lagged.
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -117,7 +121,6 @@ class LagFeatures(BaseEstimator, TransformerMixin):
             )
 
         self.variables = _check_input_parameter_variables(variables)
-        self.periods = periods
         self.freq = freq
         self.missing_values = missing_values
         self.drop_original = drop_original
@@ -132,7 +135,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
             The training dataset.
 
         y: pandas Series, default=None
-            y is not needed in this imputation. You can pass None or y.
+            y is not needed for this transformer. You can pass None or y.
         """
         # check input dataframe
         X = _is_dataframe(X)
@@ -145,6 +148,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
 
+        self.feature_names_in_ = list(X.columns)
         self.n_features_in_ = X.shape[1]
 
         return self
