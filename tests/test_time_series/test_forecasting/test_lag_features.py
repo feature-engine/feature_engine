@@ -179,3 +179,16 @@ def test_time_lag_periods_drop_original_value(df_time):
     expected_results_df = pd.DataFrame(data=expected_results, index=date_time)
 
     assert df_tr.head(5).equals(expected_results_df)
+
+
+def test_get_feature_names_out(df_time):
+    transformer = LagFeatures(
+        freq="1h",
+        drop_original=True
+    )
+    transformer.fit(df_time)
+    feature_names = transformer.get_feature_names_out()
+
+    assert feature_names == (
+        ["ambient_temp_lag_1h", "module_temp_lag_1h", "irradiation_lag_1h"]
+    )
