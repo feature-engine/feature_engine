@@ -44,7 +44,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     ----------
     {variables}
 
-    periods: int, list of ints, default=1
+    periods: int, list of ints, default=None
         Number of periods to shift. Can be positive or negative. If list, features will
         be created for each one of the periods.
 
@@ -90,11 +90,18 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        periods: int = 1,
+        periods: int = None,
         freq: Union[str, List[str]] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
+
+        if not periods is None and not freq is None:
+            raise ValueError(
+                f"Both periods and freq should should noth have values, "
+                f"either one param or the other. Got {periods} for "
+                f"periods and {freq} for freq."
+            )
         # Prevents True and False passing as 1 and 0.
         if isinstance(periods, bool):
             raise ValueError(
