@@ -44,9 +44,10 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     ----------
     {variables}
 
-    periods: int, list of ints, default=None
-        Number of periods to shift. Can be positive or negative. If list, features will
-        be created for each one of the periods.
+    periods: int, list of ints, default=1
+        Number of periods to shift. Can be a positive integer or list of positive
+        integers. If list, features will be created for each one of the periods in the
+        list. If the parameter `freq` is specified, `periods` will be ignored.
 
     freq: str, list of str, default=None
         Offset to use from the tseries module or time rule. See parameter `freq` in
@@ -90,55 +91,23 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        periods: int = None,
+        periods: int = 1,
         freq: Union[str, List[str]] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
 
-        if not periods is None and not freq is None:
-            raise ValueError(
-                f"Both periods and freq should should noth have values, "
-                f"only one of the two params. Got {periods} for "
-                f"periods and {freq} for freq."
-            )
-        # Prevents True and False passing as 1 and 0.
-        if isinstance(periods, bool):
-            raise ValueError(
-                f"`periods` must be an integer or a list of integers. Got {periods} "
-                f"instead."
-            )
-        elif not isinstance(periods, (int, list, type(None))):
-            raise ValueError(
-                f"`periods` must be an integer or a list of integers. Got {periods} "
-                f"instead."
-            )
+        if (
+            isinstance(periods, int)
+            and periods > 0
+            or isinstance(periods, list)
+            and all(isinstance(num, int) and num > 0 for num in periods)
+        ):
+            self.periods = periods
         else:
-            if isinstance(periods, int):
-                if periods < 0:
-                    raise ValueError(
-                        f"periods must be equal or greater than 0. Got {periods} "
-                        f"instead."
-                    )
-
-            elif isinstance(periods, list):
-                for period in periods:
-                    if isinstance(period, int):
-                        if period < 0:
-                            raise ValueError(
-                                f"periods must be equal or greater than 0. Got {period} "
-                                f"for one of the periods values instead."
-                            )
-                    else:
-                        raise ValueError(
-                            f"periods must be an integer or list of integers. Got {period} "
-                            f"as one of the elements in periods instead."
-                        )
-
-        if missing_values not in ["raise", "ignore"]:
             raise ValueError(
-                "missing_values takes only values 'raise' or 'ignore'."
-                f"Got {missing_values} instead."
+                f"periods must be an integer or a list of positive integers. Got {periods} "
+                f"instead."
             )
 
         if not isinstance(drop_original, bool):
