@@ -32,6 +32,8 @@ def df_time():
         "irradiation":
             [0.51, 0.79, 0.65, 0.76, 0.42, 0.49, 0.57, 0.56, 0.74,
              0.89, 0.47, 0.54, 0.4, 0.45, 0.57],
+        "color":
+            ["blue"]*10 + ["green"]*5,
     }
 
     df = pd.DataFrame(data, index=date_time)
