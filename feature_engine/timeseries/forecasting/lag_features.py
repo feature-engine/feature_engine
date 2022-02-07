@@ -115,7 +115,10 @@ class LagFeatures(BaseEstimator, TransformerMixin):
             )
 
         if missing_values not in ["raise", "ignore"]:
-            raise ValueError("missing_values takes only values 'raise' or 'ignore'")
+            raise ValueError(
+                "missing_values takes only values 'raise' or 'ignore'. "
+                f"Got {missing_values} instead."
+            )
 
         if not isinstance(drop_original, bool):
             raise ValueError(
