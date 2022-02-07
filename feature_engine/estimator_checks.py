@@ -26,12 +26,13 @@ def test_df(numeric=True, datetime=False):
         X["cat_var2"] = ["B"] * 1000
 
     if datetime is True:
-        X["date"] = (pd.date_range("2020-02-24", periods=12, freq="T"),)
+        X["date"] = pd.date_range("2020-02-24", periods=1000, freq="T")
 
     return X, y
 
 
 def check_feature_engine_estimator(estimator):
+    # Gather all tests
     check_raises_non_fitted_error(estimator)
     check_raises_error_when_fitting_not_a_df(estimator)
     check_raises_error_when_transforming_not_a_df(estimator)
@@ -54,10 +55,14 @@ def check_feature_engine_estimator(estimator):
     if hasattr(estimator, "missing_values"):
         check_error_param_missing_values(estimator)
 
-    if hasattr(estimator, "feature_names_in_"):
-        check_feature_names_in(estimator)
+    # TODO: roll-out when all estimators have feature_names_in
+    # check_feature_names_in(estimator)
+
+    if hasattr(estimator, "drop_original"):
+        check_drop_original_variables(estimator)
 
 
+# ======  Common setting errors ======
 def check_raises_non_fitted_error(estimator):
     X, y = test_df()
     transformer = clone(estimator)
@@ -105,6 +110,7 @@ def check_error_if_y_not_passed(estimator):
         estimator.fit(X)
 
 
+# ====== Check variable selection functionality ======
 def check_numerical_variables_assignment(estimator):
     # toy df
     X, y = test_df(numeric=False)
@@ -213,6 +219,7 @@ def check_all_types_variables_assignment(estimator):
             assert transformer.variables_ == list(X.columns)
 
 
+# ====== Check functionality shared across transformers ======
 def check_takes_cv_constructor(estimator):
     from sklearn.model_selection import KFold, StratifiedKFold
 
@@ -260,15 +267,21 @@ def check_takes_cv_constructor(estimator):
             )
 
 
-# ======== input param error checks
-def check_error_param_missing_values(estimator):
-    # param takes values "raise" or "ignore"
+def check_drop_original_variables(estimator):
+    X, y = test_df(numeric=False, datetime=True)
     estimator = clone(estimator)
-    for value in [2, "hola", False]:
-        with pytest.raises(ValueError):
-            estimator.__class__(missing_values=value)
+    estimator.set_params(drop_original=True)
+    X_tr = estimator.fit_transform(X, y)
+    # Check that original variables are not in transformed dataframe
+    assert len([f for f in X_tr.columns if f in estimator.variables_]) == 0
+    # Check that remaining variables are in transformed dataframe
+    remaining = [
+        f for f in estimator.feature_names_in_ if f not in estimator.variables_
+    ]
+    assert all([f in X_tr.columns for f in remaining])
 
 
+# ======== Check common fit attributes ========
 def check_feature_names_in(estimator):
     # the estimator learns the parameters from the train set
     X, y = test_df(numeric=False, datetime=True)
@@ -279,3 +292,12 @@ def check_feature_names_in(estimator):
         "cat_var2",
         "date",
     ]
+
+
+# ======== Check errors when non-permitted input params ======
+def check_error_param_missing_values(estimator):
+    # param takes values "raise" or "ignore"
+    estimator = clone(estimator)
+    for value in [2, "hola", False]:
+        with pytest.raises(ValueError):
+            estimator.__class__(missing_values=value)
