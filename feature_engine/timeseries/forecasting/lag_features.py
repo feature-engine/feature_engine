@@ -44,9 +44,9 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     LagFeatures adds lag features to the dataframe. A lag feature is a feature with
     information about a prior time step.
 
-    LagFeatures has the same functionality as `pandas.shift` with the exception that
+    LagFeatures has the same functionality as pandas `shift()` with the exception that
     only one of `periods` or `freq` can be indicated at a time. LagFeatures builds on
-    top of `pandas.shift` in that multiple lags can be created at the same time and the
+    top of pandas `shift()` in that multiple lags can be created at the same time and the
     features with names will be concatenated to the original dataframe.
 
     LagFeatures works only with numerical variables. You can pass a list of variables
@@ -66,7 +66,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
 
     freq: str, list of str, default=None
         Offset to use from the tseries module or time rule. See parameter `freq` in
-        `pandas.shift`. It is the same functionality. If freq is a list, lag features
+        pandas `shift()`. It is the same functionality. If freq is a list, lag features
         will be created for each one of the frequency values in the list. If freq is not
         None, then this parameter overrides the parameter `periods`.
 
@@ -94,7 +94,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
 
     See Also
     --------
-    pandas.shift()
+    pandas.shift
     """
 
     def __init__(

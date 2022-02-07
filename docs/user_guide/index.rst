@@ -19,4 +19,5 @@ and feature engineering transformations in general, as well as additional exampl
    selection/index
    datetime/index
    preprocessing/index
+   timeseries/index
    wrappers/index
