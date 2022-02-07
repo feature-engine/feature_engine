@@ -47,7 +47,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     LagFeatures has the same functionality as `pandas.shift` with the exception that
     only one of `periods` or `freq` can be indicated at a time. LagFeatures builds on
     top of `pandas.shift` in that multiple lags can be created at the same time and the
-    features with names are concatenated in the original dataframe.
+    features with names will be concatenated to the original dataframe.
 
     LagFeatures works only with numerical variables. You can pass a list of variables
     to lag. Alternatively, LagFeatures will automatically select and lag all numerical
@@ -92,17 +92,9 @@ class LagFeatures(BaseEstimator, TransformerMixin):
 
     {fit_transform}
 
-    Notes
-    -----
-
-
     See Also
     --------
     pandas.shift()
-
-    References
-    ----------
-
     """
 
     def __init__(
@@ -245,7 +237,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
 
         return X
 
-    def get_feature_names_out(self, input_features=None):
+    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
         """Get output feature names for transformation.
 
         Parameters
