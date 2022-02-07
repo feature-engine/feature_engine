@@ -5,7 +5,7 @@ from sklearn.datasets import make_classification
 from sklearn.exceptions import NotFittedError
 
 
-def test_df(numeric=True):
+def test_df(numeric=True, datetime=False):
     X, y = make_classification(
         n_samples=1000,
         n_features=12,
@@ -24,6 +24,9 @@ def test_df(numeric=True):
     if numeric is False:
         X["cat_var"] = ["A"] * 1000
         X["cat_var2"] = ["B"] * 1000
+
+    if datetime is True:
+        X["date"] = (pd.date_range("2020-02-24", periods=12, freq="T"),)
 
     return X, y
 
@@ -50,6 +53,9 @@ def check_feature_engine_estimator(estimator):
 
     if hasattr(estimator, "missing_values"):
         check_error_param_missing_values(estimator)
+
+    if hasattr(estimator, "feature_names_in_"):
+        check_feature_names_in(estimator)
 
 
 def check_raises_non_fitted_error(estimator):
@@ -261,3 +267,15 @@ def check_error_param_missing_values(estimator):
     for value in [2, "hola", False]:
         with pytest.raises(ValueError):
             estimator.__class__(missing_values=value)
+
+
+def check_feature_names_in(estimator):
+    # the estimator learns the parameters from the train set
+    X, y = test_df(numeric=False, datetime=True)
+    estimator = clone(estimator)
+    estimator.fit(X, y)
+    assert estimator.feature_names_in_ == ["var_" + str(i) for i in range(12)] + [
+        "cat_var",
+        "cat_var2",
+        "date",
+    ]

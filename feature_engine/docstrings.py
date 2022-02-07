@@ -47,7 +47,7 @@ _variables_attribute_docstring = """variables_:
         The group of variables that will be transformed.
         """.rstrip()
 
-_feature_names_in_docstring = """feature_names_in_: 
+_feature_names_in_docstring = """feature_names_in_:
         List with the names of features seen during `fit`.
         """.rstrip()
 

@@ -16,10 +16,10 @@ from feature_engine.dataframe_checks import (
 from feature_engine.docstrings import (
     Substitution,
     _drop_original_docstring,
+    _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _missing_values_docstring,
-    _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_numerical_docstring,
 )
@@ -110,9 +110,12 @@ class LagFeatures(BaseEstimator, TransformerMixin):
             self.periods = periods
         else:
             raise ValueError(
-                f"periods must be an integer or a list of positive integers. Got {periods} "
-                f"instead."
+                "periods must be an integer or a list of positive integers. "
+                f"Got {periods} instead."
             )
+
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError("missing_values takes only values 'raise' or 'ignore'")
 
         if not isinstance(drop_original, bool):
             raise ValueError(
@@ -250,7 +253,9 @@ class LagFeatures(BaseEstimator, TransformerMixin):
             input_features_ = self.variables_
         else:
             if not isinstance(input_features, list):
-                raise ValueError(f"input_features must be a list. Got {input_features} instead.")
+                raise ValueError(
+                    f"input_features must be a list. Got {input_features} instead."
+                )
             # Create just indicated lag features.
             input_features_ = input_features
 
@@ -280,7 +285,9 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         if input_features is None:
             if self.drop_original is True:
                 # Remove names of variables to drop.
-                original = [f for f in self.feature_names_in_ if f not in self.variables_]
+                original = [
+                    f for f in self.feature_names_in_ if f not in self.variables_
+                ]
                 feature_names = original + feature_names
             else:
                 feature_names = self.feature_names_in_ + feature_names
