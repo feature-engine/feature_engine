@@ -41,6 +41,19 @@ from feature_engine.variable_manipulation import (
 )
 class LagFeatures(BaseEstimator, TransformerMixin):
     """
+    LagFeatures adds lag features to the dataframe. A lag feature is a feature with
+    information about a prior time step.
+
+    LagFeatures has the same functionality as `pandas.shift` with the exception that
+    only one of `periods` or `freq` can be indicated at a time. LagFeatures builds on
+    top of `pandas.shift` in that multiple lags can be created at the same time and the
+    features with names are concatenated in the original dataframe.
+
+    LagFeatures works only with numerical variables. You can pass a list of variables
+    to lag. Alternatively, LagFeatures will automatically select and lag all numerical
+    variables found in the training set.
+
+    More details in the :ref:`User Guide <lag_features>`.
 
     Parameters
     ----------
@@ -75,7 +88,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     {fit}
 
     transform:
-        Add the lagged features.
+        Add lag features.
 
     {fit_transform}
 
@@ -141,7 +154,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
             The training dataset.
 
         y: pandas Series, default=None
-            y is not needed for this transformer. You can pass None or y.
+            y is not needed in this transformer. You can pass None or y.
         """
         # check input dataframe
         X = _is_dataframe(X)
@@ -161,7 +174,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Adds lagged features.
+        Adds lag features.
 
         Parameters
         ----------
