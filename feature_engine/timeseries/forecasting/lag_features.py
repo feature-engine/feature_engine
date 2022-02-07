@@ -158,7 +158,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Adds lag features.
+        Adds lagged features.
 
         Parameters
         ----------
