@@ -5,6 +5,9 @@ API
 
 Full API documentation for Feature-engine transformers.
 
+Transformation
+--------------
+
 .. toctree::
    :maxdepth: 1
 
@@ -13,9 +16,29 @@ Full API documentation for Feature-engine transformers.
    discretisation/index
    outliers/index
    transformation/index
+
+Creation
+--------
+
+.. toctree::
+   :maxdepth: 1
+
    creation/index
-   selection/index
    datetime/index
-   preprocessing/index
    timeseries/index
+
+
+Selection
+---------
+.. toctree::
+   :maxdepth: 1
+
+   selection/index
+
+Other
+-----
+.. toctree::
+   :maxdepth: 1
+
+   preprocessing/index
    wrappers/index

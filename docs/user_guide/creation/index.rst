@@ -1,7 +1,7 @@
 .. -*- mode: rst -*-
 
-Feature Creation
-================
+Math Features
+=============
 
 Feature-engine's creation transformers create and add new features to the dataframe
 by either combining or transforming existing features.

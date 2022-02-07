@@ -176,7 +176,13 @@ Feature Selection:
 
 Datetime:
 ---------
+
 - :doc:`api_doc/datetime/DatetimeFeatures`: extract features from datetime variables
+
+Forecasting:
+------------
+
+- :doc:`api_doc/timeseries/forecasting/LagFeatures`: extract lag features
 
 Preprocessing:
 --------------
