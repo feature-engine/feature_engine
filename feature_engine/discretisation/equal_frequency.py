@@ -104,7 +104,7 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         self.q = q
         self.variables = _check_input_parameter_variables(variables)
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def _fit_from_varlist(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learn the limits of the equal frequency intervals.
 
@@ -118,7 +118,7 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         """
 
         # check input dataframe
-        X = super().fit(X, y)
+        X = super()._fit_from_varlist(X, y)
 
         self.binner_dict_ = {}
 
