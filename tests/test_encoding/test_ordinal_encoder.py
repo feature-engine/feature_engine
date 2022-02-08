@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import OrdinalEncoder
 
@@ -88,12 +87,6 @@ def test_error_if_input_df_contains_categories_not_present_in_training_df(
 
     # check that the error message matches
     assert str(record.value) == msg
-
-
-def test_non_fitted_error(df_enc):
-    with pytest.raises(NotFittedError):
-        imputer = OrdinalEncoder()
-        imputer.transform(df_enc)
 
 
 def test_fit_raises_error_if_df_contains_na(df_enc_na):

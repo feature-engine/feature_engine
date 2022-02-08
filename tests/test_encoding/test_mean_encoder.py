@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import MeanEncoder, OrdinalEncoder
 
@@ -116,6 +115,7 @@ def test_automatically_find_variables(df_enc):
 
 def test_error_if_y_not_passed_to_fit(df_enc):
     # test case 3: raises error if target is not passed
+    # DO NOT delete this test or add tag["requires_y"]=True.
     with pytest.raises(TypeError):
         encoder = MeanEncoder()
         encoder.fit(df_enc)
@@ -163,12 +163,6 @@ def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
         encoder = MeanEncoder()
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         encoder.transform(df_enc_na)
-
-
-def test_raises_non_fitted_error(df_enc):
-    with pytest.raises(NotFittedError):
-        imputer = OrdinalEncoder()
-        imputer.transform(df_enc)
 
 
 def test_user_enters_1_variable_ignore_format(df_enc_numeric):

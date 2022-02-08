@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import CountFrequencyEncoder
 
@@ -160,12 +159,6 @@ def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
         encoder = CountFrequencyEncoder()
         encoder.fit(df_enc)
         encoder.transform(df_enc_na)
-
-
-def test_raises_non_fitted_error(df_enc):
-    with pytest.raises(NotFittedError):
-        encoder = CountFrequencyEncoder()
-        encoder.transform(df_enc)
 
 
 def test_ignore_variable_format_with_frequency(df_vartypes):

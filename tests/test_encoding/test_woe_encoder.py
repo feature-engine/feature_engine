@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import WoEEncoder
 
@@ -155,13 +154,6 @@ def test_error_if_denominator_probability_is_zero():
     # 0, 0]}
     # #     df = pd.DataFrame(df)
     # #     encoder.fit(df[['var_A', 'var_B']], df['target'])
-
-
-def test_non_fitted_error(df_enc):
-    # test case 8: non fitted error
-    with pytest.raises(NotFittedError):
-        imputer = WoEEncoder()
-        imputer.transform(df_enc)
 
 
 def test_error_if_contains_na_in_fit(df_enc_na):
