@@ -97,7 +97,7 @@ class PowerTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        super()._fit_from_varlist(X)
 
         return self
 

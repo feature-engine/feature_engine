@@ -103,7 +103,7 @@ class LogTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X = super()._fit_from_varlist(X)
 
         # check contains zero or negative values
         if (X[self.variables_] <= 0).any().any():
@@ -298,7 +298,7 @@ class LogCpTransformer(BaseNumericalTransformer):
         if isinstance(self.C, dict):
             X = super()._fit_from_dict(X, self.C)
         else:
-            X = super().fit(X)
+            X = super()._fit_from_varlist(X)
 
         self.C_ = self.C
 

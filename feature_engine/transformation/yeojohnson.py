@@ -94,7 +94,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X = super()._fit_from_varlist(X)
 
         self.lambda_dict_ = {}
 
