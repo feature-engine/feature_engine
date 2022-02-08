@@ -287,8 +287,13 @@ class OneHotEncoder(BaseCategoricalTransformer):
                 )
             input_features_ = input_features
 
-        feature_names = []
-        for feature in input_features_:
+        # the features not encoded
+        feature_names = [f for f in input_features_ if f not in self.variables_]
+
+        # the encoded features
+        encoded = [f for f in input_features_ if f in self.variables_]
+
+        for feature in encoded:
             if feature in self.encoder_dict_:
                 for category in self.encoder_dict_[feature]:
                     feature_names.append(str(feature) + "_" + str(category))

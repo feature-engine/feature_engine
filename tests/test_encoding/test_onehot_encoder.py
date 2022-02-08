@@ -392,3 +392,75 @@ def test_encode_into_top_categories_plus_drop_binary(df_enc_binary):
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
     assert "var_C_B" not in X.columns
+
+
+def test_get_feature_names_out(df_enc_binary):
+    original_features = ["var_num"]
+    input_features = ["var_A", "var_B", "var_C", "var_D"]
+
+    tr = OneHotEncoder()
+    tr.fit(df_enc_binary)
+
+    out = [
+        "var_A_A",
+        "var_A_B",
+        "var_A_C",
+        "var_B_A",
+        "var_B_B",
+        "var_B_C",
+        "var_C_AHA",
+        "var_C_UHU",
+        "var_D_OHO",
+        "var_D_EHE",
+    ]
+
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=input_features) == out
+    assert tr.get_feature_names_out(input_features=input_features[0:2]) == out[0:6]
+    assert tr.get_feature_names_out(input_features=[input_features[0]]) == out[0:3]
+
+    tr = OneHotEncoder(drop_last=True)
+    tr.fit(df_enc_binary)
+
+    out = [
+        "var_A_A",
+        "var_A_B",
+        "var_B_A",
+        "var_B_B",
+        "var_C_AHA",
+        "var_D_OHO",
+    ]
+
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=input_features) == out
+    assert tr.get_feature_names_out(input_features=input_features[0:2]) == out[0:4]
+    assert tr.get_feature_names_out(input_features=[input_features[0]]) == out[0:2]
+
+    tr = OneHotEncoder(drop_last_binary=True)
+    tr.fit(df_enc_binary)
+
+    out = [
+        "var_A_A",
+        "var_A_B",
+        "var_A_C",
+        "var_B_A",
+        "var_B_B",
+        "var_B_C",
+        "var_C_AHA",
+        "var_D_OHO",
+    ]
+
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=input_features) == out
+    assert tr.get_feature_names_out(input_features=[input_features[0]]) == out[0:3]
+    assert tr.get_feature_names_out(input_features=[input_features[3]]) == [out[-1]]
+
+    tr = OneHotEncoder(top_categories=1)
+    tr.fit(df_enc_binary)
+
+    out = ["var_A_B", "var_B_A", "var_C_AHA", "var_D_EHE"]
+
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=input_features) == out
+    assert tr.get_feature_names_out(input_features=input_features[0:2]) == out[0:2]
+    assert tr.get_feature_names_out(input_features=[input_features[3]]) == [out[3]]
