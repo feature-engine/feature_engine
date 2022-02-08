@@ -6,6 +6,7 @@ from sklearn.exceptions import NotFittedError
 
 
 def test_df(numeric=True):
+    """Define dataframe for testing purpose."""
     X, y = make_classification(
         n_samples=1000,
         n_features=12,
@@ -28,7 +29,40 @@ def test_df(numeric=True):
     return X, y
 
 
+def check_confirm_variables_functionality(estimator):
+    """Define tests for the confirm variables functionality."""
+    # Check if estimator allows only numerical features and select the
+    # type of dataframe to enter the estimator.
+    include_numeric_only = False
+    if estimator._more_tags()["variables"] == "numerical":
+        include_numeric_only = True
+
+    # Define a dummy dataset.
+    X, y = test_df(numeric=include_numeric_only)
+
+    # Only test if the estimator is in scope
+    if hasattr(estimator, "confirm_variables"):
+        # Confirm variables is only applicable if variables are defined.
+        # Define it in case it is not done.
+        if estimator.variables is None:
+            estimator.variables = X.columns.to_list()
+
+        # Add non valid value to the variables.
+        estimator.variables.append("not_existing")
+
+        # Check it fails in case the default value of confirm_variables
+        # (False) is used.
+        with pytest.raises(KeyError):
+            estimator.fit(X)
+
+        # Set confirm_variables to True and test the fit method succeeds.
+        estimator.confirm_variables = True
+        estimator.fit(X)
+        assert len(estimator.variables_) >= 1
+
+
 def check_feature_engine_estimator(estimator):
+    """Test multiple functionalities of estimators."""
     check_raises_non_fitted_error(estimator)
     check_raises_error_when_fitting_not_a_df(estimator)
     check_raises_error_when_transforming_not_a_df(estimator)
@@ -45,6 +79,8 @@ def check_feature_engine_estimator(estimator):
         elif tags["variables"] == "all":
             check_all_types_variables_assignment(estimator)
 
+        check_confirm_variables_functionality(estimator)
+
     if hasattr(estimator, "cv"):
         check_takes_cv_constructor(estimator)
 
@@ -53,6 +89,7 @@ def check_feature_engine_estimator(estimator):
 
 
 def check_raises_non_fitted_error(estimator):
+    """Test error is raised if estimator is not fitted."""
     X, y = test_df()
     transformer = clone(estimator)
     # test when fit is not called prior to transform
@@ -61,6 +98,7 @@ def check_raises_non_fitted_error(estimator):
 
 
 def check_raises_error_when_fitting_not_a_df(estimator):
+    """Test error is raised when fit input is not a dataframe."""
     _not_a_df = [
         "not_a_df",
         [1, 2, 3, "some_data"],
@@ -75,6 +113,7 @@ def check_raises_error_when_fitting_not_a_df(estimator):
 
 
 def check_raises_error_when_transforming_not_a_df(estimator):
+    """Test error is raised when transform input is not a dataframe."""
     X, y = test_df()
 
     _not_a_df = [
@@ -93,6 +132,7 @@ def check_raises_error_when_transforming_not_a_df(estimator):
 
 
 def check_error_if_y_not_passed(estimator):
+    """Test error is raised when y is not passed as argument."""
     X, y = test_df()
     estimator = clone(estimator)
     with pytest.raises(TypeError):
@@ -100,6 +140,7 @@ def check_error_if_y_not_passed(estimator):
 
 
 def check_numerical_variables_assignment(estimator):
+    """Test assignment of numerical variables."""
     # toy df
     X, y = test_df(numeric=False)
 
@@ -134,6 +175,7 @@ def check_numerical_variables_assignment(estimator):
 
 
 def check_categorical_variables_assignment(estimator):
+    """Test assignment of categorical variables."""
     # toy df
     X, y = test_df(numeric=False)
 
@@ -171,6 +213,7 @@ def check_categorical_variables_assignment(estimator):
 
 
 def check_all_types_variables_assignment(estimator):
+    """Test assignment of all types of variables."""
     # toy df
     X, y = test_df(numeric=False)
 
@@ -208,6 +251,7 @@ def check_all_types_variables_assignment(estimator):
 
 
 def check_takes_cv_constructor(estimator):
+    """Test cv constructor."""
     from sklearn.model_selection import KFold, StratifiedKFold
 
     X, y = test_df()
@@ -256,6 +300,7 @@ def check_takes_cv_constructor(estimator):
 
 # ======== input param error checks
 def check_error_param_missing_values(estimator):
+    """Test error for missing values."""
     # param takes values "raise" or "ignore"
     estimator = clone(estimator)
     for value in [2, "hola", False]:
