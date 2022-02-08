@@ -104,7 +104,7 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         self.q = q
         self.variables = _check_input_parameter_variables(variables)
 
-    def _fit_from_varlist(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learn the limits of the equal frequency intervals.
 
