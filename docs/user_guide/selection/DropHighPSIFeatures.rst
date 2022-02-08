@@ -1,4 +1,4 @@
-6).. _psi_selection:
+.. _psi_selection:
 
 .. currentmodule:: feature_engine.selection
 
