@@ -16,7 +16,7 @@ def test_df(numeric=True):
         random_state=1,
     )
 
-    # trasform arrays into pandas df and series
+    # transform arrays into pandas df and series
     colnames = ["var_" + str(i) for i in range(12)]
     X = pd.DataFrame(X, columns=colnames)
     y = pd.Series(y)
