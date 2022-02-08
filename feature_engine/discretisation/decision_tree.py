@@ -11,20 +11,20 @@ from sklearn.utils.multiclass import check_classification_targets, type_of_targe
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_numerical_variables,
-)
+from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 @Substitution(
     variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -50,8 +50,23 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     ----------
     {variables}
 
-    cv: int, default=3
-        Desired cross-validation fold to fit the decision tree.
+    cv: int, cross-validation generator or an iterable, default=3
+        Determines the cross-validation splitting strategy. Possible inputs for cv are:
+
+            - None, to use cross_validate's default 5-fold cross validation
+
+            - int, to specify the number of folds in a (Stratified)KFold,
+
+            - CV splitter
+                - (https://scikit-learn.org/stable/glossary.html#term-CV-splitter)
+
+            - An iterable yielding (train, test) splits as arrays of indices.
+
+        For int/None inputs, if the estimator is a classifier and y is either binary or
+        multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
+        splitters are instantiated with `shuffle=False` so the splits will be the same
+        across calls. For more details check Scikit-learn's `cross_validate`'s
+        documentation.
 
     scoring: str, default='neg_mean_squared_error'
         Desired metric to optimise the performance of the tree. Comes from
@@ -85,6 +100,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
     {variables_}
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
@@ -110,15 +127,12 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        cv: int = 3,
+        cv=3,
         scoring: str = "neg_mean_squared_error",
         param_grid: Optional[Dict[str, Union[str, int, float, List[int]]]] = None,
         regression: bool = True,
         random_state: Optional[int] = None,
     ) -> None:
-
-        if not isinstance(cv, int) or cv < 0:
-            raise ValueError("cv can only take only positive integers")
 
         if not isinstance(regression, bool):
             raise ValueError("regression can only take True or False")
@@ -159,8 +173,6 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         # check input dataframe
         X = super().fit(X, y)
 
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
-
         if self.param_grid:
             param_grid = self.param_grid
         else:
@@ -185,8 +197,6 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
             self.binner_dict_[var] = tree_model
             self.scores_dict_[var] = tree_model.score(X[var].to_frame(), y)
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -217,3 +227,9 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
                 X[feature] = tmp[:, 1]
 
         return X
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
+        tags_dict["requires_y"] = True
+        return tags_dict
