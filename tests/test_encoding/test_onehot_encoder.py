@@ -464,3 +464,10 @@ def test_get_feature_names_out(df_enc_binary):
     assert tr.get_feature_names_out(input_features=input_features) == out
     assert tr.get_feature_names_out(input_features=input_features[0:2]) == out[0:2]
     assert tr.get_feature_names_out(input_features=[input_features[3]]) == [out[3]]
+
+    with pytest.raises(ValueError):
+        tr.get_feature_names_out("var_A")
+
+    with pytest.raises(ValueError):
+        tr.get_feature_names_out(["var_A", "hola"])
+
