@@ -9,6 +9,7 @@ import pandas as pd
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _inverse_transform_docstring,
@@ -22,6 +23,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 @Substitution(
     variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
@@ -50,6 +52,8 @@ class PowerTransformer(BaseNumericalTransformer):
     Attributes
     ----------
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -94,8 +98,6 @@ class PowerTransformer(BaseNumericalTransformer):
 
         # check input dataframe
         X = super().fit(X)
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 

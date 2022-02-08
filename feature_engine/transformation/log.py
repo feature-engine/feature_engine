@@ -9,6 +9,7 @@ import pandas as pd
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _inverse_transform_docstring,
@@ -23,6 +24,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 @Substitution(
     variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
@@ -52,6 +54,8 @@ class LogTransformer(BaseNumericalTransformer):
     Attributes
     ----------
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -106,8 +110,6 @@ class LogTransformer(BaseNumericalTransformer):
             raise ValueError(
                 "Some variables contain zero or negative values, can't apply log"
             )
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -189,6 +191,7 @@ class LogTransformer(BaseNumericalTransformer):
 
 @Substitution(
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
@@ -236,6 +239,8 @@ class LogCpTransformer(BaseNumericalTransformer):
     C_:
         The constant C to add to each variable. If C = "auto" a dictionary with
         C = abs(min(variable)) + 1.
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -291,7 +296,7 @@ class LogCpTransformer(BaseNumericalTransformer):
 
         # check input dataframe
         if isinstance(self.C, dict):
-            X = super()._select_variables_from_dict(X, self.C)
+            X = super()._fit_from_dict(X, self.C)
         else:
             X = super().fit(X)
 
@@ -307,8 +312,6 @@ class LogCpTransformer(BaseNumericalTransformer):
                 "Some variables contain zero or negative values after adding"
                 + "constant C, can't apply log"
             )
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 

@@ -9,6 +9,7 @@ import pandas as pd
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _inverse_transform_docstring,
@@ -23,6 +24,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 @Substitution(
     variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
@@ -49,6 +51,8 @@ class ReciprocalTransformer(BaseNumericalTransformer):
     Attributes
     ----------
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -94,8 +98,6 @@ class ReciprocalTransformer(BaseNumericalTransformer):
                 "Some variables contain the value zero, can't apply reciprocal "
                 "transformation."
             )
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -150,6 +152,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
         # =======  this tests fail because the transformers throw an error
         # when the values are 0. Nothing to do with the test itself but
         # mostly with the data created and used in the test
