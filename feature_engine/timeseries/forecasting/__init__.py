@@ -1,4 +1,4 @@
-""" Transformers that create features for time-series test_forecasting."""
+""" Transformers that create features for time-series forecasting."""
 
 from .lag_features import LagFeatures
 

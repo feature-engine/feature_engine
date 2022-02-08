@@ -74,6 +74,7 @@ def df_time():
             0.45,
             0.57,
         ],
+        "color": ["blue"] * 10 + ["green"] * 5,
     }
 
     df = pd.DataFrame(data, index=date_time)

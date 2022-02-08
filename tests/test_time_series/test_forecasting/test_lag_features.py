@@ -4,81 +4,111 @@ import pytest
 
 from feature_engine.timeseries.forecasting import LagFeatures
 
-_false_input_params = [
-    ([3, 2], "pizza", ["tango", "empanada"], "tigre", 9),
-    ("mate", ["bombilla", "limpiado"], True, False, "cocinado"),
-    (True, -3, "asado", 4, [1984, 1999]),
-    ("alfajor", [3, -8, 10], ["jamon", "merienda"], ["mate", "bombilla"], 10),
-    ("asado", False, "empanada", None, ["tango", "empanada"]),
-]
 
-_test_types_init_params = [
-    ("empanada", 3, None, "raise", True),
-    (["che", "medialuna"], None, ["1h", "30m", "4h"], "ignore", True),
-    (None, None, None, "raise", False),
-    ("pasta", [2, 4, 6], None, "raise", False),
-    ("jamon", None, "1d", "ignore", True),
-]
-
-
-@pytest.mark.parametrize(
-    "_variables, _periods, _freq, _missing_values, _drop_original", _false_input_params
-)
-def test_raises_error_when_wrong_input_params(
-    _variables, _periods, _freq, _missing_values, _drop_original, df_time
-):
-    with pytest.raises(KeyError):
-        transformer1 = LagFeatures(variables=_variables)
-        transformer1.fit(df_time)
-        transformer1.transform(df_time)
-    with pytest.raises(ValueError):
-        transformer2 = LagFeatures(periods=_periods)
-        transformer2.fit(df_time)
-        transformer2.transform(df_time)
-    with pytest.raises((ValueError, TypeError)):
-        transformer3 = LagFeatures(freq=_freq)
-        transformer3.fit(df_time)
-        transformer3.transform(df_time)
-    with pytest.raises(ValueError):
-        transformer4 = LagFeatures(missing_values=_missing_values)
-        transformer4.fit(df_time)
-        transformer4.transform(df_time)
-    with pytest.raises(ValueError):
-        transformer5 = LagFeatures(drop_original=_drop_original)
-        transformer5.fit(df_time)
-        transformer5.transform(df_time)
-
-
-@pytest.mark.parametrize(
-    "_variables, _periods, _freq, _missing_values, _drop_original", _test_types_init_params
-)
-def test_different_types_for_init_params(
-        _variables, _periods, _freq, _missing_values, _drop_original
-):
-    transformer = LagFeatures(
-        variables=_variables,
-        periods=_periods,
-        freq=_freq,
-        missing_values=_missing_values,
-        drop_original=_drop_original
-    )
-    assert transformer.variables == _variables
+@pytest.mark.parametrize("_periods", [1, [1, 2, 3]])
+def test_permitted_param_periods(_periods):
+    transformer = LagFeatures(periods=_periods)
     assert transformer.periods == _periods
-    assert transformer.freq == _freq
-    assert transformer.missing_values == _missing_values
-    assert transformer.drop_original == _drop_original
 
 
-def test_time_lag_period_shift_and_keep_original_data(df_time):
-    # The lag is correctly performed using the 'period' param.
-    transformer = LagFeatures(
-        variables=["ambient_temp", "module_temp"],
-        periods=3,
-        drop_original=False,
+@pytest.mark.parametrize("_periods", [-1, 0, None, [-1, 2, 3], [0.1, 1], 0.5, [0, 1]])
+def test_error_when_non_permitted_param_periods(_periods):
+    with pytest.raises(ValueError):
+        LagFeatures(periods=_periods)
+
+
+def test_get_feature_names_out(df_time):
+
+    # input features
+    input_features = ["ambient_temp", "module_temp", "irradiation"]
+    original_features = ["ambient_temp", "module_temp", "irradiation", "color"]
+
+    # When freq is a string:
+    tr = LagFeatures(freq="1D")
+    tr.fit(df_time)
+
+    # Expected
+    out = ["ambient_temp_lag_1D", "module_temp_lag_1D", "irradiation_lag_1D"]
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=input_features) == out
+    assert tr.get_feature_names_out(input_features=input_features[0:1]) == out[0:1]
+    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [out[0]]
+
+    with pytest.raises(ValueError):
+        # assert error when user passes a string instead of list
+        tr.get_feature_names_out(input_features=input_features[0])
+
+    # When period is an int:
+    tr = LagFeatures(periods=2)
+    tr.fit(df_time)
+
+    # Expected
+    out = ["ambient_temp_lag_2", "module_temp_lag_2", "irradiation_lag_2"]
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=input_features) == out
+    assert tr.get_feature_names_out(input_features=input_features[0:1]) == out[0:1]
+    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [out[0]]
+
+    # When freq is a list:
+    tr = LagFeatures(freq=["3D", "2D"])
+    tr.fit(df_time)
+
+    # Expected
+    out = [
+        "ambient_temp_lag_3D",
+        "module_temp_lag_3D",
+        "irradiation_lag_3D",
+        "ambient_temp_lag_2D",
+        "module_temp_lag_2D",
+        "irradiation_lag_2D",
+    ]
+
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=input_features) == out
+    assert (
+        tr.get_feature_names_out(input_features=input_features[0:1])
+        == out[0:1] + out[3:4]
     )
-    transformer.fit(df_time)
-    df_tr = transformer.transform(df_time)
+    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [out[0]] + [
+        out[3]
+    ]
 
+    # When periods is a list:
+    tr = LagFeatures(periods=[2, 3])
+    tr.fit(df_time)
+
+    # Expected
+    out = [
+        "ambient_temp_lag_2",
+        "module_temp_lag_2",
+        "irradiation_lag_2",
+        "ambient_temp_lag_3",
+        "module_temp_lag_3",
+        "irradiation_lag_3",
+    ]
+
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=input_features) == out
+    assert (
+        tr.get_feature_names_out(input_features=input_features[0:1])
+        == out[0:1] + out[3:4]
+    )
+    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [out[0]] + [
+        out[3]
+    ]
+
+    # When drop original is true.
+    tr = LagFeatures(freq="1D", drop_original=True)
+    tr.fit(df_time)
+
+    # Expected
+    out = ["ambient_temp_lag_1D", "module_temp_lag_1D", "irradiation_lag_1D"]
+    assert tr.get_feature_names_out(input_features=None) == ["color"] + out
+    assert tr.get_feature_names_out(input_features=input_features) == out
+
+
+def test_correct_lag_when_using_periods(df_time):
+    # Expected
     date_time = [
         pd.Timestamp("2020-05-15 12:00:00"),
         pd.Timestamp("2020-05-15 12:15:00"),
@@ -90,116 +120,86 @@ def test_time_lag_period_shift_and_keep_original_data(df_time):
         "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62],
         "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61],
         "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42],
+        "color": ["blue"] * 5,
         "ambient_temp_lag_3": [np.nan, np.nan, np.nan, 31.31, 31.51],
         "module_temp_lag_3": [np.nan, np.nan, np.nan, 49.18, 49.84],
+        "ambient_temp_lag_2": [np.nan, np.nan, 31.31, 31.51, 32.15],
+        "module_temp_lag_2": [np.nan, np.nan, 49.18, 49.84, 52.35],
     }
     expected_results_df = pd.DataFrame(data=expected_results, index=date_time)
 
+    # When period is an int.
+    transformer = LagFeatures(variables=["ambient_temp", "module_temp"], periods=3)
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.head(5).equals(
+        expected_results_df.drop(["ambient_temp_lag_2", "module_temp_lag_2"], axis=1)
+    )
+
+    # When period is list.
+    transformer = LagFeatures(variables=["ambient_temp", "module_temp"], periods=[3, 2])
+    df_tr = transformer.fit_transform(df_time)
     assert df_tr.head(5).equals(expected_results_df)
 
+    # When drop original is True
+    transformer = LagFeatures(
+        variables=["ambient_temp", "module_temp"], periods=[3, 2], drop_original=True
+    )
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.head(5).equals(
+        expected_results_df.drop(["ambient_temp", "module_temp"], axis=1)
+    )
 
-def test_time_lag_frequency_shift_and_drop_original_data(df_time):
-    # Data is properly transformed using the 'freq' param.
-    transformer = LagFeatures(freq="1h", drop_original=True)
-    transformer.fit(df_time)
-    df_tr = transformer.transform(df_time)
 
+def test_correct_lag_when_using_freq(df_time):
+    # Expected
     date_time = [
         pd.Timestamp("2020-05-15 12:00:00"),
         pd.Timestamp("2020-05-15 12:15:00"),
         pd.Timestamp("2020-05-15 12:30:00"),
         pd.Timestamp("2020-05-15 12:45:00"),
         pd.Timestamp("2020-05-15 13:00:00"),
-        pd.Timestamp("2020-05-15 13:15:00"),
-        pd.Timestamp("2020-05-15 13:30:00"),
-        pd.Timestamp("2020-05-15 13:45:00"),
-        pd.Timestamp("2020-05-15 14:00:00"),
     ]
     expected_results = {
-        "ambient_temp_lag_1h": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            31.31,
-            31.51,
-            32.15,
-            32.39,
-            32.62,
-        ],
-        "module_temp_lag_1h": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            49.18,
-            49.84,
-            52.35,
-            50.63,
-            49.61,
-        ],
-        "irradiation_lag_1h": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            0.51,
-            0.79,
-            0.65,
-            0.76,
-            0.42,
-        ],
+        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62],
+        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61],
+        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42],
+        "color": ["blue"] * 5,
+        "ambient_temp_lag_1h": [np.nan, np.nan, np.nan, np.nan, 31.31],
+        "module_temp_lag_1h": [np.nan, np.nan, np.nan, np.nan, 49.18],
+        "irradiation_lag_1h": [np.nan, np.nan, np.nan, np.nan, 0.51],
+        "ambient_temp_lag_15min": [np.nan, 31.31, 31.51, 32.15, 32.39],
+        "module_temp_lag_15min": [np.nan, 49.18, 49.84, 52.35, 50.63],
+        "irradiation_lag_15min": [np.nan, 0.51, 0.79, 0.65, 0.76],
     }
     expected_results_df = pd.DataFrame(
         data=expected_results,
         index=date_time,
     )
 
-    assert df_tr.head(9).equals(expected_results_df)
-
-
-def test_time_lag_periods_drop_original_value(df_time):
-    transformer = LagFeatures(
-        periods=2,
-        drop_original=True,
+    # When freq is a string
+    transformer = LagFeatures(freq="1h")
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.head(5).equals(
+        expected_results_df.drop(
+            [
+                "ambient_temp_lag_15min",
+                "module_temp_lag_15min",
+                "irradiation_lag_15min",
+            ],
+            axis=1,
+        )
     )
-    transformer.fit(df_time)
-    df_tr = transformer.transform(df_time)
 
-    date_time = [
-        pd.Timestamp("2020-05-15 12:00:00"),
-        pd.Timestamp("2020-05-15 12:15:00"),
-        pd.Timestamp("2020-05-15 12:30:00"),
-        pd.Timestamp("2020-05-15 12:45:00"),
-        pd.Timestamp("2020-05-15 13:00:00"),
-    ]
-    expected_results = {
-        "ambient_temp_lag_2": [np.nan, np.nan, 31.31, 31.51, 32.15],
-        "module_temp_lag_2": [np.nan, np.nan, 49.18, 49.84, 52.35],
-        "irradiation_lag_2": [np.nan, np.nan, 0.51, 0.79, 0.65],
-    }
-    expected_results_df = pd.DataFrame(data=expected_results, index=date_time)
-
+    # When freq is a list
+    transformer = LagFeatures(freq=["1h", "15min"])
+    df_tr = transformer.fit_transform(df_time)
     assert df_tr.head(5).equals(expected_results_df)
 
-
-# TODO: Need to expand
-def test_get_feature_names_out(df_time):
-    transformer = LagFeatures(
-        freq="1h",
-        drop_original=True
+    # When drop original is True
+    transformer = LagFeatures(freq=["1h"], drop_original=True)
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.head(5).equals(
+        expected_results_df[
+            ["color", "ambient_temp_lag_1h", "module_temp_lag_1h", "irradiation_lag_1h"]
+        ]
     )
-    transformer.fit(df_time)
-    feature_names = transformer.get_feature_names_out()
-
-    assert feature_names == (
-        ["ambient_temp_lag_1h", "module_temp_lag_1h", "irradiation_lag_1h"]
-    )
-
-
-def test_error_if_periods_and_freq_have_values(df_time):
-    with pytest.raises(ValueError):
-        LagFeatures(
-            periods=[3, 6, 9],
-            freq=["1h", "2h"]
-        )
