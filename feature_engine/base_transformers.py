@@ -1,5 +1,5 @@
 """ The base transformer provides functionality that is shared by most transformer
-classes. Provides the base functionality within the _fit_from_varlist() and transform() methods
+classes. Provides the base functionality within the fit() and transform() methods
 shared by most transformers, like checking that input is a df, the size, NA, etc.
 """
 from typing import Dict, List, Union
