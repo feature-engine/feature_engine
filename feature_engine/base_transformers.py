@@ -128,7 +128,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
             If the input is not a Pandas DataFrame
         ValueError
             - If the variable(s) contain null values
-            - If the df has different number of features than the df used in _fit_from_varlist()
+            - If the df has different number of features than the df used in fit()
 
         Returns
         -------
