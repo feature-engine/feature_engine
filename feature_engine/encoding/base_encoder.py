@@ -96,7 +96,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         _check_contains_na(X, self.variables_)
 
         # save input features
-        self.feature_names_in_: List[Union[str, int]] = X.columns.tolist()
+        self.feature_names_in_ = X.columns.tolist()
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
@@ -137,6 +137,9 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         # check if dataset contains na
         _check_contains_na(X, self.variables_)
+
+        # reorder df to match train set
+        X = X[self.feature_names_in_]
 
         return X
 
@@ -247,6 +250,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["variables"] = "categorical"
         # the below test will fail because sklearn requires to check for inf, but
         # you can't check inf of categorical data, numpy returns and error.
         # so we need to leave without this test
