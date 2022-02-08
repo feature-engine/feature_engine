@@ -46,7 +46,6 @@ def test_user_enters_1_variable(df_enc):
     assert encoder.n_features_in_ == 2
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
-    assert encoder.get_feature_names_out()() == X.columns.tolist()
 
 
 def test_automatically_find_variables(df_enc):
@@ -113,7 +112,6 @@ def test_automatically_find_variables(df_enc):
     assert encoder.n_features_in_ == 2
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
-    assert encoder.get_feature_names_out()() == X.columns.tolist()
 
 
 def test_error_if_y_not_passed_to_fit(df_enc):
@@ -212,7 +210,6 @@ def test_user_enters_1_variable_ignore_format(df_enc_numeric):
     assert encoder.n_features_in_ == 2
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
-    assert encoder.get_feature_names_out()() == X.columns.tolist()
 
 
 def test_automatically_find_variables_ignore_format(df_enc_numeric):
@@ -279,7 +276,6 @@ def test_automatically_find_variables_ignore_format(df_enc_numeric):
     assert encoder.n_features_in_ == 2
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
-    assert encoder.get_feature_names_out()() == X.columns.tolist()
 
 
 def test_variables_cast_as_category(df_enc_category_dtypes):
@@ -314,7 +310,6 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     ]
 
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]], check_dtype=False)
-    assert encoder.get_feature_names_out()() == X.columns.tolist()
     assert X["var_A"].dtypes == float
 
 

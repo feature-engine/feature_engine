@@ -7,10 +7,10 @@ import pandas as pd
 
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _inverse_transform_docstring,
     _n_features_in_docstring,
-    _feature_names_in_docstring,
     _variables_attribute_docstring,
 )
 from feature_engine.encoding._docstrings import (

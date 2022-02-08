@@ -5,11 +5,12 @@ from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.docstrings import (
     Substitution,
-    _fit_transform_docstring,
     _feature_names_in_docstring,
+    _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
@@ -17,8 +18,6 @@ from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
 )
-from sklearn.utils.validation import check_is_fitted
-
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 
 
@@ -278,6 +277,14 @@ class OneHotEncoder(BaseCategoricalTransformer):
         if input_features is None:
             input_features_ = self.feature_names_in_
         else:
+            if not isinstance(input_features, list):
+                raise ValueError(
+                    f"input_features must be a list. Got {input_features} instead."
+                )
+            if any(f for f in input_features if f not in self.feature_names_in_):
+                raise ValueError(
+                    "Some of the features requested were not seen during training."
+                )
             input_features_ = input_features
 
         feature_names = []

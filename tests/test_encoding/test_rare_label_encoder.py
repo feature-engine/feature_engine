@@ -44,7 +44,6 @@ def test_defo_params_plus_automatically_find_variables(df_enc_big):
     assert encoder.n_features_in_ == 3
     # test transform output
     pd.testing.assert_frame_equal(X, df)
-    assert encoder.get_feature_names() == X.columns.tolist()
 
 
 def test_user_provides_grouping_label_name_and_variable_list(df_enc_big):
@@ -88,7 +87,6 @@ def test_user_provides_grouping_label_name_and_variable_list(df_enc_big):
     assert encoder.n_features_in_ == 3
     # test transform output
     pd.testing.assert_frame_equal(X, df)
-    assert encoder.get_feature_names() == X.columns.tolist()
 
 
 def test_error_if_tol_not_between_0_and_1():
@@ -154,7 +152,6 @@ def test_max_n_categories(df_enc_big):
     }
     df = pd.DataFrame(df)
     pd.testing.assert_frame_equal(X, df)
-    assert rare_encoder.get_feature_names() == X.columns.tolist()
 
 
 def test_max_n_categories_with_numeric_var(df_enc_numeric):
@@ -174,8 +171,6 @@ def test_max_n_categories_with_numeric_var(df_enc_numeric):
     for i in range(len(df)):
         assert str(list(X["var_A"])[i]) == str(list(df["var_A"])[i])
         assert str(list(X["var_B"])[i]) == str(list(df["var_B"])[i])
-
-    assert rare_encoder.get_feature_names() == X.columns.tolist()
 
 
 def test_variables_cast_as_category(df_enc_big):
@@ -215,7 +210,5 @@ def test_variables_cast_as_category(df_enc_big):
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B", "var_C"]
     assert encoder.n_features_in_ == 3
-
     # test transform output
     pd.testing.assert_frame_equal(X, df)
-    assert encoder.get_feature_names() == X.columns.tolist()

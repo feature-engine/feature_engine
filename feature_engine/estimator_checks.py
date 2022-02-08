@@ -85,7 +85,7 @@ def check_raises_error_when_fitting_not_a_df(estimator):
 
 
 def check_raises_error_when_transforming_not_a_df(estimator):
-    X, y = test_df()
+    X, y = test_df(numeric=False)
 
     _not_a_df = [
         "not_a_df",
@@ -222,7 +222,7 @@ def check_all_types_variables_assignment(estimator):
 def check_takes_cv_constructor(estimator):
     from sklearn.model_selection import KFold, StratifiedKFold
 
-    X, y = test_df()
+    X, y = test_df(numeric=False)
 
     estimator = clone(estimator)
 
@@ -312,11 +312,17 @@ def check_get_feature_names_out(estimator):
     X, y = test_df(numeric=False, datetime=True)
     estimator = clone(estimator)
     estimator.fit(X, y)
-    assert estimator.get_feature_names_out() == ["var_" + str(i) for i in range(12)] + [
-        "cat_var",
-        "cat_var2",
-        "date",
-    ]
+
+    if estimator.__class__.__name__ in ["OneHotEncoder"]:
+        pass
+    else:
+        assert estimator.get_feature_names_out() == [
+            "var_" + str(i) for i in range(12)
+        ] + [
+            "cat_var",
+            "cat_var2",
+            "date",
+        ]
 
 
 # ======== Check errors when non-permitted input params ======

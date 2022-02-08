@@ -44,7 +44,6 @@ def test_encode_1_variable_with_counts(df_enc):
     assert encoder.n_features_in_ == 3
     # transform params
     pd.testing.assert_frame_equal(X, transf_df)
-    assert encoder.get_feature_names() == X.columns.tolist()
 
 
 def test_automatically_select_variables_encode_with_frequency(df_enc):
@@ -111,7 +110,6 @@ def test_automatically_select_variables_encode_with_frequency(df_enc):
     assert encoder.n_features_in_ == 3
     # transform params
     pd.testing.assert_frame_equal(X, transf_df)
-    assert encoder.get_feature_names() == X.columns.tolist()
 
 
 def test_error_if_encoding_method_not_permitted_value():
@@ -195,7 +193,6 @@ def test_ignore_variable_format_with_frequency(df_vartypes):
     assert encoder.n_features_in_ == 5
     # transform params
     pd.testing.assert_frame_equal(X, transf_df)
-    assert encoder.get_feature_names() == X.columns.tolist()
 
 
 def test_column_names_are_numbers(df_numeric_columns):
@@ -223,7 +220,6 @@ def test_column_names_are_numbers(df_numeric_columns):
     assert encoder.n_features_in_ == 5
     # transform params
     pd.testing.assert_frame_equal(X, transf_df)
-    assert encoder.get_feature_names() == X.columns.tolist()
 
 
 def test_variables_cast_as_category(df_enc_category_dtypes):
@@ -260,12 +256,9 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 
     encoder = CountFrequencyEncoder(encoding_method="frequency", variables=["var_A"])
     X = encoder.fit_transform(df_enc_category_dtypes)
-    assert encoder.get_feature_names() == X.columns.tolist()
     assert X["var_A"].dtypes == float
-    assert encoder.get_feature_names() == ["var_A"]
 
 
 def test_error_if_rare_labels_not_permitted_value():
     with pytest.raises(ValueError):
         CountFrequencyEncoder(errors="empanada")
-

@@ -8,9 +8,9 @@ import pandas as pd
 
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _inverse_transform_docstring,
-    _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
@@ -222,6 +222,8 @@ class PRatioEncoder(BaseCategorical):
 
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["variables"] = "categorical"
+        tags_dict["requires_y"] = True
         # in the current format, the tests are performed using continuous np.arrays
         # this means that when we encode some of the values, the denominator is 0
         # and this the transformer raises an error, and the test fails.

@@ -49,7 +49,6 @@ def test_encode_categories_in_k_binary_plus_select_vars_automatically(df_enc_big
     }
     # test transform output
     assert X.sum().to_dict() == transf
-    assert encoder.get_feature_names() == X.columns.tolist()
     assert "var_A" not in X.columns
 
 
@@ -91,7 +90,6 @@ def test_encode_categories_in_k_minus_1_binary_plus_list_of_variables(df_enc_big
     # test transform output
     for col in transf.keys():
         assert X[col].sum() == transf[col]
-    assert encoder.get_feature_names() == X.columns.tolist()
     assert "var_B" not in X.columns
     assert "var_B_G" not in X.columns
     assert "var_C" in X.columns
@@ -159,10 +157,6 @@ def test_encode_top_categories():
     # test transform output
     for col in transf.keys():
         assert X[col].sum() == transf[col]
-    # note the order, it's a important
-    # features are sorted in the by the name of the input column
-    # and then by the number of occurrences of the category
-    assert encoder.get_feature_names() == X.columns.tolist()
     assert "var_B" not in X.columns
     assert "var_B_F" not in X.columns
 
@@ -219,7 +213,6 @@ def test_encode_numerical_variables(df_enc_numeric):
     assert encoder.encoder_dict_ == {"var_A": [1, 2, 3], "var_B": [1, 2, 3]}
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
-    assert encoder.get_feature_names() == X.columns.tolist()
 
 
 def test_variables_cast_as_category(df_enc_numeric):
@@ -253,7 +246,6 @@ def test_variables_cast_as_category(df_enc_numeric):
     assert encoder.encoder_dict_ == {"var_A": [1, 2, 3], "var_B": [1, 2, 3]}
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
-    assert encoder.get_feature_names() == X.columns.tolist()
 
 
 @pytest.fixture(scope="module")
@@ -302,7 +294,6 @@ def test_encode_into_k_dummy_plus_drop_binary(df_enc_binary):
     }
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
-    assert encoder.get_feature_names() == X.columns.tolist()
     assert "var_C_B" not in X.columns
 
 
@@ -336,7 +327,6 @@ def test_encode_into_kminus1_dummyy_plus_drop_binary(df_enc_binary):
     }
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
-    assert encoder.get_feature_names() == X.columns.tolist()
     assert "var_C_B" not in X.columns
 
 
@@ -369,7 +359,6 @@ def test_encode_into_top_categories_plus_drop_binary(df_enc_binary):
     }
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
-    # assert encoder.get_feature_names() == X.columns.tolist()
     assert "var_C_B" not in X.columns
 
     # top_categories = 2
@@ -402,5 +391,4 @@ def test_encode_into_top_categories_plus_drop_binary(df_enc_binary):
     }
     # test transform output
     pd.testing.assert_frame_equal(X, transf)
-    assert encoder.get_feature_names() == X.columns.tolist()
     assert "var_C_B" not in X.columns

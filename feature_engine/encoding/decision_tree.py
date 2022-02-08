@@ -21,6 +21,7 @@ from feature_engine.encoding._docstrings import (
 )
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 from feature_engine.encoding.ordinal import OrdinalEncoder
+from feature_engine.validation import _return_tags
 
 
 @Substitution(
@@ -173,7 +174,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         self.param_grid = param_grid
         self.random_state = random_state
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Fit a decision tree per variable.
 
@@ -262,3 +263,13 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     def inverse_transform(self, X: pd.DataFrame):
         """inverse_transform is not implemented for this transformer."""
         return self
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "categorical"
+        tags_dict["requires_y"] = True
+        # the below test will fail because sklearn requires to check for inf, but
+        # you can't check inf of categorical data, numpy returns and error.
+        # so we need to leave without this test
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        return tags_dict
