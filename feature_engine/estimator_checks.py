@@ -55,8 +55,8 @@ def check_feature_engine_estimator(estimator):
     if hasattr(estimator, "missing_values"):
         check_error_param_missing_values(estimator)
 
-    # TODO: roll-out when all estimators have feature_names_in
-    # check_feature_names_in(estimator)
+    check_feature_names_in(estimator)
+    check_get_feature_names_out(estimator)
 
     if hasattr(estimator, "drop_original"):
         check_drop_original_variables(estimator)
@@ -238,12 +238,15 @@ def check_takes_cv_constructor(estimator):
         if hasattr(sel, "initial_model_performance_"):
             assert isinstance(sel.initial_model_performance_, (int, float))
 
-        assert isinstance(sel.features_to_drop_, list)
-        assert all([x for x in sel.features_to_drop_ if x in X.columns])
-        assert len(sel.features_to_drop_) < X.shape[1]
+        if hasattr(sel, "features_to_drop_"):
+            assert isinstance(sel.features_to_drop_, list)
+            assert all([x for x in sel.features_to_drop_ if x in X.columns])
+            assert len(sel.features_to_drop_) < X.shape[1]
 
-        assert not Xtransformed.empty
-        assert all([x for x in Xtransformed.columns if x not in sel.features_to_drop_])
+            assert not Xtransformed.empty
+            assert all(
+                [x for x in Xtransformed.columns if x not in sel.features_to_drop_]
+            )
 
         if hasattr(sel, "performance_drifts_"):
             assert isinstance(sel.performance_drifts_, dict)
@@ -262,6 +265,16 @@ def check_takes_cv_constructor(estimator):
                 [
                     isinstance(sel.feature_performance_[var], (int, float))
                     for var in sel.feature_performance_.keys()
+                ]
+            )
+
+        if hasattr(sel, "scores_dict_"):
+            assert isinstance(sel.scores_dict_, dict)
+            assert all([x for x in X.columns if x in sel.scores_dict_.keys()])
+            assert all(
+                [
+                    isinstance(sel.scores_dict_[var], (int, float))
+                    for var in sel.scores_dict_.keys()
                 ]
             )
 
@@ -287,6 +300,19 @@ def check_feature_names_in(estimator):
     estimator = clone(estimator)
     estimator.fit(X, y)
     assert estimator.feature_names_in_ == ["var_" + str(i) for i in range(12)] + [
+        "cat_var",
+        "cat_var2",
+        "date",
+    ]
+
+
+# ======== Check common methods ========
+def check_get_feature_names_out(estimator):
+    # the estimator learns the parameters from the train set
+    X, y = test_df(numeric=False, datetime=True)
+    estimator = clone(estimator)
+    estimator.fit(X, y)
+    assert estimator.get_feature_names_out() == ["var_" + str(i) for i in range(12)] + [
         "cat_var",
         "cat_var2",
         "date",
