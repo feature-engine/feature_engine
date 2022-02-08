@@ -171,7 +171,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
             check_classification_targets(y)
 
         # check input dataframe
-        X = super()._fit_from_varlist(X, y)
+        X = super().fit(X, y)
 
         if self.param_grid:
             param_grid = self.param_grid

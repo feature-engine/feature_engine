@@ -65,7 +65,7 @@ def check_feature_engine_estimator(estimator):
 def check_raises_non_fitted_error(estimator):
     X, y = test_df()
     transformer = clone(estimator)
-    # test when _fit_from_varlist is not called prior to transform
+    # test when fit is not called prior to transform
     with pytest.raises(NotFittedError):
         transformer.transform(X)
 
@@ -79,7 +79,7 @@ def check_raises_error_when_fitting_not_a_df(estimator):
 
     transformer = clone(estimator)
     for not_df in _not_a_df:
-        # trying to _fit_from_varlist not a df
+        # trying to fit not a df
         with pytest.raises(TypeError):
             transformer.fit(not_df)
 
@@ -124,7 +124,7 @@ def check_numerical_variables_assignment(estimator):
         # set the different input var examples
         transformer.set_params(variables=input_vars)
 
-        # _fit_from_varlist
+        # fit
         transformer.fit(X, y)
 
         if input_vars is not None:
@@ -161,7 +161,7 @@ def check_categorical_variables_assignment(estimator):
         # set the different input var examples
         transformer.set_params(variables=input_vars)
 
-        # _fit_from_varlist
+        # fit
         transformer.fit(X, y)
 
         if input_vars is not None:
@@ -203,7 +203,7 @@ def check_all_types_variables_assignment(estimator):
         # set the different input var examples
         transformer.set_params(variables=input_vars)
 
-        # _fit_from_varlist
+        # fit
         transformer.fit(X, y)
 
         if input_vars is not None:
@@ -231,10 +231,10 @@ def check_takes_cv_constructor(estimator):
     for cv_constructor in cv_constructor_ls:
 
         sel = estimator.set_params(cv=cv_constructor)
-        sel._fit_from_varlist(X, y)
+        sel.fit(X, y)
         Xtransformed = sel.transform(X)
 
-        # test _fit_from_varlist attrs
+        # test fit attrs
         if hasattr(sel, "initial_model_performance_"):
             assert isinstance(sel.initial_model_performance_, (int, float))
 
@@ -293,7 +293,7 @@ def check_drop_original_variables(estimator):
     assert all([f in X_tr.columns for f in remaining])
 
 
-# ======== Check common _fit_from_varlist attributes ========
+# ======== Check common fit attributes ========
 def check_feature_names_in(estimator):
     # the estimator learns the parameters from the train set
     X, y = test_df(numeric=False, datetime=True)

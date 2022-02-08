@@ -118,7 +118,7 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         """
 
         # check input dataframe
-        X = super()._fit_from_varlist(X, y)
+        X = super().fit(X, y)
 
         self.binner_dict_ = {}
 

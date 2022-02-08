@@ -9,6 +9,7 @@ import pandas as pd
 from feature_engine.docstrings import (
     Substitution,
     _fit_transform_docstring,
+    _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
@@ -25,6 +26,7 @@ from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -104,6 +106,8 @@ class OneHotEncoder(BaseCategoricalTransformer):
     variables_binary_:
         List with binary variables identified in the data. That is, variables with
         only 2 categories.
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -217,8 +221,6 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         self._check_encoding_dictionary()
 
-        self.n_features_in_ = X.shape[1]
-
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -255,17 +257,31 @@ class OneHotEncoder(BaseCategoricalTransformer):
         """inverse_transform is not implemented for this transformer."""
         return self
 
-    def get_feature_names(self) -> List[str]:
-        """
-        Return feature names for output features.
+    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
+        """Get output feature names for transformation.
 
+        Parameters
+        ----------
+        input_features: list, default=None
+            Input features. If `input_features` is `None`, then the names of all the
+            variables in the transformed dataset (original + new variables) is returned.
+            Alternatively, only the names for the binary variables derived from
+            input_features will be returned.
+
+        Returns
         -------
-        feature_names : list of str of shape (n_output_features,) of feature names
+        feature_names_out: list
+            The feature names.
         """
         check_is_fitted(self)
 
+        if input_features is None:
+            input_features_ = self.feature_names_in_
+        else:
+            input_features_ = input_features
+
         feature_names = []
-        for feature in self.input_features_:
+        for feature in input_features_:
             if feature in self.encoder_dict_:
                 for category in self.encoder_dict_[feature]:
                     feature_names.append(str(feature) + "_" + str(category))

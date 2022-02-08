@@ -10,6 +10,7 @@ from feature_engine.docstrings import (
     _fit_transform_docstring,
     _inverse_transform_docstring,
     _n_features_in_docstring,
+    _feature_names_in_docstring,
     _variables_attribute_docstring,
 )
 from feature_engine.encoding._docstrings import (
@@ -26,6 +27,7 @@ from feature_engine.encoding.base_encoder import BaseCategorical
     variables=_variables_docstring,
     errors=_errors_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
     transform=_transform_docstring,
@@ -68,6 +70,8 @@ class MeanEncoder(BaseCategorical):
         Dictionary with the target mean value per category per variable.
 
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -141,8 +145,6 @@ class MeanEncoder(BaseCategorical):
             self.encoder_dict_[var] = temp.groupby(var)["target"].mean().to_dict()
 
         self._check_encoding_dictionary()
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 

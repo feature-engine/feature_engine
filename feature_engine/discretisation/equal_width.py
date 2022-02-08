@@ -128,7 +128,7 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         """
 
         # check input dataframe
-        X = super()._fit_from_varlist(X, y)
+        X = super().fit(X, y)
 
         # fit
         self.binner_dict_ = {}

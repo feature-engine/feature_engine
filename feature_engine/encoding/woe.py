@@ -10,6 +10,7 @@ from feature_engine.docstrings import (
     Substitution,
     _fit_transform_docstring,
     _inverse_transform_docstring,
+    _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
@@ -28,6 +29,7 @@ from feature_engine.validation import _return_tags
     variables=_variables_docstring,
     errors=_errors_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
     transform=_transform_docstring,
@@ -76,6 +78,8 @@ class WoEEncoder(BaseCategorical):
         Dictionary with the WoE per variable.
 
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -177,8 +181,6 @@ class WoEEncoder(BaseCategorical):
             self.encoder_dict_[var] = t["woe"].to_dict()
 
         self._check_encoding_dictionary()
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 

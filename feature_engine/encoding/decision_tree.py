@@ -12,6 +12,7 @@ from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.docstrings import (
     Substitution,
     _fit_transform_docstring,
+    _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
@@ -27,6 +28,7 @@ from feature_engine.encoding.ordinal import OrdinalEncoder
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -96,6 +98,8 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         sklearn Pipeline containing the ordinal encoder and the decision tree.
 
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -218,8 +222,6 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
         self.encoder_.fit(X, y)
 
-        self.n_features_in_ = X.shape[1]
-
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -247,7 +249,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         """inverse_transform is not implemented for this transformer."""
         return self
 
-    def get_feature_names(self) -> List:
+    def get_feature_names_out(self) -> List:
         """
         Return feature names for output features.
 

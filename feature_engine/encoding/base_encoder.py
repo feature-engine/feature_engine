@@ -92,11 +92,14 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
             # select all variables or check variables entered by the user
             self.variables_ = _find_all_variables(X, self.variables)
 
-        # save input features
-        self.input_features_: List[Union[str, int]] = X.columns.tolist()
-
         # check if dataset contains na
         _check_contains_na(X, self.variables_)
+
+        # save input features
+        self.feature_names_in_: List[Union[str, int]] = X.columns.tolist()
+
+        # save train set shape
+        self.n_features_in_ = X.shape[1]
 
         return X
 
@@ -230,6 +233,18 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         return X
 
+    def get_feature_names_out(self) -> List:
+        """Get output feature names for transformation.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        return self.feature_names_in_
+
     def _more_tags(self):
         tags_dict = _return_tags()
         # the below test will fail because sklearn requires to check for inf, but
@@ -273,20 +288,3 @@ class BaseCategorical(BaseCategoricalTransformer):
 
         super().__init__(variables, ignore_format)
         self.errors = errors
-
-    def get_feature_names(
-        self,
-        input_features: Optional[List[Union[str, int]]] = None,
-    ) -> List:
-
-
-    def get_feature_names(self) -> List:
-        """
-        Return feature names for output features.
-
-        -------
-        feature_names : list of str of shape (n_output_features,) of feature names
-        """
-        check_is_fitted(self)
-
-        return self.input_features_
