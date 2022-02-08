@@ -1,8 +1,8 @@
 """ The base transformer provides functionality that is shared by most transformer
-classes. Provides the base functionality within the fit() and transform() methods
+classes. Provides the base functionality within the _fit_from_varlist() and transform() methods
 shared by most transformers, like checking that input is a df, the size, NA, etc.
 """
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -23,9 +23,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
     variable transformers, discretisers, math combination.
     """
 
-    def _select_variables_from_dict(
-        self, X: pd.DataFrame, user_dict_: Dict
-    ) -> pd.DataFrame:
+    def _fit_from_dict(self, X: pd.DataFrame, user_dict_: Dict) -> pd.DataFrame:
         """
         Checks that input is a dataframe, checks that variables in the dictionary
         entered by the user are of type numerical.
@@ -62,9 +60,15 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
 
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
+        # save train set shape
+        self.n_features_in_ = X.shape[1]
+
         return X
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.DataFrame:
+    def _fit_from_varlist(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Checks that input is a dataframe, finds numerical variables, or alternatively
         checks that variables entered by the user are of type numerical.
@@ -97,19 +101,22 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         # find or check for numerical variables
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
-        # save input features
-        self.input_features_: List[Union[str, int]] = X.columns.tolist()
-
         # check if dataset contains na or inf
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
+
+        # save input features
+        self.feature_names_in_: List[Union[str, int]] = X.columns.tolist()
+
+        # save train set shape
+        self.n_features_in_ = X.shape[1]
 
         return X
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Checks that the input is a dataframe and of the same size than the one used
-        in the fit method. Checks absence of NA and Inf.
+        in the fit() method. Checks absence of NA and Inf.
 
         Parameters
         ----------
@@ -121,7 +128,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
             If the input is not a Pandas DataFrame
         ValueError
             - If the variable(s) contain null values
-            - If the df has different number of features than the df used in fit()
+            - If the df has different number of features than the df used in _fit_from_varlist()
 
         Returns
         -------
@@ -142,19 +149,25 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
 
+        # reorder variables to match train set
+        X = X[self.feature_names_in_]
+
         return X
 
-    # for the check_estimator tests
-    def _more_tags(self):
-        return _return_tags()
+    def get_feature_names_out(self) -> List:
+        """Get output feature names for transformation.
 
-    def get_feature_names(self) -> List:
-        """
-        Return feature names for output features.
-
+        Returns
         -------
-        feature_names : list of str of shape (n_output_features,) of feature names
+        feature_names_out: list
+            The feature names.
         """
         check_is_fitted(self)
 
-        return self.input_features_
+        return self.feature_names_in_
+
+    # for the check_estimator tests
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
+        return tags_dict
