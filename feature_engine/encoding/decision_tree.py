@@ -6,13 +6,12 @@ from typing import List, Optional, Union
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.docstrings import (
     Substitution,
-    _fit_transform_docstring,
     _feature_names_in_docstring,
+    _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
@@ -63,8 +62,23 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
         **'arbitrary'** : categories are numbered arbitrarily.
 
-    cv: int, default=3
-        Desired cross-validation fold to fit the decision tree.
+    cv: int, cross-validation generator or an iterable, default=3
+        Determines the cross-validation splitting strategy. Possible inputs for cv are:
+
+            - None, to use cross_validate's default 5-fold cross validation
+
+            - int, to specify the number of folds in a (Stratified)KFold,
+
+            - CV splitter
+                - (https://scikit-learn.org/stable/glossary.html#term-CV-splitter)
+
+            - An iterable yielding (train, test) splits as arrays of indices.
+
+        For int/None inputs, if the estimator is a classifier and y is either binary or
+        multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
+        splitters are instantiated with `shuffle=False` so the splits will be the same
+        across calls. For more details check Scikit-learn's `cross_validate`'s
+        documentation.
 
     scoring: str, default='neg_mean_squared_error'
         Desired metric to optimise the performance for the decision tree. Comes from
@@ -142,7 +156,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     def __init__(
         self,
         encoding_method: str = "arbitrary",
-        cv: int = 3,
+        cv=3,
         scoring: str = "neg_mean_squared_error",
         param_grid: Optional[dict] = None,
         regression: bool = True,
@@ -248,14 +262,3 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     def inverse_transform(self, X: pd.DataFrame):
         """inverse_transform is not implemented for this transformer."""
         return self
-
-    def get_feature_names_out(self) -> List:
-        """
-        Return feature names for output features.
-
-        -------
-        feature_names : list of str of shape (n_output_features,) of feature names
-        """
-        check_is_fitted(self)
-
-        return self.encoder_.named_steps.tree_discretiser.get_feature_names()
