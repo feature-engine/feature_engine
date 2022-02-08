@@ -205,21 +205,6 @@ class PRatioEncoder(BaseCategorical):
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseCategorical.transform.__doc__
-
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().inverse_transform(X)
-
-        return X
-
-    inverse_transform.__doc__ = BaseCategorical.inverse_transform.__doc__
-
     def _more_tags(self):
         tags_dict = _return_tags()
         tags_dict["variables"] = "categorical"

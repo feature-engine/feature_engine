@@ -147,18 +147,3 @@ class MeanEncoder(BaseCategorical):
         self._check_encoding_dictionary()
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseCategorical.transform.__doc__
-
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().inverse_transform(X)
-
-        return X
-
-    inverse_transform.__doc__ = BaseCategorical.inverse_transform.__doc__
