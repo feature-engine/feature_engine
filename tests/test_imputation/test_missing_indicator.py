@@ -44,3 +44,31 @@ def test_detect_variables_with_missing_data_in_variables_entered_by_user(df_na):
 def test_error_when_missing_only_not_bool():
     with pytest.raises(ValueError):
         AddMissingIndicator(missing_only="missing_only")
+
+
+def test_get_feature_names_out(df_na):
+    original_features = df_na.columns.to_list()
+
+    tr = AddMissingIndicator(missing_only=False)
+    tr.fit(df_na)
+
+    out = [f + "_na" for f in original_features]
+
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=original_features) == out
+    assert tr.get_feature_names_out(input_features=original_features[0:2]) == out[0:2]
+    assert tr.get_feature_names_out(input_features=["Name"]) == ["Name_na"]
+
+    tr = AddMissingIndicator(missing_only=True)
+    tr.fit(df_na)
+
+    out = [f + "_na" for f in original_features[0:-1]]
+
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=original_features) == out
+
+    with pytest.raises(ValueError):
+        tr.get_feature_names_out("Name")
+
+    with pytest.raises(ValueError):
+        tr.get_feature_names_out(["Name", "hola"])

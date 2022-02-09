@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
@@ -146,6 +147,44 @@ class AddMissingIndicator(BaseImputer):
             X[feature + "_na"] = np.where(X[feature].isnull(), 1, 0)
 
         return X
+
+    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features: list, default=None
+            Input features. If `input_features` is `None`, then the names of all the
+            variables in the transformed dataset (original + new variables) is returned.
+            Alternatively, only the names for the binary variables derived from
+            input_features will be returned.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        if input_features is None:
+            feature_names = self.feature_names_in_
+            imputed = self.variables_
+        else:
+            if not isinstance(input_features, list):
+                raise ValueError(
+                    f"input_features must be a list. Got {input_features} instead."
+                )
+            if any(f for f in input_features if f not in self.feature_names_in_):
+                raise ValueError(
+                    "Some of the features requested were not seen during training."
+                )
+            feature_names = []
+            imputed = [f for f in input_features if f in self.variables_]
+
+        for feature in imputed:
+            feature_names.append(str(feature) + "_na")
+
+        return feature_names
 
     def _more_tags(self):
         tags_dict = _return_tags()
