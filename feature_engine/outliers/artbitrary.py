@@ -13,6 +13,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _missing_values_docstring,
@@ -30,6 +31,7 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
     right_tail_caps_=BaseOutlier._right_tail_caps_docstring,
     left_tail_caps_=BaseOutlier._left_tail_caps_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
@@ -64,6 +66,8 @@ class ArbitraryOutlierCapper(BaseOutlier):
     {left_tail_caps_}
 
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -140,17 +144,10 @@ class ArbitraryOutlierCapper(BaseOutlier):
         else:
             self.left_tail_caps_ = {}
 
+        self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseOutlier.transform.__doc__
 
     def _more_tags(self):
         tags_dict = _return_tags()

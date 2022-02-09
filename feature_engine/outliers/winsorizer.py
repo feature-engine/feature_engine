@@ -9,6 +9,7 @@ import pandas as pd
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _missing_values_docstring,
     _n_features_in_docstring,
@@ -28,6 +29,7 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
     right_tail_caps_=WinsorizerBase._right_tail_caps_docstring,
     left_tail_caps_=WinsorizerBase._left_tail_caps_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -71,6 +73,8 @@ class Winsorizer(WinsorizerBase):
     {left_tail_caps_}
 
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -122,7 +126,8 @@ class Winsorizer(WinsorizerBase):
             per processed feature for each tail.
         """
         if not self.add_indicators:
-            return super().transform(X)
+            X_out = super().transform(X)
+
         else:
             X_orig = _is_dataframe(X)
             X_out = super().transform(X_orig)
@@ -149,4 +154,30 @@ class Winsorizer(WinsorizerBase):
                     ]
                 ]
                 X_out = pd.concat([X_out, X_both], axis=1)
+
         return X_out
+
+    def get_feature_names_out(self) -> List:
+        """Get output feature names for transformation.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        feature_names = super().get_feature_names_out()
+
+        if self.add_indicators is True:
+            if self.tail == "left":
+                indicators = [str(cl) + "_left" for cl in self.variables_]
+            elif self.tail == "right":
+                indicators = [str(cl) + "_right" for cl in self.variables_]
+            else:
+                indicators = []
+                for cl in self.variables_:
+                    indicators.append(str(cl) + "_left")
+                    indicators.append(str(cl) + "_right")
+
+            feature_names = feature_names + indicators
+
+        return feature_names
