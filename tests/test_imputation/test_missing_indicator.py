@@ -1,6 +1,4 @@
 import pytest
-from sklearn.exceptions import NotFittedError
-
 from feature_engine.imputation import AddMissingIndicator
 
 
@@ -46,9 +44,3 @@ def test_detect_variables_with_missing_data_in_variables_entered_by_user(df_na):
 def test_error_when_missing_only_not_bool():
     with pytest.raises(ValueError):
         AddMissingIndicator(missing_only="missing_only")
-
-
-def test_non_fitted_error(df_na):
-    with pytest.raises(NotFittedError):
-        imputer = AddMissingIndicator()
-        imputer.transform(df_na)

@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.imputation import CategoricalImputer
 
@@ -154,12 +153,6 @@ def test_error_when_variable_contains_multiple_modes(df_na):
     with pytest.raises(ValueError):
         imputer = CategoricalImputer(imputation_method="frequent")
         imputer.fit(df_na)
-
-
-def test_non_fitted_error(df_na):
-    with pytest.raises(NotFittedError):
-        imputer = CategoricalImputer()
-        imputer.transform(df_na)
 
 
 def test_impute_numerical_variables(df_na):

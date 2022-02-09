@@ -9,12 +9,17 @@ import pandas as pd
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_all_variables,
+)
 
 
 # for RandomSampleImputer
@@ -35,6 +40,7 @@ def _define_seed(
 
 @Substitution(
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     transform=BaseImputer._transform_docstring,
     fit_transform=_fit_transform_docstring,
@@ -88,6 +94,8 @@ class RandomSampleImputer(BaseImputer):
         Copy of the training dataframe from which to extract the random samples.
 
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -153,10 +161,7 @@ class RandomSampleImputer(BaseImputer):
         X = _is_dataframe(X)
 
         # find variables to impute
-        if not self.variables:
-            self.variables_ = [var for var in X.columns]
-        else:
-            self.variables_ = self.variables
+        self.variables_ = _find_all_variables(X, self.variables)
 
         # take a copy of the selected variables
         self.X_ = X[self.variables_].copy()
@@ -174,6 +179,7 @@ class RandomSampleImputer(BaseImputer):
                     "of the training dataframe."
                 )
 
+        self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
 
         return self
@@ -239,3 +245,9 @@ class RandomSampleImputer(BaseImputer):
                         # replace the missing data point
                         X.loc[i, feature] = random_sample
         return X
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "all"
+        return tags_dict

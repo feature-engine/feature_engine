@@ -272,15 +272,21 @@ def _find_all_variables(
     variables : List of numerical variables
     """
 
-    if isinstance(variables, (str, int)):
+    if variables is None:
+        # find all variables in dataset
+        variables = X.columns.to_list()
+
+    elif isinstance(variables, (str, int)):
+        if variables not in X.columns.to_list():
+            raise ValueError("The variable is not in the dataframe.")
         variables = [variables]
 
-    elif not variables:
-        variables = list(X.columns)
-
     else:
-        # call pandas to test if variables entered by user are in df
-        X[variables]
+        if len(variables) == 0:
+            raise ValueError("The list of variables is empty.")
+
+        if any(f for f in variables if f not in X.columns):
+            raise ValueError("Some of the variables are not in the dataframe.")
 
     return variables
 

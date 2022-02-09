@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.imputation import ArbitraryNumberImputer
 
@@ -58,12 +57,6 @@ def test_impute_with_1_and_single_variable_entered_by_user(df_na):
 def test_error_when_arbitrary_number_is_string():
     with pytest.raises(ValueError):
         ArbitraryNumberImputer(arbitrary_number="arbitrary")
-
-
-def test_non_fitted_error(df_na):
-    with pytest.raises(NotFittedError):
-        imputer = ArbitraryNumberImputer()
-        imputer.transform(df_na)
 
 
 def test_dictionary_of_imputation_values(df_na):

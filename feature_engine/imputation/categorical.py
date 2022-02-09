@@ -8,11 +8,13 @@ import pandas as pd
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
 from feature_engine.imputation.base_imputer import BaseImputer
+from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
@@ -23,6 +25,7 @@ from feature_engine.variable_manipulation import (
 @Substitution(
     imputer_dict_=BaseImputer._imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     transform=BaseImputer._transform_docstring,
     fit_transform=_fit_transform_docstring,
@@ -82,6 +85,8 @@ class CategoricalImputer(BaseImputer):
     {imputer_dict_}
 
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -163,6 +168,7 @@ class CategoricalImputer(BaseImputer):
                         "Variable {} contains multiple frequent categories.".format(var)
                     )
 
+        self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
 
         return self
@@ -193,5 +199,11 @@ class CategoricalImputer(BaseImputer):
 
         return X
 
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
+    # Get docstring from BaseClass
     transform.__doc__ = BaseImputer.transform.__doc__
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "categorical"
+        return tags_dict

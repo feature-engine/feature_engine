@@ -9,14 +9,20 @@ import pandas as pd
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
 )
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_all_variables,
+)
 
 
 @Substitution(
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -58,6 +64,8 @@ class AddMissingIndicator(BaseImputer):
     ----------
     variables_:
         List of variables for which the missing indicators will be created.
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -102,22 +110,14 @@ class AddMissingIndicator(BaseImputer):
         X = _is_dataframe(X)
 
         # find variables for which indicator should be added
-        if self.missing_only:
-            if not self.variables:
-                self.variables_ = [
-                    var for var in X.columns if X[var].isnull().sum() > 0
-                ]
-            else:
-                self.variables_ = [
-                    var for var in self.variables if X[var].isnull().sum() > 0
-                ]
+        self.variables_ = _find_all_variables(X, self.variables)
 
-        else:
-            if not self.variables:
-                self.variables_ = [var for var in X.columns]
-            else:
-                self.variables_ = self.variables
+        if self.missing_only is True:
+            self.variables_ = [
+                var for var in self.variables_ if X[var].isnull().sum() > 0
+            ]
 
+        self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
 
         return self
@@ -146,3 +146,9 @@ class AddMissingIndicator(BaseImputer):
             X[feature + "_na"] = np.where(X[feature].isnull(), 1, 0)
 
         return X
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "all"
+        return tags_dict

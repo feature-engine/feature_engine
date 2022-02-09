@@ -8,14 +8,20 @@ import pandas as pd
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
 )
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_all_variables,
+)
 
 
 @Substitution(
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -32,12 +38,6 @@ class DropMissingData(BaseImputer):
 
     Parameters
     ----------
-    missing_only: bool, default=True
-        If `True`, rows will be dropped when they show missing data in variables with
-        missing data in the train set, that is, in the data set used in `fit()`. If
-        `False`, rows will be dropped if there is missing data in any of the variables.
-        This parameter only works when `threshold=None`, otherwise it is ignored.
-
     variables: list, default=None
         The list of variables to consider for the imputation. If None, the imputer will
         evaluate missing data in all variables in the dataframe. Alternatively, the
@@ -46,6 +46,12 @@ class DropMissingData(BaseImputer):
         Note that if `missing_only=True` only variables with missing data in the train
         set will be considered to drop a row, which might be a subset of the indicated
         list.
+
+    missing_only: bool, default=True
+        If `True`, rows will be dropped when they show missing data in variables that
+        had missing data during `fit()`. If `False`, rows will be dropped if there is
+        missing data in any of the variables. This parameter only works when
+        `threshold=None`, otherwise it is ignored.
 
     threshold: int or float, default=None
         Require that percentage of non-NA values in a row to keep it. If
@@ -61,6 +67,8 @@ class DropMissingData(BaseImputer):
         dropped. The attribute `variables_` is different from the parameter `variables`
         when the latter is `None`, or when only a subset of the indicated variables
         show NA in the train set if `missing_only=True`.
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -119,33 +127,15 @@ class DropMissingData(BaseImputer):
         X = _is_dataframe(X)
 
         # find variables for which indicator should be added
+        self.variables_ = _find_all_variables(X, self.variables)
 
-        # if threshold, then missing_only is ignored:
-        if self.threshold is not None:
-            if not self.variables:
-                self.variables_ = [var for var in X.columns]
-            else:
-                self.variables_ = self.variables
+        # If user passes a threshold, then missing_only is ignored:
+        if self.threshold is None and self.missing_only is True:
+            self.variables_ = [
+                var for var in self.variables_ if X[var].isnull().sum() > 0
+            ]
 
-        # if threshold is None, we have the option to identify
-        # variables with NA only.
-        else:
-            if self.missing_only:
-                if not self.variables:
-                    self.variables_ = [
-                        var for var in X.columns if X[var].isnull().sum() > 0
-                    ]
-                else:
-                    self.variables_ = [
-                        var for var in self.variables if X[var].isnull().sum() > 0
-                    ]
-
-            else:
-                if not self.variables:
-                    self.variables_ = [var for var in X.columns]
-                else:
-                    self.variables_ = self.variables
-
+        self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
 
         return self
@@ -203,3 +193,9 @@ class DropMissingData(BaseImputer):
             idx = idx[idx]
 
         return X.loc[idx.index, :]
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "all"
+        return tags_dict

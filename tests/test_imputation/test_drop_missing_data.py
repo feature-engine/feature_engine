@@ -1,5 +1,4 @@
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.imputation import DropMissingData
 
@@ -60,12 +59,6 @@ def test_return_na_data_method(df_na):
 def test_error_when_missing_only_not_bool():
     with pytest.raises(ValueError):
         DropMissingData(missing_only="missing_only")
-
-
-def test_non_fitted_error(df_na):
-    with pytest.raises(NotFittedError):
-        imputer = DropMissingData()
-        imputer.transform(df_na)
 
 
 def test_threshold(df_na):
