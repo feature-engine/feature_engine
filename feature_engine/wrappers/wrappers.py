@@ -125,3 +125,33 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             X[self.variables] = self.transformer.transform(X[self.variables])
 
         return X
+
+
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Apply the transformation to the dataframe.
+        Only the selected features will be modified.
+
+
+
+        Args:
+            X: Pandas DataFrame to perform desired transformation
+
+        Returns:
+            Pandas DataFrame
+        """
+        pass
+
+    def get_feature_names(self, X:pd.DataFrame) -> list:
+        """
+
+
+
+        Args:
+            X: Pandas DataFrame to perform desired transformation
+
+        Returns:
+            List of column names
+        """
+
+        pass
