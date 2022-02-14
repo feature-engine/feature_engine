@@ -129,14 +129,18 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Apply the reverse the transformation of a dataframe.
+        Reverse the transformation of a dataframe.
         Only the selected features will be modified.
 
-        Args:
-            X: Pandas DataFrame to perform desired transformation
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            A dataframe that has already been transformed using a
+            sklearn transformer.
 
         Returns:
-            Pandas DataFrame
+        X_new : pandas dataframe of shape = [n_samples, n_features]
+    
         """
         # check that input is a dataframe
         X = _is_dataframe(X)
