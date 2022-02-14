@@ -129,10 +129,8 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Apply the transformation to the dataframe.
+        Apply the reverse the transformation of a dataframe.
         Only the selected features will be modified.
-
-
 
         Args:
             X: Pandas DataFrame to perform desired transformation
@@ -143,28 +141,22 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         # check that input is a dataframe
         X = _is_dataframe(X)
 
-        # Check that input data contains same number of columns as
-        # the dataframe used to fit the imputer.
-        _check_input_matches_training_df(X, self.input_shape_[1])
+        # A OneHotEncoder-transformed dataframe has the original variables.
+        if isinstance(self.transformer, OneHotEncoder):
+            X = X[self.variables]
 
-        try:
-            if isinstance(self.transformer, OneHotEncoder):
-                ohe_results_as_df = pd.DataFrame(
-                    data=self.transformer.inverse_transform(X[self.variables]),
-                    columns=self.transformer.get_feature_names(self.variables),
-                )
-                X = pd.concat([X, ohe_results_as_df], axis=1)
+        else:
+            # Check that input data contains same number of columns as
+            # the dataframe used to fit the imputer.
+            _check_input_matches_training_df(X, self.input_shape_[1])
+            X[self.variables] = (self
+                                 .transformer
+                                 .inverse_transform(X[self.variables])
+                                 )
+        return X
 
-            else:
-                X[self.variables] = (self
-                                     .transformer
-                                     .inverse_transform(X[self.variables])
-                                     )
-        except:
 
-        pass
-
-    def get_feature_names(self, X: pd.DataFrame) -> list:
+def get_feature_names(self, X: pd.DataFrame) -> list:
         """
 
 
