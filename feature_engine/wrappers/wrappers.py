@@ -157,6 +157,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             ohe_results_as_df = pd.DataFrame(
                 data=self.transformer_.transform(X[self.variables_]),
                 columns=self.transformer_.get_feature_names(self.variables_),
+                index=X.index
             )
             X = pd.concat([X, ohe_results_as_df], axis=1)
 
