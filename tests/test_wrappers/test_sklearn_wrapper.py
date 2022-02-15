@@ -1,12 +1,15 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.datasets import load_boston
+from sklearn.datasets import load_boston, fetch_california_housing
 from sklearn.feature_selection import SelectFromModel, SelectKBest, f_regression
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import Lasso
+from sklearn.model_selection import cross_val_score
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
+from feature_engine.selection import DropFeatures
 from feature_engine.wrappers import SklearnTransformerWrapper
 
 
@@ -292,6 +295,37 @@ def test_sklearn_ohe_errors(df_vartypes):
         SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=True)).fit(
             df_vartypes
         )
+
+
+def test_sklearn_ohe_cval_after_recombine():
+    """
+    Created 2022-02-14 to test fix to issue # 368
+    """
+
+    # Set up test pipeline with wrapped OneHotEncoder, with simple regression model
+    # to be able to run cross-validation; use sklearn CA housing data
+    df = fetch_california_housing(as_frame=True).frame
+    y = df["MedHouseVal"]
+    X = (
+        df[["HouseAge", "AveBedrms"]]
+        .assign(AveBedrms_cat=lambda x: pd.cut(x.AveBedrms, [0, 1, 2, 3, 4, np.inf]).astype(str))
+        .drop(columns="AveBedrms")
+    )
+    pipeline: Pipeline = Pipeline(steps=[
+        ("encode_cat", SklearnTransformerWrapper(
+            transformer=OneHotEncoder(drop="first", sparse=False),
+            variables=["AveBedrms_cat"]
+            )
+        ),
+        ("cleanup", DropFeatures(["AveBedrms_cat"])),
+        ("model", Lasso())
+    ])
+
+    # Run cross-validation
+    # Before fix to #368, errors in cross-validation caused by index issues will cause all or most results to be nan
+    # Assert this is no longer the case - assertion failed before fix to #368
+    results: np.ndarray = cross_val_score(pipeline, X, y, scoring="neg_mean_squared_error", cv=3)
+    assert not any([np.isnan(i) for i in results])
 
 
 def test_selectKBest_all_variables():
