@@ -204,15 +204,12 @@ def test_find_or_check_datetime_variables(df_datetime):
         _find_or_check_datetime_variables(df_datetime, variables=None)
         == vars_convertible_to_dt
     )
-    assert (
-        _find_or_check_datetime_variables(
-            df_datetime[vars_convertible_to_dt].reindex(
-                columns=["date_obj1", "datetime_range", "date_obj2"]
-            ),
-            variables=None,
-        )
-        == ["date_obj1", "datetime_range", "date_obj2"]
-    )
+    assert _find_or_check_datetime_variables(
+        df_datetime[vars_convertible_to_dt].reindex(
+            columns=["date_obj1", "datetime_range", "date_obj2"]
+        ),
+        variables=None,
+    ) == ["date_obj1", "datetime_range", "date_obj2"]
 
     # when variables are specified
     assert _find_or_check_datetime_variables(df_datetime, var_dt_str) == [var_dt_str]
@@ -224,13 +221,10 @@ def test_find_or_check_datetime_variables(df_datetime):
         _find_or_check_datetime_variables(df_datetime, variables=vars_convertible_to_dt)
         == vars_convertible_to_dt
     )
-    assert (
-        _find_or_check_datetime_variables(
-            df_datetime.join(tz_time),
-            variables=None,
-        )
-        == vars_convertible_to_dt + ["time_objTZ"]
-    )
+    assert _find_or_check_datetime_variables(
+        df_datetime.join(tz_time),
+        variables=None,
+    ) == vars_convertible_to_dt + ["time_objTZ"]
 
     # datetime var cast as categorical
     df_datetime["date_obj1"] = df_datetime["date_obj1"].astype("category")
