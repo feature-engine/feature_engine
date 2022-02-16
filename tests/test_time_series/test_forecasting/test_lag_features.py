@@ -38,6 +38,10 @@ def test_get_feature_names_out(df_time):
         # assert error when user passes a string instead of list
         tr.get_feature_names_out(input_features=input_features[0])
 
+    with pytest.raises(ValueError):
+        # assert error when uses passes features that were not lagged
+        tr.get_feature_names_out(input_features=["color"])
+
     # When period is an int:
     tr = LagFeatures(periods=2)
     tr.fit(df_time)

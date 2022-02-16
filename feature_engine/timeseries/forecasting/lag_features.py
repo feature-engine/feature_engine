@@ -264,6 +264,11 @@ class LagFeatures(BaseEstimator, TransformerMixin):
                 raise ValueError(
                     f"input_features must be a list. Got {input_features} instead."
                 )
+            if any([f for f in input_features if f not in self.variables_]):
+                raise ValueError(
+                    "Some features in input_features were not lagged. You can only get"
+                    "the names of the lagged features with this function."
+                )
             # Create just indicated lag features.
             input_features_ = input_features
 
