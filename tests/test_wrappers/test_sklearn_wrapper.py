@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.datasets import load_boston, fetch_california_housing
+from sklearn.datasets import fetch_california_housing, load_boston
 from sklearn.feature_selection import SelectFromModel, SelectKBest, f_regression
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import Lasso
@@ -308,23 +308,33 @@ def test_sklearn_ohe_cval_after_recombine():
     y = df["MedHouseVal"]
     X = (
         df[["HouseAge", "AveBedrms"]]
-        .assign(AveBedrms_cat=lambda x: pd.cut(x.AveBedrms, [0, 1, 2, 3, 4, np.inf]).astype(str))
+        .assign(
+            AveBedrms_cat=lambda x: pd.cut(x.AveBedrms, [0, 1, 2, 3, 4, np.inf]).astype(
+                str
+            )
+        )
         .drop(columns="AveBedrms")
     )
-    pipeline: Pipeline = Pipeline(steps=[
-        ("encode_cat", SklearnTransformerWrapper(
-            transformer=OneHotEncoder(drop="first", sparse=False),
-            variables=["AveBedrms_cat"]
-            )
-        ),
-        ("cleanup", DropFeatures(["AveBedrms_cat"])),
-        ("model", Lasso())
-    ])
+    pipeline: Pipeline = Pipeline(
+        steps=[
+            (
+                "encode_cat",
+                SklearnTransformerWrapper(
+                    transformer=OneHotEncoder(drop="first", sparse=False),
+                    variables=["AveBedrms_cat"],
+                ),
+            ),
+            ("cleanup", DropFeatures(["AveBedrms_cat"])),
+            ("model", Lasso()),
+        ]
+    )
 
     # Run cross-validation
     # Before fix to #368, errors in cross-validation caused by index issues will cause all or most results to be nan
     # Assert this is no longer the case - assertion failed before fix to #368
-    results: np.ndarray = cross_val_score(pipeline, X, y, scoring="neg_mean_squared_error", cv=3)
+    results: np.ndarray = cross_val_score(
+        pipeline, X, y, scoring="neg_mean_squared_error", cv=3
+    )
     assert not any([np.isnan(i) for i in results])
 
 
