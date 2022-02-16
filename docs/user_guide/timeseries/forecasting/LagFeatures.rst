@@ -39,6 +39,8 @@ index.
 
 .. code:: python
 
+    import pandas as pd
+
     X = {"ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68],
          "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52],
          "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49, 0.57, 0.56],
@@ -68,6 +70,8 @@ Now we will create new features by lagging all numerical variables 1 row forward
 that :class:`LagFeatures` automatically finds all numerical variables.
 
 .. code:: python
+
+    from feature_engine.timeseries.forecasting import LagFeatures
 
     lag_f = LagFeatures(periods=1)
 
@@ -105,8 +109,25 @@ The variables to lag are stored in the `variables_` attribute of the
 
     ['ambient_temp', 'module_temp', 'irradiation']
 
-Shift multiple rows forward
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+We can obtain the names of the variables in the returned dataframe using the
+get_feature_names_out() method:
+
+.. code:: python
+
+    lag_f.get_feature_names_out()
+
+.. code:: python
+
+    ['ambient_temp',
+     'module_temp',
+     'irradiation',
+     'color',
+     'ambient_temp_lag_1',
+     'module_temp_lag_1',
+     'irradiation_lag_1']
+
+Create multiple lag features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can create multiple lag features with one transformer by passing the lag periods in
 a list.
@@ -144,6 +165,17 @@ added at the back of the dataframe.
     2020-05-15 12:30:00               31.31              49.18               0.51
     2020-05-15 12:45:00               31.51              49.84               0.79
     2020-05-15 13:00:00               32.15              52.35               0.65
+
+We can get the names of all the lag features created for the variable "irradiation" as
+follows:
+
+.. code:: python
+
+    lag_f.get_feature_names_out(["irradiation"])
+
+.. code:: python
+
+    ['irradiation_lag_1', 'irradiation_lag_2']
 
 
 Lag based on datetime
@@ -215,8 +247,86 @@ original variable is not present in the output dataframe.
     2020-05-15 12:45:00                   0.51
     2020-05-15 13:00:00                   0.79
 
+Working with pandas series
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Getting the name of the variables
+If your time series is a pandas Series instead of a pandas Dataframe, you need to
+transform it into a dataframe before using :class:`LagFeatures`.
+
+The following is a pandas Series:
+
+.. code:: python
+
+    X['ambient_temp']
+
+.. code:: python
+
+    2020-05-15 12:00:00    31.31
+    2020-05-15 12:15:00    31.51
+    2020-05-15 12:30:00    32.15
+    2020-05-15 12:45:00    32.39
+    2020-05-15 13:00:00    32.62
+    2020-05-15 13:15:00    32.50
+    2020-05-15 13:30:00    32.52
+    2020-05-15 13:45:00    32.68
+    Freq: 15T, Name: ambient_temp, dtype: float64
+
+We can use :class:`LagFeatures` to create, for example, 3 new features by lagging the
+pandas Series if we convert it to a pandas Dataframe using the method `to_frame()`:
+
+.. code:: python
+
+    lag_f = LagFeatures(periods=[1, 2, 3])
+
+    X_tr = lag_f.fit_transform(X['ambient_temp'].to_frame())
+
+    X_tr.head()
+
+.. code:: python
+
+                         ambient_temp  ambient_temp_lag_1  ambient_temp_lag_2  \
+    2020-05-15 12:00:00         31.31                 NaN                 NaN
+    2020-05-15 12:15:00         31.51               31.31                 NaN
+    2020-05-15 12:30:00         32.15               31.51               31.31
+    2020-05-15 12:45:00         32.39               32.15               31.51
+    2020-05-15 13:00:00         32.62               32.39               32.15
+
+                         ambient_temp_lag_3
+    2020-05-15 12:00:00                 NaN
+    2020-05-15 12:15:00                 NaN
+    2020-05-15 12:30:00                 NaN
+    2020-05-15 12:45:00               31.31
+    2020-05-15 13:00:00               31.51
+
+And if we do not want the original values of time series in the returned dataframe, we
+just need to remember to drop the original series after the transformation:
+
+.. code:: python
+
+    lag_f = LagFeatures(periods=[1, 2, 3], drop_original=True)
+
+    X_tr = lag_f.fit_transform(X['ambient_temp'].to_frame())
+
+    X_tr.head()
+
+.. code:: python
+
+                         ambient_temp_lag_1  ambient_temp_lag_2  \
+    2020-05-15 12:00:00                 NaN                 NaN
+    2020-05-15 12:15:00               31.31                 NaN
+    2020-05-15 12:30:00               31.51               31.31
+    2020-05-15 12:45:00               32.15               31.51
+    2020-05-15 13:00:00               32.39               32.15
+
+                         ambient_temp_lag_3
+    2020-05-15 12:00:00                 NaN
+    2020-05-15 12:15:00                 NaN
+    2020-05-15 12:30:00                 NaN
+    2020-05-15 12:45:00               31.31
+    2020-05-15 13:00:00               31.51
+
+
+Getting the name of new variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can easily obtain the name of the original and new variables with the method
