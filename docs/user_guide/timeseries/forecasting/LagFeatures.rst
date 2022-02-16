@@ -8,10 +8,10 @@ LagFeatures
 The :class:`LagFeatures` adds lag features to the dataframe. A lag feature is a feature
 with information about a prior time step.
 
-In forecasting, past values of the variable we want to forecast, are likely to be
-predictive. Past values of other accompanying predictive features can also help us
-improve our forecast. Thus, in forecasting, it is common practice to create lag features
-from target series and predictive variables.
+When forecasting the future values of a variable the past values of that variable are
+likely to be predictive. Past values of other accompanying predictive features can also
+help us improve our forecast. Thus, in forecasting, it is common practice to create lag
+features from target series and predictive variables.
 
 A lag feature is the target or feature k period(s) in the past, where k is the lag and
 is to be set by the user. We can create features with multiple lags by varying k. There
