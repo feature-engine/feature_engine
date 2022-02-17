@@ -60,8 +60,10 @@ class BaseRecursiveSelector(BaseSelector):
         across calls. For more details check Scikit-learn's `cross_validate`'s
         documentation.
 
-    confirm_variables:
-        Check that the variables entered by the user exist in the df.
+    confirm_variables: bool, default=False
+        If set to True, variables that are not present in the input dataframe will be
+        removed from the indicated list of variables. See parameter variables for more
+        details.
 
     Attributes
     ----------
@@ -91,7 +93,7 @@ class BaseRecursiveSelector(BaseSelector):
 
     _estimator_docstring = """estimator: object
         A Scikit-learn estimator for regression or classification.
-        The estimator must have either a `feature_importances` or `coef_` attribute
+        The estimator must have either a `feature_importances` or a `coef_` attribute
         after fitting.
         """.rstrip()
 
