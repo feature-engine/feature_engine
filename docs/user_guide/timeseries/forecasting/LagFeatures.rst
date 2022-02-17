@@ -329,7 +329,7 @@ just need to remember to drop the original series after the transformation:
     2020-05-15 13:00:00               31.51
 
 
-Getting the name of new variables
+Getting the name of the variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can easily obtain the name of the original and new variables with the method
