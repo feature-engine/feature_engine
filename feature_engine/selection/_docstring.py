@@ -6,12 +6,12 @@ _variables_all_docstring = """variables: list, default=None
     """.rstrip()
 
 _variables_numerical_docstring = """variables: str or list, default=None
-        The list of variable to be evaluated. If None, the transformer will evaluate
+        The list of variables to evaluate. If None, the transformer will evaluate
         all numerical features in the dataset.
         """.rstrip()
 
 _variables_attribute_docstring = """variables_:
-        The variables that will be considered for the feature selection.
+        The variables that will be considered for the feature selection procedure.
         """.rstrip()
 
 _missing_values_docstring = """missing_values: str, default=ignore
@@ -24,18 +24,18 @@ _estimator_docstring = """estimator: object
         """.rstrip()
 
 _scoring_docstring = """scoring: str, default='roc_auc'
-        Desired metric to optimise the performance of the estimator. Comes from
+        Metric to evaluate the performance of the estimator. Comes from
         sklearn.metrics. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
         """.rstrip()
 
 _threshold_docstring = """threshold: float, int, default = 0.01
-        The value that defines if a feature will be kept or removed. Note that for
-        metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
-        between 0 and 1. For metrics like the mean_square_error and the
-        root_mean_square_error the threshold can be a big number.
-        The threshold must be defined by the user. Bigger thresholds will select less
-        features.
+        The value that defines whether a feature will be selected. Note that for
+        metrics like roc-auc, r2_score, and accuracy, the thresholds will be floats
+        between 0 and 1. For metrics like the mean_square_error and the 
+        root_mean_square_error, the threshold can be a big number. The threshold
+        must be defined by the user. With bigger thresholds, fewer features will be
+        selected.
         """.rstrip()
 
 _cv_docstring = """cv: int, cross-validation generator or an iterable, default=3
@@ -55,7 +55,7 @@ _cv_docstring = """cv: int, cross-validation generator or an iterable, default=3
         """.rstrip()
 
 _initial_model_performance_docstring = """initial_model_performance_:
-        Performance of the model trained using the original dataset.
+        The model's performance when trained with the original dataset.
         """.rstrip()
 
 _features_to_drop_docstring = """features_to_drop_:
