@@ -123,7 +123,7 @@ class SmartCorrelatedSelection(BaseSelector):
     Methods
     -------
     fit:
-        Find best feature from each correlated groups.
+        Find best feature from each correlated group.
 
     transform:
         Return selected features.

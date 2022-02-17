@@ -51,10 +51,6 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         Check that the variables entered by the user exist in the df.
     """
 
-    _transform_docstring = """transform:
-            Remove non-selected features.
-            """.rstrip()
-
     _confirm_variables_docstring = """confirm_variables: bool, default=False
             If set to True, variables that are not present in the input dataframe will
             be removed from the list of variables. Only used when passing a variable

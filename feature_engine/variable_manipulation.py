@@ -288,23 +288,23 @@ def _find_all_variables(
 def _filter_out_variables_not_in_dataframe(X, variables):
     """Filter out variables that are not present in the dataframe.
 
-    The function removed the variables defined in the arguments that
-    are not present in the input dataframe.
+    Function removes variables that the user defines in the argument `variables`
+    but that are not present in the input dataframe.
+
+    Useful when ussing several feature selection procedures in a row. The dataframe
+    input to the first selection algorithm likely contains more variables than the
+    input dataframe to subsequent selection algorithms, and it is not possible a
+    priori, to say which variable will be dropped.
 
     Parameters
     ----------
-    X :  pandas DataFrame
-    variables : string, int or list of (strings or int).
-
-    Raises
-    ------
-    ValueError
-        If there are no categorical variables in df or df is empty.
+    X:  pandas DataFrame
+    variables: string, int or list of (strings or int).
 
     Returns
     -------
-    filtered_variables : List of variables present in variables and in the
-    input dataframe.
+    filtered_variables: List of variables present in `variables` and in the
+        input dataframe.
     """
     # When variables is not defined, keep it like this and return None.
     if variables is None:
