@@ -62,8 +62,8 @@ class BaseRecursiveSelector(BaseSelector):
 
     confirm_variables: bool, default=False
         If set to True, variables that are not present in the input dataframe will be
-        removed from the indicated list of variables. See parameter variables for more
-        details.
+        removed from the list of variables. Only used when passing a variable list to
+        the parameter `variables`. See parameter variables for more details.
 
     Attributes
     ----------

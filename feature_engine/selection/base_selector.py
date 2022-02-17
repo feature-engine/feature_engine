@@ -56,10 +56,10 @@ class BaseSelector(BaseEstimator, TransformerMixin):
             """.rstrip()
 
     _confirm_variables_docstring = """confirm_variables: bool, default=False
-        If set to True, variables that do not exist in the input dataframe will be
-        deleted from the provided list of variables. See parameter variables for more
-        details.
-        """.rstrip()
+            If set to True, variables that are not present in the input dataframe will
+            be removed from the list of variables. Only used when passing a variable
+            list to the parameter `variables`. See parameter variables for more details.
+            """.rstrip()
 
     def __init__(
         self,
