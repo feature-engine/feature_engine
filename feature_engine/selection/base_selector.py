@@ -56,8 +56,8 @@ class BaseSelector(BaseEstimator, TransformerMixin):
             """.rstrip()
 
     _confirm_variables_docstring = """confirm_variables: bool, default=False
-        If set to True, variables that are not present in the input dataframe will be
-        removed from the indicated list of variables. See parameter variables for more
+        If set to True, variables that do not exist in the input dataframe will be
+        deleted from the provided list of variables. See parameter variables for more
         details.
         """.rstrip()
 

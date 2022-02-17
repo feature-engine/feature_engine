@@ -36,7 +36,6 @@ _threshold_docstring = """threshold: float, int, default = 0.01
         features.
         """.rstrip()
 
-# TODO: check doc building and potentially exclude this file from flake8 tests
 _cv_docstring = """cv: int, cross-validation generator or an iterable, default=3
         Determines the cross-validation splitting strategy. Possible inputs for cv are:
         # noqa: W293

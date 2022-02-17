@@ -186,7 +186,5 @@ class BaseRecursiveSelector(BaseSelector):
         tags_dict["_xfail_checks"][
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
-        tags_dict["_xfail_checks"][
-            "check_estimators_nan_inf"
-        ] = "transformer allows NA"
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
         return tags_dict
