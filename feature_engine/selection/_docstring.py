@@ -31,9 +31,9 @@ _scoring_docstring = """scoring: str, default='roc_auc'
 
 _threshold_docstring = """threshold: float, int, default = 0.01
         The value that defines whether a feature will be selected. Note that for
-        metrics like roc-auc, r2_score, and accuracy, the thresholds will be floats
+        metrics like roc-auc, r2_score, and accuracy, the threshold will be a float
         between 0 and 1. For metrics like the mean_square_error and the 
-        root_mean_square_error, the threshold can be a big number. The threshold
+        root_mean_square_error, the threshold can take any number. The threshold
         must be defined by the user. With bigger thresholds, fewer features will be
         selected.
         """.rstrip()
