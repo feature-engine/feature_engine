@@ -30,6 +30,9 @@ multiple values of k at the same time. Second, it adds the features with a name 
 original dataframe. Third, it has the methods `fit()` and `transform()` that make it
 compatible with the Scikit-learn's `Pipeline` and cross-validation functions.
 
+Note that to be compatible with LagFeatures, the dataframe's index must have unique
+values and no NaN.
+
 Examples
 --------
 

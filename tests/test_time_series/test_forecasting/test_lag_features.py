@@ -24,7 +24,7 @@ def test_permitted_param_sort_index(_sort_index):
 
 
 @pytest.mark.parametrize("_sort_index", [-1, None, "hola"])
-def test_error_when_non_permitted_param_periods(_sort_index):
+def test_error_when_non_permitted_param_sort_index(_sort_index):
     with pytest.raises(ValueError):
         LagFeatures(sort_index=_sort_index)
 

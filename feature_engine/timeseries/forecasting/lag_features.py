@@ -49,6 +49,9 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     top of pandas `shift()` in that multiple lags can be created at the same time and
     the features with names will be concatenated to the original dataframe.
 
+    To be compatible with LagFeatures, the dataframe's index must have unique values
+    and no NaN.
+
     LagFeatures works only with numerical variables. You can pass a list of variables
     to lag. Alternatively, LagFeatures will automatically select and lag all numerical
     variables found in the training set.
@@ -168,13 +171,15 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         if X.index.is_unique is False:
             raise NotImplementedError(
                 "The dataframe's index does not contain unique values. "
-                "Only dataframes with unique values in the index are compatible with this transformer."
+                "Only dataframes with unique values in the index are compatible "
+                "with this transformer."
             )
 
         if X.index.isnull().sum() > 0:
             raise NotImplementedError(
                 "The dataframe's index contains NaN values or missing data. "
-                "Only dataframes with complete indexes are compatible with this transformer."
+                "Only dataframes with complete indexes are compatible with "
+                "this transformer."
             )
 
         # find or check for numerical variables
@@ -220,13 +225,15 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         if X.index.is_unique is False:
             raise NotImplementedError(
                 "The dataframe's index does not contain unique values. "
-                "Only dataframes with unique values in the index are compatible with this transformer."
+                "Only dataframes with unique values in the index are compatible "
+                "with this transformer."
             )
 
         if X.index.isnull().sum() > 0:
             raise NotImplementedError(
                 "The dataframe's index contains NaN values or missing data. "
-                "Only dataframes with complete indexes are compatible with this transformer."
+                "Only dataframes with complete indexes are compatible with "
+                "this transformer."
             )
 
         # check if dataset contains na
