@@ -1,4 +1,4 @@
-# noqa
+# flake8: noqa
 
 _variables_all_docstring = """variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
@@ -15,8 +15,8 @@ _variables_attribute_docstring = """variables_:
         """.rstrip()
 
 _missing_values_docstring = """missing_values: str, default=ignore
-        Takes values 'raise' and 'ignore'. Whether the missing values should be raised
-        as error or ignored when determining correlation.
+        Whether the missing values should be raised as error or ignored when
+        determining correlation. Takes values 'raise' and 'ignore'.
         """.rstrip()
 
 _estimator_docstring = """estimator: object
@@ -31,9 +31,9 @@ _scoring_docstring = """scoring: str, default='roc_auc'
 
 _threshold_docstring = """threshold: float, int, default = 0.01
         The value that defines whether a feature will be selected. Note that for
-        metrics like roc-auc, r2_score, and accuracy, the threshold will be a float
-        between 0 and 1. For metrics like the mean_square_error and the
-        root_mean_square_error, the threshold can take any number. The threshold
+        metrics like the roc-auc, r2, and the accuracy, the threshold will be a float
+        between 0 and 1. For metrics like the mean squared error and the
+        root mean squared error, the threshold can take any number. The threshold
         must be defined by the user. With bigger thresholds, fewer features will be
         selected.
         """.rstrip()
@@ -43,8 +43,7 @@ _cv_docstring = """cv: int, cross-validation generator or an iterable, default=3
 
             - None, to use cross_validate's default 5-fold cross validation
             - int, to specify the number of folds in a (Stratified)KFold,
-            - CV splitter
-                - (https://scikit-learn.org/stable/glossary.html#term-CV-splitter)
+            - CV splitter: (https://scikit-learn.org/stable/glossary.html#term-CV-splitter)
             - An iterable yielding (train, test) splits as arrays of indices.
 
         For int/None inputs, if the estimator is a classifier and y is either binary or
@@ -59,7 +58,7 @@ _initial_model_performance_docstring = """initial_model_performance_:
         """.rstrip()
 
 _features_to_drop_docstring = """features_to_drop_:
-        List with the features to remove from the dataset.
+        List with the features that will be removed.
         """.rstrip()
 
 _fit_docstring = """fit:
