@@ -60,6 +60,9 @@ class BaseRecursiveSelector(BaseSelector):
         across calls. For more details check Scikit-learn's `cross_validate`'s
         documentation.
 
+    confirm_variables:
+        Check that the variables entered by the user exist in the df.
+
     Attributes
     ----------
     initial_model_performance_:
@@ -107,11 +110,13 @@ class BaseRecursiveSelector(BaseSelector):
         cv=3,
         threshold: Union[int, float] = 0.01,
         variables: Variables = None,
+        confirm_variables: bool = False,
     ):
 
         if not isinstance(threshold, (int, float)):
             raise ValueError("threshold can only be integer or float")
 
+        super().__init__(confirm_variables)
         self.variables = _check_input_parameter_variables(variables)
         self.estimator = estimator
         self.scoring = scoring
@@ -134,8 +139,11 @@ class BaseRecursiveSelector(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
+
         # find numerical variables or check variables entered by user
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         # train model with all features and cross-validation
         model = cross_validate(
@@ -178,4 +186,7 @@ class BaseRecursiveSelector(BaseSelector):
         tags_dict["_xfail_checks"][
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"][
+            "check_estimators_nan_inf"
+        ] = "transformer allows NA"
         return tags_dict

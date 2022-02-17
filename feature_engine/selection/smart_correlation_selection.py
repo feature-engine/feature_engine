@@ -34,7 +34,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     estimator=_estimator_docstring,
     scoring=_scoring_docstring,
     cv=_cv_docstring,
-    # confirm_variables=BaseSelector._confirm_variables,
+    confirm_variables=BaseSelector._confirm_variables_docstring,
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
     variables_=_variables_attribute_docstring,
@@ -106,6 +106,8 @@ class SmartCorrelatedSelection(BaseSelector):
 
     {cv}
 
+    {confirm_variables}
+
     Attributes
     ----------
     correlated_feature_sets_:
@@ -149,6 +151,7 @@ class SmartCorrelatedSelection(BaseSelector):
         estimator=None,
         scoring: str = "roc_auc",
         cv=3,
+        confirm_variables: bool = False,
     ):
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError("threshold must be a float between 0 and 1")
@@ -181,6 +184,8 @@ class SmartCorrelatedSelection(BaseSelector):
                 "with NaN by setting missing_values to 'ignore."
             )
 
+        super().__init__(confirm_variables)
+
         self.variables = _check_input_parameter_variables(variables)
         self.method = method
         self.threshold = threshold
@@ -207,8 +212,11 @@ class SmartCorrelatedSelection(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
+
         # find all numerical variables or check those entered are in the dataframe
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         if self.missing_values == "raise":
             # check if dataset contains na

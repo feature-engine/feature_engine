@@ -36,15 +36,16 @@ _threshold_docstring = """threshold: float, int, default = 0.01
         features.
         """.rstrip()
 
-#TODO: check doc building and potentially exclude this file from flake8 tests
+# TODO: check doc building and potentially exclude this file from flake8 tests
 _cv_docstring = """cv: int, cross-validation generator or an iterable, default=3
         Determines the cross-validation splitting strategy. Possible inputs for cv are:
+        # noqa: W293
             - None, to use cross_validate's default 5-fold cross validation
             - int, to specify the number of folds in a (Stratified)KFold,
             - CV splitter
                 - (https://scikit-learn.org/stable/glossary.html#term-CV-splitter)
             - An iterable yielding (train, test) splits as arrays of indices.
-            
+        # noqa: W293
         For int/None inputs, if the estimator is a classifier and y is either binary or
         multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
         splitters are instantiated with `shuffle=False` so the splits will be the same

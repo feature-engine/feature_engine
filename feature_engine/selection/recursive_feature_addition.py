@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
     _fit_transform_docstring,
@@ -26,7 +27,7 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
     threshold=_threshold_docstring,
     cv=_cv_docstring,
     variables=_variables_numerical_docstring,
-    # confirm_variables=BaseRecursiveSelector._confirm_variables,
+    confirm_variables=BaseRecursiveSelector._confirm_variables_docstring,
     initial_model_performance_=_initial_model_performance_docstring,
     feature_importances_=BaseRecursiveSelector._feature_importances_docstring,
     performance_drifts_=BaseRecursiveSelector._performance_drifts_docstring,
@@ -73,6 +74,8 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
     {cv}
 
+    {confirm_variables}
+
     Attributes
     ----------
     {initial_model_performance_}
@@ -113,6 +116,9 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
         """
 
         super().fit(X, y)
+
+        # We need this line to pass the tests of the check_estimator
+        X = _is_dataframe(X)
 
         # Sort the feature importance values decreasingly
         self.feature_importances_.sort_values(ascending=False, inplace=True)

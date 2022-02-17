@@ -38,7 +38,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     threshold=_threshold_docstring,
     cv=_cv_docstring,
     variables=_variables_numerical_docstring,
-    # confirm_variables=BaseRecursiveSelector._confirm_variables,
+    confirm_variables=BaseSelector._confirm_variables_docstring,
     initial_model_performance_=_initial_model_performance_docstring,
     features_to_drop_=_features_to_drop_docstring,
     variables_=_variables_attribute_docstring,
@@ -72,6 +72,8 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     {threshold}
 
     {cv}
+
+    {confirm_variables}
 
     Attributes
     ----------
@@ -109,6 +111,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         cv=3,
         threshold: Union[int, float] = None,
         variables: Variables = None,
+        confirm_variables: bool = False,
     ):
 
         if threshold:
@@ -128,6 +131,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
                     "0 and 1."
                 )
 
+        super().__init__(confirm_variables)
         self.variables = _check_input_parameter_variables(variables)
         self.estimator = estimator
         self.scoring = scoring
@@ -150,8 +154,11 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
+
         # find numerical variables or check variables entered by user
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         self.feature_performance_ = {}
 

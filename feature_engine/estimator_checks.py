@@ -261,3 +261,34 @@ def check_error_param_missing_values(estimator):
     for value in [2, "hola", False]:
         with pytest.raises(ValueError):
             estimator.__class__(missing_values=value)
+
+
+def check_confirm_variables(estimator):
+    X, y = test_df()
+    Xs = X.drop(labels=["var_10", "var_11"], axis=1)
+
+    # original variables in X
+    all_vars = ["var_" + str(i) for i in range(12)]
+
+    estimator = clone(estimator)
+
+    sel = estimator.set_params(
+        variables=all_vars,
+        confirm_variables=False,
+    )
+    sel.fit(X, y)
+    assert sel.variables_ == all_vars
+
+    sel = estimator.set_params(
+        variables=all_vars,
+        confirm_variables=True,
+    )
+    sel.fit(Xs, y)
+    assert sel.variables_ == ["var_" + str(i) for i in range(10)]
+
+    sel = estimator.set_params(
+        variables=all_vars,
+        confirm_variables=False,
+    )
+    with pytest.raises(KeyError):
+        sel.fit(Xs, y)

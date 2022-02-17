@@ -40,7 +40,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     threshold=_threshold_docstring,
     cv=_cv_docstring,
     variables=_variables_numerical_docstring,
-    # confirm_variables=BaseRecursiveSelector._confirm_variables,
+    confirm_variables=BaseSelector._confirm_variables_docstring,
     initial_model_performance_=_initial_model_performance_docstring,
     features_to_drop_=_features_to_drop_docstring,
     variables_=_variables_attribute_docstring,
@@ -88,6 +88,8 @@ class SelectByShuffling(BaseSelector):
     random_state: int, default=None
         Controls the randomness when shuffling features.
 
+    {confirm_variables}
+
     Attributes
     ----------
     {initial_model_performance_}
@@ -128,10 +130,13 @@ class SelectByShuffling(BaseSelector):
         threshold: Union[float, int] = None,
         variables: Variables = None,
         random_state: int = None,
+        confirm_variables: bool = False,
     ):
 
         if threshold and not isinstance(threshold, (int, float)):
             raise ValueError("threshold can only be integer or float or None")
+
+        super().__init__(confirm_variables)
 
         self.variables = _check_input_parameter_variables(variables)
         self.estimator = estimator
@@ -161,8 +166,11 @@ class SelectByShuffling(BaseSelector):
         if isinstance(y, pd.Series):
             y = y.reset_index(drop=True)
 
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
+
         # find numerical variables or check variables entered by user
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         # train model with all features and cross-validation
         model = cross_validate(
