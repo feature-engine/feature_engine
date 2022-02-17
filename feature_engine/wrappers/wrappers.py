@@ -140,7 +140,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         Returns:
         X_new : pandas dataframe of shape = [n_samples, n_features]
-    
+
         """
         # check that input is a dataframe
         X = _is_dataframe(X)
