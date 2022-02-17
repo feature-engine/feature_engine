@@ -40,7 +40,7 @@ _threshold_docstring = """threshold: float, int, default = 0.01
 
 _cv_docstring = """cv: int, cross-validation generator or an iterable, default=3
         Determines the cross-validation splitting strategy. Possible inputs for cv are:
-        
+
             - None, to use cross_validate's default 5-fold cross validation
             - int, to specify the number of folds in a (Stratified)KFold,
             - CV splitter
