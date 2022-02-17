@@ -49,6 +49,9 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     top of pandas `shift()` in that multiple lags can be created at the same time and
     the features with names will be concatenated to the original dataframe.
 
+    To be compatible with LagFeatures, the dataframe's index must have unique values
+    and no NaN.
+
     LagFeatures works only with numerical variables. You can pass a list of variables
     to lag. Alternatively, LagFeatures will automatically select and lag all numerical
     variables found in the training set.
@@ -69,6 +72,9 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         pandas `shift()`. It is the same functionality. If freq is a list, lag features
         will be created for each one of the frequency values in the list. If freq is not
         None, then this parameter overrides the parameter `periods`.
+
+    sort_index: bool, default=True
+        Whether to order the index of the dataframe before creating the lag features.
 
     {missing_values}
 
@@ -102,6 +108,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         periods: int = 1,
         freq: Union[str, List[str]] = None,
+        sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
@@ -119,6 +126,11 @@ class LagFeatures(BaseEstimator, TransformerMixin):
                 f"Got {periods} instead."
             )
 
+        if not isinstance(sort_index, bool):
+            raise ValueError(
+                "sort_index takes values True and False." f"Got {sort_index} instead."
+            )
+
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
                 "missing_values takes only values 'raise' or 'ignore'. "
@@ -133,6 +145,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
 
         self.variables = _check_input_parameter_variables(variables)
         self.freq = freq
+        self.sort_index = sort_index
         self.missing_values = missing_values
         self.drop_original = drop_original
 
@@ -150,6 +163,24 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         """
         # check input dataframe
         X = _is_dataframe(X)
+
+        # We need the dataframes to have unique values in the index and no missing data.
+        # Otherwise, when we merge the lag features we will duplicate rows.
+
+        # Check that the index contains unique values.
+        if X.index.is_unique is False:
+            raise NotImplementedError(
+                "The dataframe's index does not contain unique values. "
+                "Only dataframes with unique values in the index are compatible "
+                "with this transformer."
+            )
+
+        if X.index.isnull().sum() > 0:
+            raise NotImplementedError(
+                "The dataframe's index contains NaN values or missing data. "
+                "Only dataframes with complete indexes are compatible with "
+                "this transformer."
+            )
 
         # find or check for numerical variables
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
@@ -187,10 +218,31 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_input_matches_training_df(X, self.n_features_in_)
 
+        # We need the dataframes to have unique values in the index and no missing data.
+        # Otherwise, when we merge the lag features we will duplicate rows.
+
+        # Check that the index contains unique values.
+        if X.index.is_unique is False:
+            raise NotImplementedError(
+                "The dataframe's index does not contain unique values. "
+                "Only dataframes with unique values in the index are compatible "
+                "with this transformer."
+            )
+
+        if X.index.isnull().sum() > 0:
+            raise NotImplementedError(
+                "The dataframe's index contains NaN values or missing data. "
+                "Only dataframes with complete indexes are compatible with "
+                "this transformer."
+            )
+
         # check if dataset contains na
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
+
+        if self.sort_index is True:
+            X.sort_index(inplace=True)
 
         # if freq is not None, it overrides periods.
         if self.freq is not None:
@@ -263,6 +315,11 @@ class LagFeatures(BaseEstimator, TransformerMixin):
             if not isinstance(input_features, list):
                 raise ValueError(
                     f"input_features must be a list. Got {input_features} instead."
+                )
+            if any([f for f in input_features if f not in self.variables_]):
+                raise ValueError(
+                    "Some features in input_features were not lagged. You can only get"
+                    "the names of the lagged features with this function."
                 )
             # Create just indicated lag features.
             input_features_ = input_features

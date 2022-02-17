@@ -27,7 +27,6 @@ Creation
 
    creation/index
    datetime/index
-   timeseries/index
 
 
 Selection
@@ -36,6 +35,16 @@ Selection
    :maxdepth: 1
 
    selection/index
+
+
+Time series
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   timeseries/index
+
 
 Other
 -----

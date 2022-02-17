@@ -17,8 +17,19 @@ def test_error_when_non_permitted_param_periods(_periods):
         LagFeatures(periods=_periods)
 
 
-def test_get_feature_names_out(df_time):
+@pytest.mark.parametrize("_sort_index", [True, False])
+def test_permitted_param_sort_index(_sort_index):
+    transformer = LagFeatures(sort_index=_sort_index)
+    assert transformer.sort_index == _sort_index
 
+
+@pytest.mark.parametrize("_sort_index", [-1, None, "hola"])
+def test_error_when_non_permitted_param_sort_index(_sort_index):
+    with pytest.raises(ValueError):
+        LagFeatures(sort_index=_sort_index)
+
+
+def test_get_feature_names_out(df_time):
     # input features
     input_features = ["ambient_temp", "module_temp", "irradiation"]
     original_features = ["ambient_temp", "module_temp", "irradiation", "color"]
@@ -37,6 +48,10 @@ def test_get_feature_names_out(df_time):
     with pytest.raises(ValueError):
         # assert error when user passes a string instead of list
         tr.get_feature_names_out(input_features=input_features[0])
+
+    with pytest.raises(ValueError):
+        # assert error when uses passes features that were not lagged
+        tr.get_feature_names_out(input_features=["color"])
 
     # When period is an int:
     tr = LagFeatures(periods=2)
@@ -203,3 +218,62 @@ def test_correct_lag_when_using_freq(df_time):
             ["color", "ambient_temp_lag_1h", "module_temp_lag_1h", "irradiation_lag_1h"]
         ]
     )
+
+
+def test_sort_index(df_time):
+    X = df_time.copy()
+
+    # Shuffle dataframe
+    Xs = X.sample(len(df_time)).copy()
+
+    transformer = LagFeatures(sort_index=True)
+    X_tr = transformer.fit_transform(Xs)
+
+    A = X[transformer.variables_].iloc[0:4].values
+    B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
+    assert (A == B).all()
+
+    transformer = LagFeatures(sort_index=False)
+    X_tr = transformer.fit_transform(Xs)
+
+    A = Xs[transformer.variables_].iloc[0:4].values
+    B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
+    assert (A == B).all()
+
+
+def test_error_when_not_unique_values_in_index(df_time):
+    X = df_time.copy()
+
+    # introduce dupes in index
+    tmp = X.head(2).copy()
+    tmp.iloc[0] = [1, 1, 1, "blue"]
+    Xd = pd.concat([X, tmp], axis=0)
+
+    transformer = LagFeatures()
+
+    with pytest.raises(NotImplementedError):
+        transformer.fit(Xd)
+
+    transformer.fit(X)
+    with pytest.raises(NotImplementedError):
+        transformer.transform(Xd)
+
+
+def test_error_when_nan_in_index(df_time):
+    X = df_time.copy()
+
+    # Introduce NaN in index.
+    # Need to introduce only 1 NaN, otherwise, if there are multiple NaN
+    # they are caught by the is_unique method.
+    tmp = X.head(1).copy()
+    tmp.index = [np.nan]
+    Xd = pd.concat([X, tmp], axis=0)
+
+    transformer = LagFeatures()
+
+    with pytest.raises(NotImplementedError):
+        transformer.fit(Xd)
+
+    transformer.fit(X)
+    with pytest.raises(NotImplementedError):
+        transformer.transform(Xd)
