@@ -286,7 +286,7 @@ def _find_all_variables(
             raise ValueError("The list of variables is empty.")
 
         if any(f for f in variables if f not in X.columns):
-            raise ValueError("Some of the variables are not in the dataframe.")
+            raise KeyError("Some of the variables are not in the dataframe.")
 
     return variables
 
