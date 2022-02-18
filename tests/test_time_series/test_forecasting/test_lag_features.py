@@ -263,8 +263,6 @@ def test_error_when_nan_in_index(df_time):
     X = df_time.copy()
 
     # Introduce NaN in index.
-    # Need to introduce only 1 NaN, otherwise, if there are multiple NaN
-    # they are caught by the is_unique method.
     tmp = X.head(1).copy()
     tmp.index = [np.nan]
     Xd = pd.concat([X, tmp], axis=0)
