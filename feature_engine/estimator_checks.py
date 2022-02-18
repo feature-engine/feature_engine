@@ -292,3 +292,14 @@ def check_confirm_variables(estimator):
     )
     with pytest.raises(KeyError):
         sel.fit(Xs, y)
+
+    # When variables is None.
+    sel = estimator.set_params(
+        variables=None,
+        confirm_variables=True,
+    )
+    sel.fit(X, y)
+    assert sel.variables_ == all_vars
+
+    sel.fit(Xs, y)
+    assert sel.variables_ == ["var_" + str(i) for i in range(10)]
