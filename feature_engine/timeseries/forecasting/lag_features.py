@@ -167,19 +167,19 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         # We need the dataframes to have unique values in the index and no missing data.
         # Otherwise, when we merge the lag features we will duplicate rows.
 
+        if X.index.isnull().sum() > 0:
+            raise NotImplementedError(
+                "The dataframe's index contains NaN values or missing data. "
+                "Only dataframes with complete indexes are compatible with "
+                "this transformer."
+            )
+            
         # Check that the index contains unique values.
         if X.index.is_unique is False:
             raise NotImplementedError(
                 "The dataframe's index does not contain unique values. "
                 "Only dataframes with unique values in the index are compatible "
                 "with this transformer."
-            )
-
-        if X.index.isnull().sum() > 0:
-            raise NotImplementedError(
-                "The dataframe's index contains NaN values or missing data. "
-                "Only dataframes with complete indexes are compatible with "
-                "this transformer."
             )
 
         # find or check for numerical variables
@@ -221,19 +221,19 @@ class LagFeatures(BaseEstimator, TransformerMixin):
         # We need the dataframes to have unique values in the index and no missing data.
         # Otherwise, when we merge the lag features we will duplicate rows.
 
+        if X.index.isnull().sum() > 0:
+            raise NotImplementedError(
+                "The dataframe's index contains NaN values or missing data. "
+                "Only dataframes with complete indexes are compatible with "
+                "this transformer."
+            )
+            
         # Check that the index contains unique values.
         if X.index.is_unique is False:
             raise NotImplementedError(
                 "The dataframe's index does not contain unique values. "
                 "Only dataframes with unique values in the index are compatible "
                 "with this transformer."
-            )
-
-        if X.index.isnull().sum() > 0:
-            raise NotImplementedError(
-                "The dataframe's index contains NaN values or missing data. "
-                "Only dataframes with complete indexes are compatible with "
-                "this transformer."
             )
 
         # check if dataset contains na
