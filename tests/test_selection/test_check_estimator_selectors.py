@@ -3,7 +3,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.estimator_checks import check_feature_engine_estimator
-from feature_engine.selection import (  # SelectByTargetMeanPerformance,
+from feature_engine.selection import (
     DropConstantFeatures,
     DropCorrelatedFeatures,
     DropDuplicateFeatures,
@@ -13,6 +13,7 @@ from feature_engine.selection import (  # SelectByTargetMeanPerformance,
     RecursiveFeatureElimination,
     SelectByShuffling,
     SelectBySingleFeaturePerformance,
+    # SelectByTargetMeanPerformance,
     SmartCorrelatedSelection,
 )
 
