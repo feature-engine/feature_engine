@@ -315,6 +315,13 @@ def check_get_feature_names_out(estimator):
 
     if estimator.__class__.__name__ in ["OneHotEncoder"]:
         pass
+
+    # selection transformers
+    elif hasattr(estimator, "confirm_variables") or estimator.__class__.__name__ == "DropFeatures":
+        feature_names = [f for f in X.columns if f not in estimator.features_to_drop_]
+        assert estimator.get_feature_names_out() == feature_names
+        assert estimator.transform(X).shape[1] == len(feature_names)
+
     else:
         assert estimator.get_feature_names_out() == [
             "var_" + str(i) for i in range(12)
