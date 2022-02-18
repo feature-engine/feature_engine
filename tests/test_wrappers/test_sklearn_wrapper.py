@@ -2,7 +2,9 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.datasets import fetch_california_housing, load_boston
+from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectFromModel, SelectKBest, f_regression
+from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import Lasso
 from sklearn.model_selection import cross_val_score
@@ -15,11 +17,23 @@ from feature_engine.wrappers import SklearnTransformerWrapper
 
 @pytest.mark.parametrize(
     "transformer",
-    [SimpleImputer(), OneHotEncoder(), StandardScaler(), SelectKBest(), Lasso()],
+    [
+        SimpleImputer(),
+        OneHotEncoder(),
+        StandardScaler(),
+        SelectKBest(),
+        Lasso(),
+        RandomForestClassifier(),
+        PCA(),
+        VotingClassifier(RandomForestClassifier()),
+    ],
 )
 def test_param_transformer(transformer, df_na):
-    if transformer.__class__.__name__ == "Lasso":
+    if transformer.__class__.__name__ in ["Lasso", "RandomForestClassifier"]:
         with pytest.raises(TypeError):
+            SklearnTransformerWrapper(transformer=transformer)
+    elif transformer.__class__.__name__ in ["PCA", "VotingClassifier"]:
+        with pytest.raises(NotImplementedError):
             SklearnTransformerWrapper(transformer=transformer)
     else:
         tr = SklearnTransformerWrapper(transformer=transformer)
@@ -42,7 +56,7 @@ def test_wrap_selectors():
     pass
 
 
-def test_wrap_feature_extractors():
+def test_wrap_feature_creators():
     pass
 
 
