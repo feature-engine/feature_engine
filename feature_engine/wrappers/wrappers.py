@@ -15,8 +15,10 @@ from feature_engine.variable_manipulation import (
     _find_or_check_numerical_variables,
 )
 
-_selectors = [
+_SELECTORS = [
     "GenericUnivariateSelect",
+    "RFE",
+    "RFECV",
     "SelectFdr",
     "SelectFpr",
     "SelectFromModel",
@@ -24,7 +26,38 @@ _selectors = [
     "SelectKBest",
     "SelectPercentile",
     "SequentialFeatureSelector",
+    "VarianceThreshold",
 ]
+
+_CREATORS = [
+    # 'FeatureHasher',
+    "OneHotEncoder",
+    "PolynomialFeatures",
+    "MissingIndicator",
+]
+
+_TRANSFORMERS = [
+    # transformers
+    "Binarizer",
+    "FunctionTransformer",
+    "KBinsDiscretizer",
+    "PowerTransformer",
+    "QuantileTransformer",
+    # imputers
+    "SimpleImputer",
+    "IterativeImputer",
+    "KNNImputer",
+    # encoders
+    "OrdinalEncoder",
+    # scalers
+    "MaxAbsScaler",
+    "MinMaxScaler",
+    "StandardScaler",
+    "RobustScaler",
+    "Normalizer",
+]
+
+_ALL_TRANSFORMERS = _SELECTORS + _CREATORS + _TRANSFORMERS
 
 
 class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
@@ -90,8 +123,14 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         if not issubclass(transformer.__class__, TransformerMixin):
             raise TypeError(
-                "transformer expected a Scikit-learn transformer, "
+                "transformer expected a Scikit-learn transformer. "
                 f"got {transformer} instead."
+            )
+
+        if transformer.__class__.__name__ not in _ALL_TRANSFORMERS:
+            raise NotImplementedError(
+                "This transformer is not compatible with the wrapper. "
+                "Supported transformers are {}.".format(", ".join(_ALL_TRANSFORMERS))
             )
 
         self.transformer = transformer
@@ -128,6 +167,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             "OneHotEncoder",
             "OrdinalEncoder",
             "SimpleImputer",
+            "MissingIndicator",
         ]:
             self.variables_ = _find_all_variables(X, self.variables)
 
@@ -178,16 +218,17 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         # reorder df to match train set
         X = X[self.feature_names_in_]
 
-        if self.transformer_.__class__.__name__ == "OneHotEncoder":
-            ohe_results_as_df = pd.DataFrame(
+        # Transformers that add features
+        if self.transformer_.__class__.__name__ in _CREATORS:
+            new_features_df = pd.DataFrame(
                 data=self.transformer_.transform(X[self.variables_]),
-                columns=self.transformer_.get_feature_names(self.variables_),
+                columns=self.transformer_.get_feature_names_out(self.variables_),
                 index=X.index,
             )
-            X = pd.concat([X, ohe_results_as_df], axis=1)
+            X = pd.concat([X, new_features_df], axis=1)
 
         # Feature selection
-        elif self.transformer_.__class__.__name__ in _selectors:
+        elif self.transformer_.__class__.__name__ in _SELECTORS:
 
             # the variables that will be dropped
             features_to_drop = [
