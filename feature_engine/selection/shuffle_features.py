@@ -9,6 +9,7 @@ from sklearn.utils.validation import check_random_state
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
 )
@@ -44,6 +45,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     initial_model_performance_=_initial_model_performance_docstring,
     features_to_drop_=_features_to_drop_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_docstring,
     transform=_transform_docstring,
@@ -100,6 +102,8 @@ class SelectByShuffling(BaseSelector):
     {features_to_drop_}
 
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -233,17 +237,12 @@ class SelectByShuffling(BaseSelector):
             if self.performance_drifts_[f] < threshold
         ]
 
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
         self.n_features_in_ = X.shape[1]
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseSelector.transform.__doc__
 
     def _more_tags(self):
         tags_dict = _return_tags()

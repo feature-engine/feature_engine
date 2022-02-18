@@ -23,9 +23,11 @@ class DropFeatures(BaseSelector):
     features_to_drop_:
         The features that will be dropped.
 
+    feature_names_in_:
+        List with the names of features seen during `fit`.
+
     n_features_in_:
         The number of features in the train set used in fit.
-
 
     Methods
     -------
@@ -76,17 +78,12 @@ class DropFeatures(BaseSelector):
                 "existing variables"
             )
 
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
         self.n_features_in_ = X.shape[1]
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseSelector.transform.__doc__
 
     def _more_tags(self):
         tags_dict = _return_tags()

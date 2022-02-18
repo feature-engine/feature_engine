@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -103,8 +105,27 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         # check if number of columns in test dataset matches to train dataset
         _check_input_matches_training_df(X, self.n_features_in_)
 
+        # reorder df to match train set
+        X = X[self.feature_names_in_]
+
         # return the dataframe with the selected features
         return X.drop(columns=self.features_to_drop_)
+
+    def get_feature_names_out(self) -> List:
+        """Get output feature names for transformation.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        feature_names = [
+            f for f in self.feature_names_in_ if f not in self.features_to_drop_
+        ]
+
+        return feature_names
 
     def _more_tags(self):
         tags_dict = _return_tags()

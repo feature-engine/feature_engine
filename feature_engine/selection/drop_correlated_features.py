@@ -9,6 +9,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
 )
@@ -31,6 +32,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -77,6 +79,8 @@ class DropCorrelatedFeatures(BaseSelector):
         Groups of correlated features. Each list is a group of correlated features.
 
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -197,14 +201,9 @@ class DropCorrelatedFeatures(BaseSelector):
                 if len(_temp_set) > 1:
                     self.correlated_feature_sets_.append(_temp_set)
 
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
         self.n_features_in_ = X.shape[1]
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseSelector.transform.__doc__
