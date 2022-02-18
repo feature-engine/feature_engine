@@ -13,7 +13,44 @@ from feature_engine.selection import DropFeatures
 from feature_engine.wrappers import SklearnTransformerWrapper
 
 
-def test_sklearn_imputer_numeric_with_constant(df_na):
+@pytest.mark.parametrize(
+    "transformer",
+    [SimpleImputer(), OneHotEncoder(), StandardScaler(), SelectKBest(), Lasso()],
+)
+def test_param_transformer(transformer, df_na):
+    if transformer.__class__.__name__ == "Lasso":
+        with pytest.raises(TypeError):
+            SklearnTransformerWrapper(transformer=transformer)
+    else:
+        tr = SklearnTransformerWrapper(transformer=transformer)
+        assert tr.transformer == transformer
+
+
+@pytest.mark.parametrize(
+    "transformer",
+    [SimpleImputer(), OneHotEncoder(), StandardScaler(), SelectKBest(), Lasso()],
+)
+def test_inverse_transform(transformer):
+    pass
+
+
+def test_get_feature_names_out():
+    pass
+
+
+def test_wrap_selectors():
+    pass
+
+
+def test_wrap_feature_extractors():
+    pass
+
+
+def test_wrap_other_transformers():
+    pass
+
+
+def test_wrap_simple_imputer(df_na):
     variables_to_impute = ["Age", "Marks"]
     na_variables_left_after_imputation = [
         col
@@ -37,6 +74,7 @@ def test_sklearn_imputer_numeric_with_constant(df_na):
     assert transformer.variables == variables_to_impute
     # fit params
     assert transformer.variables_ == variables_to_impute
+    assert transformer.feature_names_in_ == ref.columns.to_list()
     assert transformer.n_features_in_ == 6
     # transformed output
     assert all(
@@ -44,6 +82,14 @@ def test_sklearn_imputer_numeric_with_constant(df_na):
     )
     assert all(dataframe_na_transformed[variables_to_impute].isna().sum() == 0)
     pd.testing.assert_frame_equal(ref, dataframe_na_transformed)
+    # inverse_transform
+    # SimpleImputer raises an error when inverse_transform is called with
+    # missing_indicators=False.
+    with pytest.raises(ValueError):
+        transformer.inverse_transform(dataframe_na_transformed)
+    # get_feature_names_out
+    with pytest.raises(NotImplementedError):
+        transformer.get_feature_names_out()
 
 
 def test_sklearn_imputer_object_with_constant(df_na):
@@ -110,6 +156,7 @@ def test_sklearn_standardscaler_numeric(df_vartypes):
     ) / ref[variables_to_scale].std(ddof=0)
 
     transformed_df = transformer.fit_transform(df_vartypes)
+    inv_tr_df = transformer.inverse_transform(transformed_df)
 
     # init params
     assert isinstance(transformer.transformer, StandardScaler)
@@ -118,7 +165,13 @@ def test_sklearn_standardscaler_numeric(df_vartypes):
     assert transformer.n_features_in_ == 5
     assert (transformer.transformer_.mean_.round(6) == np.array([19.5, 0.75])).all()
     assert all(transformer.transformer_.scale_.round(6) == [1.118034, 0.111803])
+    # transform method
     pd.testing.assert_frame_equal(ref, transformed_df)
+    # inverse_transform method
+    pd.testing.assert_frame_equal(inv_tr_df, df_vartypes)
+    # get_feature_names_out method
+    with pytest.raises(NotImplementedError):
+        transformer.get_feature_names_out()
 
 
 def test_sklearn_standardscaler_object(df_vartypes):
@@ -297,7 +350,7 @@ def test_sklearn_ohe_errors(df_vartypes):
         )
 
 
-def test_sklearn_ohe_cval_after_recombine():
+def test_sklearn_ohe_with_crossvalidation():
     """
     Created 2022-02-14 to test fix to issue # 368
     """
@@ -330,9 +383,6 @@ def test_sklearn_ohe_cval_after_recombine():
     )
 
     # Run cross-validation
-    # Before fix to #368, errors in cross-validation caused by
-    # index issues will cause all or most results to be nan.
-    # Assert this is no longer the case - assertion failed before fix to #368
     results: np.ndarray = cross_val_score(
         pipeline, X, y, scoring="neg_mean_squared_error", cv=3
     )
