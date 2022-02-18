@@ -353,19 +353,19 @@ def check_confirm_variables(estimator):
 
     estimator = clone(estimator)
 
-    # sel = estimator.set_params(
-    #     variables=all_vars,
-    #     confirm_variables=False,
-    # )
-    # sel.fit(X, y)
-    # assert sel.variables_ == all_vars
-    #
-    # sel = estimator.set_params(
-    #     variables=all_vars,
-    #     confirm_variables=True,
-    # )
-    # sel.fit(Xs, y)
-    # assert sel.variables_ == ["var_" + str(i) for i in range(10)]
+    sel = estimator.set_params(
+        variables=all_vars,
+        confirm_variables=False,
+    )
+    sel.fit(X, y)
+    assert sel.variables_ == all_vars
+
+    sel = estimator.set_params(
+        variables=all_vars,
+        confirm_variables=True,
+    )
+    sel.fit(Xs, y)
+    assert sel.variables_ == ["var_" + str(i) for i in range(10)]
 
     sel = estimator.set_params(
         variables=all_vars,
@@ -374,13 +374,13 @@ def check_confirm_variables(estimator):
     with pytest.raises(KeyError):
         sel.fit(Xs, y)
 
-    # # When variables is None.
-    # sel = estimator.set_params(
-    #     variables=None,
-    #     confirm_variables=True,
-    # )
-    # sel.fit(X, y)
-    # assert sel.variables_ == all_vars
-    #
-    # sel.fit(Xs, y)
-    # assert sel.variables_ == ["var_" + str(i) for i in range(10)]
+    # When variables is None.
+    sel = estimator.set_params(
+        variables=None,
+        confirm_variables=True,
+    )
+    sel.fit(X, y)
+    assert sel.variables_ == all_vars
+
+    sel.fit(Xs, y)
+    assert sel.variables_ == ["var_" + str(i) for i in range(10)]
