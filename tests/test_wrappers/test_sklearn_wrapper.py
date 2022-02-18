@@ -330,7 +330,8 @@ def test_sklearn_ohe_cval_after_recombine():
     )
 
     # Run cross-validation
-    # Before fix to #368, errors in cross-validation caused by index issues will cause all or most results to be nan
+    # Before fix to #368, errors in cross-validation caused by
+    # index issues will cause all or most results to be nan.
     # Assert this is no longer the case - assertion failed before fix to #368
     results: np.ndarray = cross_val_score(
         pipeline, X, y, scoring="neg_mean_squared_error", cv=3
