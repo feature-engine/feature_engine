@@ -31,8 +31,10 @@ class DropFeatures(BaseSelector):
     -------
     fit:
         This transformer does not learn any parameter.
+
     transform:
         Drops indicated features.
+
     fit_transform:
         Fit to data, then transform it.
     """

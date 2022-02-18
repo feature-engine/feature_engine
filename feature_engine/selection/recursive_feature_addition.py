@@ -1,9 +1,43 @@
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
+from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine.selection._docstring import (
+    _cv_docstring,
+    _features_to_drop_docstring,
+    _fit_docstring,
+    _initial_model_performance_docstring,
+    _scoring_docstring,
+    _threshold_docstring,
+    _transform_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
 from feature_engine.selection.base_recursive_selector import BaseRecursiveSelector
 
 
+@Substitution(
+    estimator=BaseRecursiveSelector._estimator_docstring,
+    scoring=_scoring_docstring,
+    threshold=_threshold_docstring,
+    cv=_cv_docstring,
+    variables=_variables_numerical_docstring,
+    confirm_variables=BaseRecursiveSelector._confirm_variables_docstring,
+    initial_model_performance_=_initial_model_performance_docstring,
+    feature_importances_=BaseRecursiveSelector._feature_importances_docstring,
+    performance_drifts_=BaseRecursiveSelector._performance_drifts_docstring,
+    features_to_drop_=_features_to_drop_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_docstring,
+    transform=_transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class RecursiveFeatureAddition(BaseRecursiveSelector):
     """
     RecursiveFeatureAddition() selects features following a recursive addition process.
@@ -30,75 +64,41 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
     Parameters
     ----------
-    estimator: object
-        A Scikit-learn estimator for regression or classification.
-        The estimator must have either a `feature_importances` or `coef_` attribute
-        after fitting.
+    {estimator}
 
-    variables: str or list, default=None
-        The list of variable to be evaluated. If None, the transformer will evaluate
-        all numerical features in the dataset.
+    {variables}
 
-    scoring: str, default='roc_auc'
-        Desired metric to optimise the performance of the estimator. Comes from
-        sklearn.metrics. See the model evaluation documentation for more options:
-        https://scikit-learn.org/stable/modules/model_evaluation.html
+    {scoring}
 
-    threshold: float, int, default = 0.01
-        The value that defines if a feature will be kept or removed. Note that for
-        metrics like roc-auc, r2_score and accuracy, the thresholds will be floats
-        between 0 and 1. For metrics like the mean_square_error and the
-        root_mean_square_error the threshold can be a big number.
-        The threshold must be defined by the user. Bigger thresholds will select less
-        features.
+    {threshold}
 
-    cv: int, cross-validation generator or an iterable, default=3
-        Determines the cross-validation splitting strategy. Possible inputs for cv are:
+    {cv}
 
-            - None, to use cross_validate's default 5-fold cross validation
-
-            - int, to specify the number of folds in a (Stratified)KFold,
-
-            - CV splitter
-                - (https://scikit-learn.org/stable/glossary.html#term-CV-splitter)
-
-            - An iterable yielding (train, test) splits as arrays of indices.
-
-        For int/None inputs, if the estimator is a classifier and y is either binary or
-        multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
-        splitters are instantiated with `shuffle=False` so the splits will be the same
-        across calls. For more details check Scikit-learn's `cross_validate`'s
-        documentation.
+    {confirm_variables}
 
     Attributes
     ----------
-    initial_model_performance_ :
-        Performance of the model trained using the original dataset.
+    {initial_model_performance_}
 
-    feature_importances_ :
-        Pandas Series with the feature importance (comes from step 2)
+    {feature_importances_}
 
-    performance_drifts_:
-        Dictionary with the performance drift per examined feature (comes from step 5).
+    {performance_drifts_}
 
-    features_to_drop_:
-        List with the features to remove from the dataset.
+    {features_to_drop_}
 
-    variables_:
-        The variables that will be considered for the feature selection.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
 
     Methods
     -------
-    fit:
-        Find the important features.
-    transform:
-         Reduce X to the selected features.
-    fit_transform:
-        Fit to data, then transform it.
+    {fit}
+
+    {transform}
+
+    {fit_transform}
+
     """
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
@@ -116,6 +116,9 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
         """
 
         super().fit(X, y)
+
+        # We need this line to pass the tests of the check_estimator
+        X = _is_dataframe(X)
 
         # Sort the feature importance values decreasingly
         self.feature_importances_.sort_values(ascending=False, inplace=True)
@@ -170,7 +173,6 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
             # If new performance model is
             if performance_drift > self.threshold:
-
                 # add feature to the list of selected features
                 _selected_features.append(feature)
 

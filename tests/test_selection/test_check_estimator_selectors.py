@@ -2,8 +2,11 @@ import pytest
 from sklearn.linear_model import LogisticRegression
 from sklearn.utils.estimator_checks import check_estimator
 
-from feature_engine.estimator_checks import check_feature_engine_estimator
-from feature_engine.selection import (
+from feature_engine.estimator_checks import (
+    check_confirm_variables,
+    check_feature_engine_estimator,
+)
+from feature_engine.selection import (  # SelectByTargetMeanPerformance,
     DropConstantFeatures,
     DropCorrelatedFeatures,
     DropDuplicateFeatures,
@@ -13,7 +16,6 @@ from feature_engine.selection import (
     RecursiveFeatureElimination,
     SelectByShuffling,
     SelectBySingleFeaturePerformance,
-    # SelectByTargetMeanPerformance,
     SmartCorrelatedSelection,
 )
 
@@ -35,9 +37,7 @@ _estimators = [
 ]
 
 
-# the RFA and RFE fail most tests. I think it has to do
-# with the numpy arrays used in sklearn tests.
-@pytest.mark.parametrize("estimator", _estimators[:-2])
+@pytest.mark.parametrize("estimator", _estimators)
 def test_check_estimator_from_sklearn(estimator):
     return check_estimator(estimator)
 
@@ -47,6 +47,12 @@ def test_check_estimator_from_feature_engine(estimator):
     if estimator.__class__.__name__ == "DropFeatures":
         estimator.set_params(features_to_drop=["var_1"])
     return check_feature_engine_estimator(estimator)
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_confirm_variables(estimator):
+    if estimator.__class__.__name__ != "DropFeatures":
+        return check_confirm_variables(estimator)
 
 
 @pytest.mark.parametrize("estimator", _estimators[7:10])

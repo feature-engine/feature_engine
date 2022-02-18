@@ -14,6 +14,15 @@ from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine.selection._docstring import (
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -23,6 +32,13 @@ from feature_engine.variable_manipulation import (
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
+@Substitution(
+    confirm_variables=BaseSelector._confirm_variables_docstring,
+    variables=_variables_numerical_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class DropHighPSIFeatures(BaseSelector):
     r"""
     DropHighPSIFeatures drops features which Population Stability Index (PSI) value is
@@ -145,17 +161,16 @@ class DropHighPSIFeatures(BaseSelector):
         when determining the PSI for that particular feature. If 'raise' the transformer
         will raise an error and features will not be selected.
 
-    variables: list, default=None
-        The list of variables to evaluate. If None, the transformer will evaluate all
-        numerical variables in the dataset.
+    {variables}
+
+    {confirm_variables}
 
     Attributes
     ----------
     features_to_drop_:
         List with the features that will be dropped.
 
-    variables_:
-        The variables to evaluate.
+    {variables_}
 
     psi_values_:
         Dictionary containing the PSI value per feature.
@@ -164,17 +179,17 @@ class DropHighPSIFeatures(BaseSelector):
         Value used to split the dataframe into basis and test.
         This value is computed when not given as parameter.
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Find features with high PSI values.
+
     transform:
         Remove features with high PSI values.
-    fit_transform:
-        Fit to the data. Then transform it.
+
+    {fit_transform}
 
     See Also
     --------
@@ -195,6 +210,7 @@ class DropHighPSIFeatures(BaseSelector):
         min_pct_empty_bins: float = 0.0001,
         missing_values: str = "raise",
         variables: Variables = None,
+        confirm_variables: bool = False,
     ):
 
         if not isinstance(split_col, (str, int, type(None))):
@@ -259,6 +275,8 @@ class DropHighPSIFeatures(BaseSelector):
                     f"or choose another splitting criteria."
                 )
 
+        super().__init__(confirm_variables)
+
         # Check the variables before assignment.
         self.variables = _check_input_parameter_variables(variables)
 
@@ -289,8 +307,11 @@ class DropHighPSIFeatures(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
+
         # find numerical variables or check those entered are present in the dataframe
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         # Remove the split_col from the variables list. It might be added if the
         # variables are not defined at initialization.

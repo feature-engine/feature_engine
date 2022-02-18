@@ -1,8 +1,3 @@
-_variables_numerical_docstring = """variables: list, default=None
-        The list of numerical variables to transform. If None, the transformer will
-        automatically find and select all numerical variables.
-    """.rstrip()
-
 _variables_docstring = """variables: list, default=None
         The list of categorical variables that will be encoded. If None, the
         encoder will find and transform all variables of type object or categorical by

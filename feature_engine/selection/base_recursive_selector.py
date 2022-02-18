@@ -60,12 +60,17 @@ class BaseRecursiveSelector(BaseSelector):
         across calls. For more details check Scikit-learn's `cross_validate`'s
         documentation.
 
+    confirm_variables: bool, default=False
+        If set to True, variables that are not present in the input dataframe will be
+        removed from the list of variables. Only used when passing a variable list to
+        the parameter `variables`. See parameter variables for more details.
+
     Attributes
     ----------
-    initial_model_performance_ :
+    initial_model_performance_:
         Performance of the model trained using the original dataset.
 
-    feature_importances_ :
+    feature_importances_:
         Pandas Series with the feature importance (comes from step 2)
 
     performance_drifts_:
@@ -86,6 +91,20 @@ class BaseRecursiveSelector(BaseSelector):
         Find the important features.
     """
 
+    _estimator_docstring = """estimator: object
+        A Scikit-learn estimator for regression or classification.
+        The estimator must have either a `feature_importances` or a `coef_` attribute
+        after fitting.
+        """.rstrip()
+
+    _feature_importances_docstring = """feature_importances_:
+        Pandas Series with the feature importance (comes from step 2)
+        """.rstrip()
+
+    _performance_drifts_docstring = """performance_drifts_:
+        Dictionary with the performance drift per examined feature (comes from step 5).
+        """.rstrip()
+
     def __init__(
         self,
         estimator,
@@ -93,11 +112,13 @@ class BaseRecursiveSelector(BaseSelector):
         cv=3,
         threshold: Union[int, float] = 0.01,
         variables: Variables = None,
+        confirm_variables: bool = False,
     ):
 
         if not isinstance(threshold, (int, float)):
             raise ValueError("threshold can only be integer or float")
 
+        super().__init__(confirm_variables)
         self.variables = _check_input_parameter_variables(variables)
         self.estimator = estimator
         self.scoring = scoring
@@ -120,8 +141,11 @@ class BaseRecursiveSelector(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
+
         # find numerical variables or check variables entered by user
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         # train model with all features and cross-validation
         model = cross_validate(
@@ -164,4 +188,5 @@ class BaseRecursiveSelector(BaseSelector):
         tags_dict["_xfail_checks"][
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
         return tags_dict

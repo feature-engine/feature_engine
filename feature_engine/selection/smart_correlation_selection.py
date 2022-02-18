@@ -8,6 +8,19 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     _is_dataframe,
 )
+from feature_engine.docstrings import (
+    Substitution,
+    _fit_transform_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine.selection._docstring import (
+    _cv_docstring,
+    _estimator_docstring,
+    _missing_values_docstring,
+    _scoring_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -17,6 +30,17 @@ from feature_engine.variable_manipulation import (
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
+@Substitution(
+    estimator=_estimator_docstring,
+    scoring=_scoring_docstring,
+    cv=_cv_docstring,
+    confirm_variables=BaseSelector._confirm_variables_docstring,
+    variables=_variables_numerical_docstring,
+    missing_values=_missing_values_docstring,
+    variables_=_variables_attribute_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class SmartCorrelatedSelection(BaseSelector):
     """
     SmartCorrelatedSelection() finds groups of correlated features and then selects,
@@ -41,9 +65,7 @@ class SmartCorrelatedSelection(BaseSelector):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of variables to evaluate. If None, the transformer will evaluate all
-        numerical variables in the dataset.
+    {variables}
 
     method: string or callable, default='pearson'
         Can take 'pearson', 'spearman', 'kendall' or callable. It refers to the
@@ -60,9 +82,7 @@ class SmartCorrelatedSelection(BaseSelector):
         The correlation threshold above which a feature will be deemed correlated with
         another one and removed from the dataset.
 
-    missing_values: str, default=ignore
-        Takes values 'raise' and 'ignore'. Whether the missing values should be raised
-        as error or ignored when determining correlation.
+    {missing_values}
 
     selection_method: str, default= "missing_values"
         Takes the values "missing_values", "cardinality", "variance" and
@@ -80,54 +100,35 @@ class SmartCorrelatedSelection(BaseSelector):
         **"model_performance"**: trains a machine learning model using the correlated
         feature group and retains the feature with the highest importance.
 
-    estimator: object, default = None
-        A Scikit-learn estimator for regression or classification.
+    {estimator}
 
-    scoring: str, default='roc_auc'
-        Desired metric to optimise the performance of the estimator. Comes from
-        sklearn.metrics. See the model evaluation documentation for more options:
-        https://scikit-learn.org/stable/modules/model_evaluation.html
+    {scoring}
 
-    cv: int, cross-validation generator or an iterable, default=3
-        Determines the cross-validation splitting strategy. Possible inputs for cv are:
+    {cv}
 
-            - None, to use cross_validate's default 5-fold cross validation
-
-            - int, to specify the number of folds in a (Stratified)KFold,
-
-            - CV splitter
-                - (https://scikit-learn.org/stable/glossary.html#term-CV-splitter)
-
-            - An iterable yielding (train, test) splits as arrays of indices.
-
-        For int/None inputs, if the estimator is a classifier and y is either binary or
-        multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
-        splitters are instantiated with `shuffle=False` so the splits will be the same
-        across calls. For more details check Scikit-learn's `cross_validate`'s
-        documentation.
+    {confirm_variables}
 
     Attributes
     ----------
     correlated_feature_sets_:
-        Groups of correlated features.  Each list is a group of correlated features.
+        Groups of correlated features. Each list is a group of correlated features.
 
     features_to_drop_:
         The correlated features to remove from the dataset.
 
-    variables_:
-        The variables that will be considered for the feature selection.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {n_features_in_}
 
     Methods
     -------
     fit:
-        Find best feature from each correlated groups.
+        Find best feature from each correlated group.
+
     transform:
         Return selected features.
-    fit_transform:
-        Fit to the data. Then transform it.
+
+    {fit_transform}
 
     Notes
     -----
@@ -150,6 +151,7 @@ class SmartCorrelatedSelection(BaseSelector):
         estimator=None,
         scoring: str = "roc_auc",
         cv=3,
+        confirm_variables: bool = False,
     ):
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError("threshold must be a float between 0 and 1")
@@ -182,6 +184,8 @@ class SmartCorrelatedSelection(BaseSelector):
                 "with NaN by setting missing_values to 'ignore."
             )
 
+        super().__init__(confirm_variables)
+
         self.variables = _check_input_parameter_variables(variables)
         self.method = method
         self.threshold = threshold
@@ -208,8 +212,11 @@ class SmartCorrelatedSelection(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
+
         # find all numerical variables or check those entered are in the dataframe
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         if self.missing_values == "raise":
             # check if dataset contains na
