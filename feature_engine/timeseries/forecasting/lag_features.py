@@ -173,7 +173,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
                 "Only dataframes with complete indexes are compatible with "
                 "this transformer."
             )
-            
+
         # Check that the index contains unique values.
         if X.index.is_unique is False:
             raise NotImplementedError(
@@ -227,7 +227,7 @@ class LagFeatures(BaseEstimator, TransformerMixin):
                 "Only dataframes with complete indexes are compatible with "
                 "this transformer."
             )
-            
+
         # Check that the index contains unique values.
         if X.index.is_unique is False:
             raise NotImplementedError(
