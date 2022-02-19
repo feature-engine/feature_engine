@@ -33,7 +33,6 @@ _CREATORS = [
     # 'FeatureHasher',
     "OneHotEncoder",
     "PolynomialFeatures",
-    "MissingIndicator",
 ]
 
 _TRANSFORMERS = [
@@ -59,12 +58,30 @@ _TRANSFORMERS = [
 
 _ALL_TRANSFORMERS = _SELECTORS + _CREATORS + _TRANSFORMERS
 
+_INVERSE_TRANSFORM = [
+    "PowerTransformer",
+    "QuantileTransformer",
+    "OrdinalEncoder",
+    "MaxAbsScaler",
+    "MinMaxScaler",
+    "StandardScaler",
+    "RobustScaler",
+]
+
 
 class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
+
     """
     Wrapper to apply Scikit-learn transformers to a selected group of variables. It
-    works with transformers like the SimpleImputer, OrdinalEncoder, OneHotEncoder, all
-    the scalers and also the transformers for feature selection.
+    supports the following transformers:
+
+    - Binarizer and KBinsDiscretizer (only when encoding=Ordinal)
+    - FunctionTransformer, PowerTransformer and QuantileTransformer
+    - SimpleImputer, IterativeImputer and KNNImputer (only when add_indicators=False)
+    - OrdinalEncoder and OneHotEncoder (only when sparse is False)
+    - MaxAbsScaler, MinMaxScaler, StandardScaler, RobustScaler, Normalizer
+    - All selection transformers including VarianceThreshold
+    - PolynomialFeautures
 
     More details in the :ref:`User Guide <sklearn_wrapper>`.
 
@@ -87,6 +104,10 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     variables_:
         The group of variables that will be transformed.
 
+    features_to_drop_:
+        The variables that will be dropped. Only present when using selection
+        transformers
+
     feature_names_in_:
         List with the names of features seen during `fit`.
 
@@ -96,10 +117,10 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     Methods
     -------
     fit:
-        Fit Scikit-learn transformer
+        Fit Scikit-learn transformer.
 
     transform:
-        Transform data with the Scikit-learn transformer
+        Transform data with the Scikit-learn transformer.
 
     fit_transform:
         Fit to data, then transform it.
@@ -108,7 +129,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     -----
     This transformer offers similar functionality to the ColumnTransformer from
     Scikit-learn, but it allows entering the transformations directly into a
-    Pipeline.
+    Pipeline and returns pandas dataframes.
 
     See Also
     --------
@@ -124,13 +145,32 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         if not issubclass(transformer.__class__, TransformerMixin):
             raise TypeError(
                 "transformer expected a Scikit-learn transformer. "
-                f"got {transformer} instead."
+                f"got {transformer} instead. "
             )
 
         if transformer.__class__.__name__ not in _ALL_TRANSFORMERS:
             raise NotImplementedError(
                 "This transformer is not compatible with the wrapper. "
                 "Supported transformers are {}.".format(", ".join(_ALL_TRANSFORMERS))
+            )
+
+        if (
+            transformer.__class__.__name__
+            in ["SimpleImputer", "KNNImputer", "IterativeImputer"]
+            and transformer.add_indicator is True
+        ):
+            raise NotImplementedError(
+                "The imputer is only compatible with the wrapper when the "
+                "parameter `add_indicator` is False. "
+            )
+
+        if (
+            transformer.__class__.__name__ == "KBinsDiscretizer"
+            and transformer.encode != "ordinal"
+        ):
+            raise NotImplementedError(
+                "The KBinsDiscretizer is only compatible with the wrapper when the "
+                "parameter `encode` is `ordinal`. "
             )
 
         self.transformer = transformer
@@ -158,7 +198,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             self.transformer_.__class__.__name__ == "OneHotEncoder"
             and self.transformer_.sparse
         ):
-            raise AttributeError(
+            raise NotImplementedError(
                 "The SklearnTransformerWrapper can only wrap the OneHotEncoder if you "
                 "set its sparse attribute to False."
             )
@@ -167,7 +207,6 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             "OneHotEncoder",
             "OrdinalEncoder",
             "SimpleImputer",
-            "MissingIndicator",
         ]:
             self.variables_ = _find_all_variables(X, self.variables)
 
@@ -175,6 +214,11 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         self.transformer_.fit(X[self.variables_], y)
+
+        if self.transformer_.__class__.__name__ in _SELECTORS:
+            # Find features to drop.
+            selected = X[self.variables_].columns[self.transformer_.get_support()]
+            self.features_to_drop_ = [f for f in self.variables_ if f not in selected]
 
         # save input features
         self.feature_names_in_ = X.columns.tolist()
@@ -188,17 +232,19 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         Apply the transformation to the dataframe. Only the selected variables will be
         modified.
 
-        **Note**
+        If the Scikit-learn transformer is the OneHotEncoder or the  PolynomialFeatures,
+        the new features will be concatenated to the input dataset.
 
-        If the Scikit-learn transformer is the OneHotEncoder, the dummy features will
-        be concatenated to the input dataset. Note that the original categorical
-        variables will not be removed from the dataset after encoding. If this is the
-        desired effect, please use Feature-engine's OneHotEncoder instead.
+        If the Scikit-learn transformer is for feature selection, the non-selected
+        features will be dropped from the dataframe.
+
+        For all other transformers, the original variables will be replaced by the
+        transformed ones.
 
         Parameters
         ----------
         X: Pandas DataFrame
-            The data to transform
+            The data to transform.
 
         Returns
         -------
@@ -218,8 +264,11 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         # reorder df to match train set
         X = X[self.feature_names_in_]
 
-        # Transformers that add features
-        if self.transformer_.__class__.__name__ in _CREATORS:
+        # Transformers that add features: creators
+        if self.transformer_.__class__.__name__ in [
+            "OneHotEncoder",
+            "PolynomialFeatures",
+        ]:
             new_features_df = pd.DataFrame(
                 data=self.transformer_.transform(X[self.variables_]),
                 columns=self.transformer_.get_feature_names_out(self.variables_),
@@ -227,27 +276,28 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
             X = pd.concat([X, new_features_df], axis=1)
 
-        # Feature selection
+        # Feature selection: transformers that remove features
         elif self.transformer_.__class__.__name__ in _SELECTORS:
 
-            # the variables that will be dropped
-            features_to_drop = [
-                f
-                for f in self.variables_
-                if f not in self.transformer_.get_feature_names_out()
-            ]
-
             # return the dataframe with the selected features
-            X.drop(columns=features_to_drop)
+            X.drop(columns=self.features_to_drop_, inplace=True)
 
+        # Transformers that modify existing features
         else:
             X[self.variables_] = self.transformer_.transform(X[self.variables_])
 
         return X
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Convert the encoded variable back to the original values. Only
-        works if the Scikit-learn transformer has the method implemented.
+        """Convert the transformed variables back to the original values. Only
+        implemented for the following Scikit-learn transformers:
+
+        PowerTransformer, QuantileTransformer, OrdinalEncoder,
+        MaxAbsScaler, MinMaxScaler, StandardScaler, RobustScaler.
+
+        If you would like this method implemented for additional transformers,
+        please check if they have the inverse_transform method in Scikit-learn and then
+        raise an issue in our repo.
 
         Parameters
         ----------
@@ -257,8 +307,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         Returns
         -------
         X_tr: pandas dataframe of shape = [n_samples, n_features].
-            The un-transformed dataframe, with the categorical variables containing the
-            original values.
+            The dataframe with the original values.
         """
         # Check method fit has been called
         check_is_fitted(self)
@@ -266,10 +315,18 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         # check that input is a dataframe
         X = _is_dataframe(X)
 
+        if self.transformer_.__class__.__name__ not in _INVERSE_TRANSFORM:
+            raise NotImplementedError(
+                "The method `inverse_transform` is not implemented for this "
+                "transformer. Supported transformers are {}.".format(
+                    ", ".join(_INVERSE_TRANSFORM)
+                )
+            )
+        # For safety, we check that the transformer has the method implemented.
         if hasattr(self.transformer_, "inverse_transform") and callable(
             self.transformer_.inverse_transform
         ):
-            X = self.transformer_.inverse_transform(X)
+            X[self.variables_] = self.transformer_.inverse_transform(X[self.variables_])
         else:
             raise NotImplementedError(
                 "This Scikit-learn transformer does not have the method "
@@ -277,9 +334,8 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
         return X
 
-    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
-        """Get output feature names for transformation. Only works if the Scikit-learn
-        transformer has the method implemented.
+    def get_feature_names_out(self) -> List:
+        """Get output feature names for transformation.
 
         Returns
         -------
@@ -289,15 +345,19 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         # Check method fit has been called
         check_is_fitted(self)
 
-        if hasattr(self.transformer_, "get_feature_names_out") and callable(
-            self.transformer_.get_feature_names_out
-        ):
-            return self.transformer_.get_feature_names_out(input_features)
-        else:
-            raise NotImplementedError(
-                "This Scikit-learn transformer does not have the method "
-                "`get_feature_names_out` implemented."
-            )
+        if self.transformer_.__class__.__name__ in _TRANSFORMERS:
+            feature_names = self.feature_names_in_
+
+        if self.transformer_.__class__.__name__ in _CREATORS:
+            added_features = self.transformer_.get_feature_names_out(self.variables_)
+            feature_names = self.feature_names_in_ + added_features
+
+        if self.transformer_.__class__.__name__ in _SELECTORS:
+            feature_names = [
+                f for f in self.feature_names_in_ if f not in self.features_to_drop_
+            ]
+
+        return feature_names
 
     def _more_tags(self):
         tags_dict = _return_tags()
