@@ -132,8 +132,8 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
 
 
 def _check_for_X_y_index_mismatch(
-        X: Union[pd.DataFrame, pd.Series, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    X: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y: Union[pd.DataFrame, pd.Series, np.ndarray],
 ):
     """
     Handles the following case:
@@ -160,7 +160,9 @@ def _check_for_X_y_index_mismatch(
         If the mismatch conditions described above have been met, returns a copy of
         the original parameter, with index set to y's index. Else, returns original parameter value unaffected.
     """
-    is_pd_X_and_y: bool = all([(type(i) == pd.DataFrame or type(i) == pd.Series) for i in (X, y)])
+    is_pd_X_and_y: bool = all(
+        [(type(i) == pd.DataFrame or type(i) == pd.Series) for i in (X, y)]
+    )
     if is_pd_X_and_y and any(X.index != y.index):
         X = X.copy()
         X.index = y.index

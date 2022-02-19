@@ -2,21 +2,17 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
-
-from feature_engine.encoding import (
-    MeanEncoder,
-    WoEEncoder,
-    PRatioEncoder,
-)
-
 from sklearn.impute import SimpleImputer
+
+from feature_engine.encoding import MeanEncoder, PRatioEncoder, WoEEncoder
 
 
 @pytest.mark.parametrize(
     # Encoders that encode X as a function of y; this is what
     # breaks down when X becomes an array and indexes don't accidentally match in final
     # concantenation
-    "encoder", [MeanEncoder(), WoEEncoder(), PRatioEncoder()]
+    "encoder",
+    [MeanEncoder(), WoEEncoder(), PRatioEncoder()],
 )
 def test_fix_index_mismatch_from_upstream_array(encoder):
     """
@@ -26,10 +22,12 @@ def test_fix_index_mismatch_from_upstream_array(encoder):
 
     # test dataframe; setup for a transfromation where
     # coded version of 'x' will be a function of target 'y'
-    df: pd.DataFrame = pd.DataFrame({
-        'x': ['a', 'a', 'b', 'b', 'c', 'c'],
-        'y': [1, 0, 1, 0, 1, 0],
-    })
+    df: pd.DataFrame = pd.DataFrame(
+        {
+            "x": ["a", "a", "b", "b", "c", "c"],
+            "y": [1, 0, 1, 0, 1, 0],
+        }
+    )
     # Key - "non-standard" index that is not the usual
     # contiguous range starting a t 0
     df.index = [101, 105, 42, 76, 88, 92]
