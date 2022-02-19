@@ -33,11 +33,30 @@ from feature_engine.selection import DropFeatures
 from feature_engine.wrappers import SklearnTransformerWrapper
 
 
+_transformers = [
+    Binarizer(threshold=2),
+    KBinsDiscretizer(n_bins=3, encode="ordinal"),
+    StandardScaler(),
+    MinMaxScaler(),
+    Normalizer(),
+    PowerTransformer(),
+    FunctionTransformer(np.log, validate=True),
+    OrdinalEncoder(),
+]
+
+_selectors = [
+    SelectFromModel(Lasso(random_state=1)),
+    SelectKBest(f_regression, k=2),
+    VarianceThreshold(),
+    RFE(Lasso(random_state=1)),
+]
+
+
 @pytest.mark.parametrize(
     "transformer",
     [
         SimpleImputer(),
-        OneHotEncoder(),
+        OneHotEncoder(sparse=False),
         StandardScaler(),
         SelectKBest(),
     ],
@@ -61,6 +80,7 @@ def test_error_when_transformer_is_estimator(transformer, df_na):
         MissingIndicator(),
         KBinsDiscretizer(encode="one_hot"),
         SimpleImputer(add_indicator=True),
+        OneHotEncoder(sparse=True),
     ],
 )
 def test_error_not_implemented_transformer(transformer, df_na):
@@ -68,15 +88,7 @@ def test_error_not_implemented_transformer(transformer, df_na):
         SklearnTransformerWrapper(transformer=transformer)
 
 
-@pytest.mark.parametrize(
-    "transformer",
-    [
-        SelectFromModel(Lasso(random_state=1)),
-        SelectKBest(f_regression, k=2),
-        VarianceThreshold(),
-        RFE(Lasso(random_state=1)),
-    ],
-)
+@pytest.mark.parametrize("transformer", _selectors)
 def test_wrap_selectors(transformer):
     # load data
     X = fetch_california_housing(as_frame=True).frame
@@ -114,19 +126,7 @@ def test_wrap_selectors(transformer):
     pd.testing.assert_frame_equal(Xt, Xw)
 
 
-@pytest.mark.parametrize(
-    "transformer",
-    [
-        Binarizer(threshold=2),
-        KBinsDiscretizer(n_bins=3, encode="ordinal"),
-        StandardScaler(),
-        MinMaxScaler(),
-        Normalizer(),
-        PowerTransformer(),
-        FunctionTransformer(np.log, validate=True),
-        OrdinalEncoder(),
-    ],
-)
+@pytest.mark.parametrize("transformer", _transformers)
 def test_wrap_transformers(transformer):
     # load data
     X = fetch_california_housing(as_frame=True).frame
@@ -282,11 +282,6 @@ def test_sklearn_ohe_object_one_feature(df_vartypes):
 
     transformed_df = transformer.fit_transform(df_vartypes[variables_to_encode])
 
-    # init params
-    assert isinstance(transformer.transformer, OneHotEncoder)
-    assert transformer.variables == variables_to_encode
-    # fit params
-    assert transformer.n_features_in_ == 1
     pd.testing.assert_frame_equal(ref, transformed_df)
 
 
@@ -315,11 +310,6 @@ def test_sklearn_ohe_object_many_features(df_vartypes):
 
     transformed_df = transformer.fit_transform(df_vartypes[variables_to_encode])
 
-    # init params
-    assert isinstance(transformer.transformer, OneHotEncoder)
-    assert transformer.variables == variables_to_encode
-    # fit params
-    assert transformer.n_features_in_ == 2
     pd.testing.assert_frame_equal(ref, transformed_df)
 
 
@@ -343,11 +333,6 @@ def test_sklearn_ohe_numeric(df_vartypes):
 
     transformed_df = transformer.fit_transform(df_vartypes[variables_to_encode])
 
-    # init params
-    assert isinstance(transformer.transformer, OneHotEncoder)
-    assert transformer.variables == variables_to_encode
-    # fit params
-    assert transformer.n_features_in_ == 1
     pd.testing.assert_frame_equal(ref, transformed_df)
 
 
@@ -388,18 +373,7 @@ def test_sklearn_ohe_all_features(df_vartypes):
 
     transformed_df = transformer.fit_transform(df_vartypes)
 
-    # init params
-    assert isinstance(transformer.transformer, OneHotEncoder)
-    # fit params
-    assert transformer.n_features_in_ == 5
     pd.testing.assert_frame_equal(ref, transformed_df)
-
-
-def test_sklearn_ohe_errors(df_vartypes):
-    with pytest.raises(NotImplementedError):
-        SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=True)).fit(
-            df_vartypes
-        )
 
 
 def test_sklearn_ohe_with_crossvalidation():
@@ -467,9 +441,14 @@ def test_inverse_transform(transformer):
 
     pd.testing.assert_frame_equal(X_inv, X)
 
+
 @pytest.mark.parametrize(
     "transformer",
-    [OneHotEncoder(sparse=False), SelectKBest(), PolynomialFeatures(), SimpleImputer()],
+    [
+        SelectKBest(f_regression, k=2),
+        PolynomialFeatures(),
+        SimpleImputer(),
+    ],
 )
 def test_error_when_inverse_transform_not_implemented(transformer):
     X = fetch_california_housing(as_frame=True).frame
@@ -484,5 +463,53 @@ def test_error_when_inverse_transform_not_implemented(transformer):
         tr_wrap.inverse_transform(X_tr)
 
 
-def test_get_feature_names_out():
-    pass
+@pytest.mark.parametrize(
+    "varlist", [["MedInc", "HouseAge", "AveRooms", "AveBedrms"], None]
+)
+@pytest.mark.parametrize("transformer", _transformers)
+def test_get_feature_names_out_transformers(varlist, transformer):
+
+    X = fetch_california_housing(as_frame=True).frame
+    tr_wrap = SklearnTransformerWrapper(transformer=transformer, variables=varlist)
+    Xw = tr_wrap.fit_transform(X)
+
+    assert Xw.columns.to_list() == tr_wrap.get_feature_names_out()
+
+
+@pytest.mark.parametrize(
+    "varlist", [["MedInc", "HouseAge", "AveRooms", "AveBedrms"], None]
+)
+@pytest.mark.parametrize("transformer", _selectors)
+def test_get_feature_names_out_selectors(varlist, transformer):
+    X = fetch_california_housing(as_frame=True).frame
+    y = X["MedHouseVal"]
+    X = X.drop(["MedHouseVal"], axis=1)
+    tr_wrap = SklearnTransformerWrapper(transformer=transformer, variables=varlist)
+    Xw = tr_wrap.fit_transform(X, y)
+
+    assert Xw.columns.to_list() == tr_wrap.get_feature_names_out()
+
+
+@pytest.mark.parametrize(
+    "varlist", [["MedInc", "HouseAge", "AveRooms", "AveBedrms"], None]
+)
+def test_get_feature_names_out_polynomialfeatures(varlist):
+    X = fetch_california_housing(as_frame=True).frame
+    tr_wrap = SklearnTransformerWrapper(
+        transformer=PolynomialFeatures(), variables=varlist
+    )
+    Xw = tr_wrap.fit_transform(X)
+    assert Xw.columns.tolist() == tr_wrap.get_feature_names_out()
+
+
+@pytest.mark.parametrize("varlist", [["Name", "City"], None])
+def test_get_feature_names_out_ohe(varlist, df_vartypes):
+
+    transformer = SklearnTransformerWrapper(
+        transformer=OneHotEncoder(sparse=False, dtype=np.int64),
+        variables=varlist,
+    )
+
+    df_tr = transformer.fit_transform(df_vartypes)
+
+    assert df_tr.columns.to_list() == transformer.get_feature_names_out()

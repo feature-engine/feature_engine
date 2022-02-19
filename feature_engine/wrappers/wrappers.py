@@ -173,6 +173,15 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
                 "parameter `encode` is `ordinal`. "
             )
 
+        if (
+            transformer.__class__.__name__ == "OneHotEncoder"
+            and transformer.sparse is True
+        ):
+            raise NotImplementedError(
+                "The SklearnTransformerWrapper can only wrap the OneHotEncoder if you "
+                "set its sparse attribute to False."
+            )
+
         self.transformer = transformer
         self.variables = _check_input_parameter_variables(variables)
 
@@ -193,15 +202,6 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         self.transformer_ = clone(self.transformer)
-
-        if (
-            self.transformer_.__class__.__name__ == "OneHotEncoder"
-            and self.transformer_.sparse
-        ):
-            raise NotImplementedError(
-                "The SklearnTransformerWrapper can only wrap the OneHotEncoder if you "
-                "set its sparse attribute to False."
-            )
 
         if self.transformer_.__class__.__name__ in [
             "OneHotEncoder",
@@ -350,7 +350,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         if self.transformer_.__class__.__name__ in _CREATORS:
             added_features = self.transformer_.get_feature_names_out(self.variables_)
-            feature_names = self.feature_names_in_ + added_features
+            feature_names = list(self.feature_names_in_) + list(added_features)
 
         if self.transformer_.__class__.__name__ in _SELECTORS:
             feature_names = [
