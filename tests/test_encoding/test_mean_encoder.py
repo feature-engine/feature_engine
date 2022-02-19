@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from feature_engine.encoding import MeanEncoder, OrdinalEncoder
+from feature_engine.encoding import MeanEncoder
 
 
 def test_user_enters_1_variable(df_enc):

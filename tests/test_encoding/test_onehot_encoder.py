@@ -470,4 +470,3 @@ def test_get_feature_names_out(df_enc_binary):
 
     with pytest.raises(ValueError):
         tr.get_feature_names_out(["var_A", "hola"])
-
