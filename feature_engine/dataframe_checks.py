@@ -129,3 +129,40 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
             "Some of the variables to transform contain inf values. Check and "
             "remove those before using this transformer."
         )
+
+
+def _check_for_X_y_index_mismatch(
+        X: Union[pd.DataFrame, pd.Series, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray]
+):
+    """
+    Handles the following case:
+    1) X and y came from a DataFrame whose index was not the standard contiguous 0-n
+    2) Earlier on, X was affected by an sklearn transform, turning it into an array and losing its different index
+    3) X enters a feature-engine transformer and becomes a DataFrame again via _is_dataframe()
+    4) X and y now have different indexes
+    This function checks for this case; if it is met, it will return a copy of X with its index replaced with the
+    correct index from y. It will not make any changes if either X or y is not a pandas object, or of course if there
+    is no index mismatch.
+    This case was first detected in issue #376.
+
+    Parameters
+    ----------
+    X: Pandas DataFrame, Series, or numpy ndarray
+        In all likelihood will be DataFrame, due to this method usually being called with the
+        output of _is_dataframe(). Will not make any changes if X is not a DataFrame or Series.
+    y: Pandas DataFrame, Series, or numpy ndarray
+        In all likelihood will be a Series. Will not make any changes if X is not a DataFrame or Series.
+
+    Returns
+    -------
+    X: same type as parameter X.
+        If the mismatch conditions described above have been met, returns a copy of
+        the original parameter, with index set to y's index. Else, returns original parameter value unaffected.
+    """
+    is_pd_X_and_y: bool = all([(type(i) == pd.DataFrame or type(i) == pd.Series) for i in (X, y)])
+    if is_pd_X_and_y and any(X.index != y.index):
+        X = X.copy()
+        X.index = y.index
+
+    return X
