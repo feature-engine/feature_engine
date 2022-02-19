@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 from sklearn.impute import SimpleImputer
 
 from feature_engine.encoding import MeanEncoder, PRatioEncoder, WoEEncoder
@@ -17,7 +16,8 @@ from feature_engine.encoding import MeanEncoder, PRatioEncoder, WoEEncoder
 def test_fix_index_mismatch_from_upstream_array(encoder):
     """
     Created 2022-02-19 to test fix to issue # 376
-    Code adapted from: https://github.com/scikit-learn-contrib/category_encoders/issues/280
+    Code adapted from:
+    https://github.com/scikit-learn-contrib/category_encoders/issues/280
     """
 
     # test dataframe; setup for a transfromation where
