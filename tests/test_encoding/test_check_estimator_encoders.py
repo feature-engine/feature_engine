@@ -58,7 +58,10 @@ def test_all_transformers(Estimator):
     # breaks down when X becomes an array and indexes don't accidentally match in final
     # concantenation
     "encoder",
-    [MeanEncoder(), WoEEncoder(), PRatioEncoder()],
+    [
+        MeanEncoder(), WoEEncoder(), PRatioEncoder(),
+        OrdinalEncoder(encoding_method="ordered"), DecisionTreeEncoder()
+    ],
 )
 def test_fix_index_mismatch_from_upstream_array(encoder):
     """
