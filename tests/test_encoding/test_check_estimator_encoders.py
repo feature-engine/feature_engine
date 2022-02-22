@@ -1,7 +1,6 @@
 import pytest
 import pandas as pd
 import numpy as np
-from sklearn.impute import SimpleImputer
 from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.encoding import (
