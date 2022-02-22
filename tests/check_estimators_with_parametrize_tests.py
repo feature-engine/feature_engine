@@ -39,6 +39,7 @@ from feature_engine.selection import (
     SelectByTargetMeanPerformance,
     SmartCorrelatedSelection,
 )
+from feature_engine.timeseries.forecasting import LagFeatures
 from feature_engine.transformation import (
     BoxCoxTransformer,
     LogTransformer,
@@ -144,4 +145,10 @@ def test_sklearn_compatible_selectors(estimator, check):
 # wrappers
 @parametrize_with_checks([SklearnTransformerWrapper(SimpleImputer())])
 def test_sklearn_compatible_wrapper(estimator, check):
+    check(estimator)
+
+
+# test_forecasting
+@parametrize_with_checks([LagFeatures(missing_values="ignore")])
+def test_sklearn_compatible_forecasters(estimator, check):
     check(estimator)

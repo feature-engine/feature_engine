@@ -1,7 +1,7 @@
 .. -*- mode: rst -*-
 
-Variable Discretisation
-=======================
+Discretisation
+==============
 
 Feature-engine's variable discretisation transformers transform continuous numerical
 variables into discrete variables. The discrete variables will contain contiguous
