@@ -61,6 +61,7 @@ def check_feature_engine_estimator(estimator):
     if hasattr(estimator, "drop_original"):
         check_drop_original_variables(estimator)
 
+
 # ======  Common setting errors ======
 def check_raises_non_fitted_error(estimator):
     X, y = test_df()
