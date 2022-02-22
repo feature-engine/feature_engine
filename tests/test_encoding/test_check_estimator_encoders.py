@@ -55,18 +55,18 @@ def test_all_transformers(Estimator):
 
 @pytest.mark.parametrize(
     # Encoders that encode X as a function of y; this is what
-    # breaks down when X becomes an array and indexes don't accidentally match in final
-    # concantenation
-    "encoder",
+    # breaks down when X becomes an array and indexes don't
+    # accidentally match in final concantenation
+    "encoder, y_vals",
     [
-        MeanEncoder(),
-        WoEEncoder(),
-        PRatioEncoder(),
-        OrdinalEncoder(encoding_method="ordered"),
-        DecisionTreeEncoder(),
+        (MeanEncoder(), [1, 0, 1, 0, 1, 0]),
+        (WoEEncoder(), [1, 0, 1, 0, 1, 0]),
+        (PRatioEncoder(), [1, 0, 1, 0, 1, 0]),
+        (OrdinalEncoder(encoding_method="ordered"), [1, 0, 1, 0, 1, 0]),
+        (DecisionTreeEncoder(), [21, 30, 21, 30, 51, 40]),
     ],
 )
-def test_fix_index_mismatch_from_upstream_array(encoder):
+def test_fix_index_mismatch_from_upstream_array(encoder, y_vals):
     """
     Created 2022-02-19 to test fix to issue # 376
     Code adapted from:
@@ -78,7 +78,7 @@ def test_fix_index_mismatch_from_upstream_array(encoder):
     df: pd.DataFrame = pd.DataFrame(
         {
             "x": ["a", "a", "b", "b", "c", "c"],
-            "y": [1, 0, 1, 0, 1, 0],
+            "y": y_vals,
         }
     )
     # Key - "non-standard" index that is not the usual
