@@ -84,19 +84,7 @@ def test_fix_index_mismatch_from_upstream_array(encoder):
     X: pd.DataFrame = df[["x"]]
     y: pd.Series = df["y"]
 
-    # Will serve as a no-op whose chief purpose is to turn the
-    # X into an np.ndarray
-    si = SimpleImputer(strategy="constant", fill_value="a")
-
-    # Sequence leading to issue:
-    # 1) X becomes an array
-    assert type(X) == pd.DataFrame
-    X_2: np.array = si.fit_transform(X)
-    assert type(X_2) == np.ndarray
-
-    # 2) Encoder encodes as function of X, y
+    # Test issue fix where X becomes array, y remains Series with original DataFrame index
+    X_2: np.ndarray = X.to_numpy()
     df_result: pd.DataFrame = encoder.fit_transform(X_2, y)
-    assert type(df_result) == pd.DataFrame
-
-    # Assertion fails: breakdown in index matches causes results to be all nan
     assert all(df_result.iloc[:, 0].notnull())
