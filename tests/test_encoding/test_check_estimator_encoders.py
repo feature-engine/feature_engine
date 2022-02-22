@@ -1,6 +1,6 @@
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.encoding import (
@@ -59,8 +59,11 @@ def test_all_transformers(Estimator):
     # concantenation
     "encoder",
     [
-        MeanEncoder(), WoEEncoder(), PRatioEncoder(),
-        OrdinalEncoder(encoding_method="ordered"), DecisionTreeEncoder()
+        MeanEncoder(),
+        WoEEncoder(),
+        PRatioEncoder(),
+        OrdinalEncoder(encoding_method="ordered"),
+        DecisionTreeEncoder(),
     ],
 )
 def test_fix_index_mismatch_from_upstream_array(encoder):
@@ -86,7 +89,8 @@ def test_fix_index_mismatch_from_upstream_array(encoder):
     X: pd.DataFrame = df[["x"]]
     y: pd.Series = df["y"]
 
-    # Test issue fix where X becomes array, y remains Series with original DataFrame index
+    # Test issue fix where X becomes array,
+    # y remains Series with original DataFrame index
     X_2: np.ndarray = X.to_numpy()
     df_result: pd.DataFrame = encoder.fit_transform(X_2, y)
     assert all(df_result.iloc[:, 0].notnull())
