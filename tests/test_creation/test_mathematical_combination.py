@@ -353,3 +353,19 @@ def test_drop_original_variables(df_vartypes):
     )
 
     pd.testing.assert_frame_equal(X, ref)
+
+
+@pytest.mark.parametrize("_varnames", [None, ["var1", "var2"]])
+@pytest.mark.parametrize("_drop", [True, False])
+def test_get_feature_names_out(_varnames, _drop, df_vartypes):
+    transformer = MathematicalCombination(
+        variables_to_combine=["Age", "Marks"],
+        math_operations=["sum", "mean"],
+        new_variables_names=_varnames,
+        drop_original=_drop,
+    )
+
+    X = transformer.fit_transform(df_vartypes)
+    assert list(X.columns) == transformer.get_feature_names_out()
+
+

@@ -2,6 +2,7 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.creation._docstring import (
@@ -10,6 +11,7 @@ from feature_engine.creation._docstring import (
 )
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
@@ -22,6 +24,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
     variables=_variables_numerical_docstring,
     drop_original=_drop_original_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     transform=_transform_docstring,
     fit_transform=_fit_transform_docstring,
@@ -61,6 +64,8 @@ class CyclicalTransformer(BaseNumericalTransformer):
         The maximum value of the cyclical feature.
 
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -117,7 +122,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X = super()._fit_from_varlist(X)
 
         if self.max_values is None:
             self.max_values_ = X[self.variables_].max().to_dict()
@@ -128,8 +133,6 @@ class CyclicalTransformer(BaseNumericalTransformer):
                         f"The mapping key {key} is not present" f" in variables."
                     )
             self.max_values_ = self.max_values
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -158,3 +161,59 @@ class CyclicalTransformer(BaseNumericalTransformer):
             X.drop(columns=self.variables_, inplace=True)
 
         return X
+
+    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features: list, default=None
+            Input features. If `input_features` is `None`, then the names of all the
+            variables in the transformed dataset (original + new variables) is returned.
+            Alternatively, only the names for the new features derived from
+            input_features will be returned.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        # Create names for all features or just the indicated ones.
+        if input_features is None:
+            # Create all lag features.
+            input_features_ = self.variables_
+        else:
+            if not isinstance(input_features, list):
+                raise ValueError(
+                    f"input_features must be a list. Got {input_features} instead."
+                )
+            if any([f for f in input_features if f not in self.variables_]):
+                raise ValueError(
+                    "Some features in input_features were not used to create new "
+                    "variables. You can only get the names of the new features "
+                    "with this function."
+                )
+            # Create just indicated lag features.
+            input_features_ = input_features
+
+        # create the names for the lag features
+        feature_names = [
+            str(var) + suffix
+            for var in input_features_
+            for suffix in ["_sin", "_cos"]
+        ]
+
+        # Return names of all variables if input_features is None.
+        if input_features is None:
+            if self.drop_original is True:
+                # Remove names of variables to drop.
+                original = [
+                    f for f in self.feature_names_in_ if f not in self.variables_
+                ]
+                feature_names = original + feature_names
+            else:
+                feature_names = self.feature_names_in_ + feature_names
+
+        return feature_names

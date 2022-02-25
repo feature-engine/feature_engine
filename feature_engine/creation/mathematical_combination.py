@@ -17,6 +17,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
@@ -28,6 +29,7 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 @Substitution(
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     transform=_transform_docstring,
@@ -86,6 +88,8 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
     math_operations_:
         List with the mathematical operations to be applied to the
         `variables_to_combine`.
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -237,6 +241,10 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
                 for operation in self.math_operations_
             }
 
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
+        # save train set shape
         self.n_features_in_ = X.shape[1]
 
         return self
@@ -278,6 +286,29 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
             X.drop(columns=self.variables_to_combine, inplace=True)
 
         return X
+
+    def get_feature_names_out(self) -> List:
+        """Get output feature names for transformation.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        feature_names = [f for f in self.combination_dict_.keys()]
+
+        if self.drop_original is True:
+            # Remove names of variables to drop.
+            original = [
+                f for f in self.feature_names_in_ if f not in self.variables_to_combine
+            ]
+            feature_names = original + feature_names
+        else:
+            feature_names = self.feature_names_in_ + feature_names
+
+        return feature_names
 
     def _more_tags(self):
         tags_dict = _return_tags()

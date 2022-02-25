@@ -17,6 +17,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
@@ -28,6 +29,7 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 @Substitution(
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     transform=_transform_docstring,
@@ -84,6 +86,8 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
@@ -229,6 +233,10 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
                     "remove those before using this transformer with div."
                 )
 
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
+        # save train set shape
         self.n_features_in_ = X.shape[1]
 
         return self
@@ -273,7 +281,6 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
                     "remove those before using this transformer."
                 )
 
-        original_col_names = [var for var in X.columns]
         # Add new features and values into de data frame.
         if "sub" in self.operations:
             for reference in self.reference_variables:
@@ -306,7 +313,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
         # replace created variable names with user ones.
         if self.new_variables_names:
-            X.columns = original_col_names + self.new_variables_names
+            X.columns = self.feature_names_in_ + self.new_variables_names
 
         if self.drop_original:
             X.drop(

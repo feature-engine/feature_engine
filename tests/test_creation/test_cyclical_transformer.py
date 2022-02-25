@@ -226,3 +226,35 @@ def test_max_values_mapping(df_cyclical):
         0.688967,
     ]
     pd.testing.assert_frame_equal(X, transf_df)
+
+
+def test_get_feature_names_out(df_cyclical):
+    # default features from all variables
+    transformer = CyclicalTransformer()
+    X = transformer.fit_transform(df_cyclical)
+    assert list(X.columns) == transformer.get_feature_names_out()
+    assert transformer.get_feature_names_out(input_features=["day"]) == [
+        "day_sin", "day_cos"
+    ]
+    assert transformer.get_feature_names_out(input_features=["day", "months"]) == [
+        "day_sin", "day_cos", "months_sin", "months_cos"
+    ]
+
+    # default features from 1 variable
+    transformer = CyclicalTransformer(drop_original=True)
+    X = transformer.fit_transform(df_cyclical)
+    assert list(X.columns) == transformer.get_feature_names_out()
+    assert transformer.get_feature_names_out(input_features=["day"]) == [
+        "day_sin", "day_cos"
+    ]
+    assert transformer.get_feature_names_out(input_features=["day", "months"]) == [
+        "day_sin", "day_cos", "months_sin", "months_cos"
+    ]
+
+    with pytest.raises(ValueError):
+        # assert error when user passes a string instead of list
+        transformer.get_feature_names_out(input_features="day")
+
+    with pytest.raises(ValueError):
+        # assert error when uses passes features that were not lagged
+        transformer.get_feature_names_out(input_features=["color"])
