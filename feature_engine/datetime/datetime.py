@@ -306,7 +306,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self)
 
-        # Create names for all lag features or just the indicated ones.
+        # Create names for all features or just the indicated ones.
         if input_features is None:
             # Create all lag features.
             input_features_ = self.variables_
@@ -327,7 +327,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         # create the names for the lag features
         feature_names = [
             str(var) + FEATURES_SUFFIXES[feat]
-            for var in self.variables_
+            for var in input_features_
             for feat in self.features_to_extract_
         ]
 
