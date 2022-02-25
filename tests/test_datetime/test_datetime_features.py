@@ -438,6 +438,17 @@ def test_get_feature_names_out(df_datetime, df_datetime_transformed):
         "date_obj1_" + feat for feat in ["semester", "week"]
     ]
 
+    # when drop original is False
+    transformer = DatetimeFeatures(drop_original=False)
+    X = transformer.fit_transform(df_datetime)
+    assert list(X.columns) == transformer.get_feature_names_out()
+    assert transformer.get_feature_names_out(input_features=vars_dt) == [
+        var + feat for var in vars_dt for feat in feat_names_default
+    ]
+    assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
+        "date_obj1" + feat for feat in feat_names_default
+    ]
+
     with pytest.raises(ValueError):
         # assert error when user passes a string instead of list
         transformer.get_feature_names_out(input_features="date_obj1")
