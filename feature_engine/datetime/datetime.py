@@ -12,7 +12,7 @@ from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
     _is_dataframe,
 )
-from feature_engine.datetime.datetime_constants import (
+from feature_engine.datetime._datetime_constants import (
     FEATURES_DEFAULT,
     FEATURES_FUNCTIONS,
     FEATURES_SUFFIXES,
@@ -20,6 +20,7 @@ from feature_engine.datetime.datetime_constants import (
 )
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
@@ -31,6 +32,7 @@ from feature_engine.variable_manipulation import (
 
 
 @Substitution(
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
@@ -113,6 +115,8 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
     features_to_extract_:
         The date and time features that will be extracted from each variable.
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -214,6 +218,10 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         else:
             self.features_to_extract_ = self.features_to_extract
 
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
+        # save train set shape
         self.n_features_in_ = X.shape[1]
 
         return self
@@ -279,3 +287,59 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
             X.drop(self.variables_, axis=1, inplace=True)
 
         return X
+
+    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features: list, default=None
+            Input features. If `input_features` is `None`, then the names of all the
+            variables in the transformed dataset (original + new variables) is returned.
+            Alternatively, only the names for the datetime features derived from
+            input_features will be returned.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        # Create names for all lag features or just the indicated ones.
+        if input_features is None:
+            # Create all lag features.
+            input_features_ = self.variables_
+        else:
+            if not isinstance(input_features, list):
+                raise ValueError(
+                    f"input_features must be a list. Got {input_features} instead."
+                )
+            if any([f for f in input_features if f not in self.variables_]):
+                raise ValueError(
+                    "Some features in input_features were not used to extract new "
+                    "variables. You can only get the names of the extracted features "
+                    "with this function."
+                )
+            # Create just indicated lag features.
+            input_features_ = input_features
+
+        # create the names for the lag features
+        feature_names = [
+            str(var) + FEATURES_SUFFIXES[feat]
+            for var in self.variables_
+            for feat in self.features_to_extract_
+        ]
+
+        # Return names of all variables if input_features is None.
+        if input_features is None:
+            if self.drop_original is True:
+                # Remove names of variables to drop.
+                original = [
+                    f for f in self.feature_names_in_ if f not in self.variables_
+                ]
+                feature_names = original + feature_names
+            else:
+                feature_names = self.feature_names_in_ + feature_names
+
+        return feature_names
