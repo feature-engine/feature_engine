@@ -185,8 +185,6 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
                 "with this transformer."
             )
 
-        # returns a list if a str was inputted for 'variables' param
-        self.variables_ = _find_all_variables(X, self.variables)
         # find variables that will be transformed
         self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
@@ -303,7 +301,7 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
             ]
         else:
             feature_names = [
-                str(features) + f"_window_{self.window}_periods_{self.periods}"
+                str(feature) + f"_window_{self.window}_periods_{self.periods}"
                 for feature in input_features_
             ]
 
