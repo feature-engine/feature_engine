@@ -38,4 +38,4 @@ def test_permitted_param_freq(_freqs):
 @pytest.mark.parametrize("_freqs", [5, "asado", [1, 2, 4], False])
 def test_error_when_non_permitted_param_freq(_freqs):
     with pytest.raises(ValueError):
-        WindowFeatures(freq=_freqs)
+        WindowFeatures(periods=None, freq=_freqs)

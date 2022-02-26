@@ -127,7 +127,7 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
                 f"periods must be a positive integer. Got {periods} instead."
             )
 
-        if not isinstance(freq, str):
+        if periods is None and not isinstance(freq, str):
             raise ValueError(
                 f"freq must be a string. Got {freq} instead."
             )
