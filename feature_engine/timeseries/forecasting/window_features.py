@@ -199,3 +199,37 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
         self.n_features_in_ = X.shape[1]
 
         return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Adds window features.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The data to transform.
+
+        Returns
+        -------
+        X_new: Pandas dataframe, shape = [n_samples, n_features + lag_features]
+            The dataframe with the original plus the new variables.
+        """
+
+
+
+
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Adds lag features.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The data to transform.
+
+        Returns
+        -------
+        X_new: Pandas dataframe, shape = [n_samples, n_features + lag_features]
+            The dataframe with the original plus the new variables.
+        """
