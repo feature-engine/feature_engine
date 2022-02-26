@@ -27,6 +27,7 @@ from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
+    _find_all_variables,
 )
 
 
@@ -148,3 +149,21 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
         self.sort_index = sort_index
         self.missing_values = missing_values
         self.drop_original = drop_original
+
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+        """
+        This transformer does not learn parameters.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The training dataset.
+
+        y: pandas Series, default=None
+            y is not needed in this transformer. You can pass None or y.
+        """
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # find variables that will be transformed
+        self.variables = _find_all_variables(X, self.variables)
