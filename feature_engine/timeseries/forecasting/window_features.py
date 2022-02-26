@@ -107,7 +107,7 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
     def __init__(
             self,
             variables: List[str] = None,
-            window: Union[str, int] = None,
+            window: Union[str, int] = 1,
             periods: int = 1,
             freq: str = None,
             sort_index: bool = True,
@@ -115,14 +115,16 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
             drop_original: bool = False,
     ) -> None:
 
-        if not (isinstance(window, int) or isinstance(window, str)):
+        if not (isinstance(window, int) or isinstance(window, str)) or isinstance(window, bool):
             raise ValueError(
                 f"window must be a string or integer. Got {window} instead."
             )
 
-        if not isinstance(periods, int):
+        if isinstance(periods, int) and periods > 0 and not isinstance(periods, bool):
+            self.periods = periods
+        else:
             raise ValueError(
-                f"periods must be an integer. Got {periods} instead."
+                f"periods must be a positive integer. Got {periods} instead."
             )
 
         if not isinstance(freq, str):
@@ -144,11 +146,11 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
 
         self.variables = _check_input_parameter_variables(variables)
         self.window = window
-        self.periods = periods
         self.freq = freq
         self.sort_index = sort_index
         self.missing_values = missing_values
         self.drop_original = drop_original
+
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
