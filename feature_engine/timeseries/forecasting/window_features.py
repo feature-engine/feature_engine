@@ -214,9 +214,52 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
         X_new: Pandas dataframe, shape = [n_samples, n_features + lag_features]
             The dataframe with the original plus the new variables.
         """
+        # checmk method fit has been called
+        check_is_fitted(self)
 
+        # check if 'X' is a dataframe
+        X = _is_dataframe(X)
 
+        # check if input data contains the same number of columns as the fitted dataframe.
+        _check_input_matches_training_df(X, self.n_features_in_)
 
+        # Dataframes must have unique values in the index and no missing data.
+        # Otherwise, when we merge the lag features we will duplicate rows.
+        if X.index.isnull().sum() > 0:
+            raise NotImplementedError(
+                "The dataframe's index contains NaN values or missing data. "
+                "Only dataframes with complete indexes are compatible with "
+                "this transformer."
+            )
+
+        if X.index.is_unique is False:
+            raise NotImplementedError(
+                "The dataframe's index does not contain unique values. "
+                "Only dataframes with unique values in the index are compatible "
+                "with this transformer."
+            )
+
+        # check if dataset contains na
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
+
+        if self.sort_index is True:
+            X.sort_index(inplace=True)
+
+        # if freq is not None, it overrides periods.
+        # TODO: make stats fcn dynamic
+        if self.freq is not None:
+            tmp = (X[self.variables_]
+                   .rolling(window=window).mean()
+                   .shift(freq=self.freq)
+                   )
+        # TODO: make stats fcn dynamic
+        else:
+            tmp = (X[self.variables_]
+                   .rolling(window=window).mean()
+                   .shift(periods=self.periods)
+                   )
 
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
