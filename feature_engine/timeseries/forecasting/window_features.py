@@ -167,5 +167,33 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
+        # We need the dataframes to have unique values in the index and no missing data.
+        # Otherwise, when we merge the window features we will duplicate rows.
+
+        if X.index.isnull().sum() > 0:
+            raise NotImplementedError(
+                "The dataframe's index contains NaN values or missing data. "
+                "Only dataframes with complete indexes are compatible with "
+                "this transformer."
+            )
+
+        # Check that the index contains unique values.
+        if X.index.is_unique is False:
+            raise NotImplementedError(
+                "The dataframe's index does not contain unique values. "
+                "Only dataframes with unique values in the index are compatible "
+                "with this transformer."
+            )
+
         # find variables that will be transformed
-        self.variables = _find_all_variables(X, self.variables)
+        self.variables_ = _find_all_variables(X, self.variables)
+
+        # check if dataset contains na
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
+
+        self.feature_names_in_ = X.columns.tolist()
+        self.n_features_in_ = X.shape[1]
+
+        return self
