@@ -261,6 +261,64 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
                    .shift(periods=self.periods)
                    )
 
+    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
+        """
+        Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features: list, default=None
+            Input features. If `input_features` is `None`, then the names of all the
+            variables in the transformed dataset (original + new variables) is returned.
+            Alternatively, only the names for the lag features derived from
+            input_features will be returned.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        # create names for all window features or just the indicated ones.
+        if input_features is None:
+            input_features_ = self.variables_
+        else:
+            if not isinstance(input_features, list):
+                raise ValueError(
+                    f"input_features must be a list. Got {input_features} instead."
+                )
+            if any([f for f in input_features if f not in self.variables_]):
+                raise ValueError(
+                    "Some features in input_features were not transformed. This method only "
+                    "provides the names of the transform features with this method."
+                )
+            # create just indicated window features
+            input_features_ = input_features
+
+        if self.freq is not None:
+            feature_names = [
+                str(feature) + f"_window_{self.window}_freq_{self.freq}"
+                for feature in input_features_
+            ]
+        else:
+            feature_names = [
+                str(features) + f"_window_{self.window}_periods_{self.periods}"
+                for feature in input_features_
+            ]
+
+        # return names of all variables if input_features is None
+        if input_features is None:
+            if self.drop_original is True:
+                # removes names of variables to drop
+                original = [
+                    f for f in self.feature_names_in_ if f not in self.variables_
+                ]
+            else:
+                feature_names = self.feature_names_in_ + feature_names
+
+        return feature_names
+
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
