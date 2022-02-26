@@ -115,7 +115,7 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
             drop_original: bool = False,
     ) -> None:
 
-        if not isinstance(window, [str, int]):
+        if not (isinstance(window, int) or isinstance(window, str)):
             raise ValueError(
                 f"window must be a string or integer. Got {window} instead."
             )
