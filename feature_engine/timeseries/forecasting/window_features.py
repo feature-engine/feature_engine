@@ -185,8 +185,10 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
                 "with this transformer."
             )
 
-        # find variables that will be transformed
+        # returns a list if a str was inputted for 'variables' param
         self.variables_ = _find_all_variables(X, self.variables)
+        # find variables that will be transformed
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         # check if dataset contains na
         if self.missing_values == "raise":
