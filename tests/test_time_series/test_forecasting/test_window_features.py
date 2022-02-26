@@ -58,4 +58,8 @@ def test_get_feature_names_out(df_time):
     assert tr.get_feature_names_out(input_features=None) == original_features + output
     assert tr.get_feature_names_out(input_features=input_features) == output
     assert tr.get_feature_names_out(input_features=input_features[0:2]) == output[0:2]
-    assert tr.get_feature_names_out(input_features=input_features[0]) == [output[0]]
+    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [output[0]]
+
+    with pytest.raises(ValueError):
+        # get error when passes a string instead of list
+        tr.get_feature_names_out(input_features=input_features[0])
