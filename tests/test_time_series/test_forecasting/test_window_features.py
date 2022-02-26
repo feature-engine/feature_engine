@@ -39,3 +39,23 @@ def test_permitted_param_freq(_freqs):
 def test_error_when_non_permitted_param_freq(_freqs):
     with pytest.raises(ValueError):
         WindowFeatures(periods=None, freq=_freqs)
+
+def test_get_feature_names_out(df_time):
+    # input features
+    input_features = ["ambient_temp", "module_temp", "irradiation"]
+    original_features = ["ambient_temp", "module_temp", "irradiation", "color"]
+
+    # when freq is a string
+    tr = WindowFeatures(window=3, freq="3D")
+    tr.fit(df_time)
+
+    # expected
+    output = [
+        "ambient_temp_window_3_freq_3D",
+        "module_temp_window_3_freq_3D",
+        "irradiation_window_3_freq_3D",
+    ]
+    assert tr.get_feature_names_out(input_features=None) == original_features + output
+    assert tr.get_feature_names_out(input_features=input_features) == output
+    assert tr.get_feature_names_out(input_features=input_features[0:2]) == output[0:2]
+    assert tr.get_feature_names_out(input_features=input_features[0]) == [output[0]]
