@@ -151,3 +151,54 @@ def test_correct_window_when_using_periods(df_time):
     assert df_tr.head(9).equals(
         expected_results_df.drop(["ambient_temp_window_3_periods_2"], axis=1)
     )
+
+
+def test_correct_window_when_using_freq(df_time):
+    date_time = [
+        pd.Timestamp("2020-05-15 12:00:00"),
+        pd.Timestamp("2020-05-15 12:15:00"),
+        pd.Timestamp("2020-05-15 12:30:00"),
+        pd.Timestamp("2020-05-15 12:45:00"),
+        pd.Timestamp("2020-05-15 13:00:00"),
+        pd.Timestamp("2020-05-15 13:15:00"),
+        pd.Timestamp("2020-05-15 13:30:00"),
+        pd.Timestamp("2020-05-15 13:45:00"),
+        pd.Timestamp('2020-05-15 14:00:00'),
+    ]
+    expected_results = {
+        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68, 33.76],
+        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52, 49.8],
+        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49, 0.57, 0.56, 0.74],
+        "color": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
+        "ambient_temp_window_2_freq_45min": [np.nan, np.nan, np.nan, np.nan, 62.82, 63.66, 64.54, 65.01, 65.12],
+        "module_temp_window_2_freq_45min": [np.nan, np.nan, np.nan, np.nan, 99.02, 102.19, 102.98, 100.24, 96.62],
+        "irradiation_window_2_freq_45min": [np.nan, np.nan, np.nan, np.nan, 1.3, 1.44, 1.41, 1.18, 0.91],
+    }
+
+    expected_results_df = pd.DataFrame(data=expected_results, index=date_time)
+
+    transformer = WindowFeatures(window=2, function=np.sum, freq="45min")
+    transformer.fit(df_time)
+    df_tr = transformer.transform(df_time)
+
+    assert df_tr.head(9).round(3).equals(expected_results_df)
+
+    # when drop_original is true
+    transformer = WindowFeatures(window=2, function=np.sum, freq="45min", drop_original=True)
+    transformer.fit(df_time)
+    df_tr = transformer.transform(df_time)
+
+    assert df_tr.head(9).round(3).equals(
+        expected_results_df.drop(["ambient_temp", "module_temp", "irradiation"], axis=1)
+    )
+
+    # select variables
+    transformer = WindowFeatures(
+        variables=["ambient_temp", "irradiation"], window=2, function=np.sum, freq="45min"
+    )
+    transformer.fit(df_time)
+    df_tr = transformer.transform(df_time)
+
+    assert df_tr.head(9).round(3).equals(
+        expected_results_df.drop(["module_temp_window_2_freq_45min"], axis=1)
+    )
