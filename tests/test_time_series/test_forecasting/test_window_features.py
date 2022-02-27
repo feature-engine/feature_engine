@@ -17,6 +17,18 @@ def test_error_when_non_permitted_param_windows(_windows):
         WindowFeatures(window=_windows)
 
 
+@pytest.mark.parametrize("_functions", [np.mean, np.std, np.max, np.median])
+def test_permitted_param_functions(_functions):
+    transformer = WindowFeatures(function=_functions)
+    assert transformer.function == _functions
+
+
+@pytest.mark.parametrize("_functions", ["che", True, np.sin, 1984])
+def test_error_when_non_permitted_param_functions(_functions):
+    with pytest.raises(ValueError):
+        WindowFeatures(function=_functions)
+
+
 @pytest.mark.parametrize("_periods", [1, 2, 3])
 def test_permitted_param_periods(_periods):
     transformer = WindowFeatures(periods=_periods)
@@ -61,5 +73,24 @@ def test_get_feature_names_out(df_time):
     assert tr.get_feature_names_out(input_features=[input_features[0]]) == [output[0]]
 
     with pytest.raises(ValueError):
-        # get error when passes a string instead of list
+        # get error when a user passes a string instead of list
         tr.get_feature_names_out(input_features=input_features[0])
+
+    with pytest.raises(ValueError):
+        # assert error when uses passes features that were not transformed
+        tr.get_feature_names_out(input_features=["lamp"])
+
+    # when period is an int
+    tr = WindowFeatures(window=2, periods=7)
+    tr.fit(df_time)
+
+    # expected
+    output = [
+        "ambient_temp_window_2_periods_7",
+        "module_temp_window_2_periods_7",
+        "irradiation_window_2_periods_7",
+    ]
+    assert tr.get_feature_names_out(input_features=None) == original_features + output
+    assert tr.get_feature_names_out(input_features=input_features) == output
+    assert tr.get_feature_names_out(input_features=input_features[0:2]) == output[0:2]
+    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [output[0]]
