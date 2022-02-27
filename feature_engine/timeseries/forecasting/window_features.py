@@ -3,6 +3,7 @@
 
 from typing import List, Optional, Union
 
+import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -108,6 +109,7 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
             self,
             variables: List[str] = None,
             window: Union[str, int] = 1,
+            function: numpy = np.mean,
             periods: int = 1,
             freq: str = None,
             sort_index: bool = True,
@@ -127,6 +129,11 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
                 f"periods must be a positive integer. Got {periods} instead."
             )
 
+        if function not in (np.mean, np.std, np.median, np.min, np.max):
+            raise ValueError(
+                f"function must be np.mean, np.std, np.median, np.min, or np.max. "
+                f"Got {function} instead."
+            )
         if periods is None and not isinstance(freq, str):
             raise ValueError(
                 f"freq must be a string. Got {freq} instead."
@@ -146,6 +153,7 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
 
         self.variables = _check_input_parameter_variables(variables)
         self.window = window
+        self.function = function
         self.freq = freq
         self.sort_index = sort_index
         self.missing_values = missing_values
@@ -249,7 +257,7 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
         # TODO: make stats fcn dynamic
         if self.freq is not None:
             tmp = (X[self.variables_]
-                   .rolling(window=window).mean()
+                   .rolling(window=self.window).mean()
                    .shift(freq=self.freq)
                    )
         # TODO: make stats fcn dynamic
