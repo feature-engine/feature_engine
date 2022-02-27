@@ -129,9 +129,9 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
                 f"periods must be a positive integer. Got {periods} instead."
             )
 
-        if function not in (np.mean, np.std, np.median, np.min, np.max):
+        if function not in (np.mean, np.std, np.median, np.min, np.max, np.sum):
             raise ValueError(
-                f"function must be np.mean, np.std, np.median, np.min, or np.max. "
+                f"function must be np.mean, np.std, np.median, np.min, np.max, or np.sum. "
                 f"Got {function} instead."
             )
         if periods is None and not isinstance(freq, str):
