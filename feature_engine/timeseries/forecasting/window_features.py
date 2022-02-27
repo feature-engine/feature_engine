@@ -252,12 +252,13 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
         if self.sort_index is True:
             X.sort_index(inplace=True)
 
-        # if freq is not None, freq overrides periods.
+        # if freq is not None, it overrides periods.
         if self.freq is not None:
             tmp = (X[self.variables_]
                    .rolling(window=self.window).apply(self.function)
                    .shift(freq=self.freq)
                    )
+
         else:
             tmp = (X[self.variables_]
                    .rolling(window=self.window).apply(self.function)
@@ -266,7 +267,7 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
 
         tmp.columns = self.get_feature_names_out(self.variables_)
 
-        X = X.merge(tmp, left_index=True, right_index=True, home="left")
+        X = X.merge(tmp, left_index=True, right_index=True, how="left")
 
         if self.drop_original:
             X = X.drop(self.variables_, axis=1)
@@ -330,19 +331,3 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
                 feature_names = self.feature_names_in_ + feature_names
 
         return feature_names
-
-
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """
-        Adds lag features.
-
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The data to transform.
-
-        Returns
-        -------
-        X_new: Pandas dataframe, shape = [n_samples, n_features + lag_features]
-            The dataframe with the original plus the new variables.
-        """
