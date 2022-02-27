@@ -99,15 +99,15 @@ def test_get_feature_names_out(df_time):
 
 def test_correct_window_when_using_periods(df_time):
     date_time = [
-        "2020-05-15 12:00:00",
-        "2020-05-15 12:15:00",
-        "2020-05-15 12:30:00",
-        "2020-05-15 12:45:00",
-        "2020-05-15 13:00:00",
-        "2020-05-15 13:15:00",
-        "2020-05-15 13:30:00",
-        "2020-05-15 13:45:00",
-        '2020-05-15 14:00:00',
+        pd.Timestamp("2020-05-15 12:00:00"),
+        pd.Timestamp("2020-05-15 12:15:00"),
+        pd.Timestamp("2020-05-15 12:30:00"),
+        pd.Timestamp("2020-05-15 12:45:00"),
+        pd.Timestamp("2020-05-15 13:00:00"),
+        pd.Timestamp("2020-05-15 13:15:00"),
+        pd.Timestamp("2020-05-15 13:30:00"),
+        pd.Timestamp("2020-05-15 13:45:00"),
+        pd.Timestamp('2020-05-15 14:00:00'),
     ]
 
     expected_results = {
@@ -121,9 +121,33 @@ def test_correct_window_when_using_periods(df_time):
     }
     expected_results_df = pd.DataFrame(data=expected_results, index=date_time)
 
+    # when period is int
     transformer = WindowFeatures(window=3, function=np.median, periods=2)
     transformer.fit(df_time)
     df_tr = transformer.transform(df_time)
-    print(df_tr.head())
-    # assert df_tr.columns.tolist() == expected_results_df.columns.tolist()
+
     assert df_tr.head(9).equals(expected_results_df)
+
+    # when drop_original is true
+    transformer = WindowFeatures(
+        window=3, function=np.median, periods=2, drop_original=True
+    )
+    transformer.fit(df_time)
+    df_tr = transformer.transform(df_time)
+
+    assert df_tr.head(9).equals(
+        expected_results_df.drop(["ambient_temp", "module_temp", "irradiation"], axis=1)
+    )
+
+    # select variables
+    transformer = WindowFeatures(variables=["module_temp", "irradiation"],
+                                 window=3,
+                                 function=np.median,
+                                 periods=2
+                                 )
+    transformer.fit(df_time)
+    df_tr = transformer.transform(df_time)
+    print(df_tr.head())
+    assert df_tr.head(9).equals(
+        expected_results_df.drop(["ambient_temp_window_3_periods_2"], axis=1)
+    )
