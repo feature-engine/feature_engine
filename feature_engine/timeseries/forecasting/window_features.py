@@ -1,7 +1,7 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Callable
 
 import numpy as np
 import pandas as pd
@@ -109,7 +109,7 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
             self,
             variables: List[str] = None,
             window: Union[str, int] = 1,
-            function: numpy = np.mean,
+            function: Callable = np.mean,
             periods: int = 1,
             freq: str = None,
             sort_index: bool = True,
@@ -158,7 +158,6 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
         self.sort_index = sort_index
         self.missing_values = missing_values
         self.drop_original = drop_original
-
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -253,19 +252,26 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
         if self.sort_index is True:
             X.sort_index(inplace=True)
 
-        # if freq is not None, it overrides periods.
-        # TODO: make stats fcn dynamic
+        # if freq is not None, freq overrides periods.
         if self.freq is not None:
             tmp = (X[self.variables_]
-                   .rolling(window=self.window).mean()
+                   .rolling(window=self.window).apply(self.function)
                    .shift(freq=self.freq)
                    )
-        # TODO: make stats fcn dynamic
         else:
             tmp = (X[self.variables_]
-                   .rolling(window=window).mean()
+                   .rolling(window=self.window).apply(self.function)
                    .shift(periods=self.periods)
                    )
+
+        tmp.columns = self.get_feature_names_out(self.variables_)
+
+        X = X.merge(tmp, left_index=True, right_index=True, home="left")
+
+        if self.drop_original:
+            X = X.drop(self.variables_, axis=1)
+
+        return X
 
     def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
         """
