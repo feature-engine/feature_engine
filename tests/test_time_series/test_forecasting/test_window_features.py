@@ -202,3 +202,26 @@ def test_correct_window_when_using_freq(df_time):
     assert df_tr.head(9).round(3).equals(
         expected_results_df.drop(["module_temp_window_2_freq_45min"], axis=1)
     )
+
+
+def test_sort_index(df_time):
+    X = df_time.copy()
+
+    # shuffle dataframe
+    Xs = X.sample(len(df_time)).copy()
+
+    transformer = WindowFeatures(sort_index=True)
+    Xs_tr = transformer.fit_transform(Xs)
+
+    # check with X, the sorted dataframe
+    A = X[transformer.variables_].iloc[0:4].values
+    B = Xs_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
+    assert (A == B).all()
+
+    transformer = WindowFeatures(sort_index=False)
+    Xs_tr = transformer.fit_transform(Xs)
+
+    # check with Xs, the unsorted dataframe
+    A = Xs[transformer.variables_].iloc[0:4].values
+    B = Xs_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
+    assert (A == B).all()
