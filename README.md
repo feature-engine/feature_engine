@@ -226,5 +226,13 @@ BSD 3-Clause
 
 ## Donate
 
-[Sponsor us](https://github.com/sponsors/solegalli) to support her continue expanding 
-Feature-engine.
+By becoming a [sponsor](https://github.com/sponsors/solegalli), you can help the 
+maintainer continue to improve Feature-engine.
+
+You can buy her a coffee to say thanks.
+
+You can make a one-off custom donation or become a regular contributor.
+
+You can choose from pre-set amounts or chip in whatever you feel comfortable with.
+
+And you can also become a Bronze, Silver or Gold sponsor for Feature-engine.

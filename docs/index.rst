@@ -232,8 +232,9 @@ For more details on how to contribute check the contributing page. Click on the
 Donate
 ~~~~~~
 
-`Sponsor us <https://github.com/sponsors/solegalli>`_ to support us continue expanding
-Feature-engine.
+You can also donate to the author (Soledad Galli) via
+`Github Sponsors <https://github.com/sponsors/solegalli>`_ to help her continue to
+develop Feature-engine.
 
 Open Source
 ~~~~~~~~~~~
@@ -259,3 +260,4 @@ Table of Contents
    contribute/index
    about/index
    whats_new/index
+   donate
