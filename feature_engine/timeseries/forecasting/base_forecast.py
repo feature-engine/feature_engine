@@ -15,22 +15,19 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.docstrings import (
     Substitution,
-    _drop_original_docstring,
     _feature_names_in_docstring,
     _fit_not_learn_docstring,
-    _fit_transform_docstring,
-    _missing_values_docstring,
     _n_features_in_docstring,
-    _variables_numerical_docstring,
 )
-from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
 
 @Substitution(
-    fit=_fit_not_learn_docstring
+    feature_names_in_=_feature_names_in_docstring,
+    fit=_fit_not_learn_docstring,
+    n_features_in_=_n_features_in_docstring,
 )
 class BaseForecast(BaseEstimator, TransformerMixin):
     """
@@ -40,10 +37,22 @@ class BaseForecast(BaseEstimator, TransformerMixin):
     ----------
 
 
-      Methods
+    Attributes
+    ----------
+    variables_:
+        The group of variables that will be lagged.
+
+    {feature_names_in_}
+
+    {n_features_in_}
+
+
+    Methods
     -------
     {fit}
 
+    transform:
+        Performs checks to ensure dataframe can be transformed.
 
     """
 
