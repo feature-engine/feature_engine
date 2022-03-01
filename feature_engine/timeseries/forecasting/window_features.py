@@ -117,12 +117,7 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
             drop_original: bool = False,
     ) -> None:
 
-        if not (isinstance(window, int) or isinstance(window, str)) or isinstance(window, bool):
-            raise ValueError(
-                f"window must be a string or integer. Got {window} instead."
-            )
-
-        if isinstance(periods, int) and periods > 0 and not isinstance(periods, bool):
+        if isinstance(periods, int) and periods > 0:
             self.periods = periods
         else:
             raise ValueError(
