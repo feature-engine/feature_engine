@@ -24,7 +24,7 @@ from feature_engine.docstrings import (
     _n_features_in_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine.validation import _return_tags
+from feature_engine.timeseries.forecasting import BaseForecast
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
@@ -41,7 +41,7 @@ from feature_engine.variable_manipulation import (
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class WindowFeatures(BaseEstimator, TransformerMixin):
+class WindowFeatures(BaseForecast):
     """
         LagFeatures adds lag features to the dataframe. A lag feature is a feature with
         information about a prior time step.
@@ -154,51 +154,7 @@ class WindowFeatures(BaseEstimator, TransformerMixin):
         self.missing_values = missing_values
         self.drop_original = drop_original
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
-        """
-        This transformer does not learn parameters.
 
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The training dataset.
-
-        y: pandas Series, default=None
-            y is not needed in this transformer. You can pass None or y.
-        """
-        # check input dataframe
-        X = _is_dataframe(X)
-
-        # We need the dataframes to have unique values in the index and no missing data.
-        # Otherwise, when we merge the window features we will duplicate rows.
-
-        if X.index.isnull().sum() > 0:
-            raise NotImplementedError(
-                "The dataframe's index contains NaN values or missing data. "
-                "Only dataframes with complete indexes are compatible with "
-                "this transformer."
-            )
-
-        # Check that the index contains unique values.
-        if X.index.is_unique is False:
-            raise NotImplementedError(
-                "The dataframe's index does not contain unique values. "
-                "Only dataframes with unique values in the index are compatible "
-                "with this transformer."
-            )
-
-        # find variables that will be transformed
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
-
-        # check if dataset contains na
-        if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.variables_)
-
-        self.feature_names_in_ = X.columns.tolist()
-        self.n_features_in_ = X.shape[1]
-
-        return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
