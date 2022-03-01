@@ -164,40 +164,8 @@ class LagFeatures(BaseForecast):
         X_new: Pandas dataframe, shape = [n_samples, n_features + lag_features]
             The dataframe with the original plus the new variables.
         """
-        # Check method fit has been called
-        check_is_fitted(self)
-
-        # check if 'X' is a dataframe
-        X = _is_dataframe(X)
-
-        # Check if input data contains same number of columns as dataframe used to fit.
-        _check_input_matches_training_df(X, self.n_features_in_)
-
-        # We need the dataframes to have unique values in the index and no missing data.
-        # Otherwise, when we merge the lag features we will duplicate rows.
-
-        if X.index.isnull().sum() > 0:
-            raise NotImplementedError(
-                "The dataframe's index contains NaN values or missing data. "
-                "Only dataframes with complete indexes are compatible with "
-                "this transformer."
-            )
-
-        # Check that the index contains unique values.
-        if X.index.is_unique is False:
-            raise NotImplementedError(
-                "The dataframe's index does not contain unique values. "
-                "Only dataframes with unique values in the index are compatible "
-                "with this transformer."
-            )
-
-        # check if dataset contains na
-        if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.variables_)
-
-        if self.sort_index is True:
-            X.sort_index(inplace=True)
+        # Performs various checks
+        X = super().transform(X)
 
         # if freq is not None, it overrides periods.
         if self.freq is not None:
