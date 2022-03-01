@@ -154,8 +154,6 @@ class WindowFeatures(BaseForecast):
         self.missing_values = missing_values
         self.drop_original = drop_original
 
-
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Adds window features.
