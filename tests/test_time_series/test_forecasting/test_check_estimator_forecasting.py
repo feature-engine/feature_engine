@@ -5,9 +5,12 @@ from feature_engine.estimator_checks import (
     check_feature_engine_estimator,
     check_feature_names_in,
 )
-from feature_engine.timeseries.forecasting import LagFeatures
+from feature_engine.timeseries.forecasting import LagFeatures, WindowFeatures
 
-_estimators = [LagFeatures(missing_values="ignore")]
+_estimators = [
+    LagFeatures(missing_values="ignore"),
+    WindowFeatures(missing_values="ignore"),
+]
 
 
 @pytest.mark.parametrize("estimator", _estimators)
