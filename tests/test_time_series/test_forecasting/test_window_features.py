@@ -111,13 +111,25 @@ def test_correct_window_when_using_periods(df_time):
     ]
 
     expected_results = {
-        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68, 33.76],
-        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52, 49.8],
+        "ambient_temp": [
+            31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68, 33.76
+        ],
+        "module_temp": [
+            49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52, 49.8
+        ],
         "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49, 0.57, 0.56, 0.74],
-        "color": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
-        "ambient_temp_window_3_periods_2": [np.nan, np.nan, np.nan, np.nan, 31.51, 32.15, 32.39, 32.5, 32.52],
-        "module_temp_window_3_periods_2": [np.nan, np.nan, np.nan, np.nan, 49.84, 50.63, 50.63, 49.61, 47.01],
-        "irradiation_window_3_periods_2": [np.nan, np.nan, np.nan, np.nan, 0.65, 0.76, 0.65, 0.49, 0.49],
+        "color": [
+            'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue']
+        ,
+        "ambient_temp_window_3_periods_2": [
+            np.nan, np.nan, np.nan, np.nan, 31.51, 32.15, 32.39, 32.5, 32.52
+        ],
+        "module_temp_window_3_periods_2": [
+            np.nan, np.nan, np.nan, np.nan, 49.84, 50.63, 50.63, 49.61, 47.01
+        ],
+        "irradiation_window_3_periods_2": [
+            np.nan, np.nan, np.nan, np.nan, 0.65, 0.76, 0.65, 0.49, 0.49
+        ],
     }
     expected_results_df = pd.DataFrame(data=expected_results, index=date_time)
 
@@ -170,9 +182,15 @@ def test_correct_window_when_using_freq(df_time):
         "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52, 49.8],
         "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49, 0.57, 0.56, 0.74],
         "color": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
-        "ambient_temp_window_2_freq_45min": [np.nan, np.nan, np.nan, np.nan, 62.82, 63.66, 64.54, 65.01, 65.12],
-        "module_temp_window_2_freq_45min": [np.nan, np.nan, np.nan, np.nan, 99.02, 102.19, 102.98, 100.24, 96.62],
-        "irradiation_window_2_freq_45min": [np.nan, np.nan, np.nan, np.nan, 1.3, 1.44, 1.41, 1.18, 0.91],
+        "ambient_temp_window_2_freq_45min": [
+            np.nan, np.nan, np.nan, np.nan, 62.82, 63.66, 64.54, 65.01, 65.12
+        ],
+        "module_temp_window_2_freq_45min": [
+            np.nan, np.nan, np.nan, np.nan, 99.02, 102.19, 102.98, 100.24, 96.62
+        ],
+        "irradiation_window_2_freq_45min": [
+            np.nan, np.nan, np.nan, np.nan, 1.3, 1.44, 1.41, 1.18, 0.91]
+        ,
     }
 
     expected_results_df = pd.DataFrame(data=expected_results, index=date_time)
@@ -184,7 +202,9 @@ def test_correct_window_when_using_freq(df_time):
     assert df_tr.head(9).round(3).equals(expected_results_df)
 
     # when drop_original is true
-    transformer = WindowFeatures(window=2, function=np.sum, freq="45min", drop_original=True)
+    transformer = WindowFeatures(
+        window=2, function=np.sum, freq="45min", drop_original=True
+    )
     transformer.fit(df_time)
     df_tr = transformer.transform(df_time)
 
@@ -194,7 +214,10 @@ def test_correct_window_when_using_freq(df_time):
 
     # select variables
     transformer = WindowFeatures(
-        variables=["ambient_temp", "irradiation"], window=2, function=np.sum, freq="45min"
+        variables=["ambient_temp", "irradiation"],
+        window=2,
+        function=np.sum,
+        freq="45min"
     )
     transformer.fit(df_time)
     df_tr = transformer.transform(df_time)
@@ -215,7 +238,10 @@ def test_sort_index(df_time):
 
     # check with X, the sorted dataframe
     A = X[transformer.variables_].iloc[0:4].values
-    B = Xs_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
+    B = (
+        Xs_tr[transformer.get_feature_names_out(transformer.variables_)]
+            .iloc[1:5].values
+    )
     assert (A == B).all()
 
     transformer = WindowFeatures(sort_index=False)
@@ -223,5 +249,8 @@ def test_sort_index(df_time):
 
     # check with Xs, the unsorted dataframe
     A = Xs[transformer.variables_].iloc[0:4].values
-    B = Xs_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
+    B = (
+        Xs_tr[transformer.get_feature_names_out(transformer.variables_)]
+            .iloc[1:5].values
+    )
     assert (A == B).all()
