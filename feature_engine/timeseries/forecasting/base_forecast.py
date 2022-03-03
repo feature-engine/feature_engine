@@ -1,7 +1,7 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import Optional
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -20,9 +20,9 @@ from feature_engine.docstrings import (
     _n_features_in_docstring,
 )
 from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
+
 
 @Substitution(
     feature_names_in_=_feature_names_in_docstring,
@@ -85,8 +85,8 @@ class BaseForecast(BaseEstimator, TransformerMixin):
         if X.index.is_unique is False:
             raise NotImplementedError(
                 "The dataframe's index does not contain unique values. "
-                "Only dataframes with unique values in the index are compatible "
-                "with this transformer."
+                "Only dataframes with unique values in the index are "
+                "compatible with this transformer."
             )
 
         # find variables that will be transformed
