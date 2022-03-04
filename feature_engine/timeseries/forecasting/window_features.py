@@ -112,6 +112,15 @@ class WindowFeatures(BaseForecast):
                 f"periods must be a positive integer. Got {periods} instead."
             )
 
+        if isinstance(window, int) and window > 0:
+            self.window = window
+        elif isinstance(window, str):
+            self.window = window
+        else:
+            raise ValueError(
+                f"window must be a positive integer or string. Got {window} instead."
+            )
+
         if function not in (np.mean, np.std, np.median, np.min, np.max, np.sum):
             raise ValueError(
                 f"function must be np.mean, np.std, np.median, np.min, np.max, "

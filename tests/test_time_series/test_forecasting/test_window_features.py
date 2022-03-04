@@ -11,7 +11,7 @@ def test_permitted_param_windows(_windows):
     assert transformer.window == _windows
 
 
-@pytest.mark.parametrize("_windows", [True, [4, "hola"], 4.3])
+@pytest.mark.parametrize("_windows", [None, [4, "hola"], 4.3, -42])
 def test_error_when_non_permitted_param_windows(_windows):
     with pytest.raises(ValueError):
         WindowFeatures(window=_windows)
@@ -35,7 +35,7 @@ def test_permitted_param_periods(_periods):
     assert transformer.periods == _periods
 
 
-@pytest.mark.parametrize("_periods", ["pizza", 3.33, True, None])
+@pytest.mark.parametrize("_periods", ["pizza", 3.33, ["mate", "cumbia"], None])
 def test_error_when_non_permitted_param_periods(_periods):
     with pytest.raises(ValueError):
         WindowFeatures(periods=_periods)
