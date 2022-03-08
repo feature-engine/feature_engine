@@ -15,12 +15,11 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.docstrings import (
     Substitution,
+    _drop_original_docstring,
     _feature_names_in_docstring,
     _fit_not_learn_docstring,
-    _n_features_in_docstring,
     _missing_values_docstring,
-    _drop_original_docstring,
-
+    _n_features_in_docstring,
 )
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
@@ -56,11 +55,12 @@ class BaseForecast(BaseEstimator, TransformerMixin):
     {n_features_in_}
 
     """
+
     def __init__(
-            self,
-            variables: Union[None, int, str, List[Union[str, int]]] = None,
-            missing_values: str = "raise",
-            drop_original: bool = False,
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_values: str = "raise",
+        drop_original: bool = False,
     ) -> None:
 
         if missing_values not in ["raise", "ignore"]:

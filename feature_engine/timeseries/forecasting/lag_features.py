@@ -16,7 +16,6 @@ from feature_engine.docstrings import (
     _n_features_in_docstring,
     _variables_numerical_docstring,
 )
-
 from feature_engine.timeseries.forecasting.base_forecast import BaseForecast
 
 
@@ -94,20 +93,20 @@ class LagFeatures(BaseForecast):
     """
 
     def __init__(
-            self,
-            variables: Union[None, int, str, List[Union[str, int]]] = None,
-            periods: Union[int, List[int]] = 1,
-            freq: Union[str, List[str]] = None,
-            sort_index: bool = True,
-            missing_values: str = "raise",
-            drop_original: bool = False,
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        periods: Union[int, List[int]] = 1,
+        freq: Union[str, List[str]] = None,
+        sort_index: bool = True,
+        missing_values: str = "raise",
+        drop_original: bool = False,
     ) -> None:
 
         if not (
-                isinstance(periods, int)
-                and periods > 0
-                or isinstance(periods, list)
-                and all(isinstance(num, int) and num > 0 for num in periods)
+            isinstance(periods, int)
+            and periods > 0
+            or isinstance(periods, list)
+            and all(isinstance(num, int) and num > 0 for num in periods)
         ):
 
             raise ValueError(
@@ -115,14 +114,10 @@ class LagFeatures(BaseForecast):
                 f"Got {periods} instead."
             )
         if isinstance(periods, list) and len(periods) != len(set(periods)):
-            raise ValueError(
-                f"There are duplicated periods in the list: {periods}"
-            )
+            raise ValueError(f"There are duplicated periods in the list: {periods}")
 
         if isinstance(freq, list) and len(freq) != len(set(freq)):
-            raise ValueError(
-                f"There are duplicated freq values in the list: {freq}"
-            )
+            raise ValueError(f"There are duplicated freq values in the list: {freq}")
 
         if not isinstance(sort_index, bool):
             raise ValueError(
