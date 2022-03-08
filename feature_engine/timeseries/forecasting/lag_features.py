@@ -6,9 +6,6 @@ from typing import List, Optional, Union
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import (
-    _is_dataframe,
-)
 from feature_engine.docstrings import (
     Substitution,
     _drop_original_docstring,
@@ -20,11 +17,8 @@ from feature_engine.docstrings import (
     _variables_numerical_docstring,
 )
 
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_numerical_variables,
-)
 from feature_engine.timeseries.forecasting.base_forecast import BaseForecast
+
 
 @Substitution(
     variables=_variables_numerical_docstring,
@@ -100,20 +94,20 @@ class LagFeatures(BaseForecast):
     """
 
     def __init__(
-        self,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        periods: int = 1,
-        freq: Union[str, List[str]] = None,
-        sort_index: bool = True,
-        missing_values: str = "raise",
-        drop_original: bool = False,
+            self,
+            variables: Union[None, int, str, List[Union[str, int]]] = None,
+            periods: int = 1,
+            freq: Union[str, List[str]] = None,
+            sort_index: bool = True,
+            missing_values: str = "raise",
+            drop_original: bool = False,
     ) -> None:
 
         if (
-            isinstance(periods, int)
-            and periods > 0
-            or isinstance(periods, list)
-            and all(isinstance(num, int) and num > 0 for num in periods)
+                isinstance(periods, int)
+                and periods > 0
+                or isinstance(periods, list)
+                and all(isinstance(num, int) and num > 0 for num in periods)
         ):
             self.periods = periods
         else:
@@ -127,41 +121,10 @@ class LagFeatures(BaseForecast):
                 "sort_index takes values True and False." f"Got {sort_index} instead."
             )
 
-        super().__init__(missing_values, drop_original)
+        super().__init__(variables, missing_values, drop_original)
 
-        self.variables = _check_input_parameter_variables(variables)
         self.freq = freq
         self.sort_index = sort_index
-
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
-        """
-        This transformer does not learn parameters.
-
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The training dataset.
-
-        y: pandas Series, default=None
-            y is not needed in this transformer. You can pass None or y.
-        """
-        # check input dataframe
-        X = _is_dataframe(X)
-
-        # We need the dataframes to have unique values in the index and no missing data.
-        # Otherwise, when we merge the lag features we will duplicate rows.
-        self._check_index(X)
-
-        # find or check for numerical variables
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
-
-        # check if dataset contains na
-        if self.missing_values == "raise":
-            self._check_na_and_inf(X)
-
-        self._check_trainset_features(X)
-
-        return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """

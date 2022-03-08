@@ -1,7 +1,7 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -23,6 +23,10 @@ from feature_engine.docstrings import (
 
 )
 from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
+)
 
 
 @Substitution(
@@ -38,6 +42,9 @@ class BaseForecast(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
+    variables: str, int, or list of strings or integers, default=None.
+        The variables to use to create the new features.
+
     {missing_values}
 
     {drop_original}
@@ -47,12 +54,13 @@ class BaseForecast(BaseEstimator, TransformerMixin):
     {feature_names_in_}
 
     {n_features_in_}
-    """
 
+    """
     def __init__(
-        self,
-        missing_values: str = "raise",
-        drop_original: bool = False,
+            self,
+            variables: Union[None, int, str, List[Union[str, int]]] = None,
+            missing_values: str = "raise",
+            drop_original: bool = False,
     ) -> None:
 
         if missing_values not in ["raise", "ignore"]:
@@ -67,6 +75,7 @@ class BaseForecast(BaseEstimator, TransformerMixin):
                 f"Got {drop_original} instead."
             )
 
+        self.variables = _check_input_parameter_variables(variables)
         self.missing_values = missing_values
         self.drop_original = drop_original
 
@@ -121,6 +130,36 @@ class BaseForecast(BaseEstimator, TransformerMixin):
 
         self.feature_names_in_ = X.columns.tolist()
         self.n_features_in_ = X.shape[1]
+
+        return self
+
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+        """
+        This transformer does not learn parameters.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The training dataset.
+
+        y: pandas Series, default=None
+            y is not needed in this transformer. You can pass None or y.
+        """
+        # check input dataframe
+        X = _is_dataframe(X)
+
+        # We need the dataframes to have unique values in the index and no missing data.
+        # Otherwise, when we merge the lag features we will duplicate rows.
+        self._check_index(X)
+
+        # find or check for numerical variables
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+
+        # check if dataset contains na
+        if self.missing_values == "raise":
+            self._check_na_and_inf(X)
+
+        self._check_trainset_features(X)
 
         return self
 
