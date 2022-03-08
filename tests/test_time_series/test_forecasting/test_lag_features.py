@@ -11,7 +11,9 @@ def test_permitted_param_periods(_periods):
     assert transformer.periods == _periods
 
 
-@pytest.mark.parametrize("_periods", [-1, 0, None, [-1, 2, 3], [0.1, 1], 0.5, [0, 1], [1,1,2]])
+@pytest.mark.parametrize(
+    "_periods", [-1, 0, None, [-1, 2, 3], [0.1, 1], 0.5, [0, 1], [1, 1, 2]]
+)
 def test_error_when_non_permitted_param_periods(_periods):
     with pytest.raises(ValueError):
         LagFeatures(periods=_periods)

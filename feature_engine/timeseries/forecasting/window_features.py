@@ -1,7 +1,7 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union, Callable
+from typing import Callable, List, Optional, Union
 
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
@@ -113,24 +113,24 @@ class WindowFeatures(BaseForecast):
     """
 
     def __init__(
-            self,
-            variables: Union[None, int, str, List[Union[str, int]]] = None,
-            window: Union[str, int, Callable, List[int], List[str]] = 3,
-            min_periods: int = None,
-            functions: List[str] = ["mean"],
-            periods: int = 1,
-            freq: str = None,
-            sort_index: bool = True,
-            missing_values: str = "raise",
-            drop_original: bool = False,
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        window: Union[str, int, Callable, List[int], List[str]] = 3,
+        min_periods: int = None,
+        functions: List[str] = ["mean"],
+        periods: int = 1,
+        freq: str = None,
+        sort_index: bool = True,
+        missing_values: str = "raise",
+        drop_original: bool = False,
     ) -> None:
 
         if isinstance(window, list) and len(window) != len(set(window)):
-            raise ValueError(
-                f"There are duplicated windows in the list: {window}"
-            )
+            raise ValueError(f"There are duplicated windows in the list: {window}")
 
-        if not isinstance(functions, list) or not all(isinstance(val, str) for val in functions):
+        if not isinstance(functions, list) or not all(
+            isinstance(val, str) for val in functions
+        ):
             raise ValueError(
                 f"functions must be a list of strings. Got {functions} instead."
             )
@@ -174,20 +174,22 @@ class WindowFeatures(BaseForecast):
         if isinstance(self.window, list):
             df_ls = []
             for win in self.window:
-                tmp = (X[self.variables_]
-                       .rolling(window=win)
-                       .agg(self.functions)
-                       .shift(periods=self.periods, freq=self.freq)
-                       )
+                tmp = (
+                    X[self.variables_]
+                    .rolling(window=win)
+                    .agg(self.functions)
+                    .shift(periods=self.periods, freq=self.freq)
+                )
                 df_ls.append(tmp)
             tmp = pd.concat(df_ls, axis=1)
 
         else:
-            tmp = (X[self.variables_]
-                   .rolling(window=self.window)
-                   .agg(self.functions)
-                   .shift(periods=self.periods, freq=self.freq)
-                   )
+            tmp = (
+                X[self.variables_]
+                .rolling(window=self.window)
+                .agg(self.functions)
+                .shift(periods=self.periods, freq=self.freq)
+            )
 
         tmp.columns = self.get_feature_names_out(self.variables_)
 
