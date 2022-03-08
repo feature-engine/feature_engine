@@ -22,9 +22,6 @@ from feature_engine.docstrings import (
     _drop_original_docstring,
 
 )
-from feature_engine.variable_manipulation import (
-    _find_or_check_numerical_variables,
-)
 
 
 @Substitution(
@@ -46,21 +43,9 @@ class BaseForecast(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    variables_:
-        The group of variables that will be lagged.
-
     {feature_names_in_}
 
     {n_features_in_}
-
-
-    Methods
-    -------
-    {fit}
-
-    transform:
-        Performs checks to ensure dataframe can be transformed.
-
     """
 
     def __init__(
@@ -119,11 +104,8 @@ class BaseForecast(BaseEstimator, TransformerMixin):
         X: pandas dataframe of shape = [n_samples, n_features]
             The dataset for training or transformation.
         """
-
-        # check if dataset contains na
-        if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.variables_)
+        _check_contains_na(X, self.variables_)
+        _check_contains_inf(X, self.variables_)
 
         return self
 
@@ -162,7 +144,8 @@ class BaseForecast(BaseEstimator, TransformerMixin):
         # check if 'X' is a dataframe
         X = _is_dataframe(X)
 
-        # check if input data contains the same number of columns as the fitted dataframe.
+        # check if input data contains the same number of columns as the fitted
+        # dataframe.
         _check_input_matches_training_df(X, self.n_features_in_)
 
         # Dataframes must have unique values in the index and no missing data.
