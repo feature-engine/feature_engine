@@ -44,6 +44,11 @@ class WindowFeatures(BaseForecast):
     For supported aggregation functions, see Rolling Window
     `Functions <https://pandas.pydata.org/docs/reference/window.html>`_.
 
+    With pandas `rolling` we can perform rolling operations over 1 window size at a
+    time. WindowFeatures builds on top of pandas `rolling()` in that multiple windows
+    can be evaluated at the same time and the created features will be concatenated to
+    the original dataframe.
+
     To be compatible with WindowFeatures, the dataframe's index must have unique values
     and no NaN.
 
@@ -57,7 +62,7 @@ class WindowFeatures(BaseForecast):
     ----------
     {variables}
 
-    window: int, offset, or BaseIndexer subclass, default=3.
+    window: int, offset, BaseIndexer subclass, or list, default=3
         Size of the moving window. If an integer, the fixed number of observations used
         for each window. If an offset, the time period of each window. If list, features
         will be created for each one of the windows in the list. It can also take a
@@ -66,7 +71,8 @@ class WindowFeatures(BaseForecast):
 
     min_periods: int, default None.
         Minimum number of observations in window required to have a value; otherwise,
-        result is np.nan.
+        result is np.nan. See parameter `min_periods` in the pandas `rolling()`
+        documentation for more details.
 
     functions: list of strings, default = ['mean']
         The functions to apply within the window. Valid functions can be found
