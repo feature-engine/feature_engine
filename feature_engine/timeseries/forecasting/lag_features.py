@@ -96,7 +96,7 @@ class LagFeatures(BaseForecast):
     def __init__(
             self,
             variables: Union[None, int, str, List[Union[str, int]]] = None,
-            periods: int = 1,
+            periods: Union[int, List[int]] = 1,
             freq: Union[str, List[str]] = None,
             sort_index: bool = True,
             missing_values: str = "raise",
