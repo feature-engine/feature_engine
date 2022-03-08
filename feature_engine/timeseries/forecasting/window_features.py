@@ -125,6 +125,21 @@ class WindowFeatures(BaseForecast):
             drop_original: bool = False,
     ) -> None:
 
+        if isinstance(window, list) and len(window) != len(set(window)):
+            raise ValueError(
+                f"There are duplicated windows in the list: {window}"
+            )
+
+        if not isinstance(functions, list) or not all(isinstance(val, str) for val in functions):
+            raise ValueError(
+                f"functions must be a list of strings. Got {functions} instead."
+            )
+        if len(functions) != len(set(functions)):
+            raise ValueError(
+                f"There are some duplicated functions in the list of "
+                f"functions: {functions}"
+            )
+
         if not isinstance(periods, int) or periods <= 0:
             raise ValueError(
                 f"periods must be a positive integer. Got {periods} instead."

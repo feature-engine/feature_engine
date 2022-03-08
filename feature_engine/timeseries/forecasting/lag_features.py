@@ -103,17 +103,25 @@ class LagFeatures(BaseForecast):
             drop_original: bool = False,
     ) -> None:
 
-        if (
+        if not (
                 isinstance(periods, int)
                 and periods > 0
                 or isinstance(periods, list)
                 and all(isinstance(num, int) and num > 0 for num in periods)
         ):
-            self.periods = periods
-        else:
+
             raise ValueError(
                 "periods must be an integer or a list of positive integers. "
                 f"Got {periods} instead."
+            )
+        if isinstance(periods, list) and len(periods) != len(set(periods)):
+            raise ValueError(
+                f"There are duplicated periods in the list: {periods}"
+            )
+
+        if isinstance(freq, list) and len(freq) != len(set(freq)):
+            raise ValueError(
+                f"There are duplicated freq values in the list: {freq}"
             )
 
         if not isinstance(sort_index, bool):
@@ -123,6 +131,7 @@ class LagFeatures(BaseForecast):
 
         super().__init__(variables, missing_values, drop_original)
 
+        self.periods = periods
         self.freq = freq
         self.sort_index = sort_index
 
