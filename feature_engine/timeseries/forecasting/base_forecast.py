@@ -195,6 +195,9 @@ class BaseForecast(BaseEstimator, TransformerMixin):
         if self.missing_values == "raise":
             self._check_na_and_inf(X)
 
+        # reorder variables to match train set
+        X = X[self.feature_names_in_]
+
         if self.sort_index is True:
             X.sort_index(inplace=True)
 

@@ -16,6 +16,13 @@ _date_time = [
     pd.Timestamp('2020-05-15 14:00:00'),
 ]
 
+
+@pytest.mark.parametrize("_window", [[2, 2, 3], ["45min", "45min", "30min"]])
+def test_error_when_duplicated_windows(_window):
+    with pytest.raises(ValueError):
+        WindowFeatures(window=_window)
+
+
 @pytest.mark.parametrize("_periods", [1, 2, 3])
 def test_permitted_param_periods(_periods):
     transformer = WindowFeatures(periods=_periods)
@@ -26,6 +33,18 @@ def test_permitted_param_periods(_periods):
 def test_error_when_non_permitted_param_periods(_periods):
     with pytest.raises(ValueError):
         WindowFeatures(periods=_periods)
+
+
+@pytest.mark.parametrize("_functions", [["sum","mean"], ["sum", "mean", "count"]])
+def test_permitted_param_functions(_functions):
+    transformer = WindowFeatures(functions=_functions)
+    assert transformer.functions == _functions
+
+
+@pytest.mark.parametrize("_functions", ["sum", 3.33, [1, "mean"], None, ["sum", "sum", "mean"]])
+def test_error_when_non_permitted_param_functions(_functions):
+    with pytest.raises(ValueError):
+        WindowFeatures(functions=_functions)
 
 
 def test_get_feature_names_out(df_time):
@@ -311,3 +330,26 @@ def test_multiple_windows(df_time):
     assert df_tr.head(9).round(3).equals(
         expected_results_df.drop([xxx,xxx,xxx], axis=1)
     )
+
+#TODO: modify test to pass
+def test_sort_index(df_time):
+    X = df_time.copy()
+
+    # Shuffle dataframe
+    Xs = X.sample(len(df_time)).copy()
+
+    transformer = WindowFeatures(sort_index=True)
+    X_tr = transformer.fit_transform(Xs)
+
+    # TODO: this needs changing
+    A = X[transformer.variables_].iloc[0:4].values
+    B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
+    assert (A == B).all()
+
+    transformer = WindowFeatures(sort_index=False)
+    X_tr = transformer.fit_transform(Xs)
+
+    # TODO: this needs changing
+    A = Xs[transformer.variables_].iloc[0:4].values
+    B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
+    assert (A == B).all()
