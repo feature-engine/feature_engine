@@ -18,6 +18,9 @@ from feature_engine.docstrings import (
     _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _n_features_in_docstring,
+    _missing_values_docstring,
+    _drop_original_docstring,
+
 )
 from feature_engine.variable_manipulation import (
     _find_or_check_numerical_variables,
@@ -25,6 +28,8 @@ from feature_engine.variable_manipulation import (
 
 
 @Substitution(
+    missing_values=_missing_values_docstring,
+    drop_original=_drop_original_docstring,
     feature_names_in_=_feature_names_in_docstring,
     fit=_fit_not_learn_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -35,7 +40,9 @@ class BaseForecast(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
+    {missing_values}
 
+    {drop_original}
 
     Attributes
     ----------
@@ -56,25 +63,37 @@ class BaseForecast(BaseEstimator, TransformerMixin):
 
     """
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def __init__(
+        self,
+        missing_values: str = "raise",
+        drop_original: bool = False,
+    ) -> None:
+
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError(
+                "missing_values takes only values 'raise' or 'ignore'. "
+                f"Got {missing_values} instead."
+            )
+
+        if not isinstance(drop_original, bool):
+            raise ValueError(
+                "drop_original takes only boolean values True and False. "
+                f"Got {drop_original} instead."
+            )
+
+        self.missing_values = missing_values
+        self.drop_original = drop_original
+
+    def _check_index(self, X: pd.DataFrame):
         """
-        This transformer does not learn parameters.
+        Check that the index does not have missing data and its values are unique.
 
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset.
-
-        y: pandas Series, default=None
-            y is not needed in this transformer. You can pass None or y.
         """
-        # check input dataframe
-        X = _is_dataframe(X)
-
-        # We need the dataframes to have unique values in the index and no missing data.
-        # Otherwise, when we merge the window features we will duplicate rows.
-
-        if X.index.isnull().sum() > 0:
+        if X.index.isnull().any():
             raise NotImplementedError(
                 "The dataframe's index contains NaN values or missing data. "
                 "Only dataframes with complete indexes are compatible with "
@@ -89,13 +108,34 @@ class BaseForecast(BaseEstimator, TransformerMixin):
                 "compatible with this transformer."
             )
 
-        # find variables that will be transformed
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        return self
+
+    def _check_na_and_inf(self, X: pd.DataFrame):
+        """
+        Checks that the dataframe does not contain NaN or Infinite values.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The dataset for training or transformation.
+        """
 
         # check if dataset contains na
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
+
+        return self
+
+    def _check_trainset_features(self, X: pd.DataFrame):
+        """
+        Finds the number and name of the features in the training set.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The dataset for training or transformation.
+        """
 
         self.feature_names_in_ = X.columns.tolist()
         self.n_features_in_ = X.shape[1]
@@ -104,7 +144,7 @@ class BaseForecast(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Adds window features.
+        Common checks performed before the feature transformation.
 
         Parameters
         ----------
@@ -113,8 +153,8 @@ class BaseForecast(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X_new: Pandas dataframe, shape = [n_samples, n_features + lag_features]
-            The dataframe with the original plus the new variables.
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The data to transform.
         """
         # checmk method fit has been called
         check_is_fitted(self)
