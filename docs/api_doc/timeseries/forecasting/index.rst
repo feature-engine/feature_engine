@@ -11,5 +11,6 @@ past.
    :maxdepth: 2
 
    LagFeatures
+   WindowFeatures
 
 
