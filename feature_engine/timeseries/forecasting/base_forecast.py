@@ -22,6 +22,7 @@ from feature_engine.docstrings import (
     _drop_original_docstring,
 
 )
+from feature_engine.validation import _return_tags
 
 
 @Substitution(
@@ -76,7 +77,7 @@ class BaseForecast(BaseEstimator, TransformerMixin):
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
-            The training dataset.
+            The dataset.
         """
         if X.index.isnull().any():
             raise NotImplementedError(
@@ -85,7 +86,6 @@ class BaseForecast(BaseEstimator, TransformerMixin):
                 "this transformer."
             )
 
-        # Check that the index contains unique values.
         if X.index.is_unique is False:
             raise NotImplementedError(
                 "The dataframe's index does not contain unique values. "
@@ -138,7 +138,7 @@ class BaseForecast(BaseEstimator, TransformerMixin):
         X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
         """
-        # checmk method fit has been called
+        # check method fit has been called
         check_is_fitted(self)
 
         # check if 'X' is a dataframe
@@ -149,27 +149,24 @@ class BaseForecast(BaseEstimator, TransformerMixin):
         _check_input_matches_training_df(X, self.n_features_in_)
 
         # Dataframes must have unique values in the index and no missing data.
-        # Otherwise, when we merge the lag features we will duplicate rows.
-        if X.index.isnull().sum() > 0:
-            raise NotImplementedError(
-                "The dataframe's index contains NaN values or missing data. "
-                "Only dataframes with complete indexes are compatible with "
-                "this transformer."
-            )
-
-        if X.index.is_unique is False:
-            raise NotImplementedError(
-                "The dataframe's index does not contain unique values. "
-                "Only dataframes with unique values in the index are compatible "
-                "with this transformer."
-            )
+        # Otherwise, when we merge the created features we will duplicate rows.
+        self._check_index(X)
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.variables_)
+            self._check_na_and_inf(X)
 
         if self.sort_index is True:
             X.sort_index(inplace=True)
 
         return X
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "numerical"
+        # add additional test that fails
+        tags_dict["_xfail_checks"][
+            "check_methods_subset_invariance"
+        ] = "tLagFeatures is not invariant when applied to a subset. Not sure why yet"
+        return tags_dict

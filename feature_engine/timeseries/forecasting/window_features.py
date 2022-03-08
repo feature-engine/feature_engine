@@ -17,7 +17,7 @@ from feature_engine.docstrings import (
     _n_features_in_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine.timeseries.forecasting import BaseForecast
+from feature_engine.timeseries.forecasting.base_forecast import BaseForecast
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
 )
