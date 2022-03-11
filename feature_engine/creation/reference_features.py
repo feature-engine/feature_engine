@@ -1,4 +1,3 @@
-from sklearn.utils import deprecated
 from typing import List, Optional, Union
 
 import pandas as pd
@@ -27,10 +26,6 @@ from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
-@deprecated(
-    "CombineWithReferenceFeature() is deprecated in version 1.3 and will be removed in "
-    "version 1.4. Use ReferenceFeatures() instead."
-)
 @Substitution(
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
@@ -42,9 +37,6 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 )
 class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     """
-    DEPRECATED: CombineWithReferenceFeature() is deprecated in version 1.3 and will be
-    removed in Version 1.4. Use ReferenceFeatures() instead.
-
     CombineWithReferenceFeature() applies basic mathematical operations between a group
     of variables and one or more reference features. It adds one or more additional
     features to the dataframe with the result of the operations.

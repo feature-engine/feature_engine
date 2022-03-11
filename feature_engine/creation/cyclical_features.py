@@ -1,4 +1,3 @@
-from sklearn.utils import deprecated
 from typing import Dict, List, Optional, Union
 
 import numpy as np
@@ -21,10 +20,6 @@ from feature_engine.docstrings import (
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
-@deprecated(
-    "CyclicalTransformer() is deprecated in version 1.3 and will be removed in "
-    "version 1.4. Use CyclicalFeatures() instead."
-)
 @Substitution(
     variables=_variables_numerical_docstring,
     drop_original=_drop_original_docstring,
@@ -36,9 +31,6 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 )
 class CyclicalTransformer(BaseNumericalTransformer):
     """
-    DEPRECATED: CyclicalTransformer() is deprecated in version 1.3 and will be removed
-    in version 1.4. Use CyclicalFeatures() instead.
-
     The CyclicalTransformer() applies cyclical transformations to numerical
     variables, returning 2 new features per variable, according to:
 
