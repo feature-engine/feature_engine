@@ -19,7 +19,7 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 
 
 class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
-    """shared set-up procedures across numerical transformers, i.e.,
+    """Shared set-up procedures across numerical transformers, i.e.,
     variable transformers, discretisers, math combination.
     """
 
@@ -106,7 +106,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         _check_contains_inf(X, self.variables_)
 
         # save input features
-        self.feature_names_in_: List[Union[str, int]] = X.columns.tolist()
+        self.feature_names_in_ = X.columns.tolist()
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
