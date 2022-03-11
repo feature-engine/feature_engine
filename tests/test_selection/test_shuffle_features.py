@@ -45,7 +45,7 @@ def test_regression_cv_3_and_r2(load_diabetes_dataset):
     #  test for regression using cv=3, and the r2 as metric.
     X, y = load_diabetes_dataset
     sel = SelectByShuffling(
-        estimator=LinearRegression(), scoring="r2", cv=3, threshold=0.01, random_state=1
+        estimator=LinearRegression(), scoring="r2", cv=3, threshold=0.05, random_state=1
     )
     sel.fit(X, y)
 

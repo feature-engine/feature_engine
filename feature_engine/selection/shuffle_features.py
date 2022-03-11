@@ -2,8 +2,9 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.base import is_classifier
 from sklearn.metrics import get_scorer
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import cross_validate, check_cv
 from sklearn.utils.validation import check_random_state
 
 from feature_engine.dataframe_checks import _is_dataframe
@@ -169,6 +170,8 @@ class SelectByShuffling(BaseSelector):
 
         if isinstance(y, pd.Series):
             y = y.reset_index(drop=True)
+        else:
+            y = pd.Series(y)
 
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
@@ -189,6 +192,10 @@ class SelectByShuffling(BaseSelector):
         # store initial model performance
         self.initial_model_performance_ = model["test_score"].mean()
 
+        # extract the validation folds
+        cv_ = check_cv(self.cv, y=y, classifier=is_classifier(self.estimator))
+        validation_indices = [val_index for _, val_index in cv_.split(X, y)]
+
         # get performance metric
         scorer = get_scorer(self.scoring)
 
@@ -200,6 +207,7 @@ class SelectByShuffling(BaseSelector):
 
         # shuffle features and save feature performance drift into a dict
         for feature in self.variables_:
+
             X_shuffled = X[self.variables_].copy()
 
             # shuffle individual feature
@@ -208,10 +216,12 @@ class SelectByShuffling(BaseSelector):
                 .sample(frac=1, random_state=random_state)
                 .reset_index(drop=True)
             )
-
+            
             # determine the performance with the shuffled feature
             performance = np.mean(
-                [scorer(m, X_shuffled, y) for m in model["estimator"]]
+                [scorer(m, X_shuffled.iloc[idx], y.iloc[idx]) 
+                for m, idx in zip(model["estimator"], validation_indices)
+                ]
             )
 
             # determine drift in performance
