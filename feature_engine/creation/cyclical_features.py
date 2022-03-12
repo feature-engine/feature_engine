@@ -5,12 +5,9 @@ import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.creation._docstring import (
-    _drop_original_docstring,
-    _transform_docstring,
-)
 from feature_engine.docstrings import (
     Substitution,
+    _drop_original_docstring,
     _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
@@ -26,10 +23,9 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
-    transform=_transform_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class CyclicalTransformer(BaseNumericalTransformer):
+class CyclicalFeatures(BaseNumericalTransformer):
     """
     The CyclicalTransformer() applies cyclical transformations to numerical
     variables, returning 2 new features per variable, according to:
@@ -74,7 +70,8 @@ class CyclicalTransformer(BaseNumericalTransformer):
     fit:
         Learns the maximum values of the cyclical features.
 
-    {transform}
+    transform:
+        Add new features.
 
     {fit_transform}
 
@@ -95,13 +92,15 @@ class CyclicalTransformer(BaseNumericalTransformer):
                 isinstance(var, (int, float)) for var in list(max_values.values())
             ):
                 raise TypeError(
-                    "max_values takes a dictionary of strings as keys, "
-                    "and numbers as items to be used as the reference for"
-                    "the max value of each column."
+                    "max_values takes a dictionary where the values are numerical. "
+                    f"Got {max_values} instead."
                 )
 
         if not isinstance(drop_original, bool):
-            raise TypeError("drop_original takes only boolean values True and False.")
+            raise TypeError(
+                "drop_original takes only boolean values True and False. "
+                f"Got {drop_original} instead."
+            )
 
         self.variables = _check_input_parameter_variables(variables)
         self.max_values = max_values
@@ -120,18 +119,11 @@ class CyclicalTransformer(BaseNumericalTransformer):
         y: pandas Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
-
-        # check input dataframe
-        X = super()._fit_from_varlist(X)
-
         if self.max_values is None:
+            X = super()._fit_from_varlist(X)
             self.max_values_ = X[self.variables_].max().to_dict()
         else:
-            for key in list(self.max_values.keys()):
-                if key not in self.variables_:
-                    raise ValueError(
-                        f"The mapping key {key} is not present" f" in variables."
-                    )
+            X = super()._fit_from_dict(X, self.max_values)
             self.max_values_ = self.max_values
 
         return self
@@ -182,7 +174,6 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
         # Create names for all features or just the indicated ones.
         if input_features is None:
-            # Create all lag features.
             input_features_ = self.variables_
         else:
             if not isinstance(input_features, list):
@@ -198,11 +189,9 @@ class CyclicalTransformer(BaseNumericalTransformer):
             # Create just indicated lag features.
             input_features_ = input_features
 
-        # create the names for the lag features
+        # create the names for the periodic features
         feature_names = [
-            str(var) + suffix
-            for var in input_features_
-            for suffix in ["_sin", "_cos"]
+            str(var) + suffix for var in input_features_ for suffix in ["_sin", "_cos"]
         ]
 
         # Return names of all variables if input_features is None.

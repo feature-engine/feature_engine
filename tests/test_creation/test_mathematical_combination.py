@@ -367,5 +367,3 @@ def test_get_feature_names_out(_varnames, _drop, df_vartypes):
 
     X = transformer.fit_transform(df_vartypes)
     assert list(X.columns) == transformer.get_feature_names_out()
-
-

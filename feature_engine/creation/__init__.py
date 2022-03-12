@@ -5,10 +5,16 @@ variables in the dataframe.
 
 from .combine_with_reference_feature import CombineWithReferenceFeature
 from .cyclical import CyclicalTransformer
+from .cyclical_features import CyclicalFeatures
+from .math_features import MathFeatures
 from .mathematical_combination import MathematicalCombination
+from .relative_features import RelativeFeatures
 
 __all__ = [
     "MathematicalCombination",
     "CombineWithReferenceFeature",
     "CyclicalTransformer",
+    "MathFeatures",
+    "RelativeFeatures",
+    "CyclicalFeatures",
 ]

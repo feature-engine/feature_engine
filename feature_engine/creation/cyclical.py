@@ -1,17 +1,14 @@
-from sklearn.utils import deprecated
 from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.utils import deprecated
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.creation._docstring import (
-    _drop_original_docstring,
-    _transform_docstring,
-)
 from feature_engine.docstrings import (
     Substitution,
+    _drop_original_docstring,
     _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
@@ -31,7 +28,6 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
-    transform=_transform_docstring,
     fit_transform=_fit_transform_docstring,
 )
 class CyclicalTransformer(BaseNumericalTransformer):
@@ -82,7 +78,8 @@ class CyclicalTransformer(BaseNumericalTransformer):
     fit:
         Learns the maximum values of the cyclical features.
 
-    {transform}
+    transform:
+        Create new features.
 
     {fit_transform}
 
@@ -138,7 +135,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
             for key in list(self.max_values.keys()):
                 if key not in self.variables_:
                     raise ValueError(
-                        f"The mapping key {key} is not present" f" in variables."
+                        f"The mapping key {key} is not present in variables."
                     )
             self.max_values_ = self.max_values
 
@@ -208,9 +205,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
         # create the names for the lag features
         feature_names = [
-            str(var) + suffix
-            for var in input_features_
-            for suffix in ["_sin", "_cos"]
+            str(var) + suffix for var in input_features_ for suffix in ["_sin", "_cos"]
         ]
 
         # Return names of all variables if input_features is None.
