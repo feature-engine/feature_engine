@@ -11,10 +11,17 @@ def test_permitted_param_periods(_periods):
     assert transformer.periods == _periods
 
 
-@pytest.mark.parametrize("_periods", [-1, 0, None, [-1, 2, 3], [0.1, 1], 0.5, [0, 1]])
+@pytest.mark.parametrize(
+    "_periods", [-1, 0, None, [-1, 2, 3], [0.1, 1], 0.5, [0, 1], [1, 1, 2]]
+)
 def test_error_when_non_permitted_param_periods(_periods):
     with pytest.raises(ValueError):
         LagFeatures(periods=_periods)
+
+
+def test_error_when_non_permitted_param_freq():
+    with pytest.raises(ValueError):
+        LagFeatures(freq=["2h", "2h", "3h"])
 
 
 @pytest.mark.parametrize("_sort_index", [True, False])
@@ -220,19 +227,22 @@ def test_correct_lag_when_using_freq(df_time):
     )
 
 
-def test_error_when_nan_in_index(df_time):
+def test_sort_index(df_time):
     X = df_time.copy()
 
-    # Introduce NaN in index.
-    tmp = X.head(1).copy()
-    tmp.index = [np.nan]
-    Xd = pd.concat([X, tmp], axis=0)
+    # Shuffle dataframe
+    Xs = X.sample(len(df_time)).copy()
 
-    transformer = LagFeatures()
+    transformer = LagFeatures(sort_index=True)
+    X_tr = transformer.fit_transform(Xs)
 
-    with pytest.raises(NotImplementedError):
-        transformer.fit(Xd)
+    A = X[transformer.variables_].iloc[0:4].values
+    B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
+    assert (A == B).all()
 
-    transformer.fit(X)
-    with pytest.raises(NotImplementedError):
-        transformer.transform(Xd)
+    transformer = LagFeatures(sort_index=False)
+    X_tr = transformer.fit_transform(Xs)
+
+    A = Xs[transformer.variables_].iloc[0:4].values
+    B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
+    assert (A == B).all()

@@ -1,9 +1,8 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union, Callable
+from typing import Callable, List, Optional, Union
 
-import numpy as np
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
@@ -17,10 +16,7 @@ from feature_engine.docstrings import (
     _n_features_in_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine.timeseries.forecasting import BaseForecast
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-)
+from feature_engine.timeseries.forecasting.base_forecast import BaseForecast
 
 
 @Substitution(
@@ -34,34 +30,61 @@ from feature_engine.variable_manipulation import (
 )
 class WindowFeatures(BaseForecast):
     """
-    WindowFeatures performs windowing operations on the specified variables.
-    A windowing operation perform an aggregation - e.g. mean or sum - over
-    a sliding partition of values.
+    WindowFeatures adds new features to a dataframe based on window operations. Window
+    operations are operations that perform an aggregation over a sliding partition of
+    past values. A window feature is, in other words, a feature created after computing
+    statistics (e.g., mean, min, max, etc.) using a window over the past data. For
+    example, the mean value of the previous 3 months of data is a window feature. The
+    maximum value of the previous three rows of data is another window feature.
 
-    WindowFeatures combines the function of pandas 'rolling()' and 'shift()'.
+    WindowFeatures uses the pandas' functions `rolling()`, `agg` and `shift`. With
+    `rolling`, it creates rolling windows. With `agg` it applies multiple functions
+    within those windows. With 'shift()' it allocates the values to the correct rows.
+
+    For supported aggregation functions, see Rolling Window
+    `Functions <https://pandas.pydata.org/docs/reference/window.html>`_.
+
+    With pandas `rolling` we can perform rolling operations over 1 window size at a
+    time. WindowFeatures builds on top of pandas `rolling()` in that multiple windows
+    can be evaluated at the same time and the created features will be concatenated to
+    the original dataframe.
 
     To be compatible with WindowFeatures, the dataframe's index must have unique values
     and no NaN.
 
     WindowFeatures works only with numerical variables. You can pass a list of variables
-    to lag. Alternatively, WindowFeatures will automatically select and lag all numerical
-    variables found in the training set.
+    to use as input for the windows. Alternatively, WindowFeatures will automatically
+    select all numerical variables in the training set.
 
-    More details in the :ref:`User Guide <lag_features>`.
+    More details in the :ref:`User Guide <window_features>`.
 
     Parameters
     ----------
     {variables}
 
+    window: int, offset, BaseIndexer subclass, or list, default=3
+        Size of the moving window. If an integer, the fixed number of observations used
+        for each window. If an offset, the time period of each window. If list, features
+        will be created for each one of the windows in the list. It can also take a
+        function. See parameter `windows` in the pandas `rolling()` documentation for
+        more details.
+
+    min_periods: int, default None.
+        Minimum number of observations in window required to have a value; otherwise,
+        result is np.nan. See parameter `min_periods` in the pandas `rolling()`
+        documentation for more details.
+
+    functions: list of strings, default = ['mean']
+        The functions to apply within the window. Valid functions can be found
+        `here <https://pandas.pydata.org/docs/reference/window.html>`_.
+
     periods: int, list of ints, default=1
-        Number of periods to shift. Can be a positive integer or list of positive
-        integers. If list, features will be created for each one of the periods in the
-        list. If the parameter `freq` is specified, `periods` will be ignored.
+        Number of periods to shift. Can be a positive integer. See param `periods` in
+        pandas `shift`.
 
     freq: str, list of str, default=None
         Offset to use from the tseries module or time rule. See parameter `freq` in
-        pandas `shift()`. If freq is not None, then this parameter overrides the
-        parameter `periods`.
+        pandas `shift()`.
 
     sort_index: bool, default=True
         Whether to order the index of the dataframe before creating the lag features.
@@ -73,7 +96,7 @@ class WindowFeatures(BaseForecast):
     Attributes
     ----------
     variables_:
-        The group of variables that will be lagged.
+        The group of variables that will be used to create the window features.
 
     {feature_names_in_}
 
@@ -84,72 +107,58 @@ class WindowFeatures(BaseForecast):
     {fit}
 
     transform:
-        Add lag features.
+        Add window features.
 
     {fit_transform}
 
     See Also
     --------
+    pandas.rolling
+    pandas.aggregate
     pandas.shift
     """
 
     def __init__(
-            self,
-            variables: List[str] = None,
-            window: Union[str, int] = 1,
-            function: Callable = np.mean,
-            periods: int = 1,
-            freq: str = None,
-            sort_index: bool = True,
-            missing_values: str = "raise",
-            drop_original: bool = False,
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        window: Union[str, int, Callable, List[int], List[str]] = 3,
+        min_periods: int = None,
+        functions: List[str] = ["mean"],
+        periods: int = 1,
+        freq: str = None,
+        sort_index: bool = True,
+        missing_values: str = "raise",
+        drop_original: bool = False,
     ) -> None:
 
-        if isinstance(periods, int) and periods > 0:
-            self.periods = periods
-        else:
+        if isinstance(window, list) and len(window) != len(set(window)):
+            raise ValueError(f"There are duplicated windows in the list: {window}")
+
+        if not isinstance(functions, list) or not all(
+            isinstance(val, str) for val in functions
+        ):
+            raise ValueError(
+                f"functions must be a list of strings. Got {functions} instead."
+            )
+        if len(functions) != len(set(functions)):
+            raise ValueError(
+                f"There are some duplicated functions in the list of "
+                f"functions: {functions}"
+            )
+
+        if not isinstance(periods, int) or periods <= 0:
             raise ValueError(
                 f"periods must be a positive integer. Got {periods} instead."
             )
 
-        if isinstance(window, int) and window > 0:
-            self.window = window
-        elif isinstance(window, str):
-            self.window = window
-        else:
-            raise ValueError(
-                f"window must be a positive integer or string. Got {window} instead."
-            )
+        super().__init__(variables, missing_values, drop_original)
 
-        if function not in (np.mean, np.std, np.median, np.min, np.max, np.sum):
-            raise ValueError(
-                f"function must be np.mean, np.std, np.median, np.min, np.max, "
-                f"or np.sum. Got {function} instead."
-            )
-        if periods is None and not isinstance(freq, str):
-            raise ValueError(
-                f"freq must be a string. Got {freq} instead."
-            )
-
-        if missing_values not in ["raise", "ignore"]:
-            raise ValueError(
-                "missing_values takes only values 'raise' or 'ignore'. "
-                f"Got {missing_values} instead."
-            )
-
-        if not isinstance(drop_original, bool):
-            raise ValueError(
-                "drop_original takes only boolean values True and False. "
-                f"Got {drop_original} instead."
-            )
-
-        self.variables = _check_input_parameter_variables(variables)
         self.window = window
-        self.function = function
+        self.min_periods = min_periods
+        self.functions = functions
+        self.periods = periods
         self.freq = freq
         self.sort_index = sort_index
-        self.missing_values = missing_values
-        self.drop_original = drop_original
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -162,24 +171,31 @@ class WindowFeatures(BaseForecast):
 
         Returns
         -------
-        X_new: Pandas dataframe, shape = [n_samples, n_features + lag_features]
+        X_new: Pandas dataframe, shape = [n_samples, n_features + window_features]
             The dataframe with the original plus the new variables.
         """
-        # Performs various checks
+        # Common dataframe checks and setting up.
         X = super().transform(X)
 
-        # if freq is not None, it overrides periods.
-        if self.freq is not None:
-            tmp = (X[self.variables_]
-                   .rolling(window=self.window).apply(self.function)
-                   .shift(freq=self.freq)
-                   )
+        if isinstance(self.window, list):
+            df_ls = []
+            for win in self.window:
+                tmp = (
+                    X[self.variables_]
+                    .rolling(window=win)
+                    .agg(self.functions)
+                    .shift(periods=self.periods, freq=self.freq)
+                )
+                df_ls.append(tmp)
+            tmp = pd.concat(df_ls, axis=1)
 
         else:
-            tmp = (X[self.variables_]
-                   .rolling(window=self.window).apply(self.function)
-                   .shift(periods=self.periods)
-                   )
+            tmp = (
+                X[self.variables_]
+                .rolling(window=self.window)
+                .agg(self.functions)
+                .shift(periods=self.periods, freq=self.freq)
+            )
 
         tmp.columns = self.get_feature_names_out(self.variables_)
 
@@ -199,7 +215,7 @@ class WindowFeatures(BaseForecast):
         input_features: list, default=None
             Input features. If `input_features` is `None`, then the names of all the
             variables in the transformed dataset (original + new variables) is returned.
-            Alternatively, only the names for the lag features derived from
+            Alternatively, only the names for the window features derived from
             input_features will be returned.
 
         Returns
@@ -219,30 +235,35 @@ class WindowFeatures(BaseForecast):
                 )
             if any([f for f in input_features if f not in self.variables_]):
                 raise ValueError(
-                    "Some features in input_features were not transformed. This method only "
-                    "provides the names of the transform features with this method."
+                    "Some features in input_features were not used as input for the "
+                    "window features. You can only get the names of the window features "
+                    "with this function."
                 )
             # create just indicated window features
             input_features_ = input_features
 
-        if self.freq is not None:
+        if isinstance(self.window, list):
             feature_names = [
-                str(feature) + f"_window_{self.window}_freq_{self.freq}"
+                str(feature) + f"_window_{win}" + f"_{agg}"
+                for win in self.window
                 for feature in input_features_
+                for agg in self.functions
             ]
         else:
             feature_names = [
-                str(feature) + f"_window_{self.window}_periods_{self.periods}"
+                str(feature) + f"_window_{self.window}" + f"_{agg}"
                 for feature in input_features_
+                for agg in self.functions
             ]
 
         # return names of all variables if input_features is None
         if input_features is None:
             if self.drop_original is True:
                 # removes names of variables to drop
-                feature_names = [
+                original = [
                     f for f in self.feature_names_in_ if f not in self.variables_
                 ]
+                feature_names = original + feature_names
             else:
                 feature_names = self.feature_names_in_ + feature_names
 

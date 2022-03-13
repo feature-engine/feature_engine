@@ -16,12 +16,7 @@ from feature_engine.docstrings import (
     _n_features_in_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine.timeseries.forecasting import BaseForecast
-from feature_engine.validation import _return_tags
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_numerical_variables,
-)
+from feature_engine.timeseries.forecasting.base_forecast import BaseForecast
 
 
 @Substitution(
@@ -100,48 +95,40 @@ class LagFeatures(BaseForecast):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        periods: int = 1,
+        periods: Union[int, List[int]] = 1,
         freq: Union[str, List[str]] = None,
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
 
-        if (
+        if not (
             isinstance(periods, int)
             and periods > 0
             or isinstance(periods, list)
             and all(isinstance(num, int) and num > 0 for num in periods)
         ):
-            self.periods = periods
-        else:
+
             raise ValueError(
                 "periods must be an integer or a list of positive integers. "
                 f"Got {periods} instead."
             )
+        if isinstance(periods, list) and len(periods) != len(set(periods)):
+            raise ValueError(f"There are duplicated periods in the list: {periods}")
+
+        if isinstance(freq, list) and len(freq) != len(set(freq)):
+            raise ValueError(f"There are duplicated freq values in the list: {freq}")
 
         if not isinstance(sort_index, bool):
             raise ValueError(
                 "sort_index takes values True and False." f"Got {sort_index} instead."
             )
 
-        if missing_values not in ["raise", "ignore"]:
-            raise ValueError(
-                "missing_values takes only values 'raise' or 'ignore'. "
-                f"Got {missing_values} instead."
-            )
+        super().__init__(variables, missing_values, drop_original)
 
-        if not isinstance(drop_original, bool):
-            raise ValueError(
-                "drop_original takes only boolean values True and False. "
-                f"Got {drop_original} instead."
-            )
-
-        self.variables = _check_input_parameter_variables(variables)
+        self.periods = periods
         self.freq = freq
         self.sort_index = sort_index
-        self.missing_values = missing_values
-        self.drop_original = drop_original
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -157,7 +144,7 @@ class LagFeatures(BaseForecast):
         X_new: Pandas dataframe, shape = [n_samples, n_features + lag_features]
             The dataframe with the original plus the new variables.
         """
-        # Performs various checks
+        # Common dataframe checks and setting up.
         X = super().transform(X)
 
         # if freq is not None, it overrides periods.
@@ -274,13 +261,3 @@ class LagFeatures(BaseForecast):
                 feature_names = self.feature_names_in_ + feature_names
 
         return feature_names
-
-    def _more_tags(self):
-        tags_dict = _return_tags()
-        tags_dict["allow_nan"] = True
-        tags_dict["variables"] = "numerical"
-        # add additional test that fails
-        tags_dict["_xfail_checks"][
-            "check_methods_subset_invariance"
-        ] = "tLagFeatures is not invariant when applied to a subset. Not sure why yet"
-        return tags_dict
