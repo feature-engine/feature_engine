@@ -364,11 +364,11 @@ def test_multiple_windows(df_time):
             np.nan,
             np.nan,
             np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
+            31.41,
+            31.83,
+            32.27,
+            32.505,
+            32.56,
         ],
         "module_temp_window_2_sum": [
             np.nan,
@@ -386,11 +386,11 @@ def test_multiple_windows(df_time):
             np.nan,
             np.nan,
             np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
+            49.51,
+            51.095,
+            51.49,
+            50.12,
+            48.31,
         ],
         "irradiation_window_2_sum": [
             np.nan,
@@ -408,77 +408,77 @@ def test_multiple_windows(df_time):
             np.nan,
             np.nan,
             np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
+            0.65,
+            0.72,
+            0.705,
+            0.59,
+            0.455,
         ],
         "ambient_temp_window_3_sum": [
             np.nan,
             np.nan,
             np.nan,
             np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
+            np.nan,
+            94.97,
+            96.05,
+            97.16,
+            97.51,
         ],
         "ambient_temp_window_3_mean": [
             np.nan,
             np.nan,
             np.nan,
             np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
+            np.nan,
+            31.657,
+            32.017,
+            32.387,
+            32.503,
         ],
         "module_temp_window_3_sum": [
             np.nan,
             np.nan,
             np.nan,
             np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
+            np.nan,
+            151.37,
+            152.82,
+            152.59,
+            147.25,
         ],
         "module_temp_window_3_mean": [
             np.nan,
             np.nan,
             np.nan,
             np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
+            np.nan,
+            50.457,
+            50.94,
+            50.863,
+            49.083,
         ],
         "irradiation_window_3_sum": [
             np.nan,
             np.nan,
             np.nan,
             np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
+            np.nan,
+            1.95,
+            2.2,
+            1.83,
+            1.67,
         ],
         "irradiation_window_3_mean": [
             np.nan,
             np.nan,
             np.nan,
             np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
+            np.nan,
+            0.65,
+            0.733,
+            0.61,
+            0.557,
         ],
     }
 
@@ -528,8 +528,10 @@ def test_multiple_windows(df_time):
         .equals(
             expected_results_df.drop(
                 [
-                    xxx,
-                    xxx,
+                    "module_temp_window_2_sum",
+                    "module_temp_window_2_mean",
+                    "module_temp_window_3_sum",
+                    "module_temp_window_3_mean",
                 ],
                 axis=1,
             )
@@ -547,11 +549,26 @@ def test_multiple_windows(df_time):
     df_tr = transformer.fit_transform(df_time)
 
     assert (
-        df_tr.head(9).round(3).equals(expected_results_df.drop([xxx, xxx, xxx], axis=1))
+        df_tr.head(9)
+        .round(3)
+        .equals(
+            expected_results_df.drop(
+                [
+                    "ambient_temp_window_2_sum",
+                    "ambient_temp_window_2_mean",
+                    "module_temp_window_2_sum",
+                    "module_temp_window_2_mean",
+                    "ambient_temp_window_3_sum",
+                    "ambient_temp_window_3_mean",
+                    "module_temp_window_3_sum",
+                    "module_temp_window_3_mean",
+                ],
+                axis=1
+            )
+        )
     )
 
 
-# TODO: modify test to pass
 def test_sort_index(df_time):
     X = df_time.copy()
 
@@ -561,15 +578,9 @@ def test_sort_index(df_time):
     transformer = WindowFeatures(sort_index=True)
     X_tr = transformer.fit_transform(Xs)
 
-    # TODO: this needs changing
-    A = X[transformer.variables_].iloc[0:4].values
-    B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
-    assert (A == B).all()
+    assert X[transformer.variables_].head().equals(X_tr[transformer.variables_].head())
 
     transformer = WindowFeatures(sort_index=False)
     X_tr = transformer.fit_transform(Xs)
 
-    # TODO: this needs changing
-    A = Xs[transformer.variables_].iloc[0:4].values
-    B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
-    assert (A == B).all()
+    assert not(X[transformer.variables_].head().equals(X_tr[transformer.variables_].head()))
