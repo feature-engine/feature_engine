@@ -314,4 +314,9 @@ def test_get_feature_names_out(_varnames, _drop, df_vartypes):
 
     X = transformer.fit_transform(df_vartypes)
     assert list(X.columns) == transformer.get_feature_names_out(all=True)
-    assert _varnames == transformer.get_feature_names_out(all=False)
+    if _varnames is not None:
+        assert _varnames == transformer.get_feature_names_out(all=False)
+    else:
+        assert ["sum_Age_Marks", "mean_Age_Marks"] == transformer.get_feature_names_out(
+            all=False
+        )

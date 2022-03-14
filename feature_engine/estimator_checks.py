@@ -1,4 +1,5 @@
 from typing import Tuple
+
 import pandas as pd
 import pytest
 from sklearn.base import clone
@@ -198,10 +199,12 @@ def check_get_feature_names_out(estimator):
     if estimator.__class__.__name__ not in _skip_test:
         # selection transformers
         if (
-                hasattr(estimator, "confirm_variables")
-                or estimator.__class__.__name__ == "DropFeatures"
+            hasattr(estimator, "confirm_variables")
+            or estimator.__class__.__name__ == "DropFeatures"
         ):
-            feature_names = [f for f in X.columns if f not in estimator.features_to_drop_]
+            feature_names = [
+                f for f in X.columns if f not in estimator.features_to_drop_
+            ]
             assert estimator.get_feature_names_out() == feature_names
             assert estimator.transform(X).shape[1] == len(feature_names)
 
@@ -209,10 +212,10 @@ def check_get_feature_names_out(estimator):
             assert estimator.get_feature_names_out() == [
                 "var_" + str(i) for i in range(12)
             ] + [
-                       "cat_var1",
-                       "cat_var2",
-                       "date",
-                   ]
+                "cat_var1",
+                "cat_var2",
+                "date",
+            ]
 
 
 # =======  TESTS BASED ON ESTIMATOR TAGS =============
@@ -390,8 +393,6 @@ def check_all_types_variables_assignment(estimator):
         else:
             assert transformer.variables is None
             assert transformer.variables_ == list(X.columns)
-
-
 
 
 # == TESTS BASED OF SPECIFIC PARAMETERS IN INIT SHARED CROSS TRANSFORMERS ===
