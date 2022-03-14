@@ -36,7 +36,6 @@ def test_check_variables_assignment():
 
 
 def test_raises_error_when_no_transformer_passed():
-    # this selectors need an estimator as an input param
-    # test error otherwise.
+    # this transformer needs an estimator as an input param.
     with pytest.raises(TypeError):
         SklearnTransformerWrapper()
