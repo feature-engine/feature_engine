@@ -216,11 +216,12 @@ class SelectByShuffling(BaseSelector):
                 .sample(frac=1, random_state=random_state)
                 .reset_index(drop=True)
             )
-            
+
             # determine the performance with the shuffled feature
             performance = np.mean(
-                [scorer(m, X_shuffled.iloc[idx], y.iloc[idx]) 
-                for m, idx in zip(model["estimator"], validation_indices)
+                [
+                    scorer(m, X_shuffled.iloc[idx], y.iloc[idx])
+                    for m, idx in zip(model["estimator"], validation_indices)
                 ]
             )
 
