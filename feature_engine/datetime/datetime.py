@@ -254,6 +254,9 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
 
+        # reorder variables to match train set
+        X = X[self.feature_names_in_]
+
         # convert datetime variables
         datetime_df = pd.concat(
             [
@@ -308,7 +311,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
         # Create names for all features or just the indicated ones.
         if input_features is None:
-            # Create all lag features.
+            # Create all features.
             input_features_ = self.variables_
         else:
             if not isinstance(input_features, list):
@@ -321,7 +324,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
                     "variables. You can only get the names of the extracted features "
                     "with this function."
                 )
-            # Create just indicated lag features.
+            # Create just indicated features.
             input_features_ = input_features
 
         # create the names for the lag features
