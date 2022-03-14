@@ -118,8 +118,7 @@ class AddMissingIndicator(BaseImputer):
                 var for var in self.variables_ if X[var].isnull().sum() > 0
             ]
 
-        self.feature_names_in_ = X.columns.to_list()
-        self.n_features_in_ = X.shape[1]
+        self.get_feature_names_in(X)
 
         return self
 

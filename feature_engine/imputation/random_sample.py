@@ -179,8 +179,7 @@ class RandomSampleImputer(BaseImputer):
                     "of the training dataframe."
                 )
 
-        self.feature_names_in_ = X.columns.to_list()
-        self.n_features_in_ = X.shape[1]
+        self.get_feature_names_in(X)
 
         return self
 
