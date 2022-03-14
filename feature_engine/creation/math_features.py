@@ -171,7 +171,7 @@ class MathFeatures(BaseCreation):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Add aggregated variables.
+        Create and add new variables.
 
         Parameters
         ----------
