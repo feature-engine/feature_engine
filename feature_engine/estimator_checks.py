@@ -189,7 +189,7 @@ def check_get_feature_names_out(estimator):
     specific tests, based on the transformer functionality. They will be skipped from
     this test.
     """
-    _skip_test = ["OneHotEncoder", "AddMissingIndicator", "LagFeatures"]
+    _skip_test = ["OneHotEncoder", "AddMissingIndicator", "LagFeatures", "MathFeatures", "CyclicalFeatures", "RelativeFeatures"]
     # the estimator learns the parameters from the train set
     X, y = test_df(categorical=True, datetime=True)
     estimator = clone(estimator)
@@ -481,11 +481,16 @@ def check_drop_original_variables(estimator):
     estimator.set_params(drop_original=True)
     X_tr = estimator.fit_transform(X, y)
 
+    if hasattr(estimator, "variables_"):
+        vars = estimator.variables_
+    else:
+        vars = estimator.variables
+
     # Check that original variables are not in transformed dataframe
-    assert set(estimator.variables_).isdisjoint(set(X_tr.columns))
+    assert set(vars).isdisjoint(set(X_tr.columns))
     # Check that remaining variables are in transformed dataframe
     remaining = [
-        f for f in estimator.feature_names_in_ if f not in estimator.variables_
+        f for f in estimator.feature_names_in_ if f not in vars
     ]
     assert all([f in X_tr.columns for f in remaining])
 
@@ -494,11 +499,16 @@ def check_drop_original_variables(estimator):
     estimator.set_params(drop_original=False)
     X_tr = estimator.fit_transform(X, y)
 
+    if hasattr(estimator, "variables_"):
+        vars = estimator.variables_
+    else:
+        vars = estimator.variables
+
     # Check that original variables are in transformed dataframe
-    assert len([f in X_tr.columns for f in estimator.variables_])
+    assert len([f in X_tr.columns for f in vars])
     # Check that remaining variables are in transformed dataframe
     remaining = [
-        f for f in estimator.feature_names_in_ if f not in estimator.variables_
+        f for f in estimator.feature_names_in_ if f not in vars
     ]
     assert all([f in X_tr.columns for f in remaining])
 
@@ -513,8 +523,16 @@ def check_error_param_missing_values(estimator):
     # param takes values "raise" or "ignore"
     estimator = clone(estimator)
     for value in [2, "hola", False]:
-        with pytest.raises(ValueError):
-            estimator.__class__(missing_values=value)
+        if estimator.__class__.__name__ == "MathFeatures":
+            with pytest.raises(ValueError):
+                estimator.__class__(variables=["var_1", "var_2", "var_3"], func="mean", missing_values=value)
+
+        elif estimator.__class__.__name__ == "RelativeFeatures":
+            with pytest.raises(ValueError):
+                estimator.__class__(variables=["var_1", "var_2", "var_3"], reference=["var_4"],func="mean", missing_values=value)
+        else:
+            with pytest.raises(ValueError):
+                estimator.__class__(missing_values=value)
 
 
 def check_confirm_variables(estimator):

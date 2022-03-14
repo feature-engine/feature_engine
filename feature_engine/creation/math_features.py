@@ -245,8 +245,8 @@ class MathFeatures(BaseCreation):
     def _more_tags(self):
         tags_dict = _return_tags()
         tags_dict["allow_nan"] = True
-        tags_dict["variables"] = "numerical"
-        # add additional test that fails
+        tags_dict["variables"] = "skip"
+        # Tests that are OK to fail:
         tags_dict["_xfail_checks"][
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
