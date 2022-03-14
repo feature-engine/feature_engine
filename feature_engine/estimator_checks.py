@@ -86,8 +86,8 @@ def check_feature_engine_estimator(estimator):
 
     - checks that transformer raises error if y is not passed.
 
-    - checks that numerical, categorical or all variables are correctly selected in
-    fit().
+    - checks that numerical, categorical, datetime or all variables are correctly
+    selected and assigned in fit().
     """
     # Tests for all transformers
     check_raises_non_fitted_error(estimator)
