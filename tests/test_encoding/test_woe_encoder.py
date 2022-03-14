@@ -79,13 +79,6 @@ def test_automatically_select_variables(df_enc):
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
 
-def test_error_target_is_not_passed(df_enc):
-    # test case 2: raises error if target is  not passed
-    encoder = WoEEncoder(variables=None)
-    with pytest.raises(TypeError):
-        encoder.fit(df_enc)
-
-
 def test_warn_if_transform_df_contains_categories_not_seen_in_fit(df_enc, df_enc_rare):
     # test case 3: when dataset to be transformed contains categories not present
     # in training dataset

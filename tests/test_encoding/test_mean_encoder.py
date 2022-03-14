@@ -113,14 +113,6 @@ def test_automatically_find_variables(df_enc):
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
 
-def test_error_if_y_not_passed_to_fit(df_enc):
-    # test case 3: raises error if target is not passed
-    # DO NOT delete this test or add tag["requires_y"]=True.
-    with pytest.raises(TypeError):
-        encoder = MeanEncoder()
-        encoder.fit(df_enc)
-
-
 def test_warning_if_transform_df_contains_categories_not_present_in_fit_df(
     df_enc, df_enc_rare
 ):
