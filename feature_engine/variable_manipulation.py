@@ -274,12 +274,12 @@ def _find_all_variables(
 
     if variables is None:
         # find all variables in dataset
-        variables = X.columns.to_list()
+        variables_ = X.columns.to_list()
 
     elif isinstance(variables, (str, int)):
         if variables not in X.columns.to_list():
             raise ValueError("The variable is not in the dataframe.")
-        variables = [variables]
+        variables_ = [variables]
 
     else:
         if len(variables) == 0:
@@ -288,7 +288,9 @@ def _find_all_variables(
         if any(f for f in variables if f not in X.columns):
             raise KeyError("Some of the variables are not in the dataframe.")
 
-    return variables
+        variables_ = variables
+
+    return variables_
 
 
 def _filter_out_variables_not_in_dataframe(X, variables):
