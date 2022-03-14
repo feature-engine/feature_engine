@@ -27,7 +27,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 )
 class CyclicalFeatures(BaseNumericalTransformer):
     """
-    The CyclicalTransformer() applies cyclical transformations to numerical
+    CyclicalFeatures() applies cyclical transformations to numerical
     variables, returning 2 new features per variable, according to:
 
     - var_sin = sin(variable * (2. * pi / max_value))
@@ -35,11 +35,11 @@ class CyclicalFeatures(BaseNumericalTransformer):
 
     where max_value is the maximum value in the variable, and pi is 3.14...
 
-    The CyclicalTransformer() works only with numerical variables. A list of variables
+    CyclicalFeatures() works only with numerical variables. A list of variables
     to transform can be passed as an argument. Alternatively, the transformer will
     automatically select and transform all numerical variables.
 
-    Missing data should be imputed before applying this transformer.
+    Missing data should be imputed before using this transformer.
 
     More details in the :ref:`User Guide <cyclical_features>`.
 
@@ -57,7 +57,7 @@ class CyclicalFeatures(BaseNumericalTransformer):
     Attributes
     ----------
     max_values_:
-        The maximum value of the cyclical feature.
+        The maximum values of the cyclical features.
 
     {variables_}
 
@@ -68,10 +68,10 @@ class CyclicalFeatures(BaseNumericalTransformer):
     Methods
     -------
     fit:
-        Learns the maximum values of the cyclical features.
+        Learns the variable's maximum values.
 
     transform:
-        Add new features.
+        Adds new features.
 
     {fit_transform}
 
@@ -108,7 +108,7 @@ class CyclicalFeatures(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the maximum value of each cyclical variable.
+        Learns the maximum value of each variable.
 
         Parameters
         ----------
@@ -130,7 +130,7 @@ class CyclicalFeatures(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame):
         """
-        Creates new features using the cyclical transformation.
+        Creates new features using the cyclical transformations.
 
         Parameters
         ----------
