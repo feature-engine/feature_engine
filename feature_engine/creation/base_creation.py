@@ -86,7 +86,7 @@ class BaseCreation(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X_new: Pandas dataframe, shape = [n_samples, n_features + n_operations]
+        X_new: Pandas dataframe
             The dataframe with the original variables plus the new variables.
         """
 
