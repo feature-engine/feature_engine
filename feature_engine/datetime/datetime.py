@@ -343,3 +343,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
                 feature_names = self.feature_names_in_ + feature_names
 
         return feature_names
+
+    def _more_tags(self):
+        tags_dict = {"variables": "datetime"}
+        return tags_dict

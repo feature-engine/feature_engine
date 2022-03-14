@@ -47,7 +47,8 @@ def test_df(
         X["cat_var2"] = ["B"] * 1000
 
     if datetime is True:
-        X["date"] = pd.date_range("2020-02-24", periods=1000, freq="T")
+        X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="T")
+        X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="H")
 
     return X, y
 
@@ -108,6 +109,8 @@ def check_feature_engine_estimator(estimator):
             check_categorical_variables_assignment(estimator)
         elif tags["variables"] == "all":
             check_all_types_variables_assignment(estimator)
+        elif tags["variables"] == "datetime":
+            check_datetime_variables_assignment(estimator)
 
     # Tests based on transformer's init parameters
     if hasattr(estimator, "cv"):
@@ -152,7 +155,7 @@ def check_raises_error_when_input_not_a_df(estimator):
     ]
 
     # permitted input
-    X, y = test_df(categorical=True)
+    X, y = test_df(categorical=True, datetime=True)
 
     transformer = clone(estimator)
 
@@ -189,7 +192,15 @@ def check_get_feature_names_out(estimator):
     specific tests, based on the transformer functionality. They will be skipped from
     this test.
     """
-    _skip_test = ["OneHotEncoder", "AddMissingIndicator", "LagFeatures", "MathFeatures", "CyclicalFeatures", "RelativeFeatures"]
+    _skip_test = [
+        "OneHotEncoder",
+        "AddMissingIndicator",
+        "LagFeatures",
+        "MathFeatures",
+        "CyclicalFeatures",
+        "RelativeFeatures",
+        "DatetimeFeatures",
+    ]
     # the estimator learns the parameters from the train set
     X, y = test_df(categorical=True, datetime=True)
     estimator = clone(estimator)
@@ -213,7 +224,8 @@ def check_get_feature_names_out(estimator):
             ] + [
                 "cat_var1",
                 "cat_var2",
-                "date",
+                "date1",
+                "date2",
             ]
 
 
@@ -394,6 +406,57 @@ def check_all_types_variables_assignment(estimator):
             assert transformer.variables_ == list(X.columns)
 
 
+def check_datetime_variables_assignment(estimator):
+    """
+    Checks that transformers that work with datetime variables, correctly set
+    the values for the attributes `variables` and `variables_`.
+
+    The first attribute can take a string, an integer, a list of strings or integers or
+    None. The second attribute can take a list of string or integers.
+
+    For this check to run, the transformer needs the tag 'variables' set to
+    'datetime'.
+    """
+
+    # toy df
+    X, y = test_df(datetime=True)
+
+    # input variables to test
+    _input_vars_ls = ["date1", ["date2"], ["date1", "date2"], None]
+
+    # the estimator
+    transformer = clone(estimator)
+
+    for input_vars in _input_vars_ls:
+        # set the different input var examples
+        transformer.set_params(variables=input_vars)
+
+        # before fitting
+        if input_vars is not None:
+            assert transformer.variables == input_vars
+        else:
+            assert transformer.variables is None
+
+        # fit
+        transformer.fit(X, y)
+
+        if input_vars is not None:
+            assert transformer.variables == input_vars
+
+            if isinstance(input_vars, list):
+                assert transformer.variables_ == input_vars
+            else:
+                assert transformer.variables_ == [input_vars]
+        else:
+            assert transformer.variables is None
+            assert transformer.variables_ == ["date1", "date2"]
+
+    # test raises error if uses passes numerical variable
+    transformer.set_params(variables=["var_1", "date1"])
+    with pytest.raises(TypeError):
+        transformer.fit(X, y)
+
+
 # == TESTS BASED OF SPECIFIC PARAMETERS IN INIT SHARED CROSS TRANSFORMERS ===
 def check_takes_cv_constructor(estimator):
     """
@@ -489,9 +552,7 @@ def check_drop_original_variables(estimator):
     # Check that original variables are not in transformed dataframe
     assert set(vars).isdisjoint(set(X_tr.columns))
     # Check that remaining variables are in transformed dataframe
-    remaining = [
-        f for f in estimator.feature_names_in_ if f not in vars
-    ]
+    remaining = [f for f in estimator.feature_names_in_ if f not in vars]
     assert all([f in X_tr.columns for f in remaining])
 
     # when drop_original is False
@@ -507,9 +568,7 @@ def check_drop_original_variables(estimator):
     # Check that original variables are in transformed dataframe
     assert len([f in X_tr.columns for f in vars])
     # Check that remaining variables are in transformed dataframe
-    remaining = [
-        f for f in estimator.feature_names_in_ if f not in vars
-    ]
+    remaining = [f for f in estimator.feature_names_in_ if f not in vars]
     assert all([f in X_tr.columns for f in remaining])
 
 
@@ -525,11 +584,20 @@ def check_error_param_missing_values(estimator):
     for value in [2, "hola", False]:
         if estimator.__class__.__name__ == "MathFeatures":
             with pytest.raises(ValueError):
-                estimator.__class__(variables=["var_1", "var_2", "var_3"], func="mean", missing_values=value)
+                estimator.__class__(
+                    variables=["var_1", "var_2", "var_3"],
+                    func="mean",
+                    missing_values=value,
+                )
 
         elif estimator.__class__.__name__ == "RelativeFeatures":
             with pytest.raises(ValueError):
-                estimator.__class__(variables=["var_1", "var_2", "var_3"], reference=["var_4"],func="mean", missing_values=value)
+                estimator.__class__(
+                    variables=["var_1", "var_2", "var_3"],
+                    reference=["var_4"],
+                    func="mean",
+                    missing_values=value,
+                )
         else:
             with pytest.raises(ValueError):
                 estimator.__class__(missing_values=value)

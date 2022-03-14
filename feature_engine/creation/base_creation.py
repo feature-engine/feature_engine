@@ -58,7 +58,9 @@ class BaseCreation(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # check variables are numerical
-        self.variables: List[Union[str, int]] = _find_or_check_numerical_variables(X, self.variables)
+        self.variables: List[Union[str, int]] = _find_or_check_numerical_variables(
+            X, self.variables
+        )
 
         # check if dataset contains na
         if self.missing_values == "raise":

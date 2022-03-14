@@ -3,7 +3,6 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 import pandas as pd
 from sklearn.utils import deprecated
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.docstrings import (
