@@ -1,4 +1,4 @@
-.. _cyclical:
+.. _cyclical_features:
 
 .. currentmodule:: feature_engine.creation
 

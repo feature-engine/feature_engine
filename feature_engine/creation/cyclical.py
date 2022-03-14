@@ -48,7 +48,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     Missing data should be imputed before applying this transformer.
 
-    More details in the :ref:`User Guide <cyclical_features>`.
+    More details in the :ref:`User Guide <cyclical>`.
 
     Parameters
     ----------

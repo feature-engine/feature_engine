@@ -57,7 +57,7 @@ class CyclicalFeatures(BaseNumericalTransformer):
     Attributes
     ----------
     max_values_:
-        The maximum values of the cyclical features.
+        The feature's maximum values.
 
     {variables_}
 
@@ -77,6 +77,8 @@ class CyclicalFeatures(BaseNumericalTransformer):
 
     References
     ----------
+    https://ianlondon.github.io/blog/encoding-cyclical-features-24hour-time/
+    https://towardsdatascience.com/cyclical-features-encoding-its-about-time-ce23581845ca
     http://blog.davidkaleko.com/feature-engineering-cyclical-features.html
     """
 

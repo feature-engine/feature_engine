@@ -52,7 +52,7 @@ class RelativeFeatures(BaseCreation):
     The transformed dataframe will contain the additional features indicated in the
     new_variables_name list plus the original set of variables.
 
-    More details in the :ref:`User Guide <combine_with_ref>`.
+    More details in the :ref:`User Guide <relative_features>`.
 
     Parameters
     ----------
