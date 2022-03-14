@@ -1,7 +1,6 @@
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
