@@ -57,11 +57,11 @@ def check_feature_engine_estimator(estimator):
     Performs checks of common functionality to all transformers.
 
     There are checks that apply to all transformers, checks that run only when a
-    parameters exists in the init method, and checks executed based on transformer
+    parameter exists in the init method, and checks executed based on transformer
     tags. Tags are added to transformers to signal that some common tests should be
     performed on them.
 
-    Common tests:
+    **Common tests:**
 
     - checks non-fitted error: checks error when transform() method is called before
     the fit() method.
@@ -69,26 +69,24 @@ def check_feature_engine_estimator(estimator):
     - checks that transformer raises error when input to fit() or transform() is not a
     dataframe.
 
-    - checks correct values of attribute features_names_in_
+    - checks correct values of attribute `features_names_in_`.
 
-    Checks based on transformer's init attributes:
+    - checks default functionality of method get_features_out().
+
+    **Checks based on transformer's init attributes:**
 
     - checks that transformer can use any cross-validation constructor from sklearn.
 
-    - checks correct functionality of parameter `drop_original`
+    - checks correct functionality of parameter `drop_original`.
 
-    - check that users enters permitted values to init parameters missing_values
+    - check that users enters permitted values to init parameters `missing_values`.
 
-    Checks based on transformer tags.
+    **Checks based on transformer tags.**
 
-    - checks that transformer raises error if y is not passed (only for for those
-    transformers that require y).
+    - checks that transformer raises error if y is not passed.
 
     - checks that numerical, categorical or all variables are correctly selected in
     fit().
-
-    Other checks:
-    - checks default functionality of method get_features_out().
     """
     # Tests for all transformers
     check_raises_non_fitted_error(estimator)
@@ -185,10 +183,11 @@ def check_get_feature_names_out(estimator):
     Check that the method get_feature_names_out() returns the variable names of
     the transformed dataframe. In most transformers that would be the same as
     the variable names in the train set used in fit(). The value is stored in
-    feature_names_in.
+    `feature_names_in_`.
 
     For those transformers that return additional variables, we need to incorporate
-    specific tests, based on the transformer functionality. They will be skipped.
+    specific tests, based on the transformer functionality. They will be skipped from
+    this test.
     """
     _skip_test = ["OneHotEncoder", "AddMissingIndicator", "LagFeatures"]
     # the estimator learns the parameters from the train set
@@ -236,7 +235,7 @@ def check_error_if_y_not_passed(estimator):
 def check_numerical_variables_assignment(estimator):
     """
     Checks that transformers that work only with numerical variables, correctly set
-    the values for the attributes `variables` and `variables`.
+    the values for the attributes `variables` and `variables_`.
 
     The first attribute can take a string, an integer, a list of strings or integers or
     None.
@@ -288,7 +287,7 @@ def check_numerical_variables_assignment(estimator):
 def check_categorical_variables_assignment(estimator):
     """
     Checks that transformers that work only with categorical variables, correctly set
-    the values for the attributes `variables` and `variables`.
+    the values for the attributes `variables` and `variables_`.
 
     The first attribute can take a string, an integer, a list of strings or integers or
     None.
@@ -344,7 +343,7 @@ def check_categorical_variables_assignment(estimator):
 def check_all_types_variables_assignment(estimator):
     """
     Checks that transformers that work with all types of variables, correctly set
-    the values for the attributes `variables` and `variables`.
+    the values for the attributes `variables` and `variables_`.
 
     The first attribute can take a string, an integer, a list of strings or integers or
     None. The second attribute can take a list of string or integers.
