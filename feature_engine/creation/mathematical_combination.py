@@ -292,29 +292,6 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
 
         return X
 
-    def get_feature_names_out(self) -> List:
-        """Get output feature names for transformation.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        feature_names = [f for f in self.combination_dict_.keys()]
-
-        if self.drop_original is True:
-            # Remove names of variables to drop.
-            original = [
-                f for f in self.feature_names_in_ if f not in self.variables_to_combine
-            ]
-            feature_names = original + feature_names
-        else:
-            feature_names = self.feature_names_in_ + feature_names
-
-        return feature_names
-
     def _more_tags(self):
         tags_dict = _return_tags()
         # add additional test that fails
