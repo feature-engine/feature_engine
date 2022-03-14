@@ -41,15 +41,8 @@ def test_general_transformation_without_dropping_variables(df_cyclical):
         -0.900969,
     ]
 
-    # test init params
-    assert cyclical.variables == ["day"]
-
-    # test fit attr
-    assert cyclical.variables_ == ["day"]
-    assert cyclical.n_features_in_ == 2
-    assert cyclical.max_values_ == {
-        "day": 7,
-    }
+    # fit attr
+    assert cyclical.max_values_ == {"day": 7}
 
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
@@ -83,15 +76,9 @@ def test_general_transformation_dropping_original_variables(df_cyclical):
     ]
     transf_df = transf_df.drop(columns="day")
 
-    # test init params
-    assert cyclical.variables == ["day"]
-
     # test fit attr
-    assert cyclical.variables_ == ["day"]
     assert cyclical.n_features_in_ == 2
-    assert cyclical.max_values_ == {
-        "day": 7,
-    }
+    assert cyclical.max_values_ == {"day": 7}
 
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
@@ -142,12 +129,7 @@ def test_automatically_find_variables(df_cyclical):
     ]
     transf_df = transf_df.drop(columns=["day", "months"])
 
-    # test init params
-    assert cyclical.variables is None
-
     # test fit attr
-    assert cyclical.variables_ == ["day", "months"]
-    assert cyclical.n_features_in_ == 2
     assert cyclical.max_values_ == {
         "day": 7,
         "months": 12,
@@ -164,24 +146,25 @@ def test_fit_raises_error_if_na_in_df(df_na):
         transformer.fit(df_na)
 
 
-# def test_fit_raises_error_if_mapping_key_not_in_variables(df_cyclical):
-#     # test case 3: when dataset contains na, fit method
-#     with pytest.raises(TypeError):
-#         transformer = CyclicalFeatures(variables="day", max_values={"dayi": 31})
-#         transformer.fit(df_cyclical)
-
-
-def test_check_validation_of_init_parameters(df_cyclical):
-
-    with pytest.raises(TypeError):
-        transformer = CyclicalFeatures(variables="day", max_values=("dayi", 31))
+def test_fit_raises_error_if_user_dictionary_key_not_in_df(df_cyclical):
+    with pytest.raises(KeyError):
+        transformer = CyclicalFeatures(max_values={"dayi": 31})
         transformer.fit(df_cyclical)
 
-    with pytest.raises(TypeError):
-        transformer = CyclicalFeatures(variables="day", max_values={"day": "31"})
+
+def test_raises_error_when_init_parameters_not_permitted(df_cyclical):
 
     with pytest.raises(TypeError):
-        transformer = CyclicalFeatures(variables="day", drop_original="True")
+        # when max_values is not a dictionary
+        CyclicalFeatures(max_values=("dayi", 31))
+
+    with pytest.raises(TypeError):
+        # when max_values values are not integers or string
+        CyclicalFeatures(max_values={"day": "31"})
+
+    with pytest.raises(TypeError):
+        # when drop original is not a boolean
+        CyclicalFeatures(drop_original="True")
 
 
 def test_max_values_mapping(df_cyclical):
