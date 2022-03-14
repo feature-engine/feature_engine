@@ -32,7 +32,6 @@ from sklearn.preprocessing import (
 from feature_engine.selection import DropFeatures
 from feature_engine.wrappers import SklearnTransformerWrapper
 
-
 _transformers = [
     Binarizer(threshold=2),
     KBinsDiscretizer(n_bins=3, encode="ordinal"),

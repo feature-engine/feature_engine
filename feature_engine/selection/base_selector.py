@@ -111,6 +111,15 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         # return the dataframe with the selected features
         return X.drop(columns=self.features_to_drop_)
 
+    def _get_feature_names_in(self, X):
+        """Get the names and number of features in the train set. The dataframe
+        used during fit."""
+
+        self.feature_names_in_ = X.columns.to_list()
+        self.n_features_in_ = X.shape[1]
+
+        return self
+
     def get_feature_names_out(self) -> List:
         """Get output feature names for transformation.
 

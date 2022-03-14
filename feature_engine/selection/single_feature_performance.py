@@ -196,9 +196,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
             warnings.warn("All features will be dropped, try changing the threshold.")
 
         # save input features
-        self.feature_names_in_ = X.columns.tolist()
-
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         return self
 

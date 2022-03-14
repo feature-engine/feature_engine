@@ -151,9 +151,7 @@ class BaseRecursiveSelector(BaseSelector):
         self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
         # save input features
-        self.feature_names_in_ = X.columns.tolist()
-
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         # train model with all features and cross-validation
         model = cross_validate(
@@ -186,7 +184,7 @@ class BaseRecursiveSelector(BaseSelector):
         # Aggregate the feature importance returned in each fold
         self.feature_importances_ = feature_importances_cv.mean(axis=1)
 
-        return self
+        return X
 
     def _more_tags(self):
         tags_dict = _return_tags()

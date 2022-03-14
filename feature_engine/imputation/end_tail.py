@@ -177,7 +177,6 @@ class EndTailImputer(BaseImputer):
                     X[self.variables_].quantile(0.25) - (IQR * self.fold)
                 ).to_dict()
 
-        self.feature_names_in_ = X.columns.to_list()
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         return self

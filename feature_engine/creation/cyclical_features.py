@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
-from sklearn.utils import deprecated
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.docstrings import (
@@ -17,10 +17,6 @@ from feature_engine.docstrings import (
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
-@deprecated(
-    "CyclicalTransformer() is deprecated in version 1.3 and will be removed in "
-    "version 1.4. Use CyclicalFeatures() instead."
-)
 @Substitution(
     variables=_variables_numerical_docstring,
     drop_original=_drop_original_docstring,
@@ -29,12 +25,9 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class CyclicalTransformer(BaseNumericalTransformer):
+class CyclicalFeatures(BaseNumericalTransformer):
     """
-    DEPRECATED: CyclicalTransformer() is deprecated in version 1.3 and will be removed
-    in version 1.4. Use CyclicalFeatures() instead.
-
-    The CyclicalTransformer() applies cyclical transformations to numerical
+    CyclicalFeatures() applies cyclical transformations to numerical
     variables, returning 2 new features per variable, according to:
 
     - var_sin = sin(variable * (2. * pi / max_value))
@@ -42,13 +35,13 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     where max_value is the maximum value in the variable, and pi is 3.14...
 
-    The CyclicalTransformer() works only with numerical variables. A list of variables
+    CyclicalFeatures() works only with numerical variables. A list of variables
     to transform can be passed as an argument. Alternatively, the transformer will
     automatically select and transform all numerical variables.
 
-    Missing data should be imputed before applying this transformer.
+    Missing data should be imputed before using this transformer.
 
-    More details in the :ref:`User Guide <cyclical>`.
+    More details in the :ref:`User Guide <cyclical_features>`.
 
     Parameters
     ----------
@@ -64,7 +57,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
     Attributes
     ----------
     max_values_:
-        The maximum value of the cyclical feature.
+        The feature's maximum values.
 
     {variables_}
 
@@ -75,15 +68,17 @@ class CyclicalTransformer(BaseNumericalTransformer):
     Methods
     -------
     fit:
-        Learns the maximum values of the cyclical features.
+        Learns the variable's maximum values.
 
     transform:
-        Create new features.
+        Adds new features.
 
     {fit_transform}
 
     References
     ----------
+    https://ianlondon.github.io/blog/encoding-cyclical-features-24hour-time/
+    https://towardsdatascience.com/cyclical-features-encoding-its-about-time-ce23581845ca
     http://blog.davidkaleko.com/feature-engineering-cyclical-features.html
     """
 
@@ -99,13 +94,15 @@ class CyclicalTransformer(BaseNumericalTransformer):
                 isinstance(var, (int, float)) for var in list(max_values.values())
             ):
                 raise TypeError(
-                    "max_values takes a dictionary of strings as keys, "
-                    "and numbers as items to be used as the reference for"
-                    "the max value of each column."
+                    "max_values takes a dictionary where the values are numerical. "
+                    f"Got {max_values} instead."
                 )
 
         if not isinstance(drop_original, bool):
-            raise TypeError("drop_original takes only boolean values True and False.")
+            raise TypeError(
+                "drop_original takes only boolean values True and False. "
+                f"Got {drop_original} instead."
+            )
 
         self.variables = _check_input_parameter_variables(variables)
         self.max_values = max_values
@@ -113,7 +110,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learns the maximum value of each cyclical variable.
+        Learns the maximum value of each variable.
 
         Parameters
         ----------
@@ -124,25 +121,18 @@ class CyclicalTransformer(BaseNumericalTransformer):
         y: pandas Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
-
-        # check input dataframe
-        X = super()._fit_from_varlist(X)
-
         if self.max_values is None:
+            X = super()._fit_from_varlist(X)
             self.max_values_ = X[self.variables_].max().to_dict()
         else:
-            for key in list(self.max_values.keys()):
-                if key not in self.variables_:
-                    raise ValueError(
-                        f"The mapping key {key} is not present in variables."
-                    )
+            X = super()._fit_from_dict(X, self.max_values)
             self.max_values_ = self.max_values
 
         return self
 
     def transform(self, X: pd.DataFrame):
         """
-        Creates new features using the cyclical transformation.
+        Creates new features using the cyclical transformations.
 
         Parameters
         ----------
@@ -165,3 +155,56 @@ class CyclicalTransformer(BaseNumericalTransformer):
             X.drop(columns=self.variables_, inplace=True)
 
         return X
+
+    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features: list, default=None
+            Input features. If `input_features` is `None`, then the names of all the
+            variables in the transformed dataset (original + new variables) is returned.
+            Alternatively, only the names for the new features derived from
+            input_features will be returned.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        # Create names for all features or just the indicated ones.
+        if input_features is None:
+            input_features_ = self.variables_
+        else:
+            if not isinstance(input_features, list):
+                raise ValueError(
+                    f"input_features must be a list. Got {input_features} instead."
+                )
+            if any([f for f in input_features if f not in self.variables_]):
+                raise ValueError(
+                    "Some features in input_features were not used to create new "
+                    "variables. You can only get the names of the new features "
+                    "with this function."
+                )
+            # Create just indicated lag features.
+            input_features_ = input_features
+
+        # create the names for the periodic features
+        feature_names = [
+            str(var) + suffix for var in input_features_ for suffix in ["_sin", "_cos"]
+        ]
+
+        # Return names of all variables if input_features is None.
+        if input_features is None:
+            if self.drop_original is True:
+                # Remove names of variables to drop.
+                original = [
+                    f for f in self.feature_names_in_ if f not in self.variables_
+                ]
+                feature_names = original + feature_names
+            else:
+                feature_names = self.feature_names_in_ + feature_names
+
+        return feature_names

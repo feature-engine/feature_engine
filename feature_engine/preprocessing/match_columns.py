@@ -206,7 +206,6 @@ class MatchVariables(BaseEstimator, TransformerMixin):
     # for the check_estimator tests
     def _more_tags(self):
         tags_dict = _return_tags()
-        tags_dict["variables"] = "all"
 
         msg = "input shape of dataframes in fit and transform can differ"
         tags_dict["_xfail_checks"]["check_transformer_general"] = msg

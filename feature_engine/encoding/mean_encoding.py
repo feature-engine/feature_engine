@@ -147,3 +147,8 @@ class MeanEncoder(BaseCategorical):
         self._check_encoding_dictionary()
 
         return self
+
+    def _more_tags(self):
+        tags_dict = super()._more_tags()
+        tags_dict["requires_y"] = True
+        return tags_dict

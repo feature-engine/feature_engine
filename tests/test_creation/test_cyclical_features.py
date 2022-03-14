@@ -1,39 +1,22 @@
 import pandas as pd
 import pytest
 
-from feature_engine.creation import CyclicalTransformer
+from feature_engine.creation import CyclicalFeatures
 
 
 @pytest.fixture
 def df_cyclical():
     df = {
-        "day": [
-            6,
-            7,
-            5,
-            3,
-            1,
-            2,
-            4,
-        ],
-        "months": [
-            3,
-            7,
-            9,
-            12,
-            4,
-            6,
-            12,
-        ],
+        "day": [6, 7, 5, 3, 1, 2, 4],
+        "months": [3, 7, 9, 12, 4, 6, 12],
     }
     df = pd.DataFrame(df)
-
     return df
 
 
 def test_general_transformation_without_dropping_variables(df_cyclical):
     # test case 1: just one variable.
-    cyclical = CyclicalTransformer(variables=["day"])
+    cyclical = CyclicalFeatures(variables=["day"])
     X = cyclical.fit_transform(df_cyclical)
 
     transf_df = df_cyclical.copy()
@@ -58,15 +41,8 @@ def test_general_transformation_without_dropping_variables(df_cyclical):
         -0.900969,
     ]
 
-    # test init params
-    assert cyclical.variables == ["day"]
-
-    # test fit attr
-    assert cyclical.variables_ == ["day"]
-    assert cyclical.n_features_in_ == 2
-    assert cyclical.max_values_ == {
-        "day": 7,
-    }
+    # fit attr
+    assert cyclical.max_values_ == {"day": 7}
 
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
@@ -74,7 +50,7 @@ def test_general_transformation_without_dropping_variables(df_cyclical):
 
 def test_general_transformation_dropping_original_variables(df_cyclical):
     # test case 1: just one variable, but dropping the variable after transformation
-    cyclical = CyclicalTransformer(variables=["day"], drop_original=True)
+    cyclical = CyclicalFeatures(variables=["day"], drop_original=True)
     X = cyclical.fit_transform(df_cyclical)
 
     transf_df = df_cyclical.copy()
@@ -100,15 +76,9 @@ def test_general_transformation_dropping_original_variables(df_cyclical):
     ]
     transf_df = transf_df.drop(columns="day")
 
-    # test init params
-    assert cyclical.variables == ["day"]
-
     # test fit attr
-    assert cyclical.variables_ == ["day"]
     assert cyclical.n_features_in_ == 2
-    assert cyclical.max_values_ == {
-        "day": 7,
-    }
+    assert cyclical.max_values_ == {"day": 7}
 
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
@@ -116,7 +86,7 @@ def test_general_transformation_dropping_original_variables(df_cyclical):
 
 def test_automatically_find_variables(df_cyclical):
     # test case 2: automatically select variables
-    cyclical = CyclicalTransformer(variables=None, drop_original=True)
+    cyclical = CyclicalFeatures(variables=None, drop_original=True)
     X = cyclical.fit_transform(df_cyclical)
     transf_df = df_cyclical.copy()
 
@@ -159,12 +129,7 @@ def test_automatically_find_variables(df_cyclical):
     ]
     transf_df = transf_df.drop(columns=["day", "months"])
 
-    # test init params
-    assert cyclical.variables is None
-
     # test fit attr
-    assert cyclical.variables_ == ["day", "months"]
-    assert cyclical.n_features_in_ == 2
     assert cyclical.max_values_ == {
         "day": 7,
         "months": 12,
@@ -177,32 +142,33 @@ def test_automatically_find_variables(df_cyclical):
 def test_fit_raises_error_if_na_in_df(df_na):
     # test case 3: when dataset contains na, fit method
     with pytest.raises(ValueError):
-        transformer = CyclicalTransformer()
+        transformer = CyclicalFeatures()
         transformer.fit(df_na)
 
 
-def test_fit_raises_error_if_mapping_key_not_in_variables(df_cyclical):
-    # test case 3: when dataset contains na, fit method
-    with pytest.raises(ValueError):
-        transformer = CyclicalTransformer(variables="day", max_values={"dayi": 31})
+def test_fit_raises_error_if_user_dictionary_key_not_in_df(df_cyclical):
+    with pytest.raises(KeyError):
+        transformer = CyclicalFeatures(max_values={"dayi": 31})
         transformer.fit(df_cyclical)
 
 
-def test_check_validation_of_init_parameters(df_cyclical):
+def test_raises_error_when_init_parameters_not_permitted(df_cyclical):
 
     with pytest.raises(TypeError):
-        transformer = CyclicalTransformer(variables="day", max_values=("dayi", 31))
-        transformer.fit(df_cyclical)
+        # when max_values is not a dictionary
+        CyclicalFeatures(max_values=("dayi", 31))
 
     with pytest.raises(TypeError):
-        transformer = CyclicalTransformer(variables="day", max_values={"day": "31"})
+        # when max_values values are not integers or string
+        CyclicalFeatures(max_values={"day": "31"})
 
     with pytest.raises(TypeError):
-        transformer = CyclicalTransformer(variables="day", drop_original="True")
+        # when drop original is not a boolean
+        CyclicalFeatures(drop_original="True")
 
 
 def test_max_values_mapping(df_cyclical):
-    cyclical = CyclicalTransformer(variables="day", max_values={"day": 31})
+    cyclical = CyclicalFeatures(variables="day", max_values={"day": 31})
 
     X = cyclical.fit_transform(df_cyclical)
 
@@ -226,3 +192,43 @@ def test_max_values_mapping(df_cyclical):
         0.688967,
     ]
     pd.testing.assert_frame_equal(X, transf_df)
+
+
+def test_get_feature_names_out(df_cyclical):
+    # default features from all variables
+    transformer = CyclicalFeatures()
+    X = transformer.fit_transform(df_cyclical)
+    assert list(X.columns) == transformer.get_feature_names_out()
+    assert transformer.get_feature_names_out(input_features=["day"]) == [
+        "day_sin",
+        "day_cos",
+    ]
+    assert transformer.get_feature_names_out(input_features=["day", "months"]) == [
+        "day_sin",
+        "day_cos",
+        "months_sin",
+        "months_cos",
+    ]
+
+    # default features from 1 variable
+    transformer = CyclicalFeatures(drop_original=True)
+    X = transformer.fit_transform(df_cyclical)
+    assert list(X.columns) == transformer.get_feature_names_out()
+    assert transformer.get_feature_names_out(input_features=["day"]) == [
+        "day_sin",
+        "day_cos",
+    ]
+    assert transformer.get_feature_names_out(input_features=["day", "months"]) == [
+        "day_sin",
+        "day_cos",
+        "months_sin",
+        "months_cos",
+    ]
+
+    with pytest.raises(ValueError):
+        # assert error when user passes a string instead of list
+        transformer.get_feature_names_out(input_features="day")
+
+    with pytest.raises(ValueError):
+        # assert error when uses passes features that were not lagged
+        transformer.get_feature_names_out(input_features=["color"])

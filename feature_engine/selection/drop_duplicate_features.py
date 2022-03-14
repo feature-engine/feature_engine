@@ -161,9 +161,7 @@ class DropDuplicateFeatures(BaseSelector):
                     self.duplicated_feature_sets_.append(_temp_set)
 
         # save input features
-        self.feature_names_in_ = X.columns.tolist()
-
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         return self
 

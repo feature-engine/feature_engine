@@ -118,8 +118,7 @@ class AddMissingIndicator(BaseImputer):
                 var for var in self.variables_ if X[var].isnull().sum() > 0
             ]
 
-        self.feature_names_in_ = X.columns.to_list()
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         return self
 
@@ -144,7 +143,7 @@ class AddMissingIndicator(BaseImputer):
 
         X = X.copy()
         for feature in self.variables_:
-            X[feature + "_na"] = np.where(X[feature].isnull(), 1, 0)
+            X[f"{feature}_na"] = np.where(X[feature].isnull(), 1, 0)
 
         return X
 
@@ -181,10 +180,9 @@ class AddMissingIndicator(BaseImputer):
             feature_names = []
             imputed = [f for f in input_features if f in self.variables_]
 
-        for feature in imputed:
-            feature_names.append(str(feature) + "_na")
+        imputed = [f"{feat}_na" for feat in imputed]
 
-        return feature_names
+        return feature_names + imputed
 
     def _more_tags(self):
         tags_dict = _return_tags()

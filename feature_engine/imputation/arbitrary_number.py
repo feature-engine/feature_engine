@@ -126,7 +126,6 @@ class ArbitraryNumberImputer(BaseImputer):
             self.variables_ = _find_or_check_numerical_variables(X, self.variables)
             self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables_}
 
-        self.feature_names_in_ = X.columns.to_list()
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         return self
