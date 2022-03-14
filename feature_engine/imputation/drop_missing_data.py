@@ -135,7 +135,7 @@ class DropMissingData(BaseImputer):
                 var for var in self.variables_ if X[var].isnull().sum() > 0
             ]
 
-        self.get_feature_names_in(X)
+        self._get_feature_names_in(X)
 
         return self
 

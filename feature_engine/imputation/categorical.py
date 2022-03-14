@@ -168,7 +168,7 @@ class CategoricalImputer(BaseImputer):
                         "Variable {} contains multiple frequent categories.".format(var)
                     )
 
-        self.get_feature_names_in(X)
+        self._get_feature_names_in(X)
 
         return self
 

@@ -79,9 +79,7 @@ class DropFeatures(BaseSelector):
             )
 
         # save input features
-        self.feature_names_in_ = X.columns.tolist()
-
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         return self
 

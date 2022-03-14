@@ -106,6 +106,6 @@ class MeanMedianImputer(BaseImputer):
         elif self.imputation_method == "median":
             self.imputer_dict_ = X[self.variables_].median().to_dict()
 
-        self.get_feature_names_in(X)
+        self._get_feature_names_in(X)
 
         return self

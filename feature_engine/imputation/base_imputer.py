@@ -78,7 +78,7 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
         return X
 
-    def get_feature_names_in(self, X):
+    def _get_feature_names_in(self, X):
         """Get the names and number of features in the train set. The dataframe
         used during fit."""
 
