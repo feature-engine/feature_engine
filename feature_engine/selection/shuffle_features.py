@@ -170,8 +170,6 @@ class SelectByShuffling(BaseSelector):
 
         if isinstance(y, pd.Series):
             y = y.reset_index(drop=True)
-        else:
-            y = pd.Series(y)
 
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
