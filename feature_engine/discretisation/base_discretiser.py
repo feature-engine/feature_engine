@@ -7,7 +7,11 @@ from feature_engine.base_transformers import BaseNumericalTransformer
 
 
 class BaseDiscretiser(BaseNumericalTransformer):
-    """Shared set-up checks and methods across numerical discretisers."""
+    """
+    Shared set-up checks and methods across numerical discretisers.
+
+    Important: inherits fit() functionality and tags from BaseNumericalTransformer.
+    """
 
     _return_object_docstring = """return_object: bool, default=False
         Whether the the discrete variable should be returned as numeric or as
