@@ -178,8 +178,8 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             and transformer.sparse is True
         ):
             raise NotImplementedError(
-                "The SklearnTransformerWrapper can only wrap the OneHotEncoder if you "
-                "set its sparse attribute to False."
+                "The SklearnTransformerWrapper can only wrap the OneHotEncoder if the "
+                "sparse is set to False."
             )
 
         self.transformer = transformer
