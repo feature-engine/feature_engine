@@ -186,7 +186,7 @@ class BaseRecursiveSelector(BaseSelector):
         # Aggregate the feature importance returned in each fold
         self.feature_importances_ = feature_importances_cv.mean(axis=1)
 
-        return self
+        return X
 
     def _more_tags(self):
         tags_dict = _return_tags()

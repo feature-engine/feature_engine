@@ -118,10 +118,7 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
            Target variable. Required to train the estimator.
         """
 
-        super().fit(X, y)
-
-        # We need this line to pass the tests of the check_estimator
-        X = _is_dataframe(X)
+        X = super().fit(X, y)
 
         # Sort the feature importance values increasingly
         self.feature_importances_.sort_values(ascending=True, inplace=True)
