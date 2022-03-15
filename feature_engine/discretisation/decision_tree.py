@@ -108,9 +108,11 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     -------
     fit:
         Fit a decision tree per variable.
+
+    {fit_transform}
+
     transform:
         Replace continuous variable values by the predictions of the decision tree.
-    {fit_transform}
 
     See Also
     --------

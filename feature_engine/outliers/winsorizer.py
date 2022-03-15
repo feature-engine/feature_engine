@@ -83,10 +83,10 @@ class Winsorizer(WinsorizerBase):
     fit:
         Learn the values that will replace the outliers.
 
+    {fit_transform}
+
     transform:
         Cap the variables.
-
-    {fit_transform}
 
     """
 

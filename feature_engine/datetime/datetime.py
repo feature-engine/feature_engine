@@ -124,10 +124,10 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
     -------
     {fit}
 
+    {fit_transform}
+
     transform:
         Add the date and time features.
-
-    {fit_transform}
 
     See also
     --------

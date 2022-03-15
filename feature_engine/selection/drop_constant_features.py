@@ -81,10 +81,10 @@ class DropConstantFeatures(BaseSelector):
     fit:
         Find constant and quasi-constant features.
 
+    {fit_transform}
+
     transform:
         Remove constant and quasi-constant features.
-
-    {fit_transform}
 
     Notes
     -----

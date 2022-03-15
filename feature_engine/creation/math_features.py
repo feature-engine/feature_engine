@@ -76,9 +76,9 @@ class MathFeatures(BaseCreation):
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     Notes
     -----

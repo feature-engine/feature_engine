@@ -98,9 +98,9 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     """
 

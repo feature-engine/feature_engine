@@ -95,9 +95,9 @@ class CategoricalImputer(BaseImputer):
     fit:
         Learn the most frequent category or assign arbitrary value to variable.
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     """
 

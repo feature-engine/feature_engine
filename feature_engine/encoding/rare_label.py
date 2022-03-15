@@ -101,10 +101,10 @@ class RareLabelEncoder(BaseCategoricalTransformer):
     fit:
         Find frequent categories.
 
+    {fit_transform}
+
     transform:
         Group rare categories
-
-    {fit_transform}
     """
 
     def __init__(

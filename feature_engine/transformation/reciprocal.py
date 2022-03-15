@@ -60,12 +60,12 @@ class ReciprocalTransformer(BaseNumericalTransformer):
     -------
     {fit}
 
-    transform:
-        Apply the reciprocal 1 / x transformation.
-
     {fit_transform}
 
     {inverse_transform}
+
+    transform:
+        Apply the reciprocal 1 / x transformation.
 
     """
 

@@ -75,10 +75,10 @@ class AddMissingIndicator(BaseImputer):
     fit:
         Find the variables for which the missing indicators will be created
 
+    {fit_transform}
+
     transform:
         Add the missing indicators.
-
-    {fit_transform}
 
     """
 

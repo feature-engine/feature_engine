@@ -77,10 +77,11 @@ class DropDuplicateFeatures(BaseSelector):
     fit:
         Find duplicated features.
 
+    {fit_transform}
+
     transform:
         Remove duplicated features.
 
-    {fit_transform}
     """
 
     def __init__(

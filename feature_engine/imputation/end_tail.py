@@ -104,9 +104,9 @@ class EndTailImputer(BaseImputer):
     fit:
         Learn values to replace missing data.
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     """
 

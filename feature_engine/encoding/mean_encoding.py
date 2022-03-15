@@ -80,11 +80,11 @@ class MeanEncoder(BaseCategorical):
     fit:
         Learn the target mean value per category, per variable.
 
-    {transform}
-
     {fit_transform}
 
     {inverse_transform}
+
+    {transform}
 
     Notes
     -----

@@ -89,10 +89,10 @@ class DropCorrelatedFeatures(BaseSelector):
     fit:
         Find correlated features.
 
+    {fit_transform}
+
     transform:
         Remove correlated features.
-
-    {fit_transform}
 
     Notes
     -----

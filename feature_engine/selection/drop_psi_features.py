@@ -190,10 +190,10 @@ class DropHighPSIFeatures(BaseSelector):
     fit:
         Find features with high PSI values.
 
+    {fit_transform}
+
     transform:
         Remove features with high PSI values.
-
-    {fit_transform}
 
     See Also
     --------

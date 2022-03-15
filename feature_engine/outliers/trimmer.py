@@ -76,10 +76,10 @@ class OutlierTrimmer(WinsorizerBase):
     fit:
         Find maximum and minimum values.
 
+    {fit_transform}
+
     transform:
         Remove outliers.
-
-    {fit_transform}
 
     """
 

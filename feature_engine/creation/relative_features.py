@@ -85,9 +85,9 @@ class RelativeFeatures(BaseCreation):
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     Notes
     -----

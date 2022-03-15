@@ -115,10 +115,10 @@ class OneHotEncoder(BaseCategoricalTransformer):
     fit:
         Learn the unique categories per variable
 
+    {fit_transform}
+
     transform:
         Replace the categorical variables by the binary variables.
-
-    {fit_transform}
 
     Notes
     -----

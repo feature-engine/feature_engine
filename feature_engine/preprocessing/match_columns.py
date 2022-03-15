@@ -85,11 +85,20 @@ class MatchVariables(BaseEstimator, TransformerMixin):
     fit:
         Identify the variable names in the train set.
 
-    transform:
-        Add or delete variables to match those observed in the train set.
-
     fit_transform:
         Fit to the data. Then transform it.
+
+    get_feature_names_out:
+        Get output feature names for transformation.
+
+    get_params:
+        Get parameters for this estimator.
+
+    set_params:
+        Set the parameters of this estimator.
+
+    transform:
+        Add or delete variables to match those observed in the train set.
     """
 
     def __init__(

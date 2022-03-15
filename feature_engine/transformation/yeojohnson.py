@@ -62,10 +62,10 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
     fit:
         Learn the optimal lambda for the Yeo-Johnson transformation.
 
+    {fit_transform}
+
     transform:
         Apply the Yeo-Johnson transformation.
-
-    {fit_transform}
 
     References
     ----------

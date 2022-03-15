@@ -76,13 +76,14 @@ class DropMissingData(BaseImputer):
     -------
     fit:
         Find the variables for which missing data should be evaluated.
-    transform:
-        Remove rows with missing data.
 
     {fit_transform}
 
     return_na_data:
         Returns a dataframe with the rows that contain missing data.
+
+    transform:
+        Remove rows with missing data.
     """
 
     def __init__(

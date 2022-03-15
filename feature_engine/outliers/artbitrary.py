@@ -76,10 +76,10 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
     {fit}
 
+    {fit_transform}
+
     transform:
         Cap the variables.
-
-    {fit_transform}
 
     """
 

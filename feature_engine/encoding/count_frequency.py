@@ -88,11 +88,11 @@ class CountFrequencyEncoder(BaseCategorical):
     fit:
         Learn the count or frequency per category, per variable.
 
-    {transform}
-
     {fit_transform}
 
     {inverse_transform}
+
+    {transform}
 
     Notes
     -----

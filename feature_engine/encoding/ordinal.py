@@ -85,11 +85,11 @@ class OrdinalEncoder(BaseCategorical):
     fit:
         Find the integer to replace each category in each variable.
 
-    {transform}
-
     {fit_transform}
 
     {inverse_transform}
+
+    {transform}
 
     Notes
     -----
