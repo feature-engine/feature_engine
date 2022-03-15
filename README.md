@@ -23,9 +23,9 @@ transforming parameters from the data and then transform it.
 
 ## Feature-engine features in the following resources
 
-* [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06)
+* [Feature Engineering for Machine Learning, Online Course](https://courses.trainindata.com/p/feature-engineering-for-machine-learning)
 
-* [Feature Selection for Machine Learning, Online Course](https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71)
+* [Feature Selection for Machine Learning, Online Course](https://courses.trainindata.com/p/feature-selection-for-machine-learning)
 
 * [Deployment of Machine Learning Models, Online Course](https://www.udemy.com/course/deployment-of-machine-learning-models/?referralCode=D4FE5EA129FFD203CFF4)
 
@@ -60,7 +60,8 @@ transforming parameters from the data and then transform it.
 * Variable Transformation
 * Variable Creation
 * Variable Selection
-* Datetime Feature Extraction
+* Datetime Features
+* Time Series
 * Preprocessing
 * Scikit-learn Wrappers
 
@@ -103,9 +104,9 @@ transforming parameters from the data and then transform it.
 * YeoJohnsonTransformer
 
 ### Variable Creation:
- * MathematicalCombination
- * CombineWithReferenceFeature
- * CyclicalTransformer
+ * MathFeatures
+ * RelativeFeatures
+ * CyclicalFeatures
 
 ### Feature Selection:
  * DropFeatures
@@ -122,6 +123,9 @@ transforming parameters from the data and then transform it.
 
 ### Datetime
  * DatetimeFeatures
+ 
+### Time Series
+ * LagFeatures
  
 ### Preprocessing
  * MatchVariables
