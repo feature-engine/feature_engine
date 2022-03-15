@@ -40,15 +40,17 @@ We first create a toy dataframe with the variables "days" and "months":
         'months': [3, 7, 9, 12, 4, 6, 12],
         })
 
-Now we set up the transformer to find the maximum value automatically:
+Now we set up the transformer to find the maximum value of each variable
+automatically:
 
 .. code:: python
 
-    cyclical = CyclicalFeatures(variables=None, drop_original=True)
+    cyclical = CyclicalFeatures(variables=None, drop_original=False)
 
     X = cyclical.fit_transform(df)
 
-The maximum values used for the transformation are stored in the attribute `max_values_`:
+The maximum values used for the transformation are stored in the attribute
+`max_values_`:
 
 .. code:: python
 
@@ -58,22 +60,57 @@ The maximum values used for the transformation are stored in the attribute `max_
 
     {'day': 7, 'months': 12}
 
-We can now see the new variables in the dataframe. Note that we set `drop_original=True`,
-which means that the transformer will drop the original variables after the transformation.
-If we had chosen False, the new variables will be added alongside the original ones.
+Let's have a look at the transformed dataframe:
 
 .. code:: python
 
     print(X.head())
 
+We can see that the new variables were added at the right of our dataframe.
+
 .. code:: python
 
-            day_sin   day_cos    months_sin    months_cos
-    0 -7.818315e-01  0.623490  1.000000e+00  6.123234e-17
-    1 -2.449294e-16  1.000000 -5.000000e-01 -8.660254e-01
-    2 -9.749279e-01 -0.222521 -1.000000e+00 -1.836970e-16
-    3  4.338837e-01 -0.900969 -2.449294e-16  1.000000e+00
-    4  7.818315e-01  0.623490  8.660254e-01 -5.000000e-01
+       day  months       day_sin   day_cos    months_sin    months_cos
+    0    6       3 -7.818315e-01  0.623490  1.000000e+00  6.123234e-17
+    1    7       7 -2.449294e-16  1.000000 -5.000000e-01 -8.660254e-01
+    2    5       9 -9.749279e-01 -0.222521 -1.000000e+00 -1.836970e-16
+    3    3      12  4.338837e-01 -0.900969 -2.449294e-16  1.000000e+00
+    4    1       4  7.818315e-01  0.623490  8.660254e-01 -5.000000e-01
+
+We set the paramter `drop_original` to False, which means that we keep the original
+variables. If we want them dropped, we can set the parameter to True.
+
+Finally, we can obtain the names of the variables in the transformed dataset as follows:
+
+.. code:: python
+
+    cyclical.get_feature_names_out()
+
+Which will return the name of all the variables, original and and new. Or we can return
+the names of the new features only as follows:
+
+.. code:: python
+
+    cyclical.get_feature_names_out(["months", "day"])
+
+which will return the names of all the new features:
+
+.. code:: python
+
+    ['months_sin', 'months_cos', 'day_sin', 'day_cos']
+
+Or, if we are interested in the new features derived of a particular variable, we can
+obtain their names as follows:
+
+.. code:: python
+
+    cyclical.get_feature_names_out(["day"])
+
+which will return the names of all the new features derived from `day`:
+
+.. code:: python
+
+    ['day_sin', 'day_cos']
 
 
 Motivation
@@ -221,6 +258,7 @@ between two points corresponds to the difference in time as we would expect from
 .. image:: ../../images/hour_sin4.png
 
 We hope that cleared things up a bit.
+
 
 More details
 ^^^^^^^^^^^^
