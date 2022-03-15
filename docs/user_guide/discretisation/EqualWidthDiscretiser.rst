@@ -130,3 +130,5 @@ Check also for more details on how to use this transformer:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualWidthDiscretiser.ipynb>`_
 - `Jupyter notebook - Discretiser plus Ordinal encoding <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualWidthDiscretiser_plus_OrdinalEncoder.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

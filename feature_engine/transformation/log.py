@@ -63,12 +63,12 @@ class LogTransformer(BaseNumericalTransformer):
     -------
     {fit}
 
-    transform:
-        Transform the variables using the logarithm.
-
     {fit_transform}
 
     {inverse_transform}
+
+    transform:
+        Transform the variables using the logarithm.
 
     """
 
@@ -249,12 +249,12 @@ class LogCpTransformer(BaseNumericalTransformer):
     fit:
         Learn the constant C.
 
-    transform:
-        Transform the variables with the logarithm of x plus C.
-
     {fit_transform}
 
     {inverse_transform}
+
+    transform:
+        Transform the variables with the logarithm of x plus C.
 
     """
 

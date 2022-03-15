@@ -98,9 +98,9 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     """
 

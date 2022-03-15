@@ -71,9 +71,9 @@ class ArbitraryDiscretiser(BaseDiscretiser):
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     See Also
     --------

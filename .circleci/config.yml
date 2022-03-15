@@ -2,7 +2,7 @@ version: 2
 
 defaults: &defaults
   docker:
-    - image: circleci/python:3.7.2
+    - image: circleci/python:3.8.0
   working_directory: ~/project
 
 prepare_tox: &prepare_tox
@@ -22,19 +22,6 @@ init_pypirc: &init_pypirc
       echo -e "password = $FE_PYPI_API_KEY" >> ~/.pypirc
 
 jobs:
-  test_feature_engine_py36:
-    docker:
-      - image: circleci/python:3.6.9
-    working_directory: ~/project
-    steps:
-      - checkout:
-          path: ~/project
-      - *prepare_tox
-      - run:
-          name: Run tests with Python 3.6
-          command: |
-            tox -e py36
-
   test_feature_engine_py37:
     docker:
       - image: circleci/python:3.7.6
@@ -134,7 +121,6 @@ workflows:
   version: 2
   test-all:
     jobs:
-      - test_feature_engine_py36
       - test_feature_engine_py37
       - test_feature_engine_py38
       - test_feature_engine_py39
@@ -143,7 +129,6 @@ workflows:
       - test_type
       - package_and_upload_to_pypi:
           requires:
-            - test_feature_engine_py36
             - test_feature_engine_py37
             - test_feature_engine_py38
             - test_feature_engine_py39

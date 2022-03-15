@@ -546,6 +546,8 @@ def check_drop_original_variables(estimator):
 
     if hasattr(estimator, "variables_"):
         vars = estimator.variables_
+    elif hasattr(estimator, "reference"):
+        vars = estimator.variables + estimator.reference
     else:
         vars = estimator.variables
 

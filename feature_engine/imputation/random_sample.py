@@ -104,9 +104,9 @@ class RandomSampleImputer(BaseImputer):
     fit:
         Make a copy of the train set
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     """
 

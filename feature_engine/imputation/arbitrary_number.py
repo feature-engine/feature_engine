@@ -74,9 +74,9 @@ class ArbitraryNumberImputer(BaseImputer):
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     See Also
     --------

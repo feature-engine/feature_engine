@@ -172,3 +172,5 @@ More details
 Check also:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Select-by-Target-Mean-Encoding.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

@@ -34,11 +34,20 @@ class DropFeatures(BaseSelector):
     fit:
         This transformer does not learn any parameter.
 
-    transform:
-        Drops indicated features.
-
     fit_transform:
         Fit to data, then transform it.
+
+    get_feature_names_out:
+        Get output feature names for transformation.
+
+    get_params:
+        Get parameters for this estimator.
+
+    set_params:
+        Set the parameters of this estimator.
+
+    transform:
+        Drops indicated features.
     """
 
     def __init__(self, features_to_drop: List[Union[str, int]]):

@@ -123,10 +123,10 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     fit:
         Fit a decision tree per variable.
 
+    {fit_transform}
+
     transform:
         Replace categorical variable by the predictions of the decision tree.
-
-    {fit_transform}
 
     Notes
     -----

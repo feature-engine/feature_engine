@@ -112,9 +112,9 @@ class SelectByShuffling(BaseSelector):
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     Notes
     -----

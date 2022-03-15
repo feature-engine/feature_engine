@@ -119,11 +119,23 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     fit:
         Fit Scikit-learn transformer.
 
-    transform:
-        Transform data with the Scikit-learn transformer.
-
     fit_transform:
         Fit to data, then transform it.
+
+    get_feature_names_out:
+        Get output feature names for transformation.
+
+    get_params:
+        Get parameters for this estimator.
+
+    set_params:
+        Set the parameters of this estimator.
+
+    inverse_transform:
+        Convert the data back to the original representation.
+
+    transform:
+        Transform data with the Scikit-learn transformer.
 
     Notes
     -----

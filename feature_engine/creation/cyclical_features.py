@@ -70,10 +70,10 @@ class CyclicalFeatures(BaseNumericalTransformer):
     fit:
         Learns the variable's maximum values.
 
+    {fit_transform}
+
     transform:
         Adds new features.
-
-    {fit_transform}
 
     References
     ----------

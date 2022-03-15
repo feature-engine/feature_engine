@@ -62,9 +62,9 @@ class MeanMedianImputer(BaseImputer):
     fit:
         Learn the mean or median values.
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     """
 

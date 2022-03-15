@@ -93,10 +93,10 @@ class LagFeatures(BaseEstimator, TransformerMixin):
     -------
     {fit}
 
+    {fit_transform}
+
     transform:
         Add lag features.
-
-    {fit_transform}
 
     See Also
     --------

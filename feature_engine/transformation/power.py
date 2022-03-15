@@ -61,12 +61,12 @@ class PowerTransformer(BaseNumericalTransformer):
     -------
     {fit}
 
-    transform:
-        Apply the power transformation to the variables.
-
     {fit_transform}
 
     {inverse_transform}
+
+    transform:
+        Apply the power transformation to the variables.
 
     """
 

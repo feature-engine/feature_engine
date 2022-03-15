@@ -13,7 +13,6 @@ from feature_engine.docstrings import (
     _missing_values_docstring,
     _n_features_in_docstring,
 )
-from feature_engine.validation import _return_tags
 
 
 @Substitution(
@@ -28,11 +27,11 @@ from feature_engine.validation import _return_tags
 class MathFeatures(BaseCreation):
     """
     MathFeatures(() applies functions across multiple features returning one or more
-    additional features as a result. Is uses `pandas.agg()` to create the features,
+    additional features as a result. It uses `pandas.agg()` to create the features,
     setting `axis=1`.
 
     For supported aggregation functions, see `pandas documentation
-    <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.agg.html`_.
+    <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.agg.html>`_.
 
     Note that if some of the variables have missing data and `missing_values='ignore'`,
     the value will be ignored in the computation. To be clear, if variables A, B and C,
@@ -77,9 +76,9 @@ class MathFeatures(BaseCreation):
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     Notes
     -----
@@ -241,17 +240,3 @@ class MathFeatures(BaseCreation):
                 feature_names = self.feature_names_in_ + feature_names
 
         return feature_names
-
-    def _more_tags(self):
-        tags_dict = _return_tags()
-        tags_dict["allow_nan"] = True
-        tags_dict["variables"] = "skip"
-        # Tests that are OK to fail:
-        tags_dict["_xfail_checks"][
-            "check_parameters_default_constructible"
-        ] = "transformer has 1 mandatory parameter"
-        tags_dict["_xfail_checks"][
-            "check_fit2d_1feature"
-        ] = "this transformer works with datasets that contain at least 2 variables. \
-        Otherwise, there is nothing to combine"
-        return tags_dict

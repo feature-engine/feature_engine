@@ -10,6 +10,7 @@ from feature_engine.dataframe_checks import (
     _check_input_matches_training_df,
     _is_dataframe,
 )
+from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
@@ -73,7 +74,7 @@ class BaseCreation(BaseEstimator, TransformerMixin):
         # save train set shape
         self.n_features_in_ = X.shape[1]
 
-        return self
+        return X
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -108,3 +109,17 @@ class BaseCreation(BaseEstimator, TransformerMixin):
         X = X[self.feature_names_in_]
 
         return X
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "skip"
+        # Tests that are OK to fail:
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"][
+            "check_fit2d_1feature"
+        ] = "this transformer works with datasets that contain at least 2 variables. \
+        Otherwise, there is nothing to combine"
+        return tags_dict

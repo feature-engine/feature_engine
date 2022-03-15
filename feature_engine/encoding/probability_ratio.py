@@ -105,11 +105,11 @@ class PRatioEncoder(BaseCategorical):
     fit:
         Learn probability ratio per category, per variable.
 
-    {transform}
-
     {fit_transform}
 
     {inverse_transform}
+
+    {transform}
 
     Notes
     -----

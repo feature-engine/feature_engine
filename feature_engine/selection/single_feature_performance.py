@@ -95,9 +95,9 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     References
     ----------

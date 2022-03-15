@@ -72,10 +72,10 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     fit:
         Learn the optimal lambda for the BoxCox transformation.
 
+    {fit_transform}
+
     transform:
         Apply the BoxCox transformation.
-
-    {fit_transform}
 
     References
     ----------

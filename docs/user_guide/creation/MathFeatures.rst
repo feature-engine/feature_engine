@@ -2,37 +2,40 @@
 
 .. currentmodule:: feature_engine.creation
 
-MathematicalCombination
-=======================
+MathFeatures
+============
 
-:class:`MathematicalCombination()` applies basic mathematical operations to multiple
-features, returning one or more additional features as a result. That is, it sums,
-multiplies, takes the average, finds the maximum, minimum or standard deviation of a
-group of variables and returns the result into new variables.
+:class:`MathFeatures()` applies basic functions to groups of features, returning one or
+more additional variables as a result.  It uses `pandas.agg()` to create the features,
+so in essence, you can pass any function that is accepted by this method. One exception
+is that :class:`MathFeatures()` does not accept dictionaries for the parameter `func`.
 
-For example, if we have the variables:
+The functions can be passed as strings, numpy methods, i.e., np.mean, or any function
+that you create, as long as, it returns a scalar from a vector.
 
-- **number_payments_first_quarter**,
-- **number_payments_second_quarter**,
-- **number_payments_third_quarter** and
-- **number_payments_fourth_quarter**,
+For supported aggregation functions, see
+`pandas documentation <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.agg.html>`_.
 
-we can use :class:`MathematicalCombination()` to calculate the total number of payments
+As an example, if we have the variables:
+
+- **number_payments_first_quarter**
+- **number_payments_second_quarter**
+- **number_payments_third_quarter**
+- **number_payments_fourth_quarter**
+
+we can use :class:`MathFeatures()` to calculate the total number of payments
 and mean number of payments as follows:
 
 .. code-block:: python
 
-    transformer = MathematicalCombination(
-        variables_to_combine=[
+    transformer = MathFeatures(
+        variables=[
             'number_payments_first_quarter',
             'number_payments_second_quarter',
             'number_payments_third_quarter',
             'number_payments_fourth_quarter'
         ],
-        math_operations=[
-            'sum',
-            'mean'
-        ],
+        func=['sum','mean'],
         new_variables_name=[
             'total_number_payments',
             'mean_number_payments'
@@ -47,95 +50,204 @@ The transformed dataset, Xt, will contain the additional features
 variables.
 
 The variable **total_number_payments** is obtained by adding up the features
-indicated in `variables_to_combine`, whereas the variable **mean_number_payments** is
+indicated in `variables`, whereas the variable **mean_number_payments** is
 the mean of those 4 features.
 
-Below we show another example using the House Prices Dataset (more details about the
-dataset :ref:`here <datasets>`). In this example, we sum 2 variables: 'LotFrontage' and
-'LotArea' to obtain 'LotTotal'.
+Examples
+--------
+
+Let's dive into how we can use :class:`MathFeatures()` in more details. Let's first
+create a toy dataset:
 
 .. code:: python
 
+    import numpy as np
     import pandas as pd
-    from sklearn.model_selection import train_test_split
+    from feature_engine.creation import MathFeatures
 
-    from feature_engine.creation import MathematicalCombination
+    df = pd.DataFrame.from_dict(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, 21, 19, 18],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+        })
 
-    data = pd.read_csv('houseprice.csv').fillna(0)
+    print(df)
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        data.drop(['Id', 'SalePrice'], axis=1),
-        data['SalePrice'],
-        test_size=0.3,
-        random_state=0
+The dataset looks like this:
+
+.. code:: python
+
+        Name        City  Age  Marks                 dob
+    0    tom      London   20    0.9 2020-02-24 00:00:00
+    1   nick  Manchester   21    0.8 2020-02-24 00:01:00
+    2  krish   Liverpool   19    0.7 2020-02-24 00:02:00
+    3   jack     Bristol   18    0.6 2020-02-24 00:03:00
+
+
+We can now apply several functions over the numerical variables Age and Marks using
+strings to indicate the functions:
+
+.. code:: python
+
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func = ["sum", "prod", "min", "max", "std"],
     )
 
-    math_combinator = MathematicalCombination(
-        variables_to_combine=['LotFrontage', 'LotArea'],
-        math_operations = ['sum'],
-        new_variables_names = ['LotTotal']
+    df_t = transformer.fit_transform(df)
+
+    print(df_t)
+
+And we obtain the following dataset, where the new variables are named after the function
+used to obtain them, plus the group of variables that were used in the computation:
+
+.. code:: python
+
+        Name        City  Age  Marks                 dob  sum_Age_Marks  \
+    0    tom      London   20    0.9 2020-02-24 00:00:00           20.9
+    1   nick  Manchester   21    0.8 2020-02-24 00:01:00           21.8
+    2  krish   Liverpool   19    0.7 2020-02-24 00:02:00           19.7
+    3   jack     Bristol   18    0.6 2020-02-24 00:03:00           18.6
+
+       prod_Age_Marks  min_Age_Marks  max_Age_Marks  std_Age_Marks
+    0            18.0            0.9           20.0      13.505740
+    1            16.8            0.8           21.0      14.283557
+    2            13.3            0.7           19.0      12.940054
+    3            10.8            0.6           18.0      12.303658
+
+
+For more flexibility, we can pass existing functions to the `func` argument as follows:
+
+.. code:: python
+
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func = [np.sum, np.prod, np.min, np.max, np.std],
     )
 
-    math_combinator.fit(X_train, y_train)
+    df_t = transformer.fit_transform(df)
 
-    X_train_ = math_combinator.transform(X_train)
+    print(df_t)
 
-
-In the attribute `combination_dict_` the transformer stores the variable name and the
-operation used to obtain that variable. This way, we can easily identify which variable
-is the result of which transformation.
+And we obtain the following dataframe:
 
 .. code:: python
 
-    print(math_combinator.combination_dict_)
+        Name        City  Age  Marks                 dob  sum_Age_Marks  \
+    0    tom      London   20    0.9 2020-02-24 00:00:00           20.9
+    1   nick  Manchester   21    0.8 2020-02-24 00:01:00           21.8
+    2  krish   Liverpool   19    0.7 2020-02-24 00:02:00           19.7
+    3   jack     Bristol   18    0.6 2020-02-24 00:03:00           18.6
+
+       prod_Age_Marks  amin_Age_Marks  amax_Age_Marks  std_Age_Marks
+    0            18.0             0.9            20.0      13.505740
+    1            16.8             0.8            21.0      14.283557
+    2            13.3             0.7            19.0      12.940054
+    3            10.8             0.6            18.0      12.303658
+
+We have the option to set the parameter `drop_original` to True to drop the variables
+after performing the calculations.
+
+We can obtain the names of all the features in the transformed data as follows:
 
 .. code:: python
 
-    {'LotTotal': 'sum'}
+    transformer.get_feature_names_out(all=True)
 
-We can see that the transformed dataset contains the additional variable:
-
-.. code:: python
-
-    print(X_train_.loc[:,['LotFrontage', 'LotArea', 'LotTotal']].head())
+Which will return the names of all the variables in the transformed data:
 
 .. code:: python
 
-          LotFrontage  LotArea  LotTotal
-    64            0.0     9375    9375.0
-    682           0.0     2887    2887.0
-    960          50.0     7207    7257.0
-    1384         60.0     9060    9120.0
-    1100         60.0     8400    8460.0
+    ['Name',
+     'City',
+     'Age',
+     'Marks',
+     'dob',
+     'sum_Age_Marks',
+     'prod_Age_Marks',
+     'amin_Age_Marks',
+     'amax_Age_Marks',
+     'std_Age_Marks']
 
-**new_variables_names**
+Or, we can obtain the names of the new variables only:
 
-Even though the transfomer allows to combine variables automatically, it was originally
-designed to combine variables with domain knowledge. In this case, we normally want to
+.. code:: python
+
+    transformer.get_feature_names_out(all=False)
+
+Which will return the names of the new features:
+
+.. code:: python
+
+    ['sum_Age_Marks',
+     'prod_Age_Marks',
+     'amin_Age_Marks',
+     'amax_Age_Marks',
+     'std_Age_Marks']
+
+
+New variables names
+^^^^^^^^^^^^^^^^^^^
+
+Even though the transfomer allows to combine variables automatically, its use is intended
+to combine variables with domain knowledge. In this case, we normally want to
 give meaningful names to the variables. We can do so through the parameter
 `new_variables_names`.
 
 `new_variables_names` takes a list of strings, with the new variable names. In this
-parameter, you need to enter a name or a list of names for the newly created features
-(recommended). You must enter one name for each mathematical transformation indicated
-in the `math_operations` parameter. That is, if you want to perform mean and sum of
-features, you should enter 2 new variable names. If you perform only mean of features,
-enter 1 variable name. Alternatively, if you chose to perform all mathematical
-transformations, enter 6 new variable names.
+parameter, you need to enter a list of names for the newly created features. You must
+enter one name for each function indicated in the `func` parameter.
+That is, if you want to perform mean and sum of features, you should enter 2 new
+variable names. If you compute only the mean of features, enter 1 variable name.
 
-The name of the variables should coincide with the order in which the
-mathematical operations are initialised in the transformer. That is, if you set
-math_operations = ['mean', 'prod'], the first new variable name will be
-assigned to the mean of the variables and the second variable name
-to the product of the variables.
+The name of the variables should coincide with the order of the functions in `func`.
+That is, if you set `func = ['mean', 'prod']`, the first new variable name will be
+assigned to the mean of the variables and the second variable name to the product of the
+variables.
+
+Let's look at an example. In the following code snippet, we add up, and find the maximum
+and minimum value of 2 variables, which results in 3 new features. We add the names
+for the new features in a list:
+
+.. code:: python
+
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func = ["sum", "min", "max"],
+        new_variables_names = ["sum_vars", "min_vars", "max_vars"]
+    )
+
+    df_t = transformer.fit_transform(df)
+
+    print(df_t)
+
+The resulting dataframe contains the new features under the variable names that we
+provided:
+
+.. code:: python
+
+        Name        City  Age  Marks                 dob  sum_vars  min_vars  \
+    0    tom      London   20    0.9 2020-02-24 00:00:00      20.9       0.9
+    1   nick  Manchester   21    0.8 2020-02-24 00:01:00      21.8       0.8
+    2  krish   Liverpool   19    0.7 2020-02-24 00:02:00      19.7       0.7
+    3   jack     Bristol   18    0.6 2020-02-24 00:03:00      18.6       0.6
+
+       max_vars
+    0      20.0
+    1      21.0
+    2      19.0
+    3      18.0
+
 
 More details
 ^^^^^^^^^^^^
 
-You can find creative ways to use the :class:`MathematicalCombination()` in the
-following Jupyter notebooks and Kaggle kernels.
+You can find creative ways to use :class:`MathFeatures()` in the
+following Jupyter notebooks.
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/creation/MathematicalCombination.ipynb>`_
-- `Kaggle kernel - Wine Quality <https://www.kaggle.com/solegalli/create-new-features-with-feature-engine>`_
-- `Kaggle kernel - House Price <https://www.kaggle.com/solegalli/feature-engineering-and-model-stacking>`_
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/creation/MathFeaturesn.ipynb>`_
 
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
