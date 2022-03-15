@@ -27,11 +27,11 @@ from feature_engine.docstrings import (
 class MathFeatures(BaseCreation):
     """
     MathFeatures(() applies functions across multiple features returning one or more
-    additional features as a result. Is uses `pandas.agg()` to create the features,
+    additional features as a result. It uses `pandas.agg()` to create the features,
     setting `axis=1`.
 
     For supported aggregation functions, see `pandas documentation
-    <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.agg.html`_.
+    <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.agg.html>`_.
 
     Note that if some of the variables have missing data and `missing_values='ignore'`,
     the value will be ignored in the computation. To be clear, if variables A, B and C,

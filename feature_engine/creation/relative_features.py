@@ -53,7 +53,7 @@ class RelativeFeatures(BaseCreation):
     pd.DataFrme.add, pd.DataFrme.sub, pd.DataFrme.mul, pd.DataFrme.div,
     pd.DataFrme.truediv, pd.DataFrme.floordiv, pd.DataFrme.mod and pd.DataFrme.pow.
     Find out more in `pandas documentation
-    <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.add.html>_`.
+    <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.add.html>`_.
 
     More details in the :ref:`User Guide <relative_features>`.
 

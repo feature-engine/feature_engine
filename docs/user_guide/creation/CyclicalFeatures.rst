@@ -31,8 +31,6 @@ We first create a toy dataframe with the variables "days" and "months":
 .. code:: python
 
     import pandas as pd
-    from sklearn.model_selection import train_test_split
-
     from feature_engine.creation import CyclicalFeatures
 
     df = pd.DataFrame({
@@ -130,7 +128,6 @@ Let's create a toy dataframe and explain this in more detail:
 
 .. code:: python
 
-    import numpy as np
     import pandas as pd
     import matplotlib.pyplot as plt
 
@@ -184,13 +181,13 @@ lines to flag the hours 0 and 22.
     plt.vlines(x=0, ymin=-1, ymax=0, color='g', linestyles='dashed')
     plt.vlines(x=22, ymin=-1, ymax=-0.25, color='g', linestyles='dashed')
 
-After the transformation, we see that 0 and 22 are actually closer to each other (follow
-the dashed lines).
+After the transformation, we see that the new values for the hors 0 and 22 are actually
+closer to each other (follow the dashed lines).
 
 .. image:: ../../images/hour_sin.png
 
 The problem with trigonometric transformations, is that, because they are periodic,
-2 different observations can also return similar values after the transformation. let's
+2 different observations can also return similar values after the transformation. Let's
 explore that:
 
 .. code:: python

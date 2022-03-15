@@ -31,8 +31,8 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 )
 class CyclicalTransformer(BaseNumericalTransformer):
     """
-    DEPRECATED: CyclicalTransformer() is deprecated in version 1.3 and will be removed
-    in version 1.4. Use CyclicalFeatures() instead.
+    **DEPRECATED: CyclicalTransformer() is deprecated in version 1.3 and will be removed
+    in version 1.4. Use CyclicalFeatures() instead.**
 
     The CyclicalTransformer() applies cyclical transformations to numerical
     variables, returning 2 new features per variable, according to:
@@ -48,7 +48,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     Missing data should be imputed before applying this transformer.
 
-    More details in the :ref:`User Guide <cyclical>`.
+    More details in the :ref:`User Guide <cyclical_transformer>`.
 
     Parameters
     ----------

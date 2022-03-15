@@ -38,8 +38,8 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 )
 class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     """
-    DEPRECATED: CombineWithReferenceFeature() is deprecated in version 1.3 and will be
-    removed in Version 1.4. Use RelativeFeatures() instead.
+    **DEPRECATED: CombineWithReferenceFeature() is deprecated in version 1.3 and will be
+    removed in Version 1.4. Use RelativeFeatures() instead.**
 
     CombineWithReferenceFeature() applies basic mathematical operations between a group
     of variables and one or more reference features. It adds one or more additional

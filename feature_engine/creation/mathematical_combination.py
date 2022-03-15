@@ -38,8 +38,8 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 )
 class MathematicalCombination(BaseEstimator, TransformerMixin):
     """
-    DEPRECATED: MathematicalCombination() is deprecated in version 1.3 and will be
-    removed in version 1.4. Use MathFeatures() instead.
+    **DEPRECATED: MathematicalCombination() is deprecated in version 1.3 and will be
+    removed in version 1.4. Use MathFeatures() instead.**
 
     MathematicalCombination() applies basic mathematical operations to multiple
     features, returning one or more additional features as a result. That is, it sums,
