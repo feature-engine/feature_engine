@@ -61,6 +61,7 @@ Bug fixes
 ~~~~~~~~~
 
     - The `SklearnTransformerWrapper` now works with cross-validation when using the one hot encoder (`Noah Green <https://github.com/noahjgreen295>`_)
+    - `SelectByShuffling` evaluation of initial model performance and performance after shuffling is now carried in the same data (`gverbock <https://github.com/gverbock>`_)
 
 
 Documentation
