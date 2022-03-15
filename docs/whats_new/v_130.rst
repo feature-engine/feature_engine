@@ -11,7 +11,7 @@ Contributors
 
     - `Morgan Sell <https://github.com/Morgan-Sell>`_
     - `Kishan Manani <https://github.com/KishManani>`_
-    - `gverbock <https://github.com/gverbock>`_
+    - `Gilles Verbockhaven <https://github.com/gverbock>`_
     - `Noah Green <https://github.com/noahjgreen295>`_
     - `Alejandro Giacometti <https://github.com/janrito>`_
     - `Soledad Galli <https://github.com/solegalli>`_
@@ -50,7 +50,7 @@ Enhancements
 ~~~~~~~~~~~~
 
     - All our transformers have now the `get_feature_names_out` functionality to obtain the names of the output features (`Alejandro Giacometti <https://github.com/janrito>`_ and `Soledad Galli <https://github.com/solegalli>`_)
-    - All our selector transformers can now check that the variables were not dropped in a previous selection step (`gverbock <https://github.com/gverbock>`_)
+    - All our selector transformers can now check that the variables were not dropped in a previous selection step (`Gilles Verbockhaven <https://github.com/gverbock>`_)
     - The `DecisionTreeDiscretiser` and the `DecisionTreeEncoder` now check that the user enters a target suitable for regression or classification (`Morgan Sell <https://github.com/Morgan-Sell>`_)
     - The `DecisionTreeDiscretiser` and the `DecisionTreeEncoder` now accept all sklearn cross-validation constructors as parameter (`Soledad Galli <https://github.com/solegalli>`_)
     - The `SklearnTransformerWrapper` now implements the method inverse_transform (`Soledad Galli <https://github.com/solegalli>`_)
@@ -61,7 +61,7 @@ Bug fixes
 ~~~~~~~~~
 
     - The `SklearnTransformerWrapper` now works with cross-validation when using the one hot encoder (`Noah Green <https://github.com/noahjgreen295>`_)
-    - `SelectByShuffling` evaluation of initial model performance and performance after shuffling is now carried in the same data (`gverbock <https://github.com/gverbock>`_)
+    - `SelectByShuffling` evaluation of initial model performance and performance after shuffling is now carried in the same data (`Gilles Verbockhaven <https://github.com/gverbock>`_)
 
 
 Documentation
