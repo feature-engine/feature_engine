@@ -13,7 +13,6 @@ from feature_engine.docstrings import (
     _missing_values_docstring,
     _n_features_in_docstring,
 )
-from feature_engine.validation import _return_tags
 
 
 @Substitution(
@@ -241,17 +240,3 @@ class MathFeatures(BaseCreation):
                 feature_names = self.feature_names_in_ + feature_names
 
         return feature_names
-
-    def _more_tags(self):
-        tags_dict = _return_tags()
-        tags_dict["allow_nan"] = True
-        tags_dict["variables"] = "skip"
-        # Tests that are OK to fail:
-        tags_dict["_xfail_checks"][
-            "check_parameters_default_constructible"
-        ] = "transformer has 1 mandatory parameter"
-        tags_dict["_xfail_checks"][
-            "check_fit2d_1feature"
-        ] = "this transformer works with datasets that contain at least 2 variables. \
-        Otherwise, there is nothing to combine"
-        return tags_dict

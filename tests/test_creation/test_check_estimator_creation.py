@@ -4,7 +4,7 @@ from sklearn.utils.estimator_checks import check_estimator
 from feature_engine.creation import (
     CyclicalFeatures,
     MathFeatures,
-    # RelativeFeatures,
+    RelativeFeatures,
     # FIXME: remove in version 1.4
     CombineWithReferenceFeature,
     CyclicalTransformer,
@@ -14,7 +14,9 @@ from feature_engine.estimator_checks import check_feature_engine_estimator
 
 _estimators = [
     MathFeatures(variables=["0", "1"], func="mean", missing_values="ignore"),
-    # RelativeFeatures(variables=["0"], reference=["1"]),
+    RelativeFeatures(
+        variables=["0", "1"], reference=["0"], func=["add"], missing_values="ignore"
+    ),
     CyclicalFeatures(),
     # FIXME: remove in version 1.4
     MathematicalCombination(variables_to_combine=["0", "1"]),
@@ -30,7 +32,7 @@ def test_check_estimator_from_sklearn(estimator):
 
 _estimators = [
     MathFeatures(variables=["var_1", "var_2", "var_3"], func="mean"),
-    # RelativeFeatures(variables=["0"], reference=["1"]),
+    RelativeFeatures(variables=["var_1", "var_2"], reference=["var_3"], func=["add"]),
     CyclicalFeatures(),
 ]
 
