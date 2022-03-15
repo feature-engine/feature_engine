@@ -264,3 +264,5 @@ You can find more details on to use the :class:`CyclicalFeatures()` in the
 following Jupyter notebooks.
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/creation/CyclicalFeatures.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

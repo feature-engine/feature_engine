@@ -167,3 +167,5 @@ You can find creative ways to use the :class:`RelativeFeatures()` in the
 following Jupyter notebooks and Kaggle kernels.
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/creation/RelativeFeatures.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

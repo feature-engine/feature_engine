@@ -104,3 +104,4 @@ In this Kaggle kernel we use :class:`DropDuplicateFeatures()` together with othe
 
 - `Kaggle kernel <https://www.kaggle.com/solegalli/feature-selection-with-feature-engine>`_
 
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

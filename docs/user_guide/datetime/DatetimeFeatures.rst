@@ -613,3 +613,5 @@ You can find additional examples with a real dataset on how to use
 :class:`DatetimeFeatures()` in the following Jupyter notebook.
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/datetime/DatetimeFeatures.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

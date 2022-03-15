@@ -249,3 +249,5 @@ You can find creative ways to use :class:`MathFeatures()` in the
 following Jupyter notebooks.
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/creation/MathFeaturesn.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
