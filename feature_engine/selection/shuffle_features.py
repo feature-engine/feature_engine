@@ -171,6 +171,11 @@ class SelectByShuffling(BaseSelector):
         if isinstance(y, pd.Series):
             y = y.reset_index(drop=True)
 
+        # Enforce y to have the iloc attribute required for the calculation of the
+        # model performance for the different folds.
+        if hasattr(y, "iloc") is False:
+            y = pd.Series(y)
+
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
 
