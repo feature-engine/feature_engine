@@ -72,6 +72,7 @@ Deprecations
 ~~~~~~~~~~~~
 
     - We are deprecating `MathematicalCombination`, `CombineWithFeatureReference` and `CyclicalTransformer` in version 1.3 and they will be removed in version 1.4
+    - Feature-engine does not longer work with Python 3.6 due to dependence on latest versions of Scikit-learn
 
 For developers
 ~~~~~~~~~~~~~~

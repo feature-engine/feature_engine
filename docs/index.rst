@@ -60,8 +60,10 @@ If you want to know more about what makes Feature-engine unique, check this
 Installation
 ~~~~~~~~~~~~
 
-Feature-engine is a Python 3 package and works well with 3.6 or later. Earlier versions
-have not been tested. The simplest way to install Feature-engine is from PyPI with pip:
+Feature-engine is a Python 3 package and works well with 3.7 or later. Earlier versions
+are not compatible with the latest versions of Python numerical computing libraries.
+
+The simplest way to install Feature-engine is from PyPI with pip:
 
 .. code-block:: bash
 
