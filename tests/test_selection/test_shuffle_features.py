@@ -41,7 +41,7 @@ def test_sel_with_default_parameters(df_test):
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
 
-def test_regression_cv_3_and_r2(df_test, load_diabetes_dataset):
+def test_regression_cv_3_and_r2(load_diabetes_dataset):
     #  test for regression using cv=3, and the r2 as metric.
     X, y = load_diabetes_dataset
 
