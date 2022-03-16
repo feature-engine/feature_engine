@@ -8,14 +8,8 @@ from feature_engine.variable_manipulation import (
     _find_or_check_categorical_variables,
     _find_or_check_datetime_variables,
     _find_or_check_numerical_variables,
-    _find_categorical_and_numerical_variables,
 )
 
-from tests.conftest import (
-    df_enc,
-    df_enc_numeric,
-    df_vartypes,
-)
 
 def test_check_input_parameter_variables():
     vars_ls = ["var1", "var2", "var1"]
@@ -284,9 +278,6 @@ def test_find_all_variables(df_vartypes):
         assert _find_all_variables(df_vartypes, non_existing_vars)
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 filter_dict = [
     (
         pd.DataFrame(columns=["A", "B", "C", "D", "E"]),
@@ -307,117 +298,3 @@ def test_filter_out_variables_not_in_dataframe(df, variables, overlap, not_in_co
 
     with pytest.raises(ValueError):
         assert _filter_out_variables_not_in_dataframe(df, not_in_col)
-
-
-def test_find_categorical_and_numerical_variable_one_cat_var(
-        df_enc
-):
-    assert (_find_categorical_and_numerical_variables(df_enc, ["var_A"])
-            == (["var_A"], []))
-
-
-def test_find_categorical_and_numeric_variables_one_categorical_variables(
-        df_enc
-_cat_num_vars = [
-    (df_enc, "var_A", ["var_A"], []),
-    (df_enc_numeric, "var_B", [], ["var_B"]),
-    # TODO: Datetime test
-    (df_vartypes, None, ["Name", "City"], ["Age", "Marks"]),
-    (df_enc_numeric, None, [], ["var_A", "var_B", "target"])
-]
-
-@pytest.mark.parametrize(
-    "_df, _variables, _categorical_vars, _numerical_vars", _cat_num_vars
-)
-def test_find_categorical_and_numeric_vars_pass_diff_var_permutations(
-        _df, _variables, _categorical_vars, _numerical_vars
-):
-    assert (_find_categorical_and_numerical_variables(
-        _df, _variables) == (_categorical_vars, _numerical_vars)
-            )
-
-
-
-
-
-def test_error_find_categorical_and_numerical_vars_datetime_var(
-        df_datetime
-):
-    # TODO: Fix test. Not returning type error.
-    with pytest.raises(TypeError):
-        _find_categorical_and_numerical_variables(
-            df_datetime, ["datetime_range"]
-        )
-
-#
-# def test_find_categorical_and_numeric_vars_df_contains_num_and_cat_vars(
-#         df_enc_categorical_and_numeric
-# ):
-#     assert (_find_categorical_and_numerical_variables(
-#         df_enc_categorical_and_numeric, None)
-#         == (["var_A", "var_B"], ["var_C", "var_D", "target"]))
-
-
-# def test_find_categorical_and_numeric_variables_df_contains_num_vars(
-#         df_enc_numeric
-# ):
-#     assert (_find_categorical_and_numerical_variables(
-#         df_enc_numeric, None)
-#         == ([], ["var_A", "var_B", "target"]))
-
-
-def test_find_cat_and_num_vars_df_contains_cat_vars(
-        df_enc
-):
-    df_new = df_enc[["var_A", "var_B"]].copy()
-    assert (_find_categorical_and_numerical_variables(
-        df_new, None)
-        == (["var_A", "var_B"], []))
-
-
-def test_error_find_categorical_and_numeric_variables_pass_empty_list(
-        df_enc
-):
-    with pytest.raises(ValueError):
-        _find_categorical_and_numerical_variables(
-            df_enc, []
-        )
-
-
-def test_find_categorical_and_numerical_variables_user_passes_num_and_cat_vars(
-        df_vartypes
-):
-    assert (_find_categorical_and_numerical_variables(
-        df_vartypes, ["Name", "Age", "City", "Marks"])
-        == (["Name", "City"], ["Age", "Marks"]))
-
-
-def test_find_categorical_and_numeric_variables_user_passes_cat_vars(
-        df_vartypes
-):
-    assert (_find_categorical_and_numerical_variables(
-        df_vartypes, ["Name", "Marks"])
-        == (["Name", "Marks"], []))
-
-
-def test_find_categorical_and_numeric_variables_user_passes_num_vars(
-        df_vartypes
-):
-    assert (_find_categorical_and_numerical_variables(
-        df_vartypes, ["Age", "Marks"])
-        == ([], ["Age", "Marks"]))
-
-
-#TODO:
-# add tests for new function: find_numerical_and_categorical_variables
-# test the following:
-# user passes 1 variable that is categorical
-# user passes 1 variable that is numerical
-# user passes q variable in format datetime, function raises error
-# user passes None, df contains both numerical and categorical
-# user passes None, df contains numerical
-# user passes None, df contains categorical
-# user passes empty list, function raises error
-# user passes list with num and cat vars
-# user passes list with cat vars
-# user passes list with num vars
