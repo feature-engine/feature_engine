@@ -1,5 +1,6 @@
 from typing import List, Union
 
+import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
@@ -45,10 +46,10 @@ class BaseTargetMeanEstimator(BaseEstimator):
     Attributes
     ----------
     variables_categorical_:
-        The group of categorical input variables that will be used for _prediction.
+        The group of categorical input variables that will be used for prediction.
 
     variables_numerical_:
-        The group of numerical input variables that will be used for _prediction.
+        The group of numerical input variables that will be used for prediction.
 
     pipeline_:
         A Sickit-learn Pipeline with a dicretiser and/or encoder. Used to determine the
@@ -57,10 +58,14 @@ class BaseTargetMeanEstimator(BaseEstimator):
     n_features_in_:
         The number of features in the train set used in fit.
 
+    feature_names_in_:
+        List with the names of features seen during `fit`.
+
     Methods
     -------
     fit:
         Learn the mean target value per category or per bin, for each variable.
+
     predict:
         Predict using the average of the target mean value across variables.
 
@@ -85,7 +90,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         bins: int = 5,
         strategy: str = "equal_width",
     ):
-        # boolean value can be interpreted as an integer
+
         if not isinstance(bins, int):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
@@ -121,7 +126,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         if len(X) != len(y) or any(X.index != y.index):
             raise ValueError("There is a mismatch in the length or index of X and y.")
 
-        # identify categorical and numerical variables
+        # find categorical and numerical variables
         (
             self.variables_categorical_,
             self.variables_numerical_,
@@ -207,7 +212,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
         return discretiser
 
-    def _predict(self, X: pd.DataFrame) -> pd.Series:
+    def _predict(self, X: pd.DataFrame) -> np.array:
         """
         Predict using the average of the target mean value across variables.
 
@@ -218,7 +223,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
         Return
         -------
-        y_pred: pandas series of shape = [n_samples]
+        y_pred: numpy array of shape = (n_samples, )
             The mean target value per observation.
         """
         # check method fit has been called

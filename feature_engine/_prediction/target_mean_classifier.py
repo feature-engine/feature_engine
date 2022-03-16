@@ -1,23 +1,24 @@
-# Authors: Morgan Sell <morganpsell@gmail.com>
-# License: BSD 3 clause
-
 import numpy as np
 import pandas as pd
 from sklearn.base import ClassifierMixin
 from sklearn.utils.multiclass import unique_labels
 
-from feature_engine.prediction.base_predictor import BaseTargetMeanEstimator
+from feature_engine._prediction.base_predictor import BaseTargetMeanEstimator
 
 
 class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
     """
-    The TargetMeanClassifier estimates the target value based on the mean target value
-    per category or bin, across a group of variables.
+    The TargetMeanClassifier() predicts the target value based on the mean target value
+    per category or bin, across a group of categorical or numerical variables.
 
-    The TargetMeanClassifier takes both numerical and categorical variables as input.
+    The TargetMeanClassifier() takes both numerical and categorical variables as input.
+
     For numerical variables, the values are first sorted into bins of equal-width or
-    equal-frequency. Then, the mean target value is estimated for each bin. If the
-    variables are categorical, the mean target value is estimated for each category.
+    equal-frequency. Then, the mean target value is estimated for each bin.
+
+    If the variables are categorical, the mean target value is estimated for each
+    category.
+
     Finally, the estimator takes the average of the mean target value across the
     input variables and determines the class based on a threshold of 0.5.
 
@@ -53,10 +54,13 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
     n_features_in_:
         The number of features in the train set used in fit.
 
+    feature_names_in_:
+        List with the names of features seen during `fit`.
+
     Methods
     -------
     fit:
-        Learn the mean target value per category or per bin, for each variable.
+        Learn the mean target value per category or per bin, per variable.
 
     predict:
         Predict class labels for samples in X.
@@ -65,7 +69,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         Predict logarithm of probability estimates.
 
     predict_proba:
-        Proxy for Probability estimates based of the average of the target mean value
+        Proxy for probability estimates based of the average of the target mean value
          across variables.
 
     score:
@@ -98,11 +102,11 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         y : pandas series of shape = [n_samples,]
             The target variable.
         """
-        # check that y is binary
         self.classes_ = unique_labels(y)
 
+        # check that y is binary
         if len(self.classes_) > 2:
-            raise ValueError(
+            raise NotImplementedError(
                 "This encoder is designed for binary classification only. The target "
                 "has more than 2 unique values."
             )
@@ -116,8 +120,10 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
 
         return self
 
-    def predict_proba(self, X: pd.DataFrame) -> pd.Series:
+    def predict_proba(self, X: pd.DataFrame) -> np.array:
         """
+        Predict class probabilities for X.
+
         Proxy for probability estimates based of the average of the target mean value
         across variables.
 
@@ -130,16 +136,16 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
 
         Return
         -------
-        T: array-like of shape (n_samples, n_classes)
+        p: array-like of shape (n_samples, n_classes)
             Returns the probability of the sample for each class in the model, where
             classes are ordered as they are in self.classes_.
         """
         prob = self._predict(X)
         return np.vstack([1 - prob, prob]).T
 
-    def predict_log_proba(self, X: pd.DataFrame) -> pd.Series:
+    def predict_log_proba(self, X: pd.DataFrame) -> np.array:
         """
-        Predict logarithm of probability estimates.
+        Predict class log-probabilities for X.
 
         The returned estimates for all classes are ordered by the label of classes.
 
@@ -150,23 +156,22 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
 
         Return
         -------
-        T: array-like of shape (n_samples, n_classes)
+        p: array-like of shape (n_samples, n_classes)
             Returns the log-probability of the sample for each class in the model,
             where classes are ordered as they are in self.classes_.
-
         """
-        log_prob = np.log(self.predict_proba(X))
-        return log_prob
+        return np.log(self.predict_proba(X))
 
-    def predict(self, X: pd.DataFrame) -> pd.Series:
+    def predict(self, X: pd.DataFrame) -> np.array:
         """
-        Predict class labels for samples in X.
+        Predict class for X.
+
+        Class 1 is returned when the class probability is bigger than 0.5.
 
         Parameters
         ----------
         X : pandas dataframe of shape = [n_samples, n_features]
-            The input series which must have the same name as one of the features in the
-            dataframe that was used to fit the predictor.
+            The input samples.
 
         Return
         -------
