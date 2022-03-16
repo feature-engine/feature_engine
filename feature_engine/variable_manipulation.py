@@ -377,6 +377,9 @@ def _find_categorical_and_numerical_variables(
         # find numerical variables in dataset
         variables_num = list(X.select_dtypes(include="number").columns)
 
+        if len(variables_num)==0 and len(variables_cat)==0:
+            raise TypeError("There are no numerical or categorical variables in the dataframe")
+
     # If user passes variable list.
     else:
         if len(variables) == 0:
@@ -390,8 +393,8 @@ def _find_categorical_and_numerical_variables(
         # find numerical variables
         variables_num = list(X[variables].select_dtypes(include="number").columns)
 
-        if any([v for v in variables if f not in variables_cat + variables_num]):
-            raise ValueError(
+        if any([v for v in variables if v not in variables_cat + variables_num]):
+            raise TypeError(
                 "Some of the variables are neither numerical nor categorical."
             )
 

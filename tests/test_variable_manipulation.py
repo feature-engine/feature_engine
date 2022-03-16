@@ -8,6 +8,7 @@ from feature_engine.variable_manipulation import (
     _find_or_check_categorical_variables,
     _find_or_check_datetime_variables,
     _find_or_check_numerical_variables,
+    _find_categorical_and_numerical_variables,
 )
 
 
@@ -298,3 +299,51 @@ def test_filter_out_variables_not_in_dataframe(df, variables, overlap, not_in_co
 
     with pytest.raises(ValueError):
         assert _filter_out_variables_not_in_dataframe(df, not_in_col)
+
+
+def test_find_categorical_and_numerical_variables(df_vartypes):
+
+    # Case 1: user passes 1 variable that is categorical
+    assert (_find_categorical_and_numerical_variables(df_vartypes, ["Name"])==(["Name"], []))
+    assert (_find_categorical_and_numerical_variables(df_vartypes, "Name") == (["Name"], []))
+
+    # Case 2: user passes 1 variable that is numerical
+    assert (_find_categorical_and_numerical_variables(df_vartypes, ["Age"]) == ([], ["Age"]))
+    assert (_find_categorical_and_numerical_variables(df_vartypes, "Age") == ([], ["Age"]))
+
+    # Case 3: user passes 1 categorical and 1 numerical variable
+    assert (_find_categorical_and_numerical_variables(df_vartypes, ["Age", "Name"]) == (["Name"], ["Age"]))
+
+    # Case 4: automatically identify variables
+    assert (_find_categorical_and_numerical_variables(df_vartypes, None) == (["Name", "City"], ["Age", "Marks"]))
+    assert (_find_categorical_and_numerical_variables(df_vartypes[["Name", "City"]], None) == (["Name", "City"], []))
+    assert (_find_categorical_and_numerical_variables(df_vartypes[["Age", "Marks"]], None) == ([], ["Age", "Marks"]))
+
+    # Case 5: error when no variable is numerical or categorical
+    with pytest.raises(TypeError):
+        _find_categorical_and_numerical_variables(df_vartypes["dob"].to_frame(), None)
+
+    with pytest.raises(TypeError):
+        _find_categorical_and_numerical_variables(df_vartypes["dob"].to_frame(), ["dob"])
+
+    with pytest.raises(TypeError):
+        _find_categorical_and_numerical_variables(df_vartypes["dob"].to_frame(), "dob")
+
+    # Case 6: user passes empty list
+    with pytest.raises(ValueError):
+        _find_categorical_and_numerical_variables(df_vartypes, [])
+
+    # Case 7: datetime cast as object
+    df = df_vartypes.copy()
+    df["dob"] = df["dob"].astype("O")
+
+    # datetime variable is skipped when automatically finding variables, but
+    # selected if user passes it in list
+    assert (_find_categorical_and_numerical_variables(df, None) == (["Name", "City"], ["Age", "Marks"]))
+    assert (_find_categorical_and_numerical_variables(df, ["Name", "Marks", "dob"]) == (["Name", "dob"], ["Marks"]))
+
+    # Case 8: variables cast as category
+    df = df_vartypes.copy()
+    df["City"] = df["City"].astype("category")
+    assert (_find_categorical_and_numerical_variables(df, None) == (["Name", "City"], ["Age", "Marks"]))
+    assert (_find_categorical_and_numerical_variables(df, "City") == (["City"], []))
