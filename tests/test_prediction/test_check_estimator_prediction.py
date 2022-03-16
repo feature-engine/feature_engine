@@ -201,7 +201,7 @@ def test_feature_names_in(estimator):
 @pytest.mark.parametrize("_strategy", ["equal_width", "equal_frequency"])
 @pytest.mark.parametrize("_bins", [3, 5, 7])
 @pytest.mark.parametrize("estimator", _estimators)
-def test_attributes_upon_fitting(df_pred, _strategy, _bins, estimator):
+def test_attributes_upon_fitting(_strategy, _bins, estimator):
     transformer = clone(estimator)
     transformer.set_params(bins=_bins, strategy=_strategy)
 
