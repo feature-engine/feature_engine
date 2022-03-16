@@ -1,12 +1,9 @@
-# Authors: Morgan Sell <morganpsell@gmail.com>
-# License: BSD 3 clause
-
 from typing import List, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
-from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
@@ -48,10 +45,10 @@ class BaseTargetMeanEstimator(BaseEstimator):
     Attributes
     ----------
     variables_categorical_:
-        The group of categorical input variables that will be used for prediction.
+        The group of categorical input variables that will be used for _prediction.
 
     variables_numerical_:
-        The group of numerical input variables that will be used for prediction.
+        The group of numerical input variables that will be used for _prediction.
 
     pipeline_:
         A Sickit-learn Pipeline with a dicretiser and/or encoder. Used to determine the
@@ -89,13 +86,13 @@ class BaseTargetMeanEstimator(BaseEstimator):
         strategy: str = "equal_width",
     ):
         # boolean value can be interpreted as an integer
-        if not isinstance(bins, int) or isinstance(bins, bool):
+        if not isinstance(bins, int):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
         if strategy not in ["equal_width", "equal_frequency"]:
             raise ValueError(
-                "strategy takes only values equal_width or equal_frequency. Got "
-                f"{strategy} instead."
+                "strategy takes only values 'equal_width' or 'equal_frequency'. "
+                f"Got {strategy} instead."
             )
 
         self.variables = _check_input_parameter_variables(variables)
@@ -117,10 +114,15 @@ class BaseTargetMeanEstimator(BaseEstimator):
         # check if 'X' is a dataframe
         X = _is_dataframe(X)
 
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
         # Check X and y for consistent length
-        # X, y = check_X_y(X, y, dtype=None)
-        # X = pd.DataFrame(X)
-        # y = pd.DataFrame(y)
+        if len(X)!=len(y) or any(X.index != y.index):
+            raise ValueError(
+                "There is a mismatch in the length or index of X and y."
+            )
+
         # identify categorical and numerical variables
         (
             self.variables_categorical_,
@@ -133,6 +135,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
         # check inf
         _check_contains_inf(X, self.variables_numerical_)
+
         # pipeline with discretiser and encoder
         if self.variables_categorical_ and self.variables_numerical_:
             self.pipeline_ = self._make_combined_pipeline()
@@ -145,7 +148,9 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
         self.pipeline_.fit(X, y)
 
+        # store input features
         self.n_features_in_ = X.shape[1]
+        self.feature_names_in_ = list(X.columns)
 
         return self
 
@@ -215,7 +220,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
         Return
         -------
-        y_pred: pandas series of shape = [n_samples, ]
+        y_pred: pandas series of shape = [n_samples]
             The mean target value per observation.
         """
         # check method fit has been called
@@ -226,6 +231,16 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
         # Check input data contains same number of columns as df used to fit
         _check_input_matches_training_df(X, self.n_features_in_)
+
+        # check for missing values
+        _check_contains_na(X, self.variables_numerical_)
+        _check_contains_na(X, self.variables_categorical_)
+
+        # check inf
+        _check_contains_inf(X, self.variables_numerical_)
+
+        # reorder dataframe to match train set
+        X = X[self.feature_names_in_]
 
         # transform dataframe
         X_tr = self.pipeline_.transform(X)
