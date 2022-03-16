@@ -1,6 +1,6 @@
 """Functions to select certain types of variables."""
 
-from typing import Any, List, Union, Tuple
+from typing import Any, List, Tuple, Union
 
 import pandas as pd
 from pandas.api.types import is_categorical_dtype as is_categorical
@@ -335,14 +335,17 @@ def _filter_out_variables_not_in_dataframe(X, variables):
 
 
 def _find_categorical_and_numerical_variables(
-        X: pd.DataFrame, variables: Variables = None
+    X: pd.DataFrame, variables: Variables = None
 ) -> Tuple[List[Union[str, int]], List[Union[str, int]]]:
     """
     Find numerical and categorical variables.
+
     Parameters
     ----------
     X :  pandas DataFrame
+
     variables : List of variables. Defaults to None.
+
     Returns
     -------
     variables : Tuple with List of numerical and list of categorical variables.
@@ -358,8 +361,9 @@ def _find_categorical_and_numerical_variables(
             variables_num = [variables]
             variables_cat = []
         else:
-            raise TypeError("The variable entered is neither numerical "
-                            "nor categorical.")
+            raise TypeError(
+                "The variable entered is neither numerical nor categorical."
+            )
 
     # If user leaves default None parameter.
     elif variables is None:
@@ -379,10 +383,16 @@ def _find_categorical_and_numerical_variables(
             raise ValueError("The list of variables is empty.")
 
         # find categorical variables
-        variables_cat = [var for var in X[variables]
-            .select_dtypes(include=["O", "category"]).columns]
+        variables_cat = [
+            var for var in X[variables].select_dtypes(include=["O", "category"]).columns
+        ]
 
         # find numerical variables
         variables_num = list(X[variables].select_dtypes(include="number").columns)
+
+        if any([v for v in variables if f not in variables_cat + variables_num]):
+            raise ValueError(
+                "Some of the variables are neither numerical nor categorical."
+            )
 
     return variables_cat, variables_num
