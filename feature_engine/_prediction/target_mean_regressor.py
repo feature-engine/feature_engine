@@ -1,28 +1,25 @@
-# Authors: Morgan Sell <morganpsell@gmail.com>
-# License: BSD 3 clause
-
 import numpy as np
 import pandas as pd
 from sklearn.base import RegressorMixin
 from sklearn.utils.multiclass import type_of_target
 
-from feature_engine.prediction.base_predictor import BaseTargetMeanEstimator
+from feature_engine._prediction.base_predictor import BaseTargetMeanEstimator
 
 
 class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
     """
-    The TargetMeanRegressor outputs a target estimation based on the mean target value
-    per category or bin, across a group of variables.
+    The TargetMeanRegressor() outputs a target estimation based on the mean target
+    value per category or bin, across a group of categorical or numerical variables.
 
-    First, it calculates the mean target value per category or per bin for each
-    variable. The final estimation is the average of the target mean values across
-    variables.
+    First, TargetMeanRegressor() calculates the mean target value per category or per
+    bin for each variable. The final estimation is the average of the target mean
+    values across variables.
 
-    The TargetMeanRegressor takes both numerical and categorical variables as input.
+    The TargetMeanRegressor() takes both numerical and categorical variables as input.
     For numerical variables, the values are first sorted into bins of equal-width or
     equal-frequency. Then, the mean target value is estimated for each bin. If the
     variables are categorical, the mean target value is estimated for each category.
-    Finally, the estimator takes the average of the mean target value across the
+    Finally, the estimator takes the average of the mean target value across all
     input variables.
 
     Parameters
@@ -54,12 +51,17 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
     n_features_in_:
         The number of features in the train set used in fit.
 
+    feature_names_in_:
+        List with the names of features seen during `fit`.
+
     Methods
     -------
     fit:
         Learn the mean target value per category or per bin, for each variable.
+
     predict:
         Predict using the average of the target mean value across variables.
+
     score:
         Return the coefficient of determination of the prediction.
 
@@ -100,7 +102,7 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
 
         return super().fit(X, y)
 
-    def predict(self, X: pd.DataFrame) -> pd.Series:
+    def predict(self, X: pd.DataFrame) -> np.array:
         """
         Predict using the average of the target mean value across variables.
 
@@ -114,11 +116,4 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
         y_pred: ndarray of shape (n_samples,)
             Returns predicted values.
         """
-
-        y_pred = self._predict(X)
-        if not isinstance(y_pred, np.ndarray) or y_pred.ndim != 1:
-            raise ValueError(
-                "'y_pred' is not a 1-dimension numpy array. Predictions "
-                "must be a 1-dimension numpy array."
-            )
-        return y_pred
+        return self._predict(X)
