@@ -7,7 +7,7 @@ from feature_engine._prediction.target_mean_classifier import TargetMeanClassifi
 #assert tr.classes_.tolist() == [0, 1]
 
 
-def test_classifier_categorical_variables(df_classification):
+def test_categorical_variables(df_classification):
 
     X, y = df_classification
 
@@ -39,8 +39,8 @@ def test_classifier_categorical_variables(df_classification):
                     [0., 1.],
                     [0., 1.]])
 
-    np.array_equal(pred, exp_pred)
-    np.array_equal(prob, exp_prob)
+    assert np.array_equal(pred, exp_pred)
+    assert np.array_equal(prob, exp_prob)
 
     tr = TargetMeanClassifier(variables="cat_var_B")
     tr.fit(X, y)
@@ -70,8 +70,8 @@ def test_classifier_categorical_variables(df_classification):
        [0. , 1. ],
        [0. , 1. ]])
 
-    np.array_equal(pred, exp_pred)
-    np.array_equal(prob, exp_prob)
+    assert np.array_equal(pred, exp_pred)
+    assert np.array_equal(prob, exp_prob)
 
     tr = TargetMeanClassifier(variables=["cat_var_A","cat_var_B"])
     tr.fit(X, y)
@@ -101,11 +101,11 @@ def test_classifier_categorical_variables(df_classification):
        [0.  , 1.  ],
        [0.  , 1.  ]])
 
-    np.array_equal(pred, exp_pred)
-    np.array_equal(prob, exp_prob)
+    assert np.array_equal(pred, exp_pred)
+    assert np.array_equal(prob, exp_prob)
 
 
-def test_classifier_numerical_variables(df_classification):
+def test_numerical_variables(df_classification):
 
     X, y = df_classification
 
@@ -137,10 +137,10 @@ def test_classifier_numerical_variables(df_classification):
                     [0., 1.],
                     [0., 1.]])
 
-    np.array_equal(pred, exp_pred)
-    np.array_equal(prob, exp_prob)
+    assert np.array_equal(pred, exp_pred)
+    assert np.array_equal(prob, exp_prob)
 
-    tr = TargetMeanClassifier(variables="cat_var_B")
+    tr = TargetMeanClassifier(variables="cat_var_B", bins=2)
     tr.fit(X, y)
 
     pred = tr.predict(X)
@@ -168,10 +168,10 @@ def test_classifier_numerical_variables(df_classification):
        [0.5, 0.5],
        [0.5, 0.5]])
 
-    np.array_equal(pred, exp_pred)
-    np.array_equal(prob, exp_prob)
+    assert np.array_equal(pred, exp_pred)
+    assert np.array_equal(prob, exp_prob)
 
-    tr = TargetMeanClassifier(variables=["num_var_A","num_var_B"])
+    tr = TargetMeanClassifier(variables=["num_var_A","num_var_B"], bins=2)
     tr.fit(X, y)
 
     pred = tr.predict(X)
@@ -199,8 +199,8 @@ def test_classifier_numerical_variables(df_classification):
        [0.25, 0.75],
        [0.25, 0.75]])
 
-    np.array_equal(pred, exp_pred)
-    np.array_equal(prob, exp_prob)
+    assert np.array_equal(pred, exp_pred)
+    assert np.array_equal(prob, exp_prob)
 
 
 def test_classifier_all_variables(df_classification):
@@ -257,6 +257,6 @@ def test_classifier_all_variables(df_classification):
        [-2.07944154, -0.13353139],
        [-2.07944154, -0.13353139]])
 
-    np.array_equal(pred, exp_pred)
-    np.array_equal(prob, exp_prob)
-    np.array_equal(prob_log, exp_prob_log)
+    assert np.array_equal(pred, exp_pred)
+    assert np.array_equal(prob, exp_prob)
+    assert np.array_equal(prob_log, exp_prob_log)
