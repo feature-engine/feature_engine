@@ -118,10 +118,8 @@ class BaseTargetMeanEstimator(BaseEstimator):
             y = pd.Series(y)
 
         # Check X and y for consistent length
-        if len(X)!=len(y) or any(X.index != y.index):
-            raise ValueError(
-                "There is a mismatch in the length or index of X and y."
-            )
+        if len(X) != len(y) or any(X.index != y.index):
+            raise ValueError("There is a mismatch in the length or index of X and y.")
 
         # identify categorical and numerical variables
         (
@@ -246,8 +244,10 @@ class BaseTargetMeanEstimator(BaseEstimator):
         X_tr = self.pipeline_.transform(X)
 
         # calculate the average for each observation
-        predictions = X_tr[
-            self.variables_numerical_ + self.variables_categorical_
-        ].mean(axis=1).to_numpy()
+        predictions = (
+            X_tr[self.variables_numerical_ + self.variables_categorical_]
+            .mean(axis=1)
+            .to_numpy()
+        )
 
         return predictions
