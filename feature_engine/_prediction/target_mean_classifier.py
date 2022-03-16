@@ -20,7 +20,8 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
     category.
 
     Finally, the estimator takes the average of the mean target value across the
-    input variables and determines the class based on a threshold of 0.5.
+    input variables (the proxy for probability estimates) and determines the class
+    based on a threshold of 0.5.
 
     Parameters
     ----------
