@@ -44,9 +44,11 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
     variables_numerical_:
         The group of numerical input variables that will be used for prediction.
 
-    pipeline_:
-        A Sickit-learn Pipeline with a dicretiser and/or encoder. Used to determine the
-        mean target value per category or bin, per variable.
+    binner_dict_:
+         Dictionary with the interval limits per numerical variable.
+
+    encoder_dict_:
+        Dictionary with the mean target value per category or interval, per variable.
 
     n_features_in_:
         The number of features in the train set used in fit.

@@ -52,9 +52,11 @@ class BaseTargetMeanEstimator(BaseEstimator):
     variables_numerical_:
         The group of numerical input variables that will be used for prediction.
 
-    pipeline_:
-        A Sickit-learn Pipeline with a dicretiser and/or encoder. Used to determine the
-        mean target value per category or bin, per variable.
+    binner_dict_:
+         Dictionary with the interval limits per numerical variable.
+
+    encoder_dict_:
+        Dictionary with the mean target value per category or interval, per variable.
 
     n_features_in_:
         The number of features in the train set used in fit.
@@ -144,15 +146,26 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
         # pipeline with discretiser and encoder
         if self.variables_categorical_ and self.variables_numerical_:
-            self.pipeline_ = self._make_combined_pipeline()
+            self._pipeline = self._make_combined_pipeline()
+
+            # assign attributes for further understanding
+            self.binner_dict_ = self._pipeline.named_steps['discretiser'].binner_dict_
+            self.encoder_dict_ = self._pipeline.named_steps['encoder_num'].encoder_dict_
+            self.encoder_dict_.update(self._pipeline.named_steps['encoder_cat'].encoder_dict_)
 
         elif self.variables_categorical_:
-            self.pipeline_ = self._make_categorical_pipeline()
+            self._pipeline = self._make_categorical_pipeline()
+
+            self.binner_dict_ = []
+            self.encoder_dict_ = self._pipeline.encoder_dict_
 
         else:
-            self.pipeline_ = self._make_numerical_pipeline()
+            self._pipeline = self._make_numerical_pipeline()
 
-        self.pipeline_.fit(X, y)
+            self.binner_dict_ = self._pipeline.named_steps['discretiser'].binner_dict_
+            self.encoder_dict_ = self._pipeline.named_steps['encoder'].encoder_dict_
+
+        self._pipeline.fit(X, y)
 
         # store input features
         self.n_features_in_ = X.shape[1]
@@ -206,11 +219,11 @@ class BaseTargetMeanEstimator(BaseEstimator):
         """
         if self.strategy == "equal_width":
             discretiser = EqualWidthDiscretiser(
-                bins=self.bins, variables=self.variables_numerical_, return_object=True
+                bins=self.bins, variables=self.variables_numerical_, return_boundaries=True
             )
         else:
             discretiser = EqualFrequencyDiscretiser(
-                q=self.bins, variables=self.variables_numerical_, return_object=True
+                q=self.bins, variables=self.variables_numerical_, return_boundaries=True
             )
 
         return discretiser
@@ -250,7 +263,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         X = X[self.feature_names_in_]
 
         # transform dataframe
-        X_tr = self.pipeline_.transform(X)
+        X_tr = self._pipeline.transform(X)
 
         return X_tr
 

@@ -8,20 +8,22 @@ from feature_engine._prediction.base_predictor import BaseTargetMeanEstimator
 
 class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
     """
-    The TargetMeanClassifier() predicts the target value based on the mean target value
-    per category or bin, across a group of categorical or numerical variables.
+    The TargetMeanClassifier() estimates target values based on the average of the mean
+    target value per category or bin of a group of categorical and numerical variables.
 
-    The TargetMeanClassifier() takes both numerical and categorical variables as input.
+    The TargetMeanClassifier() first sorts numerical variables into bins of equal-width
+    or equal-frequency. Then, the mean target value is estimated for each bin. If the
+    variables are categorical, the mean target value is estimated for each category.
 
-    For numerical variables, the values are first sorted into bins of equal-width or
-    equal-frequency. Then, the mean target value is estimated for each bin.
+    Finally, the estimator takes the average of the mean target value per observation
+    across the input variables. This average of the target value per observation is
+    used as proxy for probability estimates. The class is then determined based a
+    threshold of 0.5.
 
-    If the variables are categorical, the mean target value is estimated for each
-    category.
+    TargetMeanClassifier() works like any Scikit-learn classifier. At the moment, it
+    only works for binary classification.
 
-    Finally, the estimator takes the average of the mean target value across the
-    input variables (the proxy for probability estimates) and determines the class
-    based on a threshold of 0.5.
+    More details in the :ref:`User Guide <targetmeanclassifier>`.
 
     Parameters
     ----------
@@ -48,9 +50,11 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
     classes_:
         A list of class labels known to the classifier.
 
-    pipeline_:
-        A Scikit-learn Pipeline with a dicretiser and/or encoder. Used to determine the
-        mean target value per category or bin, per variable.
+    binner_dict_:
+         Dictionary with the interval limits per numerical variable.
+
+    encoder_dict_:
+        Dictionary with the mean target value per category or interval, per variable.
 
     n_features_in_:
         The number of features in the train set used in fit.
