@@ -64,14 +64,6 @@ class BaseTargetMeanEstimator(BaseEstimator):
     feature_names_in_:
         List with the names of features seen during `fit`.
 
-    Methods
-    -------
-    fit:
-        Learn the mean target value per category or per bin, for each variable.
-
-    predict:
-        Predict using the average of the target mean value across variables.
-
     See Also
     --------
     feature_engine.encoding.MeanEncoder
@@ -144,28 +136,35 @@ class BaseTargetMeanEstimator(BaseEstimator):
         # check inf
         _check_contains_inf(X, self.variables_numerical_)
 
-        # pipeline with discretiser and encoder
+        # Create pipelines
         if self.variables_categorical_ and self.variables_numerical_:
             self._pipeline = self._make_combined_pipeline()
-
-            # assign attributes for further understanding
-            self.binner_dict_ = self._pipeline.named_steps['discretiser'].binner_dict_
-            self.encoder_dict_ = self._pipeline.named_steps['encoder_num'].encoder_dict_
-            self.encoder_dict_.update(self._pipeline.named_steps['encoder_cat'].encoder_dict_)
 
         elif self.variables_categorical_:
             self._pipeline = self._make_categorical_pipeline()
 
+        else:
+            self._pipeline = self._make_numerical_pipeline()
+
+        # Train pipeline
+        self._pipeline.fit(X, y)
+
+        # Assign attributes (useful to interpret features)
+        if self.variables_categorical_ and self.variables_numerical_:
+            # assign attributes for further understanding
+            self.binner_dict_ = self._pipeline.named_steps["discretiser"].binner_dict_
+            self.encoder_dict_ = self._pipeline.named_steps["encoder_num"].encoder_dict_
+            self.encoder_dict_.update(
+                self._pipeline.named_steps["encoder_cat"].encoder_dict_
+            )
+
+        elif self.variables_categorical_:
             self.binner_dict_ = []
             self.encoder_dict_ = self._pipeline.encoder_dict_
 
         else:
-            self._pipeline = self._make_numerical_pipeline()
-
-            self.binner_dict_ = self._pipeline.named_steps['discretiser'].binner_dict_
-            self.encoder_dict_ = self._pipeline.named_steps['encoder'].encoder_dict_
-
-        self._pipeline.fit(X, y)
+            self.binner_dict_ = self._pipeline.named_steps["discretiser"].binner_dict_
+            self.encoder_dict_ = self._pipeline.named_steps["encoder"].encoder_dict_
 
         # store input features
         self.n_features_in_ = X.shape[1]
@@ -219,7 +218,9 @@ class BaseTargetMeanEstimator(BaseEstimator):
         """
         if self.strategy == "equal_width":
             discretiser = EqualWidthDiscretiser(
-                bins=self.bins, variables=self.variables_numerical_, return_boundaries=True
+                bins=self.bins,
+                variables=self.variables_numerical_,
+                return_boundaries=True,
             )
         else:
             discretiser = EqualFrequencyDiscretiser(
@@ -242,7 +243,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
          -------
         X_new: pandas dataframe of shape = [n_samples, n_features]
             The transformed data with the discrete variables.
-         """
+        """
         # check method fit has been called
         check_is_fitted(self)
 
