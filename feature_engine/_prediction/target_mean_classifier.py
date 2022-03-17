@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import ClassifierMixin
-from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.multiclass import check_classification_targets
+from sklearn.utils.multiclass import check_classification_targets, unique_labels
 
 from feature_engine._prediction.base_predictor import BaseTargetMeanEstimator
 
@@ -115,8 +114,8 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         # check that y is binary
         if len(self.classes_) > 2:
             raise NotImplementedError(
-                "This classifier is designed for binary classification only. The target "
-                "has more than 2 unique values."
+                "This classifier is designed for binary classification only. "
+                "The target has more than 2 unique values."
             )
 
         # if target has values other than 0 and 1, we need to remap the values,

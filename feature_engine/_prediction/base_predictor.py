@@ -150,20 +150,29 @@ class BaseTargetMeanEstimator(BaseEstimator):
         self._pipeline.fit(X, y)
 
         # Assign attributes (useful to interpret features)
+        # Use dict() to make a copy of the dictionary. Otherwise, like in pandas,
+        # it is just another view of the same data, mind-blowing.
         if self.variables_categorical_ and self.variables_numerical_:
-            self.binner_dict_ = self._pipeline.named_steps["discretiser"].binner_dict_
-            self.encoder_dict_ = self._pipeline.named_steps["encoder_num"].encoder_dict_
-            self.encoder_dict_.update(
-                self._pipeline.named_steps["encoder_cat"].encoder_dict_
+            self.binner_dict_ = dict(
+                self._pipeline.named_steps["discretiser"].binner_dict_
             )
+            self.encoder_dict_ = dict(
+                self._pipeline.named_steps["encoder_num"].encoder_dict_
+            )
+            tmp_dict = dict(self._pipeline.named_steps["encoder_cat"].encoder_dict_)
+            self.encoder_dict_.update(tmp_dict)
 
         elif self.variables_categorical_:
-            self.binner_dict_ = []
-            self.encoder_dict_ = self._pipeline.encoder_dict_
+            self.binner_dict_ = {}
+            self.encoder_dict_ = dict(self._pipeline.encoder_dict_)
 
         else:
-            self.binner_dict_ = self._pipeline.named_steps["discretiser"].binner_dict_
-            self.encoder_dict_ = self._pipeline.named_steps["encoder"].encoder_dict_
+            self.binner_dict_ = dict(
+                self._pipeline.named_steps["discretiser"].binner_dict_
+            )
+            self.encoder_dict_ = dict(
+                self._pipeline.named_steps["encoder"].encoder_dict_
+            )
 
         # store input features
         self.n_features_in_ = X.shape[1]
@@ -223,7 +232,9 @@ class BaseTargetMeanEstimator(BaseEstimator):
             )
         else:
             discretiser = EqualFrequencyDiscretiser(
-                q=self.bins, variables=self.variables_numerical_, return_boundaries=True
+                q=self.bins,
+                variables=self.variables_numerical_,
+                return_boundaries=True,
             )
 
         return discretiser

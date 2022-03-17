@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import is_classifier
 from sklearn.metrics import get_scorer
-from sklearn.model_selection import cross_validate, check_cv
+from sklearn.model_selection import check_cv, cross_validate
 from sklearn.utils.validation import check_random_state
 
 from feature_engine.dataframe_checks import _is_dataframe

@@ -1,17 +1,12 @@
 from typing import List, Union
 
 import pandas as pd
+from sklearn.base import clone
 from sklearn.model_selection import cross_validate
-from feature_engine.dataframe_checks import _is_dataframe
-from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.validation import _return_tags
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_all_variables,
-)
-from feature_engine._prediction.target_mean_regressor import TargetMeanRegressor
-from feature_engine._prediction.target_mean_classifier import TargetMeanClassifier
 
+from feature_engine._prediction.target_mean_classifier import TargetMeanClassifier
+from feature_engine._prediction.target_mean_regressor import TargetMeanRegressor
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -27,8 +22,19 @@ from feature_engine.selection._docstring import (
     _transform_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine.selection._selection_constants import (
+    _CLASSIFICATION_METRICS,
+    _REGRESSION_METRICS,
+)
+from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_all_variables,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
+
 
 @Substitution(
     scoring=_scoring_docstring,
@@ -45,36 +51,49 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 )
 class SelectByTargetMeanPerformance(BaseSelector):
     """
-    SelectByTargetMeanPerformance() uses the mean value of the target per category, or
-    interval if the variable is numerical, as proxy for target estimation. With this
-    proxy and the real target, the selector determines a performance metric for each
-    feature, and then selects them based on this performance metric.
+    SelectByTargetMeanPerformance() uses the mean value of the target per category or
+    per interval, if the variable is numerical, as proxy for target estimation. With
+    this proxy, the selector determines the performance of each feature based on a
+    metric of choice, and then selects the features based on this performance value.
 
-    SelectByTargetMeanPerformance() works with numerical and categorical variables.
-    First, it eparates the training set into train and test sets. Then it works as
-    follows:
+    The beauty of SelectByTargetMeanPerformance() is that it can evaluate numerical and
+    categorical variables, without much prior manipulation. In other words, you don't
+    need to encode the categorical variables or transform the numerical variables to
+    assess their importance with this transformer.
+
+    SelectByTargetMeanPerformance() does require that the dataset is complete, without
+    missing data.
+
+    SelectByTargetMeanPerformance() determines the performance of each variable with
+    cross-validation. More specifically:
 
     For each categorical variable:
 
-    1. Determines the mean target value per category using the train set.
+    1. Determines the mean target value per category.
 
-    2. Replaces the categories in the test set by the target mean values.
+    2. Replaces the categories by the target mean values.
 
-    3. Using the encoded variables and the real target calculates the roc-auc or r2.
+    3. Determines the performance of the transformer variable.
 
-    4. Selects the features which roc-auc or r2 is bigger than the threshold.
 
     For each numerical variable:
 
     1. Discretises the variable into intervals of equal width or equal frequency.
 
-    2. Determines the mean value of the target per interval using the train set.
+    2. Determines the mean value of the target per interval.
 
-    3. Replaces the intervals in the test set, by the target mean values.
+    3. Replaces the intervals by the target mean values.
 
-    4. Using the transformed variable and the real target calculates the roc-auc or r2.
+    4. Determines the performance of the transformer variable.
 
-    5. Selects the features which roc-auc or r2 is bigger than the threshold.
+
+    Finally, it selects the features which performance metric is bigger than the
+    indicated threshold.
+
+    All the steps are performed with cross-validation. That means, that intervals and
+    target mean values per interval or category are determined in a certain portion of
+    the data, and evaluated in a left-out sample. The performance metric per variable
+    is the average across the cross-validation fold.
 
     More details in the :ref:`User Guide <target_mean_selection>`.
 
@@ -89,12 +108,8 @@ class SelectByTargetMeanPerformance(BaseSelector):
         the values will be sorted.
 
     strategy: str, default = 'equal_width'
-        Whether to create the bins for discretization of numerical variables of
-        equal width ('equal_width') or equal frequency ('equal_frequency').
-
-    {estimator}
-
-    {variables}
+        Whether the bins should of equal width ('equal_width') or equal frequency
+        ('equal_frequency').
 
     {scoring}
 
@@ -103,8 +118,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
     {cv}
 
     regression: boolean, default=True
-        Indicates whether the discretiser should train a regression or a classification
-        decision tree.
+        Indicates whether the target is one for regression or a classification.
 
     {confirm_variables}
 
@@ -113,7 +127,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
     {variables_}
 
     feature_performance_:
-        Dictionary with the performance proxy per feature.
+        Dictionary with the performance of each feature.
 
     {features_to_drop_}
 
@@ -152,10 +166,10 @@ class SelectByTargetMeanPerformance(BaseSelector):
         variables: Variables = None,
         bins: int = 5,
         strategy: str = "equal_width",
-        scoring: str = "roc_auc_score",
+        scoring: str = "roc_auc",
         cv=3,
         threshold: Union[int, float] = None,
-        regression: bool = True,
+        regression: bool = False,
         confirm_variables: bool = False,
     ):
 
@@ -168,10 +182,23 @@ class SelectByTargetMeanPerformance(BaseSelector):
                 f"Got {strategy} instead."
             )
 
-        if threshold and not isinstance(threshold, (int, float)):
+        if threshold is not None and not isinstance(threshold, (int, float)):
             raise ValueError(
-                "threshold can only take integer or float. "
-                f"Got {threshold} instead."
+                "threshold can only take integer or float. " f"Got {threshold} instead."
+            )
+
+        if regression is True and scoring not in _REGRESSION_METRICS:
+            raise ValueError(
+                f"The metric {scoring} is not suitable for regression. Set the "
+                "parameter regression to False or choose a different performance "
+                "metric."
+            )
+
+        if regression is False and scoring not in _CLASSIFICATION_METRICS:
+            raise ValueError(
+                f"The metric {scoring} is not suitable for classification. Set the"
+                "parameter regression to True or choose a different performance "
+                "metric."
             )
 
         super().__init__(confirm_variables)
@@ -198,11 +225,11 @@ class SelectByTargetMeanPerformance(BaseSelector):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # check variables
-        self.variables_ = _find_all_variables(X, self.variables)
-
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
+
+        # find all variables or check those entered are present in the dataframe
+        self.variables_ = _find_all_variables(X, self.variables_)
 
         # save input features
         self._get_feature_names_in(X)
@@ -222,9 +249,15 @@ class SelectByTargetMeanPerformance(BaseSelector):
         self.feature_performance_ = {}
 
         for variable in self.variables_:
+            # clone estimator
+            estimator = clone(est)
+
+            # set the estimator to evaluate the required variable
+            estimator.set_params(variables=variable)
+
             model = cross_validate(
-                est,
-                X[variable].to_frame(),
+                estimator,
+                X,
                 y,
                 cv=self.cv,
                 scoring=self.scoring,
@@ -248,5 +281,5 @@ class SelectByTargetMeanPerformance(BaseSelector):
         tags_dict = _return_tags()
         tags_dict["variables"] = "all"
         tags_dict["requires_y"] = True
-
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
         return tags_dict
