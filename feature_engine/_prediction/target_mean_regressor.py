@@ -22,6 +22,9 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
     Finally, the estimator takes the average of the mean target value across all
     input variables.
 
+    More details in the :ref:`User Guide <targetmeanregressor>`.
+
+
     Parameters
     ----------
     variables: list, default=None

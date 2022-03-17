@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import ClassifierMixin
 from sklearn.utils.multiclass import unique_labels
+from sklearn.utils.multiclass import check_classification_targets
 
 from feature_engine._prediction.base_predictor import BaseTargetMeanEstimator
 
@@ -107,12 +108,14 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         y : pandas series of shape = [n_samples,]
             The target variable.
         """
+        check_classification_targets(y)
+
         self.classes_ = unique_labels(y)
 
         # check that y is binary
         if len(self.classes_) > 2:
             raise NotImplementedError(
-                "This encoder is designed for binary classification only. The target "
+                "This classifier is designed for binary classification only. The target "
                 "has more than 2 unique values."
             )
 

@@ -151,7 +151,6 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
         # Assign attributes (useful to interpret features)
         if self.variables_categorical_ and self.variables_numerical_:
-            # assign attributes for further understanding
             self.binner_dict_ = self._pipeline.named_steps["discretiser"].binner_dict_
             self.encoder_dict_ = self._pipeline.named_steps["encoder_num"].encoder_dict_
             self.encoder_dict_.update(
