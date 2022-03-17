@@ -120,12 +120,14 @@ class BaseTargetMeanEstimator(BaseEstimator):
         # check if 'X' is a dataframe
         X = _is_dataframe(X)
 
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
-
         # Check X and y for consistent length
-        if len(X) != len(y) or any(X.index != y.index):
-            raise ValueError("There is a mismatch in the length or index of X and y.")
+        if len(X) != len(y):
+            raise ValueError(
+                "There is a mismatch in the number of observations in X and y."
+            )
+
+        if isinstance(y, pd.Series) and any(X.index != y.index):
+            raise ValueError("There is a mismatch in the index of X and y.")
 
         # find categorical and numerical variables
         (
@@ -213,20 +215,21 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
         return discretiser
 
-    def _predict(self, X: pd.DataFrame) -> np.array:
+    def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Predict using the average of the target mean value across variables.
+         Replace original values by the average of the target mean value per bin or
+         category in each one of the variables.
 
-        Parameters
-        ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
-            The input samples.
+         Parameters
+         ----------
+         X : pandas dataframe of shape = [n_samples, n_features]
+             The input samples.
 
-        Return
-        -------
-        y_pred: numpy array of shape = (n_samples, )
-            The mean target value per observation.
-        """
+         Return
+         -------
+        X_new: pandas dataframe of shape = [n_samples, n_features]
+            The transformed data with the discrete variables.
+         """
         # check method fit has been called
         check_is_fitted(self)
 
@@ -248,6 +251,25 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
         # transform dataframe
         X_tr = self.pipeline_.transform(X)
+
+        return X_tr
+
+    def _predict(self, X: pd.DataFrame) -> np.array:
+        """
+        Predict using the average of the target mean value across variables.
+
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The input samples.
+
+        Return
+        -------
+        y_pred: numpy array of shape = (n_samples, )
+            The mean target value per observation.
+        """
+        # transform dataframe
+        X_tr = self._transform(X)
 
         # calculate the average for each observation
         predictions = (
