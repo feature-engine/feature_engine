@@ -199,7 +199,7 @@ class RandomSampleImputer(BaseImputer):
             The dataframe without missing values in the transformed variables.
         """
 
-        X = self._check_transform_input_and_state(X)
+        X = self._transform(X)
 
         # random sampling with a general seed
         if self.seed == "general":

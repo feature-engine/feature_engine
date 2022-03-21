@@ -139,7 +139,7 @@ class AddMissingIndicator(BaseImputer):
             The dataframe containing the additional binary variables..
         """
 
-        X = self._check_transform_input_and_state(X)
+        X = self._transform(X)
 
         X = X.copy()
         for feature in self.variables_:

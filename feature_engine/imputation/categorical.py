@@ -174,7 +174,7 @@ class CategoricalImputer(BaseImputer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
 
-        X = self._check_transform_input_and_state(X)
+        X = self._transform(X)
 
         # replaces missing data with the learned parameters
         if self.imputation_method == "frequent":

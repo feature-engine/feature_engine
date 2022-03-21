@@ -156,7 +156,7 @@ class DropMissingData(BaseImputer):
             [n_samples - n_samples_with_na, n_features]
         """
 
-        X = self._check_transform_input_and_state(X)
+        X = self._transform(X)
 
         if self.threshold:
             X.dropna(
@@ -183,7 +183,7 @@ class DropMissingData(BaseImputer):
             The subset of the dataframe with the rows with missing data.
         """
 
-        X = self._check_transform_input_and_state(X)
+        X = self._transform(X)
 
         if self.threshold:
             idx = pd.isnull(X[self.variables_]).mean(axis=1) >= self.threshold
