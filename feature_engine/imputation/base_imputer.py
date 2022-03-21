@@ -72,9 +72,8 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
         X = self._check_transform_input_and_state(X)
 
-        # replaces missing data with the learned parameters
-        for variable in self.imputer_dict_:
-            X[variable].fillna(self.imputer_dict_[variable], inplace=True)
+        # Replace missing data with learned parameters
+        X.fillna(value=self.imputer_dict_, inplace=True)
 
         return X
 

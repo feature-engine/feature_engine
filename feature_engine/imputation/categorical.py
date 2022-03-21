@@ -178,8 +178,7 @@ class CategoricalImputer(BaseImputer):
 
         # replaces missing data with the learned parameters
         if self.imputation_method == "frequent":
-            for variable in self.imputer_dict_:
-                X[variable].fillna(self.imputer_dict_[variable], inplace=True)
+            X.fillna(value=self.imputer_dict_, inplace=True)
 
         else:
             for variable in self.imputer_dict_:
