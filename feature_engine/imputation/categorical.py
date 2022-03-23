@@ -155,18 +155,39 @@ class CategoricalImputer(BaseImputer):
             self.imputer_dict_ = {var: self.fill_value for var in self.variables_}
 
         elif self.imputation_method == "frequent":
-            self.imputer_dict_ = {}
 
-            for var in self.variables_:
+            # if imputing only 1 variable:
+            if len(self.variables_) == 1:
+                var = self.variables_[0]
                 mode_vals = X[var].mode()
 
-                # careful: some variables contain multiple modes
-                if len(mode_vals) == 1:
-                    self.imputer_dict_[var] = mode_vals[0]
-                else:
+                # Some variables may contain more than 1 mode:
+                if len(mode_vals) > 1:
                     raise ValueError(
-                        "Variable {} contains multiple frequent categories.".format(var)
+                        f"Variable {var} contains multiple frequent categories."
                     )
+
+                self.imputer_dict_ = {var: mode_vals[0]}
+
+            # imputing multiple variables:
+            else:
+                # Returns a dataframe with 1 row if there is one mode per
+                # variable, or more rows if there are more modes:
+                mode_vals = X[self.variables_].mode()
+
+                # Careful: some variables contain multiple modes
+                if len(mode_vals) > 1:
+                    varnames = mode_vals.dropna(axis=1).columns.to_list()
+                    if len(varnames) > 1:
+                        varnames_str = ", ".join(varnames)
+                    else:
+                        varnames_str = varnames[0]
+                    raise ValueError(
+                        f"The variables {varnames_str} contain multiple frequent "
+                        f"categories."
+                    )
+
+                self.imputer_dict_ = mode_vals.iloc[0].to_dict()
 
         self._get_feature_names_in(X)
 
