@@ -142,8 +142,9 @@ class AddMissingIndicator(BaseImputer):
         X = self._transform(X)
 
         X = X.copy()
-        for feature in self.variables_:
-            X[f"{feature}_na"] = np.where(X[feature].isnull(), 1, 0)
+
+        indicator_names = [f"{feature}_na" for feature in self.variables_]
+        X[indicator_names] = X[self.variables_].isna().astype(int)
 
         return X
 
