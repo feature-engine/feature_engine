@@ -195,22 +195,23 @@ class CategoricalImputer(BaseImputer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
 
-        X = self._transform(X)
-
-        # replaces missing data with the learned parameters
+        # Frequent category imputation
         if self.imputation_method == "frequent":
-            X.fillna(value=self.imputer_dict_, inplace=True)
+            X = super().transform(X)
 
+        # Imputation with string
         else:
-            for variable in self.imputer_dict_:
+            X = self._transform(X)
+
+            # if variable is of type category, we need to add the new
+            # category, before filling in the nan
+            for variable in self.variables_:
                 if pd.api.types.is_categorical_dtype(X[variable]):
-                    # if variable is of type category, we first need to add the new
-                    # category, and then fill in the nan
                     X[variable].cat.add_categories(
                         self.imputer_dict_[variable], inplace=True
                     )
 
-                X[variable].fillna(self.imputer_dict_[variable], inplace=True)
+            X.fillna(self.imputer_dict_, inplace=True)
 
         # add additional step to return variables cast as object
         if self.return_object:
