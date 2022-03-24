@@ -29,8 +29,12 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
     def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Check that the input is a dataframe and of the same size than the one used
-        in the fit method. Checks absence of NA.
+        Common checks before transforming data:
+
+        - Check transformer was fit
+        - Check that the input is a dataframe
+        - Check that input has same size than the train set used in fit()
+        - Re-orders dataframe features if necessary
 
         Parameters
         ----------
@@ -78,8 +82,8 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         return X
 
     def _get_feature_names_in(self, X):
-        """Get the names and number of features in the train set. The dataframe
-        used during fit."""
+        """Get the names and number of features in the train set (the dataframe
+        used during fit)."""
 
         self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
