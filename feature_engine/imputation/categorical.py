@@ -164,7 +164,7 @@ class CategoricalImputer(BaseImputer):
                 # Some variables may contain more than 1 mode:
                 if len(mode_vals) > 1:
                     raise ValueError(
-                        f"Variable {var} contains multiple frequent categories."
+                        f"The variable {var} contains multiple frequent categories."
                     )
 
                 self.imputer_dict_ = {var: mode_vals[0]}
@@ -183,7 +183,7 @@ class CategoricalImputer(BaseImputer):
                     else:
                         varnames_str = varnames[0]
                     raise ValueError(
-                        f"The variables {varnames_str} contain multiple frequent "
+                        f"The variable(s) {varnames_str} contain(s) multiple frequent "
                         f"categories."
                     )
 

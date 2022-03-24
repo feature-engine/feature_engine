@@ -150,9 +150,29 @@ def test_error_when_imputation_method_not_frequent_or_missing():
 
 
 def test_error_when_variable_contains_multiple_modes(df_na):
-    with pytest.raises(ValueError):
-        imputer = CategoricalImputer(imputation_method="frequent")
+
+    msg = "The variable Name contains multiple frequent categories."
+    imputer = CategoricalImputer(imputation_method="frequent", variables="Name")
+    with pytest.raises(ValueError) as record:
         imputer.fit(df_na)
+    # check that error message matches
+    assert str(record.value) == msg
+
+    msg = "The variable(s) Name contain(s) multiple frequent categories."
+    imputer = CategoricalImputer(imputation_method="frequent")
+    with pytest.raises(ValueError) as record:
+        imputer.fit(df_na)
+    # check that error message matches
+    assert str(record.value) == msg
+
+    df_ = df_na.copy()
+    df_["Name_dup"] = df_["Name"]
+    msg = "The variable(s) Name, Name_dup contain(s) multiple frequent categories."
+    imputer = CategoricalImputer(imputation_method="frequent")
+    with pytest.raises(ValueError) as record:
+        imputer.fit(df_)
+    # check that error message matches
+    assert str(record.value) == msg
 
 
 def test_impute_numerical_variables(df_na):
