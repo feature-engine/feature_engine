@@ -155,18 +155,39 @@ class CategoricalImputer(BaseImputer):
             self.imputer_dict_ = {var: self.fill_value for var in self.variables_}
 
         elif self.imputation_method == "frequent":
-            self.imputer_dict_ = {}
 
-            for var in self.variables_:
+            # if imputing only 1 variable:
+            if len(self.variables_) == 1:
+                var = self.variables_[0]
                 mode_vals = X[var].mode()
 
-                # careful: some variables contain multiple modes
-                if len(mode_vals) == 1:
-                    self.imputer_dict_[var] = mode_vals[0]
-                else:
+                # Some variables may contain more than 1 mode:
+                if len(mode_vals) > 1:
                     raise ValueError(
-                        "Variable {} contains multiple frequent categories.".format(var)
+                        f"The variable {var} contains multiple frequent categories."
                     )
+
+                self.imputer_dict_ = {var: mode_vals[0]}
+
+            # imputing multiple variables:
+            else:
+                # Returns a dataframe with 1 row if there is one mode per
+                # variable, or more rows if there are more modes:
+                mode_vals = X[self.variables_].mode()
+
+                # Careful: some variables contain multiple modes
+                if len(mode_vals) > 1:
+                    varnames = mode_vals.dropna(axis=1).columns.to_list()
+                    if len(varnames) > 1:
+                        varnames_str = ", ".join(varnames)
+                    else:
+                        varnames_str = varnames[0]
+                    raise ValueError(
+                        f"The variable(s) {varnames_str} contain(s) multiple frequent "
+                        f"categories."
+                    )
+
+                self.imputer_dict_ = mode_vals.iloc[0].to_dict()
 
         self._get_feature_names_in(X)
 
@@ -174,23 +195,23 @@ class CategoricalImputer(BaseImputer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
 
-        X = self._check_transform_input_and_state(X)
-
-        # replaces missing data with the learned parameters
+        # Frequent category imputation
         if self.imputation_method == "frequent":
-            for variable in self.imputer_dict_:
-                X[variable].fillna(self.imputer_dict_[variable], inplace=True)
+            X = super().transform(X)
 
+        # Imputation with string
         else:
-            for variable in self.imputer_dict_:
+            X = self._transform(X)
+
+            # if variable is of type category, we need to add the new
+            # category, before filling in the nan
+            for variable in self.variables_:
                 if pd.api.types.is_categorical_dtype(X[variable]):
-                    # if variable is of type category, we first need to add the new
-                    # category, and then fill in the nan
                     X[variable].cat.add_categories(
                         self.imputer_dict_[variable], inplace=True
                     )
 
-                X[variable].fillna(self.imputer_dict_[variable], inplace=True)
+            X.fillna(self.imputer_dict_, inplace=True)
 
         # add additional step to return variables cast as object
         if self.return_object:

@@ -27,10 +27,14 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         Impute missing data.
         """.rstrip()
 
-    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Check that the input is a dataframe and of the same size than the one used
-        in the fit method. Checks absence of NA.
+        Common checks before transforming data:
+
+        - Check transformer was fit
+        - Check that the input is a dataframe
+        - Check that input has same size than the train set used in fit()
+        - Re-orders dataframe features if necessary
 
         Parameters
         ----------
@@ -70,17 +74,16 @@ class BaseImputer(BaseEstimator, TransformerMixin):
             The dataframe without missing values in the selected variables.
         """
 
-        X = self._check_transform_input_and_state(X)
+        X = self._transform(X)
 
-        # replaces missing data with the learned parameters
-        for variable in self.imputer_dict_:
-            X[variable].fillna(self.imputer_dict_[variable], inplace=True)
+        # Replace missing data with learned parameters
+        X.fillna(value=self.imputer_dict_, inplace=True)
 
         return X
 
     def _get_feature_names_in(self, X):
-        """Get the names and number of features in the train set. The dataframe
-        used during fit."""
+        """Get the names and number of features in the train set (the dataframe
+        used during fit)."""
 
         self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]

@@ -3,7 +3,6 @@
 
 from typing import List, Optional, Union
 
-import numpy as np
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
@@ -139,11 +138,10 @@ class AddMissingIndicator(BaseImputer):
             The dataframe containing the additional binary variables..
         """
 
-        X = self._check_transform_input_and_state(X)
+        X = self._transform(X)
 
-        X = X.copy()
-        for feature in self.variables_:
-            X[f"{feature}_na"] = np.where(X[feature].isnull(), 1, 0)
+        indicator_names = [f"{feature}_na" for feature in self.variables_]
+        X[indicator_names] = X[self.variables_].isna().astype(int)
 
         return X
 
