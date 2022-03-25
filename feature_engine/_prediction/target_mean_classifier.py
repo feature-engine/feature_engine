@@ -17,7 +17,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
 
     Finally, the estimator takes the average of the mean target value per observation
     across the input variables. This average of the target value per observation is
-    used as proxy for probability estimates. The class is then determined based a
+    used as proxy for probability estimates. The class is then determined based on a
     threshold of 0.5.
 
     TargetMeanClassifier() works like any Scikit-learn classifier. At the moment, it
@@ -75,7 +75,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
 
     predict_proba:
         Proxy for probability estimates based of the average of the target mean value
-         across variables.
+        across variables.
 
     score:
         Return the mean accuracy on the given test data and labels.
@@ -123,9 +123,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         if any(x for x in self.classes_ if x not in [0, 1]):
             y = np.where(y == unique_labels(y)[0], 0, 1)
 
-        super().fit(X, y)
-
-        return self
+        return super().fit(X, y)
 
     def predict_proba(self, X: pd.DataFrame) -> np.array:
         """

@@ -52,16 +52,16 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 class SelectByTargetMeanPerformance(BaseSelector):
     """
     SelectByTargetMeanPerformance() uses the mean value of the target per category or
-    per interval, if the variable is numerical, as proxy for target estimation. With
+    per interval(if the variable is numerical), as proxy for target estimation. With
     this proxy, the selector determines the performance of each feature based on a
     metric of choice, and then selects the features based on this performance value.
 
-    The beauty of SelectByTargetMeanPerformance() is that it can evaluate numerical and
-    categorical variables, without much prior manipulation. In other words, you don't
-    need to encode the categorical variables or transform the numerical variables to
-    assess their importance with this transformer.
+    SelectByTargetMeanPerformance() can evaluate numerical and categorical variables,
+    without much prior manipulation. In other words, you don't need to encode the
+    categorical variables or transform the numerical variables to assess their
+    importance if you use this transformer.
 
-    SelectByTargetMeanPerformance() does require that the dataset is complete, without
+    SelectByTargetMeanPerformance() requires that the dataset is complete, without
     missing data.
 
     SelectByTargetMeanPerformance() determines the performance of each variable with
@@ -69,31 +69,32 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
     For each categorical variable:
 
-    1. Determines the mean target value per category.
+    1. Determines the mean target value per category in the training folds.
 
-    2. Replaces the categories by the target mean values.
+    2. Replaces the categories by the target mean values in the test folds.
 
-    3. Determines the performance of the transformer variable.
+    3. Determines the performance of the transformed variables in the test folds.
 
 
     For each numerical variable:
 
     1. Discretises the variable into intervals of equal width or equal frequency.
 
-    2. Determines the mean value of the target per interval.
+    2. Determines the mean value of the target per interval in the training folds.
 
-    3. Replaces the intervals by the target mean values.
+    3. Replaces the intervals by the target mean values in the test fold.
 
-    4. Determines the performance of the transformer variable.
+    4. Determines the performance of the transformed variable in the test fold.
 
 
-    Finally, it selects the features which performance metric is bigger than the
-    indicated threshold.
+    Finally, it selects the features which performance is bigger than the indicated
+    threshold. If the threshold if left to None, it selects features which performance
+    is bigger than the mean performance of all features.
 
     All the steps are performed with cross-validation. That means, that intervals and
     target mean values per interval or category are determined in a certain portion of
     the data, and evaluated in a left-out sample. The performance metric per variable
-    is the average across the cross-validation fold.
+    is the average across the cross-validation folds.
 
     More details in the :ref:`User Guide <target_mean_selection>`.
 
