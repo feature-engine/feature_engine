@@ -155,8 +155,8 @@ Numerical Transformation: Transformers
 - :doc:`api_doc/transformation/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables
 - :doc:`api_doc/transformation/YeoJohnsonTransformer`: performs Yeo-Johnson transformation of numerical variables
 
-Mathematical Combination:
--------------------------
+Feature Creation:
+-----------------
 
 -  :doc:`api_doc/creation/MathFeatures`: creates new variables by combining features with mathematical operations
 -  :doc:`api_doc/creation/RelativeFeatures`: combines variables with reference features

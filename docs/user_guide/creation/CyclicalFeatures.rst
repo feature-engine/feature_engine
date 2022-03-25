@@ -5,23 +5,24 @@
 CyclicalFeatures
 ================
 
-The :class:`CyclicalFeatures()` applies cyclical transformations to numerical
-variables. The transformations return 2 new features per variable, according to:
+The :class:`CyclicalFeatures()` creates 2 new features from numerical variables that better
+capture the cyclical nature of the original variable. :class:`CyclicalFeatures()` return
+2 new features per variable, according to:
 
 - var_sin = sin(variable * (2. * pi / max_value))
 - var_cos = cos(variable * (2. * pi / max_value))
 
 where max_value is the maximum value in the variable, and pi is 3.14...
 
-**Motivation**
-
 There are some features that are cyclic by nature. For example the
 hours of a day or the months in a year. In these cases, the higher values of
 the variable are closer to the lower values. For example, December (12) is closer
-to January (1) than to June (6). By applying a cyclical transformations we capture
-this cycle or proximity between values.
+to January (1) than to June (6). By applying a cyclical transformations, that is, with
+the sine and cosine transformations of the original variables, we can capture
+the cyclic nature and obtain a better representation of the proximity between values.
 
-**Examples**
+Examples
+--------
 
 In the code example below, we show how to obtain cyclical features from days and months
 in a toy dataframe.
@@ -84,8 +85,14 @@ Finally, we can obtain the names of the variables in the transformed dataset as 
 
     cyclical.get_feature_names_out()
 
-Which will return the name of all the variables, original and and new. Or we can return
-the names of the new features only as follows:
+Which will return the name of all the variables in the final output, original and and
+new:
+
+.. code:: python
+
+    ['day', 'months', 'day_sin', 'day_cos', 'months_sin', 'months_cos']
+
+Or we can return the names of the new features only, as follows:
 
 .. code:: python
 
@@ -233,7 +240,7 @@ that:
 The hour 0, after the transformation, takes the values of sine 0 and cosine 1, which
 makes it different from the hour 11.5, which takes values of sine 0 and cosine -1. In
 other words, with the 2 functions together, we are able to distinguish all observations
-within our variable.
+within our original variable.
 
 .. image:: ../../images/hour_sin3.png
 
