@@ -74,9 +74,10 @@ class BaseDiscretiser(BaseNumericalTransformer):
         X = super().transform(X)
 
         # transform variables
-        if self.return_boundaries:
+        if self.return_boundaries is True:
             for feature in self.variables_:
                 X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
+            X[self.variables_] = X[self.variables_].astype(str)
 
         else:
             for feature in self.variables_:
