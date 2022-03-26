@@ -81,6 +81,9 @@ Bug fixes
 
     - The `SklearnTransformerWrapper` now works with cross-validation when using the one hot encoder (`Noah Green <https://github.com/noahjgreen295>`_)
     - The `SelectByShuffling` now evaluates the initial performance and the performance after shuffling in the same data parts (`Gilles Verbockhaven <https://github.com/gverbock>`_)
+    - **Discretisers**: when setting `return_boundaries=True` the interval limits are now returned as strings and the variables as object data type (`Soledad Galli <https://github.com/solegalli>`_)
+    - `DecisionTreeEncoder` now enforces passing y to `fit()` (`Soledad Galli <https://github.com/solegalli>`_)
+    - `DropMissingData` can now take a string in the `variables` parameter (`Soledad Galli <https://github.com/solegalli>`_)
 
 
 Documentation
@@ -90,6 +93,7 @@ Documentation
     - Added guides on how to use `MathFeatures` and `RelativeFeatures` (`Soledad Galli <https://github.com/solegalli>`_)
     - Expanded user guide on how to use `CyclicalFeatures` with explanation and demos of what these features are (`Soledad Galli <https://github.com/solegalli>`_)
     - Added a Jupyter notebook with a demo of the `CyclicalFeatures` class (`Soledad Galli <https://github.com/solegalli>`_)
+    - We now display all available methods in the documentation methods summary (`Soledad Galli <https://github.com/solegalli>`_)
 
 
 Deprecations
@@ -97,6 +101,7 @@ Deprecations
 
     - We are deprecating `MathematicalCombination`, `CombineWithFeatureReference` and `CyclicalTransformer` in version 1.3 and they will be removed in version 1.4
     - Feature-engine does not longer work with Python 3.6 due to dependence on latest versions of Scikit-learn
+    - In `MatchColumns` the attribute `input_features_` was replaced by `feature_names_in_` to adopt Scikit-learn convention
 
 
 Code improvements
@@ -105,6 +110,7 @@ Code improvements
     - **Imputers**: removed looping over every variable to replace NaN. Now passing imputer dictionary to `pd.fillna()` (`Soledad Galli <https://github.com/solegalli>`_)
     - `AddMissingIndicators`: removed looping over every variable to add missing indicators. Now using `pd.isna()` (`Soledad Galli <https://github.com/solegalli>`_)
     - `CategoricalImputer` now captures all modes in one go, without looping over variables (`Soledad Galli <https://github.com/solegalli>`_)
+    - Removed workaround to import docstrings for `transform()` method in various transformers (`Soledad Galli <https://github.com/solegalli>`_)
 
 
 For developers
