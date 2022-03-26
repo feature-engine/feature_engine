@@ -46,9 +46,9 @@ class MathFeatures(BaseCreation):
         least 2 different variables in the list.
 
     func: function, string, list
-        Functions to use for aggregating the data. Same functionality as pandas.agg()
-        `func` argument. If a function, it must either work when passed a DataFrame or
-        when passed to DataFrame.apply. Accepted combinations are:
+        Functions to use for aggregating the data. Same functionality as parameter
+        `func` in `pandas.agg()`. If a function, it must either work when passed a
+        DataFrame or when passed to DataFrame.apply. Accepted combinations are:
 
         - function
         - string function name
