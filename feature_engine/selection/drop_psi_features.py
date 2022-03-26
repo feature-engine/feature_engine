@@ -16,6 +16,7 @@ from feature_engine.discretisation import (
 )
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
 )
@@ -36,6 +37,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     confirm_variables=BaseSelector._confirm_variables_docstring,
     variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -179,6 +181,8 @@ class DropHighPSIFeatures(BaseSelector):
         Value used to split the dataframe into basis and test.
         This value is computed when not given as parameter.
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
@@ -186,10 +190,10 @@ class DropHighPSIFeatures(BaseSelector):
     fit:
         Find features with high PSI values.
 
+    {fit_transform}
+
     transform:
         Remove features with high PSI values.
-
-    {fit_transform}
 
     See Also
     --------
@@ -372,7 +376,8 @@ class DropHighPSIFeatures(BaseSelector):
             if self.psi_values_[feature] > self.threshold:
                 self.features_to_drop_.append(feature)
 
-        self.n_features_in_ = X.shape[1]
+        # save input features
+        self._get_feature_names_in(X)
 
         return self
 
@@ -524,11 +529,3 @@ class DropHighPSIFeatures(BaseSelector):
             cut_off = (distance.idxmin()).values[0]
 
         return cut_off
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseSelector.transform.__doc__

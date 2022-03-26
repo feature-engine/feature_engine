@@ -7,6 +7,7 @@ import pandas as pd
 
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _inverse_transform_docstring,
     _n_features_in_docstring,
@@ -26,6 +27,7 @@ from feature_engine.encoding.base_encoder import BaseCategorical
     variables=_variables_docstring,
     errors=_errors_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
     transform=_transform_docstring,
@@ -77,6 +79,8 @@ class CountFrequencyEncoder(BaseCategorical):
 
     {variables_}
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
@@ -84,11 +88,11 @@ class CountFrequencyEncoder(BaseCategorical):
     fit:
         Learn the count or frequency per category, per variable.
 
-    {transform}
-
     {fit_transform}
 
     {inverse_transform}
+
+    {transform}
 
     Notes
     -----
@@ -150,21 +154,4 @@ class CountFrequencyEncoder(BaseCategorical):
 
         self._check_encoding_dictionary()
 
-        self.n_features_in_ = X.shape[1]
-
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseCategorical.transform.__doc__
-
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().inverse_transform(X)
-
-        return X
-
-    inverse_transform.__doc__ = BaseCategorical.inverse_transform.__doc__

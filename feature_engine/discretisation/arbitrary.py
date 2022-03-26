@@ -9,6 +9,7 @@ import pandas as pd
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
@@ -23,6 +24,7 @@ from feature_engine.validation import _return_tags
     binner_dict_=BaseDiscretiser._binner_dict_docstring,
     transform=BaseDiscretiser._transform_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
@@ -61,15 +63,17 @@ class ArbitraryDiscretiser(BaseDiscretiser):
 
     {variables_}
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     See Also
     --------
@@ -115,12 +119,10 @@ class ArbitraryDiscretiser(BaseDiscretiser):
             y is not needed in this transformer. You can pass y or None.
         """
         # check input dataframe
-        X = super()._select_variables_from_dict(X, self.binning_dict)
+        X = super()._fit_from_dict(X, self.binning_dict)
 
         # for consistency wit the rest of the discretisers, we add this attribute
         self.binner_dict_ = self.binning_dict
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 

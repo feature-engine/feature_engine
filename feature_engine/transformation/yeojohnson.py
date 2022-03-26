@@ -9,6 +9,7 @@ import scipy.stats as stats
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
@@ -20,6 +21,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 @Substitution(
     variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -51,6 +53,8 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
     {variables_}
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
@@ -58,10 +62,10 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
     fit:
         Learn the optimal lambda for the Yeo-Johnson transformation.
 
+    {fit_transform}
+
     transform:
         Apply the Yeo-Johnson transformation.
-
-    {fit_transform}
 
     References
     ----------
@@ -90,7 +94,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X = super()._fit_from_varlist(X)
 
         self.lambda_dict_ = {}
 
@@ -99,8 +103,6 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
         for var in self.variables_:
             _, self.lambda_dict_[var] = stats.yeojohnson(X[var])
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 

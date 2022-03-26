@@ -74,7 +74,7 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    input_features_:
+    feature_names_in_:
         The variables present in the train set, in the order observed during fit.
 
     n_features_in_:
@@ -84,10 +84,21 @@ class MatchVariables(BaseEstimator, TransformerMixin):
     -------
     fit:
         Identify the variable names in the train set.
-    transform:
-        Add or delete variables to match those observed in the train set.
+
     fit_transform:
         Fit to the data. Then transform it.
+
+    get_feature_names_out:
+        Get output feature names for transformation.
+
+    get_params:
+        Get parameters for this estimator.
+
+    set_params:
+        Set the parameters of this estimator.
+
+    transform:
+        Add or delete variables to match those observed in the train set.
     """
 
     def __init__(
@@ -138,7 +149,7 @@ class MatchVariables(BaseEstimator, TransformerMixin):
             _check_contains_na(X, X.columns)
 
         # save input features
-        self.input_features_: List[Union[str, int]] = X.columns.tolist()
+        self.feature_names_in_: List[Union[str, int]] = X.columns.tolist()
 
         self.n_features_in_ = X.shape[1]
 
@@ -166,10 +177,10 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
         if self.missing_values == "raise":
             # check if dataset contains na
-            _check_contains_na(X, self.input_features_)
+            _check_contains_na(X, self.feature_names_in_)
 
-        _columns_to_drop = list(set(X.columns) - set(self.input_features_))
-        _columns_to_add = list(set(self.input_features_) - set(X.columns))
+        _columns_to_drop = list(set(X.columns) - set(self.feature_names_in_))
+        _columns_to_add = list(set(self.feature_names_in_) - set(X.columns))
 
         if self.verbose:
             if len(_columns_to_add) > 0:
@@ -185,9 +196,21 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
         X = X.drop(_columns_to_drop, axis=1)
 
-        X = X.reindex(columns=self.input_features_, fill_value=self.fill_value)
+        X = X.reindex(columns=self.feature_names_in_, fill_value=self.fill_value)
 
         return X
+
+    def get_feature_names_out(self) -> List:
+        """Get output feature names for transformation.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        return self.feature_names_in_
 
     # for the check_estimator tests
     def _more_tags(self):

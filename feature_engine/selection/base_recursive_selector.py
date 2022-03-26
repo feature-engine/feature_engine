@@ -82,6 +82,9 @@ class BaseRecursiveSelector(BaseSelector):
     variables_:
         The variables that will be considered for the feature selection.
 
+    feature_names_in_:
+        List with the names of features seen during `fit`.
+
     n_features_in_:
         The number of features in the train set used in fit.
 
@@ -147,6 +150,9 @@ class BaseRecursiveSelector(BaseSelector):
         # find numerical variables or check variables entered by user
         self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
+        # save input features
+        self._get_feature_names_in(X)
+
         # train model with all features and cross-validation
         model = cross_validate(
             self.estimator,
@@ -178,7 +184,7 @@ class BaseRecursiveSelector(BaseSelector):
         # Aggregate the feature importance returned in each fold
         self.feature_importances_ = feature_importances_cv.mean(axis=1)
 
-        return self
+        return X
 
     def _more_tags(self):
         tags_dict = _return_tags()

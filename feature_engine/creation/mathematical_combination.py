@@ -2,13 +2,9 @@ from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils import deprecated
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.creation._docstring import (
-    _drop_original_docstring,
-    _missing_values_docstring,
-    _transform_docstring,
-)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -17,24 +13,34 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.docstrings import (
     Substitution,
+    _drop_original_docstring,
+    _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
+    _missing_values_docstring,
     _n_features_in_docstring,
 )
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
+@deprecated(
+    "MathematicalCombination() is deprecated in version 1.3 and will be removed in "
+    "version 1.4. Use MathFeatures() instead."
+)
 @Substitution(
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
-    transform=_transform_docstring,
     fit_transform=_fit_transform_docstring,
 )
 class MathematicalCombination(BaseEstimator, TransformerMixin):
     """
+    **DEPRECATED: MathematicalCombination() is deprecated in version 1.3 and will be
+    removed in version 1.4. Use MathFeatures() instead.**
+
     MathematicalCombination() applies basic mathematical operations to multiple
     features, returning one or more additional features as a result. That is, it sums,
     multiplies, takes the average, maximum, minimum or standard deviation of a group
@@ -87,13 +93,16 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
         List with the mathematical operations to be applied to the
         `variables_to_combine`.
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
     -------
     {fit}
 
-    {transform}
+    transform:
+        Create new features.
 
     {fit_transform}
 
@@ -237,6 +246,10 @@ class MathematicalCombination(BaseEstimator, TransformerMixin):
                 for operation in self.math_operations_
             }
 
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
+        # save train set shape
         self.n_features_in_ = X.shape[1]
 
         return self

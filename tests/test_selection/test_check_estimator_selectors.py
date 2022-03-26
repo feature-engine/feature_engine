@@ -6,7 +6,7 @@ from feature_engine.estimator_checks import (
     check_confirm_variables,
     check_feature_engine_estimator,
 )
-from feature_engine.selection import (  # SelectByTargetMeanPerformance,
+from feature_engine.selection import (
     DropConstantFeatures,
     DropCorrelatedFeatures,
     DropDuplicateFeatures,
@@ -16,6 +16,7 @@ from feature_engine.selection import (  # SelectByTargetMeanPerformance,
     RecursiveFeatureElimination,
     SelectByShuffling,
     SelectBySingleFeaturePerformance,
+    SelectByTargetMeanPerformance,
     SmartCorrelatedSelection,
 )
 
@@ -29,9 +30,8 @@ _estimators = [
     DropHighPSIFeatures(bins=5),
     SmartCorrelatedSelection(),
     SelectByShuffling(estimator=_logreg, scoring="accuracy"),
+    SelectByTargetMeanPerformance(bins=3),
     SelectBySingleFeaturePerformance(estimator=_logreg, scoring="accuracy"),
-    # FIXME: as part of PR 358
-    # SelectByTargetMeanPerformance(scoring="r2_score", bins=3),
     RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy"),
 ]
@@ -55,7 +55,7 @@ def test_confirm_variables(estimator):
         return check_confirm_variables(estimator)
 
 
-@pytest.mark.parametrize("estimator", _estimators[7:10])
+@pytest.mark.parametrize("estimator", _estimators[8:11])
 def test_raises_error_when_no_estimator_passed(estimator):
     # this selectors need an estimator as an input param
     # test error otherwise.

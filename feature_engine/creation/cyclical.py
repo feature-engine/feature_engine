@@ -2,14 +2,13 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.utils import deprecated
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.creation._docstring import (
-    _drop_original_docstring,
-    _transform_docstring,
-)
 from feature_engine.docstrings import (
     Substitution,
+    _drop_original_docstring,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
@@ -18,16 +17,23 @@ from feature_engine.docstrings import (
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
+@deprecated(
+    "CyclicalTransformer() is deprecated in version 1.3 and will be removed in "
+    "version 1.4. Use CyclicalFeatures() instead."
+)
 @Substitution(
     variables=_variables_numerical_docstring,
     drop_original=_drop_original_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
-    transform=_transform_docstring,
     fit_transform=_fit_transform_docstring,
 )
 class CyclicalTransformer(BaseNumericalTransformer):
     """
+    **DEPRECATED: CyclicalTransformer() is deprecated in version 1.3 and will be removed
+    in version 1.4. Use CyclicalFeatures() instead.**
+
     The CyclicalTransformer() applies cyclical transformations to numerical
     variables, returning 2 new features per variable, according to:
 
@@ -42,7 +48,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     Missing data should be imputed before applying this transformer.
 
-    More details in the :ref:`User Guide <cyclical_features>`.
+    More details in the :ref:`User Guide <cyclical_transformer>`.
 
     Parameters
     ----------
@@ -62,6 +68,8 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     {variables_}
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
@@ -69,7 +77,8 @@ class CyclicalTransformer(BaseNumericalTransformer):
     fit:
         Learns the maximum values of the cyclical features.
 
-    {transform}
+    transform:
+        Create new features.
 
     {fit_transform}
 
@@ -117,7 +126,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X = super()._fit_from_varlist(X)
 
         if self.max_values is None:
             self.max_values_ = X[self.variables_].max().to_dict()
@@ -125,11 +134,9 @@ class CyclicalTransformer(BaseNumericalTransformer):
             for key in list(self.max_values.keys()):
                 if key not in self.variables_:
                     raise ValueError(
-                        f"The mapping key {key} is not present" f" in variables."
+                        f"The mapping key {key} is not present in variables."
                     )
             self.max_values_ = self.max_values
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 

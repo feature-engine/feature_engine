@@ -6,6 +6,7 @@ import pandas as pd
 
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _missing_values_docstring,
     _n_features_in_docstring,
@@ -25,6 +26,7 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
     right_tail_caps_=WinsorizerBase._right_tail_caps_docstring,
     left_tail_caps_=WinsorizerBase._left_tail_caps_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -65,6 +67,8 @@ class OutlierTrimmer(WinsorizerBase):
 
     {variables_}
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
@@ -72,10 +76,10 @@ class OutlierTrimmer(WinsorizerBase):
     fit:
         Find maximum and minimum values.
 
+    {fit_transform}
+
     transform:
         Remove outliers.
-
-    {fit_transform}
 
     """
 

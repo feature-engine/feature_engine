@@ -1,195 +1,163 @@
-# import numpy as np
 import pandas as pd
 import pytest
 
 from feature_engine.selection import SelectByTargetMeanPerformance
 
-# TODO: we need to expand these tests
+
+def df_classification():
+    df = {
+        "cat_var_A": ["A"] * 5 + ["B"] * 5 + ["C"] * 5 + ["D"] * 5,
+        "cat_var_B": ["A"] * 6
+        + ["B"] * 2
+        + ["C"] * 2
+        + ["B"] * 2
+        + ["C"] * 2
+        + ["D"] * 6,
+        "num_var_A": [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
+        "num_var_B": [1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 2, 2, 3, 3, 4, 4, 4, 4, 4, 4],
+    }
+
+    df = pd.DataFrame(df)
+    df = pd.concat([df, df, df, df], axis=0)
+
+    y = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+    y = pd.concat([y, y, y, y], axis=0)
+
+    return df, y
 
 
-def test_numerical_variables_roc_auc(df_test):
-    X, y = df_test
+def df_regression():
+    df = {
+        "cat_var_A": ["A"] * 5 + ["B"] * 5 + ["C"] * 5 + ["D"] * 5,
+        "cat_var_B": ["A"] * 6
+        + ["B"] * 2
+        + ["C"] * 2
+        + ["B"] * 2
+        + ["C"] * 2
+        + ["D"] * 6,
+        "num_var_A": [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
+        "num_var_B": [1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 2, 2, 3, 3, 4, 4, 4, 4, 4, 4],
+    }
 
-    sel = SelectByTargetMeanPerformance(
-        variables=None,
-        scoring="roc_auc_score",
-        threshold=0.6,
-        bins=5,
-        strategy="equal_width",
-        cv=3,
-        random_state=1,
-    )
+    df = pd.DataFrame(df)
+    df = pd.concat([df, df, df, df], axis=0)
 
-    sel.fit(X, y)
-
-    # expected result
-    Xtransformed = X[["var_0", "var_4", "var_6", "var_7", "var_9"]]
-    # performance_dict = {
-    #     "var_0": 0.628,
-    #     "var_1": 0.548,
-    #     "var_2": 0.513,
-    #     "var_3": 0.474,
-    #     "var_4": 0.973,
-    #     "var_5": 0.496,
-    #     "var_6": 0.97,
-    #     "var_7": 0.992,
-    #     "var_8": 0.536,
-    #     "var_9": 0.931,
-    #     "var_10": 0.466,
-    #     "var_11": 0.517,
-    # }
-
-    # test init params
-    assert sel.variables is None
-    assert sel.scoring == "roc_auc_score"
-    assert sel.threshold == 0.6
-    assert sel.bins == 5
-    assert sel.strategy == "equal_width"
-    assert sel.cv == 3
-    assert sel.random_state == 1
-
-    # test fit attrs
-    assert sel.variables_ == list(X.columns)
-    assert sel.variables_categorical_ == []
-    assert sel.variables_numerical_ == list(X.columns)
-    assert sel.features_to_drop_ == [
-        "var_1",
-        "var_2",
-        "var_3",
-        "var_5",
-        "var_8",
-        "var_10",
-        "var_11",
-    ]
-    # assert all(
-    #     np.round(sel.feature_performance_[f], 3) == performance_dict[f]
-    #     for f in sel.feature_performance_.keys()
-    # )
-    # test transform output
-    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+    y = pd.Series([0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3])
+    y = pd.concat([y, y, y, y], axis=0)
+    return df, y
 
 
-def test_categorical_variables_roc_auc(df_test_num_cat):
-    X, y = df_test_num_cat
-    X = X[["var_A", "var_B"]]
+def test_classification():
+
+    X, y = df_classification()
 
     sel = SelectByTargetMeanPerformance(
         variables=None,
-        scoring="roc_auc_score",
-        threshold=0.78,
-        cv=2,
-        random_state=1,
-    )
-
-    sel.fit(X, y)
-
-    # expected result
-    Xtransformed = X["var_A"].to_frame()
-    # performance_dict = {"var_A": 0.841, "var_B": 0.776}
-
-    # test init params
-    assert sel.variables is None
-    assert sel.scoring == "roc_auc_score"
-    assert sel.threshold == 0.78
-    assert sel.cv == 2
-    assert sel.random_state == 1
-
-    # test fit attrs
-    assert sel.variables_ == list(X.columns)
-    assert sel.variables_categorical_ == list(X.columns)
-    assert sel.variables_numerical_ == []
-    assert sel.features_to_drop_ == ["var_B"]
-    # assert all(
-    #     np.round(sel.feature_performance_[f], 3) == performance_dict[f]
-    #     for f in sel.feature_performance_.keys()
-    # )
-    # test transform output
-    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
-
-
-def test_df_cat_and_num_variables_roc_auc(df_test_num_cat):
-    X, y = df_test_num_cat
-
-    sel = SelectByTargetMeanPerformance(
-        variables=None,
-        scoring="roc_auc_score",
-        threshold=0.6,
-        bins=3,
+        scoring="accuracy",
+        threshold=None,
+        bins=2,
         strategy="equal_width",
         cv=2,
-        random_state=1,
     )
 
     sel.fit(X, y)
 
     # expected result
-    Xtransformed = X[["var_A", "var_B"]]
-    # performance_dict = {"var_A": 0.841, "var_B": 0.776,
-    # "var_C": 0.481, "var_D": 0.496}
+    Xtransformed = X[["cat_var_A", "num_var_A"]]
 
-    # test init params
-    assert sel.variables is None
-    assert sel.scoring == "roc_auc_score"
-    assert sel.threshold == 0.60
-    assert sel.cv == 2
-    assert sel.random_state == 1
+    performance_dict = {
+        "cat_var_A": 1.0,
+        "cat_var_B": 0.8,
+        "num_var_A": 1.0,
+        "num_var_B": 0.8,
+    }
+    features_to_drop = ["cat_var_B", "num_var_B"]
 
-    # test fit attrs
-    assert sel.variables_ == list(X.columns)
-    assert sel.variables_categorical_ == ["var_A", "var_B"]
-    assert sel.variables_numerical_ == ["var_C", "var_D"]
-    assert sel.features_to_drop_ == ["var_C", "var_D"]
-    # assert all(
-    #     np.round(sel.feature_performance_[f], 3) == performance_dict[f]
-    #     for f in sel.feature_performance_.keys()
-    # )
-    # test transform output
+    assert sel.features_to_drop_ == features_to_drop
+    assert sel.feature_performance_ == performance_dict
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
-
-def test_df_cat_and_num_variables_r2(df_test_num_cat):
-    X, y = df_test_num_cat
-
     sel = SelectByTargetMeanPerformance(
-        variables=None,
-        scoring="r2_score",
-        threshold=0.1,
-        bins=3,
+        variables=["cat_var_A", "cat_var_B", "num_var_A", "num_var_B"],
+        scoring="roc_auc",
+        threshold=0.9,
+        bins=2,
         strategy="equal_frequency",
         cv=2,
-        random_state=1,
     )
 
     sel.fit(X, y)
 
     # expected result
-    Xtransformed = X[["var_A", "var_B"]]
-    # performance_dict = {
-    #     "var_A": 0.392,
-    #     "var_B": 0.250,
-    #     "var_C": -0.004,
-    #     "var_D": -0.052,
-    # }
+    Xtransformed = X[["cat_var_A", "cat_var_B", "num_var_A"]]
 
-    # test init params
-    assert sel.variables is None
-    assert sel.scoring == "r2_score"
-    assert sel.threshold == 0.1
-    assert sel.cv == 2
-    assert sel.bins == 3
-    assert sel.strategy == "equal_frequency"
-    assert sel.random_state == 1
+    performance_dict = {
+        "cat_var_A": 1.0,
+        "cat_var_B": 0.92,
+        "num_var_A": 1.0,
+        "num_var_B": 0.8,
+    }
+    features_to_drop = ["num_var_B"]
 
-    # test fit attrs
-    assert sel.variables_ == list(X.columns)
-    assert sel.variables_categorical_ == ["var_A", "var_B"]
-    assert sel.variables_numerical_ == ["var_C", "var_D"]
-    assert sel.features_to_drop_ == ["var_C", "var_D"]
-    # assert all(
-    #     np.round(sel.feature_performance_[f], 3) == performance_dict[f]
-    #     for f in sel.feature_performance_.keys()
-    # )
-    # test transform output
+    assert sel.features_to_drop_ == features_to_drop
+    assert sel.feature_performance_ == performance_dict
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_regression():
+
+    X, y = df_regression()
+
+    sel = SelectByTargetMeanPerformance(
+        variables=None,
+        bins=2,
+        scoring="r2",
+        regression=True,
+        cv=2,
+        strategy="equal_width",
+        threshold=None,
+    )
+
+    sel.fit(X, y)
+
+    # expected result
+    Xtransformed = X[["cat_var_A", "cat_var_B", "num_var_A"]]
+    performance_dict = {
+        "cat_var_A": 1.0,
+        "cat_var_B": 0.8533333333333333,
+        "num_var_A": 0.8,
+        "num_var_B": 0.512,
+    }
+
+    assert sel.features_to_drop_ == ["num_var_B"]
+    assert sel.feature_performance_ == performance_dict
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+    X, y = df_regression()
+
+    sel = SelectByTargetMeanPerformance(
+        variables=["cat_var_A", "cat_var_B", "num_var_A", "num_var_B"],
+        bins=2,
+        scoring="neg_root_mean_squared_error",
+        regression=True,
+        cv=2,
+        strategy="equal_width",
+        threshold=-0.2,
+    )
+
+    sel.fit(X, y)
+
+    # expected result
+    Xtransformed = X["cat_var_A"].to_frame()
+    performance_dict = {
+        "cat_var_A": 0.0,
+        "cat_var_B": -0.42817441928883765,
+        "num_var_A": -0.5,
+        "num_var_B": -0.7810249675906654,
+    }
+
+    assert sel.features_to_drop_ == ["cat_var_B", "num_var_A", "num_var_B"]
+    assert sel.feature_performance_ == performance_dict
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
 
@@ -200,11 +168,7 @@ def test_error_wrong_params():
         SelectByTargetMeanPerformance(scoring=1)
     with pytest.raises(ValueError):
         SelectByTargetMeanPerformance(threshold="hola")
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         SelectByTargetMeanPerformance(bins="hola")
     with pytest.raises(ValueError):
         SelectByTargetMeanPerformance(strategy="hola")
-    with pytest.raises(ValueError):
-        SelectByTargetMeanPerformance(cv="hola")
-    with pytest.raises(ValueError):
-        SelectByTargetMeanPerformance(cv=1)

@@ -13,7 +13,7 @@ and choose the transformation that we need, and use it just like we would use an
 sklearn class. This was the original vision for Feature-engine.
 
 Feature-engine is an open source Python package originally designed to support the online
-course `Feature Engineering for Machine Learning in Udemy <https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO>`_,
+course `Feature Engineering for Machine Learning <https://courses.trainindata.com/p/feature-engineering-for-machine-learning>`_,
 but has now gained popularity and supports transformations beyond those taught in the
 course. It was launched in 2017, and since then, several releases have appeared and a
 growing international community is beginning to lead the development.

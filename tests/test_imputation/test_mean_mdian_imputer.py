@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.imputation import MeanMedianImputer
 
@@ -63,9 +62,3 @@ def test_median_imputation_when_user_enters_single_variables(df_na):
 def test_error_with_wrong_imputation_method():
     with pytest.raises(ValueError):
         MeanMedianImputer(imputation_method="arbitrary")
-
-
-def test_non_fitted_error(df_na):
-    with pytest.raises(NotFittedError):
-        imputer = MeanMedianImputer()
-        imputer.transform(df_na)

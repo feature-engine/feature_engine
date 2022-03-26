@@ -1,9 +1,9 @@
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
 )
@@ -33,6 +33,7 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
     performance_drifts_=BaseRecursiveSelector._performance_drifts_docstring,
     features_to_drop_=_features_to_drop_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_docstring,
     transform=_transform_docstring,
@@ -89,15 +90,17 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
 
     {variables_}
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     """
 
@@ -114,10 +117,7 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
            Target variable. Required to train the estimator.
         """
 
-        super().fit(X, y)
-
-        # We need this line to pass the tests of the check_estimator
-        X = _is_dataframe(X)
+        X = super().fit(X, y)
 
         # Sort the feature importance values increasingly
         self.feature_importances_.sort_values(ascending=True, inplace=True)
@@ -181,14 +181,4 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
             f for f in self.variables_ if f not in _selected_features
         ]
 
-        self.n_features_in_ = X.shape[1]
-
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseRecursiveSelector.transform.__doc__

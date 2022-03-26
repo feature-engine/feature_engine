@@ -7,7 +7,11 @@ from feature_engine.base_transformers import BaseNumericalTransformer
 
 
 class BaseDiscretiser(BaseNumericalTransformer):
-    """Shared set-up checks and methods across numerical discretisers."""
+    """
+    Shared set-up checks and methods across numerical discretisers.
+
+    Important: inherits fit() functionality and tags from BaseNumericalTransformer.
+    """
 
     _return_object_docstring = """return_object: bool, default=False
         Whether the the discrete variable should be returned as numeric or as
@@ -70,9 +74,10 @@ class BaseDiscretiser(BaseNumericalTransformer):
         X = super().transform(X)
 
         # transform variables
-        if self.return_boundaries:
+        if self.return_boundaries is True:
             for feature in self.variables_:
                 X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
+            X[self.variables_] = X[self.variables_].astype(str)
 
         else:
             for feature in self.variables_:

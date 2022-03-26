@@ -4,7 +4,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.datetime import DatetimeFeatures
-from feature_engine.datetime.datetime_constants import (
+from feature_engine.datetime._datetime_constants import (
     FEATURES_DEFAULT,
     FEATURES_SUFFIXES,
     FEATURES_SUPPORTED,
@@ -393,3 +393,66 @@ def test_extract_features_with_different_datetime_parsing_options(df_datetime):
         X,
         pd.DataFrame({"date_obj2_year": [2010, 2009, 1995, 2004]}),
     )
+
+
+def test_get_feature_names_out(df_datetime, df_datetime_transformed):
+    # default features from all variables
+    transformer = DatetimeFeatures()
+    X = transformer.fit_transform(df_datetime)
+    assert list(X.columns) == transformer.get_feature_names_out()
+    assert transformer.get_feature_names_out(input_features=vars_dt) == [
+        var + feat for var in vars_dt for feat in feat_names_default
+    ]
+    assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
+        "date_obj1" + feat for feat in feat_names_default
+    ]
+
+    # default features from 1 variable
+    transformer = DatetimeFeatures(variables="date_obj1")
+    X = transformer.fit_transform(df_datetime)
+    assert list(X.columns) == transformer.get_feature_names_out()
+    assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
+        "date_obj1" + feat for feat in feat_names_default
+    ]
+
+    # all features
+    transformer = DatetimeFeatures(features_to_extract="all")
+    X = transformer.fit_transform(df_datetime)
+    assert list(X.columns) == transformer.get_feature_names_out()
+    feat_names_all = [FEATURES_SUFFIXES[feat] for feat in FEATURES_SUPPORTED]
+    assert transformer.get_feature_names_out(input_features=vars_dt) == [
+        var + feat for var in vars_dt for feat in feat_names_all
+    ]
+    assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
+        "date_obj1" + feat for feat in feat_names_all
+    ]
+
+    # specified features
+    transformer = DatetimeFeatures(features_to_extract=["semester", "week"])
+    X = transformer.fit_transform(df_datetime)
+    assert list(X.columns) == transformer.get_feature_names_out()
+    assert transformer.get_feature_names_out(input_features=vars_dt) == [
+        var + "_" + feat for var in vars_dt for feat in ["semester", "week"]
+    ]
+    assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
+        "date_obj1_" + feat for feat in ["semester", "week"]
+    ]
+
+    # when drop original is False
+    transformer = DatetimeFeatures(drop_original=False)
+    X = transformer.fit_transform(df_datetime)
+    assert list(X.columns) == transformer.get_feature_names_out()
+    assert transformer.get_feature_names_out(input_features=vars_dt) == [
+        var + feat for var in vars_dt for feat in feat_names_default
+    ]
+    assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
+        "date_obj1" + feat for feat in feat_names_default
+    ]
+
+    with pytest.raises(ValueError):
+        # assert error when user passes a string instead of list
+        transformer.get_feature_names_out(input_features="date_obj1")
+
+    with pytest.raises(ValueError):
+        # assert error when uses passes features that were not lagged
+        transformer.get_feature_names_out(input_features=["color"])

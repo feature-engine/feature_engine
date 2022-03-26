@@ -23,20 +23,31 @@ class DropFeatures(BaseSelector):
     features_to_drop_:
         The features that will be dropped.
 
+    feature_names_in_:
+        List with the names of features seen during `fit`.
+
     n_features_in_:
         The number of features in the train set used in fit.
-
 
     Methods
     -------
     fit:
         This transformer does not learn any parameter.
 
-    transform:
-        Drops indicated features.
-
     fit_transform:
         Fit to data, then transform it.
+
+    get_feature_names_out:
+        Get output feature names for transformation.
+
+    get_params:
+        Get parameters for this estimator.
+
+    set_params:
+        Set the parameters of this estimator.
+
+    transform:
+        Drops indicated features.
     """
 
     def __init__(self, features_to_drop: List[Union[str, int]]):
@@ -76,17 +87,10 @@ class DropFeatures(BaseSelector):
                 "existing variables"
             )
 
-        self.n_features_in_ = X.shape[1]
+        # save input features
+        self._get_feature_names_in(X)
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseSelector.transform.__doc__
 
     def _more_tags(self):
         tags_dict = _return_tags()

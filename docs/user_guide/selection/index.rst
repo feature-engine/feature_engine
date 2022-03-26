@@ -126,6 +126,5 @@ Additional Resources
 
 More details about feature selection can be found in the following resources:
 
-- `Feature Selection Online Course <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_
+- `Feature Selection Online Course <https://courses.trainindata.com/p/feature-selection-for-machine-learning>`_
 - `Feature Selection for Machine Learning: A comprehensive Overview <https://trainindata.medium.com/feature-selection-for-machine-learning-a-comprehensive-overview-bd571db5dd2d>`_
-

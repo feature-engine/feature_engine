@@ -9,10 +9,8 @@ from feature_engine.selection import (
     RecursiveFeatureAddition,
     RecursiveFeatureElimination,
 )
-from feature_engine.selection.base_recursive_selector import BaseRecursiveSelector
 
 _selectors = [
-    BaseRecursiveSelector,
     RecursiveFeatureElimination,
     RecursiveFeatureAddition,
 ]
@@ -154,10 +152,6 @@ _estimators_importance = [
 @pytest.mark.parametrize("_estimator, _importance", _estimators_importance)
 def test_feature_importances(_estimator, _importance, df_test):
     X, y = df_test
-
-    # Test Base Recursive Selector
-    sel = BaseRecursiveSelector(_estimator).fit(X, y)
-    assert list(np.round(sel.feature_importances_.values, 4)) == _importance
 
     sel = RecursiveFeatureAddition(_estimator).fit(X, y)
     _importance.sort(reverse=True)

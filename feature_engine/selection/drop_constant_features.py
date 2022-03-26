@@ -5,6 +5,7 @@ import pandas as pd
 from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
 )
@@ -26,6 +27,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     confirm_variables=BaseSelector._confirm_variables_docstring,
     variables=_variables_all_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -70,6 +72,8 @@ class DropConstantFeatures(BaseSelector):
 
     {variables_}:
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
@@ -77,10 +81,10 @@ class DropConstantFeatures(BaseSelector):
     fit:
         Find constant and quasi-constant features.
 
+    {fit_transform}
+
     transform:
         Remove constant and quasi-constant features.
-
-    {fit_transform}
 
     Notes
     -----
@@ -175,17 +179,10 @@ class DropConstantFeatures(BaseSelector):
                 "constant or quasi-constant features. Try changing the tol value."
             )
 
-        self.n_features_in_ = X.shape[1]
+        # save input features
+        self._get_feature_names_in(X)
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseSelector.transform.__doc__
 
     def _more_tags(self):
         tags_dict = _return_tags()

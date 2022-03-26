@@ -8,6 +8,7 @@ import pandas as pd
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
@@ -24,6 +25,7 @@ from feature_engine.variable_manipulation import (
 @Substitution(
     imputer_dict_=BaseImputer._imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     transform=BaseImputer._transform_docstring,
@@ -64,15 +66,17 @@ class ArbitraryNumberImputer(BaseImputer):
 
     {variables_}
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     See Also
     --------
@@ -122,14 +126,6 @@ class ArbitraryNumberImputer(BaseImputer):
             self.variables_ = _find_or_check_numerical_variables(X, self.variables)
             self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables_}
 
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseImputer.transform.__doc__

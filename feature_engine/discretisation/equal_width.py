@@ -8,6 +8,7 @@ import pandas as pd
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
@@ -24,6 +25,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
     transform=BaseDiscretiser._transform_docstring,
     variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -68,15 +70,17 @@ class EqualWidthDiscretiser(BaseDiscretiser):
 
     {variables_}
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     See Also
     --------
@@ -124,7 +128,7 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         """
 
         # check input dataframe
-        X = super().fit(X, y)
+        X = super()._fit_from_varlist(X)
 
         # fit
         self.binner_dict_ = {}
@@ -139,7 +143,5 @@ class EqualWidthDiscretiser(BaseDiscretiser):
             bins[0] = float("-inf")
             bins[len(bins) - 1] = float("inf")
             self.binner_dict_[var] = bins
-
-        self.n_features_in_ = X.shape[1]
 
         return self

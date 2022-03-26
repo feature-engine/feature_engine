@@ -83,11 +83,6 @@ def test_regression(df_normal_dist):
     assert all(x for x in np.round(X["var"].unique(), 2) if x not in X_t)
 
 
-def test_error_when_cv_is_string():
-    with pytest.raises(ValueError):
-        DecisionTreeDiscretiser(cv="other")
-
-
 def test_error_when_regression_is_not_bool():
     with pytest.raises(ValueError):
         DecisionTreeDiscretiser(regression="other")

@@ -9,6 +9,7 @@ import pandas as pd
 
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
@@ -24,6 +25,7 @@ from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -90,6 +92,8 @@ class RareLabelEncoder(BaseCategoricalTransformer):
 
     {variables_}
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
@@ -97,10 +101,10 @@ class RareLabelEncoder(BaseCategoricalTransformer):
     fit:
         Find frequent categories.
 
+    {fit_transform}
+
     transform:
         Group rare categories
-
-    {fit_transform}
     """
 
     def __init__(
@@ -173,8 +177,6 @@ class RareLabelEncoder(BaseCategoricalTransformer):
                 self.encoder_dict_[var] = X[var].unique()
 
         self._check_encoding_dictionary()
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 

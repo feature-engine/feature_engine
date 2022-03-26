@@ -2,7 +2,7 @@
 classes. Provides the base functionality within the fit() and transform() methods
 shared by most transformers, like checking that input is a df, the size, NA, etc.
 """
-from typing import Dict, Optional
+from typing import Dict, List
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -19,13 +19,11 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 
 
 class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
-    """shared set-up procedures across numerical transformers, i.e.,
+    """Shared set-up procedures across numerical transformers, i.e.,
     variable transformers, discretisers, math combination.
     """
 
-    def _select_variables_from_dict(
-        self, X: pd.DataFrame, user_dict_: Dict
-    ) -> pd.DataFrame:
+    def _fit_from_dict(self, X: pd.DataFrame, user_dict_: Dict) -> pd.DataFrame:
         """
         Checks that input is a dataframe, checks that variables in the dictionary
         entered by the user are of type numerical.
@@ -62,9 +60,15 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
 
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
+        # save train set shape
+        self.n_features_in_ = X.shape[1]
+
         return X
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.DataFrame:
+    def _fit_from_varlist(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Checks that input is a dataframe, finds numerical variables, or alternatively
         checks that variables entered by the user are of type numerical.
@@ -101,12 +105,18 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
 
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
+        # save train set shape
+        self.n_features_in_ = X.shape[1]
+
         return X
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Checks that the input is a dataframe and of the same size than the one used
-        in the fit method. Checks absence of NA and Inf.
+        in the fit() method. Checks absence of NA and Inf.
 
         Parameters
         ----------
@@ -139,8 +149,25 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
 
+        # reorder variables to match train set
+        X = X[self.feature_names_in_]
+
         return X
+
+    def get_feature_names_out(self) -> List:
+        """Get output feature names for transformation.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        return self.feature_names_in_
 
     # for the check_estimator tests
     def _more_tags(self):
-        return _return_tags()
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
+        return tags_dict

@@ -2,13 +2,15 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.base import is_classifier
 from sklearn.metrics import get_scorer
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import check_cv, cross_validate
 from sklearn.utils.validation import check_random_state
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
 )
@@ -44,6 +46,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     initial_model_performance_=_initial_model_performance_docstring,
     features_to_drop_=_features_to_drop_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_docstring,
     transform=_transform_docstring,
@@ -101,15 +104,17 @@ class SelectByShuffling(BaseSelector):
 
     {variables_}
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
     -------
     {fit}
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     Notes
     -----
@@ -166,6 +171,11 @@ class SelectByShuffling(BaseSelector):
         if isinstance(y, pd.Series):
             y = y.reset_index(drop=True)
 
+        # Enforce y to have the iloc attribute required for the calculation of the
+        # model performance for the different folds.
+        if hasattr(y, "iloc") is False:
+            y = pd.Series(y)
+
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
 
@@ -185,6 +195,10 @@ class SelectByShuffling(BaseSelector):
         # store initial model performance
         self.initial_model_performance_ = model["test_score"].mean()
 
+        # extract the validation folds
+        cv_ = check_cv(self.cv, y=y, classifier=is_classifier(self.estimator))
+        validation_indices = [val_index for _, val_index in cv_.split(X, y)]
+
         # get performance metric
         scorer = get_scorer(self.scoring)
 
@@ -196,6 +210,7 @@ class SelectByShuffling(BaseSelector):
 
         # shuffle features and save feature performance drift into a dict
         for feature in self.variables_:
+
             X_shuffled = X[self.variables_].copy()
 
             # shuffle individual feature
@@ -207,7 +222,10 @@ class SelectByShuffling(BaseSelector):
 
             # determine the performance with the shuffled feature
             performance = np.mean(
-                [scorer(m, X_shuffled, y) for m in model["estimator"]]
+                [
+                    scorer(m, X_shuffled.iloc[idx], y.iloc[idx])
+                    for m, idx in zip(model["estimator"], validation_indices)
+                ]
             )
 
             # determine drift in performance
@@ -233,17 +251,10 @@ class SelectByShuffling(BaseSelector):
             if self.performance_drifts_[f] < threshold
         ]
 
-        self.n_features_in_ = X.shape[1]
+        # save input features
+        self._get_feature_names_in(X)
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseSelector.transform.__doc__
 
     def _more_tags(self):
         tags_dict = _return_tags()

@@ -8,6 +8,7 @@ import pandas as pd
 
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _inverse_transform_docstring,
     _n_features_in_docstring,
@@ -28,6 +29,7 @@ from feature_engine.validation import _return_tags
     variables=_variables_docstring,
     errors=_errors_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
     transform=_transform_docstring,
@@ -76,6 +78,8 @@ class WoEEncoder(BaseCategorical):
         Dictionary with the WoE per variable.
 
     {variables_}
+
+    {feature_names_in_}
 
     {n_features_in_}
 
@@ -178,27 +182,12 @@ class WoEEncoder(BaseCategorical):
 
         self._check_encoding_dictionary()
 
-        self.n_features_in_ = X.shape[1]
-
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseCategorical.transform.__doc__
-
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().inverse_transform(X)
-
-        return X
-
-    inverse_transform.__doc__ = BaseCategorical.inverse_transform.__doc__
 
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["variables"] = "categorical"
+        tags_dict["requires_y"] = True
         # in the current format, the tests are performed using continuous np.arrays
         # this means that when we encode some of the values, the denominator is 0
         # and this the transformer raises an error, and the test fails.

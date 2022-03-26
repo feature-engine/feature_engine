@@ -1,6 +1,6 @@
 """Functions to select certain types of variables."""
 
-from typing import Any, List, Union
+from typing import Any, List, Tuple, Union
 
 import pandas as pd
 from pandas.api.types import is_categorical_dtype as is_categorical
@@ -272,17 +272,25 @@ def _find_all_variables(
     variables : List of numerical variables
     """
 
-    if isinstance(variables, (str, int)):
-        variables = [variables]
+    if variables is None:
+        # find all variables in dataset
+        variables_ = X.columns.to_list()
 
-    elif not variables:
-        variables = list(X.columns)
+    elif isinstance(variables, (str, int)):
+        if variables not in X.columns.to_list():
+            raise ValueError("The variable is not in the dataframe.")
+        variables_ = [variables]
 
     else:
-        # call pandas to test if variables entered by user are in df
-        X[variables]
+        if len(variables) == 0:
+            raise ValueError("The list of variables is empty.")
 
-    return variables
+        if any(f for f in variables if f not in X.columns):
+            raise KeyError("Some of the variables are not in the dataframe.")
+
+        variables_ = variables
+
+    return variables_
 
 
 def _filter_out_variables_not_in_dataframe(X, variables):
@@ -324,3 +332,72 @@ def _filter_out_variables_not_in_dataframe(X, variables):
         )
 
     return filtered_variables
+
+
+def _find_categorical_and_numerical_variables(
+    X: pd.DataFrame, variables: Variables = None
+) -> Tuple[List[Union[str, int]], List[Union[str, int]]]:
+    """
+    Find numerical and categorical variables.
+
+    Parameters
+    ----------
+    X :  pandas DataFrame
+
+    variables : List of variables. Defaults to None.
+
+    Returns
+    -------
+    variables : Tuple with List of numerical and list of categorical variables.
+    """
+
+    # If the user passes just 1 variable outside a list.
+    if isinstance(variables, (str, int)):
+
+        if is_categorical(X[variables]) or is_object(X[variables]):
+            variables_cat = [variables]
+            variables_num = []
+        elif is_numeric(X[variables]):
+            variables_num = [variables]
+            variables_cat = []
+        else:
+            raise TypeError(
+                "The variable entered is neither numerical nor categorical."
+            )
+
+    # If user leaves default None parameter.
+    elif variables is None:
+        # find categorical variables
+        if variables is None:
+            variables_cat = [
+                column
+                for column in X.select_dtypes(include=["O", "category"]).columns
+                if _is_categorical_and_is_not_datetime(X[column])
+            ]
+        # find numerical variables in dataset
+        variables_num = list(X.select_dtypes(include="number").columns)
+
+        if len(variables_num) == 0 and len(variables_cat) == 0:
+            raise TypeError(
+                "There are no numerical or categorical variables in the dataframe"
+            )
+
+    # If user passes variable list.
+    else:
+        if len(variables) == 0:
+            raise ValueError("The list of variables is empty.")
+
+        # find categorical variables
+        variables_cat = [
+            var for var in X[variables].select_dtypes(include=["O", "category"]).columns
+        ]
+
+        # find numerical variables
+        variables_num = list(X[variables].select_dtypes(include="number").columns)
+
+        if any([v for v in variables if v not in variables_cat + variables_num]):
+            raise TypeError(
+                "Some of the variables are neither numerical nor categorical."
+            )
+
+    return variables_cat, variables_num

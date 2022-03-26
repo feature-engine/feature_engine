@@ -1,7 +1,7 @@
 .. -*- mode: rst -*-
 
-Math Features
-=============
+Feature Creation
+================
 
 Feature-engine's creation transformers create and add new features to the dataframe
 by either combining or transforming existing features.
@@ -9,6 +9,9 @@ by either combining or transforming existing features.
 .. toctree::
    :maxdepth: 2
 
+   MathFeatures
+   RelativeFeatures
+   CyclicalFeatures
    MathematicalCombination
    CombineWithReferenceFeature
    CyclicalTransformer

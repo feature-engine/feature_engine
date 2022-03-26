@@ -66,6 +66,9 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
 
+        # reorder to match training set
+        X = X[self.feature_names_in_]
+
         return X
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -103,8 +106,22 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
         return X
 
+    def get_feature_names_out(self) -> List:
+        """Get output feature names for transformation.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        return self.feature_names_in_
+
     def _more_tags(self):
-        return _return_tags()
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
+        return tags_dict
 
 
 class WinsorizerBase(BaseOutlier):
@@ -272,6 +289,7 @@ class WinsorizerBase(BaseOutlier):
             elif self.capping_method == "quantiles":
                 self.left_tail_caps_ = X[self.variables_].quantile(self.fold).to_dict()
 
+        self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
 
         return self

@@ -20,6 +20,7 @@ def test_arbitrary_discretiser():
 
     # HouseAge is the median house age in the block group.
     data_t1["HouseAge"] = pd.cut(data["HouseAge"], bins=[0, 20, 40, 60, np.Inf])
+    data_t1["HouseAge"] = data_t1["HouseAge"].astype(str)
     data_t2["HouseAge"] = pd.cut(
         data["HouseAge"], bins=[0, 20, 40, 60, np.Inf], labels=False
     )

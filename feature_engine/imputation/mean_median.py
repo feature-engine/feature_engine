@@ -8,6 +8,7 @@ import pandas as pd
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
@@ -23,6 +24,7 @@ from feature_engine.variable_manipulation import (
     variables=BaseImputer._variables_numerical_docstring,
     imputer_dict_=BaseImputer._imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     transform=BaseImputer._transform_docstring,
     fit_transform=_fit_transform_docstring,
@@ -51,6 +53,8 @@ class MeanMedianImputer(BaseImputer):
 
     {variables_}
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
@@ -58,9 +62,9 @@ class MeanMedianImputer(BaseImputer):
     fit:
         Learn the mean or median values.
 
-    {transform}
-
     {fit_transform}
+
+    {transform}
 
     """
 
@@ -102,14 +106,6 @@ class MeanMedianImputer(BaseImputer):
         elif self.imputation_method == "median":
             self.imputer_dict_ = X[self.variables_].median().to_dict()
 
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseImputer.transform.__doc__

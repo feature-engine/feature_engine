@@ -3,20 +3,26 @@
 
 from typing import List, Optional, Union
 
-import numpy as np
 import pandas as pd
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
+    _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
 )
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.validation import _return_tags
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_all_variables,
+)
 
 
 @Substitution(
+    feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
@@ -59,6 +65,8 @@ class AddMissingIndicator(BaseImputer):
     variables_:
         List of variables for which the missing indicators will be created.
 
+    {feature_names_in_}
+
     {n_features_in_}
 
     Methods
@@ -66,10 +74,10 @@ class AddMissingIndicator(BaseImputer):
     fit:
         Find the variables for which the missing indicators will be created
 
+    {fit_transform}
+
     transform:
         Add the missing indicators.
-
-    {fit_transform}
 
     """
 
@@ -102,23 +110,14 @@ class AddMissingIndicator(BaseImputer):
         X = _is_dataframe(X)
 
         # find variables for which indicator should be added
-        if self.missing_only:
-            if not self.variables:
-                self.variables_ = [
-                    var for var in X.columns if X[var].isnull().sum() > 0
-                ]
-            else:
-                self.variables_ = [
-                    var for var in self.variables if X[var].isnull().sum() > 0
-                ]
+        self.variables_ = _find_all_variables(X, self.variables)
 
-        else:
-            if not self.variables:
-                self.variables_ = [var for var in X.columns]
-            else:
-                self.variables_ = self.variables
+        if self.missing_only is True:
+            self.variables_ = [
+                var for var in self.variables_ if X[var].isnull().sum() > 0
+            ]
 
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         return self
 
@@ -139,10 +138,52 @@ class AddMissingIndicator(BaseImputer):
             The dataframe containing the additional binary variables..
         """
 
-        X = self._check_transform_input_and_state(X)
+        X = self._transform(X)
 
-        X = X.copy()
-        for feature in self.variables_:
-            X[feature + "_na"] = np.where(X[feature].isnull(), 1, 0)
+        indicator_names = [f"{feature}_na" for feature in self.variables_]
+        X[indicator_names] = X[self.variables_].isna().astype(int)
 
         return X
+
+    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features: list, default=None
+            Input features. If `input_features` is `None`, then the names of all the
+            variables in the transformed dataset (original + new variables) is returned.
+            Alternatively, only the names for the binary variables derived from
+            input_features will be returned.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        if input_features is None:
+            feature_names = self.feature_names_in_
+            imputed = self.variables_
+        else:
+            if not isinstance(input_features, list):
+                raise ValueError(
+                    f"input_features must be a list. Got {input_features} instead."
+                )
+            if any(f for f in input_features if f not in self.feature_names_in_):
+                raise ValueError(
+                    "Some of the features requested were not seen during training."
+                )
+            feature_names = []
+            imputed = [f for f in input_features if f in self.variables_]
+
+        imputed = [f"{feat}_na" for feat in imputed]
+
+        return feature_names + imputed
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "all"
+        return tags_dict
