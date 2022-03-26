@@ -50,8 +50,9 @@ class RelativeFeatures(BaseCreation):
     functions are added to the dataframe.
 
     This transformer works only with numerical variables. It uses the pandas methods
-    pd.DataFrme.add, pd.DataFrme.sub, pd.DataFrme.mul, pd.DataFrme.div,
-    pd.DataFrme.truediv, pd.DataFrme.floordiv, pd.DataFrme.mod and pd.DataFrme.pow.
+    `pd.DataFrme.add`, `pd.DataFrme.sub`, `pd.DataFrme.mul`, `pd.DataFrme.div`,
+    `pd.DataFrme.truediv`, `pd.DataFrme.floordiv`, `pd.DataFrme.mod` and
+    `pd.DataFrme.pow`.
     Find out more in `pandas documentation
     <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.add.html>`_.
 
