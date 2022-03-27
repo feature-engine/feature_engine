@@ -57,37 +57,56 @@ def test_all_transformers(Estimator):
     # Encoders that encode X as a function of y; this is what
     # breaks down when X becomes an array and indexes don't
     # accidentally match in final concantenation
-    "encoder, y_vals",
+
+    # All test DataFrames have same data except DecisionTreeEncoder(),
+    # which needs different y values.
+
+    # Key to all: - "non-standard" index that is not the usual
+    # contiguous range starting a t 0
+
+    "encoder, df_test",
     [
-        (MeanEncoder(), [1, 0, 1, 0, 1, 0]),
-        (WoEEncoder(), [1, 0, 1, 0, 1, 0]),
-        (PRatioEncoder(), [1, 0, 1, 0, 1, 0]),
-        (OrdinalEncoder(encoding_method="ordered"), [1, 0, 1, 0, 1, 0]),
-        (DecisionTreeEncoder(), [21, 30, 21, 30, 51, 40]),
-    ],
+        (MeanEncoder(),
+         pd.DataFrame({
+             "x": ["a", "a", "b", "b", "c", "c"],
+             "y": [1, 0, 1, 0, 1, 0]
+         }, index=[101, 105, 42, 76, 88, 92])),
+
+        (WoEEncoder(),
+         pd.DataFrame({
+             "x": ["a", "a", "b", "b", "c", "c"],
+             "y": [1, 0, 1, 0, 1, 0]
+         }, index=[101, 105, 42, 76, 88, 92])),
+
+        (PRatioEncoder(),
+         pd.DataFrame({
+             "x": ["a", "a", "b", "b", "c", "c"],
+             "y": [1, 0, 1, 0, 1, 0]
+         }, index=[101, 105, 42, 76, 88, 92])),
+
+        (OrdinalEncoder(encoding_method="ordered"),
+         pd.DataFrame({
+             "x": ["a", "a", "b", "b", "c", "c"],
+             "y": [1, 0, 1, 0, 1, 0]
+         }, index=[101, 105, 42, 76, 88, 92])),
+
+        (DecisionTreeEncoder(),
+         pd.DataFrame({
+             "x": ["a", "a", "b", "b", "c", "c"],
+             "y": [21, 30, 21, 30, 51, 40]
+         }, index=[101, 105, 42, 76, 88, 92])),
+    ]
 )
-def test_fix_index_mismatch_from_upstream_array(encoder, y_vals):
+def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test):
     """
-    Created 2022-02-19 to test fix to issue # 376
+    Created 2022-03-27 to test fix to issue # 376
     Code adapted from:
     https://github.com/scikit-learn-contrib/category_encoders/issues/280
     """
 
-    # test dataframe; setup for a transfromation where
-    # coded version of 'x' will be a function of target 'y'
-    df: pd.DataFrame = pd.DataFrame(
-        {
-            "x": ["a", "a", "b", "b", "c", "c"],
-            "y": y_vals,
-        }
-    )
-    # Key - "non-standard" index that is not the usual
-    # contiguous range starting a t 0
-    df.index = [101, 105, 42, 76, 88, 92]
-
     # Set up for standard pipeline/training etc.
-    X: pd.DataFrame = df[["x"]]
-    y: pd.Series = df["y"]
+    X: pd.DataFrame = df_test[["x"]]
+    y: pd.Series = df_test["y"]
 
     # Test issue fix where X becomes array,
     # y remains Series with original DataFrame index
