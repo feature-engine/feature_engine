@@ -59,11 +59,11 @@ def test_all_transformers(Estimator):
     # accidentally match in final concantenation
     "encoder, y_vals",
     [
-        (MeanEncoder(), [1, 0, 1, 0, 1, 0]),
-        (WoEEncoder(), [1, 0, 1, 0, 1, 0]),
-        (PRatioEncoder(), [1, 0, 1, 0, 1, 0]),
-        (OrdinalEncoder(encoding_method="ordered"), [1, 0, 1, 0, 1, 0]),
-        (DecisionTreeEncoder(), [21, 30, 21, 30, 51, 40]),
+        (MeanEncoder(variables=["x"]), [1, 0, 1, 0, 1, 0]),
+        (WoEEncoder(variables=["x"]), [1, 0, 1, 0, 1, 0]),
+        (PRatioEncoder(variables=["x"]), [1, 0, 1, 0, 1, 0]),
+        (OrdinalEncoder(variables=["x"], encoding_method="ordered"), [1, 0, 1, 0, 1, 0]),
+        (DecisionTreeEncoder(variables=["x"]), [21, 30, 21, 30, 51, 40]),
     ],
 )
 def test_fix_index_mismatch_from_upstream_array(encoder, y_vals):
@@ -78,6 +78,7 @@ def test_fix_index_mismatch_from_upstream_array(encoder, y_vals):
     df: pd.DataFrame = pd.DataFrame(
         {
             "x": ["a", "a", "b", "b", "c", "c"],
+            "other": ["g", "w", "d", "f", "l", "m"],
             "y": y_vals,
         }
     )
@@ -86,7 +87,7 @@ def test_fix_index_mismatch_from_upstream_array(encoder, y_vals):
     df.index = [101, 105, 42, 76, 88, 92]
 
     # Set up for standard pipeline/training etc.
-    X: pd.DataFrame = df[["x"]]
+    X: pd.DataFrame = df.drop(columns="y")
     y: pd.Series = df["y"]
 
     # Test issue fix where X becomes array,
