@@ -1,6 +1,3 @@
-# Authors: Morgan Sell <morganpsell@gmail.com>
-# License: BSD 3 clause
-
 from typing import Callable, List, Optional, Union
 
 import pandas as pd
@@ -37,20 +34,20 @@ class WindowFeatures(BaseForecastTransformer):
     example, the mean value of the previous 3 months of data is a window feature. The
     maximum value of the previous three rows of data is another window feature.
 
-    WindowFeatures uses the pandas' functions `rolling()`, `agg` and `shift`. With
-    `rolling`, it creates rolling windows. With `agg` it applies multiple functions
+    WindowFeatures uses pandas functions `rolling()`, `agg()` and `shift()`. With
+    `rolling()`, it creates rolling windows. With `agg()` it applies multiple functions
     within those windows. With 'shift()' it allocates the values to the correct rows.
 
     For supported aggregation functions, see Rolling Window
     `Functions <https://pandas.pydata.org/docs/reference/window.html>`_.
 
-    With pandas `rolling` we can perform rolling operations over 1 window size at a
-    time. WindowFeatures builds on top of pandas `rolling()` in that multiple windows
-    can be evaluated at the same time and the created features will be concatenated to
-    the original dataframe.
+    With pandas `rolling()` we can perform rolling operations over 1 window size at a
+    time. WindowFeatures builds on top of pandas `rolling()` in that new features can
+    be derived from multiple window sizes, and the created features will be
+    automatically concatenated to the original dataframe.
 
     To be compatible with WindowFeatures, the dataframe's index must have unique values
-    and no NaN.
+    and no missing data.
 
     WindowFeatures works only with numerical variables. You can pass a list of variables
     to use as input for the windows. Alternatively, WindowFeatures will automatically
@@ -64,15 +61,18 @@ class WindowFeatures(BaseForecastTransformer):
 
     window: int, offset, BaseIndexer subclass, or list, default=3
         Size of the moving window. If an integer, the fixed number of observations used
-        for each window. If an offset, the time period of each window. If list, features
-        will be created for each one of the windows in the list. It can also take a
-        function. See parameter `windows` in the pandas `rolling()` documentation for
-        more details.
+        for each window. If an offset (recommended), the time period of each window. It
+        can also take a function. See parameter `windows` in pandas `rolling()`
+        documentation for more details.
+
+        In addition to pandas normal input values, `window` can also take a list with
+        the above specified values, in which case, features will be created for each
+        one of the windows specified in the list.
 
     min_periods: int, default None.
-        Minimum number of observations in window required to have a value; otherwise,
-        result is np.nan. See parameter `min_periods` in the pandas `rolling()`
-        documentation for more details.
+        Minimum number of observations in the window required to have a value;
+        otherwise, the result is np.nan. See parameter `min_periods` in pandas
+        `rolling()` documentation for more details.
 
     functions: list of strings, default = ['mean']
         The functions to apply within the window. Valid functions can be found
@@ -87,7 +87,7 @@ class WindowFeatures(BaseForecastTransformer):
         pandas `shift()`.
 
     sort_index: bool, default=True
-        Whether to order the index of the dataframe before creating the lag features.
+        Whether to order the index of the dataframe before creating the features.
 
     {missing_values}
 
@@ -142,11 +142,10 @@ class WindowFeatures(BaseForecastTransformer):
             )
         if len(functions) != len(set(functions)):
             raise ValueError(
-                f"There are some duplicated functions in the list of "
-                f"functions: {functions}"
+                f"There are duplicated functions in the list: {functions}"
             )
 
-        if not isinstance(periods, int) or periods <= 0:
+        if not isinstance(periods, int) or periods < 1:
             raise ValueError(
                 f"periods must be a positive integer. Got {periods} instead."
             )
@@ -244,14 +243,14 @@ class WindowFeatures(BaseForecastTransformer):
 
         if isinstance(self.window, list):
             feature_names = [
-                str(feature) + f"_window_{win}" + f"_{agg}"
+                f"{feature}_window_{win}_{agg}"
                 for win in self.window
                 for feature in input_features_
                 for agg in self.functions
             ]
         else:
             feature_names = [
-                str(feature) + f"_window_{self.window}" + f"_{agg}"
+                f"{feature}_window_{self.window}_{agg}"
                 for feature in input_features_
                 for agg in self.functions
             ]
