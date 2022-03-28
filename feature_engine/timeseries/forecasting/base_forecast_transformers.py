@@ -146,7 +146,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin):
         X = _is_dataframe(X)
 
         # We need the dataframes to have unique values in the index and no missing data.
-        # Otherwise, when we merge the lag features we will duplicate rows.
+        # Otherwise, when we merge the new features we will duplicate rows.
         self._check_index(X)
 
         # find or check for numerical variables
@@ -207,5 +207,5 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin):
         # add additional test that fails
         tags_dict["_xfail_checks"][
             "check_methods_subset_invariance"
-        ] = "tLagFeatures is not invariant when applied to a subset. Not sure why yet"
+        ] = "LagFeatures is not invariant when applied to a subset. Not sure why yet"
         return tags_dict
