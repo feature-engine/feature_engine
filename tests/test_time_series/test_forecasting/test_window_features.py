@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from pandas.testing import assert_frame_equal
+
 import pytest
 
 from feature_engine.timeseries.forecasting import WindowFeatures
@@ -229,7 +231,7 @@ def test_single_window_when_using_periods(df_time):
     transformer = WindowFeatures(
         variables=["module_temp", "irradiation"],
         window=3,
-        functions=["median"],
+        functions="median",
         periods=2,
     )
     transformer.fit(df_time)
@@ -333,7 +335,7 @@ def test_single_window_when_using_freq(df_time):
     transformer = WindowFeatures(
         variables=["ambient_temp", "irradiation"],
         window=2,
-        functions=["sum"],
+        functions="sum",
         freq="45min",
     )
     df_tr = transformer.fit_transform(df_time)
@@ -361,245 +363,75 @@ def test_single_window_when_using_freq(df_time):
     )
 
 
-# TODO: complete the values for this test
 def test_multiple_windows(df_time):
-    expected_results = {
-        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68, 33.76],
-        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52, 49.8],
-        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49, 0.57, 0.56, 0.74],
-        "color": [
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-        ],
-        "ambient_temp_window_2_sum": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            62.82,
-            63.66,
-            64.54,
-            65.01,
-            65.12,
-        ],
-        "ambient_temp_window_2_mean": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-        ],
-        "module_temp_window_2_sum": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            99.02,
-            102.19,
-            102.98,
-            100.24,
-            96.62,
-        ],
-        "module_temp_window_2_mean": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-        ],
-        "irradiation_window_2_sum": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            1.3,
-            1.44,
-            1.41,
-            1.18,
-            0.91,
-        ],
-        "irradiation_window_2_mean": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-        ],
-        "ambient_temp_window_3_sum": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-        ],
-        "ambient_temp_window_3_mean": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-        ],
-        "module_temp_window_3_sum": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-        ],
-        "module_temp_window_3_mean": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-        ],
-        "irradiation_window_3_sum": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-        ],
-        "irradiation_window_3_mean": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-            xxx,
-        ],
-    }
-
-    expected_results_df = pd.DataFrame(data=expected_results, index=_date_time)
 
     # Case 1: automatically select variables
     transformer = WindowFeatures(
-        window=[2, 3], functions=["sum", "mean"], periods=45, freq="min"
+        window=[2, 3], functions=["sum", "mean"], periods=15, freq="min"
     )
-    df_tr = transformer.fit_transform(df_time)
+    df_time_tr = transformer.fit_transform(df_time)
 
-    assert df_tr.head(9).round(3).equals(expected_results_df)
+    # Expected
+    X = df_time.copy()
+    num_vars = ["ambient_temp", "module_temp", "irradiation"]
+    tmp = X[num_vars].rolling(2).agg(["sum", "mean"]).shift(periods=15, freq="min")
+    X_tr = X.merge(tmp, left_index=True, right_index=True, how="left")
+    tmp = X[num_vars].rolling(3).agg(["sum", "mean"]).shift(periods=15, freq="min")
+    X_tr = X_tr.merge(tmp, left_index=True, right_index=True, how="left")
+    X_tr.columns = transformer.get_feature_names_out()
 
-    # Case 2: when drop_original is true
-    transformer = WindowFeatures(
-        window=[2, 3],
-        functions=["sum", "mean"],
-        periods=45,
-        freq="min",
-        drop_original=True,
-    )
-    df_tr = transformer.fit_transform(df_time)
+    assert df_time_tr.equals(X_tr)
 
-    assert (
-        df_tr.head(9)
-        .round(3)
-        .equals(
-            expected_results_df.drop(
-                ["ambient_temp", "module_temp", "irradiation"], axis=1
-            )
-        )
-    )
-
-    # Case 3: user indicates multiple variables
+    # Case 2: user indicates multiple variables
     transformer = WindowFeatures(
         variables=["ambient_temp", "irradiation"],
         window=[2, 3],
         functions=["sum", "mean"],
-        periods=45,
-        freq="min",
+        freq="30min",
     )
-    df_tr = transformer.fit_transform(df_time)
+    df_time_tr = transformer.fit_transform(df_time)
 
-    assert (
-        df_tr.head(9)
-        .round(3)
-        .equals(
-            expected_results_df.drop(
-                [
-                    xxx,
-                    xxx,
-                ],
-                axis=1,
-            )
-        )
-    )
+    # Expected
+    X = df_time.copy()
+    tmp = X[["ambient_temp", "irradiation"]].rolling(2).agg(["sum", "mean"]).shift(freq="30min")
+    X_tr = X.merge(tmp, left_index=True, right_index=True, how="left")
+    tmp = X[["ambient_temp", "irradiation"]].rolling(3).agg(["sum", "mean"]).shift(freq="30min")
+    X_tr = X_tr.merge(tmp, left_index=True, right_index=True, how="left")
+    X_tr.columns = transformer.get_feature_names_out()
+
+    assert df_time_tr.equals(X_tr)
 
     # Case 4: user indicates 1 variable
     transformer = WindowFeatures(
         variables=["irradiation"],
         window=[2, 3],
-        functions=["sum", "mean"],
-        periods=45,
-        freq="min",
+        functions="std",
+        periods=1,
     )
-    df_tr = transformer.fit_transform(df_time)
+    df_time_tr = transformer.fit_transform(df_time)
 
-    assert (
-        df_tr.head(9).round(3).equals(expected_results_df.drop([xxx, xxx, xxx], axis=1))
-    )
-
-
-# TODO: modify test to pass
-def test_sort_index(df_time):
+    # Expected
     X = df_time.copy()
+    tmp = X["irradiation"].rolling(2).agg("std").shift(periods=1)
+    X_tr = X.merge(tmp, left_index=True, right_index=True, how="left")
+    tmp = X["irradiation"].rolling(3).agg("std").shift(periods=1)
+    X_tr = X_tr.merge(tmp, left_index=True, right_index=True, how="left")
+    X_tr.columns = transformer.get_feature_names_out()
 
+    assert df_time_tr.equals(X_tr)
+
+
+def test_sort_index(df_time):
     # Shuffle dataframe
-    Xs = X.sample(len(df_time)).copy()
-
-    transformer = WindowFeatures(sort_index=True)
-    X_tr = transformer.fit_transform(Xs)
-
-    # TODO: this needs changing
-    A = X[transformer.variables_].iloc[0:4].values
-    B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
-    assert (A == B).all()
+    Xs = df_time.copy()
+    Xs = Xs.sample(frac=1)
 
     transformer = WindowFeatures(sort_index=False)
-    X_tr = transformer.fit_transform(Xs)
+    df_tr = transformer.fit_transform(Xs)
+    assert_frame_equal(df_tr[transformer.variables_], Xs[transformer.variables_])
 
-    # TODO: this needs changing
-    A = Xs[transformer.variables_].iloc[0:4].values
-    B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
-    assert (A == B).all()
+    transformer = WindowFeatures(sort_index=True)
+    df_tr = transformer.fit_transform(Xs)
+    assert_frame_equal(
+        df_tr[transformer.variables_], Xs[transformer.variables_].sort_index()
+    )
