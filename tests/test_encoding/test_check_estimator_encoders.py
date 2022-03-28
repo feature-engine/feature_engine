@@ -61,7 +61,7 @@ def test_all_transformers(Estimator):
     # which needs different y values.
     # Key to all: - "non-standard" index that is not the usual
     # contiguous range starting a t 0
-    "encoder, df_test",
+    "encoder, df_test, df_expected",
     [
         (
             MeanEncoder(),
@@ -69,6 +69,9 @@ def test_all_transformers(Estimator):
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
                 index=[101, 105, 42, 76, 88, 92],
             ),
+            pd.DataFrame(
+                {"0": [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]},
+            )
         ),
         (
             WoEEncoder(),
@@ -76,6 +79,9 @@ def test_all_transformers(Estimator):
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
                 index=[101, 105, 42, 76, 88, 92],
             ),
+            pd.DataFrame(
+                {"0": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+            )
         ),
         (
             PRatioEncoder(),
@@ -83,13 +89,19 @@ def test_all_transformers(Estimator):
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
                 index=[101, 105, 42, 76, 88, 92],
             ),
+            pd.DataFrame(
+                {"0": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
+            )
         ),
         (
             OrdinalEncoder(encoding_method="ordered"),
             pd.DataFrame(
-                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92],
+                {"x": ["a", "a", "a", "b", "b", "b", "c", "c", "c"], "y":[3, 3, 3, 2, 2, 2, 1, 1, 1]},
+                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1]
             ),
+            pd.DataFrame(
+                {"0": [2, 2, 2, 1, 1, 1, 0, 0, 0]}
+            )
         ),
         (
             DecisionTreeEncoder(),
@@ -97,10 +109,13 @@ def test_all_transformers(Estimator):
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [21, 30, 21, 30, 51, 40]},
                 index=[101, 105, 42, 76, 88, 92],
             ),
+            pd.DataFrame(
+                {"0": [25.5, 25.5, 25.5, 25.5, 45.5, 45.5]},
+            )
         ),
     ],
 )
-def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test):
+def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test, df_expected):
     """
     Created 2022-03-27 to test fix to issue # 376
     Code adapted from:
@@ -115,7 +130,7 @@ def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test):
     # y remains Series with original DataFrame index
     X_2: np.ndarray = X.to_numpy()
     df_result: pd.DataFrame = encoder.fit_transform(X_2, y)
-    assert all(df_result.iloc[:, 0].notnull())
+    assert df_result.equals(df_expected)
 
 
 @pytest.mark.parametrize(
@@ -126,46 +141,66 @@ def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test):
     # which needs different y values.
     # Key to all: - "non-standard" index that is not the usual
     # contiguous range starting a t 0
-    "encoder, df_test",
+    "encoder, df_test, df_expected",
     [
         (
             MeanEncoder(),
             pd.DataFrame(
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92],
+                index=[101, 105, 42, 76, 88, 92]
             ),
+            pd.DataFrame(
+                {"x": [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]},
+                index=[101, 105, 42, 76, 88, 92]
+            )
         ),
         (
             WoEEncoder(),
             pd.DataFrame(
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92],
+                index=[101, 105, 42, 76, 88, 92]
             ),
+            pd.DataFrame(
+                {"x": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+                index=[101, 105, 42, 76, 88, 92]
+            )
         ),
         (
             PRatioEncoder(),
             pd.DataFrame(
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92],
+                index=[101, 105, 42, 76, 88, 92]
             ),
+            pd.DataFrame(
+                {"x": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
+                index=[101, 105, 42, 76, 88, 92]
+            )
         ),
         (
             OrdinalEncoder(encoding_method="ordered"),
             pd.DataFrame(
-                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92],
+                {"x": ["a", "a", "a", "b", "b", "b", "c", "c", "c"], "y":[3, 3, 3, 2, 2, 2, 1, 1, 1]},
+                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1]
             ),
+            pd.DataFrame(
+                {"x": [2, 2, 2, 1, 1, 1, 0, 0, 0]},
+                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1]
+            )
         ),
         (
             DecisionTreeEncoder(),
             pd.DataFrame(
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [21, 30, 21, 30, 51, 40]},
-                index=[101, 105, 42, 76, 88, 92],
+                index=[101, 105, 42, 76, 88, 92]
             ),
+            pd.DataFrame(
+                {"x": [25.5, 25.5, 25.5, 25.5, 45.5, 45.5]},
+                index=[101, 105, 42, 76, 88, 92]
+            )
         ),
     ],
 )
-def test_fix_index_mismatch_from_x_pandas_y_numpy(encoder, df_test):
+def test_fix_index_mismatch_from_x_pandas_y_numpy(encoder, df_test, df_expected):
     """
     Created 2022-03-27 to test fix to issue # 376
     Code adapted from:
@@ -180,4 +215,5 @@ def test_fix_index_mismatch_from_x_pandas_y_numpy(encoder, df_test):
     # y remains Series with original DataFrame index
     y_2: np.ndarray = y.to_numpy()
     df_result: pd.DataFrame = encoder.fit_transform(X, y_2)
-    assert all(df_result.iloc[:, 0].notnull())
+    assert df_result.equals(df_expected)
+
