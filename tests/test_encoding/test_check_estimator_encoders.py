@@ -71,7 +71,7 @@ def test_all_transformers(Estimator):
             ),
             pd.DataFrame(
                 {"0": [25.5, 25.5, 25.5, 25.5, 45.5, 45.5]},
-            )
+            ),
         ),
         (
             MeanEncoder(),
@@ -81,17 +81,18 @@ def test_all_transformers(Estimator):
             ),
             pd.DataFrame(
                 {"0": [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]},
-            )
+            ),
         ),
         (
             OrdinalEncoder(encoding_method="ordered"),
             pd.DataFrame(
-                {"x": ["a", "a", "a", "b", "b", "b", "c", "c", "c"], "y": [3, 3, 3, 2, 2, 2, 1, 1, 1]},
-                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1]
+                {
+                    "x": ["a", "a", "a", "b", "b", "b", "c", "c", "c"],
+                    "y": [3, 3, 3, 2, 2, 2, 1, 1, 1],
+                },
+                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1],
             ),
-            pd.DataFrame(
-                {"0": [2, 2, 2, 1, 1, 1, 0, 0, 0]}
-            )
+            pd.DataFrame({"0": [2, 2, 2, 1, 1, 1, 0, 0, 0]}),
         ),
         (
             PRatioEncoder(),
@@ -101,7 +102,7 @@ def test_all_transformers(Estimator):
             ),
             pd.DataFrame(
                 {"0": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
-            )
+            ),
         ),
         (
             WoEEncoder(),
@@ -111,7 +112,7 @@ def test_all_transformers(Estimator):
             ),
             pd.DataFrame(
                 {"0": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-            )
+            ),
         ),
     ],
 )
@@ -147,56 +148,56 @@ def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test, df_expected)
             DecisionTreeEncoder(),
             pd.DataFrame(
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [21, 30, 21, 30, 51, 40]},
-                index=[101, 105, 42, 76, 88, 92]
+                index=[101, 105, 42, 76, 88, 92],
             ),
             pd.DataFrame(
                 {"x": [25.5, 25.5, 25.5, 25.5, 45.5, 45.5]},
-                index=[101, 105, 42, 76, 88, 92]
-            )
+                index=[101, 105, 42, 76, 88, 92],
+            ),
         ),
         (
             MeanEncoder(),
             pd.DataFrame(
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92]
+                index=[101, 105, 42, 76, 88, 92],
             ),
             pd.DataFrame(
-                {"x": [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]},
-                index=[101, 105, 42, 76, 88, 92]
-            )
+                {"x": [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]}, index=[101, 105, 42, 76, 88, 92]
+            ),
         ),
         (
             OrdinalEncoder(encoding_method="ordered"),
             pd.DataFrame(
-                {"x": ["a", "a", "a", "b", "b", "b", "c", "c", "c"], "y": [3, 3, 3, 2, 2, 2, 1, 1, 1]},
-                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1]
+                {
+                    "x": ["a", "a", "a", "b", "b", "b", "c", "c", "c"],
+                    "y": [3, 3, 3, 2, 2, 2, 1, 1, 1],
+                },
+                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1],
             ),
             pd.DataFrame(
                 {"x": [2, 2, 2, 1, 1, 1, 0, 0, 0]},
-                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1]
-            )
+                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1],
+            ),
         ),
         (
             PRatioEncoder(),
             pd.DataFrame(
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92]
+                index=[101, 105, 42, 76, 88, 92],
             ),
             pd.DataFrame(
-                {"x": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
-                index=[101, 105, 42, 76, 88, 92]
-            )
+                {"x": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]}, index=[101, 105, 42, 76, 88, 92]
+            ),
         ),
         (
             WoEEncoder(),
             pd.DataFrame(
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92]
+                index=[101, 105, 42, 76, 88, 92],
             ),
             pd.DataFrame(
-                {"x": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-                index=[101, 105, 42, 76, 88, 92]
-            )
+                {"x": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, index=[101, 105, 42, 76, 88, 92]
+            ),
         ),
     ],
 )
@@ -216,4 +217,3 @@ def test_fix_index_mismatch_from_x_pandas_y_numpy(encoder, df_test, df_expected)
     y_2: np.ndarray = y.to_numpy()
     df_result: pd.DataFrame = encoder.fit_transform(X, y_2)
     assert df_result.equals(df_expected)
-
