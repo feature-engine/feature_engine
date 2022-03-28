@@ -38,7 +38,7 @@ class WindowFeatures(BaseForecastTransformer):
 
     WindowFeatures uses pandas functions `rolling()`, `agg()` and `shift()`. With
     `rolling()`, it creates rolling windows. With `agg()` it applies multiple functions
-    within those windows. With 'shift()' it allocates the values to the correct rows.
+    within those windows. With `shift()` it allocates the values to the correct rows.
 
     For supported aggregation functions, see Rolling Window
     `Functions <https://pandas.pydata.org/docs/reference/window.html>`_.

@@ -3,42 +3,61 @@
 .. currentmodule:: feature_engine.timeseries.forecasting
 
 WindowFeatures
-===========
+==============
 
-# TODO modify this document
-The :class:`LagFeatures` adds lag features to the dataframe. A lag feature is a feature
-with information about a prior time step.
+:class:`WindowFeatures` adds window features to the dataframe. Window features are
+the result of window operations over the variables. Window operations are operations that
+perform an aggregation over a sliding partition of past values. A window feature is,
+then, a feature created after computing mathematical functions (e.g., mean, min,
+max, etc.) within a window over the past data.
 
-When forecasting the future values of a variable the past values of that variable are
-likely to be predictive. Past values of other accompanying predictive features can also
-help us improve our forecast. Thus, in forecasting, it is common practice to create lag
-features from target series and predictive variables.
+For example, the mean value of the previous 3 months of data is a window feature. The
+maximum value of the previous three rows of data is another window feature.
 
-A lag feature is the target or feature k period(s) in the past, where k is the lag and
-is to be set by the user. We can create features with multiple lags by varying k. There
-are 2 ways in which we can indicate the lag k using :class:`LagFeatures`. We can
-indicate the lag using the parameter `periods`. This parameter takes integers that
-indicate the number of rows forward that the features will be lagged. Alternatively,
-we can use the parameter `freq`, which takes a string with the period and frequency,
-and lags features based on the datetime index. For example, if we pass `freq="1D"`, the
-values of the features will be moved 1 day forward.
+When forecasting the future values of a variable, the past values of that variable are
+likely to be predictive. To capitalize on the past values of a variable, we can simply
+lag features with :class:`LagFeatures`. And, we can as well create features that
+take in consideration the values in the past but within a window.
 
-The :class:`LagFeatures` transformer works very similarly to `pandas.shift`, but unlike
-`pandas.shift` we can indicate the lag using either `periods` or `freq` but not both.
-Also, unlike `pandas.shift`, we can only lag features forward. The :class:`LagFeatures`
-has several advantages over `pandas.shift` however. First, it can create features with
-multiple values of k at the same time. Second, it adds the features with a name to the
-original dataframe. Third, it has the methods `fit()` and `transform()` that make it
+To create window features we need to determine a number of parameters. First, we need
+to identify the size of the window or windows in which we will perform the operations.
+For example, we can take the average of the variable over 3 months, or 6 weeks. We also
+need to determine how far back is the window located respect to the value we want to
+forecast. For example, I can take the average of the last 3 weeks of data to forecast
+this week of data, or I can take the average of the last 3 weeks of data to forecast
+next weeks data, leaving a gap of a window in between the window feature and the
+forecasting point.
+
+:class:`WindowFeatures` transformer works on top of `pandas.rolling`, `pandas.aggregate`
+and `pandas.shift`. With `pandas.rolling`, :class:`WindowFeatures` determines the size
+of the windows for the operations. With `pandas.rolling` we can specify the window size
+with an integer, a string or a function. With :class:`WindowFeatures`, in addition, we
+can pass a list of integers, strings or functions, to perform computations over multiple
+window sizes.
+
+:class:`WindowFeatures` uses `pandas.aggregate` to perform the mathematical operations
+over the windows. Therefore, you can use any operation supported
+by pandas. For supported aggregation functions, see Rolling Window
+`Functions <https://pandas.pydata.org/docs/reference/window.html>`_.
+
+With `pandas.shift`, :class:`WindowFeatures` places the value derived from the past
+window, at the place of the value that we want to forecast. So if we want to forecast
+this week with the average of the past 3 weeks of data, we should shift the value 1
+week forward. If we want to forecast next week with the last 3 weeks of data, we should
+forward the value 2 weeks forward.
+
+:class:`WindowFeatures` will add the new variables with a representative name to the
+original dataframe. It also has the methods `fit()` and `transform()` that make it
 compatible with the Scikit-learn's `Pipeline` and cross-validation functions.
 
-Note that to be compatible with :class:`LagFeatures`, the dataframe's index must have
+Note that to be compatible with :class:`WindowFeatures` the dataframe's index must have
 unique values and no NaN.
 
 Examples
 --------
 
-Let's create a toy dataset to demonstrate the functionality of :class:`LagFeatures`.
-The dataframe contains 3 numerical variables a categorical variable and a datetime
+Let's create a toy dataset to demonstrate the functionality of :class:`WindowFeatures`.
+The dataframe contains 3 numerical variables, a categorical variable, and a datetime
 index.
 
 .. code:: python
@@ -67,24 +86,35 @@ Below we see the output of our toy dataframe:
     2020-05-15 12:45:00         32.39        50.63         0.76  green
     2020-05-15 13:00:00         32.62        49.61         0.42   blue
 
-Shift a row forward
-~~~~~~~~~~~~~~~~~~~
 
-Now we will create new features by lagging all numerical variables 1 row forward. Note
-that :class:`LagFeatures` automatically finds all numerical variables.
+
+Now we will create window features from the numerical variables. By setting
+`window=["30min", "60min"]` we perform calculations over windows of 30 and 60
+minutes, respectively. If you look at our toy dataframe, you'll notice that 30 minutes
+corresponds to 2 rows of data, and 60 minutes are 4 rows of data. So, we will perform calculations
+over 2 and then 4 rows of data, respectively.
+
+In `functions`, we indicate all the operations that we want to perform over those windows.
+In our example below, we want to calculate the mean and the standard deviation of the
+data within those windows and also find the maximum value within the windows.
+
+With `freq="15min"` we indicate that we need to shift the calculations 15 minutes
+forward. In other words, we are using the data available in windows defined up to 15 minutes
+before the forecasting point.
 
 .. code:: python
 
-    from feature_engine.timeseries.forecasting import LagFeatures
+    from feature_engine.timeseries.forecasting import WindowFeatures
 
-    lag_f = LagFeatures(periods=1)
+    win_f = WindowFeatures(
+        window=["30min", "60min"], functions=["mean", "max", "std"], freq="15min",
+    )
 
-    X_tr = lag_f.fit_transform(X)
+    X_tr = win_f.fit_transform(X)
 
     X_tr.head()
 
-We can find the lag features on the right side of the dataframe. Note that the values
-have been shifted a row forward.
+We can find the window features on the right side of the dataframe.
 
 .. code:: python
 
@@ -95,19 +125,127 @@ have been shifted a row forward.
     2020-05-15 12:45:00         32.39        50.63         0.76  green
     2020-05-15 13:00:00         32.62        49.61         0.42   blue
 
-                         ambient_temp_lag_1  module_temp_lag_1  irradiation_lag_1
-    2020-05-15 12:00:00                 NaN                NaN                NaN
-    2020-05-15 12:15:00               31.31              49.18               0.51
-    2020-05-15 12:30:00               31.51              49.84               0.79
-    2020-05-15 12:45:00               32.15              52.35               0.65
-    2020-05-15 13:00:00               32.39              50.63               0.76
+                         ambient_temp_window_30min_mean  \
+    2020-05-15 12:00:00                             NaN
+    2020-05-15 12:15:00                           31.31
+    2020-05-15 12:30:00                           31.41
+    2020-05-15 12:45:00                           31.83
+    2020-05-15 13:00:00                           32.27
 
-The variables to lag are stored in the `variables_` attribute of the
-:class:`LagFeatures`:
+                         ambient_temp_window_30min_max  \
+    2020-05-15 12:00:00                            NaN
+    2020-05-15 12:15:00                          31.31
+    2020-05-15 12:30:00                          31.51
+    2020-05-15 12:45:00                          32.15
+    2020-05-15 13:00:00                          32.39
+
+                         ambient_temp_window_30min_std  \
+    2020-05-15 12:00:00                            NaN
+    2020-05-15 12:15:00                            NaN
+    2020-05-15 12:30:00                       0.141421
+    2020-05-15 12:45:00                       0.452548
+    2020-05-15 13:00:00                       0.169706
+
+                         module_temp_window_30min_mean  \
+    2020-05-15 12:00:00                            NaN
+    2020-05-15 12:15:00                         49.180
+    2020-05-15 12:30:00                         49.510
+    2020-05-15 12:45:00                         51.095
+    2020-05-15 13:00:00                         51.490
+
+                         module_temp_window_30min_max  \
+    2020-05-15 12:00:00                           NaN
+    2020-05-15 12:15:00                         49.18
+    2020-05-15 12:30:00                         49.84
+    2020-05-15 12:45:00                         52.35
+    2020-05-15 13:00:00                         52.35
+
+                         module_temp_window_30min_std  ...  \
+    2020-05-15 12:00:00                           NaN  ...
+    2020-05-15 12:15:00                           NaN  ...
+    2020-05-15 12:30:00                      0.466690  ...
+    2020-05-15 12:45:00                      1.774838  ...
+    2020-05-15 13:00:00                      1.216224  ...
+
+                         irradiation_window_30min_std  \
+    2020-05-15 12:00:00                           NaN
+    2020-05-15 12:15:00                           NaN
+    2020-05-15 12:30:00                      0.197990
+    2020-05-15 12:45:00                      0.098995
+    2020-05-15 13:00:00                      0.077782
+
+                         ambient_temp_window_60min_mean  \
+    2020-05-15 12:00:00                             NaN
+    2020-05-15 12:15:00                       31.310000
+    2020-05-15 12:30:00                       31.410000
+    2020-05-15 12:45:00                       31.656667
+    2020-05-15 13:00:00                       31.840000
+
+                         ambient_temp_window_60min_max  \
+    2020-05-15 12:00:00                            NaN
+    2020-05-15 12:15:00                          31.31
+    2020-05-15 12:30:00                          31.51
+    2020-05-15 12:45:00                          32.15
+    2020-05-15 13:00:00                          32.39
+
+                         ambient_temp_window_60min_std  \
+    2020-05-15 12:00:00                            NaN
+    2020-05-15 12:15:00                            NaN
+    2020-05-15 12:30:00                       0.141421
+    2020-05-15 12:45:00                       0.438786
+    2020-05-15 13:00:00                       0.512640
+
+                         module_temp_window_60min_mean  \
+    2020-05-15 12:00:00                            NaN
+    2020-05-15 12:15:00                      49.180000
+    2020-05-15 12:30:00                      49.510000
+    2020-05-15 12:45:00                      50.456667
+    2020-05-15 13:00:00                      50.500000
+
+                         module_temp_window_60min_max  \
+    2020-05-15 12:00:00                           NaN
+    2020-05-15 12:15:00                         49.18
+    2020-05-15 12:30:00                         49.84
+    2020-05-15 12:45:00                         52.35
+    2020-05-15 13:00:00                         52.35
+
+                         module_temp_window_60min_std  \
+    2020-05-15 12:00:00                           NaN
+    2020-05-15 12:15:00                           NaN
+    2020-05-15 12:30:00                      0.466690
+    2020-05-15 12:45:00                      1.672553
+    2020-05-15 13:00:00                      1.368381
+
+                         irradiation_window_60min_mean  \
+    2020-05-15 12:00:00                            NaN
+    2020-05-15 12:15:00                         0.5100
+    2020-05-15 12:30:00                         0.6500
+    2020-05-15 12:45:00                         0.6500
+    2020-05-15 13:00:00                         0.6775
+
+                         irradiation_window_60min_max  \
+    2020-05-15 12:00:00                           NaN
+    2020-05-15 12:15:00                          0.51
+    2020-05-15 12:30:00                          0.79
+    2020-05-15 12:45:00                          0.79
+    2020-05-15 13:00:00                          0.79
+
+                         irradiation_window_60min_std
+    2020-05-15 12:00:00                           NaN
+    2020-05-15 12:15:00                           NaN
+    2020-05-15 12:30:00                      0.197990
+    2020-05-15 12:45:00                      0.140000
+    2020-05-15 13:00:00                      0.126853
+
+    [5 rows x 22 columns]
+
+
+The variables used as input for the window features are stored in the `variables_`
+attribute of the :class:`WindowFeatures`:
 
 .. code:: python
 
-    lag_f.variables_
+    win_f.variables_
 
 .. code:: python
 
@@ -118,7 +256,7 @@ get_feature_names_out() method:
 
 .. code:: python
 
-    lag_f.get_feature_names_out()
+    win_f.get_feature_names_out()
 
 .. code:: python
 
@@ -126,136 +264,47 @@ get_feature_names_out() method:
      'module_temp',
      'irradiation',
      'color',
-     'ambient_temp_lag_1',
-     'module_temp_lag_1',
-     'irradiation_lag_1']
+     'ambient_temp_window_30min_mean',
+     'ambient_temp_window_30min_max',
+     'ambient_temp_window_30min_std',
+     'module_temp_window_30min_mean',
+     'module_temp_window_30min_max',
+     'module_temp_window_30min_std',
+     'irradiation_window_30min_mean',
+     'irradiation_window_30min_max',
+     'irradiation_window_30min_std',
+     'ambient_temp_window_60min_mean',
+     'ambient_temp_window_60min_max',
+     'ambient_temp_window_60min_std',
+     'module_temp_window_60min_mean',
+     'module_temp_window_60min_max',
+     'module_temp_window_60min_std',
+     'irradiation_window_60min_mean',
+     'irradiation_window_60min_max',
+     'irradiation_window_60min_std']
 
-Create multiple lag features
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-We can create multiple lag features with one transformer by passing the lag periods in
-a list.
-
-.. code:: python
-
-    lag_f = LagFeatures(periods=[1, 2])
-
-    X_tr = lag_f.fit_transform(X)
-
-    X_tr.head()
-
-Note how multiple lag features were created for each of the numerical variables and
-added at the back of the dataframe.
-
-.. code:: python
-
-                         ambient_temp  module_temp  irradiation  color  \
-    2020-05-15 12:00:00         31.31        49.18         0.51  green
-    2020-05-15 12:15:00         31.51        49.84         0.79  green
-    2020-05-15 12:30:00         32.15        52.35         0.65  green
-    2020-05-15 12:45:00         32.39        50.63         0.76  green
-    2020-05-15 13:00:00         32.62        49.61         0.42   blue
-
-                         ambient_temp_lag_1  module_temp_lag_1  irradiation_lag_1  \
-    2020-05-15 12:00:00                 NaN                NaN                NaN
-    2020-05-15 12:15:00               31.31              49.18               0.51
-    2020-05-15 12:30:00               31.51              49.84               0.79
-    2020-05-15 12:45:00               32.15              52.35               0.65
-    2020-05-15 13:00:00               32.39              50.63               0.76
-
-                         ambient_temp_lag_2  module_temp_lag_2  irradiation_lag_2
-    2020-05-15 12:00:00                 NaN                NaN                NaN
-    2020-05-15 12:15:00                 NaN                NaN                NaN
-    2020-05-15 12:30:00               31.31              49.18               0.51
-    2020-05-15 12:45:00               31.51              49.84               0.79
-    2020-05-15 13:00:00               32.15              52.35               0.65
-
-We can get the names of all the lag features created for the variable "irradiation" as
+We can get the names of the window features created for the variable "irradiation" as
 follows:
 
 .. code:: python
 
-    lag_f.get_feature_names_out(["irradiation"])
+    win_f.get_feature_names_out(["irradiation"])
 
 .. code:: python
 
-    ['irradiation_lag_1', 'irradiation_lag_2']
+    ['irradiation_window_30min_mean',
+     'irradiation_window_30min_max',
+     'irradiation_window_30min_std',
+     'irradiation_window_60min_mean',
+     'irradiation_window_60min_max',
+     'irradiation_window_60min_std']
 
-
-Lag based on datetime
-~~~~~~~~~~~~~~~~~~~~~
-
-We can also lag features utilizing information in the datetime index of the dataframe.
-Let's for example create features by lagging 2 of the numerical variables 30 minutes
-forward.
-
-.. code:: python
-
-    lag_f = LagFeatures(variables = ["module_temp", "irradiation"], freq="30min")
-
-    X_tr = lag_f.fit_transform(X)
-
-    X_tr.head()
-
-Note that the features were moved forward 30 minutes.
-
-.. code:: python
-
-                         ambient_temp  module_temp  irradiation  color  \
-    2020-05-15 12:00:00         31.31        49.18         0.51  green
-    2020-05-15 12:15:00         31.51        49.84         0.79  green
-    2020-05-15 12:30:00         32.15        52.35         0.65  green
-    2020-05-15 12:45:00         32.39        50.63         0.76  green
-    2020-05-15 13:00:00         32.62        49.61         0.42   blue
-
-                         module_temp_lag_30min  irradiation_lag_30min
-    2020-05-15 12:00:00                    NaN                    NaN
-    2020-05-15 12:15:00                    NaN                    NaN
-    2020-05-15 12:30:00                  49.18                   0.51
-    2020-05-15 12:45:00                  49.84                   0.79
-    2020-05-15 13:00:00                  52.35                   0.65
-
-Drop variable after lagging features
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Similarly, we can lag multiple time intervals forward, but this time, let's drop the
-original variable after creating the lag features.
-
-.. code:: python
-
-    lag_f = LagFeatures(variables="irradiation",
-                        freq=["30min", "45min"],
-                        drop_original=True,
-                        )
-
-    X_tr = lag_f.fit_transform(X)
-
-    X_tr.head()
-
-We now see the multiple lag features at the back of the dataframe, and also that the
-original variable is not present in the output dataframe.
-
-.. code:: python
-
-                         ambient_temp  module_temp  color  irradiation_lag_30min  \
-    2020-05-15 12:00:00         31.31        49.18  green                    NaN
-    2020-05-15 12:15:00         31.51        49.84  green                    NaN
-    2020-05-15 12:30:00         32.15        52.35  green                   0.51
-    2020-05-15 12:45:00         32.39        50.63  green                   0.79
-    2020-05-15 13:00:00         32.62        49.61   blue                   0.65
-
-                         irradiation_lag_45min
-    2020-05-15 12:00:00                    NaN
-    2020-05-15 12:15:00                    NaN
-    2020-05-15 12:30:00                    NaN
-    2020-05-15 12:45:00                   0.51
-    2020-05-15 13:00:00                   0.79
 
 Working with pandas series
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If your time series is a pandas Series instead of a pandas Dataframe, you need to
-transform it into a dataframe before using :class:`LagFeatures`.
+transform it into a dataframe before using :class:`WindowFeatures`.
 
 The following is a pandas Series:
 
@@ -275,59 +324,71 @@ The following is a pandas Series:
     2020-05-15 13:45:00    32.68
     Freq: 15T, Name: ambient_temp, dtype: float64
 
-We can use :class:`LagFeatures` to create, for example, 3 new features by lagging the
-pandas Series if we convert it to a pandas Dataframe using the method `to_frame()`:
+We can use :class:`WindowFeatures` to create, for example, 2 new window features by finding
+the mean and maximum value within a 45 minute windows of a pandas Series if we convert it
+to a pandas Dataframe using the method `to_frame()`:
 
 .. code:: python
 
-    lag_f = LagFeatures(periods=[1, 2, 3])
+    win_f = WindowFeatures(
+        window=["45min"],
+        functions=["mean", "max"],
+        freq="30min",
+    )
 
-    X_tr = lag_f.fit_transform(X['ambient_temp'].to_frame())
+    X_tr = win_f.fit_transform(X['ambient_temp'].to_frame())
 
     X_tr.head()
 
 .. code:: python
 
-                         ambient_temp  ambient_temp_lag_1  ambient_temp_lag_2  \
-    2020-05-15 12:00:00         31.31                 NaN                 NaN
-    2020-05-15 12:15:00         31.51               31.31                 NaN
-    2020-05-15 12:30:00         32.15               31.51               31.31
-    2020-05-15 12:45:00         32.39               32.15               31.51
-    2020-05-15 13:00:00         32.62               32.39               32.15
+                         ambient_temp  ambient_temp_window_45min_mean  \
+    2020-05-15 12:00:00         31.31                             NaN
+    2020-05-15 12:15:00         31.51                             NaN
+    2020-05-15 12:30:00         32.15                       31.310000
+    2020-05-15 12:45:00         32.39                       31.410000
+    2020-05-15 13:00:00         32.62                       31.656667
 
-                         ambient_temp_lag_3
-    2020-05-15 12:00:00                 NaN
-    2020-05-15 12:15:00                 NaN
-    2020-05-15 12:30:00                 NaN
-    2020-05-15 12:45:00               31.31
-    2020-05-15 13:00:00               31.51
+                         ambient_temp_window_45min_max
+    2020-05-15 12:00:00                            NaN
+    2020-05-15 12:15:00                            NaN
+    2020-05-15 12:30:00                          31.31
+    2020-05-15 12:45:00                          31.51
+    2020-05-15 13:00:00                          32.15
+
 
 And if we do not want the original values of time series in the returned dataframe, we
 just need to remember to drop the original series after the transformation:
 
 .. code:: python
 
-    lag_f = LagFeatures(periods=[1, 2, 3], drop_original=True)
+    win_f = WindowFeatures(
+        window=["45min"],
+        functions=["mean", "max"],
+        freq="30min",
+        drop_original=True,
+    )
 
-    X_tr = lag_f.fit_transform(X['ambient_temp'].to_frame())
+    X_tr = win_f.fit_transform(X['ambient_temp'].to_frame())
 
     X_tr.head()
 
 .. code:: python
 
-                         ambient_temp_lag_1  ambient_temp_lag_2  \
-    2020-05-15 12:00:00                 NaN                 NaN
-    2020-05-15 12:15:00               31.31                 NaN
-    2020-05-15 12:30:00               31.51               31.31
-    2020-05-15 12:45:00               32.15               31.51
-    2020-05-15 13:00:00               32.39               32.15
+                         ambient_temp_window_45min_mean  \
+    2020-05-15 12:00:00                             NaN
+    2020-05-15 12:15:00                             NaN
+    2020-05-15 12:30:00                       31.310000
+    2020-05-15 12:45:00                       31.410000
+    2020-05-15 13:00:00                       31.656667
 
-                         ambient_temp_lag_3
-    2020-05-15 12:00:00                 NaN
-    2020-05-15 12:15:00                 NaN
-    2020-05-15 12:30:00                 NaN
-    2020-05-15 12:45:00               31.31
-    2020-05-15 13:00:00               31.51
+                         ambient_temp_window_45min_max
+    2020-05-15 12:00:00                            NaN
+    2020-05-15 12:15:00                            NaN
+    2020-05-15 12:30:00                          31.31
+    2020-05-15 12:45:00                          31.51
+    2020-05-15 13:00:00                          32.15
+
 
 
 Getting the name of the variables
@@ -339,11 +400,11 @@ all the features in the output dataframe.
 
 .. code:: python
 
-    lag_f = LagFeatures(periods=[1, 2])
+    win_f = WindowFeatures()
 
-    lag_f.fit(X)
+    win_f.fit(X)
 
-    lag_f.get_feature_names_out()
+    win_f.get_feature_names_out()
 
 .. code:: python
 
@@ -351,21 +412,17 @@ all the features in the output dataframe.
      'module_temp',
      'irradiation',
      'color',
-     'ambient_temp_lag_1',
-     'module_temp_lag_1',
-     'irradiation_lag_1',
-     'ambient_temp_lag_2',
-     'module_temp_lag_2',
-     'irradiation_lag_2']
+     'ambient_temp_window_3_mean',
+     'module_temp_window_3_mean',
+     'irradiation_window_3_mean']
 
 Alternatively, we can obtain the names of the lag features created from one or more
 input features as follows:
 
 .. code:: python
 
-    lag_f.get_feature_names_out(input_features=["irradiation"])
+    win_f.get_feature_names_out(input_features=["irradiation"])
 
 .. code:: python
 
-    ['irradiation_lag_1', 'irradiation_lag_2']
-
+    ['irradiation_window_3_mean']
