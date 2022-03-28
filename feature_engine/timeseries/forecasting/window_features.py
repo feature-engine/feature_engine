@@ -13,7 +13,9 @@ from feature_engine.docstrings import (
     _n_features_in_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine.timeseries.forecasting.base_forecast_transformers import BaseForecastTransformer
+from feature_engine.timeseries.forecasting.base_forecast_transformers import (
+    BaseForecastTransformer,
+)
 
 
 @Substitution(
@@ -142,9 +144,7 @@ class WindowFeatures(BaseForecastTransformer):
                 f"Got {functions} instead."
             )
         if isinstance(functions, list) and len(functions) != len(set(functions)):
-            raise ValueError(
-                f"There are duplicated functions in the list: {functions}"
-            )
+            raise ValueError(f"There are duplicated functions in the list: {functions}")
 
         if not isinstance(periods, int) or periods < 1:
             raise ValueError(
@@ -235,9 +235,8 @@ class WindowFeatures(BaseForecastTransformer):
                 )
             if any([f for f in input_features if f not in self.variables_]):
                 raise ValueError(
-                    "Some features in input_features were not used as input for the "
-                    "window features. You can only get the names of the window features "
-                    "with this function."
+                    "Some of the indicated features were not used to create window "
+                    "features."
                 )
             # create just indicated window features
             input_features_ = input_features

@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
-from pandas.testing import assert_frame_equal
-
 import pytest
+from pandas.testing import assert_frame_equal
 
 from feature_engine.timeseries.forecasting import WindowFeatures
 
@@ -37,7 +36,9 @@ def test_error_when_non_permitted_param_periods(_periods):
         WindowFeatures(periods=_periods)
 
 
-@pytest.mark.parametrize("_functions", ["mean", "std", ["sum", "mean"], ["sum", "mean", "count"]])
+@pytest.mark.parametrize(
+    "_functions", ["mean", "std", ["sum", "mean"], ["sum", "mean", "count"]]
+)
 def test_permitted_param_functions(_functions):
     transformer = WindowFeatures(functions=_functions)
     assert transformer.functions == _functions
@@ -393,9 +394,19 @@ def test_multiple_windows(df_time):
 
     # Expected
     X = df_time.copy()
-    tmp = X[["ambient_temp", "irradiation"]].rolling(2).agg(["sum", "mean"]).shift(freq="30min")
+    tmp = (
+        X[["ambient_temp", "irradiation"]]
+        .rolling(2)
+        .agg(["sum", "mean"])
+        .shift(freq="30min")
+    )
     X_tr = X.merge(tmp, left_index=True, right_index=True, how="left")
-    tmp = X[["ambient_temp", "irradiation"]].rolling(3).agg(["sum", "mean"]).shift(freq="30min")
+    tmp = (
+        X[["ambient_temp", "irradiation"]]
+        .rolling(3)
+        .agg(["sum", "mean"])
+        .shift(freq="30min")
+    )
     X_tr = X_tr.merge(tmp, left_index=True, right_index=True, how="left")
     X_tr.columns = transformer.get_feature_names_out()
 
