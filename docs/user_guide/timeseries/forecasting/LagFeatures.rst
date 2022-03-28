@@ -37,7 +37,7 @@ Examples
 --------
 
 Let's create a toy dataset to demonstrate the functionality of :class:`LagFeatures`.
-The dataframe contains 3 numerical variables a categorical variable and a datetime
+The dataframe contains 3 numerical variables, a categorical variable, and a datetime
 index.
 
 .. code:: python

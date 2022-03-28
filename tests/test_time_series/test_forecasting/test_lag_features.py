@@ -11,10 +11,17 @@ def test_permitted_param_periods(_periods):
     assert transformer.periods == _periods
 
 
-@pytest.mark.parametrize("_periods", [-1, 0, None, [-1, 2, 3], [0.1, 1], 0.5, [0, 1]])
+@pytest.mark.parametrize(
+    "_periods", [-1, 0, None, [-1, 2, 3], [0.1, 1], 0.5, [0, 1], [1, 1, 2]]
+)
 def test_error_when_non_permitted_param_periods(_periods):
     with pytest.raises(ValueError):
         LagFeatures(periods=_periods)
+
+
+def test_error_when_non_permitted_param_freq():
+    with pytest.raises(ValueError):
+        LagFeatures(freq=["2h", "2h", "3h"])
 
 
 @pytest.mark.parametrize("_sort_index", [True, False])
@@ -239,39 +246,3 @@ def test_sort_index(df_time):
     A = Xs[transformer.variables_].iloc[0:4].values
     B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
     assert (A == B).all()
-
-
-def test_error_when_not_unique_values_in_index(df_time):
-    X = df_time.copy()
-
-    # introduce dupes in index
-    tmp = X.head(2).copy()
-    tmp.iloc[0] = [1, 1, 1, "blue"]
-    Xd = pd.concat([X, tmp], axis=0)
-
-    transformer = LagFeatures()
-
-    with pytest.raises(NotImplementedError):
-        transformer.fit(Xd)
-
-    transformer.fit(X)
-    with pytest.raises(NotImplementedError):
-        transformer.transform(Xd)
-
-
-def test_error_when_nan_in_index(df_time):
-    X = df_time.copy()
-
-    # Introduce NaN in index.
-    tmp = X.head(1).copy()
-    tmp.index = [np.nan]
-    Xd = pd.concat([X, tmp], axis=0)
-
-    transformer = LagFeatures()
-
-    with pytest.raises(NotImplementedError):
-        transformer.fit(Xd)
-
-    transformer.fit(X)
-    with pytest.raises(NotImplementedError):
-        transformer.transform(Xd)

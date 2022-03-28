@@ -126,6 +126,7 @@ transforming parameters from the data and then transform it.
  
 ### Time Series
  * LagFeatures
+ * WindowFeatures
  
 ### Preprocessing
  * MatchVariables
