@@ -16,7 +16,7 @@ from feature_engine.docstrings import (
     _n_features_in_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine.timeseries.forecasting.base_forecast import BaseForecastTransformer
+from feature_engine.timeseries.forecasting.base_forecast_transformers import BaseForecastTransformer
 
 
 @Substitution(
