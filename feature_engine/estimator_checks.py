@@ -179,6 +179,7 @@ def check_feature_names_in(estimator):
     estimator = clone(estimator)
     estimator.fit(X, y)
     assert estimator.feature_names_in_ == varnames
+    assert estimator.n_features_in_ == len(varnames)
 
 
 def check_get_feature_names_out(estimator):
@@ -196,6 +197,7 @@ def check_get_feature_names_out(estimator):
         "OneHotEncoder",
         "AddMissingIndicator",
         "LagFeatures",
+        "WindowFeatures",
         "MathFeatures",
         "CyclicalFeatures",
         "RelativeFeatures",
