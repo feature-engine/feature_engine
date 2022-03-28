@@ -132,21 +132,21 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
 
 
 def _check_X_y_pd_np_mismatch(
-    X: Union[pd.DataFrame, pd.Series, np.ndarray],
-    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    X: Union[pd.DataFrame, np.ndarray],
+    y: Union[pd.Series, np.ndarray],
 ):
     """
     Handles case where X is an ndarray and y is a Series,
     or when X is a DataFrame but y is in an ndarray.
     In both cases, the non-pandas object will be converted
-    to a pandas object, and take on :wqthe index of the other (pandas) object.
+    to a pandas object, and take on the index of the other (pandas) object.
     If both are ndarray objects, they are returned unchanged.
     If both are not pandas objects, method returns objects unchanged.
 
     Parameters
     ----------
-    X: Pandas DataFrame, Series, or numpy ndarray
-    y: Pandas DataFrame, Series, or numpy ndarray
+    X: Pandas DataFrame or numpy ndarray
+    y: Pandas Series, or numpy ndarray
 
     Returns
     -------
@@ -158,7 +158,7 @@ def _check_X_y_pd_np_mismatch(
         # to correctly convert X to DataFrame
         X = _is_dataframe(X)
         X.index = y.index
-    elif isinstance(X, (pd.DataFrame, pd.Series)) and isinstance(y, np.ndarray):
+    elif isinstance(X, pd.DataFrame) and isinstance(y, np.ndarray):
         y = pd.Series(y)
         y.index = X.index
 
