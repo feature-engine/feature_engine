@@ -16,7 +16,7 @@ from feature_engine.docstrings import (
     _n_features_in_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine.timeseries.forecasting.base_forecast import BaseForecast
+from feature_engine.timeseries.forecasting.base_forecast import BaseForecastTransformer
 
 
 @Substitution(
@@ -28,7 +28,7 @@ from feature_engine.timeseries.forecasting.base_forecast import BaseForecast
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class WindowFeatures(BaseForecast):
+class WindowFeatures(BaseForecastTransformer):
     """
     WindowFeatures adds new features to a dataframe based on window operations. Window
     operations are operations that perform an aggregation over a sliding partition of

@@ -1,6 +1,3 @@
-# Authors: Morgan Sell <morganpsell@gmail.com>
-# License: BSD 3 clause
-
 from typing import List, Optional, Union
 
 import pandas as pd
@@ -35,7 +32,7 @@ from feature_engine.variable_manipulation import (
     fit=_fit_not_learn_docstring,
     n_features_in_=_n_features_in_docstring,
 )
-class BaseForecast(BaseEstimator, TransformerMixin):
+class BaseForecastTransformer(BaseEstimator, TransformerMixin):
     """
     Shared methods across time-series forecasting transformers.
 
@@ -118,7 +115,7 @@ class BaseForecast(BaseEstimator, TransformerMixin):
 
         return self
 
-    def _check_trainset_features(self, X: pd.DataFrame):
+    def _get_feature_names_in(self, X: pd.DataFrame):
         """
         Finds the number and name of the features in the training set.
 
@@ -159,7 +156,7 @@ class BaseForecast(BaseEstimator, TransformerMixin):
         if self.missing_values == "raise":
             self._check_na_and_inf(X)
 
-        self._check_trainset_features(X)
+        self._get_feature_names_in(X)
 
         return self
 

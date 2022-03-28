@@ -16,7 +16,7 @@ from feature_engine.docstrings import (
     _n_features_in_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine.timeseries.forecasting.base_forecast import BaseForecast
+from feature_engine.timeseries.forecasting.base_forecast import BaseForecastTransformer
 
 
 @Substitution(
@@ -28,7 +28,7 @@ from feature_engine.timeseries.forecasting.base_forecast import BaseForecast
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class LagFeatures(BaseForecast):
+class LagFeatures(BaseForecastTransformer):
     """
     LagFeatures adds lag features to the dataframe. A lag feature is a feature with
     information about a prior time step.
