@@ -131,46 +131,35 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
         )
 
 
-def _check_for_X_y_index_mismatch(
+def _check_X_y_pd_np_mismatch(
     X: Union[pd.DataFrame, pd.Series, np.ndarray],
     y: Union[pd.DataFrame, pd.Series, np.ndarray],
 ):
     """
-    Handles the following case:
-    1) X and y came from a DataFrame whose index was not the standard contiguous 0-n
-    2) Earlier on, X was affected by an sklearn transform, turning
-    it into an array and losing its different index
-    3) X enters a feature-engine transformer and becomes a
-    DataFrame again via _is_dataframe()
-    4) X and y now have different indexes
-    This function checks for this case; if it is met, it will return
-    a copy of X with its index replaced with the
-    correct index from y. It will not make any changes if either X or
-    y is not a pandas object, or of course if there is no index mismatch.
-    This case was first detected in issue #376.
+    Handles case where X is an ndarray and y is a Series,
+    or when X is a DataFrame but y is in an ndarray.
+    In both cases, the non-pandas object will be converted
+    to a pandas object, and take on :wqthe index of the other (pandas) object.
+    If both are ndarray objects, they are returned unchanged.
+    If both are not pandas objects, method returns objects unchanged.
 
     Parameters
     ----------
     X: Pandas DataFrame, Series, or numpy ndarray
-        In all likelihood will be DataFrame, due to this method usually
-        being called with the output of _is_dataframe().
-        Will not make any changes if X is not a DataFrame or Series.
     y: Pandas DataFrame, Series, or numpy ndarray
-        In all likelihood will be a Series.
-        Will not make any changes if X is not a DataFrame or Series.
 
     Returns
     -------
-    X: same type as parameter X.
-        If the mismatch conditions described above have been met, returns a copy of
-        the original parameter, with index set to y's index.
-        Else, returns original parameter value unaffected.
+    X: changed as per description above
+    y: changed as per description above
     """
-    is_pd_X_and_y: bool = all(
-        [(type(i) == pd.DataFrame or type(i) == pd.Series) for i in (X, y)]
-    )
-    if is_pd_X_and_y and any(X.index != y.index):
-        X = X.copy()
+    if isinstance(X, np.ndarray) and isinstance(y, (pd.DataFrame, pd.Series)):
+        # already know X is not a DataFrame, use machinery in _is_dataframe()
+        # to correctly convert X to DataFrame
+        X = _is_dataframe(X)
         X.index = y.index
+    elif isinstance(X, (pd.DataFrame, pd.Series)) and isinstance(y, np.ndarray):
+        y = pd.Series(y)
+        y.index = X.index
 
-    return X
+    return X, y

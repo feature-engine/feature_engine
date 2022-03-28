@@ -57,45 +57,48 @@ def test_all_transformers(Estimator):
     # Encoders that encode X as a function of y; this is what
     # breaks down when X becomes an array and indexes don't
     # accidentally match in final concantenation
-
     # All test DataFrames have same data except DecisionTreeEncoder(),
     # which needs different y values.
-
     # Key to all: - "non-standard" index that is not the usual
     # contiguous range starting a t 0
-
     "encoder, df_test",
     [
-        (MeanEncoder(),
-         pd.DataFrame({
-             "x": ["a", "a", "b", "b", "c", "c"],
-             "y": [1, 0, 1, 0, 1, 0]
-         }, index=[101, 105, 42, 76, 88, 92])),
-
-        (WoEEncoder(),
-         pd.DataFrame({
-             "x": ["a", "a", "b", "b", "c", "c"],
-             "y": [1, 0, 1, 0, 1, 0]
-         }, index=[101, 105, 42, 76, 88, 92])),
-
-        (PRatioEncoder(),
-         pd.DataFrame({
-             "x": ["a", "a", "b", "b", "c", "c"],
-             "y": [1, 0, 1, 0, 1, 0]
-         }, index=[101, 105, 42, 76, 88, 92])),
-
-        (OrdinalEncoder(encoding_method="ordered"),
-         pd.DataFrame({
-             "x": ["a", "a", "b", "b", "c", "c"],
-             "y": [1, 0, 1, 0, 1, 0]
-         }, index=[101, 105, 42, 76, 88, 92])),
-
-        (DecisionTreeEncoder(),
-         pd.DataFrame({
-             "x": ["a", "a", "b", "b", "c", "c"],
-             "y": [21, 30, 21, 30, 51, 40]
-         }, index=[101, 105, 42, 76, 88, 92])),
-    ]
+        (
+            MeanEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+        (
+            WoEEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+        (
+            PRatioEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+        (
+            OrdinalEncoder(encoding_method="ordered"),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+        (
+            DecisionTreeEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [21, 30, 21, 30, 51, 40]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+    ],
 )
 def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test):
     """
@@ -119,45 +122,48 @@ def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test):
     # Encoders that encode X as a function of y; this is what
     # breaks down when y becomes an array and indexes don't
     # accidentally match in final concantenation
-
     # All test DataFrames have same data except DecisionTreeEncoder(),
     # which needs different y values.
-
     # Key to all: - "non-standard" index that is not the usual
     # contiguous range starting a t 0
-
     "encoder, df_test",
     [
-        (MeanEncoder(),
-         pd.DataFrame({
-             "x": ["a", "a", "b", "b", "c", "c"],
-             "y": [1, 0, 1, 0, 1, 0]
-         }, index=[101, 105, 42, 76, 88, 92])),
-
-        (WoEEncoder(),
-         pd.DataFrame({
-             "x": ["a", "a", "b", "b", "c", "c"],
-             "y": [1, 0, 1, 0, 1, 0]
-         }, index=[101, 105, 42, 76, 88, 92])),
-
-        (PRatioEncoder(),
-         pd.DataFrame({
-             "x": ["a", "a", "b", "b", "c", "c"],
-             "y": [1, 0, 1, 0, 1, 0]
-         }, index=[101, 105, 42, 76, 88, 92])),
-
-        (OrdinalEncoder(encoding_method="ordered"),
-         pd.DataFrame({
-             "x": ["a", "a", "b", "b", "c", "c"],
-             "y": [1, 0, 1, 0, 1, 0]
-         }, index=[101, 105, 42, 76, 88, 92])),
-
-        (DecisionTreeEncoder(),
-         pd.DataFrame({
-             "x": ["a", "a", "b", "b", "c", "c"],
-             "y": [21, 30, 21, 30, 51, 40]
-         }, index=[101, 105, 42, 76, 88, 92])),
-    ]
+        (
+            MeanEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+        (
+            WoEEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+        (
+            PRatioEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+        (
+            OrdinalEncoder(encoding_method="ordered"),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+        (
+            DecisionTreeEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [21, 30, 21, 30, 51, 40]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+    ],
 )
 def test_fix_index_mismatch_from_x_pandas_y_numpy(encoder, df_test):
     """
