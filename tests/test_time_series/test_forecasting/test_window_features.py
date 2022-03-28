@@ -35,14 +35,14 @@ def test_error_when_non_permitted_param_periods(_periods):
         WindowFeatures(periods=_periods)
 
 
-@pytest.mark.parametrize("_functions", [["sum", "mean"], ["sum", "mean", "count"]])
+@pytest.mark.parametrize("_functions", ["mean", "std", ["sum", "mean"], ["sum", "mean", "count"]])
 def test_permitted_param_functions(_functions):
     transformer = WindowFeatures(functions=_functions)
     assert transformer.functions == _functions
 
 
 @pytest.mark.parametrize(
-    "_functions", ["sum", 3.33, [1, "mean"], None, ["sum", "sum", "mean"]]
+    "_functions", [3.33, [1, "mean"], None, ["sum", "sum", "mean"]]
 )
 def test_error_when_non_permitted_param_functions(_functions):
     with pytest.raises(ValueError):
@@ -124,6 +124,36 @@ def test_get_feature_names_out(df_time):
         tr.get_feature_names_out(input_features=[input_features[0]])
         == output[0:2] + output[6:8]
     )
+
+    # case 4: 1 window, multiple variables, 1 function
+    tr = WindowFeatures(window=2, functions=["mean"])
+    tr.fit(df_time)
+
+    # expected
+    output = [
+        "ambient_temp_window_2_mean",
+        "module_temp_window_2_mean",
+        "irradiation_window_2_mean",
+    ]
+    assert tr.get_feature_names_out(input_features=None) == original_features + output
+    assert tr.get_feature_names_out(input_features=input_features) == output
+    assert tr.get_feature_names_out(input_features=input_features[0:2]) == output[0:2]
+    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [output[0]]
+
+    # case 4: When function is a string
+    tr = WindowFeatures(window=2, functions="mean")
+    tr.fit(df_time)
+
+    # expected
+    output = [
+        "ambient_temp_window_2_mean",
+        "module_temp_window_2_mean",
+        "irradiation_window_2_mean",
+    ]
+    assert tr.get_feature_names_out(input_features=None) == original_features + output
+    assert tr.get_feature_names_out(input_features=input_features) == output
+    assert tr.get_feature_names_out(input_features=input_features[0:2]) == output[0:2]
+    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [output[0]]
 
 
 def test_single_window_when_using_periods(df_time):

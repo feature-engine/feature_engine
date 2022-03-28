@@ -74,7 +74,7 @@ class WindowFeatures(BaseForecastTransformer):
         otherwise, the result is np.nan. See parameter `min_periods` in pandas
         `rolling()` documentation for more details.
 
-    functions: list of strings, default = ['mean']
+    functions: string or list of strings, default = 'mean'
         The functions to apply within the window. Valid functions can be found
         `here <https://pandas.pydata.org/docs/reference/window.html>`_.
 
@@ -123,7 +123,7 @@ class WindowFeatures(BaseForecastTransformer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         window: Union[str, int, Callable, List[int], List[str]] = 3,
         min_periods: int = None,
-        functions: List[str] = ["mean"],
+        functions: Union[str, List[str]] = "mean",
         periods: int = 1,
         freq: str = None,
         sort_index: bool = True,
@@ -134,13 +134,14 @@ class WindowFeatures(BaseForecastTransformer):
         if isinstance(window, list) and len(window) != len(set(window)):
             raise ValueError(f"There are duplicated windows in the list: {window}")
 
-        if not isinstance(functions, list) or not all(
+        if not isinstance(functions, (str, list)) or not all(
             isinstance(val, str) for val in functions
         ):
             raise ValueError(
-                f"functions must be a list of strings. Got {functions} instead."
+                f"functions must be a string or a list of strings. "
+                f"Got {functions} instead."
             )
-        if len(functions) != len(set(functions)):
+        if isinstance(functions, list) and len(functions) != len(set(functions)):
             raise ValueError(
                 f"There are duplicated functions in the list: {functions}"
             )
@@ -241,18 +242,23 @@ class WindowFeatures(BaseForecastTransformer):
             # create just indicated window features
             input_features_ = input_features
 
+        if not isinstance(self.functions, list):
+            functions_ = [self.functions]
+        else:
+            functions_ = self.functions
+
         if isinstance(self.window, list):
             feature_names = [
                 f"{feature}_window_{win}_{agg}"
                 for win in self.window
                 for feature in input_features_
-                for agg in self.functions
+                for agg in functions_
             ]
         else:
             feature_names = [
                 f"{feature}_window_{self.window}_{agg}"
                 for feature in input_features_
-                for agg in self.functions
+                for agg in functions_
             ]
 
         # return names of all variables if input_features is None
