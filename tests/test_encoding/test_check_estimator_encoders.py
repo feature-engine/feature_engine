@@ -64,6 +64,16 @@ def test_all_transformers(Estimator):
     "encoder, df_test, df_expected",
     [
         (
+            DecisionTreeEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [21, 30, 21, 30, 51, 40]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+            pd.DataFrame(
+                {"0": [25.5, 25.5, 25.5, 25.5, 45.5, 45.5]},
+            )
+        ),
+        (
             MeanEncoder(),
             pd.DataFrame(
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
@@ -74,13 +84,13 @@ def test_all_transformers(Estimator):
             )
         ),
         (
-            WoEEncoder(),
+            OrdinalEncoder(encoding_method="ordered"),
             pd.DataFrame(
-                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92],
+                {"x": ["a", "a", "a", "b", "b", "b", "c", "c", "c"], "y": [3, 3, 3, 2, 2, 2, 1, 1, 1]},
+                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1]
             ),
             pd.DataFrame(
-                {"0": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+                {"0": [2, 2, 2, 1, 1, 1, 0, 0, 0]}
             )
         ),
         (
@@ -94,23 +104,13 @@ def test_all_transformers(Estimator):
             )
         ),
         (
-            OrdinalEncoder(encoding_method="ordered"),
+            WoEEncoder(),
             pd.DataFrame(
-                {"x": ["a", "a", "a", "b", "b", "b", "c", "c", "c"], "y":[3, 3, 3, 2, 2, 2, 1, 1, 1]},
-                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1]
-            ),
-            pd.DataFrame(
-                {"0": [2, 2, 2, 1, 1, 1, 0, 0, 0]}
-            )
-        ),
-        (
-            DecisionTreeEncoder(),
-            pd.DataFrame(
-                {"x": ["a", "a", "b", "b", "c", "c"], "y": [21, 30, 21, 30, 51, 40]},
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
                 index=[101, 105, 42, 76, 88, 92],
             ),
             pd.DataFrame(
-                {"0": [25.5, 25.5, 25.5, 25.5, 45.5, 45.5]},
+                {"0": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
             )
         ),
     ],
@@ -144,6 +144,17 @@ def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test, df_expected)
     "encoder, df_test, df_expected",
     [
         (
+            DecisionTreeEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [21, 30, 21, 30, 51, 40]},
+                index=[101, 105, 42, 76, 88, 92]
+            ),
+            pd.DataFrame(
+                {"x": [25.5, 25.5, 25.5, 25.5, 45.5, 45.5]},
+                index=[101, 105, 42, 76, 88, 92]
+            )
+        ),
+        (
             MeanEncoder(),
             pd.DataFrame(
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
@@ -155,14 +166,14 @@ def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test, df_expected)
             )
         ),
         (
-            WoEEncoder(),
+            OrdinalEncoder(encoding_method="ordered"),
             pd.DataFrame(
-                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92]
+                {"x": ["a", "a", "a", "b", "b", "b", "c", "c", "c"], "y": [3, 3, 3, 2, 2, 2, 1, 1, 1]},
+                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1]
             ),
             pd.DataFrame(
-                {"x": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
-                index=[101, 105, 42, 76, 88, 92]
+                {"x": [2, 2, 2, 1, 1, 1, 0, 0, 0]},
+                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1]
             )
         ),
         (
@@ -177,24 +188,13 @@ def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test, df_expected)
             )
         ),
         (
-            OrdinalEncoder(encoding_method="ordered"),
+            WoEEncoder(),
             pd.DataFrame(
-                {"x": ["a", "a", "a", "b", "b", "b", "c", "c", "c"], "y":[3, 3, 3, 2, 2, 2, 1, 1, 1]},
-                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1]
-            ),
-            pd.DataFrame(
-                {"x": [2, 2, 2, 1, 1, 1, 0, 0, 0]},
-                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1]
-            )
-        ),
-        (
-            DecisionTreeEncoder(),
-            pd.DataFrame(
-                {"x": ["a", "a", "b", "b", "c", "c"], "y": [21, 30, 21, 30, 51, 40]},
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
                 index=[101, 105, 42, 76, 88, 92]
             ),
             pd.DataFrame(
-                {"x": [25.5, 25.5, 25.5, 25.5, 45.5, 45.5]},
+                {"x": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
                 index=[101, 105, 42, 76, 88, 92]
             )
         ),
