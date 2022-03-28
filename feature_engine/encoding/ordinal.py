@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
+from feature_engine.dataframe_checks import _check_X_y_pd_np_mismatch
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -146,6 +147,7 @@ class OrdinalEncoder(BaseCategorical):
             Otherwise, y needs to be passed when fitting the transformer.
         """
 
+        X, y = _check_X_y_pd_np_mismatch(X, y)
         X = self._check_fit_input_and_variables(X)
 
         # join target to predictor variables
