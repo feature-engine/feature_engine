@@ -217,3 +217,65 @@ def test_fix_index_mismatch_from_x_pandas_y_numpy(encoder, df_test, df_expected)
     y_2: np.ndarray = y.to_numpy()
     df_result: pd.DataFrame = encoder.fit_transform(X, y_2)
     assert df_result.equals(df_expected)
+
+
+@pytest.mark.parametrize(
+    "encoder, df_test",
+    [
+        (
+            DecisionTreeEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [21, 30, 21, 30, 51, 40]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+        (
+            MeanEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+        (
+            OrdinalEncoder(encoding_method="ordered"),
+            pd.DataFrame(
+                {
+                    "x": ["a", "a", "a", "b", "b", "b", "c", "c", "c"],
+                    "y": [3, 3, 3, 2, 2, 2, 1, 1, 1],
+                },
+                index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1],
+            ),
+        ),
+        (
+            PRatioEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+        (
+            WoEEncoder(),
+            pd.DataFrame(
+                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
+                index=[101, 105, 42, 76, 88, 92],
+            ),
+        ),
+    ],
+)
+def test_detect_index_mismatch_from_x_pandas_y_pandas(encoder, df_test):
+    """
+    Created 2022-03-27 to test fix to issue # 376
+    """
+
+    # Set up for standard pipeline/training etc.
+    X: pd.DataFrame = df_test[["x"]]
+    y: pd.Series = df_test["y"]
+
+    # Test issue fix where indexes of pandas objects become mismatched
+    # y remains Series with original DataFrame index
+    y = y.reset_index(drop=True)
+
+    e: Exception
+    with pytest.raises(Exception) as e:
+        encoder.fit_transform(X, y)
+    assert "mismatch" in e.value.args[0].lower()
