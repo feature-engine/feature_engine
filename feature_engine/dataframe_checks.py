@@ -139,7 +139,8 @@ def _check_X_y_pd_np_mismatch(
     Handles 3 cases
     1. X is an ndarray and y is a Series - converts X to DataFrame with y's index
     2. X is a DataFrame and y is an ndarray - converts y to Series with X's index
-    3. X is a DataFrame and y is a Series, but their indexes don't match - raises an error
+    3. X is a DataFrame and y is a Series, but their indexes don't match
+    - raises an error
 
     If both are ndarray objects, they are returned unchanged.
 
