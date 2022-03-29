@@ -8,6 +8,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
 from feature_engine.discretisation import DecisionTreeDiscretiser
+from feature_engine.dataframe_checks import _check_X_y_pd_np_mismatch
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -202,6 +203,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
             check_classification_targets(y)
 
         # check input dataframe
+        X, y = _check_X_y_pd_np_mismatch(X, y)
         X = self._check_fit_input_and_variables(X)
 
         if self.param_grid:
