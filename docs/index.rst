@@ -233,7 +233,7 @@ Donate
 ~~~~~~
 
 Support Feature-engine financially via
-`Github Sponsors <https://github.com/sponsors/feature-engine>`_ and help us further our
+`Github Sponsors <https://github.com/sponsors/feature-engine>`_ and help further our
 mission to democratize machine learning tools through open-source software.
 
 Open Source
