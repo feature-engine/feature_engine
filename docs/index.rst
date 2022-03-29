@@ -232,9 +232,9 @@ For more details on how to contribute check the contributing page. Click on the
 Donate
 ~~~~~~
 
-You can also donate to the author (Soledad Galli) via
-`Github Sponsors <https://github.com/sponsors/solegalli>`_ to help her continue to
-develop Feature-engine.
+Support Feature-engine financially via
+`Github Sponsors <https://github.com/sponsors/feature-engine>`_ and help us further our
+mission to democratize machine learning tools through open-source software.
 
 Open Source
 ~~~~~~~~~~~
