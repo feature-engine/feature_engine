@@ -229,11 +229,12 @@ let us know!
 For more details on how to contribute check the contributing page. Click on the
 :ref:`**Contribute** <contribute>` guide.
 
-Donate
-~~~~~~
+Sponsor us
+~~~~~~~~~~
 
-`Sponsor us <https://github.com/sponsors/solegalli>`_ to support us continue expanding
-Feature-engine.
+Support Feature-engine financially via
+`Github Sponsors <https://github.com/sponsors/feature-engine>`_ and help further our
+mission to democratize machine learning tools through open-source software.
 
 Open Source
 ~~~~~~~~~~~
@@ -259,3 +260,4 @@ Table of Contents
    contribute/index
    about/index
    whats_new/index
+   donate
