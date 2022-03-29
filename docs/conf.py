@@ -119,6 +119,16 @@ html_theme_options = {
             "url": "https://github.com/feature-engine/feature_engine",
             "icon": "fab fa-github-square",
         },
+        {
+            "name": "Blog",
+            "url": "https://trainindata.medium.com/",
+            "icon": "fab fa-blogger",
+        },
+        {
+            "name": "Sponsor",
+            "url": "https://github.com/sponsors/feature-engine",
+            "icon": "fas fa-hand-holding-heart",
+        },
     ],
     "favicons": [
         {
