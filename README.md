@@ -226,6 +226,6 @@ BSD 3-Clause
 
 ## Sponsor us
 
-[Sponsor us](https://github.com/sponsors/feature-engine) and support us further our 
+[Sponsor us](https://github.com/sponsors/feature-engine) and support further our 
 mission to democratize machine learning and programming tools through open-source 
 software.
