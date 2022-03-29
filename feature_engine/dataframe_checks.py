@@ -136,17 +136,17 @@ def _check_X_y_pd_np_mismatch(
     y: Union[pd.Series, np.ndarray],
 ):
     """
-    Handles case where X is an ndarray and y is a Series,
-    or when X is a DataFrame but y is in an ndarray.
-    In both cases, the non-pandas object will be converted
-    to a pandas object, and take on the index of the other (pandas) object.
+    Handles 3 cases
+    1. X is an ndarray and y is a Series - converts X to DataFrame with y's index
+    2. X is a DataFrame and y is an ndarray - converts y to Series with X's index
+    3. X is a DataFrame and y is a Series, but their indexes don't match - raises an error
+
     If both are ndarray objects, they are returned unchanged.
-    If both are not pandas objects, method returns objects unchanged.
 
     Parameters
     ----------
     X: Pandas DataFrame or numpy ndarray
-    y: Pandas Series, or numpy ndarray
+    y: Pandas Series or numpy ndarray
 
     Returns
     -------
@@ -161,5 +161,8 @@ def _check_X_y_pd_np_mismatch(
     elif isinstance(X, pd.DataFrame) and isinstance(y, np.ndarray):
         y = pd.Series(y)
         y.index = X.index
+    elif isinstance(X, pd.DataFrame) and isinstance(y, pd.Series):
+        if not all(y.index == X.index):
+            raise Exception("Index mismatch between DataFrame X and Series y")
 
     return X, y
