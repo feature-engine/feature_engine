@@ -229,8 +229,8 @@ let us know!
 For more details on how to contribute check the contributing page. Click on the
 :ref:`**Contribute** <contribute>` guide.
 
-Donate
-~~~~~~
+Sponsor us
+~~~~~~~~~~
 
 Support Feature-engine financially via
 `Github Sponsors <https://github.com/sponsors/feature-engine>`_ and help further our

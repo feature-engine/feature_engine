@@ -224,7 +224,7 @@ Now you can build the docs using: ``sphinx-build -b html docs build``
 
 BSD 3-Clause
 
-## Donate
+## Sponsor us
 
 [Sponsor us](https://github.com/sponsors/feature-engine) and support us further our 
 mission to democratize machine learning and programming tools through open-source 
