@@ -22,3 +22,7 @@ def test_check_input_matches_training_df(df_vartypes):
 def test_contains_na(df_na):
     with pytest.raises(ValueError):
         assert _check_contains_na(df_na, ["Name", "City"])
+    with pytest.raises(ValueError):
+        assert _check_contains_na(
+            df_na.reindex(index=[1, 2, 3, 4, 5, None]), variables=["index"]
+        )

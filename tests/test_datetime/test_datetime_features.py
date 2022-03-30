@@ -14,6 +14,7 @@ vars_dt = ["datetime_range", "date_obj1", "date_obj2", "time_obj"]
 vars_non_dt = ["Name", "Age"]
 feat_names_default = [FEATURES_SUFFIXES[feat] for feat in FEATURES_DEFAULT]
 dates_nan = pd.DataFrame({"dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan]})
+dates_idx_nan = pd.DataFrame(index=["Feb-2010", np.nan, "Jun-1922", np.nan])
 
 
 _false_input_params = [
@@ -100,6 +101,8 @@ def test_raises_error_when_df_has_nan():
     # dataset containing nans
     with pytest.raises(ValueError):
         DatetimeFeatures().fit(dates_nan)
+    with pytest.raises(ValueError):
+        DatetimeFeatures(variables="index").fit(dates_idx_nan)
 
 
 def test_attributes_upon_fitting(df_datetime):
