@@ -131,7 +131,7 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
         )
 
 
-def _check_X_y_pd_np_mismatch(
+def _check_X_y(
     X: Union[pd.DataFrame, np.ndarray],
     y: Union[pd.Series, np.ndarray],
 ):

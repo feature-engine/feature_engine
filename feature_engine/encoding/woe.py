@@ -6,7 +6,7 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
-from feature_engine.dataframe_checks import _check_X_y_pd_np_mismatch
+from feature_engine.dataframe_checks import _check_X_y
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -137,7 +137,7 @@ class WoEEncoder(BaseCategorical):
             Target, must be binary.
         """
 
-        X, y = _check_X_y_pd_np_mismatch(X, y)
+        X, y = _check_X_y(X, y)
         X = self._check_fit_input_and_variables(X)
 
         if not isinstance(y, pd.Series):
