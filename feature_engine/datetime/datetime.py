@@ -254,22 +254,34 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
 
-        # reorder variables to match train set
-        X = X[self.feature_names_in_]
-
-        # convert datetime variables
-        datetime_df = pd.concat(
-            [
+        if self.variables_ == ["index"]:
+            datetime_df = pd.DataFrame(
                 pd.to_datetime(
-                    X[variable],
+                    X.index,
                     dayfirst=self.dayfirst,
                     yearfirst=self.yearfirst,
                     utc=self.utc,
-                )
-                for variable in self.variables_
-            ],
-            axis=1,
-        )
+                ),
+                index=X.index,
+            )
+
+        else:
+            # reorder variables to match train set
+            X = X[self.feature_names_in_]
+
+            # convert datetime variables
+            datetime_df = pd.concat(
+                [
+                    pd.to_datetime(
+                        X[variable],
+                        dayfirst=self.dayfirst,
+                        yearfirst=self.yearfirst,
+                        utc=self.utc,
+                    )
+                    for variable in self.variables_
+                ],
+                axis=1,
+            )
 
         non_dt_columns = datetime_df.columns[~datetime_df.apply(is_datetime)].tolist()
         if non_dt_columns:
@@ -280,14 +292,21 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
             )
 
         # create new features
-        for var in self.variables_:
+        if self.variables_ == ["index"]:
             for feat in self.features_to_extract_:
-                X[str(var) + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[feat](
-                    datetime_df[var]
+                X["index" + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[feat](
+                    datetime_df[0]
                 )
 
-        if self.drop_original:
-            X.drop(self.variables_, axis=1, inplace=True)
+        else:
+            for var in self.variables_:
+                for feat in self.features_to_extract_:
+                    X[str(var) + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[feat](
+                        datetime_df[var]
+                    )
+
+            if self.drop_original:
+                X.drop(self.variables_, axis=1, inplace=True)
 
         return X
 

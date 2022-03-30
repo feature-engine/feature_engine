@@ -14,8 +14,13 @@ vars_dt = ["datetime_range", "date_obj1", "date_obj2", "time_obj"]
 vars_non_dt = ["Name", "Age"]
 feat_names_default = [FEATURES_SUFFIXES[feat] for feat in FEATURES_DEFAULT]
 dates_nan = pd.DataFrame({"dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan]})
-dates_idx_nan = pd.DataFrame(index=["Feb-2010", np.nan, "Jun-1922", np.nan])
-
+dates_idx_nan = pd.DataFrame(
+    [1, 2, 3, 4], index=["Feb-2010", np.nan, "Jun-1922", np.nan]
+)
+dates_idx_dt = pd.DataFrame(
+    [4, 3, 2, 1],
+    index=pd.date_range("2003-02-27", periods=4, freq="D"),
+)
 
 _false_input_params = [
     (["not_supported"], 3.519, "wrong_option"),
@@ -92,6 +97,8 @@ def test_raises_error_when_variables_not_datetime(df_datetime):
         DatetimeFeatures(variables=["Age"]).fit(df_datetime)
     with pytest.raises(TypeError):
         DatetimeFeatures(variables=["Name", "Age", "date_obj1"]).fit(df_datetime)
+    with pytest.raises(TypeError):
+        DatetimeFeatures(variables="index").fit(df_datetime)
     # passing a df that contains no datetime variables
     with pytest.raises(ValueError):
         DatetimeFeatures().fit(df_datetime[["Name", "Age"]])
@@ -219,6 +226,25 @@ def test_extract_datetime_features_from_specified_variables(
                 for feat in feat_names_default
             ]
         ],
+    )
+
+    # datetime variable is index
+    X = DatetimeFeatures(
+        variables="index", features_to_extract=["month", "day_of_month"]
+    ).fit_transform(dates_idx_dt)
+    pd.testing.assert_frame_equal(
+        X,
+        pd.concat(
+            [
+                dates_idx_dt,
+                pd.DataFrame(
+                    [[2, 27], [2, 28], [3, 1], [3, 2]],
+                    index=dates_idx_dt.index,
+                    columns=["index_month", "index_day_of_month"],
+                ),
+            ],
+            axis=1,
+        ),
     )
 
 
