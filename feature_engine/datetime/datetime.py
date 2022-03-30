@@ -77,6 +77,8 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         The list of variables to extract date and time features from.
         If None, the transformer will find and select all datetime variables,
         including variables of type object that can be converted to datetime.
+        If "index", the transformer will extract datetime features from the
+        index of the dataframe.
 
     features_to_extract: list, default=None
         The list of date features to extract. If None, the following features will be
