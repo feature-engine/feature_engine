@@ -211,7 +211,14 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
         # check if datetime variables contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
+            if self.variables_ == ["index"]:
+                if X.index.isnull().any():
+                    raise ValueError(
+                        "Some of the variables to transform contain NaN. Check and "
+                        "remove those before using this transformer."
+                    )
+            else:
+                _check_contains_na(X, self.variables_)
 
         if self.features_to_extract is None:
             self.features_to_extract_ = FEATURES_DEFAULT
@@ -254,7 +261,15 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
+            if self.variables_ == ["index"]:
+                if X.index.isnull().any():
+                    raise ValueError(
+                        "Some of the variables to transform contain NaN. Check and "
+                        "remove those before using this transformer."
+                    )
+
+            else:
+                _check_contains_na(X, self.variables_)
 
         if self.variables_ == ["index"]:
             datetime_df = pd.DataFrame(

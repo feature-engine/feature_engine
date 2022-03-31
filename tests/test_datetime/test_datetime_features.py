@@ -109,6 +109,8 @@ def test_raises_error_when_df_has_nan():
     # dataset containing nans
     with pytest.raises(ValueError):
         DatetimeFeatures().fit(dates_nan)
+    with pytest.raises(ValueError):
+        DatetimeFeatures(variables="index").fit(dates_idx_nan)
 
 
 def test_attributes_upon_fitting(df_datetime):
@@ -157,7 +159,11 @@ def test_raises_error_when_nan_in_transform_df(df_datetime):
     transformer.fit(df_datetime)
     # dataset containing nans
     with pytest.raises(ValueError):
-        DatetimeFeatures().transform(dates_nan)
+        transformer.transform(dates_nan)
+    transformer = DatetimeFeatures(variables="index")
+    transformer.fit(dates_idx_dt)
+    with pytest.raises(ValueError):
+        transformer.transform(dates_idx_nan)
 
 
 def test_raises_non_fitted_error(df_datetime):
@@ -402,6 +408,22 @@ def test_extract_features_from_variables_containing_nans():
     pd.testing.assert_frame_equal(
         X,
         pd.DataFrame({"dates_na_year": [2010, np.nan, 1922, np.nan]}),
+    )
+    # dt variable is index
+    X = DatetimeFeatures(
+        variables="index", features_to_extract=["month"], missing_values="ignore"
+    ).fit_transform(dates_idx_nan)
+    pd.testing.assert_frame_equal(
+        X,
+        pd.concat(
+            [
+                dates_idx_nan,
+                pd.DataFrame(
+                    {"index_month": [2, np.nan, 6, np.nan]}, index=dates_idx_nan.index
+                ),
+            ],
+            axis=1,
+        ),
     )
 
 
