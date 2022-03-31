@@ -22,6 +22,7 @@ dates_idx_dt = pd.DataFrame(
     index=pd.date_range("2003-02-27", periods=4, freq="D"),
 )
 
+
 _false_input_params = [
     (["not_supported"], 3.519, "wrong_option"),
     (["year", 1874], [1, -1.09, "var3"], 1),
@@ -108,8 +109,6 @@ def test_raises_error_when_df_has_nan():
     # dataset containing nans
     with pytest.raises(ValueError):
         DatetimeFeatures().fit(dates_nan)
-    with pytest.raises(ValueError):
-        DatetimeFeatures(variables="index").fit(dates_idx_nan)
 
 
 def test_attributes_upon_fitting(df_datetime):

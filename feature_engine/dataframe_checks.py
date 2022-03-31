@@ -100,11 +100,8 @@ def _check_contains_na(X: pd.DataFrame, variables: List[Union[str, int]]) -> Non
     ValueError
         If the variable(s) contain null values
     """
-    if (
-        variables == ["index"]
-        and X.index.isnull().any()
-        or (variables != ["index"] and X[variables].isnull().values.any())
-    ):
+
+    if X[variables].isnull().values.any():
         raise ValueError(
             "Some of the variables to transform contain NaN. Check and "
             "remove those before using this transformer."
