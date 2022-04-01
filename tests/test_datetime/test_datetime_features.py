@@ -245,7 +245,7 @@ def test_extract_datetime_features_from_specified_variables(
                 pd.DataFrame(
                     [[2, 27], [2, 28], [3, 1], [3, 2]],
                     index=dates_idx_dt.index,
-                    columns=["index_month", "index_day_of_month"],
+                    columns=["month", "day_of_month"],
                 ),
             ],
             axis=1,
@@ -419,7 +419,7 @@ def test_extract_features_from_variables_containing_nans():
             [
                 dates_idx_nan,
                 pd.DataFrame(
-                    {"index_month": [2, np.nan, 6, np.nan]}, index=dates_idx_nan.index
+                    {"month": [2, np.nan, 6, np.nan]}, index=dates_idx_nan.index
                 ),
             ],
             axis=1,

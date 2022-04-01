@@ -4,6 +4,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
+from pandas.api.types import is_numeric_dtype as is_numeric
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -28,6 +29,7 @@ from feature_engine.docstrings import (
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_datetime_variables,
+    _is_categorical_and_is_datetime,
 )
 
 
@@ -206,18 +208,32 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         # check input dataframe
         X = _is_dataframe(X)
 
-        # find or check for datetime variables
-        self.variables_ = _find_or_check_datetime_variables(X, self.variables)
+        # special case index
+        if self.variables == "index":
 
-        # check if datetime variables contains na
-        if self.missing_values == "raise":
-            if self.variables_ == ["index"]:
+            if not (
+                is_datetime(X.index)
+                or (
+                    not is_numeric(X.index) and _is_categorical_and_is_datetime(X.index)
+                )
+            ):
+                raise TypeError("Index is not datetime.")
+
+            if self.missing_values == "raise":
                 if X.index.isnull().any():
                     raise ValueError(
-                        "Some of the variables to transform contain NaN. Check and "
+                        "Index contain NaN. Check and "
                         "remove those before using this transformer."
                     )
-            else:
+
+            self.variables_ = ["index"]
+
+        else:
+            # find or check for datetime variables
+            self.variables_ = _find_or_check_datetime_variables(X, self.variables)
+
+            # check if datetime variables contains na
+            if self.missing_values == "raise":
                 _check_contains_na(X, self.variables_)
 
         if self.features_to_extract is None:
@@ -259,46 +275,49 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_input_matches_training_df(X, self.n_features_in_)
 
-        # check if dataset contains na
-        if self.missing_values == "raise":
-            if self.variables_ == ["index"]:
+        # special case index
+        if self.variables_ == ["index"]:
+            if self.missing_values == "raise":
                 if X.index.isnull().any():
                     raise ValueError(
-                        "Some of the variables to transform contain NaN. Check and "
+                        "Index contain NaN. Check and "
                         "remove those before using this transformer."
                     )
 
-            else:
-                _check_contains_na(X, self.variables_)
+            for feat in self.features_to_extract_:
+                X[FEATURES_SUFFIXES[feat][1:]] = FEATURES_FUNCTIONS[feat](
+                    pd.Series(
+                        pd.to_datetime(
+                            X.index,
+                            dayfirst=self.dayfirst,
+                            yearfirst=self.yearfirst,
+                            utc=self.utc,
+                        ),
+                        index=X.index,
+                    )
+                )
 
-        if self.variables_ == ["index"]:
-            datetime_df = pd.DataFrame(
+            return X
+
+        # check if dataset contains na
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_)
+
+        # reorder variables to match train set
+        X = X[self.feature_names_in_]
+        # convert datetime variables
+        datetime_df = pd.concat(
+            [
                 pd.to_datetime(
-                    X.index,
+                    X[variable],
                     dayfirst=self.dayfirst,
                     yearfirst=self.yearfirst,
                     utc=self.utc,
-                ),
-                index=X.index,
-            )
-
-        else:
-            # reorder variables to match train set
-            X = X[self.feature_names_in_]
-
-            # convert datetime variables
-            datetime_df = pd.concat(
-                [
-                    pd.to_datetime(
-                        X[variable],
-                        dayfirst=self.dayfirst,
-                        yearfirst=self.yearfirst,
-                        utc=self.utc,
-                    )
-                    for variable in self.variables_
-                ],
-                axis=1,
-            )
+                )
+                for variable in self.variables_
+            ],
+            axis=1,
+        )
 
         non_dt_columns = datetime_df.columns[~datetime_df.apply(is_datetime)].tolist()
         if non_dt_columns:
@@ -309,21 +328,13 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
             )
 
         # create new features
-        if self.variables_ == ["index"]:
+        for var in self.variables_:
             for feat in self.features_to_extract_:
-                X["index" + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[feat](
-                    datetime_df[0]
+                X[str(var) + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[feat](
+                    datetime_df[var]
                 )
-
-        else:
-            for var in self.variables_:
-                for feat in self.features_to_extract_:
-                    X[str(var) + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[feat](
-                        datetime_df[var]
-                    )
-
-            if self.drop_original:
-                X.drop(self.variables_, axis=1, inplace=True)
+        if self.drop_original:
+            X.drop(self.variables_, axis=1, inplace=True)
 
         return X
 
