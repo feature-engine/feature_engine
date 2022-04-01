@@ -196,12 +196,6 @@ def test_find_or_check_datetime_variables(df_datetime):
         assert _find_or_check_datetime_variables(df_datetime, variables=vars_nondt)
     with pytest.raises(TypeError):
         assert _find_or_check_datetime_variables(df_datetime, variables=vars_mix)
-    with pytest.raises(TypeError):
-        assert _find_or_check_datetime_variables(df_datetime, variables="index")
-    with pytest.raises(TypeError):
-        assert _find_or_check_datetime_variables(
-            df_datetime.reindex(index=[1, 2.5, 98, -3.2, 0, 2.88723]), variables="index"
-        )
 
     # error when user enters empty list
     with pytest.raises(ValueError):
@@ -220,26 +214,6 @@ def test_find_or_check_datetime_variables(df_datetime):
             variables=None,
         )
         == ["date_obj1", "datetime_range", "date_obj2"]
-    )
-
-    # when variables="index"
-    assert (
-        _find_or_check_datetime_variables(
-            df_datetime.reindex(index=pd.date_range("2003-02-20", periods=6, freq="D")),
-            variables="index",
-        )
-        == ["index"]
-    )
-    assert (
-        _find_or_check_datetime_variables(
-            df_datetime.reindex(
-                index=pd.date_range("2003-02-20", periods=6, freq="D").astype(
-                    "category"
-                )
-            ),
-            variables="index",
-        )
-        == ["index"]
     )
 
     # when variables are specified

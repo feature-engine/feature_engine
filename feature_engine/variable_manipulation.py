@@ -221,23 +221,14 @@ def _find_or_check_datetime_variables(
             raise ValueError("No datetime variables found in this dataframe.")
 
     elif isinstance(variables, (str, int)):
-        if variables == "index":
-            if is_datetime(X.index) or (
-                not is_numeric(X.index) and _is_categorical_and_is_datetime(X.index)
-            ):
-                variables = [variables]
 
-            else:
-                raise TypeError("Index is not datetime.")
-
+        if is_datetime(X[variables]) or (
+            not is_numeric(X[variables])
+            and _is_categorical_and_is_datetime(X[variables])
+        ):
+            variables = [variables]
         else:
-            if is_datetime(X[variables]) or (
-                not is_numeric(X[variables])
-                and _is_categorical_and_is_datetime(X[variables])
-            ):
-                variables = [variables]
-            else:
-                raise TypeError("The variable entered is not datetime.")
+            raise TypeError("The variable entered is not datetime.")
 
     else:
         if len(variables) == 0:
