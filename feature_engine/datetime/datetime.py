@@ -226,7 +226,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
                         "remove those before using this transformer."
                     )
 
-            self.variables_ = ["index"]
+            self.variables_: List[Union[str, int]] = ["index"]
 
         else:
             # find or check for datetime variables
