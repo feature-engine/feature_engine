@@ -80,9 +80,6 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
             list of categorical variables
         """
 
-        # check input dataframe
-        X = _is_dataframe(X)
-
         if not self.ignore_format:
             # find categorical variables or check variables entered by user are object
             self.variables_: List[
@@ -101,7 +98,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # save train set shape
         self.n_features_in_ = X.shape[1]
 
-        return X
+        return self
 
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """
