@@ -133,7 +133,7 @@ class MeanEncoder(BaseCategorical):
         """
 
         X, y = _check_X_y(X, y)
-        X = self._check_fit_input_and_variables(X)
+        self._check_fit_input_and_variables(X)
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)

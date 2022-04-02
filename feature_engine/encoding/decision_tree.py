@@ -204,7 +204,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
         # check input dataframe
         X, y = _check_X_y(X, y)
-        X = self._check_fit_input_and_variables(X)
+        self._check_fit_input_and_variables(X)
 
         if self.param_grid:
             param_grid = self.param_grid
