@@ -5,7 +5,7 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import _check_X_y
+from feature_engine.dataframe_checks import _check_pd_X_y
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -132,7 +132,7 @@ class MeanEncoder(BaseCategorical):
             The target.
         """
 
-        X, y = _check_X_y(X, y)
+        X, y = _check_pd_X_y(X, y)
         self._check_fit_input_and_variables(X)
 
         temp = pd.concat([X, y], axis=1)

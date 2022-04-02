@@ -8,7 +8,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_input_matches_training_df,
     _is_dataframe,
-    _check_X_y
+    _check_pd_X_y
 )
 
 
@@ -87,13 +87,13 @@ def test_contains_na(df_na):
         ),
     ]
 )
-def test_check_X_y(X_in, y_in, expected_1, expected_2, exception_type, exception_match):
+def test_check_pd_X_y(X_in, y_in, expected_1, expected_2, exception_type, exception_match):
     with (
         contextlib.nullcontext() if not exception_type
         else pytest.raises(exception_type, match=exception_match)
     ):
         # Execute - can throw here (non-null exception_type will expect exception)
-        X_out, y_out = _check_X_y(X_in, y_in)
+        X_out, y_out = _check_pd_X_y(X_in, y_in)
 
         # Test X output
         if expected_1 is None:

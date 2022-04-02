@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 import pandas as pd
 from sklearn.utils import check_X_y
 
-from feature_engine.dataframe_checks import _check_X_y, _is_dataframe
+from feature_engine.dataframe_checks import _check_pd_X_y, _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -153,7 +153,7 @@ class OrdinalEncoder(BaseCategorical):
 
         # All dimension, type, etc. checking
         if self.encoding_method == "ordered":
-            X, y = _check_X_y(X, y)
+            X, y = _check_pd_X_y(X, y)
         else:
             X = _is_dataframe(X)
         self._check_fit_input_and_variables(X)
