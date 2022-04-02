@@ -220,12 +220,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
                 raise TypeError("The dataframe index is not datetime.")
 
             if self.missing_values == "raise":
-                if X.index.isnull().any():
-                    raise ValueError(
-                        "The dataframe index contains missing data. "
-                        "Check and remove those before using this transformer "
-                        "or set missing_values to False."
-                    )
+                self._check_index_contains_na(X.index)
 
             self.variables_ = None
 
@@ -279,12 +274,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         # special case index
         if self.variables_ is None:
             if self.missing_values == "raise":
-                if X.index.isnull().any():
-                    raise ValueError(
-                        "The dataframe index contains missing data. "
-                        "Check and remove those before using this transformer "
-                        "or set missing_values to False."
-                    )
+                self._check_index_contains_na(X.index)
 
             for feat in self.features_to_extract_:
                 X[FEATURES_SUFFIXES[feat][1:]] = FEATURES_FUNCTIONS[feat](
@@ -417,6 +407,14 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
                 feature_names = self.feature_names_in_ + feature_names
 
         return feature_names
+
+    def _check_index_contains_na(self, index: pd.Index):
+        if index.isnull().any():
+            raise ValueError(
+                "The dataframe index contains missing data. "
+                "Check and remove those before using this transformer "
+                "or set missing_values to False."
+            )
 
     def _more_tags(self):
         tags_dict = {"variables": "datetime"}
