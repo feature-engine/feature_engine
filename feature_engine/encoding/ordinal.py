@@ -4,8 +4,9 @@
 from typing import List, Optional, Union
 
 import pandas as pd
+from sklearn.utils import check_X_y
 
-from feature_engine.dataframe_checks import _check_X_y
+from feature_engine.dataframe_checks import _check_X_y, _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -21,6 +22,9 @@ from feature_engine.encoding._docstrings import (
     _variables_docstring,
 )
 from feature_engine.encoding.base_encoder import BaseCategorical
+
+
+
 
 
 @Substitution(
@@ -147,8 +151,12 @@ class OrdinalEncoder(BaseCategorical):
             Otherwise, y needs to be passed when fitting the transformer.
         """
 
-        X, y = _check_X_y(X, y)
-        X = self._check_fit_input_and_variables(X)
+        # All dimension, type, etc. checking
+        if self.encoding_method == "ordered":
+            X, y = _check_X_y(X, y)
+        else:
+            X = _is_dataframe(X)
+        self._check_fit_input_and_variables(X)
 
         # join target to predictor variables
         if self.encoding_method == "ordered":
