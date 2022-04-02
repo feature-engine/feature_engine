@@ -198,6 +198,7 @@ def check_get_feature_names_out(estimator):
         "AddMissingIndicator",
         "LagFeatures",
         "WindowFeatures",
+        "ExpandingWindowFeatures",
         "MathFeatures",
         "CyclicalFeatures",
         "RelativeFeatures",

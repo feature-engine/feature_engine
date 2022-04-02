@@ -5,11 +5,16 @@ from sklearn.base import clone
 from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.estimator_checks import check_feature_engine_estimator
-from feature_engine.timeseries.forecasting import LagFeatures, WindowFeatures
+from feature_engine.timeseries.forecasting import (
+    LagFeatures,
+    WindowFeatures,
+    ExpandingWindowFeatures,
+)
 
 _estimators = [
     LagFeatures(missing_values="ignore"),
     WindowFeatures(missing_values="ignore"),
+    ExpandingWindowFeatures(missing_values="ignore")
 ]
 
 
