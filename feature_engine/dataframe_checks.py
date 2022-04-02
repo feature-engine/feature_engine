@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import issparse
 
+from .numpy_to_pandas import (_is_numpy, _numpy_to_series, _numpy_to_dataframe)
+
 
 def _is_dataframe(X: pd.DataFrame) -> pd.DataFrame:
     """
@@ -136,13 +138,17 @@ def _check_X_y(
     y: Union[pd.Series, np.ndarray],
 ):
     """
-    Handles 3 cases
-    1. X is an ndarray and y is a Series - converts X to DataFrame with y's index
-    2. X is a DataFrame and y is an ndarray - converts y to Series with X's index
-    3. X is a DataFrame and y is a Series, but their indexes don't match
-    - raises an error
+    Returns X as a DataFrame and y as a Series, converting any numpy
+    objects to pandas objects as needed.
+    * If both parameters are numpy objects, they are converted to pandas objects.
+    * If one parameter is a pandas object and the other is a numpy object,
+    the former will be converted to a pandas object, with the indexes
+    of the latter.
+    * If both parameters are pandas objects, and their indexes are inconsistent,
+    an exception is raised (i.e. this is the caller's error.)
+    * If both parameters are pandas objects and their indexes match, they are
+    returned unchanged.
 
-    If both are ndarray objects, they are returned unchanged.
 
     Parameters
     ----------
@@ -151,19 +157,44 @@ def _check_X_y(
 
     Returns
     -------
-    X: changed as per description above
-    y: changed as per description above
+    X: Pandas DataFrame
+    y: Pandas Series
+
+    Exceptions
+    ----------
+    ValueError: if X and y are dimension-incompatible, X and y are pandas objects
+    with inconsistent indexes
     """
-    if isinstance(X, np.ndarray) and isinstance(y, (pd.DataFrame, pd.Series)):
-        # already know X is not a DataFrame, use machinery in _is_dataframe()
-        # to correctly convert X to DataFrame
-        X = _is_dataframe(X)
-        X.index = y.index
-    elif isinstance(X, pd.DataFrame) and isinstance(y, np.ndarray):
-        y = pd.Series(y)
-        y.index = X.index
-    elif isinstance(X, pd.DataFrame) and isinstance(y, pd.Series):
+
+    # * If both parameters are numpy objects, they are converted to pandas objects.
+    # * If one parameter is a pandas object and the other is a numpy object,
+    # the former will be converted to a pandas object, with the indexes
+    # of the latter.
+    if _is_numpy(X):
+        X = _numpy_to_dataframe(X, index=y.index if isinstance(y, pd.Series) else None)
+    if _is_numpy(y):
+        y = _numpy_to_series(y, index=X.index if isinstance(X, pd.DataFrame) else None)
+
+    # * If both parameters are pandas objects, and their indexes are inconsistent,
+    # an exception is raised (i.e. this is the caller's error.)
+    # * If both parameters are pandas objects and their indexes match, they are
+    # returned unchanged.
+    if isinstance(X, pd.DataFrame) and isinstance(y, pd.Series):
         if not all(y.index == X.index):
-            raise Exception("Index mismatch between DataFrame X and Series y")
+            raise ValueError("Index mismatch between DataFrame X and Series y")
+        else:
+            pass  # deliberately highlighting the no-op case
+
+    # * If X is sparse or X is empty, raises an exception
+    # (This deliberately carries out similar tests in _is_dataframe() above in
+    # order to support different code paths)
+    if issparse(X):
+        raise ValueError("This transformer does not support sparse matrices.")
+
+    if X.empty:
+        raise ValueError(
+            "0 feature(s) (shape=%s) while a minimum of %d is "
+            "required." % (X.shape, 1)
+        )
 
     return X, y
