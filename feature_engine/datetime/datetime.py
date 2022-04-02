@@ -217,13 +217,14 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
                     not is_numeric(X.index) and _is_categorical_and_is_datetime(X.index)
                 )
             ):
-                raise TypeError("Index is not datetime.")
+                raise TypeError("The dataframe index is not datetime.")
 
             if self.missing_values == "raise":
                 if X.index.isnull().any():
                     raise ValueError(
-                        "Index contain NaN. Check and "
-                        "remove those before using this transformer."
+                        "The dataframe index contains missing data. "
+                        "Check and remove those before using this transformer "
+                        "or set missing_values to False."
                     )
 
             self.variables_: List[Union[str, int]] = ["index"]
@@ -280,8 +281,9 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
             if self.missing_values == "raise":
                 if X.index.isnull().any():
                     raise ValueError(
-                        "Index contain NaN. Check and "
-                        "remove those before using this transformer."
+                        "The dataframe index contains missing data. "
+                        "Check and remove those before using this transformer "
+                        "or set missing_values to False."
                     )
 
             for feat in self.features_to_extract_:
