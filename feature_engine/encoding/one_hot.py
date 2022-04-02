@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -180,7 +181,8 @@ class OneHotEncoder(BaseCategoricalTransformer):
             None.
         """
 
-        X = self._check_fit_input_and_variables(X)
+        X = _is_dataframe(X)
+        self._check_fit_input_and_variables(X)
 
         self.encoder_dict_ = {}
 

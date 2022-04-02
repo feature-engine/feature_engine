@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -139,7 +140,8 @@ class CountFrequencyEncoder(BaseCategorical):
             y is not needed in this encoder. You can pass y or None.
         """
 
-        X = self._check_fit_input_and_variables(X)
+        X = _is_dataframe(X)
+        self._check_fit_input_and_variables(X)
 
         self.encoder_dict_ = {}
 

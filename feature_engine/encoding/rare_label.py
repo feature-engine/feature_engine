@@ -7,6 +7,7 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
+from feature_engine.dataframe_checks import _is_dataframe
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -147,7 +148,8 @@ class RareLabelEncoder(BaseCategoricalTransformer):
             y is not required. You can pass y or None.
         """
 
-        X = self._check_fit_input_and_variables(X)
+        X = _is_dataframe(X)
+        self._check_fit_input_and_variables(X)
 
         self.encoder_dict_ = {}
 
