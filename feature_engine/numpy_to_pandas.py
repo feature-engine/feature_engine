@@ -39,11 +39,7 @@ def _numpy_to_dataframe(
     df_out : the object converted to a pandas DataFrame
     """
     col_names: List[str] = [str(i) for i in range(obj_in.shape[1])]
-    df_out: pd.DataFrame = pd.DataFrame(
-        obj_in,
-        columns=col_names,
-        index=index
-    )
+    df_out: pd.DataFrame = pd.DataFrame(obj_in, columns=col_names, index=index)
 
     return df_out
 
