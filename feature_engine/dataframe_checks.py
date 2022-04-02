@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import issparse
 
-from .numpy_to_pandas import (_is_numpy, _numpy_to_series, _numpy_to_dataframe)
+from .numpy_to_pandas import _is_numpy, _numpy_to_dataframe, _numpy_to_series
 
 
 def _is_dataframe(X: pd.DataFrame) -> pd.DataFrame:

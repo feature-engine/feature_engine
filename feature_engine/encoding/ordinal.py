@@ -4,7 +4,6 @@
 from typing import List, Optional, Union
 
 import pandas as pd
-from sklearn.utils import check_X_y
 
 from feature_engine.dataframe_checks import _check_pd_X_y, _is_dataframe
 from feature_engine.docstrings import (
@@ -22,9 +21,6 @@ from feature_engine.encoding._docstrings import (
     _variables_docstring,
 )
 from feature_engine.encoding.base_encoder import BaseCategorical
-
-
-
 
 
 @Substitution(

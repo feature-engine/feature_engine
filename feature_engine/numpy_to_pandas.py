@@ -1,8 +1,10 @@
 """Functions to detect numpy objects and convert to pandas objects."""
 
-from typing import Any, Union, List
+from typing import Any, List, Union
+
 import numpy as np
 import pandas as pd
+
 
 def _is_numpy(obj_in: Any) -> bool:
     """
@@ -21,7 +23,9 @@ def _is_numpy(obj_in: Any) -> bool:
     return isinstance(obj_in, (np.generic, np.ndarray))
 
 
-def _numpy_to_dataframe(obj_in: Union[np.generic, np.ndarray], index=None) -> pd.DataFrame:
+def _numpy_to_dataframe(
+    obj_in: Union[np.generic, np.ndarray], index=None
+) -> pd.DataFrame:
     """
     Converts a numpy object to a pandas DataFrame
 
