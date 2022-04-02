@@ -35,9 +35,8 @@ def _is_dataframe(X: pd.DataFrame) -> pd.DataFrame:
     """
     # check_estimator uses numpy arrays for its checks.
     # Thus, we need to allow np arrays
-    if isinstance(X, (np.generic, np.ndarray)):
-        col_names = [str(i) for i in range(X.shape[1])]
-        X = pd.DataFrame(X, columns=col_names)
+    if _is_numpy(X):
+        X = _numpy_to_dataframe(X)
 
     if issparse(X):
         raise ValueError("This transformer does not support sparse matrices.")
