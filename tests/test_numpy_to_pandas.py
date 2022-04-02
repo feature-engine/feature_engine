@@ -42,4 +42,3 @@ def test_numpy_to_series():
 
     expected.index = ["a", "b", "c"]
     assert_series_equal(_numpy_to_series(np_array, index=["a", "b", "c"]), expected)
-
