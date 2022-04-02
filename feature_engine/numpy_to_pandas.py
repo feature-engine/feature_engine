@@ -39,9 +39,11 @@ def _numpy_to_dataframe(
     df_out : the object converted to a pandas DataFrame
     """
     col_names: List[str] = [str(i) for i in range(obj_in.shape[1])]
-    df_out: pd.DataFrame = pd.DataFrame(obj_in, columns=col_names)
-    if index is not None:
-        df_out.index = index
+    df_out: pd.DataFrame = pd.DataFrame(
+        obj_in,
+        columns=col_names,
+        index=index
+    )
 
     return df_out
 
@@ -59,8 +61,6 @@ def _numpy_to_series(obj_in: Union[np.generic, np.ndarray], index=None) -> pd.Se
     -------
     df_out : the object converted to a pandas Series
     """
-    s_out: pd.Series = pd.Series(obj_in)
-    if index is not None:
-        s_out.index = index
+    s_out: pd.Series = pd.Series(obj_in, index=index)
 
     return s_out
