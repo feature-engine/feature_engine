@@ -488,6 +488,23 @@ def test_get_feature_names_out(df_datetime, df_datetime_transformed):
         "date_obj1_" + feat for feat in ["semester", "week"]
     ]
 
+    # features were extracted from index
+    transformer = DatetimeFeatures(
+        variables="index", features_to_extract=["semester", "week"]
+    )
+    X = transformer.fit_transform(dates_idx_dt)
+    # user passes something else than index as input_features
+    with pytest.raises(ValueError):
+        transformer.get_feature_names_out(input_features="not_index")
+    with pytest.raises(ValueError):
+        transformer.get_feature_names_out(input_features=["still", "not", "index"])
+    # input_features is None
+    assert list(X.columns) == transformer.get_feature_names_out()
+    # input_features is index
+    assert ["semester", "week"] == transformer.get_feature_names_out(
+        input_features="index"
+    )
+
     # when drop original is False
     transformer = DatetimeFeatures(drop_original=False)
     X = transformer.fit_transform(df_datetime)

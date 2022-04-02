@@ -227,7 +227,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
                         "or set missing_values to False."
                     )
 
-            self.variables_: List[Union[str, int]] = ["index"]
+            self.variables_ = None
 
         else:
             # find or check for datetime variables
@@ -277,7 +277,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         _check_input_matches_training_df(X, self.n_features_in_)
 
         # special case index
-        if self.variables_ == ["index"]:
+        if self.variables_ is None:
             if self.missing_values == "raise":
                 if X.index.isnull().any():
                     raise ValueError(
@@ -340,7 +340,9 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
         return X
 
-    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
+    def get_feature_names_out(
+        self, input_features: Optional[Union[List, str]] = None
+    ) -> List:
         """Get output feature names for transformation.
 
         Parameters
@@ -350,6 +352,8 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
             variables in the transformed dataset (original + new variables) is returned.
             Alternatively, only the names for the datetime features derived from
             input_features will be returned.
+            If the transformer was fitted on the dataframe index, you may only pass
+            `index` as input_features, or leave it as `None`.
 
         Returns
         -------
@@ -357,6 +361,24 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
             The feature names.
         """
         check_is_fitted(self)
+
+        # special case index
+        if self.variables_ is None:
+            feature_names = []
+            if input_features is None:
+                feature_names += self.feature_names_in_
+            else:
+                if input_features != "index":
+                    raise ValueError(
+                        "Only the dataframe index was used to extract new variables."
+                        "You can only get the names of the extracted features "
+                        "with this function."
+                    )
+            feature_names += [
+                FEATURES_SUFFIXES[feat][1:] for feat in self.features_to_extract_
+            ]
+
+            return feature_names
 
         # Create names for all features or just the indicated ones.
         if input_features is None:
