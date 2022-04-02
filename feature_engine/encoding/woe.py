@@ -140,9 +140,6 @@ class WoEEncoder(BaseCategorical):
         X, y = _check_X_y(X, y)
         self._check_fit_input_and_variables(X)
 
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
-
         # check that y is binary
         if y.nunique() != 2:
             raise ValueError(
