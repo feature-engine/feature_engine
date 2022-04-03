@@ -147,7 +147,8 @@ def _check_pd_X_y(
     an exception is raised (i.e. this is the caller's error.)
     * If both parameters are pandas objects and their indexes match, they are
     returned unchanged.
-
+    * If X is sparse or X is empty or, after all transforms, is stiil
+    not a DataFrame, raises an exception
 
     Parameters
     ----------
@@ -184,11 +185,17 @@ def _check_pd_X_y(
         else:
             pass  # deliberately highlighting the no-op case
 
-    # * If X is sparse or X is empty, raises an exception
+    # * If X is sparse or X is empty or, after all transforms, is stiil
+    # not a DataFrame, raises an exception
     # (This deliberately carries out similar tests in _is_dataframe() above in
     # order to support different code paths)
     if issparse(X):
         raise ValueError("This transformer does not support sparse matrices.")
+
+    if not isinstance(X, pd.DataFrame):
+        raise TypeError(
+            "X is not a pandas dataframe. The dataset should be a pandas dataframe."
+        )
 
     if X.empty:
         raise ValueError(
