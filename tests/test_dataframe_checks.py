@@ -60,6 +60,7 @@ def test_check_pd_X_y_both_numpy(X_in, y_in, expected_1, expected_2):
     elif isinstance(expected_2, (np.generic, np.ndarray)):
         assert all(y_out == expected_2)
 
+
 @pytest.mark.parametrize(
     "X_in, y_in, expected_1, expected_2",
     [
