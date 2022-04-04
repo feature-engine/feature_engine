@@ -28,6 +28,14 @@ operations over the expanding window. Therefore, you can use any operation suppo
 by pandas. For supported aggregation functions, see Expanding Window
 `Functions <https://pandas.pydata.org/docs/reference/window.html>`_.
 
+With `pandas.shift`, :class:`ExpandingWindowFeatures` lags the result of the expanding
+window operation. This is useful to ensure that only the information known at predict
+time is used to compute the window feature. So if at predict time we only know
+the value of a feature at the previous time period and before that, then we should lag the
+the window feature by 1 period. If at predict time we only know the value of a feature
+from 2 weeks ago and before that, then we should lag the window feature column by 2 weeks.
+:class:`ExpandingWindowFeatures` uses a default lag of one period.
+
 :class:`ExpandingWindowFeatures` will add the new variables with a representative
 name to the original dataframe. It also has the methods `fit()` and `transform()`
 that make it compatible with the Scikit-learn's `Pipeline` and cross-validation
