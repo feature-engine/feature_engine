@@ -19,7 +19,7 @@ def test_drop_1_variable(df_vartypes):
     )
 
     # init params
-    assert transformer.features_to_drop == ["City"]
+    assert transformer.features_to_drop == "City"
 
     # transform params
     assert X.shape == (4, 4)

@@ -58,9 +58,6 @@ class DropFeatures(BaseSelector):
                 "you wish to drop from the dataframe."
             )
 
-        if isinstance(features_to_drop, str):
-            features_to_drop = [features_to_drop]
-
         self.features_to_drop = features_to_drop
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
