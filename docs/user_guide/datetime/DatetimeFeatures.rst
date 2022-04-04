@@ -9,6 +9,8 @@ DatetimeFeatures
 variables. It works with variables whose original dtype is datetime, and also with
 object-like and categorical variables, provided that they can be parsed into datetime
 format. It *cannot* extract features from numerical variables.
+:class:`DatetimeFeatures()` can also extract date and time variables from the
+dataframe index, provided it can be converted to datetime.
 
 Oftentimes, datasets contain information related to dates and/or times at which an event
 occurred. In pandas dataframes, these datetime variables can be cast as datetime or,
@@ -186,6 +188,15 @@ the features.
     2             2          2003            17
 
 And that is it. The additional features are now added in the dataframe.
+
+Extract date and time features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With :class:`DatetimeFeatures` we can also create date and time features from the
+dataframe index.
+
+#TODO example
+
 
 Important
 ~~~~~~~~~
