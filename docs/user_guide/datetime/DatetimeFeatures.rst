@@ -5,10 +5,17 @@
 DatetimeFeatures
 ================
 
-:class:`DatetimeFeatures()` extracts several datetime features from datetime
+:class:`DatetimeFeatures()` extracts several date and time features from datetime
 variables. It works with variables whose original dtype is datetime, and also with
 object-like and categorical variables, provided that they can be parsed into datetime
 format. It *cannot* extract features from numerical variables.
+
+In time series data, the index of the dataframe often contains date and time
+information. :class:`DatetimeFeatures()` can also extract date and time variables from
+the dataframe index.
+
+Tabular data
+------------
 
 Oftentimes, datasets contain information related to dates and/or times at which an event
 occurred. In pandas dataframes, these datetime variables can be cast as datetime or,
@@ -17,18 +24,16 @@ more generically, as object.
 Datetime variables, in their raw format, are generally not suitable to train machine
 learning models. Yet, an enormous amount of information can be extracted from them.
 
-:class:`DatetimeFeatures()` is able to extract many numerical and binary date and
-time features from these datetime variables. Among these features we can find the month
-in which an event occurred, the day of the week, or whether that day was a weekend day.
+:class:`DatetimeFeatures()` extracts many numerical and binary date and time features
+from these datetime variables. Among these features we can find the month in which an
+event occurred, the day of the week, or whether that day was a weekend day.
 
-With :class:`DatetimeFeatures()` you can choose which date and time features
-to extract from your datetime variables. You can also extract date and time features
-from a subset of datetime variables in your data.
+With :class:`DatetimeFeatures()` we can choose which date and time features
+to extract from the datetime variables. We can also extract date and time features
+from a subset of datetime variables in the data.
 
-Examples
---------
 Through the following examples we highlight the functionality and versatility of
-:class:`DatetimeFeatures()`.
+:class:`DatetimeFeatures()` for tabular data.
 
 Extract date features
 ~~~~~~~~~~~~~~~~~~~~~
@@ -62,7 +67,7 @@ second datetime variable in our dataset.
 
     df_transf = dtfs.fit_transform(toy_df)
 
-    print(df_transf)
+    df_transf
 
 .. code:: python
 
@@ -79,6 +84,29 @@ dataframe.
 By default, :class:`DatetimeFeatures()` drops the variable from which the date and time
 features were extracted, in this case, *var_date2*. To keep the variable, we just need
 to indicate `drop_original=False` when initializing the transformer.
+
+Finally, we can obtain the name of the variables in the returned data as follows:
+
+.. code:: python
+
+    dtfs.get_feature_names_out()
+
+.. code:: python
+
+    ['var_date1',
+     'var_date2_month',
+     'var_date2_month_end',
+     'var_date2_day_of_year']
+
+Or we can obtain the names of the features created from a certain variable as follows:
+
+.. code:: python
+
+    dtfs.get_feature_names_out(["var_date2"])
+
+.. code:: python
+
+    ['var_date2_month', 'var_date2_month_end', 'var_date2_day_of_year']
 
 Extract time features
 ~~~~~~~~~~~~~~~~~~~~~
@@ -109,7 +137,7 @@ don't need to specify them.
 
     df_transf = dfts.fit_transform(toy_df)
 
-    print(df_transf)
+    df_transf
 
 .. code:: python
 
@@ -137,6 +165,37 @@ attributes.
 Again, the original datetime variables are dropped from the data by default. If we
 want to keep them, we just need to indicate `drop_original=False` when initializing
 the transformer.
+
+Finally, if we want to obtain the names of the variables in the output data, we can use:
+
+.. code:: python
+
+    dfts.get_feature_names_out()
+
+.. code:: python
+
+    ['not_a_dt', 'var_time1_minute', 'var_time2_minute']
+
+We can obtain the date and time features derived from both our datetime variables as
+follows:
+
+.. code:: python
+
+    dfts.get_feature_names_out(['var_time1', 'var_time2'])
+
+.. code:: python
+
+    ['var_time1_minute', 'var_time2_minute']
+
+Or, we can obtain the features derived from just one of the variables like this:
+
+.. code:: python
+
+    dfts.get_feature_names_out(['var_time1'])
+
+.. code:: python
+
+    ['var_time1_minute']
 
 Extract date and time features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -187,8 +246,113 @@ the features.
 
 And that is it. The additional features are now added in the dataframe.
 
+Time series
+-----------
+
+Time series data consist of datapoints indexed in time order. The time is usually in
+the index of the dataframe. With :class:`DatetimeFeatures` we can also create date and
+time features from the dataframe index.
+
+Let's create a toy dataframe with datetime in the index.
+
+.. code:: python
+
+    import pandas as pd
+
+    X = {"ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68],
+         "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52],
+         "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49, 0.57, 0.56],
+         "color": ["green"] * 4 + ["blue"] * 4,
+         }
+
+    X = pd.DataFrame(X)
+    X.index = pd.date_range("2020-05-15 12:00:00", periods=8, freq="15min")
+
+    X.head()
+
+Below we see the output of our toy dataframe:
+
+.. code:: python
+
+                         ambient_temp  module_temp  irradiation  color
+    2020-05-15 12:00:00         31.31        49.18         0.51  green
+    2020-05-15 12:15:00         31.51        49.84         0.79  green
+    2020-05-15 12:30:00         32.15        52.35         0.65  green
+    2020-05-15 12:45:00         32.39        50.63         0.76  green
+    2020-05-15 13:00:00         32.62        49.61         0.42   blue
+
+We can extract features from the index as follows:
+
+..  code:: python
+
+    from feature_engine.datetime import DatetimeFeatures
+
+    dtf = DatetimeFeatures(variables="index")
+
+    Xtr = dtf.fit_transform(X)
+
+    Xtr
+
+We can see that the transformer created the default time features and added them at
+the end of the dataframe.
+
+.. code:: python
+
+                         ambient_temp  module_temp  irradiation  color  month  \
+    2020-05-15 12:00:00         31.31        49.18         0.51  green      5
+    2020-05-15 12:15:00         31.51        49.84         0.79  green      5
+    2020-05-15 12:30:00         32.15        52.35         0.65  green      5
+    2020-05-15 12:45:00         32.39        50.63         0.76  green      5
+    2020-05-15 13:00:00         32.62        49.61         0.42   blue      5
+    2020-05-15 13:15:00         32.50        47.01         0.49   blue      5
+    2020-05-15 13:30:00         32.52        46.67         0.57   blue      5
+    2020-05-15 13:45:00         32.68        47.52         0.56   blue      5
+
+                         year  day_of_week  day_of_month  hour  minute  second
+    2020-05-15 12:00:00  2020            4            15    12       0       0
+    2020-05-15 12:15:00  2020            4            15    12      15       0
+    2020-05-15 12:30:00  2020            4            15    12      30       0
+    2020-05-15 12:45:00  2020            4            15    12      45       0
+    2020-05-15 13:00:00  2020            4            15    13       0       0
+    2020-05-15 13:15:00  2020            4            15    13      15       0
+    2020-05-15 13:30:00  2020            4            15    13      30       0
+    2020-05-15 13:45:00  2020            4            15    13      45       0
+
+We can obtain the name of all the variables in the output dataframe as follows:
+
+.. code:: python
+
+    dtf.get_feature_names_out()
+
+.. code:: python
+
+    ['ambient_temp',
+     'module_temp',
+     'irradiation',
+     'color',
+     'month',
+     'year',
+     'day_of_week',
+     'day_of_month',
+     'hour',
+     'minute',
+     'second']
+
+
+Alternatively, we can obtain the name of the features created from the index as
+follows:
+
+.. code:: python
+
+    dtf.get_feature_names_out("index")
+
+.. code:: python
+
+    ['month', 'year', 'day_of_week', 'day_of_month', 'hour', 'minute', 'second']
+
+
 Important
-~~~~~~~~~
+---------
 
 We highly recommend specifying the date and time features that you would like to extract
 from your datetime variables. If you have too many time variables, this might not be
@@ -271,7 +435,7 @@ And mistakenly extract the hour and the minute.
 The new features will contain the value 0.
 
 Automating feature extraction
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------
 
 We can indicate which features we want to extract from the datetime variables as we did
 in the previous examples, passing the feature names in lists. Alternatively,
@@ -418,7 +582,7 @@ We can find the group of features extracted by the transformer in its attribute.
      'second']
 
 Extract and select features automatically
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------------
 
 If we have a dataframe with a date variables, time variables and date and time variables,
 we can extract all features, or the most common features from all the variables, and then
@@ -494,7 +658,7 @@ from the dataset.
 As you can see, we do not have the constant features in the transformed dataset.
 
 Extract features from time-aware variables
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------------
 
 Time-aware datetime variables can be particularly cumbersome to work with as far
 as the format goes. We will briefly show how :class:`DatetimeFeatures()` deals
@@ -606,8 +770,9 @@ is the default option.
 Note that the hour extracted from the variable differ in this dataframe respect to the
 one obtained in **Case 2**.
 
+
 More details
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 
 You can find additional examples with a real dataset on how to use
 :class:`DatetimeFeatures()` in the following Jupyter notebook.

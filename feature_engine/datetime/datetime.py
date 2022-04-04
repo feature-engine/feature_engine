@@ -42,10 +42,10 @@ from feature_engine.variable_manipulation import (
 class DatetimeFeatures(BaseEstimator, TransformerMixin):
     """
     DatetimeFeatures extracts date and time features from datetime variables, adding
-    new columns to the dataset. DatetimeFeatures is able to extract datetime
-    information from existing datetime or object-like variables.
+    new columns to the dataset. DatetimeFeatures can extract datetime information from
+    existing datetime or object-like variables or from the dataframe index.
 
-    DatetimeFeatures uses pandas.to_datetime to convert object variables to datetime
+    DatetimeFeatures uses `pandas.to_datetime` to convert object variables to datetime
     and pandas.dt to extract the features from datetime.
 
     The transformer supports the extraction of the following features:
@@ -75,8 +75,8 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of variables to extract date and time features from.
+    variables: str, list, default=None
+        List wit the variables from which date and time information will be extracted.
         If None, the transformer will find and select all datetime variables,
         including variables of type object that can be converted to datetime.
         If "index", the transformer will extract datetime features from the
@@ -86,8 +86,8 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         The list of date features to extract. If None, the following features will be
         extracted: "month", "year", "day_of_week", "day_of_month", "hour",
         "minute" and "second". If "all", all supported features will be extracted.
-        Alternatively, you can pass a list with the names of the supported features
-        you want to extract.
+        Alternatively, you can pass a list with the names of the features you want to
+        extract.
 
     drop_original: bool, default="True"
         If True, the original datetime variables will be dropped from the dataframe.
@@ -96,29 +96,37 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         Indicates if missing values should be ignored or raised. If 'raise' the
         transformer will return an error if the the datasets to `fit` or `transform`
         contain missing values. If 'ignore', missing data will be ignored when
-        performing the feature extraction.
+        performing the feature extraction. Missing data is only evaluated in the
+        variables that will be used to derive the date and time features. If features
+        are derived from the dataframe index, missing data will be checked in the
+        index.
 
     dayfirst: bool, default="False"
-        Specify a date parse order if arg is str or its list-likes. If True, parses
-        dates with the day first, eg 10/11/12 is parsed as 2012-11-10.
+        Specify a date parse order if arg is str or is list-like. If True, parses
+        dates with the day first, e.g. 10/11/12 is parsed as 2012-11-10. Same as in
+        `pandas.to_datetime`.
 
     yearfirst: bool, default="False"
-        Specify a date parse order if arg is str or its list-likes.
+        Specify a date parse order if arg is str or is list-like.
+        Same as in `pandas.to_datetime`.
 
-        - If True parses dates with the year first, eg 10/11/12 is parsed as 2010-11-12.
+        - If True parses dates with the year first, e.g. 10/11/12 is parsed as
+          2010-11-12.
         - If both dayfirst and yearfirst are True, yearfirst is preceded.
 
     utc: bool, default=None
         Return UTC DatetimeIndex if True (converting any tz-aware datetime.datetime
-        objects as well).
+        objects as well). Same as in `pandas.to_datetime`.
 
     Attributes
     ----------
     variables_:
-        List of variables from which date and time features will be extracted.
+        List of variables from which date and time features will be extracted. If None,
+        features will be extracted from the dataframe index.
 
     features_to_extract_:
-        The date and time features that will be extracted from each variable.
+        The date and time features that will be extracted from each variable or the
+        index.
 
     {feature_names_in_}
 
@@ -342,13 +350,12 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        input_features: list, default=None
-            Input features. If `input_features` is `None`, then the names of all the
-            variables in the transformed dataset (original + new variables) is returned.
-            Alternatively, only the names for the datetime features derived from
-            input_features will be returned.
-            If the features were derived from the dataframe index, pass 'index'
-            to obtain the datetime features or None for all output features."
+        input_features: str, list, default=None
+            Input features. If `None`, then the names of all the variables in the
+            transformed dataset (original + new variables) is returned. If 'index',
+            then the name of the features created from the index is returned. If list
+            with feature names, the names for the datetime features derived from
+            the variables in the list will be returned."
 
         Returns
         -------
@@ -359,57 +366,67 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
         # special case index
         if self.variables_ is None:
-            feature_names = []
+
             if input_features is None:
-                feature_names += self.feature_names_in_
+                feature_names = (
+                    self.feature_names_in_ + self._get_datetime_feature_names("index")
+                )
+
+            elif input_features == "index":
+                feature_names = self._get_datetime_feature_names("index")
+
             else:
-                if input_features != "index":
+                raise ValueError(
+                    "The dataframe index was used to extract date and time variables."
+                    "Thus, input_features can only be None or 'index'. "
+                    f"Got {input_features} instead."
+                )
+
+        else:
+            # Return all features in transformed output.
+            if input_features is None:
+                # All datetime features.
+                feature_names = self._get_datetime_feature_names(self.variables_)
+
+                if self.drop_original is True:
+                    # Remove names of variables to drop.
+                    original = [
+                        f for f in self.feature_names_in_ if f not in self.variables_
+                    ]
+                    feature_names = original + feature_names
+                else:
+                    feature_names = self.feature_names_in_ + feature_names
+
+            else:
+                # Return features requested by user.
+                if not isinstance(input_features, list):
                     raise ValueError(
-                        "Only the dataframe index was used to extract new variables."
-                        "You can only get the names of the extracted features "
-                        "with this function."
+                        f"input_features must be a list. Got {input_features} instead."
                     )
-            feature_names += [
+                if any([f for f in input_features if f not in self.variables_]):
+                    raise ValueError(
+                        "Some features in input_features were not used to extract new "
+                        "variables. Pass either None, or a list with the features that "
+                        "were used to create date and time features."
+                    )
+                # Create just indicated features.
+                feature_names = self._get_datetime_feature_names(input_features)
+
+        return feature_names
+
+    def _get_datetime_feature_names(self, input_features: Union[List, str]):
+        """create the names for the datetime features."""
+
+        if input_features == "index":
+            feature_names = [
                 FEATURES_SUFFIXES[feat][1:] for feat in self.features_to_extract_
             ]
-
-            return feature_names
-
-        # Create names for all features or just the indicated ones.
-        if input_features is None:
-            # Create all features.
-            input_features_ = self.variables_
         else:
-            if not isinstance(input_features, list):
-                raise ValueError(
-                    f"input_features must be a list. Got {input_features} instead."
-                )
-            if any([f for f in input_features if f not in self.variables_]):
-                raise ValueError(
-                    "Some features in input_features were not used to extract new "
-                    "variables. You can only get the names of the extracted features "
-                    "with this function."
-                )
-            # Create just indicated features.
-            input_features_ = input_features
-
-        # create the names for the lag features
-        feature_names = [
-            str(var) + FEATURES_SUFFIXES[feat]
-            for var in input_features_
-            for feat in self.features_to_extract_
-        ]
-
-        # Return names of all variables if input_features is None.
-        if input_features is None:
-            if self.drop_original is True:
-                # Remove names of variables to drop.
-                original = [
-                    f for f in self.feature_names_in_ if f not in self.variables_
-                ]
-                feature_names = original + feature_names
-            else:
-                feature_names = self.feature_names_in_ + feature_names
+            feature_names = [
+                str(var) + FEATURES_SUFFIXES[feat]
+                for var in input_features
+                for feat in self.features_to_extract_
+            ]
 
         return feature_names
 
