@@ -6,9 +6,9 @@ from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.estimator_checks import check_feature_engine_estimator
 from feature_engine.timeseries.forecasting import (
+    ExpandingWindowFeatures,
     LagFeatures,
     WindowFeatures,
-    ExpandingWindowFeatures,
 )
 
 _estimators = [
