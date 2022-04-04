@@ -1,5 +1,3 @@
-import contextlib
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -52,9 +50,7 @@ def test_contains_na(df_na):
         ),
     ],
 )
-def test_check_pd_X_y_both_same_type(
-    X_in, y_in, expected_1, expected_2
-):
+def test_check_pd_X_y_both_same_type(X_in, y_in, expected_1, expected_2):
     # Execute
     X_out, y_out = _check_pd_X_y(X_in, y_in)
 
@@ -73,6 +69,7 @@ def test_check_pd_X_y_both_same_type(
         assert_series_equal(y_out, expected_2)
     elif isinstance(expected_2, (np.generic, np.ndarray)):
         assert all(y_out == expected_2)
+
 
 @pytest.mark.parametrize(
     "X_in, y_in, expected_1, expected_2",
@@ -101,9 +98,7 @@ def test_check_pd_X_y_both_same_type(
         ),
     ],
 )
-def test_check_pd_X_y_np_to_pd(
-    X_in, y_in, expected_1, expected_2
-):
+def test_check_pd_X_y_np_to_pd(X_in, y_in, expected_1, expected_2):
     # Execute
     X_out, y_out = _check_pd_X_y(X_in, y_in)
 
@@ -140,9 +135,7 @@ def test_check_pd_X_y_np_to_pd(
         ),
     ],
 )
-def test_check_pd_X_y_errors(
-    X_in, y_in, exception_type, exception_match
-):
+def test_check_pd_X_y_errors(X_in, y_in, exception_type, exception_match):
     with (pytest.raises(exception_type, match=exception_match)):
         # Execute - can throw here (non-null exception_type will expect exception)
         X_out, y_out = _check_pd_X_y(X_in, y_in)
