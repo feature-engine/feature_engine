@@ -25,6 +25,12 @@ def test_get_feature_names_out_raises_when_input_features_not_transformed(df_tim
         tr.get_feature_names_out(input_features=["color"])
 
 
+@pytest.mark.parametrize("_periods", [1, 2, 3])
+def test_permitted_param_periods(_periods):
+    transformer = ExpandingWindowFeatures(periods=_periods)
+    assert transformer.periods == _periods
+
+
 def test_get_feature_names_out_multiple_variables_and_functions(df_time):
     # input features
     input_features = ["ambient_temp", "module_temp", "irradiation"]
@@ -303,6 +309,102 @@ def test_expanding_sum_and_mean_multiple_vars(df_time):
 
     transformer = ExpandingWindowFeatures(
         variables=["ambient_temp", "irradiation"], functions=["sum", "mean"]
+    )
+    df_tr = transformer.fit_transform(df_time)
+    assert_frame_equal(df_tr, expected_df)
+
+
+def test_expanding_sum_single_var_periods(df_time):
+    expected_results = {
+        "ambient_temp_expanding_sum": [
+            np.nan,
+            np.nan,
+            31.31,
+            62.82,
+            94.97,
+            127.36,
+            159.98,
+            192.48,
+            225.00,
+            257.68,
+            291.44,
+            325.57,
+            359.65,
+            393.35,
+            427.24,
+        ],
+    }
+    expected_df = df_time.copy()
+    expected_df["ambient_temp_expanding_sum"] = expected_results[
+        "ambient_temp_expanding_sum"
+    ]
+
+    transformer = ExpandingWindowFeatures(
+        variables=["ambient_temp"], functions="sum", periods=2
+    )
+    df_tr = transformer.fit_transform(df_time)
+    assert_frame_equal(df_tr, expected_df)
+
+
+def test_expanding_sum_single_var_freqs(df_time):
+    expected_results = {
+        "ambient_temp_expanding_sum": [
+            np.nan,
+            np.nan,
+            31.31,
+            62.82,
+            94.97,
+            127.36,
+            159.98,
+            192.48,
+            225.00,
+            257.68,
+            291.44,
+            325.57,
+            359.65,
+            393.35,
+            427.24,
+        ],
+    }
+    expected_df = df_time.copy()
+    expected_df["ambient_temp_expanding_sum"] = expected_results[
+        "ambient_temp_expanding_sum"
+    ]
+
+    transformer = ExpandingWindowFeatures(
+        variables=["ambient_temp"], functions="sum", freq="30T"
+    )
+    df_tr = transformer.fit_transform(df_time)
+    assert_frame_equal(df_tr, expected_df)
+
+
+def test_expanding_sum_single_var_periods_and_freqs(df_time):
+    expected_results = {
+        "ambient_temp_expanding_sum": [
+            np.nan,
+            np.nan,
+            31.31,
+            62.82,
+            94.97,
+            127.36,
+            159.98,
+            192.48,
+            225.00,
+            257.68,
+            291.44,
+            325.57,
+            359.65,
+            393.35,
+            427.24,
+        ],
+    }
+    expected_df = df_time.copy()
+    expected_df["ambient_temp_expanding_sum"] = expected_results[
+        "ambient_temp_expanding_sum"
+    ]
+
+    transformer = ExpandingWindowFeatures(
+        variables=["ambient_temp"], functions="sum", periods=2, freq="15T"
     )
     df_tr = transformer.fit_transform(df_time)
     assert_frame_equal(df_tr, expected_df)

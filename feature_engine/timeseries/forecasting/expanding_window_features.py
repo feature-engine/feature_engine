@@ -71,6 +71,14 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         The functions to apply within the window. Valid functions can be found
         `here <https://pandas.pydata.org/docs/reference/window.html>`_.
 
+    periods: int, list of ints, default=1
+        Number of periods to shift. Can be a positive integer. See param `periods` in
+        pandas `shift`.
+
+    freq: str, list of str, default=None
+        Offset to use from the tseries module or time rule. See parameter `freq` in
+        pandas `shift()`.
+
     sort_index: bool, default=True
         Whether to order the index of the dataframe before creating the
         expanding window feature.
@@ -110,6 +118,8 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         variables: None | int | str | list[str | int] = None,
         min_periods: int | None = None,
         functions: str | list[str] = "mean",
+        periods: int = 1,
+        freq: str = None,
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
@@ -125,10 +135,17 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         if isinstance(functions, list) and len(functions) != len(set(functions)):
             raise ValueError(f"There are duplicated functions in the list: {functions}")
 
+        if not isinstance(periods, int) or periods < 1:
+            raise ValueError(
+                f"periods must be a positive integer. Got {periods} instead."
+            )
+
         super().__init__(variables, missing_values, drop_original)
 
         self.min_periods = min_periods
         self.functions = functions
+        self.periods = periods
+        self.freq = freq
         self.sort_index = sort_index
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -152,7 +169,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
             X[self.variables_]
             .expanding(min_periods=self.min_periods)
             .agg(self.functions)
-            .shift(periods=1)
+            .shift(periods=self.periods, freq=self.freq)
         )
 
         tmp.columns = self.get_feature_names_out(self.variables_)
