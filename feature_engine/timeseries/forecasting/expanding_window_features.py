@@ -135,9 +135,9 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         if isinstance(functions, list) and len(functions) != len(set(functions)):
             raise ValueError(f"There are duplicated functions in the list: {functions}")
 
-        if not isinstance(periods, int) or periods < 1:
+        if not isinstance(periods, int) or periods < 0:
             raise ValueError(
-                f"periods must be a positive integer. Got {periods} instead."
+                f"periods must be a non-negative integer. Got {periods} instead."
             )
 
         super().__init__(variables, missing_values, drop_original)
