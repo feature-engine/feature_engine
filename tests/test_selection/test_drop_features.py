@@ -4,6 +4,28 @@ import pytest
 from feature_engine.selection import DropFeatures
 
 
+def test_drop_1_variable(df_vartypes):
+    transformer = DropFeatures(features_to_drop="City")
+    X = transformer.fit_transform(df_vartypes)
+
+    # expected result
+    df = pd.DataFrame(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "Age": [20, 21, 19, 18],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+        }
+    )
+
+    # init params
+    assert transformer.features_to_drop == ["City"]
+
+    # transform params
+    assert X.shape == (4, 4)
+    assert type(X) == pd.DataFrame
+    pd.testing.assert_frame_equal(X, df)
+
 def test_drop_2_variables(df_vartypes):
     transformer = DropFeatures(features_to_drop=["City", "dob"])
     X = transformer.fit_transform(df_vartypes)
