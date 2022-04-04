@@ -38,6 +38,31 @@ def test_contains_na(df_na):
             pd.DataFrame({"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}),
             pd.Series([1, 2, 3, 4]),
         ),
+    ],
+)
+def test_check_pd_X_y_both_numpy(X_in, y_in, expected_1, expected_2):
+    # Execute
+    X_out, y_out = _check_pd_X_y(X_in, y_in)
+
+    # Test X output
+    if expected_1 is None:
+        assert X_out is X_in
+    elif isinstance(expected_1, pd.DataFrame):
+        assert_frame_equal(X_out, expected_1)
+    elif isinstance(expected_1, (np.generic, np.ndarray)):
+        assert all(X_out == expected_1)
+
+    # Test y output
+    if expected_2 is None:
+        assert y_out is y_in
+    elif isinstance(expected_2, pd.Series):
+        assert_series_equal(y_out, expected_2)
+    elif isinstance(expected_2, (np.generic, np.ndarray)):
+        assert all(y_out == expected_2)
+
+@pytest.mark.parametrize(
+    "X_in, y_in, expected_1, expected_2",
+    [
         # * If both parameters are pandas objects and their indexes match, they are
         # returned unchanged.
         (
@@ -50,7 +75,7 @@ def test_contains_na(df_na):
         ),
     ],
 )
-def test_check_pd_X_y_both_same_type(X_in, y_in, expected_1, expected_2):
+def test_check_pd_X_y_both_pandas(X_in, y_in, expected_1, expected_2):
     # Execute
     X_out, y_out = _check_pd_X_y(X_in, y_in)
 
