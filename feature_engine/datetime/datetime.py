@@ -271,62 +271,67 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_input_matches_training_df(X, self.n_features_in_)
 
+        # reorder variables to match train set
+        X = X[self.feature_names_in_]
+
         # special case index
         if self.variables_ is None:
+            # check if dataset contains na
             if self.missing_values == "raise":
                 self._check_index_contains_na(X.index)
 
-            for feat in self.features_to_extract_:
-                X[FEATURES_SUFFIXES[feat][1:]] = FEATURES_FUNCTIONS[feat](
-                    pd.Series(
-                        pd.to_datetime(
-                            X.index,
-                            dayfirst=self.dayfirst,
-                            yearfirst=self.yearfirst,
-                            utc=self.utc,
-                        ),
-                        index=X.index,
-                    )
-                )
-
-            return X
-
-        # check if dataset contains na
-        if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
-
-        # reorder variables to match train set
-        X = X[self.feature_names_in_]
-        # convert datetime variables
-        datetime_df = pd.concat(
-            [
+            # convert index to a datetime series
+            idx_datetime = pd.Series(
                 pd.to_datetime(
-                    X[variable],
+                    X.index,
                     dayfirst=self.dayfirst,
                     yearfirst=self.yearfirst,
                     utc=self.utc,
-                )
-                for variable in self.variables_
-            ],
-            axis=1,
-        )
-
-        non_dt_columns = datetime_df.columns[~datetime_df.apply(is_datetime)].tolist()
-        if non_dt_columns:
-            raise ValueError(
-                "ValueError: variable(s) "
-                + (len(non_dt_columns) * "{} ").format(*non_dt_columns)
-                + "could not be converted to datetime. Try setting utc=True"
+                ),
+                index=X.index,
             )
 
-        # create new features
-        for var in self.variables_:
+            # create new features
             for feat in self.features_to_extract_:
-                X[str(var) + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[feat](
-                    datetime_df[var]
+                X[FEATURES_SUFFIXES[feat][1:]] = FEATURES_FUNCTIONS[feat](idx_datetime)
+
+        else:
+            # check if dataset contains na
+            if self.missing_values == "raise":
+                _check_contains_na(X, self.variables_)
+
+            # convert datetime variables
+            datetime_df = pd.concat(
+                [
+                    pd.to_datetime(
+                        X[variable],
+                        dayfirst=self.dayfirst,
+                        yearfirst=self.yearfirst,
+                        utc=self.utc,
+                    )
+                    for variable in self.variables_
+                ],
+                axis=1,
+            )
+
+            non_dt_columns = datetime_df.columns[
+                ~datetime_df.apply(is_datetime)
+            ].tolist()
+            if non_dt_columns:
+                raise ValueError(
+                    "ValueError: variable(s) "
+                    + (len(non_dt_columns) * "{} ").format(*non_dt_columns)
+                    + "could not be converted to datetime. Try setting utc=True"
                 )
-        if self.drop_original:
-            X.drop(self.variables_, axis=1, inplace=True)
+
+            # create new features
+            for var in self.variables_:
+                for feat in self.features_to_extract_:
+                    X[str(var) + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[feat](
+                        datetime_df[var]
+                    )
+            if self.drop_original:
+                X.drop(self.variables_, axis=1, inplace=True)
 
         return X
 
@@ -342,8 +347,8 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
             variables in the transformed dataset (original + new variables) is returned.
             Alternatively, only the names for the datetime features derived from
             input_features will be returned.
-            If the transformer was fitted on the dataframe index, you may only pass
-            `index` as input_features, or leave it as `None`.
+            If the features were derived from the dataframe index, pass 'index'
+            to obtain the datetime features or None for all output features."
 
         Returns
         -------
