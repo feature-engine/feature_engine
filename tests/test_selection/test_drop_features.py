@@ -26,6 +26,7 @@ def test_drop_1_variable(df_vartypes):
     assert type(X) == pd.DataFrame
     pd.testing.assert_frame_equal(X, df)
 
+
 def test_drop_2_variables(df_vartypes):
     transformer = DropFeatures(features_to_drop=["City", "dob"])
     X = transformer.fit_transform(df_vartypes)
