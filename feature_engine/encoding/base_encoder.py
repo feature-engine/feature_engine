@@ -53,7 +53,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
 
-    def _check_fit_input_and_variables(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _check_fit_input_and_variables(self, X: pd.DataFrame):
         """
         Checks that input is a dataframe, finds categorical variables, or alternatively
         checks that the variables entered by the user are of type object (categorical).
@@ -71,13 +71,6 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         ValueError
             If there are no categorical variables in the df or the df is empty
             If the variable(s) contain null values
-
-        Returns
-        -------
-        X: Pandas DataFrame
-            The same dataframe entered as parameter
-        variables : list
-            list of categorical variables
         """
 
         if not self.ignore_format:
