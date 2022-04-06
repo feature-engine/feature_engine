@@ -14,6 +14,13 @@ vars_dt = ["datetime_range", "date_obj1", "date_obj2", "time_obj"]
 vars_non_dt = ["Name", "Age"]
 feat_names_default = [FEATURES_SUFFIXES[feat] for feat in FEATURES_DEFAULT]
 dates_nan = pd.DataFrame({"dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan]})
+dates_idx_nan = pd.DataFrame(
+    [1, 2, 3, 4], index=["Feb-2010", np.nan, "Jun-1922", np.nan]
+)
+dates_idx_dt = pd.DataFrame(
+    [4, 3, 2, 1],
+    index=pd.date_range("2003-02-27", periods=4, freq="D"),
+)
 
 
 _false_input_params = [
@@ -91,6 +98,8 @@ def test_raises_error_when_variables_not_datetime(df_datetime):
         DatetimeFeatures(variables=["Age"]).fit(df_datetime)
     with pytest.raises(TypeError):
         DatetimeFeatures(variables=["Name", "Age", "date_obj1"]).fit(df_datetime)
+    with pytest.raises(TypeError):
+        DatetimeFeatures(variables="index").fit(df_datetime)
     # passing a df that contains no datetime variables
     with pytest.raises(ValueError):
         DatetimeFeatures().fit(df_datetime[["Name", "Age"]])
@@ -100,6 +109,8 @@ def test_raises_error_when_df_has_nan():
     # dataset containing nans
     with pytest.raises(ValueError):
         DatetimeFeatures().fit(dates_nan)
+    with pytest.raises(ValueError):
+        DatetimeFeatures(variables="index").fit(dates_idx_nan)
 
 
 def test_attributes_upon_fitting(df_datetime):
@@ -148,7 +159,11 @@ def test_raises_error_when_nan_in_transform_df(df_datetime):
     transformer.fit(df_datetime)
     # dataset containing nans
     with pytest.raises(ValueError):
-        DatetimeFeatures().transform(dates_nan)
+        transformer.transform(dates_nan)
+    transformer = DatetimeFeatures(variables="index")
+    transformer.fit(dates_idx_dt)
+    with pytest.raises(ValueError):
+        transformer.transform(dates_idx_nan)
 
 
 def test_raises_non_fitted_error(df_datetime):
@@ -216,6 +231,25 @@ def test_extract_datetime_features_from_specified_variables(
                 for feat in feat_names_default
             ]
         ],
+    )
+
+    # datetime variable is index
+    X = DatetimeFeatures(
+        variables="index", features_to_extract=["month", "day_of_month"]
+    ).fit_transform(dates_idx_dt)
+    pd.testing.assert_frame_equal(
+        X,
+        pd.concat(
+            [
+                dates_idx_dt,
+                pd.DataFrame(
+                    [[2, 27], [2, 28], [3, 1], [3, 2]],
+                    index=dates_idx_dt.index,
+                    columns=["month", "day_of_month"],
+                ),
+            ],
+            axis=1,
+        ),
     )
 
 
@@ -375,6 +409,22 @@ def test_extract_features_from_variables_containing_nans():
         X,
         pd.DataFrame({"dates_na_year": [2010, np.nan, 1922, np.nan]}),
     )
+    # dt variable is index
+    X = DatetimeFeatures(
+        variables="index", features_to_extract=["month"], missing_values="ignore"
+    ).fit_transform(dates_idx_nan)
+    pd.testing.assert_frame_equal(
+        X,
+        pd.concat(
+            [
+                dates_idx_nan,
+                pd.DataFrame(
+                    {"month": [2, np.nan, 6, np.nan]}, index=dates_idx_nan.index
+                ),
+            ],
+            axis=1,
+        ),
+    )
 
 
 def test_extract_features_with_different_datetime_parsing_options(df_datetime):
@@ -437,6 +487,23 @@ def test_get_feature_names_out(df_datetime, df_datetime_transformed):
     assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
         "date_obj1_" + feat for feat in ["semester", "week"]
     ]
+
+    # features were extracted from index
+    transformer = DatetimeFeatures(
+        variables="index", features_to_extract=["semester", "week"]
+    )
+    X = transformer.fit_transform(dates_idx_dt)
+    # user passes something else than index as input_features
+    with pytest.raises(ValueError):
+        transformer.get_feature_names_out(input_features="not_index")
+    with pytest.raises(ValueError):
+        transformer.get_feature_names_out(input_features=["still", "not", "index"])
+    # input_features is None
+    assert list(X.columns) == transformer.get_feature_names_out()
+    # input_features is index
+    assert ["semester", "week"] == transformer.get_feature_names_out(
+        input_features="index"
+    )
 
     # when drop original is False
     transformer = DatetimeFeatures(drop_original=False)
