@@ -8,7 +8,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     _check_input_matches_training_df,
-    _is_dataframe,
+    check_X,
 )
 from feature_engine.docstrings import (
     Substitution,
@@ -143,7 +143,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin):
             y is not needed in this transformer. You can pass None or y.
         """
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # We need the dataframes to have unique values in the index and no missing data.
         # Otherwise, when we merge the new features we will duplicate rows.
@@ -178,7 +178,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         # check if 'X' is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # check if input data contains the same number of columns as the fitted
         # dataframe.

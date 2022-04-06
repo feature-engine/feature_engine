@@ -8,7 +8,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     _check_input_matches_training_df,
-    _is_dataframe,
+    check_X,
 )
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
@@ -56,7 +56,7 @@ class BaseCreation(BaseEstimator, TransformerMixin):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # check variables are numerical
         self.variables: List[Union[str, int]] = _find_or_check_numerical_variables(
@@ -95,7 +95,7 @@ class BaseCreation(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_input_matches_training_df(X, self.n_features_in_)

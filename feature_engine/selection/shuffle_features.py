@@ -7,7 +7,7 @@ from sklearn.metrics import get_scorer
 from sklearn.model_selection import check_cv, cross_validate
 from sklearn.utils.validation import check_random_state
 
-from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.dataframe_checks import check_X
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -163,7 +163,7 @@ class SelectByShuffling(BaseSelector):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # reset the index
         X = X.reset_index(drop=True)

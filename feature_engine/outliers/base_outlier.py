@@ -9,7 +9,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     _check_input_matches_training_df,
-    _is_dataframe,
+    check_X,
 )
 from feature_engine.validation import _return_tags
 from feature_engine.variable_manipulation import (
@@ -55,7 +55,7 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # Check that the dataframe contains the same number of columns
         # than the dataframe used to fit the imputer.
@@ -239,7 +239,7 @@ class WinsorizerBase(BaseOutlier):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # find or check for numerical variables
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)

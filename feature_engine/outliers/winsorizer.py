@@ -6,7 +6,7 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
-from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.dataframe_checks import check_X
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -129,7 +129,7 @@ class Winsorizer(WinsorizerBase):
             X_out = super().transform(X)
 
         else:
-            X_orig = _is_dataframe(X)
+            X_orig = check_X(X)
             X_out = super().transform(X_orig)
             X_orig = X_orig[self.variables_]
             X_out_filtered = X_out[self.variables_]

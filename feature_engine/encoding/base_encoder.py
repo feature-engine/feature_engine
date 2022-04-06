@@ -8,7 +8,7 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_input_matches_training_df,
-    _is_dataframe,
+    check_X,
 )
 from feature_engine.docstrings import Substitution
 from feature_engine.encoding._docstrings import (
@@ -81,7 +81,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         if not self.ignore_format:
             # find categorical variables or check variables entered by user are object
@@ -130,7 +130,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # Check input data contains same number of columns as df used to fit
         _check_input_matches_training_df(X, self.n_features_in_)

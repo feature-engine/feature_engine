@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.dataframe_checks import check_X
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -107,7 +107,7 @@ class AddMissingIndicator(BaseImputer):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # find variables for which indicator should be added
         self.variables_ = _find_all_variables(X, self.variables)

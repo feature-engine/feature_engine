@@ -10,7 +10,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     _check_input_matches_training_df,
-    _is_dataframe,
+    check_X,
 )
 from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
@@ -112,7 +112,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
             The target variable.
         """
         # check if 'X' is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # Check X and y for consistent length
         if len(X) != len(y):
@@ -258,7 +258,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # Check input data contains same number of columns as df used to fit
         _check_input_matches_training_df(X, self.n_features_in_)

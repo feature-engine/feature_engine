@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.dataframe_checks import check_X
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -158,7 +158,7 @@ class RandomSampleImputer(BaseImputer):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # find variables to impute
         self.variables_ = _find_all_variables(X, self.variables)
