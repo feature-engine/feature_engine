@@ -2,7 +2,7 @@
 transform().
 """
 
-from typing import List, Union
+from typing import List, Union, Tuple
 
 import numpy as np
 import pandas as pd
@@ -134,7 +134,7 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
 
 def _check_pd_X_y(
     X: Union[pd.DataFrame, np.ndarray],
-    y: Union[pd.Series, np.ndarray],
+    y: Union[pd.Series, np.ndarray, list, Tuple],
 ):
     """
     Returns X as a DataFrame and y as a Series, converting any numpy
@@ -154,7 +154,7 @@ def _check_pd_X_y(
     Parameters
     ----------
     X: Pandas DataFrame or numpy ndarray
-    y: Pandas Series or numpy ndarray
+    y: Pandas Series or numpy ndarray or list or tuple
 
     Returns
     -------
@@ -167,19 +167,22 @@ def _check_pd_X_y(
     with inconsistent indexes, or if either X or y is None/empty
     """
     # * Raises an exception if either incoming object is None or empty
-    if X is None or X.shape[0] == 0:
+    if X is None or len(X) == 0:
         raise ValueError("X cannot be None or empty")
-    if y is None or y.shape[0] == 0:
+    if y is None or len(y) == 0:
         raise ValueError("y cannot be None or empty")
 
     # * If both parameters are numpy objects, they are converted to pandas objects.
     # * If one parameter is a pandas object and the other is a numpy object,
     # the former will be converted to a pandas object, with the indexes
-    # of the latter.
+    # of the latter. (Lists and tuples are also supported for y)
     if _is_numpy(X):
         X = _numpy_to_dataframe(X, index=y.index if isinstance(y, pd.Series) else None)
     if _is_numpy(y):
         y = _numpy_to_series(y, index=X.index if isinstance(X, pd.DataFrame) else None)
+    if isinstance(y, (list, Tuple)):
+        y = pd.Series(y)
+        y.index = X.index if isinstance(X, pd.DataFrame) else None
 
     # * If both parameters are pandas objects, and their indexes are inconsistent,
     # an exception is raised (i.e. this is the caller's error.)
