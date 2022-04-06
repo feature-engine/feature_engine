@@ -159,6 +159,16 @@ def test_check_pd_X_y_np_to_pd(X_in, y_in, expected_1, expected_2):
             ValueError,
             ".*Index.*",
         ),
+
+        # Show that incompatible dimensions causes same error
+        (
+                pd.DataFrame(
+                    {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
+                ),
+                pd.Series([1, 2, 3], index=[22, 99, 101]),
+                ValueError,
+                ".*Lengths.*",
+        ),
     ],
 )
 def test_check_pd_X_y_errors(X_in, y_in, exception_type, exception_match):
