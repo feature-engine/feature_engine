@@ -124,24 +124,24 @@ def test_check_pd_X_y_both_pandas(X_in, y_in, expected_1, expected_2):
         ),
         # (Lists and tuples are also supported for y)
         (
-                pd.DataFrame(
-                    {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
-                ),
-                [1, 2, 3, 4],
-                pd.DataFrame(
-                    {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
-                ),
-                pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212]),
+            pd.DataFrame(
+                {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
+            ),
+            [1, 2, 3, 4],
+            pd.DataFrame(
+                {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
+            ),
+            pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212]),
         ),
         (
-                pd.DataFrame(
-                    {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
-                ),
-                (1, 2, 3, 4),
-                pd.DataFrame(
-                    {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
-                ),
-                pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212]),
+            pd.DataFrame(
+                {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
+            ),
+            (1, 2, 3, 4),
+            pd.DataFrame(
+                {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
+            ),
+            pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212]),
         ),
     ],
 )
@@ -180,46 +180,43 @@ def test_check_pd_X_y_np_to_pd(X_in, y_in, expected_1, expected_2):
             ValueError,
             ".*Index.*",
         ),
-
         # * Raises an exception if either incoming object is None or empty
         (
-                pd.DataFrame(
-                    {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
-                ),
-                None,
-                ValueError,
-                ".*None.*empty.*",
+            pd.DataFrame(
+                {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
+            ),
+            None,
+            ValueError,
+            ".*None.*empty.*",
         ),
         (
-                None,
-                pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212]),
-                ValueError,
-                ".*None.*empty.*",
+            None,
+            pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212]),
+            ValueError,
+            ".*None.*empty.*",
         ),
         (
-                pd.DataFrame(),
-                pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212]),
-                ValueError,
-                ".*None.*empty.*",
+            pd.DataFrame(),
+            pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212]),
+            ValueError,
+            ".*None.*empty.*",
         ),
         (
-                pd.DataFrame(
-                    {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
-                ),
-                pd.Series(),
-                ValueError,
-                ".*None.*empty.*",
+            pd.DataFrame(
+                {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
+            ),
+            pd.Series(),
+            ValueError,
+            ".*None.*empty.*",
         ),
-
-
         # Show that incompatible dimensions causes same error
         (
-                pd.DataFrame(
-                    {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
-                ),
-                pd.Series([1, 2, 3], index=[22, 99, 101]),
-                ValueError,
-                ".*Lengths.*",
+            pd.DataFrame(
+                {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
+            ),
+            pd.Series([1, 2, 3], index=[22, 99, 101]),
+            ValueError,
+            ".*Lengths.*",
         ),
     ],
 )
