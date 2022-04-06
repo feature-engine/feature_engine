@@ -146,7 +146,7 @@ def _check_pd_X_y(
     * If both parameters are pandas objects, and their indexes are inconsistent,
     an exception is raised (i.e. this is the caller's error.)
     * If both parameters are pandas objects and their indexes match, they are
-    returned unchanged.
+    copied and returned.
     * If X is sparse or X is empty or, after all transforms, is stiil
     not a DataFrame, raises an exception
 
@@ -178,12 +178,12 @@ def _check_pd_X_y(
     # * If both parameters are pandas objects, and their indexes are inconsistent,
     # an exception is raised (i.e. this is the caller's error.)
     # * If both parameters are pandas objects and their indexes match, they are
-    # returned unchanged.
+    # copied and returned
     if isinstance(X, pd.DataFrame) and isinstance(y, pd.Series):
         if not all(y.index == X.index):
             raise ValueError("Index mismatch between DataFrame X and Series y")
         else:
-            pass  # deliberately highlighting the no-op case
+            return X.copy(), y.copy()
 
     # * If X is sparse or X is empty or, after all transforms, is stiil
     # not a DataFrame, raises an exception

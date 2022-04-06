@@ -65,14 +65,16 @@ def test_check_pd_X_y_both_numpy(X_in, y_in, expected_1, expected_2):
     "X_in, y_in, expected_1, expected_2",
     [
         # * If both parameters are pandas objects and their indexes match, they are
-        # returned unchanged.
+        # copied and returned.
         (
             pd.DataFrame(
                 {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
             ),
             pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212]),
-            None,
-            None,
+            pd.DataFrame(
+                {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
+            ),
+            pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212]),
         ),
     ],
 )
@@ -81,18 +83,16 @@ def test_check_pd_X_y_both_pandas(X_in, y_in, expected_1, expected_2):
     X_out, y_out = _check_pd_X_y(X_in, y_in)
 
     # Test X output
-    if expected_1 is None:
-        assert X_out is X_in
-    elif isinstance(expected_1, pd.DataFrame):
+    if isinstance(expected_1, pd.DataFrame):
         assert_frame_equal(X_out, expected_1)
+        assert X_out is not expected_1  # make sure copied
     elif isinstance(expected_1, (np.generic, np.ndarray)):
         assert all(X_out == expected_1)
 
     # Test y output
-    if expected_2 is None:
-        assert y_out is y_in
-    elif isinstance(expected_2, pd.Series):
+    if isinstance(expected_2, pd.Series):
         assert_series_equal(y_out, expected_2)
+        assert y_out is not expected_2  # make sure copied
     elif isinstance(expected_2, (np.generic, np.ndarray)):
         assert all(y_out == expected_2)
 
