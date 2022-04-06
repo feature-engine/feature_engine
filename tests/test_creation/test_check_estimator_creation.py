@@ -1,13 +1,14 @@
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
-from feature_engine.creation import (  # FIXME: remove in version 1.4
-    CombineWithReferenceFeature,
+from feature_engine.creation import (
     CyclicalFeatures,
-    CyclicalTransformer,
-    MathematicalCombination,
     MathFeatures,
     RelativeFeatures,
+    # FIXME: remove in version 1.4
+    CombineWithReferenceFeature,
+    CyclicalTransformer,
+    MathematicalCombination,
 )
 from feature_engine.estimator_checks import check_feature_engine_estimator
 
