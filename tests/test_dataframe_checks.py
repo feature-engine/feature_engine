@@ -5,8 +5,9 @@ from pandas.testing import assert_frame_equal
 from scipy.sparse import csr_matrix
 
 from feature_engine.dataframe_checks import (
+    _check_contains_inf,
     _check_contains_na,
-    _check_input_matches_training_df,
+    _check_X_matches_training_df,
     check_X,
 )
 
@@ -42,11 +43,17 @@ def test_raises_error_if_empty_df():
         check_X(df)
 
 
-def test_check_input_matches_training_df(df_vartypes):
+def test_check_X_matches_training_df(df_vartypes):
     with pytest.raises(ValueError):
-        assert _check_input_matches_training_df(df_vartypes, 4)
+        assert _check_X_matches_training_df(df_vartypes, 4)
 
 
 def test_contains_na(df_na):
     with pytest.raises(ValueError):
         assert _check_contains_na(df_na, ["Name", "City"])
+
+
+def test_contains_inf(df_na):
+    df_na.fillna(np.inf, inplace=True)
+    with pytest.raises(ValueError):
+        assert _check_contains_inf(df_na, ["Age", "Marks"])

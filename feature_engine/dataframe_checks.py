@@ -68,7 +68,7 @@ def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
     return X
 
 
-def _check_input_matches_training_df(X: pd.DataFrame, reference: int) -> None:
+def _check_X_matches_training_df(X: pd.DataFrame, reference: int) -> None:
     """
     Checks that DataFrame to transform has the same number of columns that the
     DataFrame used with the fit() method.

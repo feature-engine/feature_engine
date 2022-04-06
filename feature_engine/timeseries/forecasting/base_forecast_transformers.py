@@ -7,7 +7,7 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
-    _check_input_matches_training_df,
+    _check_X_matches_training_df,
     check_X,
 )
 from feature_engine.docstrings import (
@@ -182,7 +182,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin):
 
         # check if input data contains the same number of columns as the fitted
         # dataframe.
-        _check_input_matches_training_df(X, self.n_features_in_)
+        _check_X_matches_training_df(X, self.n_features_in_)
 
         # Dataframes must have unique values in the index and no missing data.
         # Otherwise, when we merge the created features we will duplicate rows.

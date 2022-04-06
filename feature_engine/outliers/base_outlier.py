@@ -8,7 +8,7 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
-    _check_input_matches_training_df,
+    _check_X_matches_training_df,
     check_X,
 )
 from feature_engine.validation import _return_tags
@@ -59,7 +59,7 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
         # Check that the dataframe contains the same number of columns
         # than the dataframe used to fit the imputer.
-        _check_input_matches_training_df(X, self.n_features_in_)
+        _check_X_matches_training_df(X, self.n_features_in_)
 
         if self.missing_values == "raise":
             # check if dataset contains na

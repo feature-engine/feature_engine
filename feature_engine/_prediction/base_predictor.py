@@ -9,7 +9,7 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
-    _check_input_matches_training_df,
+    _check_X_matches_training_df,
     check_X,
 )
 from feature_engine.discretisation import (
@@ -261,7 +261,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         X = check_X(X)
 
         # Check input data contains same number of columns as df used to fit
-        _check_input_matches_training_df(X, self.n_features_in_)
+        _check_X_matches_training_df(X, self.n_features_in_)
 
         # check for missing values
         _check_contains_na(X, self.variables_numerical_)
