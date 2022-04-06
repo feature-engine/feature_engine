@@ -76,7 +76,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
     Parameters
     ----------
     variables: str, list, default=None
-        List wit the variables from which date and time information will be extracted.
+        List with the variables from which date and time information will be extracted.
         If None, the transformer will find and select all datetime variables,
         including variables of type object that can be converted to datetime.
         If "index", the transformer will extract datetime features from the
