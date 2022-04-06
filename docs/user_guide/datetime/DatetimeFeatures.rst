@@ -25,7 +25,7 @@ Datetime variables, in their raw format, are generally not suitable to train mac
 learning models. Yet, an enormous amount of information can be extracted from them.
 
 :class:`DatetimeFeatures()` extracts many numerical and binary date and time features
-from these datetime variables. Among these features we can find the month in which an
+from these datetime variables. Among these features, we find the month in which an
 event occurred, the day of the week, or whether that day was a weekend day.
 
 With :class:`DatetimeFeatures()` we can choose which date and time features
