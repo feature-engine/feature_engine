@@ -149,6 +149,7 @@ def _check_pd_X_y(
     copied and returned.
     * If X is sparse or X is empty or, after all transforms, is stiil
     not a DataFrame, raises an exception
+    * Raises an exception if either incoming object is None or empty
 
     Parameters
     ----------
@@ -163,8 +164,13 @@ def _check_pd_X_y(
     Exceptions
     ----------
     ValueError: if X and y are dimension-incompatible, X and y are pandas objects
-    with inconsistent indexes
+    with inconsistent indexes, or if either X or y is None/empty
     """
+    # * Raises an exception if either incoming object is None or empty
+    if X is None or X.shape[0] == 0:
+        raise ValueError("X cannot be None or empty")
+    if y is None or y.shape[0] == 0:
+        raise ValueError("y cannot be None or empty")
 
     # * If both parameters are numpy objects, they are converted to pandas objects.
     # * If one parameter is a pandas object and the other is a numpy object,
