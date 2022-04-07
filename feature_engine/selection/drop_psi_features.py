@@ -8,7 +8,7 @@ from pandas.api.types import is_numeric_dtype
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
-    _is_dataframe,
+    check_X,
 )
 from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
@@ -309,7 +309,7 @@ class DropHighPSIFeatures(BaseSelector):
             y is not needed in this transformer. You can pass y or None.
         """
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)

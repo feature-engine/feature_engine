@@ -9,52 +9,83 @@ import pandas as pd
 from scipy.sparse import issparse
 
 
-def _is_dataframe(X: pd.DataFrame) -> pd.DataFrame:
+def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
     """
-    Checks if the input is a DataFrame and then creates a copy.
+    Checks if the input is a DataFrame and then creates a copy. This is an important
+    step not to accidentally transform the original dataset entered by the user.
 
-    If the input is a numpy array, it converts it to a pandas Dataframe. This is mostly
-    so that we can add the check_estimator checks for compatibility with sklearn.
+    If the input is a numpy array, it converts it to a pandas Dataframe. The column
+    names are strings representing the column index starting at 0.
+
+    Feature-engine was originally designed to work with pandas dataframes. However,
+    allowing numpy arrays as input allows 2 things:
+
+    We can use the Scikit-learn tests for transformers provided by the
+    `check_estimator` function to test the compatibility of our transformers with
+    sklearn functionality.
+
+    Feature-engine transformers can be used within a Scikit-learn Pipeline together
+    with Scikit-learn transformers like the `SimpleImputer`, which return by default
+    Numpy arrays.
 
     Parameters
     ----------
-    X : pandas Dataframe or numpy array. The one that will be checked and copied.
+    X : pandas Dataframe or numpy array.
+        The input to check and copy or transform.
 
     Raises
     ------
     TypeError
-        If the input is not a Pandas DataFrame or a numpy array
+        If the input is not a Pandas DataFrame or a numpy array.
+    ValueError
+        If the input is an empty dataframe.
 
     Returns
     -------
     X : pandas Dataframe.
-        A copy of original DataFrame. Important step not to accidentally transform the
-        original dataset entered by the user.
+        A copy of original DataFrame or a converted Numpy array.
     """
-    # check_estimator uses numpy arrays for its checks.
-    # Thus, we need to allow np arrays
-    if isinstance(X, (np.generic, np.ndarray)):
-        col_names = [str(i) for i in range(X.shape[1])]
-        X = pd.DataFrame(X, columns=col_names)
+    if isinstance(X, pd.DataFrame):
+        X = X.copy()
 
-    if issparse(X):
-        raise ValueError("This transformer does not support sparse matrices.")
+    elif isinstance(X, (np.generic, np.ndarray)):
+        # If input is scalar raise error
+        if X.ndim == 0:
+            raise ValueError(
+                "Expected 2D array, got scalar array instead:\narray={}.\n"
+                "Reshape your data either using array.reshape(-1, 1) if "
+                "your data has a single feature or array.reshape(1, -1) "
+                "if it contains a single sample.".format(X)
+            )
+        # If input is 1D raise error
+        if X.ndim == 1:
+            raise ValueError(
+                "Expected 2D array, got 1D array instead:\narray={}.\n"
+                "Reshape your data either using array.reshape(-1, 1) if "
+                "your data has a single feature or array.reshape(1, -1) "
+                "if it contains a single sample.".format(X)
+            )
 
-    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+        X.columns = [str(i) for i in range(X.shape[1])]
+
+    elif issparse(X):
+        raise TypeError("This transformer does not support sparse matrices.")
+
+    else:
         raise TypeError(
-            "X is not a pandas dataframe. The dataset should be a pandas dataframe."
+            f"X must be a numpy array or pandas dataframe. Got {type(X)} instead."
         )
 
     if X.empty:
         raise ValueError(
-            "0 feature(s) (shape=%s) while a minimum of %d is "
-            "required." % (X.shape, 1)
+            "0 feature(s) (shape=%s) while a minimum of %d is required." % (X.shape, 1)
         )
 
-    return X.copy()
+    return X
 
 
-def _check_input_matches_training_df(X: pd.DataFrame, reference: int) -> None:
+def _check_X_matches_training_df(X: pd.DataFrame, reference: int) -> None:
     """
     Checks that DataFrame to transform has the same number of columns that the
     DataFrame used with the fit() method.

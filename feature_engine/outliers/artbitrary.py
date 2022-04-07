@@ -9,7 +9,7 @@ import pandas as pd
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
-    _is_dataframe,
+    check_X,
 )
 from feature_engine.docstrings import (
     Substitution,
@@ -22,7 +22,7 @@ from feature_engine.docstrings import (
 )
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.parameter_checks import _define_numerical_dict
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
@@ -114,7 +114,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
         y: pandas Series, default=None
             y is not needed in this transformer. You can pass y or None.
         """
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # find variables to be capped
         if self.min_capping_dict is None and self.max_capping_dict:

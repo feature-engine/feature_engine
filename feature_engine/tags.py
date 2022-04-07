@@ -3,9 +3,8 @@ def _return_tags():
         "_xfail_checks": {
             # Complex data in math terms, are values like 4i (imaginary numbers
             # so to speak). I've never seen such a thing in the dfs I've
-            # worked with, so I dont need this test.
-            "check_complex_data": "I dont think we need this check, if users "
-            "disagree we can think how to introduce it at a later stage.",
+            # worked with, so I don't think we need this test.
+            "check_complex_data": "Test not needed.",
             # check that estimators treat dtype object as numeric if possible
             "check_dtype_object": "Feature-engine transformers use dtypes to select "
             "between numerical and categorical variables. Feature-engine trusts the "
@@ -25,8 +24,6 @@ def _return_tags():
             # the test below tests that a second fit overrides a first fit.
             # the problem is that the test does not work with pandas df.
             "check_fit_idempotent": "Test does not work on dataframes",
-            "check_fit1d": "Test not relevant, Feature-engine transformers only"
-            "work with dataframes",
             "check_fit2d_predict1d": "Test not relevant, Feature-engine transformers "
             "only work with dataframes",
         }

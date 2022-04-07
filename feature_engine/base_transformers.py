@@ -11,10 +11,10 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
-    _check_input_matches_training_df,
-    _is_dataframe,
+    _check_X_matches_training_df,
+    check_X,
 )
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
@@ -50,7 +50,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
             The same dataframe entered as parameter
         """
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # find or check for numerical variables
         variables = [x for x in user_dict_.keys()]
@@ -96,7 +96,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # find or check for numerical variables
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
@@ -140,10 +140,10 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
-        _check_input_matches_training_df(X, self.n_features_in_)
+        _check_X_matches_training_df(X, self.n_features_in_)
 
         # check if dataset contains na or inf
         _check_contains_na(X, self.variables_)

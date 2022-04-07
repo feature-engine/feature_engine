@@ -3,9 +3,9 @@ from typing import List, Union
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.dataframe_checks import check_X
 from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
@@ -142,7 +142,7 @@ class BaseRecursiveSelector(BaseSelector):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)

@@ -2,9 +2,9 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.dataframe_checks import check_X
 from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 
 
 class DropFeatures(BaseSelector):
@@ -72,7 +72,7 @@ class DropFeatures(BaseSelector):
             y is not needed for this transformer. You can pass y or None.
         """
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # X[self.features_to_drops] calls to pandas to check if columns are
         # present in the df.

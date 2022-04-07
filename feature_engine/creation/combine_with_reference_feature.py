@@ -8,8 +8,8 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
-    _check_input_matches_training_df,
-    _is_dataframe,
+    _check_X_matches_training_df,
+    check_X,
 )
 from feature_engine.docstrings import (
     Substitution,
@@ -20,7 +20,7 @@ from feature_engine.docstrings import (
     _missing_values_docstring,
     _n_features_in_docstring,
 )
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
@@ -210,7 +210,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # check variables to combine are numerical
         self.variables_to_combine = _find_or_check_numerical_variables(
@@ -265,10 +265,10 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
-        _check_input_matches_training_df(X, self.n_features_in_)
+        _check_X_matches_training_df(X, self.n_features_in_)
 
         # check if dataset contains na
         if self.missing_values == "raise":

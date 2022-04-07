@@ -7,8 +7,8 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
-    _check_input_matches_training_df,
-    _is_dataframe,
+    _check_X_matches_training_df,
+    check_X,
 )
 from feature_engine.docstrings import (
     Substitution,
@@ -18,7 +18,7 @@ from feature_engine.docstrings import (
     _missing_values_docstring,
     _n_features_in_docstring,
 )
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
@@ -143,7 +143,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin):
             y is not needed in this transformer. You can pass None or y.
         """
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # We need the dataframes to have unique values in the index and no missing data.
         # Otherwise, when we merge the new features we will duplicate rows.
@@ -178,11 +178,11 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         # check if 'X' is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # check if input data contains the same number of columns as the fitted
         # dataframe.
-        _check_input_matches_training_df(X, self.n_features_in_)
+        _check_X_matches_training_df(X, self.n_features_in_)
 
         # Dataframes must have unique values in the index and no missing data.
         # Otherwise, when we merge the created features we will duplicate rows.

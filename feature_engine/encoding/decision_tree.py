@@ -21,7 +21,7 @@ from feature_engine.encoding._docstrings import (
 )
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 from feature_engine.encoding.ordinal import OrdinalEncoder
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 
 
 @Substitution(

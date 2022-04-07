@@ -4,11 +4,8 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import (
-    _check_input_matches_training_df,
-    _is_dataframe,
-)
-from feature_engine.validation import _return_tags
+from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
+from feature_engine.tags import _return_tags
 
 
 class BaseImputer(BaseEstimator, TransformerMixin):
@@ -49,10 +46,10 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # Check that input df contains same number of columns as df used to fit
-        _check_input_matches_training_df(X, self.n_features_in_)
+        _check_X_matches_training_df(X, self.n_features_in_)
 
         # reorder df to match train set
         X = X[self.feature_names_in_]

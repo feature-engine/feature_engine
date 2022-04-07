@@ -2,7 +2,7 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
+from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.docstrings import (
     Substitution,
     _feature_names_in_docstring,
@@ -14,7 +14,7 @@ from feature_engine.selection._docstring import (
     _variables_attribute_docstring,
 )
 from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
@@ -136,7 +136,7 @@ class DropConstantFeatures(BaseSelector):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
