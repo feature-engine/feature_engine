@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from pandas.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal, assert_series_equal
 from scipy.sparse import csr_matrix
 
 from feature_engine.dataframe_checks import (
@@ -9,6 +9,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
     check_X,
+    check_y,
 )
 
 
@@ -40,6 +41,34 @@ def test_raises_error_if_empty_df():
     df = pd.DataFrame([])
     with pytest.raises(ValueError):
         check_X(df)
+
+
+def test_check_y_returns_series():
+    s = pd.Series([0,1,2,3,4])
+    assert_series_equal(check_y(s), s)
+
+
+def test_check_y_converts_np_array():
+    a1D = np.array([1, 2, 3, 4])
+    s = pd.Series(a1D)
+    assert_series_equal(check_y(a1D), s)
+
+
+def test_check_y_raises_none_error():
+    with pytest.raises(ValueError):
+        check_y(None)
+
+
+def test_check_y_raises_nan_error():
+    s = pd.Series([0, np.nan, 2, 3, 4])
+    with pytest.raises(ValueError):
+        check_y(s)
+
+
+def test_check_y_raises_inf_error():
+    s = pd.Series([0, np.inf, 2, 3, 4])
+    with pytest.raises(ValueError):
+        check_y(s)
 
 
 def test_check_X_matches_training_df(df_vartypes):

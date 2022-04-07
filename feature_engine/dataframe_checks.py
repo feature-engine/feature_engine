@@ -7,6 +7,7 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 from scipy.sparse import issparse
+from sklearn.utils.validation import _check_y
 
 
 def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
@@ -83,6 +84,80 @@ def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
         )
 
     return X
+
+
+def check_y(
+    y: Union[np.generic, np.ndarray, pd.Series, List],
+    multi_output: bool = False,
+    y_numeric: bool = True,
+) -> pd.Series:
+    """
+    Checks that y is a series, or alternatively, if it can be converted to a series.
+
+    Parameters
+    ----------
+    y : pd.Series, np.array, list
+
+    multi_output : bool, default=False
+        Whether to allow 2D y (array). If false, y will be
+        validated as a vector. y cannot have np.nan or np.inf values if
+        multi_output=True.
+
+    y_numeric : bool, default=False
+        Whether to ensure that y has a numeric type. If dtype of y is object,
+        it is converted to float64. Should only be used for regression
+        algorithms.
+
+    Returns
+    -------
+    y: pd.Series
+    """
+
+    if y is None:
+        raise ValueError("y cannot be None.")
+
+    elif isinstance(y, pd.Series):
+        _check_y(y, multi_output=multi_output, y_numeric=y_numeric)
+        y = y.copy()
+
+    else:
+        y = _check_y(y, multi_output=multi_output, y_numeric=y_numeric)
+        y = pd.Series(y)
+
+    return y
+
+
+def _check_pd_X_y(
+    X: Union[np.generic, np.ndarray, pd.DataFrame],
+    y: Union[np.generic, np.ndarray, pd.Series, List],
+    multi_output: bool = False,
+    y_numeric: bool = True,
+) -> (pd.DataFrame, pd.Series):
+    """
+    Ensures X and y are compatible pandas DataFrame and Series. If both are pandas
+    objects, checks that their indexes match. If any is a numpy array, converts to
+    pandas object with compatible index.
+
+    This transformer ensures that we can concatenate X and y using `pandas.concat`,
+    functionality needed in the encoders.
+
+    Parameters
+    ----------
+    X: Pandas DataFrame or numpy ndarray
+    y: Pandas Series or numpy ndarray
+
+    Raises
+    ------
+    ValueError: if X and y are pandas objects with inconsistent indexes.
+    TypeError: if X is sparse matrix, empty dataframe or not a dataframe.
+    TypeError: if y can't be parsed as pandas Series.
+
+    Returns
+    -------
+    X: Pandas DataFrame
+    y: Pandas Series
+    """
+    pass
 
 
 def _check_X_matches_training_df(X: pd.DataFrame, reference: int) -> None:
