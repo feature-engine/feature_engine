@@ -79,6 +79,38 @@ def test_check_x_y_returns_pandas(df_vartypes):
     assert_series_equal(s, y)
 
 
+def test_check_X_y_pandas_non_typical_index():
+    df = pd.DataFrame(
+        {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
+    )
+    s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212])
+    x, y = check_X_y(df, s)
+    assert_frame_equal(df, x)
+    assert_series_equal(s, y)
+
+
+def test_check_x_y_reassings_index():
+    # case 1: X is dataframe, y is something else
+    df = pd.DataFrame(
+        {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
+    )
+    s = np.array([1, 2, 3, 4])
+    s_exp = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212])
+    x, y = check_X_y(df, s)
+    assert_frame_equal(df, x)
+    assert_series_equal(s_exp.astype(int), y.astype(int))
+
+    # case 2: X is not a df, y is a series
+    df = np.array([[1, 2, 3, 4], [5, 6, 7, 8]]).T
+    s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212])
+    df_exp = pd.DataFrame(df, columns=["0", "1"])
+    df_exp.index = s.index
+
+    x, y = check_X_y(df, s)
+    assert_frame_equal(df_exp, x)
+    assert_series_equal(s, y)
+
+
 def test_check_x_y_converts_numpy_to_pandas():
     a2D = np.array([[1, 2], [3, 4], [3, 4], [3, 4]])
     df_2D = pd.DataFrame(a2D, columns=["0", "1"])

@@ -87,9 +87,9 @@ def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
 
 
 def check_y(
-    y: Union[np.generic, np.ndarray, pd.Series, List],
-    multi_output: bool = False,
-    y_numeric: bool = True,
+        y: Union[np.generic, np.ndarray, pd.Series, List],
+        multi_output: bool = False,
+        y_numeric: bool = True,
 ) -> pd.Series:
     """
     Checks that y is a series, or alternatively, if it can be converted to a series.
@@ -128,10 +128,10 @@ def check_y(
 
 
 def check_X_y(
-    X: Union[np.generic, np.ndarray, pd.DataFrame],
-    y: Union[np.generic, np.ndarray, pd.Series, List],
-    multi_output: bool = False,
-    y_numeric: bool = True,
+        X: Union[np.generic, np.ndarray, pd.DataFrame],
+        y: Union[np.generic, np.ndarray, pd.Series, List],
+        multi_output: bool = False,
+        y_numeric: bool = True,
 ) -> Tuple[pd.DataFrame, pd.Series]:
     """
     Ensures X and y are compatible pandas DataFrame and Series. If both are pandas
@@ -157,14 +157,33 @@ def check_X_y(
     X: Pandas DataFrame
     y: Pandas Series
     """
-    X = check_X(X)
-    y = check_y(y, multi_output=multi_output, y_numeric=y_numeric)
-    check_consistent_length(X, y)
 
-    # If X and y were a DataFrame and a Series, they are copied without transformation.
-    # Check that their indexes match.
-    if not all(y.index == X.index):
-        raise ValueError("The indexes of X and y do not match.")
+    def _check_X_y(X, y):
+        X = check_X(X)
+        y = check_y(y, multi_output=multi_output, y_numeric=y_numeric)
+        check_consistent_length(X, y)
+        return X, y
+
+    # case 1: both are pandas objects
+    if isinstance(X, pd.DataFrame) and isinstance(y, pd.Series):
+        X, y = _check_X_y(X, y)
+        # Check that their indexes match.
+        if not all(y.index == X.index):
+            raise ValueError("The indexes of X and y do not match.")
+
+    # case 2: X is dataframe and y is something else
+    if isinstance(X, pd.DataFrame) and not isinstance(y, pd.Series):
+        X, y = _check_X_y(X, y)
+        y.index = X.index
+
+    # case 3: X is not a dataframe and y is a series
+    elif not isinstance(X, pd.DataFrame) and isinstance(y, pd.Series):
+        X, y = _check_X_y(X, y)
+        X.index = y.index
+
+    # all other cases
+    else:
+        X, y = _check_X_y(X, y)
 
     return X, y
 
