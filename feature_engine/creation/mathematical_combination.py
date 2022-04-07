@@ -20,7 +20,7 @@ from feature_engine.docstrings import (
     _missing_values_docstring,
     _n_features_in_docstring,
 )
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 

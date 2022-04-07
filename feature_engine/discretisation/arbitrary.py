@@ -15,7 +15,7 @@ from feature_engine.docstrings import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 
 
 @Substitution(

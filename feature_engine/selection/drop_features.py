@@ -4,7 +4,7 @@ import pandas as pd
 
 from feature_engine.dataframe_checks import check_X
 from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 
 
 class DropFeatures(BaseSelector):

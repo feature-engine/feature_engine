@@ -16,7 +16,7 @@ from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
 )
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,

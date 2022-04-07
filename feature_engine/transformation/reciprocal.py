@@ -17,7 +17,7 @@ from feature_engine.docstrings import (
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 

@@ -17,7 +17,7 @@ from feature_engine.discretisation import (
     EqualWidthDiscretiser,
 )
 from feature_engine.encoding import MeanEncoder
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_categorical_and_numerical_variables,

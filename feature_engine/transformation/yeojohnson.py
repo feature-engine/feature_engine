@@ -98,9 +98,6 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
         self.lambda_dict_ = {}
 
-        # to avoid NumPy error
-        X[self.variables_] = X[self.variables_].astype("float")
-
         for var in self.variables_:
             _, self.lambda_dict_[var] = stats.yeojohnson(X[var])
 

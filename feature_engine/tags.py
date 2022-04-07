@@ -4,8 +4,7 @@ def _return_tags():
             # Complex data in math terms, are values like 4i (imaginary numbers
             # so to speak). I've never seen such a thing in the dfs I've
             # worked with, so I don't think we need this test.
-            "check_complex_data": "I dont think we need this check, if users "
-            "disagree we can think how to introduce it at a later stage.",
+            "check_complex_data": "Test not needed.",
             # check that estimators treat dtype object as numeric if possible
             "check_dtype_object": "Feature-engine transformers use dtypes to select "
             "between numerical and categorical variables. Feature-engine trusts the "

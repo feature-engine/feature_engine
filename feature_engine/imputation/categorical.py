@@ -14,7 +14,7 @@ from feature_engine.docstrings import (
     _variables_attribute_docstring,
 )
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
