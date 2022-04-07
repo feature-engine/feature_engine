@@ -21,14 +21,13 @@ def test_check_X_converts_numpy_to_pandas():
     a2D = np.array([[1, 2], [3, 4]])
     a3D = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
 
-    df_1D = pd.DataFrame(a1D, columns=["0"])
     df_2D = pd.DataFrame(a2D, columns=["0", "1"])
-
-    assert_frame_equal(df_1D, check_X(a1D))
     assert_frame_equal(df_2D, check_X(a2D))
 
     with pytest.raises(ValueError):
         check_X(a3D)
+    with pytest.raises(ValueError):
+        check_X(a1D)
 
 
 def test_check_X_raises_error_sparse_matrix():

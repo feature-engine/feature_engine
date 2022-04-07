@@ -49,6 +49,23 @@ def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
         X = X.copy()
 
     elif isinstance(X, (np.generic, np.ndarray)):
+        # If input is scalar raise error
+        if X.ndim == 0:
+            raise ValueError(
+                "Expected 2D array, got scalar array instead:\narray={}.\n"
+                "Reshape your data either using array.reshape(-1, 1) if "
+                "your data has a single feature or array.reshape(1, -1) "
+                "if it contains a single sample.".format(X)
+            )
+        # If input is 1D raise error
+        if X.ndim == 1:
+            raise ValueError(
+                "Expected 2D array, got 1D array instead:\narray={}.\n"
+                "Reshape your data either using array.reshape(-1, 1) if "
+                "your data has a single feature or array.reshape(1, -1) "
+                "if it contains a single sample.".format(X)
+            )
+
         X = pd.DataFrame(X)
         X.columns = [str(i) for i in range(X.shape[1])]
 
