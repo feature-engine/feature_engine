@@ -9,6 +9,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
     check_X,
+    check_X_y,
     check_y,
 )
 
@@ -44,7 +45,7 @@ def test_raises_error_if_empty_df():
 
 
 def test_check_y_returns_series():
-    s = pd.Series([0,1,2,3,4])
+    s = pd.Series([0, 1, 2, 3, 4])
     assert_series_equal(check_y(s), s)
 
 
@@ -69,6 +70,45 @@ def test_check_y_raises_inf_error():
     s = pd.Series([0, np.inf, 2, 3, 4])
     with pytest.raises(ValueError):
         check_y(s)
+
+
+def test_check_x_y_returns_pandas(df_vartypes):
+    s = pd.Series([0, 1, 2, 3])
+    x, y = check_X_y(df_vartypes, s)
+    assert_frame_equal(df_vartypes, x)
+    assert_series_equal(s, y)
+
+
+def test_check_x_y_converts_numpy_to_pandas():
+    a2D = np.array([[1, 2], [3, 4], [3, 4], [3, 4]])
+    df_2D = pd.DataFrame(a2D, columns=["0", "1"])
+
+    a1D = np.array([1, 2, 3, 4])
+    s = pd.Series(a1D)
+
+    x, y = check_X_y(df_2D, s)
+    assert_frame_equal(df_2D, x)
+    assert_series_equal(s, y)
+
+
+def test_check_x_y_inconsistent_length(df_vartypes):
+    s = pd.Series([0, 1, 2, 3, 5])
+    with pytest.raises(ValueError):
+        check_X_y(df_vartypes, s)
+
+
+def test_check_x_y_raises_index_mismatch(df_vartypes):
+    s = pd.Series(
+        [
+            0,
+            1,
+            2,
+            3,
+        ],
+        index=[2, 3, 4, 5],
+    )
+    with pytest.raises(ValueError):
+        check_X_y(df_vartypes, s)
 
 
 def test_check_X_matches_training_df(df_vartypes):

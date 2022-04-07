@@ -2,12 +2,12 @@
 transform().
 """
 
-from typing import List, Union
+from typing import List, Union, Tuple
 
 import numpy as np
 import pandas as pd
 from scipy.sparse import issparse
-from sklearn.utils.validation import _check_y
+from sklearn.utils.validation import _check_y, check_consistent_length
 
 
 def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
@@ -127,12 +127,12 @@ def check_y(
     return y
 
 
-def _check_pd_X_y(
+def check_X_y(
     X: Union[np.generic, np.ndarray, pd.DataFrame],
     y: Union[np.generic, np.ndarray, pd.Series, List],
     multi_output: bool = False,
     y_numeric: bool = True,
-) -> (pd.DataFrame, pd.Series):
+) -> Tuple[pd.DataFrame, pd.Series]:
     """
     Ensures X and y are compatible pandas DataFrame and Series. If both are pandas
     objects, checks that their indexes match. If any is a numpy array, converts to
@@ -157,7 +157,16 @@ def _check_pd_X_y(
     X: Pandas DataFrame
     y: Pandas Series
     """
-    pass
+    X = check_X(X)
+    y = check_y(y, multi_output=multi_output, y_numeric=y_numeric)
+    check_consistent_length(X, y)
+
+    # If X and y were a DataFrame and a Series, they are copied without transformation.
+    # Check that their indexes match.
+    if not all(y.index == X.index):
+        raise ValueError("The indexes of X and y do not match.")
+
+    return X, y
 
 
 def _check_X_matches_training_df(X: pd.DataFrame, reference: int) -> None:
