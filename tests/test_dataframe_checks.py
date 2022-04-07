@@ -89,6 +89,15 @@ def test_check_X_y_pandas_non_typical_index():
     assert_series_equal(s, y)
 
 
+def test_check_X_y_pandas_index_dont_match():
+    df = pd.DataFrame(
+        {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
+    )
+    s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 999])
+    with pytest.raises(ValueError):
+        check_X_y(df, s)
+
+
 def test_check_x_y_reassings_index():
     # case 1: X is dataframe, y is something else
     df = pd.DataFrame(
