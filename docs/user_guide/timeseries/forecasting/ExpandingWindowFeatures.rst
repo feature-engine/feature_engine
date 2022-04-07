@@ -7,8 +7,8 @@ ExpandingWindowFeatures
 
 :class:`ExpandingWindowFeatures` adds expanding window features to the dataframe.
 Window features are the result of applying an aggregation operation (e.g., mean,
-min, max, etc.) to a variable over a past window. For an expanding window feature
-the window spans the from the start of the data up to, but not including, the
+min, max, etc.) to a variable over a past window. For an expanding window feature,
+the window spans from the start of the data up to, but not including, the
 time point at which the feature is being computed.
 
 For example, the mean value of all the data prior to the current value is an
@@ -18,10 +18,10 @@ current row is another expanding window feature.
 When forecasting the future values of a variable, the past values of that variable are
 likely to be predictive. To capitalize on the past values of a variable, we can simply
 lag features with :class:`LagFeatures`. We can also create features that summarise all
-the past values into a single quantity, this is enabled by :class:`ExpandingWindowFeatures`.
+the past values into a single quantity utilising :class:`ExpandingWindowFeatures`.
 
-:class:`ExpandingWindowFeatures` transformer works on top of `pandas.expanding`,
-`pandas.aggregate` and `pandas.shift`.
+:class:`ExpandingWindowFeatures` works on top of `pandas.expanding`, `pandas.aggregate`
+and `pandas.shift`.
 
 :class:`ExpandingWindowFeatures` uses `pandas.aggregate` to perform the mathematical
 operations over the expanding window. Therefore, you can use any operation supported
@@ -98,18 +98,51 @@ We can find the window features on the right side of the dataframe.
 
 .. code:: python
 
-                         ambient_temp  module_temp  irradiation  color  ...  module_temp_expanding_std  irradiation_expanding_mean  irradiation_expanding_max  irradiation_expanding_std
-    2020-05-15 12:00:00         31.31        49.18         0.51  green  ...                        NaN                         NaN                        NaN                        NaN
-    2020-05-15 12:15:00         31.51        49.84         0.79  green  ...                        NaN                      0.5100                       0.51                        NaN
-    2020-05-15 12:30:00         32.15        52.35         0.65  green  ...                   0.466690                      0.6500                       0.79                   0.197990
-    2020-05-15 12:45:00         32.39        50.63         0.76  green  ...                   1.672553                      0.6500                       0.79                   0.140000
-    2020-05-15 13:00:00         32.62        49.61         0.42   blue  ...                   1.368381                      0.6775                       0.79                   0.126853
+                         ambient_temp  module_temp  irradiation  color  \
+    2020-05-15 12:00:00         31.31        49.18         0.51  green
+    2020-05-15 12:15:00         31.51        49.84         0.79  green
+    2020-05-15 12:30:00         32.15        52.35         0.65  green
+    2020-05-15 12:45:00         32.39        50.63         0.76  green
+    2020-05-15 13:00:00         32.62        49.61         0.42   blue
 
-    [5 rows x 13 columns]
+                         ambient_temp_expanding_mean  ambient_temp_expanding_max  \
+    2020-05-15 12:00:00                          NaN                         NaN
+    2020-05-15 12:15:00                    31.310000                       31.31
+    2020-05-15 12:30:00                    31.410000                       31.51
+    2020-05-15 12:45:00                    31.656667                       32.15
+    2020-05-15 13:00:00                    31.840000                       32.39
+
+                         ambient_temp_expanding_std  module_temp_expanding_mean  \
+    2020-05-15 12:00:00                         NaN                         NaN
+    2020-05-15 12:15:00                         NaN                   49.180000
+    2020-05-15 12:30:00                    0.141421                   49.510000
+    2020-05-15 12:45:00                    0.438786                   50.456667
+    2020-05-15 13:00:00                    0.512640                   50.500000
+
+                         module_temp_expanding_max  module_temp_expanding_std  \
+    2020-05-15 12:00:00                        NaN                        NaN
+    2020-05-15 12:15:00                      49.18                        NaN
+    2020-05-15 12:30:00                      49.84                   0.466690
+    2020-05-15 12:45:00                      52.35                   1.672553
+    2020-05-15 13:00:00                      52.35                   1.368381
+
+                         irradiation_expanding_mean  irradiation_expanding_max  \
+    2020-05-15 12:00:00                         NaN                        NaN
+    2020-05-15 12:15:00                      0.5100                       0.51
+    2020-05-15 12:30:00                      0.6500                       0.79
+    2020-05-15 12:45:00                      0.6500                       0.79
+    2020-05-15 13:00:00                      0.6775                       0.79
+
+                         irradiation_expanding_std
+    2020-05-15 12:00:00                        NaN
+    2020-05-15 12:15:00                        NaN
+    2020-05-15 12:30:00                   0.197990
+    2020-05-15 12:45:00                   0.140000
+    2020-05-15 13:00:00                   0.126853
 
 
 The variables used as input for the window features are stored in the `variables_`
-attribute of the :class:`WindowFeatures`:
+attribute of the :class:`ExpandingWindowFeatures`.
 
 .. code:: python
 
@@ -160,7 +193,7 @@ Working with pandas series
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If your time series is a pandas Series instead of a pandas Dataframe, you need to
-transform it into a dataframe before using :class:`WindowFeatures`.
+transform it into a dataframe before using :class:`ExpandingWindowFeatures`.
 
 The following is a pandas Series:
 
@@ -180,13 +213,13 @@ The following is a pandas Series:
     2020-05-15 13:45:00    32.68
     Freq: 15T, Name: ambient_temp, dtype: float64
 
-We can use :class:`ExpandingWindowFeatures` to create, for example, 2 new window
+We can use :class:`ExpandingWindowFeatures` to create, for example, 2 new expanding window
 features by finding the mean and maximum value of a pandas Series if we convert
 it to a pandas Dataframe using the method `to_frame()`:
 
 .. code:: python
 
-    win_f = ExpandingWindowFeatures(functions=["mean", "max"],)
+    win_f = ExpandingWindowFeatures(functions=["mean", "max"])
 
     X_tr = win_f.fit_transform(X['ambient_temp'].to_frame())
 
@@ -194,12 +227,19 @@ it to a pandas Dataframe using the method `to_frame()`:
 
 .. code:: python
 
-                         ambient_temp  ambient_temp_expanding_mean  ambient_temp_expanding_max
-    2020-05-15 12:00:00         31.31                          NaN                         NaN
-    2020-05-15 12:15:00         31.51                    31.310000                       31.31
-    2020-05-15 12:30:00         32.15                    31.410000                       31.51
-    2020-05-15 12:45:00         32.39                    31.656667                       32.15
-    2020-05-15 13:00:00         32.62                    31.840000                       32.39
+                         ambient_temp  ambient_temp_expanding_mean  \
+    2020-05-15 12:00:00         31.31                          NaN
+    2020-05-15 12:15:00         31.51                    31.310000
+    2020-05-15 12:30:00         32.15                    31.410000
+    2020-05-15 12:45:00         32.39                    31.656667
+    2020-05-15 13:00:00         32.62                    31.840000
+
+                         ambient_temp_expanding_max
+    2020-05-15 12:00:00                         NaN
+    2020-05-15 12:15:00                       31.31
+    2020-05-15 12:30:00                       31.51
+    2020-05-15 12:45:00                       32.15
+    2020-05-15 13:00:00                       32.39
 
 
 And if we do not want the original values of time series in the returned dataframe, we

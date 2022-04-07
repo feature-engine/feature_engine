@@ -82,7 +82,7 @@ class WindowFeatures(BaseForecastTransformer):
 
     periods: int, list of ints, default=1
         Number of periods to shift. Can be a positive integer. See param `periods` in
-        pandas `shift`.
+        pandas `shift()`.
 
     freq: str, list of str, default=None
         Offset to use from the tseries module or time rule. See parameter `freq` in

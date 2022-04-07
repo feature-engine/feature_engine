@@ -32,21 +32,22 @@ from feature_engine.timeseries.forecasting.base_forecast_transformers import (
 )
 class ExpandingWindowFeatures(BaseForecastTransformer):
     """
-    ExpandingWindowFeatures adds new features to a dataframe based on window
+    ExpandingWindowFeatures adds new features to a dataframe based on expanding window
     operations. Expanding window operations are operations that perform an
     aggregation over an expanding window of all past values relative to the
     value of interest. An expanding window feature is, in other words, a feature
     created after computing statistics (e.g., mean, min, max, etc.) using a
     window over all the past data. For example, the mean value of all months
-    prior to the month of the interest is an expanding window feature.
+    prior to the month of interest is an expanding window feature.
 
-    ExpandingWindowFeatures uses the pandas' functions `expanding()`, `agg` and
-    `shift`.  With `expanding`, it creates expanding windows. With `agg` it
+    ExpandingWindowFeatures uses the pandas' functions `expanding()`, `agg()` and
+    `shift()`. With `expanding()`, it creates expanding windows. With `agg()` it
     applies multiple functions within those windows. With 'shift()' it allocates
     the values to the correct rows.
 
     For supported aggregation functions, see Expanding Window
-    `Functions <https://pandas.pydata.org/docs/reference/window.html>`_.
+    `Functions
+    <https://pandas.pydata.org/docs/reference/window.html#expanding-window-functions>`_.
 
     To be compatible with ExpandingWindowFeatures, the dataframe's index must
     have unique values and no NaN.
@@ -65,7 +66,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
     min_periods: int, default None.
         Minimum number of observations in window required to have a value;
         otherwise, result is np.nan. See parameter `min_periods` in the pandas
-        `expanding` documentation for more details.
+        `expanding()` documentation for more details.
 
     functions: str, list of str, default = 'mean'
         The functions to apply within the window. Valid functions can be found
