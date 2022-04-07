@@ -188,6 +188,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
             The target variable. Required to train the decision tree and for
             ordered ordinal encoding.
         """
+        X, y = self._check_X_y(X, y)
 
         # confirm model type and target variables are compatible.
         if self.regression is True:
@@ -201,8 +202,8 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         else:
             check_classification_targets(y)
 
-        # check input dataframe
-        X = self._check_fit_input_and_variables(X)
+        self._check_or_select_variables(X)
+        self._get_feature_names_in(X)
 
         if self.param_grid:
             param_grid = self.param_grid

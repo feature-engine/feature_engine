@@ -147,7 +147,9 @@ class RareLabelEncoder(BaseCategoricalTransformer):
             y is not required. You can pass y or None.
         """
 
-        X = self._check_fit_input_and_variables(X)
+        X = self._check_X(X)
+        self._check_or_select_variables(X)
+        self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
 
