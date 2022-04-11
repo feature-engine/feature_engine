@@ -345,6 +345,9 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
         return X
 
+    @Substitution(
+        input_features=_input_features_docstring,
+    )
     def get_feature_names_out(
         self, input_features: Optional[Union[List, str]] = None
     ) -> List:
@@ -352,12 +355,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        input_features: str, list, default=None
-            Input features. If `None`, then the names of all the variables in the
-            transformed dataset (original + new variables) is returned. If 'index',
-            then the name of the features created from the index is returned. If list
-            with feature names, the names for the datetime features derived from
-            the variables in the list will be returned."
+        {input_features}
 
         Returns
         -------
