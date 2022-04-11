@@ -11,6 +11,7 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
+from feature_engine.docstrings import Substitution, _input_features_docstring
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -106,9 +107,18 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
         return X
 
-    def get_feature_names_out(self) -> List:
+    @Substitution(
+        input_features=_input_features_docstring,
+    )
+    def get_feature_names_out(
+            self, input_features: Optional[Union[List, str]] = None
+    ) -> List:
         """Get output feature names for transformation.
 
+        Parameters
+        ----------
+        {input_features}
+        
         Returns
         -------
         feature_names_out: list

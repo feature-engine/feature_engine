@@ -1,5 +1,9 @@
 import warnings
+<<<<<<< HEAD
 from typing import List, Union, Tuple
+=======
+from typing import List, Optional, Union
+>>>>>>> 25b2f32 (update base_encoder, base_imputer, and base_outlier)
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -11,7 +15,14 @@ from feature_engine.dataframe_checks import (
     check_X,
     check_X_y,
 )
+<<<<<<< HEAD
 from feature_engine._docstrings.substitute import Substitution
+=======
+from feature_engine.docstrings import (
+    Substitution,
+    _input_features_docstring,
+)
+>>>>>>> 25b2f32 (update base_encoder, base_imputer, and base_outlier)
 from feature_engine.encoding._docstrings import (
     _errors_docstring,
     _ignore_format_docstring,
@@ -233,8 +244,17 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         return X
 
-    def get_feature_names_out(self) -> List:
+    @Substitution(
+        input_features=_input_features_docstring,
+    )
+    def get_feature_names_out(
+            self, input_features: Optional[Union[List, str]] = None
+    ) -> List:
         """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        {input_features}
 
         Returns
         -------
