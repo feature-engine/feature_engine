@@ -263,7 +263,25 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self)
 
-        return self.feature_names_in_
+        if input_features is None:
+            # return all feature names
+            feature_names = self.feature_names_in_
+
+        else:
+            # Return features requested by user.
+            if not isinstance(input_features, list):
+                raise ValueError(
+                    f"input_features must be a list. Got {input_features} instead."
+                )
+            if any([f for f in input_features if f not in self.variables_]):
+                raise ValueError(
+                    "Some features in input_features were not used to extract new "
+                    "variables. Pass either None, or a list with the features that "
+                    "were used to create date and time features."
+                )
+            feature_names = input_features
+
+        return feature_names
 
     def _more_tags(self):
         tags_dict = _return_tags()
