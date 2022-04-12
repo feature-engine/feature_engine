@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -6,6 +6,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import _check_contains_na, check_X
+from feature_engine.docstrings import Substitution, _input_features_docstring
 from feature_engine.tags import _return_tags
 
 
@@ -200,8 +201,17 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
         return X
 
-    def get_feature_names_out(self) -> List:
+    @Substitution(
+        input_features=_input_features_docstring
+    )
+    def get_feature_names_out(
+        self, input_features: Optional[Union[List, str]] = None
+    ) -> List:
         """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        {input_features}
 
         Returns
         -------
