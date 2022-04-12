@@ -423,3 +423,10 @@ def test_sort_index(df_time):
     assert_frame_equal(
         df_tr[transformer.variables_], Xs[transformer.variables_].sort_index()
     )
+
+
+def test_expanding_window_raises_when_periods_negative():
+    with pytest.raises(
+        ValueError, match="periods must be a non-negative integer. Got -1 instead."
+    ):
+        ExpandingWindowFeatures(periods=-1)
