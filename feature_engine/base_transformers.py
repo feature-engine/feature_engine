@@ -166,7 +166,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         Parameters
         ----------
         {input_features}
-        
+
         Returns
         -------
         feature_names_out: list
