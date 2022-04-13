@@ -5,6 +5,7 @@ from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
+from feature_engine.docstrings import Substitution, _input_features_docstring
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -343,8 +344,17 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
         return X
 
-    def get_feature_names_out(self) -> List:
+    @Substitution(
+        input_features=_input_features_docstring,
+    )
+    def get_feature_names_out(
+            self, input_features: Optional[Union[List, str]] = None
+    ) -> List:
         """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        {input_features}
 
         Returns
         -------
@@ -354,17 +364,30 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         # Check method fit has been called
         check_is_fitted(self)
 
-        if self.transformer_.__class__.__name__ in _TRANSFORMERS:
-            feature_names = self.feature_names_in_
+        if input_features is None:
+            if self.transformer_.__class__.__name__ in _TRANSFORMERS:
+                feature_names = self.feature_names_in_
 
-        if self.transformer_.__class__.__name__ in _CREATORS:
-            added_features = self.transformer_.get_feature_names_out(self.variables_)
-            feature_names = list(self.feature_names_in_) + list(added_features)
+            if self.transformer_.__class__.__name__ in _CREATORS:
+                added_features = self.transformer_.get_feature_names_out(self.variables_)
+                feature_names = list(self.feature_names_in_) + list(added_features)
 
-        if self.transformer_.__class__.__name__ in _SELECTORS:
-            feature_names = [
-                f for f in self.feature_names_in_ if f not in self.features_to_drop_
-            ]
+            if self.transformer_.__class__.__name__ in _SELECTORS:
+                feature_names = [
+                    f for f in self.feature_names_in_ if f not in self.features_to_drop_
+                ]
+        else:
+            if not isinstance(input_features, list):
+                raise ValueError(
+                    f"input_features must be a list. Got {input_features} instead."
+                )
+            if any([f for f in input_features if f not in self.variables_]):
+                raise ValueError(
+                    "Some features in input_features were not used to extract new "
+                    "variables. Pass either None, or a list with the features that "
+                    "were used to create date and time features."
+                )
+            feature_names = input_features
 
         return feature_names
 
