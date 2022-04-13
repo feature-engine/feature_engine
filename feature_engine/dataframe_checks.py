@@ -136,7 +136,7 @@ def check_X_y(
         X: Union[np.generic, np.ndarray, pd.DataFrame],
         y: Union[np.generic, np.ndarray, pd.Series, List],
         multi_output: bool = False,
-        y_numeric: bool = True,
+        y_numeric: bool = False,
 ) -> Tuple[pd.DataFrame, pd.Series]:
     """
     Ensures X and y are compatible pandas DataFrame and Series. If both are pandas
@@ -149,7 +149,18 @@ def check_X_y(
     Parameters
     ----------
     X: Pandas DataFrame or numpy ndarray
+
     y: Pandas Series or numpy ndarray
+
+    multi_output : bool, default=False
+        Whether to allow 2D y (array). If false, y will be
+        validated as a vector. y cannot have np.nan or np.inf values if
+        multi_output=True.
+
+    y_numeric : bool, default=False
+        Whether to ensure that y has a numeric type. If dtype of y is object,
+        it is converted to float64. Should only be used for regression
+        algorithms.
 
     Raises
     ------
