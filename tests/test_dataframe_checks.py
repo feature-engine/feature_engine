@@ -72,6 +72,11 @@ def test_check_y_raises_inf_error():
         check_y(s)
 
 
+def test_check_y_converts_string_to_number():
+    s = pd.Series(["0", "1", "2", "3", "4"])
+    assert_series_equal(check_y(s, y_numeric=True), s.astype("float"))
+
+
 def test_check_x_y_returns_pandas(df_vartypes):
     s = pd.Series([0, 1, 2, 3])
     x, y = check_X_y(df_vartypes, s)

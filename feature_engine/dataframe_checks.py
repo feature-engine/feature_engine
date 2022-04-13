@@ -89,7 +89,7 @@ def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
 def check_y(
         y: Union[np.generic, np.ndarray, pd.Series, List],
         multi_output: bool = False,
-        y_numeric: bool = True,
+        y_numeric: bool = False,
 ) -> pd.Series:
     """
     Checks that y is a series, or alternatively, if it can be converted to a series.
@@ -117,7 +117,12 @@ def check_y(
         raise ValueError("y cannot be None.")
 
     elif isinstance(y, pd.Series):
-        _check_y(y, multi_output=multi_output, y_numeric=y_numeric)
+        if y.isnull().any():
+            raise ValueError("y contains NaN infinity values.")
+        if y.dtype != "O" and not np.isfinite(y).all():
+            raise ValueError("y contains infinity values.")
+        if y_numeric and y.dtype == "O":
+            y = y.astype("float")
         y = y.copy()
 
     else:
