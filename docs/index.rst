@@ -187,6 +187,7 @@ Forecasting:
 
 - :doc:`api_doc/timeseries/forecasting/LagFeatures`: extract lag features
 - :doc:`api_doc/timeseries/forecasting/WindowFeatures`: create window features
+- :doc:`api_doc/timeseries/forecasting/ExpandingWindowFeatures`: create expanding window features
 
 Preprocessing:
 --------------

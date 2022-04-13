@@ -15,5 +15,6 @@ the past.
 
    LagFeatures
    WindowFeatures
+   ExpandingWindowFeatures
 
 

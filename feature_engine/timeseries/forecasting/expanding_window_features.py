@@ -1,4 +1,7 @@
-from typing import Callable, List, Optional, Union
+# Author: Kishan Manani
+# License: BSD 3 clause
+
+from __future__ import annotations
 
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
@@ -27,69 +30,59 @@ from feature_engine.timeseries.forecasting.base_forecast_transformers import (
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class WindowFeatures(BaseForecastTransformer):
+class ExpandingWindowFeatures(BaseForecastTransformer):
     """
-    WindowFeatures adds new features to a dataframe based on window operations. Window
-    operations are operations that perform an aggregation over a sliding partition of
-    past values. A window feature is, in other words, a feature created after computing
-    statistics (e.g., mean, min, max, etc.) using a window over the past data. For
-    example, the mean value of the previous 3 months of data is a window feature. The
-    maximum value of the previous three rows of data is another window feature.
+    ExpandingWindowFeatures adds new features to a dataframe based on expanding window
+    operations. Expanding window operations are operations that perform an
+    aggregation over an expanding window of all past values relative to the
+    value of interest. An expanding window feature is, in other words, a feature
+    created after computing statistics (e.g., mean, min, max, etc.) using a
+    window over all the past data. For example, the mean value of all months
+    prior to the month of interest is an expanding window feature.
 
-    WindowFeatures uses pandas functions `rolling()`, `agg()` and `shift()`. With
-    `rolling()`, it creates rolling windows. With `agg()` it applies multiple functions
-    within those windows. With `shift()` it allocates the values to the correct rows.
+    ExpandingWindowFeatures uses the pandas' functions `expanding()`, `agg()` and
+    `shift()`. With `expanding()`, it creates expanding windows. With `agg()` it
+    applies multiple functions within those windows. With 'shift()' it allocates
+    the values to the correct rows.
 
-    For supported aggregation functions, see Rolling Window
-    `Functions <https://pandas.pydata.org/docs/reference/window.html>`_.
+    For supported aggregation functions, see Expanding Window
+    `Functions
+    <https://pandas.pydata.org/docs/reference/window.html#expanding-window-functions>`_.
 
-    With pandas `rolling()` we can perform rolling operations over 1 window size at a
-    time. WindowFeatures builds on top of pandas `rolling()` in that new features can
-    be derived from multiple window sizes, and the created features will be
-    automatically concatenated to the original dataframe.
+    To be compatible with ExpandingWindowFeatures, the dataframe's index must
+    have unique values and no NaN.
 
-    To be compatible with WindowFeatures, the dataframe's index must have unique values
-    and no missing data.
+    ExpandingWindowFeatures works only with numerical variables. You can pass a
+    list of variables to use as input for the expanding window. Alternatively,
+    ExpandingWindowFeatures will automatically select all numerical variables
+    in the training set.
 
-    WindowFeatures works only with numerical variables. You can pass a list of variables
-    to use as input for the windows. Alternatively, WindowFeatures will automatically
-    select all numerical variables in the training set.
-
-    More details in the :ref:`User Guide <window_features>`.
+    More details in the :ref:`User Guide <expanding_window_features>`.
 
     Parameters
     ----------
     {variables}
 
-    window: int, offset, BaseIndexer subclass, or list, default=3
-        Size of the moving window. If an integer, the fixed number of observations used
-        for each window. If an offset (recommended), the time period of each window. It
-        can also take a function. See parameter `windows` in pandas `rolling()`
-        documentation for more details.
-
-        In addition to pandas normal input values, `window` can also take a list with
-        the above specified values, in which case, features will be created for each
-        one of the windows specified in the list.
-
     min_periods: int, default None.
-        Minimum number of observations in the window required to have a value;
-        otherwise, the result is np.nan. See parameter `min_periods` in pandas
-        `rolling()` documentation for more details.
+        Minimum number of observations in window required to have a value;
+        otherwise, result is np.nan. See parameter `min_periods` in the pandas
+        `expanding()` documentation for more details.
 
-    functions: string or list of strings, default = 'mean'
+    functions: str, list of str, default = 'mean'
         The functions to apply within the window. Valid functions can be found
         `here <https://pandas.pydata.org/docs/reference/window.html>`_.
 
     periods: int, list of ints, default=1
         Number of periods to shift. Can be a positive integer. See param `periods` in
-        pandas `shift()`.
+        pandas `shift`.
 
     freq: str, list of str, default=None
         Offset to use from the tseries module or time rule. See parameter `freq` in
         pandas `shift()`.
 
     sort_index: bool, default=True
-        Whether to order the index of the dataframe before creating the features.
+        Whether to order the index of the dataframe before creating the
+        expanding window feature.
 
     {missing_values}
 
@@ -98,7 +91,8 @@ class WindowFeatures(BaseForecastTransformer):
     Attributes
     ----------
     variables_:
-        The group of variables that will be used to create the window features.
+        The group of variables that will be used to create the expanding window
+        features.
 
     {feature_names_in_}
 
@@ -109,23 +103,22 @@ class WindowFeatures(BaseForecastTransformer):
     {fit}
 
     transform:
-        Add window features.
+        Add expanding window features.
 
     {fit_transform}
 
     See Also
     --------
-    pandas.rolling
+    pandas.expanding
     pandas.aggregate
     pandas.shift
     """
 
     def __init__(
         self,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        window: Union[str, int, Callable, List[int], List[str]] = 3,
-        min_periods: int = None,
-        functions: Union[str, List[str]] = "mean",
+        variables: None | int | str | list[str | int] = None,
+        min_periods: int | None = None,
+        functions: str | list[str] = "mean",
         periods: int = 1,
         freq: str = None,
         sort_index: bool = True,
@@ -133,27 +126,23 @@ class WindowFeatures(BaseForecastTransformer):
         drop_original: bool = False,
     ) -> None:
 
-        if isinstance(window, list) and len(window) != len(set(window)):
-            raise ValueError(f"There are duplicated windows in the list: {window}")
-
         if not isinstance(functions, (str, list)) or not all(
             isinstance(val, str) for val in functions
         ):
             raise ValueError(
-                f"functions must be a string or a list of strings. "
+                f"functions must be a list of strings or a string."
                 f"Got {functions} instead."
             )
         if isinstance(functions, list) and len(functions) != len(set(functions)):
             raise ValueError(f"There are duplicated functions in the list: {functions}")
 
-        if not isinstance(periods, int) or periods < 1:
+        if not isinstance(periods, int) or periods < 0:
             raise ValueError(
-                f"periods must be a positive integer. Got {periods} instead."
+                f"periods must be a non-negative integer. Got {periods} instead."
             )
 
         super().__init__(variables, missing_values, drop_original)
 
-        self.window = window
         self.min_periods = min_periods
         self.functions = functions
         self.periods = periods
@@ -162,7 +151,7 @@ class WindowFeatures(BaseForecastTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Adds window features.
+        Adds expanding window features.
 
         Parameters
         ----------
@@ -177,25 +166,12 @@ class WindowFeatures(BaseForecastTransformer):
         # Common dataframe checks and setting up.
         X = super().transform(X)
 
-        if isinstance(self.window, list):
-            df_ls = []
-            for win in self.window:
-                tmp = (
-                    X[self.variables_]
-                    .rolling(window=win)
-                    .agg(self.functions)
-                    .shift(periods=self.periods, freq=self.freq)
-                )
-                df_ls.append(tmp)
-            tmp = pd.concat(df_ls, axis=1)
-
-        else:
-            tmp = (
-                X[self.variables_]
-                .rolling(window=self.window)
-                .agg(self.functions)
-                .shift(periods=self.periods, freq=self.freq)
-            )
+        tmp = (
+            X[self.variables_]
+            .expanding(min_periods=self.min_periods)
+            .agg(self.functions)
+            .shift(periods=self.periods, freq=self.freq)
+        )
 
         tmp.columns = self.get_feature_names_out(self.variables_)
 
@@ -206,7 +182,7 @@ class WindowFeatures(BaseForecastTransformer):
 
         return X
 
-    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
+    def get_feature_names_out(self, input_features: list | None = None) -> list:
         """
         Get output feature names for transformation.
 
@@ -225,7 +201,7 @@ class WindowFeatures(BaseForecastTransformer):
         """
         check_is_fitted(self)
 
-        # create names for all window features or just the indicated ones.
+        # create names for all expanding window features or just the indicated ones.
         if input_features is None:
             input_features_ = self.variables_
         else:
@@ -246,19 +222,11 @@ class WindowFeatures(BaseForecastTransformer):
         else:
             functions_ = self.functions
 
-        if isinstance(self.window, list):
-            feature_names = [
-                f"{feature}_window_{win}_{agg}"
-                for win in self.window
-                for feature in input_features_
-                for agg in functions_
-            ]
-        else:
-            feature_names = [
-                f"{feature}_window_{self.window}_{agg}"
-                for feature in input_features_
-                for agg in functions_
-            ]
+        feature_names = [
+            f"{feature}_expanding_{agg}"
+            for feature in input_features_
+            for agg in functions_
+        ]
 
         # return names of all variables if input_features is None
         if input_features is None:
