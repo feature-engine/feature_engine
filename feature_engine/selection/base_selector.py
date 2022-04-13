@@ -154,6 +154,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
                     "variables. Pass either None, or a list with the features that "
                     "were used to create date and time features."
                 )
+            feature_names = input_features
 
         return feature_names
 

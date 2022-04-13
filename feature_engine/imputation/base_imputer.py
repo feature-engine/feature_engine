@@ -109,7 +109,9 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
         if input_features is None:
             # return all feature names
-            feature_names = self.feature_names_in_
+            feature_names = [
+                f for f in self.feature_names_in_ if f not in self.features_to_drop_
+            ]
 
         else:
             # Return features requested by user.
@@ -126,8 +128,6 @@ class BaseImputer(BaseEstimator, TransformerMixin):
             feature_names = input_features
 
         return feature_names
-
-        return self.feature_names_in_
 
     def _more_tags(self):
         tags_dict = _return_tags()
