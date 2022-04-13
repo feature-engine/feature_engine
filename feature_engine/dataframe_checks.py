@@ -97,6 +97,7 @@ def check_y(
     Parameters
     ----------
     y : pd.Series, np.array, list
+        The input to check and copy or transform.
 
     multi_output : bool, default=False
         Whether to allow 2D y (array). If false, y will be
@@ -118,7 +119,7 @@ def check_y(
 
     elif isinstance(y, pd.Series):
         if y.isnull().any():
-            raise ValueError("y contains NaN infinity values.")
+            raise ValueError("y contains NaN values.")
         if y.dtype != "O" and not np.isfinite(y).all():
             raise ValueError("y contains infinity values.")
         if y_numeric and y.dtype == "O":
@@ -149,8 +150,10 @@ def check_X_y(
     Parameters
     ----------
     X: Pandas DataFrame or numpy ndarray
+        The input to check and copy or transform.
 
-    y: Pandas Series or numpy ndarray
+    y: pd.Series, np.array, list
+        The input to check and copy or transform.
 
     multi_output : bool, default=False
         Whether to allow 2D y (array). If false, y will be
