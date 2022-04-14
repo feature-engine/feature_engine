@@ -8,8 +8,11 @@ import pandas as pd
 
 from feature_engine.dataframe_checks import check_X
 from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.fit_attributes import _variables_attribute_docstring, _feature_names_in_docstring, \
-    _n_features_in_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags

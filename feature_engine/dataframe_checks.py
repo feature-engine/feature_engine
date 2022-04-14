@@ -87,9 +87,9 @@ def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
 
 
 def check_y(
-        y: Union[np.generic, np.ndarray, pd.Series, List],
-        multi_output: bool = False,
-        y_numeric: bool = False,
+    y: Union[np.generic, np.ndarray, pd.Series, List],
+    multi_output: bool = False,
+    y_numeric: bool = False,
 ) -> pd.Series:
     """
     Checks that y is a series, or alternatively, if it can be converted to a series.
@@ -134,10 +134,10 @@ def check_y(
 
 
 def check_X_y(
-        X: Union[np.generic, np.ndarray, pd.DataFrame],
-        y: Union[np.generic, np.ndarray, pd.Series, List],
-        multi_output: bool = False,
-        y_numeric: bool = False,
+    X: Union[np.generic, np.ndarray, pd.DataFrame],
+    y: Union[np.generic, np.ndarray, pd.Series, List],
+    multi_output: bool = False,
+    y_numeric: bool = False,
 ) -> Tuple[pd.DataFrame, pd.Series]:
     """
     Ensures X and y are compatible pandas DataFrame and Series. If both are pandas

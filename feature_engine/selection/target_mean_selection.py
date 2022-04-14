@@ -8,7 +8,10 @@ from feature_engine._prediction.target_mean_classifier import TargetMeanClassifi
 from feature_engine._prediction.target_mean_regressor import TargetMeanRegressor
 from feature_engine.dataframe_checks import check_X
 from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.fit_attributes import _feature_names_in_docstring, _n_features_in_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.selection._docstring import (
     _cv_docstring,

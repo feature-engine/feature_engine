@@ -6,9 +6,15 @@ from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.fit_attributes import _variables_attribute_docstring, _feature_names_in_docstring, \
-    _n_features_in_docstring
-from feature_engine._docstrings.class_inputs import _variables_numerical_docstring, _drop_original_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.class_inputs import (
+    _variables_numerical_docstring,
+    _drop_original_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
