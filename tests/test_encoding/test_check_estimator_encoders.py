@@ -111,7 +111,7 @@ def test_check_estimator_from_feature_engine(estimator):
         ),
     ],
 )
-def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test, df_expected):
+def test_encoders_when_x_numpy_y_pandas(encoder, df_test, df_expected):
     """
     Created 2022-03-27 to test fix to issue # 376
     Code adapted from:
@@ -190,7 +190,7 @@ def test_fix_index_mismatch_from_x_numpy_y_pandas(encoder, df_test, df_expected)
         ),
     ],
 )
-def test_fix_index_mismatch_from_x_pandas_y_numpy(encoder, df_test, df_expected):
+def test_encoders_when_x_pandas_y_numpy(encoder, df_test, df_expected):
     """
     Created 2022-03-27 to test fix to issue # 376
     Code adapted from:
@@ -250,7 +250,7 @@ def test_fix_index_mismatch_from_x_pandas_y_numpy(encoder, df_test, df_expected)
         ),
     ],
 )
-def test_detect_index_mismatch_from_x_pandas_y_pandas(encoder, df_test):
+def test_encoders_raise_error_when_x_pandas_y_pandas_index_mismatch(encoder, df_test):
     """
     Created 2022-03-27 to test fix to issue # 376
     """
