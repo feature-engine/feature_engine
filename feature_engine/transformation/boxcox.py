@@ -7,7 +7,7 @@ import pandas as pd
 import scipy.stats as stats
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.docstrings import (
+from feature_engine._docstrings.docstrings import (
     Substitution,
     _feature_names_in_docstring,
     _fit_transform_docstring,

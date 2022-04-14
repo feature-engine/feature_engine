@@ -10,7 +10,7 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.docstrings import (
+from feature_engine._docstrings.docstrings import (
     Substitution,
     _drop_original_docstring,
     _feature_names_in_docstring,

@@ -8,7 +8,7 @@ from sklearn.model_selection import check_cv, cross_validate
 from sklearn.utils.validation import check_random_state
 
 from feature_engine.dataframe_checks import check_X
-from feature_engine.docstrings import (
+from feature_engine._docstrings.docstrings import (
     Substitution,
     _feature_names_in_docstring,
     _fit_transform_docstring,

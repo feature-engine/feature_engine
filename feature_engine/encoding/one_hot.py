@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.docstrings import (
+from feature_engine._docstrings.docstrings import (
     Substitution,
     _feature_names_in_docstring,
     _fit_transform_docstring,

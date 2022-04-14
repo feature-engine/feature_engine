@@ -11,7 +11,7 @@ from feature_engine.dataframe_checks import (
     check_X,
     check_X_y,
 )
-from feature_engine.docstrings import Substitution
+from feature_engine._docstrings.docstrings import Substitution
 from feature_engine.encoding._docstrings import (
     _errors_docstring,
     _ignore_format_docstring,
