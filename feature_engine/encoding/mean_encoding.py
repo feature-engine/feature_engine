@@ -5,14 +5,16 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine.docstrings import (
-    Substitution,
-    _feature_names_in_docstring,
+from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _inverse_transform_docstring,
-    _n_features_in_docstring,
-    _variables_attribute_docstring,
 )
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.encoding._docstrings import (
     _errors_docstring,
     _ignore_format_docstring,
