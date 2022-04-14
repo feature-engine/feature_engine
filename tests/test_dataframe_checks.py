@@ -77,14 +77,14 @@ def test_check_y_converts_string_to_number():
     assert_series_equal(check_y(s, y_numeric=True), s.astype("float"))
 
 
-def test_check_x_y_returns_pandas(df_vartypes):
+def test_check_x_y_returns_pandas_from_pandas(df_vartypes):
     s = pd.Series([0, 1, 2, 3])
     x, y = check_X_y(df_vartypes, s)
     assert_frame_equal(df_vartypes, x)
     assert_series_equal(s, y)
 
 
-def test_check_X_y_pandas_non_typical_index():
+def test_check_X_y_returns_pandas_from_pandas_with_non_typical_index():
     df = pd.DataFrame(
         {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
     )
@@ -94,7 +94,7 @@ def test_check_X_y_pandas_non_typical_index():
     assert_series_equal(s, y)
 
 
-def test_check_X_y_pandas_index_dont_match():
+def test_check_X_y_raises_error_when_pandas_index_dont_match():
     df = pd.DataFrame(
         {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
     )
@@ -103,7 +103,7 @@ def test_check_X_y_pandas_index_dont_match():
         check_X_y(df, s)
 
 
-def test_check_x_y_reassings_index():
+def test_check_x_y_reassings_index_when_only_one_input_is_pandas():
     # case 1: X is dataframe, y is something else
     df = pd.DataFrame(
         {"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212]
@@ -137,22 +137,8 @@ def test_check_x_y_converts_numpy_to_pandas():
     assert_series_equal(s, y)
 
 
-def test_check_x_y_inconsistent_length(df_vartypes):
+def test_check_x_y_raises_error_when_inconsistent_length(df_vartypes):
     s = pd.Series([0, 1, 2, 3, 5])
-    with pytest.raises(ValueError):
-        check_X_y(df_vartypes, s)
-
-
-def test_check_x_y_raises_index_mismatch(df_vartypes):
-    s = pd.Series(
-        [
-            0,
-            1,
-            2,
-            3,
-        ],
-        index=[2, 3, 4, 5],
-    )
     with pytest.raises(ValueError):
         check_X_y(df_vartypes, s)
 
