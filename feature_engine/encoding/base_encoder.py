@@ -1,5 +1,5 @@
 import warnings
-from typing import List, Union
+from typing import List, Union, Tuple
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -9,6 +9,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
     check_X,
+    check_X_y,
 )
 from feature_engine.docstrings import Substitution
 from feature_engine.encoding._docstrings import (
@@ -53,10 +54,18 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
 
-    def _check_fit_input_and_variables(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _check_X(self, X: pd.DataFrame) -> pd.DataFrame:
+        return check_X(X)
+
+    def _check_X_y(
+        self, X: pd.DataFrame, y: pd.Series
+    ) -> Tuple[pd.DataFrame, pd.Series]:
+        return check_X_y(X, y)
+
+    def _check_or_select_variables(self, X: pd.DataFrame):
         """
-        Checks that input is a dataframe, finds categorical variables, or alternatively
-        checks that the variables entered by the user are of type object (categorical).
+        Finds categorical variables, or alternatively checks that the variables
+        entered by the user are of type object (categorical).
         Checks absence of NA.
 
         Parameters
@@ -66,23 +75,11 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame.
             If any user provided variable is not categorical
         ValueError
             If there are no categorical variables in the df or the df is empty
             If the variable(s) contain null values
-
-        Returns
-        -------
-        X: Pandas DataFrame
-            The same dataframe entered as parameter
-        variables : list
-            list of categorical variables
         """
-
-        # check input dataframe
-        X = check_X(X)
-
         if not self.ignore_format:
             # find categorical variables or check variables entered by user are object
             self.variables_: List[
@@ -95,13 +92,13 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables_)
 
+    def _get_feature_names_in(self, X: pd.DataFrame):
+
         # save input features
         self.feature_names_in_ = X.columns.tolist()
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
-
-        return X
 
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -283,7 +280,6 @@ class BaseCategorical(BaseCategoricalTransformer):
         ignore_format: bool = False,
         errors: str = "ignore",
     ) -> None:
-
         if errors not in ["raise", "ignore"]:
             raise ValueError(
                 "errors takes only values 'raise' and 'ignore ."

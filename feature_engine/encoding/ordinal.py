@@ -146,16 +146,15 @@ class OrdinalEncoder(BaseCategorical):
             Otherwise, y needs to be passed when fitting the transformer.
         """
 
-        X = self._check_fit_input_and_variables(X)
-
-        # join target to predictor variables
         if self.encoding_method == "ordered":
-            if y is None:
-                raise ValueError("Please provide a target y for this encoding method")
+            X, y = self._check_X_y(X, y)
+        else:
+            X = self._check_X(X)
 
-            if not isinstance(y, pd.Series):
-                y = pd.Series(y)
+        self._check_or_select_variables(X)
+        self._get_feature_names_in(X)
 
+        if self.encoding_method == "ordered":
             temp = pd.concat([X, y], axis=1)
             temp.columns = list(X.columns) + ["target"]
 

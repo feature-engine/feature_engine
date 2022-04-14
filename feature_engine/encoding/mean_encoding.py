@@ -131,10 +131,9 @@ class MeanEncoder(BaseCategorical):
             The target.
         """
 
-        X = self._check_fit_input_and_variables(X)
-
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        X, y = self._check_X_y(X, y)
+        self._check_or_select_variables(X)
+        self._get_feature_names_in(X)
 
         temp = pd.concat([X, y], axis=1)
         temp.columns = list(X.columns) + ["target"]
