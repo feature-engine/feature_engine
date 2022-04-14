@@ -7,15 +7,11 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine._docstrings.docstrings import (
-    _feature_names_in_docstring,
-    _fit_not_learn_docstring,
-    _fit_transform_docstring,
-    _inverse_transform_docstring,
-    _n_features_in_docstring,
-    _variables_attribute_docstring,
-    _variables_numerical_docstring,
-)
+from feature_engine._docstrings.methods import _fit_not_learn_docstring, _fit_transform_docstring, \
+    _inverse_transform_docstring
+from feature_engine._docstrings.fit_attributes import _variables_attribute_docstring, _feature_names_in_docstring, \
+    _n_features_in_docstring
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _check_input_parameter_variables

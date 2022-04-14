@@ -3,11 +3,8 @@ from typing import List, Union
 import pandas as pd
 
 from feature_engine.dataframe_checks import _check_contains_na, check_X
-from feature_engine._docstrings.docstrings import (
-    _feature_names_in_docstring,
-    _fit_transform_docstring,
-    _n_features_in_docstring,
-)
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.fit_attributes import _feature_names_in_docstring, _n_features_in_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.selection._docstring import (
     _variables_all_docstring,
