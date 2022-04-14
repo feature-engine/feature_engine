@@ -20,12 +20,12 @@ from feature_engine.datetime._datetime_constants import (
     FEATURES_SUPPORTED,
 )
 from feature_engine._docstrings.docstrings import (
-    Substitution,
     _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
 )
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_datetime_variables,

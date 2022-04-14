@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.docstrings import (
-    Substitution,
     _feature_names_in_docstring,
     _fit_transform_docstring,
     _missing_values_docstring,
@@ -13,6 +12,7 @@ from feature_engine._docstrings.docstrings import (
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.outliers.base_outlier import WinsorizerBase
 
 

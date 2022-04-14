@@ -7,13 +7,13 @@ import pandas as pd
 
 from feature_engine.dataframe_checks import check_X
 from feature_engine._docstrings.docstrings import (
-    Substitution,
     _feature_names_in_docstring,
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.parameter_checks import _define_numerical_dict
 from feature_engine.variable_manipulation import (

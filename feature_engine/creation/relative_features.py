@@ -5,7 +5,6 @@ from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.creation.base_creation import BaseCreation
 from feature_engine._docstrings.docstrings import (
-    Substitution,
     _drop_original_docstring,
     _feature_names_in_docstring,
     _fit_not_learn_docstring,
@@ -14,6 +13,7 @@ from feature_engine._docstrings.docstrings import (
     _n_features_in_docstring,
     _variables_numerical_docstring,
 )
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 _PERMITTED_FUNCTIONS = [

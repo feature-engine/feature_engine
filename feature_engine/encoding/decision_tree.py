@@ -9,12 +9,12 @@ from sklearn.utils.multiclass import check_classification_targets, type_of_targe
 
 from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine._docstrings.docstrings import (
-    Substitution,
     _feature_names_in_docstring,
     _fit_transform_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
