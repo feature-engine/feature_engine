@@ -5,6 +5,7 @@ import pytest
 from sklearn.base import clone
 from sklearn.datasets import make_classification
 from sklearn.exceptions import NotFittedError
+from sklearn.pipeline import Pipeline
 
 
 def test_df(
@@ -209,6 +210,11 @@ def check_get_feature_names_out(estimator):
     estimator = clone(estimator)
     estimator.fit(X, y)
 
+    # create Pipeline based on a transformer
+    estimator2 = clone(estimator)
+    pipe = Pipeline(["transformer", estimator2])
+    pipe.fit(X, y)
+
     if estimator.__class__.__name__ not in _skip_test:
         # selection transformers
         if (
@@ -237,6 +243,12 @@ def check_get_feature_names_out(estimator):
             assert estimator.get_feature_names_out(
                 input_features=features
             ) == features
+
+            # transformer is used in a pipeline
+            assert pipe.get_feature_names_out(
+                input_features=features
+            ) == features
+
 
 
 # =======  TESTS BASED ON ESTIMATOR TAGS =============
