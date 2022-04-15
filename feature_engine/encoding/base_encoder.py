@@ -13,7 +13,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.parameter_checks import check_input_features
 from feature_engine._docstrings.substitute import Substitution
-
+from feature_engine._docstrings.methods import _input_features_docstring
 from feature_engine.encoding._docstrings import (
     _errors_docstring,
     _ignore_format_docstring,
