@@ -222,6 +222,7 @@ def check_get_feature_names_out(estimator):
             assert estimator.transform(X).shape[1] == len(feature_names)
 
         else:
+            # when 'input_features' is None, ie not specified
             assert estimator.get_feature_names_out() == [
                 "var_" + str(i) for i in range(12)
             ] + [
@@ -230,6 +231,12 @@ def check_get_feature_names_out(estimator):
                 "date1",
                 "date2",
             ]
+
+            # user passes input features
+            features = ["var_3", "var_5", "var_7", "cat_var2", "date1"]
+            assert estimator.get_feature_names_out(
+                input_features=features
+            ) == features
 
 
 # =======  TESTS BASED ON ESTIMATOR TAGS =============
