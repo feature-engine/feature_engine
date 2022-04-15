@@ -18,3 +18,9 @@ _fit_transform_docstring = """fit_transform:
 _inverse_transform_docstring = """inverse_transform:
         Convert the data back to the original representation.
         """.rstrip()
+
+_input_features_docstring = """input_features: str, list, default=None
+        Input features. If `None`, then the names of all the variables in the
+        transformed dataset (original + new variables) is returned. If list
+        with feature names, the features in the list will be returned."
+    """.rstrip()
