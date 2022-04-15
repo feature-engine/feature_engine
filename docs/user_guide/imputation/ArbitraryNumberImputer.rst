@@ -34,7 +34,7 @@ with 99 like this:
 .. code-block:: python
 
     transformer = ArbitraryNumberImputer(
-            imputer_dict = {'varA' : 1, 'varB': 99]
+            imputer_dict = {'varA' : 1, 'varB': 99}
             )
 
     Xt = transformer.fit_transform(X)
