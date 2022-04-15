@@ -1,9 +1,5 @@
 import warnings
-<<<<<<< HEAD
-from typing import List, Union, Tuple
-=======
-from typing import List, Optional, Union
->>>>>>> 25b2f32 (update base_encoder, base_imputer, and base_outlier)
+from typing import List, Optional, Union, Tuple
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -15,14 +11,9 @@ from feature_engine.dataframe_checks import (
     check_X,
     check_X_y,
 )
-<<<<<<< HEAD
+from feature_engine.parameter_checks import check_input_features
 from feature_engine._docstrings.substitute import Substitution
-=======
-from feature_engine.docstrings import (
-    Substitution,
-    _input_features_docstring,
-)
->>>>>>> 25b2f32 (update base_encoder, base_imputer, and base_outlier)
+
 from feature_engine.encoding._docstrings import (
     _errors_docstring,
     _ignore_format_docstring,
@@ -262,25 +253,7 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
             The feature names.
         """
         check_is_fitted(self)
-
-        if input_features is None:
-            # return all feature names
-            feature_names = self.feature_names_in_
-
-        else:
-            # Return features requested by user.
-            if not isinstance(input_features, list):
-                raise ValueError(
-                    f"input_features must be a list. Got {input_features} instead."
-                )
-            if any([f for f in input_features if f not in self.variables_]):
-                raise ValueError(
-                    "Some features in input_features were not used to extract new "
-                    "variables. Pass either None, or a list with the features that "
-                    "were used to create date and time features."
-                )
-            feature_names = input_features
-
+        feature_names = check_input_features(input_features, self.variables_)
         return feature_names
 
     def _more_tags(self):
