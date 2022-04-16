@@ -129,17 +129,25 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         y: None
             y is not needed in this transformer. You can pass y or None.
         """
-        # checks if dataset contains na or inf
-        # TODO: Will this identify the numerical variables?
-        #
-        X = super().transform(X)
+        # check if 'X' is a dataframe
+        X = check_X(X)
+
+        # identify numerical variables
+        self.variables_numerical_ = _find_or_check_numerical_variables(
+            X, self.variables
+        )
+        
+        # check for missing values
+        _check_contains_na(X, self.variables_numerical_)
+
+        # check for inf
+        _check_contains_inf(X, self.variables_numerical_)
 
         # create this attribute for consistency with the rest of the discretisers
         if self.strategy == "arbitrary":
             # check dataframe
             X = super()._fit_from_dict(X, self.binning_dict)
             self.binner_dict_ = self.binning_dict
-
 
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
