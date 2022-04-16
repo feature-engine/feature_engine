@@ -44,7 +44,7 @@ from feature_engine.variable_manipulation import (
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class TargetMeanDiscretiser(BaseDiscretiser):
+class TargetMeanDiscretiser(BaseeTargetMeanEstimator, BaseDiscretiser):
     """
 
     Parameters
@@ -90,14 +90,15 @@ class TargetMeanDiscretiser(BaseDiscretiser):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        strategy: str = "equal-frequency",
+        bins: int = 5,
+        strategy: str = "equal_frequency",
         binning_dict: Dict[Union[str, int], List[Union[str, int]]] = None,
         errors: str = "ignore",
     ) -> None:
-
-        if strategy not in ("arbitrary", "equal-frequency", "equal-width"):
+        # TODO: do we include ArbitraryDiscretiser?
+        if strategy not in ("arbitrary", "equal_frequency", "equal_width"):
             raise ValueError(
-                "strategy must equal 'arbitrary', 'equal-frequency', 'equal-width'. "
+                "strategy must equal 'arbitrary', 'equal_frequency', 'equal_width'. "
                 f"Got {strategy} instead."
             )
 
@@ -113,8 +114,9 @@ class TargetMeanDiscretiser(BaseDiscretiser):
                 f"Got {errors} instead."
             )
 
-        super().__init__(return_object, return_boundaries)
-
+        self.variables = variables
+        self.bins = bins
+        self.strategy = strategy
         self.binning_dict = binning_dict
         self.errors = errors
 
@@ -136,7 +138,7 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         self.variables_numerical_ = _find_or_check_numerical_variables(
             X, self.variables
         )
-        
+
         # check for missing values
         _check_contains_na(X, self.variables_numerical_)
 
@@ -167,3 +169,29 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
         # checks if dataset contains na or inf
         X = super().transform(X)
+
+    def _make_discretiser(self):
+        """
+        Instantiate the ArbirtraryDiscretiser, EqualFrequencyDiscretiser, or
+        EqualWidthDiscretiser.
+        """
+        # TODO: do we include ArbitraryDiscretiser?
+        if self.strategy == "arbitrary":
+            discretiser = ArbitraryDiscretiser(
+
+            )
+
+        elif self.strategy == "equal_frequency":
+            discretiser = EqualFrequencyDiscretiser(
+                q=self.bins,
+                variables=self.variables_numerical_,
+                return_boundaries=True,
+            )
+        else:
+            discretiser = EqualWidthDiscretiser(
+                bins=self.bins,
+                variables=self.variables_numerical_,
+                return_boundaries=True
+            )
+
+        return discretiser
