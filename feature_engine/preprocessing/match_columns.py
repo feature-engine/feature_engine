@@ -6,7 +6,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import _check_contains_na, check_X
-from feature_engine.docstrings import Substitution, _input_features_docstring
+from feature_engine._docstrings.methods import _input_features_docstring
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 
 

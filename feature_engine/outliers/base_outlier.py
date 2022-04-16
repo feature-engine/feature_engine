@@ -11,7 +11,8 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.docstrings import Substitution, _input_features_docstring
+from feature_engine.parameter_checks import check_input_features
+from feature_engine._docstrings.methods import _input_features_docstring
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
