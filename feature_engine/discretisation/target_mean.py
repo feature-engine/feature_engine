@@ -14,7 +14,23 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na,
+    _check_X_matches_training_df,
+    check_X,
+)
+from feature_engine.discretisation import (
+    ArbitraryDiscretiser,
+    EqualFrequencyDiscretiser,
+    EqualWidthDiscretiser
+)
+from feature_engine.encoding import MeanEncoder
 from feature_engine.tags import _return_tags
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
+)
 
 
 @Substitution(
@@ -48,9 +64,11 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
     Attributes
     ----------
+    {variables_}
+
     {binner_dict_}
 
-    {variables_}
+
 
     {feature_names_in_}
 
@@ -77,7 +95,7 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         errors: str = "ignore",
     ) -> None:
 
-        if strategy not in ("equal-frequency", "equal-width", "arbitrary"):
+        if strategy not in ("arbitrary", "equal-frequency", "equal-width"):
             raise ValueError(
                 "strategy must equal 'arbitrary', 'equal-frequency', 'equal-width'. "
                 f"Got {strategy} instead."
@@ -111,10 +129,33 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         y: None
             y is not needed in this transformer. You can pass y or None.
         """
-        # check dataframe
-        X = super()._fit_from_dict(X, self.binning_dict)
+        # checks if dataset contains na or inf
+        # TODO: Will this identify the numerical variables?
+        #
+        X = super().transform(X)
 
         # create this attribute for consistency with the rest of the discretisers
-        self.binner_dict_ = self.binning_dict
+        if self.strategy == "arbitrary":
+            # check dataframe
+            X = super()._fit_from_dict(X, self.binning_dict)
+            self.binner_dict_ = self.binning_dict
 
-    def transform(self,):
+
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The data to transform.
+
+        Returns
+        -------
+        X_new: pandas dataframe of shape = [n_samples, n_features]
+            The transformed data with the means of the discrete variables.
+
+        """
+
+        # checks if dataset contains na or inf
+        X = super().transform(X)
