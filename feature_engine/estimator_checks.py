@@ -250,7 +250,6 @@ def check_get_feature_names_out(estimator):
             ) == features
 
 
-
 # =======  TESTS BASED ON ESTIMATOR TAGS =============
 def check_error_if_y_not_passed(estimator):
     """
