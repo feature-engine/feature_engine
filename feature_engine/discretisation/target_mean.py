@@ -93,3 +93,22 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
         self.binning_dict = binning_dict
         self.errors = errors
+
+    def fit(self, X: pd.DataFrame, y:Optional[pd.Series] = None):
+        """
+        This transformer does not learn any parameter.
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The training dataset. Can be the entire dataframe, not just the
+            variables to be transformed.
+        y: None
+            y is not needed in this transformer. You can pass y or None.
+        """
+        # check dataframe
+        X = super()._fit_from_dict(X, self.binning_dict)
+
+        # create this attribute for consistency with the rest of the discretisers
+        self.binner_dict_ = self.binning_dict
+
+    def transform(self,):
