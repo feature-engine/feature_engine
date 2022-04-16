@@ -13,6 +13,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.parameter_checks import check_input_features
 from feature_engine._docstrings.methods import _input_features_docstring
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -126,8 +127,8 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
             The feature names.
         """
         check_is_fitted(self)
-
-        return self.feature_names_in_
+        feature_names = check_input_features(input_features, self.variables_)
+        return feature_names
 
     def _more_tags(self):
         tags_dict = _return_tags()
