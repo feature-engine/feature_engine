@@ -32,6 +32,7 @@ from feature_engine.variable_manipulation import (
     _find_or_check_numerical_variables,
 )
 
+from sklearn.pipeline import Pipeline
 
 @Substitution(
     return_objects=BaseDiscretiser._return_object_docstring,
@@ -151,7 +152,6 @@ class TargetMeanDiscretiser(BaseeTargetMeanEstimator, BaseDiscretiser):
             X = super()._fit_from_dict(X, self.binning_dict)
             self.binner_dict_ = self.binning_dict
 
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
 
@@ -195,3 +195,19 @@ class TargetMeanDiscretiser(BaseeTargetMeanEstimator, BaseDiscretiser):
             )
 
         return discretiser
+
+    def _make_pipeline(self):
+        """
+        Instantiate target mean encoder and create pipeline of selected
+        discretiser and encoder.
+        """
+        encoder = MeanEncoder(variables=self.variables_numerical_, errors="raise")
+
+        pipeline = Pipeline(
+            [
+                ("discretiser", self._make_discretiser()),
+                ("encoder", encoder),
+            ]
+        )
+
+        return pipeline
