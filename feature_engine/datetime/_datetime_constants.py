@@ -23,6 +23,16 @@ FEATURES_SUPPORTED = [
     "second",
 ]
 
+FEATURES_DEFAULT = [
+    "month",
+    "year",
+    "day_of_week",
+    "day_of_month",
+    "hour",
+    "minute",
+    "second",
+]
+
 FEATURES_SUFFIXES = {
     "month": "_month",
     "quarter": "_quarter",
@@ -68,13 +78,3 @@ FEATURES_FUNCTIONS = {
     "minute": lambda x: x.dt.minute,
     "second": lambda x: x.dt.second,
 }
-
-FEATURES_DEFAULT = [
-    "month",
-    "year",
-    "day_of_week",
-    "day_of_month",
-    "hour",
-    "minute",
-    "second",
-]

@@ -5,7 +5,14 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.dataframe_checks import check_X
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -13,6 +20,15 @@ from feature_engine.variable_manipulation import (
 )
 
 
+@Substitution(
+    variables=BaseImputer._variables_numerical_docstring,
+    imputer_dict_=BaseImputer._imputer_dict_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    transform=BaseImputer._transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class MeanMedianImputer(BaseImputer):
     """
     The MeanMedianImputer() replaces missing data by the mean or median value of the
@@ -29,29 +45,27 @@ class MeanMedianImputer(BaseImputer):
     imputation_method: str, default='median'
         Desired method of imputation. Can take 'mean' or 'median'.
 
-    variables: list, default=None
-        The list of variables to impute. If None, the imputer will impute
-        all numerical variables.
+    {variables}
 
     Attributes
     ----------
-    imputer_dict_:
-        Dictionary with the mean or median values per variable.
+    {imputer_dict_}
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn the mean or median values.
-    transform:
-        Impute missing data.
-    fit_transform:
-        Fit to the data, then transform it.
+
+    {fit_transform}
+
+    {transform}
+
     """
 
     def __init__(
@@ -80,7 +94,7 @@ class MeanMedianImputer(BaseImputer):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # find or check for numerical variables
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
@@ -92,14 +106,6 @@ class MeanMedianImputer(BaseImputer):
         elif self.imputation_method == "median":
             self.imputer_dict_ = X[self.variables_].median().to_dict()
 
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseImputer.transform.__doc__

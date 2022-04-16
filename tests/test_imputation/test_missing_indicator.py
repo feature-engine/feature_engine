@@ -1,10 +1,9 @@
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.imputation import AddMissingIndicator
 
 
-def test_detect_variables_with_missing_data_and_variables_is_none(df_na):
+def test_detect_variables_with_missing_data_when_variables_is_none(df_na):
     # test case 1: automatically detect variables with missing data
     imputer = AddMissingIndicator(missing_only=True, variables=None)
     X_transformed = imputer.fit_transform(df_na)
@@ -30,6 +29,15 @@ def test_add_indicators_to_all_variables_when_variables_is_none(df_na):
     assert X_transformed["dob_na"].sum() == 0
 
 
+def test_add_indicators_to_one_variable(df_na):
+    imputer = AddMissingIndicator(variables="Name")
+    X_transformed = imputer.fit_transform(df_na)
+    assert imputer.variables_ == ["Name"]
+    assert X_transformed.shape == (8, 7)
+    assert "Name_na" in X_transformed.columns
+    assert X_transformed["Name_na"].sum() == 2
+
+
 def test_detect_variables_with_missing_data_in_variables_entered_by_user(df_na):
     imputer = AddMissingIndicator(
         missing_only=True, variables=["City", "Studies", "Age", "dob"]
@@ -48,7 +56,29 @@ def test_error_when_missing_only_not_bool():
         AddMissingIndicator(missing_only="missing_only")
 
 
-def test_non_fitted_error(df_na):
-    with pytest.raises(NotFittedError):
-        imputer = AddMissingIndicator()
-        imputer.transform(df_na)
+def test_get_feature_names_out(df_na):
+    original_features = df_na.columns.to_list()
+
+    tr = AddMissingIndicator(missing_only=False)
+    tr.fit(df_na)
+
+    out = [f + "_na" for f in original_features]
+
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=original_features) == out
+    assert tr.get_feature_names_out(input_features=original_features[0:2]) == out[0:2]
+    assert tr.get_feature_names_out(input_features=["Name"]) == ["Name_na"]
+
+    tr = AddMissingIndicator(missing_only=True)
+    tr.fit(df_na)
+
+    out = [f + "_na" for f in original_features[0:-1]]
+
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=original_features) == out
+
+    with pytest.raises(ValueError):
+        tr.get_feature_names_out("Name")
+
+    with pytest.raises(ValueError):
+        tr.get_feature_names_out(["Name", "hola"])

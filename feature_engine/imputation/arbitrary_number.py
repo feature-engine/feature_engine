@@ -5,7 +5,17 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.dataframe_checks import check_X
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+)
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.parameter_checks import _define_numerical_dict
 from feature_engine.variable_manipulation import (
@@ -14,6 +24,15 @@ from feature_engine.variable_manipulation import (
 )
 
 
+@Substitution(
+    imputer_dict_=BaseImputer._imputer_dict_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_not_learn_docstring,
+    transform=BaseImputer._transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class ArbitraryNumberImputer(BaseImputer):
     """
     The ArbitraryNumberImputer() replaces missing data by an arbitrary
@@ -41,25 +60,25 @@ class ArbitraryNumberImputer(BaseImputer):
         The dictionary of variables and the arbitrary numbers for their imputation. If
         specified, it overrides the above parameters.
 
+
     Attributes
     ----------
-    imputer_dict_:
-        Dictionary with the values to replace NAs in each variable.
 
-    variables_:
-        The group of variables that will be transformed.
+    {imputer_dict_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {variables_}
+
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        This transformer does not learn parameters.
-    transform:
-        Impute missing data.
-    fit_transform:
-        Fit to the data, then transform it.
+    {fit}
+
+    {fit_transform}
+
+    {transform}
 
     See Also
     --------
@@ -96,7 +115,7 @@ class ArbitraryNumberImputer(BaseImputer):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # find or check for numerical variables
         # create the imputer dictionary
@@ -109,14 +128,6 @@ class ArbitraryNumberImputer(BaseImputer):
             self.variables_ = _find_or_check_numerical_variables(X, self.variables)
             self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables_}
 
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseImputer.transform.__doc__

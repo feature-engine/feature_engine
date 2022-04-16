@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.outliers import ArbitraryOutlierCapper
 
@@ -161,11 +160,3 @@ def test_fit_and_transform_raise_error_if_df_contains_na(df_normal_dist):
         )
         transformer.fit(df_normal_dist)
         transformer.transform(df_na)
-
-
-def test_non_fitted_error(df_vartypes):
-    with pytest.raises(NotFittedError):
-        transformer = ArbitraryOutlierCapper(
-            min_capping_dict={"var": -0.17486039103044}
-        )
-        transformer.transform(df_vartypes)

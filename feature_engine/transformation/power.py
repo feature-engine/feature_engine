@@ -7,9 +7,30 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _inverse_transform_docstring,
+)
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
+@Substitution(
+    variables=_variables_numerical_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_not_learn_docstring,
+    fit_transform=_fit_transform_docstring,
+    inverse_transform=_inverse_transform_docstring,
+)
 class PowerTransformer(BaseNumericalTransformer):
     """
     The PowerTransformer() applies power or exponential transformations to
@@ -25,31 +46,30 @@ class PowerTransformer(BaseNumericalTransformer):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of numerical variables to transform. If None, the transformer will
-        automatically find and select all numerical variables.
+    {variables}
 
     exp: float or int, default=0.5
         The power (or exponent).
 
     Attributes
     ----------
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        This transformer does not learn parameters.
+    {fit}
+
+    {fit_transform}
+
+    {inverse_transform}
+
     transform:
         Apply the power transformation to the variables.
-    fit_transform:
-        Fit to data, then transform it.
-    inverse_transform:
-        Convert the data back to the original representation.
+
     """
 
     def __init__(
@@ -79,9 +99,7 @@ class PowerTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
-
-        self.n_features_in_ = X.shape[1]
+        super()._fit_from_varlist(X)
 
         return self
 

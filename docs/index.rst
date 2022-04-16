@@ -26,9 +26,10 @@ Feature-engine includes transformers for:
 - Discretisation
 - Outlier capping or removal
 - Variable transformation
-- Variable combination
+- Variable creation
 - Variable selection
 - Datetime features
+- Time series
 - Preprocessing
 
 Feature-engine allows you to select the variables you want to transform **within** each
@@ -49,7 +50,7 @@ The following characteristics make Feature-engine unique:
 - Feature-engine can transform a specific group of variables in the dataframe.
 - Feature-engine returns dataframes, hence suitable for data exploration and model deployment.
 - Feature-engine is compatible with the Scikit-learn pipeline.
-- Feature-engine automatically recognizes numerical and categorical variables.
+- Feature-engine automatically recognizes numerical, categorical and datetime variables.
 - Feature-engine alerts you if a transformation is not possible, e.g., if applying logarithm to negative variables or divisions by 0.
 
 If you want to know more about what makes Feature-engine unique, check this
@@ -59,8 +60,10 @@ If you want to know more about what makes Feature-engine unique, check this
 Installation
 ~~~~~~~~~~~~
 
-Feature-engine is a Python 3 package and works well with 3.6 or later. Earlier versions
-have not been tested. The simplest way to install Feature-engine is from PyPI with pip:
+Feature-engine is a Python 3 package and works well with 3.7 or later. Earlier versions
+are not compatible with the latest versions of Python numerical computing libraries.
+
+The simplest way to install Feature-engine is from PyPI with pip:
 
 .. code-block:: bash
 
@@ -90,8 +93,8 @@ If you’re using Anaconda, you can install the
 Feature-engine features in the following resources
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- `Feature Engineering for Machine Learning <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_, Online Course.
-- `Feature Selection for Machine Learning <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_, Online Course.
+- `Feature Engineering for Machine Learning <https://courses.trainindata.com/p/feature-engineering-for-machine-learning>`_, Online Course.
+- `Feature Selection for Machine Learning <https://courses.trainindata.com/p/feature-selection-for-machine-learning>`_, Online Course.
 - `Python Feature Engineering Cookbook <https://packt.link/python>`_.
 - `Feature-engine: A new open-source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c/>`_.
 - `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd>`_.
@@ -152,12 +155,12 @@ Numerical Transformation: Transformers
 - :doc:`api_doc/transformation/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables
 - :doc:`api_doc/transformation/YeoJohnsonTransformer`: performs Yeo-Johnson transformation of numerical variables
 
-Mathematical Combination:
--------------------------
+Feature Creation:
+-----------------
 
--  :doc:`api_doc/creation/MathematicalCombination`: creates new variables by combining features with mathematical operations
--  :doc:`api_doc/creation/CombineWithReferenceFeature`: combines variables with reference features
--  :doc:`api_doc/creation/CyclicalTransformer`: creates variables using sine and cosine, suitable for cyclical features
+-  :doc:`api_doc/creation/MathFeatures`: creates new variables by combining features with mathematical operations
+-  :doc:`api_doc/creation/RelativeFeatures`: combines variables with reference features
+-  :doc:`api_doc/creation/CyclicalFeatures`: creates variables using sine and cosine, suitable for cyclical features
 
 Feature Selection:
 ------------------
@@ -176,7 +179,15 @@ Feature Selection:
 
 Datetime:
 ---------
+
 - :doc:`api_doc/datetime/DatetimeFeatures`: extract features from datetime variables
+
+Forecasting:
+------------
+
+- :doc:`api_doc/timeseries/forecasting/LagFeatures`: extract lag features
+- :doc:`api_doc/timeseries/forecasting/WindowFeatures`: create window features
+- :doc:`api_doc/timeseries/forecasting/ExpandingWindowFeatures`: create expanding window features
 
 Preprocessing:
 --------------
@@ -196,8 +207,8 @@ Can't get something to work? Here are places where you can find help.
 
 1. The :ref:`**User Guide** <user_guide>` in the docs.
 2. `Stack Overflow <https://stackoverflow.com/search?q=feature_engine>`_. If you ask a question, please mention "feature_engine" in it.
-3. If you are enrolled in the `Feature Engineering for Machine Learning course <https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06>`_ , post a question in a relevant section.
-4. If you are enrolled in the `Feature Selection for Machine Learning course <https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71>`_ , post a question in a relevant section.
+3. If you are enrolled in the `Feature Engineering for Machine Learning course <https://courses.trainindata.com/p/feature-engineering-for-machine-learning>`_ , post a question in a relevant section.
+4. If you are enrolled in the `Feature Selection for Machine Learning course <https://courses.trainindata.com/p/feature-selection-for-machine-learning>`_ , post a question in a relevant section.
 5. Join our `gitter community <https://gitter.im/feature_engine/community>`_. You an ask questions here as well.
 6. Ask a question in the repo by filing an `issue <https://github.com/feature-engine/feature_engine/issues/>`_ (check before if there is already a similar issue created :) ).
 
@@ -219,11 +230,12 @@ let us know!
 For more details on how to contribute check the contributing page. Click on the
 :ref:`**Contribute** <contribute>` guide.
 
-Donate
-~~~~~~
+Sponsor us
+~~~~~~~~~~
 
-`Sponsor us <https://github.com/sponsors/solegalli>`_ to support us continue expanding
-Feature-engine.
+Support Feature-engine financially via
+`Github Sponsors <https://github.com/sponsors/feature-engine>`_ and help further our
+mission to democratize machine learning tools through open-source software.
 
 Open Source
 ~~~~~~~~~~~
@@ -249,3 +261,4 @@ Table of Contents
    contribute/index
    about/index
    whats_new/index
+   donate

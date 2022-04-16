@@ -1,16 +1,196 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.datasets import load_boston
-from sklearn.feature_selection import SelectFromModel, SelectKBest, f_regression
-from sklearn.impute import SimpleImputer
+from sklearn.base import clone
+from sklearn.datasets import fetch_california_housing
+from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestClassifier, VotingClassifier
+from sklearn.feature_selection import (
+    RFE,
+    SelectFromModel,
+    SelectKBest,
+    VarianceThreshold,
+    f_regression,
+)
+from sklearn.impute import MissingIndicator, SimpleImputer
 from sklearn.linear_model import Lasso
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.model_selection import cross_val_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import (
+    Binarizer,
+    FunctionTransformer,
+    KBinsDiscretizer,
+    MinMaxScaler,
+    Normalizer,
+    OneHotEncoder,
+    OrdinalEncoder,
+    PolynomialFeatures,
+    PowerTransformer,
+    StandardScaler,
+)
 
+from feature_engine.selection import DropFeatures
 from feature_engine.wrappers import SklearnTransformerWrapper
 
+_transformers = [
+    Binarizer(threshold=2),
+    KBinsDiscretizer(n_bins=3, encode="ordinal"),
+    StandardScaler(),
+    MinMaxScaler(),
+    Normalizer(),
+    PowerTransformer(),
+    FunctionTransformer(np.log, validate=True),
+    OrdinalEncoder(),
+]
 
-def test_sklearn_imputer_numeric_with_constant(df_na):
+_selectors = [
+    SelectFromModel(Lasso(random_state=1)),
+    SelectKBest(f_regression, k=2),
+    VarianceThreshold(),
+    RFE(Lasso(random_state=1)),
+]
+
+
+@pytest.mark.parametrize(
+    "transformer",
+    [
+        SimpleImputer(),
+        OneHotEncoder(sparse=False),
+        StandardScaler(),
+        SelectKBest(),
+    ],
+)
+def test_permitted_param_transformer(transformer, df_na):
+    tr = SklearnTransformerWrapper(transformer=transformer)
+    assert tr.transformer == transformer
+
+
+@pytest.mark.parametrize("transformer", [Lasso(), RandomForestClassifier()])
+def test_error_when_transformer_is_estimator(transformer, df_na):
+    with pytest.raises(TypeError):
+        SklearnTransformerWrapper(transformer=transformer)
+
+
+@pytest.mark.parametrize(
+    "transformer",
+    [
+        PCA(),
+        VotingClassifier(RandomForestClassifier()),
+        MissingIndicator(),
+        KBinsDiscretizer(encode="one_hot"),
+        SimpleImputer(add_indicator=True),
+        OneHotEncoder(sparse=True),
+    ],
+)
+def test_error_not_implemented_transformer(transformer, df_na):
+    with pytest.raises(NotImplementedError):
+        SklearnTransformerWrapper(transformer=transformer)
+
+
+@pytest.mark.parametrize("transformer", _selectors)
+def test_wrap_selectors(transformer):
+    # load data
+    X = fetch_california_housing(as_frame=True).frame
+    y = X["MedHouseVal"]
+    X = X.drop(["MedHouseVal"], axis=1)
+
+    # prepare selectors
+    sel = clone(transformer)
+    sel_wrap = SklearnTransformerWrapper(transformer=transformer)
+
+    # Test:
+    # When passing variable list
+    varlist = ["MedInc", "HouseAge", "AveRooms", "AveBedrms"]
+    sel_wrap.set_params(variables=varlist)
+
+    Xt = pd.DataFrame(
+        sel.fit_transform(X[varlist], y),
+        columns=X[varlist].columns[(sel.get_support())],
+    )
+    Xw = sel_wrap.fit_transform(X, y)
+
+    selected = X[varlist].columns[(sel.get_support())]
+    remaining = [f for f in X.columns if f not in varlist]
+
+    pd.testing.assert_frame_equal(Xt, Xw[selected])
+    pd.testing.assert_frame_equal(X[remaining], Xw[remaining])
+    assert Xw.shape[1] == len(remaining) + len(selected)
+
+    # when variable list is None
+    sel_wrap.set_params(variables=None)
+
+    Xt = pd.DataFrame(sel.fit_transform(X, y), columns=X.columns[(sel.get_support())])
+    Xw = sel_wrap.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(Xt, Xw)
+
+
+@pytest.mark.parametrize("transformer", _transformers)
+def test_wrap_transformers(transformer):
+    # load data
+    X = fetch_california_housing(as_frame=True).frame
+
+    # prepare selectors
+    tr = clone(transformer)
+    tr_wrap = SklearnTransformerWrapper(transformer=transformer)
+
+    # Test:
+    # When passing variable list
+    varlist = ["MedInc", "HouseAge", "AveRooms", "AveBedrms"]
+    tr_wrap.set_params(variables=varlist)
+
+    Xt = pd.DataFrame(tr.fit_transform(X[varlist]), columns=X[varlist].columns)
+    Xw = tr_wrap.fit_transform(X)
+
+    remaining = [f for f in X.columns if f not in varlist]
+
+    assert Xt.shape[1] == 4
+    assert Xw.shape[1] == 9
+    pd.testing.assert_frame_equal(Xt, Xw[varlist])
+    pd.testing.assert_frame_equal(X[remaining], Xw[remaining])
+
+    # when variable list is None
+    tr_wrap.set_params(variables=None)
+
+    Xt = pd.DataFrame(tr.fit_transform(X), columns=X.columns)
+    Xw = tr_wrap.fit_transform(X)
+
+    pd.testing.assert_frame_equal(Xt, Xw)
+
+
+def test_wrap_polynomial_features():
+    # load data
+    X = fetch_california_housing(as_frame=True).frame
+
+    # prepare selectors
+    tr = PolynomialFeatures()
+    tr_wrap = SklearnTransformerWrapper(transformer=PolynomialFeatures())
+
+    # Test:
+    # When passing variable list
+    varlist = ["MedInc", "HouseAge", "AveRooms", "AveBedrms"]
+    tr_wrap.set_params(variables=varlist)
+
+    Xt = pd.DataFrame(
+        tr.fit_transform(X[varlist]), columns=tr.get_feature_names_out(varlist)
+    )
+    Xw = tr_wrap.fit_transform(X)
+
+    pd.testing.assert_frame_equal(Xw, pd.concat([X, Xt], axis=1))
+    assert Xw.shape[1] == len(X.columns) + len(tr.get_feature_names_out(varlist))
+
+    # when variable list is None
+    tr_wrap.set_params(variables=None)
+
+    Xt = pd.DataFrame(tr.fit_transform(X), columns=tr.get_feature_names_out())
+    Xw = tr_wrap.fit_transform(X)
+
+    pd.testing.assert_frame_equal(Xw, pd.concat([X, Xt], axis=1))
+    assert Xw.shape[1] == len(X.columns) + len(tr.get_feature_names_out(X.columns))
+
+
+# SimpleImputer
+def test_wrap_simple_imputer(df_na):
     variables_to_impute = ["Age", "Marks"]
     na_variables_left_after_imputation = [
         col
@@ -29,12 +209,6 @@ def test_sklearn_imputer_numeric_with_constant(df_na):
 
     dataframe_na_transformed = transformer.fit_transform(df_na)
 
-    # init params
-    assert isinstance(transformer.transformer, SimpleImputer)
-    assert transformer.variables == variables_to_impute
-    # fit params
-    assert transformer.variables_ == variables_to_impute
-    assert transformer.n_features_in_ == 6
     # transformed output
     assert all(
         dataframe_na_transformed[na_variables_left_after_imputation].isna().sum() != 0
@@ -62,11 +236,6 @@ def test_sklearn_imputer_object_with_constant(df_na):
 
     dataframe_na_transformed = transformer.fit_transform(df_na)
 
-    # init params
-    assert isinstance(transformer.transformer, SimpleImputer)
-    assert transformer.variables == variables_to_impute
-    # fit params
-    assert transformer.n_features_in_ == 6
     # transformed output
     assert all(
         dataframe_na_transformed[na_variables_left_after_imputation].isna().sum() != 0
@@ -86,74 +255,12 @@ def test_sklearn_imputer_allfeatures_with_constant(df_na):
 
     dataframe_na_transformed = transformer.fit_transform(df_na)
 
-    # init params
-    assert isinstance(transformer.transformer, SimpleImputer)
-    # fit params
-    assert transformer.n_features_in_ == 6
     # transformed output
     assert all(dataframe_na_transformed.isna().sum() == 0)
     pd.testing.assert_frame_equal(ref, dataframe_na_transformed)
 
 
-def test_sklearn_standardscaler_numeric(df_vartypes):
-    variables_to_scale = ["Age", "Marks"]
-    transformer = SklearnTransformerWrapper(
-        transformer=StandardScaler(), variables=variables_to_scale
-    )
-
-    ref = df_vartypes.copy()
-    ref[variables_to_scale] = (
-        ref[variables_to_scale] - ref[variables_to_scale].mean()
-    ) / ref[variables_to_scale].std(ddof=0)
-
-    transformed_df = transformer.fit_transform(df_vartypes)
-
-    # init params
-    assert isinstance(transformer.transformer, StandardScaler)
-    assert transformer.variables == variables_to_scale
-    # fit params
-    assert transformer.n_features_in_ == 5
-    assert (transformer.transformer_.mean_.round(6) == np.array([19.5, 0.75])).all()
-    assert all(transformer.transformer_.scale_.round(6) == [1.118034, 0.111803])
-    pd.testing.assert_frame_equal(ref, transformed_df)
-
-
-def test_sklearn_standardscaler_object(df_vartypes):
-    variables_to_scale = ["Name"]
-    transformer = SklearnTransformerWrapper(
-        transformer=StandardScaler(), variables=variables_to_scale
-    )
-
-    with pytest.raises(TypeError):
-        transformer.fit_transform(df_vartypes)
-
-    # init params
-    assert isinstance(transformer.transformer, StandardScaler)
-    assert transformer.variables == variables_to_scale
-
-
-def test_sklearn_standardscaler_allfeatures(df_vartypes):
-    transformer = SklearnTransformerWrapper(transformer=StandardScaler())
-
-    ref = df_vartypes.copy()
-    variables_to_scale = list(ref.select_dtypes(include="number").columns)
-    ref[variables_to_scale] = (
-        ref[variables_to_scale] - ref[variables_to_scale].mean()
-    ) / ref[variables_to_scale].std(ddof=0)
-
-    transformed_df = transformer.fit_transform(df_vartypes)
-
-    # init params
-    assert isinstance(transformer.transformer, StandardScaler)
-    assert transformer.variables is None
-    # fit params
-    assert transformer.variables_ == variables_to_scale
-    assert transformer.n_features_in_ == 5
-    assert (transformer.transformer_.mean_.round(6) == np.array([19.5, 0.75])).all()
-    assert all(transformer.transformer_.scale_.round(6) == [1.118034, 0.111803])
-    pd.testing.assert_frame_equal(ref, transformed_df)
-
-
+# One Hot Encoder
 def test_sklearn_ohe_object_one_feature(df_vartypes):
     variables_to_encode = ["Name"]
 
@@ -174,11 +281,6 @@ def test_sklearn_ohe_object_one_feature(df_vartypes):
 
     transformed_df = transformer.fit_transform(df_vartypes[variables_to_encode])
 
-    # init params
-    assert isinstance(transformer.transformer, OneHotEncoder)
-    assert transformer.variables == variables_to_encode
-    # fit params
-    assert transformer.n_features_in_ == 1
     pd.testing.assert_frame_equal(ref, transformed_df)
 
 
@@ -207,11 +309,6 @@ def test_sklearn_ohe_object_many_features(df_vartypes):
 
     transformed_df = transformer.fit_transform(df_vartypes[variables_to_encode])
 
-    # init params
-    assert isinstance(transformer.transformer, OneHotEncoder)
-    assert transformer.variables == variables_to_encode
-    # fit params
-    assert transformer.n_features_in_ == 2
     pd.testing.assert_frame_equal(ref, transformed_df)
 
 
@@ -235,11 +332,6 @@ def test_sklearn_ohe_numeric(df_vartypes):
 
     transformed_df = transformer.fit_transform(df_vartypes[variables_to_encode])
 
-    # init params
-    assert isinstance(transformer.transformer, OneHotEncoder)
-    assert transformer.variables == variables_to_encode
-    # fit params
-    assert transformer.n_features_in_ == 1
     pd.testing.assert_frame_equal(ref, transformed_df)
 
 
@@ -280,75 +372,143 @@ def test_sklearn_ohe_all_features(df_vartypes):
 
     transformed_df = transformer.fit_transform(df_vartypes)
 
-    # init params
-    assert isinstance(transformer.transformer, OneHotEncoder)
-    # fit params
-    assert transformer.n_features_in_ == 5
     pd.testing.assert_frame_equal(ref, transformed_df)
 
 
-def test_sklearn_ohe_errors(df_vartypes):
-    with pytest.raises(AttributeError):
-        SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=True)).fit(
-            df_vartypes
+def test_sklearn_ohe_with_crossvalidation():
+    """
+    Created 2022-02-14 to test fix to issue # 368
+    """
+
+    # Set up test pipeline with wrapped OneHotEncoder, with simple regression model
+    # to be able to run cross-validation; use sklearn CA housing data
+    df = fetch_california_housing(as_frame=True).frame
+    y = df["MedHouseVal"]
+    X = (
+        df[["HouseAge", "AveBedrms"]]
+        .assign(
+            AveBedrms_cat=lambda x: pd.cut(x.AveBedrms, [0, 1, 2, 3, 4, np.inf]).astype(
+                str
+            )
         )
-
-
-def test_selectKBest_all_variables():
-    X, y = load_boston(return_X_y=True)
-    X = pd.DataFrame(X)
-
-    selector = SklearnTransformerWrapper(
-        transformer=SelectKBest(f_regression, k=5),
+        .drop(columns="AveBedrms")
+    )
+    pipeline: Pipeline = Pipeline(
+        steps=[
+            (
+                "encode_cat",
+                SklearnTransformerWrapper(
+                    transformer=OneHotEncoder(drop="first", sparse=False),
+                    variables=["AveBedrms_cat"],
+                ),
+            ),
+            ("cleanup", DropFeatures(["AveBedrms_cat"])),
+            ("model", Lasso()),
+        ]
     )
 
-    selector.fit(X, y)
-
-    X_train_t = selector.transform(X)
-
-    pd.testing.assert_frame_equal(X_train_t, X[[2, 5, 9, 10, 12]])
-
-
-def test_selectFromModel_all_variables():
-    X, y = load_boston(return_X_y=True)
-    X = pd.DataFrame(X)
-
-    lasso = Lasso(alpha=10, random_state=0)
-
-    sfm = SelectFromModel(lasso, prefit=False)
-
-    selector = SklearnTransformerWrapper(transformer=sfm)
-
-    selector.fit(X, y)
-
-    X_train_t = selector.transform(X)
-
-    pd.testing.assert_frame_equal(X_train_t, X[[1, 9, 11, 12]])
+    # Run cross-validation
+    results: np.ndarray = cross_val_score(
+        pipeline, X, y, scoring="neg_mean_squared_error", cv=3
+    )
+    assert not any([np.isnan(i) for i in results])
 
 
-def test_selectFromModel_selected_variables():
-    X, y = load_boston(return_X_y=True)
-    X = pd.DataFrame(X)
+@pytest.mark.parametrize(
+    "transformer",
+    [PowerTransformer(), OrdinalEncoder(), MinMaxScaler(), StandardScaler()],
+)
+def test_inverse_transform(transformer):
+    X = fetch_california_housing(as_frame=True).frame
+    X = X.drop(["Longitude"], axis=1)
 
-    lasso = Lasso(alpha=10, random_state=0)
+    tr_wrap = SklearnTransformerWrapper(transformer=transformer)
 
-    sfm = SelectFromModel(lasso, prefit=False)
+    # When passing variable list
+    varlist = ["MedInc", "HouseAge", "AveRooms", "AveBedrms"]
+    tr_wrap.set_params(variables=varlist)
+    X_tr = tr_wrap.fit_transform(X)
+    X_inv = tr_wrap.inverse_transform(X_tr)
 
-    selector = SklearnTransformerWrapper(
-        transformer=sfm,
-        variables=[0, 1, 2, 3, 4, 5],
+    pd.testing.assert_frame_equal(X_inv, X)
+
+    # when variable list is None
+    tr_wrap.set_params(variables=None)
+
+    X_tr = tr_wrap.fit_transform(X)
+    X_inv = tr_wrap.inverse_transform(X_tr)
+
+    pd.testing.assert_frame_equal(X_inv, X)
+
+
+@pytest.mark.parametrize(
+    "transformer",
+    [
+        SelectKBest(f_regression, k=2),
+        PolynomialFeatures(),
+        SimpleImputer(),
+    ],
+)
+def test_error_when_inverse_transform_not_implemented(transformer):
+    X = fetch_california_housing(as_frame=True).frame
+    y = X["MedHouseVal"]
+    X = X.drop(["MedHouseVal"], axis=1)
+
+    tr_wrap = SklearnTransformerWrapper(transformer=transformer)
+    tr_wrap.fit(X, y)
+    X_tr = tr_wrap.transform(X)
+
+    with pytest.raises(NotImplementedError):
+        tr_wrap.inverse_transform(X_tr)
+
+
+@pytest.mark.parametrize(
+    "varlist", [["MedInc", "HouseAge", "AveRooms", "AveBedrms"], None]
+)
+@pytest.mark.parametrize("transformer", _transformers)
+def test_get_feature_names_out_transformers(varlist, transformer):
+
+    X = fetch_california_housing(as_frame=True).frame
+    tr_wrap = SklearnTransformerWrapper(transformer=transformer, variables=varlist)
+    Xw = tr_wrap.fit_transform(X)
+
+    assert Xw.columns.to_list() == tr_wrap.get_feature_names_out()
+
+
+@pytest.mark.parametrize(
+    "varlist", [["MedInc", "HouseAge", "AveRooms", "AveBedrms"], None]
+)
+@pytest.mark.parametrize("transformer", _selectors)
+def test_get_feature_names_out_selectors(varlist, transformer):
+    X = fetch_california_housing(as_frame=True).frame
+    y = X["MedHouseVal"]
+    X = X.drop(["MedHouseVal"], axis=1)
+    tr_wrap = SklearnTransformerWrapper(transformer=transformer, variables=varlist)
+    Xw = tr_wrap.fit_transform(X, y)
+
+    assert Xw.columns.to_list() == tr_wrap.get_feature_names_out()
+
+
+@pytest.mark.parametrize(
+    "varlist", [["MedInc", "HouseAge", "AveRooms", "AveBedrms"], None]
+)
+def test_get_feature_names_out_polynomialfeatures(varlist):
+    X = fetch_california_housing(as_frame=True).frame
+    tr_wrap = SklearnTransformerWrapper(
+        transformer=PolynomialFeatures(), variables=varlist
+    )
+    Xw = tr_wrap.fit_transform(X)
+    assert Xw.columns.tolist() == tr_wrap.get_feature_names_out()
+
+
+@pytest.mark.parametrize("varlist", [["Name", "City"], None])
+def test_get_feature_names_out_ohe(varlist, df_vartypes):
+
+    transformer = SklearnTransformerWrapper(
+        transformer=OneHotEncoder(sparse=False, dtype=np.int64),
+        variables=varlist,
     )
 
-    selector.fit(X, y)
+    df_tr = transformer.fit_transform(df_vartypes)
 
-    X_train_t = selector.transform(X)
-
-    pd.testing.assert_frame_equal(X_train_t, X[[0, 1, 2, 6, 7, 8, 9, 10, 11, 12]])
-
-
-def test_raise_error_if_transformer_wrong_type():
-    with pytest.raises(TypeError):
-        SklearnTransformerWrapper(
-            transformer="hola",
-            variables=[0, 1, 2, 3, 4, 5],
-        )
+    assert df_tr.columns.to_list() == transformer.get_feature_names_out()

@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.imputation import EndTailImputer
 
@@ -102,9 +101,3 @@ def test_error_when_tail_is_string():
 def test_error_when_fold_is_1():
     with pytest.raises(ValueError):
         EndTailImputer(fold=-1)
-
-
-def test_non_fitted_error(df_na):
-    with pytest.raises(NotFittedError):
-        imputer = EndTailImputer()
-        imputer.transform(df_na)

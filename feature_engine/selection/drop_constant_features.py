@@ -2,9 +2,19 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
+from feature_engine.dataframe_checks import _check_contains_na, check_X
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.selection._docstring import (
+    _variables_all_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
@@ -13,6 +23,14 @@ from feature_engine.variable_manipulation import (
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
+@Substitution(
+    confirm_variables=BaseSelector._confirm_variables_docstring,
+    variables=_variables_all_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class DropConstantFeatures(BaseSelector):
     """
     DropConstantFeatures() drops constant and quasi-constant variables from a dataframe.
@@ -31,9 +49,7 @@ class DropConstantFeatures(BaseSelector):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of variables to evaluate. If None, the transformer will evaluate all
-        variables in the dataset.
+    {variables}
 
     tol: float,int,  default=1
         Threshold to detect constant/quasi-constant features. Variables showing the
@@ -47,25 +63,28 @@ class DropConstantFeatures(BaseSelector):
         Whether the missing values should be raised as error, ignored or included as an
         additional value of the variable. Takes values 'raise', 'ignore', 'include'.
 
+    {confirm_variables}
+
     Attributes
     ----------
     features_to_drop_:
         List with constant and quasi-constant features.
 
-    variables_:
-        The variables that will be considered for the feature selection.
+    {variables_}:
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Find constant and quasi-constant features.
+
+    {fit_transform}
+
     transform:
         Remove constant and quasi-constant features.
-    fit_transform:
-        Fit to the data. Then transform it.
 
     Notes
     -----
@@ -78,16 +97,27 @@ class DropConstantFeatures(BaseSelector):
     """
 
     def __init__(
-        self, variables: Variables = None, tol: float = 1, missing_values: str = "raise"
+        self,
+        variables: Variables = None,
+        tol: float = 1,
+        missing_values: str = "raise",
+        confirm_variables: bool = False,
     ):
 
-        if not isinstance(tol, (float, int)) or tol < 0 or tol > 1:
+        if (
+            not isinstance(tol, (float, int))
+            or isinstance(tol, bool)
+            or tol < 0
+            or tol > 1
+        ):
             raise ValueError("tol must be a float or integer between 0 and 1")
 
         if missing_values not in ["raise", "ignore", "include"]:
             raise ValueError(
                 "missing_values takes only values 'raise', 'ignore' or " "'include'."
             )
+
+        super().__init__(confirm_variables)
 
         self.tol = tol
         self.variables = _check_input_parameter_variables(variables)
@@ -106,10 +136,13 @@ class DropConstantFeatures(BaseSelector):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
+
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
 
         # find all variables or check those entered are present in the dataframe
-        self.variables_ = _find_all_variables(X, self.variables)
+        self.variables_ = _find_all_variables(X, self.variables_)
 
         if self.missing_values == "raise":
             # check if dataset contains na
@@ -146,22 +179,16 @@ class DropConstantFeatures(BaseSelector):
                 "constant or quasi-constant features. Try changing the tol value."
             )
 
-        self.n_features_in_ = X.shape[1]
+        # save input features
+        self._get_feature_names_in(X)
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseSelector.transform.__doc__
-
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "all"
         # add additional test that fails
-        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
         tags_dict["_xfail_checks"][
             "check_fit2d_1feature"
         ] = "the transformer needs at least 2 columns to compare, ok to fail"

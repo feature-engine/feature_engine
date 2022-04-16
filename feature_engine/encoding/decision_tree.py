@@ -5,12 +5,33 @@ from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.pipeline import Pipeline
+from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
 from feature_engine.discretisation import DecisionTreeDiscretiser
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.encoding._docstrings import (
+    _ignore_format_docstring,
+    _variables_docstring,
+)
 from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
 from feature_engine.encoding.ordinal import OrdinalEncoder
+from feature_engine.tags import _return_tags
 
 
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class DecisionTreeEncoder(BaseCategoricalTransformer):
     """
     The DecisionTreeEncoder() encodes categorical variables with predictions
@@ -42,8 +63,23 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
         **'arbitrary'** : categories are numbered arbitrarily.
 
-    cv: int, default=3
-        Desired cross-validation fold to fit the decision tree.
+    cv: int, cross-validation generator or an iterable, default=3
+        Determines the cross-validation splitting strategy. Possible inputs for cv are:
+
+            - None, to use cross_validate's default 5-fold cross validation
+
+            - int, to specify the number of folds in a (Stratified)KFold,
+
+            - CV splitter
+                - (https://scikit-learn.org/stable/glossary.html#term-CV-splitter)
+
+            - An iterable yielding (train, test) splits as arrays of indices.
+
+        For int/None inputs, if the estimator is a classifier and y is either binary or
+        multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
+        splitters are instantiated with `shuffle=False` so the splits will be the same
+        across calls. For more details check Scikit-learn's `cross_validate`'s
+        documentation.
 
     scoring: str, default='neg_mean_squared_error'
         Desired metric to optimise the performance for the decision tree. Comes from
@@ -54,8 +90,8 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     param_grid: dictionary, default=None
         The hyperparameters for the decision tree to test with a grid search. The
         `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
-        DecisionTreeRegressor() or DecisionTreeClassifier(). If None, then
-        `param_grid = {'max_depth': [1, 2, 3, 4]}`.
+        DecisionTreeRegressor() or DecisionTreeClassifier(). If None, then param_grid
+        will optimise the 'max_depth' over `[1, 2, 3, 4]`.
 
     regression: boolean, default=True
         Indicates whether the encoder should train a regression or a classification
@@ -67,38 +103,30 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
 
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
 
     Attributes
     ----------
     encoder_:
         sklearn Pipeline containing the ordinal encoder and the decision tree.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Fit a decision tree per variable.
+
+    {fit_transform}
+
     transform:
         Replace categorical variable by the predictions of the decision tree.
-    fit_transform:
-        Fit to the data, then transform it.
 
     Notes
     -----
@@ -129,7 +157,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     def __init__(
         self,
         encoding_method: str = "arbitrary",
-        cv: int = 3,
+        cv=3,
         scoring: str = "neg_mean_squared_error",
         param_grid: Optional[dict] = None,
         regression: bool = True,
@@ -146,7 +174,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
         self.param_grid = param_grid
         self.random_state = random_state
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Fit a decision tree per variable.
 
@@ -160,9 +188,22 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
             The target variable. Required to train the decision tree and for
             ordered ordinal encoding.
         """
+        X, y = self._check_X_y(X, y)
 
-        # check input dataframe
-        X = self._check_fit_input_and_variables(X)
+        # confirm model type and target variables are compatible.
+        if self.regression is True:
+            if type_of_target(y) == "binary":
+                raise ValueError(
+                    "Trying to fit a regression to a binary target is not "
+                    "allowed by this transformer. Check the target values "
+                    "or set regression to False."
+                )
+
+        else:
+            check_classification_targets(y)
+
+        self._check_or_select_variables(X)
+        self._get_feature_names_in(X)
 
         if self.param_grid:
             param_grid = self.param_grid
@@ -197,8 +238,6 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
 
         self.encoder_.fit(X, y)
 
-        self.n_features_in_ = X.shape[1]
-
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -225,3 +264,13 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
     def inverse_transform(self, X: pd.DataFrame):
         """inverse_transform is not implemented for this transformer."""
         return self
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "categorical"
+        tags_dict["requires_y"] = True
+        # the below test will fail because sklearn requires to check for inf, but
+        # you can't check inf of categorical data, numpy returns and error.
+        # so we need to leave without this test
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        return tags_dict

@@ -6,9 +6,20 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.dataframe_checks import check_X
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.tags import _return_tags
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_all_variables,
+)
 
 
 # for RandomSampleImputer
@@ -27,6 +38,13 @@ def _define_seed(
     return internal_seed
 
 
+@Substitution(
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    transform=BaseImputer._transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class RandomSampleImputer(BaseImputer):
     """
     The RandomSampleImputer() replaces missing data with a random sample extracted from
@@ -75,20 +93,21 @@ class RandomSampleImputer(BaseImputer):
     X_:
         Copy of the training dataframe from which to extract the random samples.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Make a copy of the train set
-    transform:
-        Impute missing data.
-    fit_transform:
-        Fit to the data, then transform it.
+
+    {fit_transform}
+
+    {transform}
+
     """
 
     def __init__(
@@ -139,13 +158,10 @@ class RandomSampleImputer(BaseImputer):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # find variables to impute
-        if not self.variables:
-            self.variables_ = [var for var in X.columns]
-        else:
-            self.variables_ = self.variables
+        self.variables_ = _find_all_variables(X, self.variables)
 
         # take a copy of the selected variables
         self.X_ = X[self.variables_].copy()
@@ -163,7 +179,7 @@ class RandomSampleImputer(BaseImputer):
                     "of the training dataframe."
                 )
 
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
 
         return self
 
@@ -183,7 +199,7 @@ class RandomSampleImputer(BaseImputer):
             The dataframe without missing values in the transformed variables.
         """
 
-        X = self._check_transform_input_and_state(X)
+        X = self._transform(X)
 
         # random sampling with a general seed
         if self.seed == "general":
@@ -228,3 +244,9 @@ class RandomSampleImputer(BaseImputer):
                         # replace the missing data point
                         X.loc[i, feature] = random_sample
         return X
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "all"
+        return tags_dict

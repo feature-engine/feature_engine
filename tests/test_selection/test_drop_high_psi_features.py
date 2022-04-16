@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.selection import DropHighPSIFeatures
 
@@ -89,7 +88,6 @@ def test_fit_attributes(df):
     ]
     assert transformer.psi_values_ == pytest.approx(expected_psi, 12)
     assert transformer.features_to_drop_ == ["drift_1", "drift_2"]
-    assert transformer.n_features_in_ == 8
 
 
 # ================ test init parameters =================
@@ -637,10 +635,3 @@ def test_transform_different_number_of_columns(df):
 
     with pytest.raises(ValueError):
         test.transform(data)
-
-
-def test_non_fitted_error(df):
-    """Error is raised when fit is not called prior to transform."""
-    with pytest.raises(NotFittedError):
-        transformer = DropHighPSIFeatures()
-        transformer.transform(df)

@@ -5,9 +5,36 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+    _inverse_transform_docstring,
+)
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.encoding._docstrings import (
+    _errors_docstring,
+    _ignore_format_docstring,
+    _transform_docstring,
+    _variables_docstring,
+)
 from feature_engine.encoding.base_encoder import BaseCategorical
 
 
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+    errors=_errors_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+    transform=_transform_docstring,
+    inverse_transform=_inverse_transform_docstring,
+)
 class CountFrequencyEncoder(BaseCategorical):
     """
     The CountFrequencyEncoder() replaces categories by either the count or the
@@ -41,46 +68,33 @@ class CountFrequencyEncoder(BaseCategorical):
 
         **'frequency'**: percentage of observations per category
 
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
 
-    errors: string, default='ignore'
-        Indicates what to do when categories not present in the train set are
-        encountered during transform. If 'raise', then rare categories will raise an
-        error. If 'ignore', then rare categories will be set as NaN and a warning will
-        be raised instead.
+    {errors}
 
     Attributes
     ----------
     encoder_dict_:
         Dictionary with the count or frequency per category, per variable.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn the count or frequency per category, per variable.
-    transform:
-        Encode the categories to numbers.
-    fit_transform:
-        Fit to the data, then transform it.
-    inverse_transform:
-        Encode the numbers into the original categories.
+
+    {fit_transform}
+
+    {inverse_transform}
+
+    {transform}
 
     Notes
     -----
@@ -102,7 +116,7 @@ class CountFrequencyEncoder(BaseCategorical):
         encoding_method: str = "count",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore"
+        errors: str = "ignore",
     ) -> None:
 
         if encoding_method not in ["count", "frequency"]:
@@ -126,8 +140,9 @@ class CountFrequencyEncoder(BaseCategorical):
         y: pandas Series, default = None
             y is not needed in this encoder. You can pass y or None.
         """
-
-        X = self._check_fit_input_and_variables(X)
+        X = self._check_X(X)
+        self._check_or_select_variables(X)
+        self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
 
@@ -142,21 +157,4 @@ class CountFrequencyEncoder(BaseCategorical):
 
         self._check_encoding_dictionary()
 
-        self.n_features_in_ = X.shape[1]
-
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseCategorical.transform.__doc__
-
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().inverse_transform(X)
-
-        return X
-
-    inverse_transform.__doc__ = BaseCategorical.inverse_transform.__doc__

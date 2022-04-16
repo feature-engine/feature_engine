@@ -6,14 +6,28 @@ from typing import Dict, List, Optional, Union
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_numerical_variables,
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
 )
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.tags import _return_tags
+from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
+@Substitution(
+    variables=_variables_numerical_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class DecisionTreeDiscretiser(BaseNumericalTransformer):
     """
     The DecisionTreeDiscretiser() replaces numerical variables by discrete, i.e.,
@@ -34,12 +48,25 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of numerical variables to transform. If None, the discretiser will
-        automatically select all numerical variables.
+    {variables}
 
-    cv: int, default=3
-        Desired cross-validation fold to fit the decision tree.
+    cv: int, cross-validation generator or an iterable, default=3
+        Determines the cross-validation splitting strategy. Possible inputs for cv are:
+
+            - None, to use cross_validate's default 5-fold cross validation
+
+            - int, to specify the number of folds in a (Stratified)KFold,
+
+            - CV splitter
+                - (https://scikit-learn.org/stable/glossary.html#term-CV-splitter)
+
+            - An iterable yielding (train, test) splits as arrays of indices.
+
+        For int/None inputs, if the estimator is a classifier and y is either binary or
+        multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
+        splitters are instantiated with `shuffle=False` so the splits will be the same
+        across calls. For more details check Scikit-learn's `cross_validate`'s
+        documentation.
 
     scoring: str, default='neg_mean_squared_error'
         Desired metric to optimise the performance of the tree. Comes from
@@ -50,9 +77,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     param_grid: dictionary, default=None
         The hyperparameters for the decision tree to test with a grid search. The
         `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
-        DecisionTreeRegressor() or DecisionTreeClassifier().
-
-        If None, then `param_grid = {'max_depth': [1, 2, 3, 4]}`.
+        DecisionTreeRegressor() or DecisionTreeClassifier(). If None, then param_grid
+        will optimise the 'max_depth' over `[1, 2, 3, 4]`.
 
     regression: boolean, default=True
         Indicates whether the discretiser should train a regression or a classification
@@ -72,20 +98,21 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     scores_dict_:
         Dictionary with the score of the best decision tree per variable.
 
-    variables_:
-         The variables that will be discretised.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Fit a decision tree per variable.
+
+    {fit_transform}
+
     transform:
         Replace continuous variable values by the predictions of the decision tree.
-    fit_transform:
-        Fit to the data, then transform it.
 
     See Also
     --------
@@ -102,15 +129,12 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        cv: int = 3,
+        cv=3,
         scoring: str = "neg_mean_squared_error",
         param_grid: Optional[Dict[str, Union[str, int, float, List[int]]]] = None,
         regression: bool = True,
         random_state: Optional[int] = None,
     ) -> None:
-
-        if not isinstance(cv, int) or cv < 0:
-            raise ValueError("cv can only take only positive integers")
 
         if not isinstance(regression, bool):
             raise ValueError("regression can only take True or False")
@@ -122,7 +146,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.param_grid = param_grid
         self.random_state = random_state
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):  # type: ignore
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Fit one decision tree per variable to discretize with cross-validation and
         grid-search for hyperparameters.
@@ -137,11 +161,19 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         y: pandas series.
             Target variable. Required to train the decision tree.
         """
+        # confirm model type and target variables are compatible.
+        if self.regression is True:
+            if type_of_target(y) == "binary":
+                raise ValueError(
+                    "Trying to fit a regression to a binary target is not "
+                    "allowed by this transformer. Check the target values "
+                    "or set regression to False."
+                )
+        else:
+            check_classification_targets(y)
 
         # check input dataframe
-        X = super().fit(X, y)
-
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        X = super()._fit_from_varlist(X)
 
         if self.param_grid:
             param_grid = self.param_grid
@@ -167,8 +199,6 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
             self.binner_dict_[var] = tree_model
             self.scores_dict_[var] = tree_model.score(X[var].to_frame(), y)
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -199,3 +229,9 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
                 X[feature] = tmp[:, 1]
 
         return X
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
+        tags_dict["requires_y"] = True
+        return tags_dict

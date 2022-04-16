@@ -9,6 +9,9 @@ by either combining or transforming existing features.
 .. toctree::
    :maxdepth: 1
 
+   MathFeatures
+   RelativeFeatures
+   CyclicalFeatures
    MathematicalCombination
    CombineWithReferenceFeature
    CyclicalTransformer

@@ -1,5 +1,5 @@
 import warnings
-from typing import List, Union
+from typing import List, Union, Tuple
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -7,34 +7,36 @@ from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
     _check_contains_na,
-    _check_input_matches_training_df,
-    _is_dataframe,
+    _check_X_matches_training_df,
+    check_X,
+    check_X_y,
 )
-from feature_engine.validation import _return_tags
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.encoding._docstrings import (
+    _errors_docstring,
+    _ignore_format_docstring,
+    _variables_docstring,
+)
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
     _find_all_variables,
     _find_or_check_categorical_variables,
-    _check_input_parameter_variables,
 )
 
 
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+)
 class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
     """shared set-up checks and methods across categorical transformers
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}.
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
     """
 
     def __init__(
@@ -52,10 +54,18 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
 
-    def _check_fit_input_and_variables(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _check_X(self, X: pd.DataFrame) -> pd.DataFrame:
+        return check_X(X)
+
+    def _check_X_y(
+        self, X: pd.DataFrame, y: pd.Series
+    ) -> Tuple[pd.DataFrame, pd.Series]:
+        return check_X_y(X, y)
+
+    def _check_or_select_variables(self, X: pd.DataFrame):
         """
-        Checks that input is a dataframe, finds categorical variables, or alternatively
-        checks that the variables entered by the user are of type object (categorical).
+        Finds categorical variables, or alternatively checks that the variables
+        entered by the user are of type object (categorical).
         Checks absence of NA.
 
         Parameters
@@ -65,23 +75,11 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame.
             If any user provided variable is not categorical
         ValueError
             If there are no categorical variables in the df or the df is empty
             If the variable(s) contain null values
-
-        Returns
-        -------
-        X: Pandas DataFrame
-            The same dataframe entered as parameter
-        variables : list
-            list of categorical variables
         """
-
-        # check input dataframe
-        X = _is_dataframe(X)
-
         if not self.ignore_format:
             # find categorical variables or check variables entered by user are object
             self.variables_: List[
@@ -94,7 +92,13 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables_)
 
-        return X
+    def _get_feature_names_in(self, X: pd.DataFrame):
+
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
+        # save train set shape
+        self.n_features_in_ = X.shape[1]
 
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -123,13 +127,16 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # Check input data contains same number of columns as df used to fit
-        _check_input_matches_training_df(X, self.n_features_in_)
+        _check_X_matches_training_df(X, self.n_features_in_)
 
         # check if dataset contains na
         _check_contains_na(X, self.variables_)
+
+        # reorder df to match train set
+        X = X[self.feature_names_in_]
 
         return X
 
@@ -226,8 +233,21 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
 
         return X
 
+    def get_feature_names_out(self) -> List:
+        """Get output feature names for transformation.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        return self.feature_names_in_
+
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["variables"] = "categorical"
         # the below test will fail because sklearn requires to check for inf, but
         # you can't check inf of categorical data, numpy returns and error.
         # so we need to leave without this test
@@ -235,6 +255,11 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         return tags_dict
 
 
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+    errors=_errors_docstring,
+)
 class BaseCategorical(BaseCategoricalTransformer):
     """
     BaseCategorical() is the parent class to some of the encoders.
@@ -242,24 +267,11 @@ class BaseCategorical(BaseCategoricalTransformer):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
 
-    errors: string, default='ignore'
-        Indicates what to do, when categories not present in the train set are
-        encountered during transform. If 'raise', then rare categories will raise an
-        error. If 'ignore', then rare categories will be set as NaN and a warning will
-        be raised instead.
+    {errors}
     """
 
     def __init__(
@@ -268,7 +280,6 @@ class BaseCategorical(BaseCategoricalTransformer):
         ignore_format: bool = False,
         errors: str = "ignore",
     ) -> None:
-
         if errors not in ["raise", "ignore"]:
             raise ValueError(
                 "errors takes only values 'raise' and 'ignore ."

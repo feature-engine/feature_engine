@@ -8,7 +8,7 @@ selection in general in the following online courses:
    :width: 200
    :figclass: align-center
    :align: left
-   :target: https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06
+   :target: https://courses.trainindata.com/p/feature-engineering-for-machine-learning
 
    Feature Engineering for Machine Learning
 
@@ -16,7 +16,7 @@ selection in general in the following online courses:
    :width: 200
    :figclass: align-center
    :align: center
-   :target: https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71
+   :target: https://courses.trainindata.com/p/feature-selection-for-machine-learning
 
    Feature Selection for Machine Learning
 
@@ -46,5 +46,5 @@ Feature-engine and Scikit-learn in this course:
 |
 |
 
-Note that Soledad Galli, the main developer of Feature-engine will earn some money if you
+Note that Soledad Galli, the main developer of Feature-engine will earn money if you
 choose to enroll in one of the above courses.

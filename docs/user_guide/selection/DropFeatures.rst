@@ -107,3 +107,5 @@ In this Kaggle kernel we feature 3 different end-to-end machine learning pipelin
 :class:`DropFeatures()`:
 
 - `Kaggle Kernel <https://www.kaggle.com/solegalli/feature-engineering-and-model-stacking>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

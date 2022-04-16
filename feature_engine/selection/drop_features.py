@@ -2,9 +2,9 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.dataframe_checks import check_X
 from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 
 
 class DropFeatures(BaseSelector):
@@ -23,26 +23,39 @@ class DropFeatures(BaseSelector):
     features_to_drop_:
         The features that will be dropped.
 
+    feature_names_in_:
+        List with the names of features seen during `fit`.
+
     n_features_in_:
         The number of features in the train set used in fit.
-
 
     Methods
     -------
     fit:
         This transformer does not learn any parameter.
-    transform:
-        Drops indicated features.
+
     fit_transform:
         Fit to data, then transform it.
+
+    get_feature_names_out:
+        Get output feature names for transformation.
+
+    get_params:
+        Get parameters for this estimator.
+
+    set_params:
+        Set the parameters of this estimator.
+
+    transform:
+        Drops indicated features.
     """
 
     def __init__(self, features_to_drop: List[Union[str, int]]):
 
-        if not isinstance(features_to_drop, list) or len(features_to_drop) == 0:
+        if not isinstance(features_to_drop, (str, list)) or len(features_to_drop) == 0:
             raise ValueError(
-                "features_to_drop should be a list with the name of the variables"
-                "you wish to drop from the dataframe."
+                f"features_to_drop should be a list with the name of the variables "
+                f"you wish to drop from the dataframe. Got {features_to_drop} instead."
             )
 
         self.features_to_drop = features_to_drop
@@ -59,7 +72,7 @@ class DropFeatures(BaseSelector):
             y is not needed for this transformer. You can pass y or None.
         """
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # X[self.features_to_drops] calls to pandas to check if columns are
         # present in the df.
@@ -74,22 +87,15 @@ class DropFeatures(BaseSelector):
                 "existing variables"
             )
 
-        self.n_features_in_ = X.shape[1]
+        # save input features
+        self._get_feature_names_in(X)
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseSelector.transform.__doc__
-
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["allow_nan"] = True
         # add additional test that fails
-        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
         tags_dict["_xfail_checks"][
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"

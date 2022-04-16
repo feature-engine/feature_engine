@@ -120,3 +120,5 @@ More details
 In this Kaggle kernel we use :class:`DropConstantFeatures()` together with other feature selection algorithms:
 
 - `Kaggle kernel <https://www.kaggle.com/solegalli/feature-selection-with-feature-engine>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

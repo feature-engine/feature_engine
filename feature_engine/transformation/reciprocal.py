@@ -7,10 +7,31 @@ import numpy as np
 import pandas as pd
 
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.validation import _return_tags
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _inverse_transform_docstring,
+)
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
+@Substitution(
+    variables=_variables_numerical_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_not_learn_docstring,
+    fit_transform=_fit_transform_docstring,
+    inverse_transform=_inverse_transform_docstring,
+)
 class ReciprocalTransformer(BaseNumericalTransformer):
     """
     The ReciprocalTransformer() applies the reciprocal transformation 1 / x
@@ -27,28 +48,27 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of numerical variables to transform. If None, the transformer will
-        automatically find and select all numerical variables.
+    {variables}
 
     Attributes
     ----------
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        This transformer does not learn parameters.
+    {fit}
+
+    {fit_transform}
+
+    {inverse_transform}
+
     transform:
         Apply the reciprocal 1 / x transformation.
-    fit_transform:
-        Fit to data, then transform it.
-    inverse_transform:
-        Convert the data back to the original representation.
+
     """
 
     def __init__(
@@ -72,7 +92,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X = super()._fit_from_varlist(X)
 
         # check if the variables contain the value 0
         if (X[self.variables_] == 0).any().any():
@@ -80,8 +100,6 @@ class ReciprocalTransformer(BaseNumericalTransformer):
                 "Some variables contain the value zero, can't apply reciprocal "
                 "transformation."
             )
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -136,6 +154,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
         # =======  this tests fail because the transformers throw an error
         # when the values are 0. Nothing to do with the test itself but
         # mostly with the data created and used in the test

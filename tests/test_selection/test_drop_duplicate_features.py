@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.selection import DropDuplicateFeatures
 
@@ -61,13 +60,6 @@ def test_drop_duplicates_features(df_duplicate_features):
     pd.testing.assert_frame_equal(X, df)
 
 
-def test_variables_assigned_correctly(df_duplicate_features):
-    transformer = DropDuplicateFeatures()
-    transformer.fit(df_duplicate_features)
-    assert transformer.variables is None
-    assert transformer.variables_ == (list(df_duplicate_features.columns))
-
-
 def test_fit_attributes(df_duplicate_features):
     transformer = DropDuplicateFeatures()
     transformer.fit(df_duplicate_features)
@@ -78,7 +70,6 @@ def test_fit_attributes(df_duplicate_features):
         {"City", "City2"},
         {"Age", "Age2"},
     ]
-    assert transformer.n_features_in_ == 9
 
 
 def test_with_df_with_na(df_duplicate_features_with_na):
@@ -103,16 +94,3 @@ def test_with_df_with_na(df_duplicate_features_with_na):
         {"City", "City2"},
         {"Age", "Age2"},
     ]
-    assert transformer.n_features_in_ == 9
-
-
-def test_error_if_fit_input_not_dataframe():
-    with pytest.raises(TypeError):
-        DropDuplicateFeatures().fit({"Name": ["Karthik"]})
-
-
-def test_non_fitted_error(df_duplicate_features):
-    # test case 3: when fit is not called prior to transform
-    with pytest.raises(NotFittedError):
-        transformer = DropDuplicateFeatures()
-        transformer.transform(df_duplicate_features)

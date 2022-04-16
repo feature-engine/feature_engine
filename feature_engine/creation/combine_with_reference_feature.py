@@ -2,20 +2,49 @@ from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils import deprecated
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
-    _check_input_matches_training_df,
-    _is_dataframe,
+    _check_X_matches_training_df,
+    check_X,
 )
-from feature_engine.validation import _return_tags
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+)
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.class_inputs import (
+    _drop_original_docstring,
+    _missing_values_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
+@deprecated(
+    "CombineWithReferenceFeature() is deprecated in version 1.3 and will be removed in "
+    "version 1.4. Use RelativeFeatures() instead."
+)
+@Substitution(
+    missing_values=_missing_values_docstring,
+    drop_original=_drop_original_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_not_learn_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     """
+    **DEPRECATED: CombineWithReferenceFeature() is deprecated in version 1.3 and will be
+    removed in Version 1.4. Use RelativeFeatures() instead.**
+
     CombineWithReferenceFeature() applies basic mathematical operations between a group
     of variables and one or more reference features. It adds one or more additional
     features to the dataframe with the result of the operations.
@@ -42,9 +71,9 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
     operations: list, default=['sub']
         The list of basic mathematical operations to be used in the transformation.
 
-        If None, all of ['sub', 'div','add','mul'] will be performed. Alternatively,
+        If None, all of ['sub', 'div', 'add', 'mul'] will be performed. Alternatively,
         you can enter a list of operations to carry out. Each operation should
-        be a string and must be one of the elements in `['sub', 'div','add', 'mul']`.
+        be a string and must be one of the elements in `['sub', 'div', 'add', 'mul']`.
 
         Each operation will result in a new variable that will be added to the
         transformed dataset.
@@ -59,29 +88,24 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         If `new_variable_names` is None, the transformer will assign an arbitrary name
         to the features. The name will be var + operation + ref_var.
 
-    missing_values: string, default='ignore'
-        Indicates if missing values should be ignored or raised. If 'ignore', the
-        transformer will ignore missing data when transforming the data. If 'raise' the
-        transformer will return an error if the training or the datasets to transform
-        contain missing values.
+    {missing_values}
 
-    drop_original: bool, default=False
-        If True, the original variables will be dropped from the dataframe
-        after their combination.
+    {drop_original}
 
     Attributes
     ----------
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        This transformer does not learn parameters.
+    {fit}
+
     transform:
-        Combine the variables with the mathematical operations.
-    fit_transform:
-        Fit to the data, then transform it.
+        Create new features.
+
+    {fit_transform}
 
     Notes
     -----
@@ -190,7 +214,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # check variables to combine are numerical
         self.variables_to_combine = _find_or_check_numerical_variables(
@@ -218,6 +242,10 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
                     "remove those before using this transformer with div."
                 )
 
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
+        # save train set shape
         self.n_features_in_ = X.shape[1]
 
         return self
@@ -241,10 +269,10 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
-        _check_input_matches_training_df(X, self.n_features_in_)
+        _check_X_matches_training_df(X, self.n_features_in_)
 
         # check if dataset contains na
         if self.missing_values == "raise":
@@ -262,7 +290,6 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
                     "remove those before using this transformer."
                 )
 
-        original_col_names = [var for var in X.columns]
         # Add new features and values into de data frame.
         if "sub" in self.operations:
             for reference in self.reference_variables:
@@ -295,7 +322,7 @@ class CombineWithReferenceFeature(BaseEstimator, TransformerMixin):
 
         # replace created variable names with user ones.
         if self.new_variables_names:
-            X.columns = original_col_names + self.new_variables_names
+            X.columns = self.feature_names_in_ + self.new_variables_names
 
         if self.drop_original:
             X.drop(

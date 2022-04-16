@@ -2,13 +2,40 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.utils import deprecated
 
 from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.class_inputs import (
+    _variables_numerical_docstring,
+    _drop_original_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
+@deprecated(
+    "CyclicalTransformer() is deprecated in version 1.3 and will be removed in "
+    "version 1.4. Use CyclicalFeatures() instead."
+)
+@Substitution(
+    variables=_variables_numerical_docstring,
+    drop_original=_drop_original_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class CyclicalTransformer(BaseNumericalTransformer):
     """
+    **DEPRECATED: CyclicalTransformer() is deprecated in version 1.3 and will be removed
+    in version 1.4. Use CyclicalFeatures() instead.**
+
     The CyclicalTransformer() applies cyclical transformations to numerical
     variables, returning 2 new features per variable, according to:
 
@@ -23,43 +50,39 @@ class CyclicalTransformer(BaseNumericalTransformer):
 
     Missing data should be imputed before applying this transformer.
 
-    More details in the :ref:`User Guide <cyclical_features>`.
+    More details in the :ref:`User Guide <cyclical_transformer>`.
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of numerical variables to transform. If None, the transformer will
-        automatically find and select all numerical variables.
+    {variables}
 
     max_values: dict, default=None
         A dictionary with the maximum value of each variable to transform. Useful when
         the maximum value is not present in the dataset. If None, the transformer will
         automatically find the maximum value of each variable.
 
-    drop_original: bool, default=False
-        If True, the original variables to transform will be dropped from the dataframe.
+    {drop_original}
 
     Attributes
     ----------
     max_values_:
         The maximum value of the cyclical feature.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
 
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learns the maximum values of the cyclical features.
-    transform:
-        Applies the cyclical transformation.
-    fit_transform:
-        Fit to data, then transform it.
 
+    transform:
+        Create new features.
+
+    {fit_transform}
 
     References
     ----------
@@ -105,7 +128,7 @@ class CyclicalTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X = super()._fit_from_varlist(X)
 
         if self.max_values is None:
             self.max_values_ = X[self.variables_].max().to_dict()
@@ -113,11 +136,9 @@ class CyclicalTransformer(BaseNumericalTransformer):
             for key in list(self.max_values.keys()):
                 if key not in self.variables_:
                     raise ValueError(
-                        f"The mapping key {key} is not present" f" in variables."
+                        f"The mapping key {key} is not present in variables."
                     )
             self.max_values_ = self.max_values
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 
