@@ -71,16 +71,22 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
     def __init__(
         self,
-        binning_dict: Dict[Union[str, int], List[Union[str, int]]],
-        return_object: bool = False,
-        return_boundaries: bool = False,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        strategy: str = "equal-frequency",
+        binning_dict: Dict[Union[str, int], List[Union[str, int]]] = None,
         errors: str = "ignore",
     ) -> None:
 
-        if not isinstance(binning_dict, dict):
+        if strategy not in ("equal-frequency", "equal-width", "arbitrary"):
             raise ValueError(
-                "binning_dict must be a dictionary with the interval limits per "
-                f"variable. Got {binning_dict} instead."
+                "strategy must equal 'arbitrary', 'equal-frequency', 'equal-width'. "
+                f"Got {strategy} instead."
+            )
+
+        if strategy == "arbitrary" and not isinstance(binning_dict, dict):
+            raise ValueError(
+                "If 'arbitrary' is the selected strategy, then binning_dict must be a "
+                f"dictionary with the interval limits per variable. Got {binning_dict} instead."
             )
 
         if errors not in ["ignore", "raise"]:
