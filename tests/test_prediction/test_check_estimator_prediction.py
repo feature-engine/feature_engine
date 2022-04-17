@@ -13,7 +13,8 @@ from feature_engine.discretisation import (
     EqualWidthDiscretiser,
 )
 from feature_engine.encoding import MeanEncoder
-from feature_engine.estimator_checks import check_error_if_y_not_passed, test_df
+from tests.estimator_checks.dataframe_for_checks import test_df
+from tests.estimator_checks.fit_functionality_checks import check_error_if_y_not_passed
 
 _estimators = [BaseTargetMeanEstimator(), TargetMeanClassifier(), TargetMeanRegressor()]
 _predictors = [TargetMeanRegressor(), TargetMeanClassifier()]

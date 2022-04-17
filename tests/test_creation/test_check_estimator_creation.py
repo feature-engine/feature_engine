@@ -10,7 +10,7 @@ from feature_engine.creation import (
     CyclicalTransformer,
     MathematicalCombination,
 )
-from feature_engine.estimator_checks import check_feature_engine_estimator
+from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
 _estimators = [
     MathFeatures(variables=["0", "1"], func="mean", missing_values="ignore"),

@@ -8,7 +8,7 @@ from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
 )
-from feature_engine.estimator_checks import check_feature_engine_estimator
+from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
 _estimators = [
     DecisionTreeDiscretiser(regression=False),
