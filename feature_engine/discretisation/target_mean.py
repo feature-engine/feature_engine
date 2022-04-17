@@ -45,7 +45,7 @@ from sklearn.pipeline import Pipeline
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class TargetMeanDiscretiser(BaseeTargetMeanEstimator, BaseDiscretiser):
+class TargetMeanDiscretiser(BaseDiscretiser):
     """
 
     Parameters
