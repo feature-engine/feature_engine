@@ -74,11 +74,13 @@ def check_input_features(
             raise ValueError(
                 f"input_features must be a list. Got {input_features} instead."
             )
-        if _check_input_features_in_variables(input_features, all_variables):
+        if any([
+            feature for feature in input_features if feature not in all_variables
+        ]):
             raise ValueError(
-                "Some features in input_features were not used to extract new "
-                "variables. Pass either None, or a list with the features that "
-                "were used to create date and time features."
+                "Some features in input_features were not transformed by this "
+                "transformer. Pass either None, or a list with the features "
+                "that were transformed by this transformer."
             )
         feature_names = input_features
 
