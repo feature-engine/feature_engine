@@ -144,9 +144,9 @@ class BaseSelector(BaseEstimator, TransformerMixin):
                 )
             if any([f for f in input_features if f not in self.variables_]):
                 raise ValueError(
-                    "Some features in input_features were not used to extract new "
-                    "variables. Pass either None, or a list with the features that "
-                    "were used to create date and time features."
+                    "Some features in input_features were not transformed by this "
+                    "transformer. Pass either None, or a list with the features "
+                    "that were transformed by this transformer."
                 )
             feature_names = input_features
 
