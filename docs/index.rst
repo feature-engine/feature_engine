@@ -95,6 +95,7 @@ Feature-engine features in the following resources
 
 - `Feature Engineering for Machine Learning <https://courses.trainindata.com/p/feature-engineering-for-machine-learning>`_, Online Course.
 - `Feature Selection for Machine Learning <https://courses.trainindata.com/p/feature-selection-for-machine-learning>`_, Online Course.
+- `Feature Selection for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_, Online Course.
 - `Python Feature Engineering Cookbook <https://packt.link/python>`_.
 - `Feature-engine: A new open-source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c/>`_.
 - `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd>`_.

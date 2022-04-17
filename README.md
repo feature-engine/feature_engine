@@ -27,6 +27,8 @@ transforming parameters from the data and then transform it.
 
 * [Feature Selection for Machine Learning, Online Course](https://courses.trainindata.com/p/feature-selection-for-machine-learning)
 
+* [Feature Engineering for Time Series Forecasting, Online Course](https://www.courses.trainindata.com/p/feature-engineering-for-forecasting)
+
 * [Deployment of Machine Learning Models, Online Course](https://www.udemy.com/course/deployment-of-machine-learning-models/?referralCode=D4FE5EA129FFD203CFF4)
 
 * [Python Feature Engineering Cookbook](https://packt.link/python)

@@ -20,8 +20,24 @@ selection in general in the following online courses:
 
    Feature Selection for Machine Learning
 
+.. figure::  ../images/fetsf.png
+   :width: 200
+   :figclass: align-center
+   :align: left
+   :target: https://www.courses.trainindata.com/p/feature-engineering-for-forecasting
+
+   Feature Engineering for Time Series Forecasting
+
 |
 |
+|
+|
+|
+|
+|
+|
+|
+
 
 We also show how to put an entire machine learning pipeline in production, using
 Feature-engine and Scikit-learn in this course:
