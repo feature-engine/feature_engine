@@ -15,7 +15,9 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.parameter_checks import check_input_features
-from feature_engine._docstrings.methods import _input_features_docstring
+from feature_engine._docstrings.methods import (
+    _get_feature_names_out_docstring
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
@@ -158,21 +160,12 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         return X
 
     @Substitution(
-        input_features=_input_features_docstring,
+        get_feature_names_out=_get_feature_names_out_docstring
     )
     def get_feature_names_out(
             self, input_features: Optional[Union[List, str]] = None
     ) -> List:
-        """Get output feature names for transformation.
-
-        Parameters
-        ----------
-        {input_features}
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
+        """{get_feature_names_out}
         """
         check_is_fitted(self)
         feature_names = check_input_features(input_features, self.variables_)
