@@ -6,7 +6,10 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import _check_contains_na, check_X
-from feature_engine._docstrings.methods import _input_features_docstring
+from feature_engine.parameter_checks import check_input_features
+from feature_engine._docstrings.methods import (
+    _get_feature_names_out_docstring
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 
@@ -203,25 +206,17 @@ class MatchVariables(BaseEstimator, TransformerMixin):
         return X
 
     @Substitution(
-        input_features=_input_features_docstring
+        get_feature_names_out=_get_feature_names_out_docstring
     )
     def get_feature_names_out(
         self, input_features: Optional[Union[List, str]] = None
     ) -> List:
-        """Get output feature names for transformation.
-
-        Parameters
-        ----------
-        {input_features}
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
+        """{get_feature_names_out}
         """
         check_is_fitted(self)
+        feature_names = check_input_features(input_features, self.variables_)
+        return feature_names
 
-        return self.feature_names_in_
 
     # for the check_estimator tests
     def _more_tags(self):
