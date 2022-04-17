@@ -3,12 +3,16 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OrdinalEncoder, StandardScaler
 from sklearn.utils.estimator_checks import check_estimator
 
-from feature_engine.estimator_checks import (
-    check_all_types_variables_assignment,
-    check_feature_names_in,
-    check_numerical_variables_assignment,
+from tests.estimator_checks.estimator_checks import (
     check_raises_error_when_input_not_a_df,
+)
+from tests.estimator_checks.fit_functionality_checks import check_feature_names_in
+from tests.estimator_checks.non_fitted_error_checks import (
     check_raises_non_fitted_error,
+)
+from tests.estimator_checks.variable_selection_checks import (
+    check_numerical_variables_assignment,
+    check_all_types_variables_assignment,
 )
 from feature_engine.wrappers import SklearnTransformerWrapper
 
