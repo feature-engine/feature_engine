@@ -359,20 +359,29 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         # Check method fit has been called
         check_is_fitted(self)
 
-        if self.transformer_.__class__.__name__ in _TRANSFORMERS:
-            feature_names = self.feature_names_in_
+        if input_features is None:
+            if self.transformer_.__class__.__name__ in _TRANSFORMERS:
+                feature_names = self.feature_names_in_
 
-        elif self.transformer_.__class__.__name__ in _CREATORS:
-            added_features = self.transformer_.get_feature_names_out(self.variables_)
-            feature_names = list(self.feature_names_in_) + list(added_features)
+            if self.transformer_.__class__.__name__ in _CREATORS:
+                added_features = self.transformer_.get_feature_names_out(self.variables_)
+                feature_names = list(self.feature_names_in_) + list(added_features)
 
-        elif self.transformer_.__class__.__name__ in _SELECTORS:
-            feature_names = [
-                f for f in self.feature_names_in_ if f not in self.features_to_drop_
-            ]
-
+            if self.transformer_.__class__.__name__ in _SELECTORS:
+                feature_names = [
+                    f for f in self.feature_names_in_ if f not in self.features_to_drop_
+                ]
         else:
-            feature_names = check_input_features(input_features, self.variables_)
+            if all([feature for feature in input_features if feature in self.variables_]):
+                added_features = self.transformer_.get_feature_names_out(input_features)
+                feature_names = list(self.feature_names_in_) + list(added_features)
+
+            else:
+                raise ValueError(
+                    "Some features in input_features were not transformed by this "
+                    "transformer. Pass either None, or a list with the features "
+                    "that were transformed by this transformer."
+                )
 
         return feature_names
 
