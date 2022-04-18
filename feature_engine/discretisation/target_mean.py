@@ -93,23 +93,15 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         bins: int = 5,
         strategy: str = "equal_frequency",
-        binning_dict: Dict[Union[str, int], List[Union[str, int]]] = None,
         errors: str = "ignore",
     ) -> None:
-        # TODO: do we include ArbitraryDiscretiser?
-        if strategy not in ("arbitrary", "equal_frequency", "equal_width"):
+        if strategy not in ("equal_frequency", "equal_width"):
             raise ValueError(
-                "strategy must equal 'arbitrary', 'equal_frequency', 'equal_width'. "
+                "strategy must equal 'equal_frequency' or 'equal_width'. "
                 f"Got {strategy} instead."
             )
 
-        if strategy == "arbitrary" and not isinstance(binning_dict, dict):
-            raise ValueError(
-                "If 'arbitrary' is the selected strategy, then binning_dict must be a "
-                f"dictionary with the interval limits per variable. Got {binning_dict} instead."
-            )
-
-        if errors not in ["ignore", "raise"]:
+        if errors not in ("ignore", "raise"):
             raise ValueError(
                 "errors only takes values 'ignore' and 'raise. "
                 f"Got {errors} instead."
@@ -118,7 +110,6 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         self.variables = variables
         self.bins = bins
         self.strategy = strategy
-        self.binning_dict = binning_dict
         self.errors = errors
 
     def fit(self, X: pd.DataFrame, y:Optional[pd.Series] = None):
@@ -146,11 +137,6 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         # check for inf
         _check_contains_inf(X, self.variables_numerical_)
 
-        # create this attribute for consistency with the rest of the discretisers
-        if self.strategy == "arbitrary":
-            # check dataframe
-            X = super()._fit_from_dict(X, self.binning_dict)
-            self.binner_dict_ = self.binning_dict
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -172,16 +158,9 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
     def _make_discretiser(self):
         """
-        Instantiate the ArbirtraryDiscretiser, EqualFrequencyDiscretiser, or
-        EqualWidthDiscretiser.
+        Instantiate the EqualFrequencyDiscretiser or EqualWidthDiscretiser.
         """
-        # TODO: do we include ArbitraryDiscretiser?
-        if self.strategy == "arbitrary":
-            discretiser = ArbitraryDiscretiser(
-
-            )
-
-        elif self.strategy == "equal_frequency":
+        if self.strategy == "equal_frequency":
             discretiser = EqualFrequencyDiscretiser(
                 q=self.bins,
                 variables=self.variables_numerical_,
