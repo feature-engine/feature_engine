@@ -95,6 +95,11 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         strategy: str = "equal_frequency",
         errors: str = "ignore",
     ) -> None:
+
+        if not isinstance(bins, int):
+            raise ValueError(
+                f"bins must be an integer. Got {bins} instead."
+            )
         if strategy not in ("equal_frequency", "equal_width"):
             raise ValueError(
                 "strategy must equal 'equal_frequency' or 'equal_width'. "
@@ -107,21 +112,24 @@ class TargetMeanDiscretiser(BaseDiscretiser):
                 f"Got {errors} instead."
             )
 
-        self.variables = variables
+        self.variables = _check_input_parameter_variables(variables)
         self.bins = bins
         self.strategy = strategy
         self.errors = errors
 
-    def fit(self, X: pd.DataFrame, y:Optional[pd.Series] = None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        This transformer does not learn any parameter.
+        This transformer discretises the selected numerical variables and
+        learns the target mean value for each bin.
+
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the
             variables to be transformed.
-        y: None
-            y is not needed in this transformer. You can pass y or None.
+
+        y : pandas series of shape = [n_samples,]
+            The target variable.
         """
         # check if 'X' is a dataframe
         X = check_X(X)
@@ -131,12 +139,14 @@ class TargetMeanDiscretiser(BaseDiscretiser):
             X, self.variables
         )
 
+        # create dataframe to use for target values.
+        self.x_target_ = X[self.variables_numerical_].copy()
+
         # check for missing values
         _check_contains_na(X, self.variables_numerical_)
 
         # check for inf
         _check_contains_inf(X, self.variables_numerical_)
-
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -175,18 +185,11 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
         return discretiser
 
-    def _make_pipeline(self):
+    def _calc_target_mean_for_discretised_variables(self):
         """
         Instantiate target mean encoder and create pipeline of selected
         discretiser and encoder.
         """
-        encoder = MeanEncoder(variables=self.variables_numerical_, errors="raise")
 
-        pipeline = Pipeline(
-            [
-                ("discretiser", self._make_discretiser()),
-                ("encoder", encoder),
-            ]
-        )
 
         return pipeline
