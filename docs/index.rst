@@ -155,6 +155,7 @@ Numerical Transformation: Transformers
 - :doc:`api_doc/transformation/PowerTransformer`: performs power transformation of numerical variables
 - :doc:`api_doc/transformation/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables
 - :doc:`api_doc/transformation/YeoJohnsonTransformer`: performs Yeo-Johnson transformation of numerical variables
+- :doc:`api_doc/transformation/ArcsinTransformer`: performs arcsin transformation of numerical variables
 
 Feature Creation:
 -----------------
