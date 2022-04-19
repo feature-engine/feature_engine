@@ -36,7 +36,9 @@ def _define_numerical_dict(dict_: Optional[dict]) -> Optional[dict]:
     return dict_
 
 
-def check_input_features(input_features: Union[List, str], all_variables: List) -> Union[List, str]:
+def check_input_features(
+        input_features: Union[List, str, None], all_variables: Union[List, str]
+) -> Union[List, str]:
     """
     Checks if input_features is None; otherwise, check whether input_variables is a list of features
     that exist within transformed dataset.
