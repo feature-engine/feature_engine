@@ -211,14 +211,11 @@ def check_get_feature_names_out(estimator):
     estimator = clone(estimator)
     estimator.fit(X, y)
 
-<<<<<<< HEAD
     # create Pipeline based on a transformer
     estimator2 = clone(estimator)
     pipe = Pipeline(["transformer", estimator2])
     pipe.fit(X, y)
 
-=======
->>>>>>> 101982d (fix conflict. Update estimator_checks w/ new rebase)
     if estimator.__class__.__name__ not in _skip_test:
         # selection transformers
         if (
@@ -248,14 +245,11 @@ def check_get_feature_names_out(estimator):
                 input_features=features
             ) == features
 
-<<<<<<< HEAD
             # transformer is used in a pipeline
             assert pipe.get_feature_names_out(
                 input_features=features
             ) == features
 
-=======
->>>>>>> 101982d (fix conflict. Update estimator_checks w/ new rebase)
 
 # =======  TESTS BASED ON ESTIMATOR TAGS =============
 def check_error_if_y_not_passed(estimator):
