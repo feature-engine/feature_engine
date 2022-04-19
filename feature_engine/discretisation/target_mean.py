@@ -119,8 +119,8 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        This transformer discretises the selected numerical variables and
-        learns the target mean value for each bin.
+        Learn the boundaries of the selected dicretiser's intervals / bins
+        for the chosen numerical variables.
 
         Parameters
         ----------
@@ -129,24 +129,34 @@ class TargetMeanDiscretiser(BaseDiscretiser):
             variables to be transformed.
 
         y : pandas series of shape = [n_samples,]
-            The target variable.
+            y is not needed in this discretiser. You can pass y or None.
         """
         # check if 'X' is a dataframe
         X = check_X(X)
 
-        # identify numerical variables
+        #  identify numerical variables
         self.variables_numerical_ = _find_or_check_numerical_variables(
             X, self.variables
         )
 
         # create dataframe to use for target values.
-        self.x_target_ = X[self.variables_numerical_].copy()
+        self.X_target_ = X[self.variables_numerical_].copy()
 
         # check for missing values
         _check_contains_na(X, self.variables_numerical_)
 
         # check for inf
         _check_contains_inf(X, self.variables_numerical_)
+
+        # discretise
+        self._discretiser = self._make_discretiser()
+        self._discretiser.fit(X)
+
+        # store input features
+        self.n_features_in_ = X.shape[1]
+        self.feature_names_in_ = list(X.columns)
+
+        return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
