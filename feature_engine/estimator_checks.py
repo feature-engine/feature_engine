@@ -5,10 +5,8 @@ import pytest
 from sklearn.base import clone
 from sklearn.datasets import make_classification
 from sklearn.exceptions import NotFittedError
-<<<<<<< HEAD
 from sklearn.pipeline import Pipeline
-=======
->>>>>>> 101982d (fix conflict. Update estimator_checks w/ new rebase)
+
 
 
 def test_df(

@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import issparse
 from sklearn.utils.validation import _check_y, check_consistent_length
-
+from sklearn.utils import check_consistent_length
 
 def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
     """
