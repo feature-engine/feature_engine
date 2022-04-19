@@ -6,19 +6,19 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _inverse_transform_docstring,
 )
-from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
-from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
@@ -34,15 +34,14 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
 )
 class ArcsinTransformer(BaseNumericalTransformer):
     """
-    The ArcsinTransformer() applies the arcsin transformation 
-    to numerical variables.
+    The ArcsinTransformer() applies the arcsin transformation to numerical variables.
 
-    The ArcsinTransformer() only works with numerical variables between -1 and +1 
-    values. If a variable contains a value outside of this range, the transformer will raise an error.
+    The ArcsinTransformer() only works with numerical variables between -1 and +1.
+    If a variable contains a value outside of this range, the transformer will 
+    raise an error.
 
-    A list of variables can be passed as an argument. Alternatively, the
-    transformer will automatically select and transform all numerical
-    variables.
+    A list of variables can be passed as an argument. Alternatively, the transformer
+    will automatically select and transform all numerical variables.
 
     More details in the :ref:`User Guide <arcsin>`.
 
@@ -97,7 +96,8 @@ class ArcsinTransformer(BaseNumericalTransformer):
         # check if the variables is in the correct range
         if ((X[self.variables_] < -1) | (X[self.variables_] > 1)).any().any():
             raise ValueError(
-                "Some variables contain values outside the possible range for arcsin, can't apply arcsin transformation"
+                "Some variables contain values outside the possible
+                range for arcsin, can't apply arcsin transformation"
             )
 
         return self
@@ -123,7 +123,8 @@ class ArcsinTransformer(BaseNumericalTransformer):
         # check if the variables is in the correct range
         if ((X[self.variables_] < -1) | (X[self.variables_] > 1)).any().any():
             raise ValueError(
-                "Some variables contain values outside the possible range for arcsin, can't apply arcsin transformation"
+                "Some variables contain values outside the possible
+                range for arcsin, can't apply arcsin transformation"
             )
 
         # transform
@@ -158,7 +159,8 @@ class ArcsinTransformer(BaseNumericalTransformer):
         # when the values are less than -1 or greater than 1. Nothing to do with the test itself but
         # mostly with the data created and used in the test
         msg = (
-            "transformers raise errors when data is outside [-1, 1] range, thus this check fails"
+            "transformers raise errors when data is outside [-1, 1] range, thus this
+            check fails"
         )
         tags_dict["_xfail_checks"]["check_estimators_dtypes"] = msg
         tags_dict["_xfail_checks"]["check_estimators_fit_returns_self"] = msg
