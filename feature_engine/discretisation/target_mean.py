@@ -160,6 +160,8 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
+        Replace original values by the average of the target mean value per bin
+        for each of the variables.
 
         Parameters
         ----------
@@ -168,13 +170,32 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
-            The transformed data with the means of the discrete variables.
+        X_enc: pandas dataframe of shape = [n_samples, n_features]
+            The transformed data with the means of the selected numerical variables.
 
         """
+        # check that fit method has been called
+        check_is_fitted(self)
 
-        # checks if dataset contains na or inf
-        X = super().transform(X)
+        # check that input is a dataframe
+        X = check_X(X)
+
+        # check that input data contain number of columns as the fitted df
+        _check_X_matches_training_df(X, self.n_features_in_)
+
+        # check for missing values
+        _check_contains_na(X, self.variables_numerical_)
+
+        # check for infinite values
+        _check_contains_inf(X, self.variables_numerical_)
+
+        # discretise
+        X_disc = self._discretiser.transform(X)
+
+        # encode
+        X_enc = self._encode_X(X_disc)
+
+        return X_enc
 
     def _make_discretiser(self):
         """
@@ -195,11 +216,18 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
         return discretiser
 
-    def _calc_target_mean_for_discretised_variables(self):
+    def _encode_X(self, X):
         """
-        Instantiate target mean encoder and create pipeline of selected
-        discretiser and encoder.
+        Calculate the mean of each bin using the initial values (prior to
+        discretisation) for each selected variable. Replace the discrete value
+        (bin) with the corresponding mean.
         """
+        X_enc = X.copy()
+        X_enc[self.variables_numerical_] = X_enc[self.variables_numerical_].astype(str)
 
+        for variable in self.variables_numerical_:
+            encoder = MeanEncoder(variables=variable)
+            encoder.fit(X_enc, self.X_target_[variable])
+            X_enc = encoder.transform(X_enc)
 
-        return pipeline
+        return X_enc
