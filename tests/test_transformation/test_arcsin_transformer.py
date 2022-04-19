@@ -8,6 +8,8 @@ from feature_engine.transformation import ArcsinTransformer
 def test_automatically_find_variables(df_vartypes):
     # test case 1: automatically select variables
     transformer = ArcsinTransformer(variables=None)
+
+    # test fails here because of the df_vartypes data that are passed raise ValueError 
     X = transformer.fit_transform(df_vartypes)
 
     # expected output
@@ -52,14 +54,14 @@ def test_transform_raises_error_if_na_in_df(df_vartypes, df_na):
 def test_error_if_df_contains_outside_range_value(df_vartypes):
     # test error when data contains value outside range [-1, +1]
     df_neg = df_vartypes.copy()
-    df_neg.loc[1, "Age"] = 2
+    df_neg.loc[1, "Age"] = 0
 
-    # test case 4: when variable contains zero, fit
+    # test case 4: when variable contains value outside range, fit
     with pytest.raises(ValueError):
         transformer = ArcsinTransformer()
         transformer.fit(df_neg)
 
-    # test case 5: when variable contains zero, transform
+    # test case 5: when variable contains value outside range, transform
     with pytest.raises(ValueError):
         transformer = ArcsinTransformer()
         transformer.fit(df_vartypes)
@@ -68,5 +70,5 @@ def test_error_if_df_contains_outside_range_value(df_vartypes):
 
 def test_non_fitted_error(df_vartypes):
     with pytest.raises(NotFittedError):
-        transformer = ReciprocalTransformer()
+        transformer = ArcsinTransformer()
         transformer.transform(df_vartypes)
