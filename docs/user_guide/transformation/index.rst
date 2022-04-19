@@ -28,3 +28,4 @@ on the nature of the variable.
    PowerTransformer
    BoxCoxTransformer
    YeoJohnsonTransformer
+   ArcsinTransformer
