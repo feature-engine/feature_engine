@@ -94,6 +94,12 @@ class ArcsinTransformer(BaseNumericalTransformer):
         # check input dataframe
         X = super()._fit_from_varlist(X)
 
+        # check if the variables is in the correct range
+        if ((X[self.variables_] < -1) | (X[self.variables_] > 1)).any().any():
+            raise ValueError(
+                "Some variables contain values outside the possible range for arcsin, can't apply arcsin transformation"
+            )
+
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -115,10 +121,9 @@ class ArcsinTransformer(BaseNumericalTransformer):
         X = super().transform(X)
 
         # check if the variables is in the correct range
-        if (X[self.variables_] < -1 or X[self.variables_] > 1).any().any():
+        if ((X[self.variables_] < -1) | (X[self.variables_] > 1)).any().any():
             raise ValueError(
-                "Some variables contain the value outside the possible range for arcsin, can't apply reciprocal "
-                "transformation."
+                "Some variables contain values outside the possible range for arcsin, can't apply arcsin transformation"
             )
 
         # transform
