@@ -116,7 +116,7 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
     )
     def get_feature_names_out(
             self, input_features: Optional[Union[List, str]] = None
-    ) -> List:
+    ) -> Union[List, str]:
         """{get_feature_names_out}
         """
         check_is_fitted(self)
