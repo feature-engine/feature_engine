@@ -13,4 +13,5 @@ __all__ = [
     "EqualFrequencyDiscretiser",
     "EqualWidthDiscretiser",
     "ArbitraryDiscretiser",
+    "TargetMeanDiscretiser"
 ]

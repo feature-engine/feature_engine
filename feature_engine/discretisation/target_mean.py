@@ -91,7 +91,7 @@ class TargetMeanDiscretiser(BaseDiscretiser):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        bins: int = 5,
+        bins: int = 10,
         strategy: str = "equal_frequency",
         errors: str = "ignore",
     ) -> None:
