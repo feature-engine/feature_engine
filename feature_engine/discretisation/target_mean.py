@@ -39,6 +39,7 @@ from sklearn.pipeline import Pipeline
     return_boundaries=BaseDiscretiser._return_boundaries_docstring,
     binner_dict_=BaseDiscretiser._binner_dict_docstring,
     transform=BaseDiscretiser._transform_docstring,
+    variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -50,12 +51,14 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
     Parameters
     ----------
-    binning_dict: dict
-        The dictionary with the variable to interval limits pairs.
+    strategy: str, default='equal_width'
+        Whether the bins should of equal width ('equal_width') or equal frequency
+        ('equal_frequency').
 
-    {return_object}
+    {variables}
 
-    {return_boundaries}
+    bins: int, default=10
+        Desired number of equal-width or equal-distance intervals / bins.
 
     errors: string, default='ignore'
         Indicates what to do when a value is outside the limits indicated in the
@@ -68,8 +71,6 @@ class TargetMeanDiscretiser(BaseDiscretiser):
     {variables_}
 
     {binner_dict_}
-
-
 
     {feature_names_in_}
 
