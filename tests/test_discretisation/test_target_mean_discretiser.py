@@ -67,10 +67,8 @@ def test_equal_width_automatically_find_variables_and_return_as_numeric(
     assert all(x for x in ["var"].value_counts() if x not in val_counts)
 
 
-def test_automatically_find_variables_and_return_as_object(df_normal_dist):
-    # equal-frequency
-    transformer = TargetMeanDiscretiser(
-        strategy="equal_frequency", bins=10, variables=None, return_object=True
-    )
-    X = transformer.fit_transform(df_normal_dist)
-    assert X["var"].dtypes == "O"
+@pytest.mark.parameterize("_bins", [4.2, "python", ["data", "science"]])
+def test_error_when_bins_not_integer(_bins):
+    with pytest.raises(ValueError):
+        TargetMeanDiscretiser(bins=_bins)
+
