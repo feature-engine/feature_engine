@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -6,10 +6,6 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
-from feature_engine._docstrings.methods import (
-    _get_feature_names_out_docstring
-)
-from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _filter_out_variables_not_in_dataframe
 
@@ -121,34 +117,24 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         return self
 
-    @Substitution(
-        get_feature_names_out=_get_feature_names_out_docstring
-    )
-    def get_feature_names_out(
-            self, input_features: Optional[Union[List, str]] = None
-    ) -> List:
-        """{get_feature_names_out}
+    def get_feature_names_out(self, input_features=None) -> List:
+        """Get output feature names for transformation.
+
+        input_features: None
+            This parameter exists only for compatibility with the Scikit-learn
+            pipeline, but has no functionality. You can pass a list of feature names
+            or None.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
         """
         check_is_fitted(self)
 
-        if input_features is None:
-            # return all transformed features
-            feature_names = [
-                f for f in self.feature_names_in_ if f not in self.features_to_drop_
-            ]
-
-        else:
-            if not isinstance(input_features, list):
-                raise ValueError(
-                    f"input_features must be a list. Got {input_features} instead."
-                )
-            if any([f for f in input_features if f not in self.variables_]):
-                raise ValueError(
-                    "Some features in input_features were not transformed by this "
-                    "transformer. Pass either None, or a list with the features "
-                    "that were transformed by this transformer."
-                )
-            feature_names = input_features
+        feature_names = [
+            f for f in self.feature_names_in_ if f not in self.features_to_drop_
+        ]
 
         return feature_names
 
