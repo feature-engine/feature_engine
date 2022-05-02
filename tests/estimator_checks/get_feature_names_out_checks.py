@@ -39,12 +39,14 @@ def check_get_feature_names_out(estimator):
 
     if estimator.__class__.__name__ not in _skip_test:
 
-        # train transformer
+        # train set
         X, y = test_df(categorical=True, datetime=True)
+
+        # train transformer
         estimator = clone(estimator)
         estimator.fit(X, y)
 
-        # train pipeline with estimator
+        # train pipeline with transformer
         pipe = Pipeline([("transformer", clone(estimator))])
         pipe.fit(X, y)
 
@@ -73,7 +75,7 @@ def check_get_feature_names_out(estimator):
             assert pipe.get_feature_names_out(input_features) == feature_names
 
         elif estimator.__class__.__name__ == "MatchVariables":
-            # take a few as input features (selectors ignore this parameter)
+            # take a few as input features (these transformers ignore this parameter)
             input_features = [feature_names[0:3]]
 
             # test transformer
