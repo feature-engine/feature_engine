@@ -138,4 +138,4 @@ workflows:
           filters:
             branches:
               only:
-                - 1.2.X
+                - 1.3.X
