@@ -99,19 +99,19 @@ class MathFeatures(BaseCreation):
     """
 
     def __init__(
-            self,
-            variables: List[Union[str, int]],
-            func: Any,
-            new_variables_names: Optional[List[str]] = None,
-            missing_values: str = "raise",
-            drop_original: bool = False,
+        self,
+        variables: List[Union[str, int]],
+        func: Any,
+        new_variables_names: Optional[List[str]] = None,
+        missing_values: str = "raise",
+        drop_original: bool = False,
     ) -> None:
 
         if (
-                not isinstance(variables, list)
-                or not all(isinstance(var, (int, str)) for var in variables)
-                or len(variables) < 2
-                or len(set(variables)) != len(variables)
+            not isinstance(variables, list)
+            or not all(isinstance(var, (int, str)) for var in variables)
+            or len(variables) < 2
+            or len(set(variables)) != len(variables)
         ):
             raise ValueError(
                 "variables must be a list of strings or integers with at least 2 "
@@ -125,9 +125,9 @@ class MathFeatures(BaseCreation):
 
         if new_variables_names is not None:
             if (
-                    not isinstance(new_variables_names, list)
-                    or not all(isinstance(var, str) for var in new_variables_names)
-                    or len(set(new_variables_names)) != len(new_variables_names)
+                not isinstance(new_variables_names, list)
+                or not all(isinstance(var, str) for var in new_variables_names)
+                or len(set(new_variables_names)) != len(new_variables_names)
             ):
                 raise ValueError(
                     "new_variable_names should be None or a list of unique strings. "
