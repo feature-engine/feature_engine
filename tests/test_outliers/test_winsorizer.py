@@ -376,4 +376,3 @@ def test_get_feature_names_out_input_features_is_list(df_na):
 
     out = ["Age_left", "Age_right", "Marks_left", "Marks_right"]
     assert tr.get_feature_names_out(input_features) == input_features + out
-

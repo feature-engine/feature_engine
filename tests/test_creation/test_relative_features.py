@@ -388,7 +388,9 @@ def test_get_feature_names_out_from_pipeline(_drop, df_vartypes):
 
 
 @pytest.mark.parametrize("_input_features", ["hola", ["Age", "Marks"]])
-def test_get_feature_names_out_raises_error_when_wrong_param(_input_features, df_vartypes):
+def test_get_feature_names_out_raises_error_when_wrong_param(
+    _input_features, df_vartypes
+):
     transformer = RelativeFeatures(
         variables=["Age", "Marks"],
         reference=["Age", "Marks"],

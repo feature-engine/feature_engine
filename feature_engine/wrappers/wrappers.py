@@ -372,7 +372,9 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
                 )
                 feature_names = list(self.feature_names_in_) + list(added_features)
             else:
-                feature_names = list(self.transformer_.get_feature_names_out(input_features))
+                feature_names = list(
+                    self.transformer_.get_feature_names_out(input_features)
+                )
 
         if self.transformer_.__class__.__name__ in _SELECTORS:
             feature_names = [
