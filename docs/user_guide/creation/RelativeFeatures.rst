@@ -120,7 +120,7 @@ We can obtain the names of all the features in the transformed data as follows:
 
 .. code:: python
 
-    transformer.get_feature_names_out(all=True)
+    transformer.get_feature_names_out(input_features=None)
 
 Which will return the names of all the variables in the transformed data:
 
@@ -144,7 +144,7 @@ Or, we can obtain the names of the new variables only:
 
 .. code:: python
 
-    transformer.get_feature_names_out(all=False)
+    transformer.get_feature_names_out(input_features=True)
 
 Which will return the names of the new features:
 
