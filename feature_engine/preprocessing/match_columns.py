@@ -200,8 +200,13 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
         return X
 
-    def get_feature_names_out(self) -> List:
+    def get_feature_names_out(self, input_features=None) -> List:
         """Get output feature names for transformation.
+
+        input_features: None
+            This parameter exists only for compatibility with the Scikit-learn
+            pipeline, but has no functionality. You can pass a list of feature names
+            or None.
 
         Returns
         -------

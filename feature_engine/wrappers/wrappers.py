@@ -67,7 +67,6 @@ _INVERSE_TRANSFORM = [
 
 
 class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
-
     """
     Wrapper to apply Scikit-learn transformers to a selected group of variables. It
     supports the following transformers:
@@ -343,8 +342,17 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
         return X
 
-    def get_feature_names_out(self) -> List:
+    def get_feature_names_out(
+        self, input_features: Optional[List[Union[str, int]]] = None
+    ) -> List:
         """Get output feature names for transformation.
+
+        input_features: list, default=None
+            If `None`, then the names of all the variables in the transformed dataset
+            is returned. For those transformers that create and add new features to the
+            dataset, like the OneHotEncoder or the PolynomialFeatures, you have the
+            option to pass a list with the input features to obtain the newly created
+            variables. For all other transformers, this parameter will be ignored.
 
         Returns
         -------
@@ -358,8 +366,15 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             feature_names = self.feature_names_in_
 
         if self.transformer_.__class__.__name__ in _CREATORS:
-            added_features = self.transformer_.get_feature_names_out(self.variables_)
-            feature_names = list(self.feature_names_in_) + list(added_features)
+            if input_features is None:
+                added_features = self.transformer_.get_feature_names_out(
+                    self.variables_
+                )
+                feature_names = list(self.feature_names_in_) + list(added_features)
+            else:
+                feature_names = list(
+                    self.transformer_.get_feature_names_out(input_features)
+                )
 
         if self.transformer_.__class__.__name__ in _SELECTORS:
             feature_names = [

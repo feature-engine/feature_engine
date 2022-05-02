@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from sklearn.pipeline import Pipeline
+
 from feature_engine.creation import RelativeFeatures
 
 
@@ -352,5 +354,49 @@ def test_get_feature_names_out(_drop, df_vartypes):
     ]
 
     X = transformer.fit_transform(df_vartypes)
-    assert list(X.columns) == transformer.get_feature_names_out(all=True)
-    assert varnames == transformer.get_feature_names_out(all=False)
+    assert list(X.columns) == transformer.get_feature_names_out(input_features=None)
+    assert list(X.columns) == transformer.get_feature_names_out(input_features=False)
+    assert varnames == transformer.get_feature_names_out(input_features=True)
+
+
+@pytest.mark.parametrize("_drop", [True, False])
+def test_get_feature_names_out_from_pipeline(_drop, df_vartypes):
+    transformer = RelativeFeatures(
+        variables=["Age", "Marks"],
+        reference=["Age", "Marks"],
+        func=["add", "sub"],
+        drop_original=_drop,
+    )
+
+    pipe = Pipeline([("transformer", transformer)])
+
+    varnames = [
+        "Age_add_Age",
+        "Marks_add_Age",
+        "Age_add_Marks",
+        "Marks_add_Marks",
+        "Age_sub_Age",
+        "Marks_sub_Age",
+        "Age_sub_Marks",
+        "Marks_sub_Marks",
+    ]
+
+    X = pipe.fit_transform(df_vartypes)
+    assert list(X.columns) == pipe.get_feature_names_out(input_features=None)
+    assert list(X.columns) == pipe.get_feature_names_out(input_features=False)
+    assert varnames == pipe.get_feature_names_out(input_features=True)
+
+
+@pytest.mark.parametrize("_input_features", ["hola", ["Age", "Marks"]])
+def test_get_feature_names_out_raises_error_when_wrong_param(
+    _input_features, df_vartypes
+):
+    transformer = RelativeFeatures(
+        variables=["Age", "Marks"],
+        reference=["Age", "Marks"],
+        func=["add", "sub"],
+    )
+    transformer.fit(df_vartypes)
+
+    with pytest.raises(ValueError):
+        transformer.get_feature_names_out(input_features=_input_features)

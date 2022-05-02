@@ -473,6 +473,7 @@ def test_get_feature_names_out_transformers(varlist, transformer):
     Xw = tr_wrap.fit_transform(X)
 
     assert Xw.columns.to_list() == tr_wrap.get_feature_names_out()
+    assert Xw.columns.to_list() == tr_wrap.get_feature_names_out(["MedInc", "HouseAge"])
 
 
 @pytest.mark.parametrize(
@@ -487,6 +488,7 @@ def test_get_feature_names_out_selectors(varlist, transformer):
     Xw = tr_wrap.fit_transform(X, y)
 
     assert Xw.columns.to_list() == tr_wrap.get_feature_names_out()
+    assert Xw.columns.to_list() == tr_wrap.get_feature_names_out(["MedInc", "HouseAge"])
 
 
 @pytest.mark.parametrize(
@@ -500,6 +502,27 @@ def test_get_feature_names_out_polynomialfeatures(varlist):
     Xw = tr_wrap.fit_transform(X)
     assert Xw.columns.tolist() == tr_wrap.get_feature_names_out()
 
+    if varlist is not None:
+        output_feat = [
+            "1",
+            "MedInc",
+            "HouseAge",
+            "AveRooms",
+            "AveBedrms",
+            "MedInc^2",
+            "MedInc HouseAge",
+            "MedInc AveRooms",
+            "MedInc AveBedrms",
+            "HouseAge^2",
+            "HouseAge AveRooms",
+            "HouseAge AveBedrms",
+            "AveRooms^2",
+            "AveRooms AveBedrms",
+            "AveBedrms^2",
+        ]
+
+        assert output_feat == tr_wrap.get_feature_names_out(varlist)
+
 
 @pytest.mark.parametrize("varlist", [["Name", "City"], None])
 def test_get_feature_names_out_ohe(varlist, df_vartypes):
@@ -512,3 +535,17 @@ def test_get_feature_names_out_ohe(varlist, df_vartypes):
     df_tr = transformer.fit_transform(df_vartypes)
 
     assert df_tr.columns.to_list() == transformer.get_feature_names_out()
+
+    if varlist is not None:
+        output_feat = [
+            "Name_jack",
+            "Name_krish",
+            "Name_nick",
+            "Name_tom",
+            "City_Bristol",
+            "City_Liverpool",
+            "City_London",
+            "City_Manchester",
+        ]
+
+        assert output_feat == transformer.get_feature_names_out(varlist)

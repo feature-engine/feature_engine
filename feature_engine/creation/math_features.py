@@ -188,7 +188,7 @@ class MathFeatures(BaseCreation):
         """
         X = super().transform(X)
 
-        new_variable_names = self.get_feature_names_out()
+        new_variable_names = self.get_feature_names_out(input_features=True)
 
         if len(new_variable_names) == 1:
             X[new_variable_names[0]] = X[self.variables].agg(self.func, axis=1)
@@ -200,15 +200,16 @@ class MathFeatures(BaseCreation):
 
         return X
 
-    def get_feature_names_out(self, all: bool = False) -> List:
+    def get_feature_names_out(self, input_features: Optional[bool] = None) -> List:
         """Get output feature names for transformation.
 
         Parameters
         ----------
-        all: bool, default=False
-            Whether to return all or only the new features. If False, returns the names
-            of the new features. If True, returns the names of all features in the
-            transformed dataframe.
+        input_features: bool, default=None
+            If `input_features` is `None`, then the names of all the variables in the
+            transformed dataset (original + new variables) is returned. Alternatively,
+            if `input_features` is True, only the names for the new features will be
+            returned.
 
         Returns
         -------
@@ -217,6 +218,13 @@ class MathFeatures(BaseCreation):
         """
         check_is_fitted(self)
 
+        if input_features is not None and not isinstance(input_features, bool):
+            raise ValueError(
+                "input_features takes None or a boolean, True or False. "
+                f"Got {input_features} instead."
+            )
+
+        # create name of the new variables
         if self.new_variables_names is not None:
             feature_names = self.new_variables_names
 
@@ -233,7 +241,8 @@ class MathFeatures(BaseCreation):
             else:
                 feature_names = [f"{self.func}_{'_'.join(varlist)}"]
 
-        if all is True:
+        # organise return of method
+        if input_features is None or input_features is False:
             if self.drop_original is True:
                 # Remove names of variables to drop.
                 original = [
