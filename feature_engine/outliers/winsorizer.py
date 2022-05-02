@@ -164,6 +164,13 @@ class Winsorizer(WinsorizerBase):
     ) -> List[Union[str, int]]:
         """Get output feature names for transformation.
 
+        Parameters
+        ----------
+        input_features: str, list, default=None
+            If `None`, then the names of all the variables in the transformed dataset
+            is returned. If list with feature names, the features in the list, plus
+            the outlier indicators (if added), will be returned.
+
         Returns
         -------
         feature_names_out: list
