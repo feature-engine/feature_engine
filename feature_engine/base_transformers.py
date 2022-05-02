@@ -14,7 +14,7 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.parameter_checks import check_input_features
+from feature_engine.get_feature_names_out import _get_feature_names_out
 from feature_engine._docstrings.methods import (
     _get_feature_names_out_docstring
 )
@@ -163,12 +163,18 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         get_feature_names_out=_get_feature_names_out_docstring
     )
     def get_feature_names_out(
-            self, input_features: Optional[Union[List, str]] = None
-    ) -> Union[List, str]:
-        """{get_feature_names_out}
-        """
+            self, input_features: Optional[List[int, str]] = None
+    ) -> List[int, str]:
+        """{get_feature_names_out}"""
+
         check_is_fitted(self)
-        feature_names = check_input_features(input_features, self.variables_)
+
+        feature_names = _get_feature_names_out(
+            features_in=self.feature_names_in_,
+            transformed_features=self.variables_,
+            input_features=input_features,
+        )
+
         return feature_names
 
     # for the check_estimator tests
