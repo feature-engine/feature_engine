@@ -179,12 +179,12 @@ class Winsorizer(WinsorizerBase):
                 features = input_features
 
             if self.tail == "left":
-                indicators = [str(cl) + "_left" for cl in feature_names]
+                indicators = [str(cl) + "_left" for cl in features]
             elif self.tail == "right":
-                indicators = [str(cl) + "_right" for cl in feature_names]
+                indicators = [str(cl) + "_right" for cl in features]
             else:
                 indicators = []
-                for cl in feature_names:
+                for cl in features:
                     indicators.append(str(cl) + "_left")
                     indicators.append(str(cl) + "_right")
 
