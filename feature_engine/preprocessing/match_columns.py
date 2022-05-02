@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -6,11 +6,6 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import _check_contains_na, check_X
-from feature_engine.parameter_checks import check_input_features
-from feature_engine._docstrings.methods import (
-    _get_feature_names_out_docstring
-)
-from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 
 
@@ -205,18 +200,22 @@ class MatchVariables(BaseEstimator, TransformerMixin):
 
         return X
 
-    @Substitution(
-        get_feature_names_out=_get_feature_names_out_docstring
-    )
-    def get_feature_names_out(
-        self, input_features: Optional[Union[List, str]] = None
-    ) -> Union[List, str]:
-        """{get_feature_names_out}
+    def get_feature_names_out(self, input_features=None) -> List:
+        """Get output feature names for transformation.
+
+        input_features: None
+            This parameter exists only for compatibility with the Scikit-learn
+            pipeline, but has no functionality. You can pass a list of feature names
+            or None.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
         """
         check_is_fitted(self)
-        feature_names = check_input_features(input_features, self.variables_)
-        return feature_names
 
+        return self.feature_names_in_
 
     # for the check_estimator tests
     def _more_tags(self):
