@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from sklearn.exceptions import NotFittedError
+from sklearn.pipeline import Pipeline
 
 from feature_engine.datetime import DatetimeFeatures
 from feature_engine.datetime._datetime_constants import (
@@ -523,3 +525,15 @@ def test_get_feature_names_out(df_datetime, df_datetime_transformed):
     with pytest.raises(ValueError):
         # assert error when uses passes features that were not lagged
         transformer.get_feature_names_out(input_features=["color"])
+
+
+def test_get_feature_names_out_from_pipeline(df_datetime, df_datetime_transformed):
+        transformer = Pipeline([("transformer", DatetimeFeatures())])
+        X = transformer.fit_transform(df_datetime)
+        assert list(X.columns) == transformer.get_feature_names_out()
+        assert transformer.get_feature_names_out(input_features=vars_dt) == [
+            var + feat for var in vars_dt for feat in feat_names_default
+        ]
+        assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
+            "date_obj1" + feat for feat in feat_names_default
+        ]
