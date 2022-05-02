@@ -145,9 +145,9 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-            self,
-            transformer,
-            variables: Union[None, int, str, List[Union[str, int]]] = None,
+        self,
+        transformer,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if not issubclass(transformer.__class__, TransformerMixin):
@@ -163,9 +163,9 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
 
         if (
-                transformer.__class__.__name__
-                in ["SimpleImputer", "KNNImputer", "IterativeImputer"]
-                and transformer.add_indicator is True
+            transformer.__class__.__name__
+            in ["SimpleImputer", "KNNImputer", "IterativeImputer"]
+            and transformer.add_indicator is True
         ):
             raise NotImplementedError(
                 "The imputer is only compatible with the wrapper when the "
@@ -173,8 +173,8 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
 
         if (
-                transformer.__class__.__name__ == "KBinsDiscretizer"
-                and transformer.encode != "ordinal"
+            transformer.__class__.__name__ == "KBinsDiscretizer"
+            and transformer.encode != "ordinal"
         ):
             raise NotImplementedError(
                 "The KBinsDiscretizer is only compatible with the wrapper when the "
@@ -182,8 +182,8 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
 
         if (
-                transformer.__class__.__name__ == "OneHotEncoder"
-                and transformer.sparse is True
+            transformer.__class__.__name__ == "OneHotEncoder"
+            and transformer.sparse is True
         ):
             raise NotImplementedError(
                 "The SklearnTransformerWrapper can only wrap the OneHotEncoder if the "
@@ -332,7 +332,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
         # For safety, we check that the transformer has the method implemented.
         if hasattr(self.transformer_, "inverse_transform") and callable(
-                self.transformer_.inverse_transform
+            self.transformer_.inverse_transform
         ):
             X[self.variables_] = self.transformer_.inverse_transform(X[self.variables_])
         else:
@@ -343,7 +343,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         return X
 
     def get_feature_names_out(
-            self, input_features: Optional[List[str, int]] = None
+        self, input_features: Optional[List[str, int]] = None
     ) -> List:
         """Get output feature names for transformation.
 
@@ -367,7 +367,9 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
 
         if self.transformer_.__class__.__name__ in _CREATORS:
             if input_features is None:
-                added_features = self.transformer_.get_feature_names_out(self.variables_)
+                added_features = self.transformer_.get_feature_names_out(
+                    self.variables_
+                )
                 feature_names = list(self.feature_names_in_) + list(added_features)
             else:
                 feature_names = self.transformer_.get_feature_names_out(input_features)
