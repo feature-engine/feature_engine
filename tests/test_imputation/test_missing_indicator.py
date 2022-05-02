@@ -1,5 +1,7 @@
 import pytest
 
+from sklearn.pipeline import Pipeline
+
 from feature_engine.imputation import AddMissingIndicator
 
 
@@ -82,3 +84,17 @@ def test_get_feature_names_out(df_na):
 
     with pytest.raises(ValueError):
         tr.get_feature_names_out(["Name", "hola"])
+
+
+def test_get_feature_names_out_from_pipeline(df_na):
+    original_features = df_na.columns.to_list()
+
+    tr = Pipeline([("transformer", AddMissingIndicator(missing_only=False))])
+    tr.fit(df_na)
+
+    out = [f + "_na" for f in original_features]
+
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=original_features) == out
+    assert tr.get_feature_names_out(input_features=original_features[0:2]) == out[0:2]
+    assert tr.get_feature_names_out(input_features=["Name"]) == ["Name_na"]

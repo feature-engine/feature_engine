@@ -1,6 +1,8 @@
 import pandas as pd
 import pytest
 
+from sklearn.pipeline import Pipeline
+
 from feature_engine.encoding import OneHotEncoder
 
 
@@ -470,3 +472,29 @@ def test_get_feature_names_out(df_enc_binary):
 
     with pytest.raises(ValueError):
         tr.get_feature_names_out(["var_A", "hola"])
+
+
+def test_get_feature_names_out_from_pipeline(df_enc_binary):
+    original_features = ["var_num"]
+    input_features = ["var_A", "var_B", "var_C", "var_D"]
+
+    tr = Pipeline([("transformer", OneHotEncoder())])
+    tr.fit(df_enc_binary)
+
+    out = [
+        "var_A_A",
+        "var_A_B",
+        "var_A_C",
+        "var_B_A",
+        "var_B_B",
+        "var_B_C",
+        "var_C_AHA",
+        "var_C_UHU",
+        "var_D_OHO",
+        "var_D_EHE",
+    ]
+
+    assert tr.get_feature_names_out(input_features=None) == original_features + out
+    assert tr.get_feature_names_out(input_features=input_features) == out
+    assert tr.get_feature_names_out(input_features=input_features[0:2]) == out[0:6]
+    assert tr.get_feature_names_out(input_features=[input_features[0]]) == out[0:3]
