@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from sklearn.pipeline import Pipeline
+
 from feature_engine.creation import MathFeatures
 
 
@@ -305,6 +307,8 @@ def test_drop_original_variables(df_vartypes):
 @pytest.mark.parametrize("_varnames", [None, ["var1", "var2"]])
 @pytest.mark.parametrize("_drop", [True, False])
 def test_get_feature_names_out(_varnames, _drop, df_vartypes):
+
+    # set up transformer
     transformer = MathFeatures(
         variables=["Age", "Marks"],
         func=["sum", "mean"],
@@ -312,11 +316,45 @@ def test_get_feature_names_out(_varnames, _drop, df_vartypes):
         drop_original=_drop,
     )
 
+    # fit transformer
     X = transformer.fit_transform(df_vartypes)
-    assert list(X.columns) == transformer.get_feature_names_out(all=True)
+
+    # assert functionality
+    assert list(X.columns) == transformer.get_feature_names_out(input_features=None)
+    assert list(X.columns) == transformer.get_feature_names_out(input_features=False)
+
     if _varnames is not None:
-        assert _varnames == transformer.get_feature_names_out(all=False)
+        assert _varnames == transformer.get_feature_names_out(input_features=True)
     else:
         assert ["sum_Age_Marks", "mean_Age_Marks"] == transformer.get_feature_names_out(
-            all=False
+            input_features=True
+        )
+
+
+@pytest.mark.parametrize("_varnames", [None, ["var1", "var2"]])
+@pytest.mark.parametrize("_drop", [True, False])
+def test_get_feature_names_out_from_pipeline(_varnames, _drop, df_vartypes):
+
+    # set up transformer
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func=["sum", "mean"],
+        new_variables_names=_varnames,
+        drop_original=_drop,
+    )
+
+    pipe = Pipeline([("transformer", transformer)])
+
+    # fit transformer
+    X = pipe.fit_transform(df_vartypes)
+
+    # assert functionality
+    assert list(X.columns) == pipe.get_feature_names_out(input_features=None)
+    assert list(X.columns) == pipe.get_feature_names_out(input_features=False)
+
+    if _varnames is not None:
+        assert _varnames == pipe.get_feature_names_out(input_features=True)
+    else:
+        assert ["sum_Age_Marks", "mean_Age_Marks"] == pipe.get_feature_names_out(
+            input_features=True
         )
