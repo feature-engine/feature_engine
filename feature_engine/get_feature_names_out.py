@@ -10,11 +10,9 @@ def _get_feature_names_out(
         input_features: Optional[List] = None,
 ) -> List[Union[str, int]]:
     """
-    If input features is None, returns the names of all variables in the transformed
-    dataframe. If input is a list, returns the feature names in the list. In
-    transformers that modify features in place, that is, transformers that do not add
-    features to the dataframe, this parameter exists mostly for compatibility with the
-    Scikit-learn Pipeline.
+    If input_features is None, returns the names of all variables in the transformed
+    dataframe. If input_features is a list, returns the feature names in the list. This
+    parameter exists mostly for compatibility with the Scikit-learn Pipeline.
 
     Parameters
     ----------
@@ -30,14 +28,13 @@ def _get_feature_names_out(
     Raises
     ------
     ValueError
-        If input_features is not a list or any of the features are not transformed
-        by this transformer.
+        If input_features is not a list or any of the features in input_features are
+        not transformed by this transformer.
 
     Returns
     -------
     feature_names: list
         The name of the features.
-
     """
     if input_features is None:
         # return all feature names
