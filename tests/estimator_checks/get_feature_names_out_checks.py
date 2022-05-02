@@ -48,13 +48,16 @@ def check_get_feature_names_out(estimator):
         pipe = Pipeline([("transformer", clone(estimator))])
         pipe.fit(X, y)
 
+        # feature names in train set
+        feature_names = list(X.columns)
+
         # selection transformers
         if (
             hasattr(estimator, "confirm_variables")
             or estimator.__class__.__name__ == "DropFeatures"
         ):
             feature_names = [
-                f for f in X.columns if f not in estimator.features_to_drop_
+                f for f in feature_names if f not in estimator.features_to_drop_
             ]
 
             # take a few as input features (selectors ignore this parameter)
@@ -69,15 +72,20 @@ def check_get_feature_names_out(estimator):
             assert pipe.get_feature_names_out() == feature_names
             assert pipe.get_feature_names_out(input_features) == feature_names
 
-        else:
-            feature_names = [
-                "var_" + str(i) for i in range(12)] + [
-                "cat_var1",
-                "cat_var2",
-                "date1",
-                "date2",
-            ]
+        elif estimator.__class__.__name__ == "MatchVariables":
+            # take a few as input features (selectors ignore this parameter)
+            input_features = [feature_names[0:3]]
 
+            # test transformer
+            assert estimator.get_feature_names_out() == feature_names
+            assert estimator.get_feature_names_out(input_features) == feature_names
+            assert estimator.transform(X).shape[1] == len(feature_names)
+
+            # test transformer within pipeline
+            assert pipe.get_feature_names_out() == feature_names
+            assert pipe.get_feature_names_out(input_features) == feature_names
+
+        else:
             input_features = estimator.variables_
 
             # test transformer
