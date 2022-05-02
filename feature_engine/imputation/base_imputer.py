@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -94,8 +94,8 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         get_feature_names_out=_get_feature_names_out_docstring
     )
     def get_feature_names_out(
-            self, input_features: Optional[List[int, str]] = None
-    ) -> List[int, str]:
+            self, input_features: Optional[List[Union[str, int]]] = None
+    ) -> List[Union[str, int]]:
         """{get_feature_names_out}"""
 
         check_is_fitted(self)

@@ -1,14 +1,14 @@
 """Method functionality shared by all transformers that do not add features to the data,
 instead modify features in place."""
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 def _get_feature_names_out(
-        features_in: List[str, int],
-        transformed_features: List[str, int],
+        features_in: List[Union[str, int]],
+        transformed_features: List[Union[str, int]],
         input_features: Optional[List] = None,
-) -> List[int, str]:
+) -> List[Union[str, int]]:
     """
     If input features is None, returns the names of all variables in the transformed
     dataframe. If input is a list, returns the feature names in the list. In

@@ -343,7 +343,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         return X
 
     def get_feature_names_out(
-        self, input_features: Optional[List[str, int]] = None
+        self, input_features: Optional[List[Union[str, int]]] = None
     ) -> List:
         """Get output feature names for transformation.
 
