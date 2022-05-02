@@ -5,11 +5,6 @@ from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
-from feature_engine.parameter_checks import check_input_features
-from feature_engine._docstrings.methods import (
-    _get_feature_names_out_docstring
-)
-from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -72,7 +67,6 @@ _INVERSE_TRANSFORM = [
 
 
 class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
-
     """
     Wrapper to apply Scikit-learn transformers to a selected group of variables. It
     supports the following transformers:
@@ -151,9 +145,9 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-        self,
-        transformer,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
+            self,
+            transformer,
+            variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if not issubclass(transformer.__class__, TransformerMixin):
@@ -169,9 +163,9 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
 
         if (
-            transformer.__class__.__name__
-            in ["SimpleImputer", "KNNImputer", "IterativeImputer"]
-            and transformer.add_indicator is True
+                transformer.__class__.__name__
+                in ["SimpleImputer", "KNNImputer", "IterativeImputer"]
+                and transformer.add_indicator is True
         ):
             raise NotImplementedError(
                 "The imputer is only compatible with the wrapper when the "
@@ -179,8 +173,8 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
 
         if (
-            transformer.__class__.__name__ == "KBinsDiscretizer"
-            and transformer.encode != "ordinal"
+                transformer.__class__.__name__ == "KBinsDiscretizer"
+                and transformer.encode != "ordinal"
         ):
             raise NotImplementedError(
                 "The KBinsDiscretizer is only compatible with the wrapper when the "
@@ -188,8 +182,8 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
 
         if (
-            transformer.__class__.__name__ == "OneHotEncoder"
-            and transformer.sparse is True
+                transformer.__class__.__name__ == "OneHotEncoder"
+                and transformer.sparse is True
         ):
             raise NotImplementedError(
                 "The SklearnTransformerWrapper can only wrap the OneHotEncoder if the "
@@ -338,7 +332,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
         # For safety, we check that the transformer has the method implemented.
         if hasattr(self.transformer_, "inverse_transform") and callable(
-            self.transformer_.inverse_transform
+                self.transformer_.inverse_transform
         ):
             X[self.variables_] = self.transformer_.inverse_transform(X[self.variables_])
         else:
@@ -348,40 +342,40 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
         return X
 
-    @Substitution(
-        get_feature_names_out=_get_feature_names_out_docstring,
-    )
     def get_feature_names_out(
-            self, input_features: Optional[Union[List, str]] = None
+            self, input_features: Optional[List[str, int]] = None
     ) -> List:
-        """{get_feature_names_out}
+        """Get output feature names for transformation.
+
+        input_features: list, default=None
+            If `None`, then the names of all the variables in the transformed dataset
+            is returned. For those transformers that create and add new features to the
+            dataset, like the OneHotEncoder or the PolynomialFeatures, you have the
+            option to pass a list with the input features to obtain the newly created
+            variables. For all other transformers, this parameter will be ignored.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
         """
         # Check method fit has been called
         check_is_fitted(self)
 
-        if input_features is None:
-            if self.transformer_.__class__.__name__ in _TRANSFORMERS:
-                feature_names = self.feature_names_in_
+        if self.transformer_.__class__.__name__ in _TRANSFORMERS:
+            feature_names = self.feature_names_in_
 
-            if self.transformer_.__class__.__name__ in _CREATORS:
+        if self.transformer_.__class__.__name__ in _CREATORS:
+            if input_features is None:
                 added_features = self.transformer_.get_feature_names_out(self.variables_)
                 feature_names = list(self.feature_names_in_) + list(added_features)
-
-            if self.transformer_.__class__.__name__ in _SELECTORS:
-                feature_names = [
-                    f for f in self.feature_names_in_ if f not in self.features_to_drop_
-                ]
-        else:
-            if all([feature for feature in input_features if feature in self.variables_]):
-                added_features = self.transformer_.get_feature_names_out(input_features)
-                feature_names = list(self.feature_names_in_) + list(added_features)
-
             else:
-                raise ValueError(
-                    "Some features in input_features were not transformed by this "
-                    "transformer. Pass either None, or a list with the features "
-                    "that were transformed by this transformer."
-                )
+                feature_names = self.transformer_.get_feature_names_out(input_features)
+
+        if self.transformer_.__class__.__name__ in _SELECTORS:
+            feature_names = [
+                f for f in self.feature_names_in_ if f not in self.features_to_drop_
+            ]
 
         return feature_names
 
