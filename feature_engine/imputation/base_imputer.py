@@ -90,11 +90,9 @@ class BaseImputer(BaseEstimator, TransformerMixin):
 
         return self
 
-    @Substitution(
-        get_feature_names_out=_get_feature_names_out_docstring
-    )
+    @Substitution(get_feature_names_out=_get_feature_names_out_docstring)
     def get_feature_names_out(
-            self, input_features: Optional[List[Union[str, int]]] = None
+        self, input_features: Optional[List[Union[str, int]]] = None
     ) -> List[Union[str, int]]:
         """{get_feature_names_out}"""
 
