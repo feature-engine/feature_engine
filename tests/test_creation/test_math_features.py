@@ -358,3 +358,15 @@ def test_get_feature_names_out_from_pipeline(_varnames, _drop, df_vartypes):
         assert ["sum_Age_Marks", "mean_Age_Marks"] == pipe.get_feature_names_out(
             input_features=True
         )
+
+
+@pytest.mark.parametrize("_input_features", ["hola", ["Age", "Marks"]])
+def test_get_feature_names_out_raises_error_when_wrong_param(_input_features, df_vartypes):
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func=["sum", "mean"],
+    )
+    transformer.fit(df_vartypes)
+
+    with pytest.raises(ValueError):
+        transformer.get_feature_names_out(input_features=_input_features)
