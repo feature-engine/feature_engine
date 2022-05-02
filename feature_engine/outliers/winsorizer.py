@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Union
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -159,7 +159,9 @@ class Winsorizer(WinsorizerBase):
 
         return X_out
 
-    def get_feature_names_out(self) -> List:
+    def get_feature_names_out(
+            self, input_features: Optional[List[Union[str, int]]] = None
+    ) -> List[Union[str, int]]:
         """Get output feature names for transformation.
 
         Returns
@@ -167,16 +169,22 @@ class Winsorizer(WinsorizerBase):
         feature_names_out: list
             The feature names.
         """
-        feature_names = super().get_feature_names_out()
+        feature_names = super().get_feature_names_out(input_features)
 
         if self.add_indicators is True:
+
+            if input_features is None:
+                features = self.variables_
+            else:
+                features = input_features
+
             if self.tail == "left":
-                indicators = [str(cl) + "_left" for cl in self.variables_]
+                indicators = [str(cl) + "_left" for cl in feature_names]
             elif self.tail == "right":
-                indicators = [str(cl) + "_right" for cl in self.variables_]
+                indicators = [str(cl) + "_right" for cl in feature_names]
             else:
                 indicators = []
-                for cl in self.variables_:
+                for cl in feature_names:
                     indicators.append(str(cl) + "_left")
                     indicators.append(str(cl) + "_right")
 
