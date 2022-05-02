@@ -15,9 +15,7 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.get_feature_names_out import _get_feature_names_out
-from feature_engine._docstrings.methods import (
-    _get_feature_names_out_docstring
-)
+from feature_engine._docstrings.methods import _get_feature_names_out_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
