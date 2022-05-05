@@ -13,7 +13,7 @@ Contributors
     - `Kishan Manani <https://github.com/KishManani>`_
     - `Gilles Verbockhaven <https://github.com/gverbock>`_
     - `Noah Green <https://github.com/noahjgreen295>`_
-    - `bmreiniger <https://github.com/bmreiniger>`_
+    - `Ben Reiniger <https://github.com/bmreiniger>`_
     - `Edoardo Argiolas <https://github.com/dodoarg>`_
     - `Alejandro Giacometti <https://github.com/janrito>`_
     - `Tim Vink <https://github.com/timvink>`_
@@ -81,7 +81,7 @@ Enhancements
     - The `SklearnTransformerWrapper` now supports additional transformers, for example, PolynomialFeatures  (`Soledad Galli <https://github.com/solegalli>`_)
     - The `CategoricalImputer()` now let's you know which variables have more than one mode (`Soledad Galli <https://github.com/solegalli>`_)
     - The `DatetimeFeatures()` now can extract features from the dataframe index (`Edoardo Argiolas <https://github.com/dodoarg>`_)
-    - Transformers that take y now check that X and y match (`Noah Green <https://github.com/noahjgreen295>`_ and  `bmreiniger <https://github.com/bmreiniger>`_)
+    - Transformers that take y now check that X and y match (`Noah Green <https://github.com/noahjgreen295>`_ and  `Ben Reiniger <https://github.com/bmreiniger>`_)
 
 
 Bug fixes
@@ -93,7 +93,7 @@ Bug fixes
     - `DecisionTreeEncoder` now enforces passing y to `fit()` (`Soledad Galli <https://github.com/solegalli>`_)
     - `DropMissingData` can now take a string in the `variables` parameter (`Soledad Galli <https://github.com/solegalli>`_)
     - `DropFeatures` now accepts a string as input of the features_to_drop parameter (`Noah Green <https://github.com/noahjgreen295>`_)
-    - Categorical encoders now work correctly with numpy arrays as inputs (`Noah Green <https://github.com/noahjgreen295>`_ and  `bmreiniger <https://github.com/bmreiniger>`_)
+    - Categorical encoders now work correctly with numpy arrays as inputs (`Noah Green <https://github.com/noahjgreen295>`_ and  `Ben Reiniger <https://github.com/bmreiniger>`_)
 
 
 
