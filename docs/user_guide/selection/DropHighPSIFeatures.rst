@@ -535,7 +535,7 @@ And the transform method correctly removes the feature.
 
 .. code:: python
 
-    X_transformer = transformer.transform(X)
+    X_transformed = transformer.transform(X)
 
     X_transformed.columns
 
