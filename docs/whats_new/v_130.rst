@@ -4,7 +4,7 @@ Version 1.3.X
 Version 1.3.0
 -------------
 
-Deployed: 4th May 2022
+Deployed: 5th May 2022
 
 Contributors
 ~~~~~~~~~~~~
@@ -48,7 +48,7 @@ possible!
 New modules
 ~~~~~~~~~~~
 
-    - timeseries/forecasting: this module hosts transformers that create features suitable for time series forecasting (`Morgan Sell <https://github.com/Morgan-Sell>`_, `Kishan Manani <https://github.com/KishManani>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+    - timeseries-forecasting: this module hosts transformers that create features suitable for time series forecasting (`Morgan Sell <https://github.com/Morgan-Sell>`_, `Kishan Manani <https://github.com/KishManani>`_ and `Soledad Galli <https://github.com/solegalli>`_)
         - LagFeatures
         - WindowFeatures
         - ExpandingWindowFeatures
