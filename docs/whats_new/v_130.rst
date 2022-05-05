@@ -96,8 +96,6 @@ Bug fixes
     - Categorical encoders now work correctly with numpy arrays as inputs (`Noah Green <https://github.com/noahjgreen295>`_ and  `Ben Reiniger <https://github.com/bmreiniger>`_)
 
 
-
-
 Documentation
 ~~~~~~~~~~~~~
 
