@@ -19,6 +19,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
     check_X,
+    check_X_y,
 )
 from feature_engine.discretisation import (
     ArbitraryDiscretiser,
@@ -118,7 +119,7 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         self.strategy = strategy
         self.errors = errors
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Learn the boundaries of the selected dicretiser's intervals / bins
         for the chosen numerical variables.
@@ -133,7 +134,7 @@ class TargetMeanDiscretiser(BaseDiscretiser):
             y is not needed in this discretiser. You can pass y or None.
         """
         # check if 'X' is a dataframe
-        X = check_X(X)
+        X, y = check_X_y(X, y)
 
         #  identify numerical variables
         self.variables_numerical_ = _find_or_check_numerical_variables(
