@@ -549,3 +549,25 @@ def test_get_feature_names_out_ohe(varlist, df_vartypes):
         ]
 
         assert output_feat == transformer.get_feature_names_out(varlist)
+
+
+def test_sklearn_transformer_wrapper():
+    X = pd.DataFrame({
+        "col1": ["1", "2", "3"],
+        "col2": ["a", "b", "c"]
+        })
+
+    X_expected = pd.DataFrame({
+        "col1": [1.0, 2.0, 3.0],
+        "col2": ["a", "b", "c"]
+        })
+
+    transformer = SklearnTransformerWrapper(
+        FunctionTransformer(lambda x: x.astype(np.float64)),
+        variables=["col1"]
+    )
+
+    X_tf = transformer.fit_transform(X)
+
+    pd.testing.assert_frame_equal(X_expected, X_tf)
+    

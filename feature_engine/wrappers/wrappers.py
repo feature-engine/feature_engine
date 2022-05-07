@@ -215,6 +215,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             "OneHotEncoder",
             "OrdinalEncoder",
             "SimpleImputer",
+            "FunctionTransformer",
         ]:
             self.variables_ = _find_all_variables(X, self.variables)
 
