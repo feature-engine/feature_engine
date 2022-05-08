@@ -96,8 +96,8 @@ class ArcsinTransformer(BaseNumericalTransformer):
         # check if the variables is in the correct range
         if ((X[self.variables_] < -1) | (X[self.variables_] > 1)).any().any():
             raise ValueError(
-                "Some variables contain values outside the possible
-                range for arcsin, can't apply arcsin transformation"
+                "Some variables contain values outside the possible range" 
+                "can't apply arcsin transformation"
             )
 
         return self
@@ -123,8 +123,8 @@ class ArcsinTransformer(BaseNumericalTransformer):
         # check if the variables is in the correct range
         if ((X[self.variables_] < -1) | (X[self.variables_] > 1)).any().any():
             raise ValueError(
-                "Some variables contain values outside the possible
-                range for arcsin, can't apply arcsin transformation"
+                "Some variables contain values outside the possible"
+                "range for arcsin, can't apply arcsin transformation"
             )
 
         # transform
@@ -161,8 +161,8 @@ class ArcsinTransformer(BaseNumericalTransformer):
         # when the values are less than -1 or greater than 1. Nothing to do with the test itself but
         # mostly with the data created and used in the test
         msg = (
-            "transformers raise errors when data is outside [-1, 1] range, thus this
-            check fails"
+            "transformers raise errors when data is outside [-1, 1] range, thus this"
+            "check fails"
         )
         tags_dict["_xfail_checks"]["check_estimators_dtypes"] = msg
         tags_dict["_xfail_checks"]["check_estimators_fit_returns_self"] = msg
