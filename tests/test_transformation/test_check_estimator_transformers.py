@@ -9,6 +9,7 @@ from feature_engine.transformation import (
     PowerTransformer,
     ReciprocalTransformer,
     YeoJohnsonTransformer,
+    ArcsinTransformer,
 )
 
 _estimators = [
@@ -18,6 +19,7 @@ _estimators = [
     PowerTransformer(),
     ReciprocalTransformer(),
     YeoJohnsonTransformer(),
+    ArcsinTransformer(),
 ]
 
 

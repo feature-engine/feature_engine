@@ -1,4 +1,4 @@
-# Authors: Soledad Galli <solegalli@protonmail.com>
+# Authors: Tommaso Pellegrino <tommasopellegrino.1995@gmail.com>
 # License: BSD 3 clause
 
 from typing import List, Optional, Union
@@ -128,7 +128,9 @@ class ArcsinTransformer(BaseNumericalTransformer):
             )
 
         # transform
-        X.loc[:, self.variables_] = X.loc[:, self.variables_].astype("float")
+        # this line down here is probably useless (check if everything works even
+        # without it)
+        #X.loc[:, self.variables_] = X.loc[:, self.variables_].astype("float")
         X.loc[:, self.variables_] = np.arcsin(X.loc[:, self.variables_])
 
         return X
