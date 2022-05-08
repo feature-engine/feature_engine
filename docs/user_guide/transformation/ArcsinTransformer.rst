@@ -1,9 +1,9 @@
-.. _reciprocal:
+.. _arcsin:
 
 .. currentmodule:: feature_engine.transformation
 
 ArcsinTransformer
-=====================
+=================
 
 The :class:`ArcsinTransformer()` applies the arcsin transformation to
 numerical variables.
