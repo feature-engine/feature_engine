@@ -5,6 +5,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring
@@ -224,4 +225,3 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         )
 
         return pipe
-    
