@@ -2,6 +2,12 @@ import pytest
 from sklearn.linear_model import LogisticRegression
 from sklearn.utils.estimator_checks import check_estimator
 
+from tests.estimator_checks.estimator_checks import (
+    check_feature_engine_estimator,
+)
+from tests.estimator_checks.init_params_triggered_functionality_checks import (
+    check_confirm_variables,
+)
 from feature_engine.selection import (
     DropConstantFeatures,
     DropCorrelatedFeatures,
@@ -14,10 +20,6 @@ from feature_engine.selection import (
     SelectBySingleFeaturePerformance,
     SelectByTargetMeanPerformance,
     SmartCorrelatedSelection,
-)
-from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
-from tests.estimator_checks.init_params_triggered_functionality_checks import (
-    check_confirm_variables,
 )
 
 _logreg = LogisticRegression(C=0.0001, max_iter=2, random_state=1)
