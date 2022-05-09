@@ -1,7 +1,8 @@
-import warnings
-from typing import Dict, List, Optional, Union
+from typing import List, Union
 
 import pandas as pd
+from sklearn.pipeline import Pipeline
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine._docstrings.methods import (
@@ -27,13 +28,11 @@ from feature_engine.discretisation import (
     EqualWidthDiscretiser
 )
 from feature_engine.encoding import MeanEncoder
-from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
 
-from sklearn.pipeline import Pipeline
 
 @Substitution(
     return_objects=BaseDiscretiser._return_object_docstring,
@@ -141,18 +140,15 @@ class TargetMeanDiscretiser(BaseDiscretiser):
             X, self.variables
         )
 
-        # create dataframe to use for target values.
-        self.X_target_ = X[self.variables_numerical_].copy()
-
         # check for missing values
         _check_contains_na(X, self.variables_numerical_)
 
         # check for inf
         _check_contains_inf(X, self.variables_numerical_)
 
-        # discretise
-        self._discretiser = self._make_discretiser()
-        self._discretiser.fit(X)
+        # instantiate pipeline
+        self._pipeline = self._make_pipeline()
+        self._pipeline.fit(X, y)
 
         # store input features
         self.n_features_in_ = X.shape[1]
@@ -191,13 +187,10 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         # check for infinite values
         _check_contains_inf(X, self.variables_numerical_)
 
-        # discretise
-        X_disc = self._discretiser.transform(X)
+        # discretise and encode
+        X_tr = self._pipeline.transform(X)
 
-        # encode
-        X_enc = self._encode_X(X_disc)
-
-        return X_enc
+        return X_tr
 
     def _make_discretiser(self):
         """
@@ -218,18 +211,16 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
         return discretiser
 
-    def _encode_X(self, X):
+    def _make_pipeline(self):
         """
-        Calculate the mean of each bin using the initial values (prior to
-        discretisation) for each selected variable. Replace the discrete value
-        (bin) with the corresponding mean.
+        Instantiate pipeline comprised of discretiser and encoder.
         """
-        X_enc = X.copy()
-        X_enc[self.variables_numerical_] = X_enc[self.variables_numerical_].astype(str)
+        pipe = Pipeline([
+            ("discretiser", self._make_discretiser()),
+            ("encoder", MeanEncoder(
+                variables=self.variables_numerical_,
+                ignore_format=True)
+             )]
+        )
 
-        for variable in self.variables_numerical_:
-            encoder = MeanEncoder(variables=variable)
-            encoder.fit(X_enc, self.X_target_[variable])
-            X_enc = encoder.transform(X_enc)
-
-        return X_enc
+        return pipe
