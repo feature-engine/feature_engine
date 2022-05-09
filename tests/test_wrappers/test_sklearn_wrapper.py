@@ -566,12 +566,12 @@ def test_function_transformer_works_with_categoricals():
 
 
 def test_function_transformer_works_with_numericals():
-    X = pd.DataFrame({"col1": ["1", "2", "3"], "col2": ["a", "b", "c"]})
+    X = pd.DataFrame({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
 
     X_expected = pd.DataFrame({"col1": [2, 3, 4], "col2": ["a", "b", "c"]})
 
     transformer = SklearnTransformerWrapper(
-        FunctionTransformer(lambda x: x + 1), variables=["col1"]
+        FunctionTransformer(lambda x: x+1), variables=["col1"]
     )
 
     X_tf = transformer.fit_transform(X)
