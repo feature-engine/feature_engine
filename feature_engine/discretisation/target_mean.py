@@ -224,3 +224,4 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         )
 
         return pipe
+    
