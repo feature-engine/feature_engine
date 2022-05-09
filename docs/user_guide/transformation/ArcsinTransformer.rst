@@ -10,63 +10,65 @@ numerical variables.
 
 The :class:`ArcsinTransformer()` only works with numerical variables with values between -1 and +1. If the variable contains a value outside of this range, the transformer will raise an error.
 
-Let's load the house prices dataset and  separate it into train and test sets (more
+Let's load the california housing dataset and  separate it into train and test sets (more
 details about the dataset :ref:`here <datasets>`).
 
 .. code:: python
 
-	import numpy as np
-	import pandas as pd
-	import matplotlib.pyplot as plt
-	from sklearn.model_selection import train_test_split
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    from sklearn.model_selection import train_test_split
+    from sklearn.datasets import fetch_california_housing
 
-	from feature_engine import transformation as vt
+    from feature_engine import transformation as vt
+      
+    # Load dataset
+    cal_housing = fetch_california_housing()
+    X = pd.DataFrame(cal_housing.data, columns=cal_housing.feature_names)
+    # divide by 50 to obtain values between -1 and +1
+    X['Latitude'] = X['Latitude'] / 50
+    y = cal_housing.target
 
-	# Load dataset
-	data = data = pd.read_csv('houseprice.csv')
+    # Separate into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=0)
 
-	# Separate into train and test sets
-	X_train, X_test, y_train, y_test =  train_test_split(
-		    data.drop(['Id', 'SalePrice'], axis=1),
-		    data['SalePrice'], test_size=0.3, random_state=0)
-
-Now we want to apply the arcsin transformation to 2 variables in the dataframe:
+Now we want to apply the arcsin transformation to 1 variables in the dataframe:
 
 .. code:: python
 
-	# set up the variable transformer
-	tf = vt.ArcsinTransformer(variables = ['LotArea', 'GrLivArea'])
+    # set up the variable transformer
+    tf = vt.ArcsinTransformer(variables = ['Latitude'])
 
-	# fit the transformer
-	tf.fit(X_train)
+    # fit the transformer
+    tf.fit(X_train)
 
 The transformer does not learn any parameters. So we can go ahead and transform the
 variables:
 
 .. code:: python
 
-	# transform the data
-	train_t= tf.transform(X_train)
-	test_t= tf.transform(X_test)
+    # transform the data
+    train_t= tf.transform(X_train)
 
 Finally, we can plot the original variable distribution:
 
 .. code:: python
 
-	# un-transformed variable
-	X_train['LotArea'].hist(bins=50)
+    # un-transformed variable
+    X_train['Latitude'].hist(bins=50)
 
-.. image:: ../../images/lotarearaw.png
+.. image:: ../../images/latituderaw.png
 
 And now the distribution after the transformation:
 
 .. code:: python
 
-	# transformed variable
-	train_t['LotArea'].hist(bins=50)
+    # transformed variable
+    train_t['Latitude'].hist(bins=50)
 
 
-.. image:: ../../images/lotareareciprocal.png
+.. image:: ../../images/latitudearcsin.png
 
 More details
 ^^^^^^^^^^^^
