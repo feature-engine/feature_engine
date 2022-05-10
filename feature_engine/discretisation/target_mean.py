@@ -4,16 +4,15 @@ import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
-from feature_engine._docstrings.methods import (
-    _fit_not_learn_docstring,
-    _fit_transform_docstring
-)
 from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
@@ -24,10 +23,10 @@ from feature_engine.dataframe_checks import (
     check_X_y,
 )
 from feature_engine.discretisation import (
-    ArbitraryDiscretiser,
     EqualFrequencyDiscretiser,
-    EqualWidthDiscretiser
+    EqualWidthDiscretiser,
 )
+from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.encoding import MeanEncoder
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
