@@ -128,9 +128,6 @@ class ArcsinTransformer(BaseNumericalTransformer):
             )
 
         # transform
-        # this line down here is probably useless (check if everything works even
-        # without it)
-        #X.loc[:, self.variables_] = X.loc[:, self.variables_].astype("float")
         X.loc[:, self.variables_] = np.arcsin(X.loc[:, self.variables_])
 
         return X
