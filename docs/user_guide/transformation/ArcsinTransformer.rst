@@ -39,6 +39,9 @@ Now we want to apply the arcsin transformation to 1 variables in the dataframe:
 
     # fit the transformer
     tf.fit(X_train)
+    
+    # test get_feature_names_out method
+    feature_names = tf.get_feature_names_out()
 
 The transformer does not learn any parameters. So we can go ahead and transform the
 variables:
@@ -55,7 +58,7 @@ Finally, we can plot the original variable distribution:
     # un-transformed variable
     X_train['worst symmetry'].hist(bins=50)
 
-.. image:: ../../images/latituderaw.png
+.. image:: ../../images/breast_symmetry_raw.png
 
 And now the distribution after the transformation:
 
@@ -65,7 +68,7 @@ And now the distribution after the transformation:
     train_t['worst symmetry'].hist(bins=50)
 
 
-.. image:: ../../images/latitudearcsin.png
+.. image:: ../../images/breast_symmmetry_arcsin.png
 
 More details
 ^^^^^^^^^^^^
