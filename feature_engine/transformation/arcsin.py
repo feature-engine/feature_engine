@@ -37,7 +37,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
     The ArcsinTransformer() applies the arcsin transformation to numerical variables.
 
     The ArcsinTransformer() only works with numerical variables between 0 and +1.
-    If a variable contains a value outside of this range, the transformer will 
+    If a variable contains a value outside of this range, the transformer will
     raise an error.
 
     A list of variables can be passed as an argument. Alternatively, the transformer
@@ -96,7 +96,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
         # check if the variables is in the correct range
         if ((X[self.variables_] < 0) | (X[self.variables_] > 1)).any().any():
             raise ValueError(
-                "Some variables contain values outside the possible range" 
+                "Some variables contain values outside the possible range"
                 "can't apply arcsin transformation"
             )
 
@@ -148,7 +148,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
         """
         # inverse_transform
         X.loc[:, self.variables_] = np.sin(X.loc[:, self.variables_])
-        
+
         return X
 
     def _more_tags(self):
