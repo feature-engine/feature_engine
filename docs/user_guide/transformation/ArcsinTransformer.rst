@@ -34,8 +34,22 @@ Now we want to apply the arcsin transformation to 1 variables in the dataframe:
 
 .. code:: python
 
+    vars_ = [
+      'mean compactness',
+      'mean concavity',
+      'mean concave points',
+      'mean fractal dimension',
+      'smoothness error',
+      'compactness error',
+      'concavity error',
+      'concave points error',
+      'symmetry error',
+      'fractal dimension error',
+      'worst symmetry',
+      'worst fractal dimension']
+
     # set up the variable transformer
-    tf = vt.ArcsinTransformer(variables = ['worst symmetry'])
+    tf = vt.ArcsinTransformer(variables = vars_)
 
     # fit the transformer
     tf.fit(X_train)
@@ -56,19 +70,19 @@ Finally, we can plot the original variable distribution:
 .. code:: python
 
     # un-transformed variable
-    X_train['worst symmetry'].hist(bins=50)
+    X_train[vars_].hist(figsize=(20,20))
 
-.. image:: ../../images/breast_symmetry_raw.png
+.. image:: ../../images/breast_cancer_raw.png
 
 And now the distribution after the transformation:
 
 .. code:: python
 
     # transformed variable
-    train_t['worst symmetry'].hist(bins=50)
+    train_t[vars_].hist(figsize=(20,20))
 
 
-.. image:: ../../images/breast_symmmetry_arcsin.png
+.. image:: ../../images/breast_cancer_arcsin.png
 
 More details
 ^^^^^^^^^^^^
