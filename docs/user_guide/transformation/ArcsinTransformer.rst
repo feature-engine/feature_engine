@@ -8,7 +8,7 @@ ArcsinTransformer
 The :class:`ArcsinTransformer()` applies the arcsin transformation to
 numerical variables.
 
-The :class:`ArcsinTransformer()` only works with numerical variables with values between -1 and +1. If the variable contains a value outside of this range, the transformer will raise an error.
+The :class:`ArcsinTransformer()` only works with numerical variables with values between 0 and +1. If the variable contains a value outside of this range, the transformer will raise an error.
 
 Let's load the breast cancer dataset and  separate it into train and test sets (more details about the dataset :ref:`here <datasets>`).
 
@@ -30,7 +30,7 @@ Let's load the breast cancer dataset and  separate it into train and test sets (
   # Separate into train and test sets
   X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
 
-Now we want to apply the arcsin transformation to 1 variables in the dataframe:
+Now we want to apply the arcsin transformation to variables in the dataframe:
 
 .. code:: python
 
