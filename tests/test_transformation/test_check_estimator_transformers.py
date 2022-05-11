@@ -5,21 +5,21 @@ from tests.estimator_checks.estimator_checks import check_feature_engine_estimat
 from feature_engine.transformation import (
     BoxCoxTransformer,
     LogCpTransformer,
+    ArcsinTransformer,
     LogTransformer,
     PowerTransformer,
     ReciprocalTransformer,
     YeoJohnsonTransformer,
-    ArcsinTransformer,
 )
 
 _estimators = [
     BoxCoxTransformer(),
     LogTransformer(),
     LogCpTransformer(),
+    ArcsinTransformer(),
     PowerTransformer(),
     ReciprocalTransformer(),
     YeoJohnsonTransformer(),
-    ArcsinTransformer(),
 ]
 
 
@@ -28,6 +28,6 @@ def test_check_estimator_from_sklearn(estimator):
     return check_estimator(estimator)
 
 
-@pytest.mark.parametrize("estimator", _estimators[3:])
+@pytest.mark.parametrize("estimator", _estimators[4:])
 def test_check_estimator_from_feature_engine(estimator):
     return check_feature_engine_estimator(estimator)

@@ -36,7 +36,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
     """
     The ArcsinTransformer() applies the arcsin transformation to numerical variables.
 
-    The ArcsinTransformer() only works with numerical variables between -1 and +1.
+    The ArcsinTransformer() only works with numerical variables between 0 and +1.
     If a variable contains a value outside of this range, the transformer will 
     raise an error.
 
@@ -94,7 +94,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
         X = super()._fit_from_varlist(X)
 
         # check if the variables is in the correct range
-        if ((X[self.variables_] < -1) | (X[self.variables_] > 1)).any().any():
+        if ((X[self.variables_] < 0) | (X[self.variables_] > 1)).any().any():
             raise ValueError(
                 "Some variables contain values outside the possible range" 
                 "can't apply arcsin transformation"
@@ -121,14 +121,14 @@ class ArcsinTransformer(BaseNumericalTransformer):
         X = super().transform(X)
 
         # check if the variables is in the correct range
-        if ((X[self.variables_] < -1) | (X[self.variables_] > 1)).any().any():
+        if ((X[self.variables_] < 0) | (X[self.variables_] > 1)).any().any():
             raise ValueError(
                 "Some variables contain values outside the possible"
                 "range for arcsin, can't apply arcsin transformation"
             )
 
         # transform
-        X.loc[:, self.variables_] = np.arcsin(X.loc[:, self.variables_])
+        X.loc[:, self.variables_] = np.arcsin(np.sqrt(X.loc[:, self.variables_]))
 
         return X
 
@@ -167,5 +167,12 @@ class ArcsinTransformer(BaseNumericalTransformer):
         tags_dict["_xfail_checks"]["check_estimators_overwrite_params"] = msg
         tags_dict["_xfail_checks"]["check_estimators_pickle"] = msg
         tags_dict["_xfail_checks"]["check_transformer_general"] = msg
+        tags_dict["_xfail_checks"]["check_methods_subset_invariance"] = msg
+        tags_dict["_xfail_checks"]["check_fit2d_1sample"] = msg
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+        tags_dict["_xfail_checks"]["check_dict_unchanged"] = msg
+        tags_dict["_xfail_checks"]["check_dont_overwrite_parameters"] = msg
+        tags_dict["_xfail_checks"]["check_fit_check_is_fitted"] = msg
+        tags_dict["_xfail_checks"]["check_n_features_in"] = msg
 
         return tags_dict
