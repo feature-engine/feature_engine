@@ -83,13 +83,3 @@ And now the distribution after the transformation:
 
 
 .. image:: ../../images/breast_cancer_arcsin.png
-
-More details
-^^^^^^^^^^^^
-
-You can find more details about the :class:`ArcsinTransformer()` here:
-
-
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/transformation/ReciprocalTransformer.ipynb>`_
-
-All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
