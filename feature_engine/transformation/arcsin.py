@@ -154,9 +154,9 @@ class ArcsinTransformer(BaseNumericalTransformer):
     def _more_tags(self):
         tags_dict = _return_tags()
         tags_dict["variables"] = "numerical"
-        # =======  this tests fail because the transformers throw an error
-        # when the values are less than -1 or greater than 1. Nothing to do with the test itself but
-        # mostly with the data created and used in the test
+        # =======  this tests fail because the transformers throw an error when the
+        # values are less than 0 or greater than 1. Nothing to do with the test itself
+        # but mostly with the data created and used in the test
         msg = (
             "transformers raise errors when data is outside [-1, 1] range, thus this"
             "check fails"
