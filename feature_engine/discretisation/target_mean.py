@@ -136,15 +136,15 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         X, y = check_X_y(X, y)
 
         #  identify numerical variables
-        self.variables_numerical_ = _find_or_check_numerical_variables(
+        self.variables_ = _find_or_check_numerical_variables(
             X, self.variables
         )
 
         # check for missing values
-        _check_contains_na(X, self.variables_numerical_)
+        _check_contains_na(X, self.variables_)
 
         # check for inf
-        _check_contains_inf(X, self.variables_numerical_)
+        _check_contains_inf(X, self.variables_)
 
         # instantiate pipeline
         self._pipeline = self._make_pipeline()
@@ -182,10 +182,10 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         _check_X_matches_training_df(X, self.n_features_in_)
 
         # check for missing values
-        _check_contains_na(X, self.variables_numerical_)
+        _check_contains_na(X, self.variables_)
 
         # check for infinite values
-        _check_contains_inf(X, self.variables_numerical_)
+        _check_contains_inf(X, self.variables_)
 
         # discretise and encode
         X_tr = self._pipeline.transform(X)
@@ -199,14 +199,16 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         if self.strategy == "equal_frequency":
             discretiser = EqualFrequencyDiscretiser(
                 q=self.bins,
-                variables=self.variables_numerical_,
+                variables=self.variables_,
                 return_boundaries=True,
+                return_object=True,
             )
         else:
             discretiser = EqualWidthDiscretiser(
                 bins=self.bins,
-                variables=self.variables_numerical_,
-                return_boundaries=True
+                variables=self.variables_,
+                return_boundaries=True,
+                return_object=True,
             )
 
         return discretiser
@@ -217,10 +219,7 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         """
         pipe = Pipeline([
             ("discretiser", self._make_discretiser()),
-            ("encoder", MeanEncoder(
-                variables=self.variables_numerical_,
-                ignore_format=True)
-             )]
-        )
+            ("encoder", MeanEncoder(variables=self.variables_))
+        ])
 
         return pipe
