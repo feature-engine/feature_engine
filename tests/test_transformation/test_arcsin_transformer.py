@@ -1,8 +1,8 @@
-import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.transformation import ArcsinTransformer
+
 
 def test_fit_raises_error_if_na_in_df(df_na):
     # test case 2: when dataset contains na, fit method
