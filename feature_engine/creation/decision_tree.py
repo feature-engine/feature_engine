@@ -33,7 +33,8 @@ class DecisionTreeCreation(BaseCreation):
     def __init__(
         self,
         variables: List[Union[str, int]],
-        new_variable_names: Optional[str] = None,
+        new_variable_name: Optional[str] = None,
+        strategy: str = "regressor",
         missing_value: str = "raise",
         drop_original: bool = False,
     ) -> None:
@@ -48,3 +49,23 @@ class DecisionTreeCreation(BaseCreation):
                 "variables must a list of string or integers with a least 2 "
                 f"distinct variables. Got {variables} instead."
             )
+
+        # TODO: Does the transfomer generate 1 or > 1 new variables?
+        if new_variable_name is not None:
+            if not isinstance(new_variable_name, str):
+                raise ValueError(
+                    f"new_variable_name must a be a string. Got {new_variable_name} "
+                    f"instead."
+                )
+
+        if strategy not in ("classifier", "regressor"):
+            raise ValueError(
+                "strategy must be either 'classifier' or 'regressor'. "
+                f"Got {strategy} instead."
+            )
+
+        super().__init__(missing_value, drop_original)
+        self.variables = variables
+        self.new_variable_name = new_variable_name
+        self.strategy = strategy
+    
