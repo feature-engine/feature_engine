@@ -38,12 +38,16 @@ class CategoricalInitMixin:
     {variables}.
 
     {ignore_format}
+
+    allow_missing: bool
+        Whether to allow missing values in the columns handled by the transformer.
     """
 
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
+        allow_missing: bool = False
     ) -> None:
 
         if not isinstance(ignore_format, bool):
@@ -51,9 +55,15 @@ class CategoricalInitMixin:
                 "ignore_format takes only booleans True and False. "
                 f"Got {ignore_format} instead."
             )
+        if not isinstance(allow_missing, bool):
+            raise ValueError(
+                "allow_missing takes only booleans True and False. "
+                f"Got {allow_missing} instead."
+            )
 
         self.variables = _check_input_parameter_variables(variables)
         self.ignore_format = ignore_format
+        self.allow_missing = allow_missing
 
 
 @Substitution(
@@ -128,7 +138,8 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
             self.variables_ = _find_all_variables(X, self.variables)
 
         # check if dataset contains na
-        _check_contains_na(X, self.variables_)
+        if not self.allow_missing:
+            _check_contains_na(X, self.variables_)
 
     def _get_feature_names_in(self, X: pd.DataFrame):
 
@@ -171,7 +182,8 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
         _check_X_matches_training_df(X, self.n_features_in_)
 
         # check if dataset contains na
-        _check_contains_na(X, self.variables_)
+        if not self.allow_missing:
+            _check_contains_na(X, self.variables_)
 
         # reorder df to match train set
         X = X[self.feature_names_in_]
@@ -219,6 +231,13 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
                 else:
                     X[feature] = X[feature].astype("float")
 
+        self._check_nas_in_result(X)
+        return X
+
+    def _check_nas_in_result(self, X):
+        if not hasattr(self, "errors"):
+            return None
+
         # check if NaN values were introduced by the encoding
         if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
 
@@ -244,8 +263,6 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."
                 )
-
-        return X
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Convert the encoded variable back to the original values.
