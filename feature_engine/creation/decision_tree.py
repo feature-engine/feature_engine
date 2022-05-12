@@ -32,7 +32,7 @@ class DecisionTreeCreation(BaseCreation):
     Categorical variables must be converted to numerical values. There are criticisms of
     using OneHotEncoder as sparse matrices can be detrimental to a decision tree's performance.
 
-    
+
 
 
 
@@ -42,7 +42,7 @@ class DecisionTreeCreation(BaseCreation):
         self,
         variables: List[Union[str, int]],
         new_variable_name: Optional[str] = None,
-        strategy: str = "regressor",
+        regression: bool = True,
         max_depth: int = 3,
         missing_value: str = "raise",
         drop_original: bool = False,
@@ -67,10 +67,9 @@ class DecisionTreeCreation(BaseCreation):
                     f"instead."
                 )
 
-        if strategy not in ("classifier", "regressor"):
+        if not isinstance(regression, bool):
             raise ValueError(
-                "strategy must be either 'classifier' or 'regressor'. "
-                f"Got {strategy} instead."
+                f"regression must be a boolean value. Got {regression} instead."
             )
 
         if not isinstance(max_depth, int):
@@ -81,7 +80,7 @@ class DecisionTreeCreation(BaseCreation):
         super().__init__(missing_value, drop_original)
         self.variables = variables
         self.new_variable_name = new_variable_name
-        self.strategy = strategy
+        self.regression = regression
         self.max_depth = max_depth
 
     def fit(self, X: pd.DataFrame, y: pd.Series) -> None:
