@@ -8,9 +8,19 @@ ArcsinTransformer
 The :class:`ArcsinTransformer()` applies the arcsin transformation to
 numerical variables.
 
-The :class:`ArcsinTransformer()` only works with numerical variables with values between 0 and +1. If the variable contains a value outside of this range, the transformer will raise an error.
+The arcsine transformation, also called arcsin square root transformation, or
+angular transformation, takes the form of asin(sqrt(x)) where x is a real number
+between 0 and 1.
 
-Let's load the breast cancer dataset and  separate it into train and test sets (more details about the dataset :ref:`here <datasets>`).
+The arcsin square root transformation helps in dealing with probabilities,
+percents, and proportions.
+
+The :class:`ArcsinTransformer()` only works with numerical variables with values between 0 and 1. If the variable contains a value outside of this range, the transformer will raise an error.
+
+Example
+~~~~~~~
+
+Let's load the breast cancer dataset and  separate it into train and test sets.
 
 .. code:: python
 
@@ -20,17 +30,17 @@ Let's load the breast cancer dataset and  separate it into train and test sets (
     from sklearn.model_selection import train_test_split
     from sklearn.datasets import load_breast_cancer
 
-    from feature_engine import transformation as vt
+    from feature_engine import ArcsinTransformer
       
     #Load dataset
     breast_cancer = load_breast_cancer()
     X = pd.DataFrame(breast_cancer.data, columns=breast_cancer.feature_names)
     y = breast_cancer.target
 
-  # Separate into train and test sets
-  X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+    # Separate into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
 
-Now we want to apply the arcsin transformation to variables in the dataframe:
+Now we want to apply the arcsin transformation to the variables in the dataframe:
 
 .. code:: python
 
@@ -49,14 +59,11 @@ Now we want to apply the arcsin transformation to variables in the dataframe:
       'worst fractal dimension']
 
     # set up the variable transformer
-    tf = vt.ArcsinTransformer(variables = vars_)
+    tf = ArcsinTransformer(variables = vars_)
 
     # fit the transformer
     tf.fit(X_train)
     
-    # test get_feature_names_out method
-    feature_names = tf.get_feature_names_out()
-
 The transformer does not learn any parameters. So we can go ahead and transform the
 variables:
 
@@ -69,7 +76,7 @@ Finally, we can plot the original variable distribution:
 
 .. code:: python
 
-    # un-transformed variable
+    # original variables
     X_train[vars_].hist(figsize=(20,20))
 
 .. image:: ../../images/breast_cancer_raw.png
