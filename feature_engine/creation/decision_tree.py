@@ -1,4 +1,5 @@
-from typing import List, Optional, Union
+from itertools import combinations
+from typing import List, Optional, Tuple, Union
 
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
@@ -40,7 +41,8 @@ class DecisionTreeCreation(BaseCreation):
     """
     def __init__(
         self,
-        variables: List[Union[str, int]],
+        variables: List[Union[str, int]] = None,
+        output_features: Union[int, List[int], Tuple[tuple, ...]] = None,
         new_variable_name: Optional[str] = None,
         regression: bool = True,
         max_depth: int = 3,
@@ -59,12 +61,38 @@ class DecisionTreeCreation(BaseCreation):
                 f"distinct variables. Got {variables} instead."
             )
 
-        # TODO: Does the transfomer generate 1 or > 1 new variables?
-        if new_variable_name is not None:
-            if not isinstance(new_variable_name, str):
+        # checks for output_features
+        if isinstance(output_features, int):
+            if len(variables) > output_features:
                 raise ValueError(
-                    f"new_variable_name must a be a string. Got {new_variable_name} "
-                    f"instead."
+                    "If output_features is an integer, the value cannot be greater than "
+                    f"the length of variables. Got {output_features} for output_features "
+                    f"and {len(variables)} for the length of variables."
+                )
+
+        if isinstance(output_features, list):
+            if (
+                max(output_features) > len(variables)
+                or not all(isinstance(feature, int) for feature in output_features)
+            ):
+                raise ValueError(
+                    "output_features must be a list solely comprised of integers and the "
+                    "maximum integer cannot be greater than the length of variables. Got "
+                    f"{output_features} for output_features and {len(variables)} for the "
+                    f"length of variables."
+                )
+
+        if isinstance(output_features, tuple):
+            num_combos = 0
+            for n in range(len(variables)):
+                num_combos += len(list(combinations(variables, n + 1)))
+            if (
+                not all(isinstance(feature, tuple) for feature in output_features)
+                or len(output_features) > num_combos
+            ):
+                raise ValueError(
+                    "output_features must a tuple solely comprised of tuples and the maximum "
+                    f"number of tuples cannot exceed {num_combos}. Got {output_features} instead."
                 )
 
         if not isinstance(regression, bool):
@@ -79,7 +107,7 @@ class DecisionTreeCreation(BaseCreation):
 
         super().__init__(missing_value, drop_original)
         self.variables = variables
-        self.new_variable_name = new_variable_name
+        self.output_features = output_features
         self.regression = regression
         self.max_depth = max_depth
 
