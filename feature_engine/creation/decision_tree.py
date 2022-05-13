@@ -100,7 +100,7 @@ class DecisionTreeCreation(BaseCreation):
             raise ValueError(
                 f"output_features must an integer, list or tuple. Got {output_features} instead."
             )
-        
+
         if not isinstance(regression, bool):
             raise ValueError(
                 f"regression must be a boolean value. Got {regression} instead."
@@ -135,10 +135,8 @@ class DecisionTreeCreation(BaseCreation):
         X = super().fit(X, y)
 
 
-
     def _make_decision_tree(self):
         """Instantiate decision tree."""
-
         if self.regression is True:
             est = DecisionTreeRegressor(max_depth=self.max_depth)
         else:
@@ -154,6 +152,22 @@ class DecisionTreeCreation(BaseCreation):
         """
         variable_combinations = []
         if isinstance(self.output_features, int):
-            for num in range(self.output_features):
-                variable_combinations += list(combinations(self.variables, num + 1))
+            for num in range(1, self.output_features + 1):
+                variable_combinations += list(combinations(self.variables, num))
+            variable_combinations = [list(var) for var in variable_combinations]
+
+        elif isinstance(self.output_features, list):
+            for num in self.output_features:
+                variable_combinations += list(combinations(self.variables, num))
+            variable_combinations = [list(var) for var in variable_combinations]
+
+        # output_features is a tuple
+        else:
+            for feature in self.output_features:
+                if isinstance(feature, str):
+                    variable_combinations += [feature]
+                else:
+                    variable_combinations += list(feature)
+
+        return variable_combinations
 
