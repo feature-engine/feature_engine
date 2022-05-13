@@ -62,39 +62,45 @@ class DecisionTreeCreation(BaseCreation):
             )
 
         # checks for output_features
-        if isinstance(output_features, int):
-            if len(variables) > output_features:
-                raise ValueError(
-                    "If output_features is an integer, the value cannot be greater than "
-                    f"the length of variables. Got {output_features} for output_features "
-                    f"and {len(variables)} for the length of variables."
-                )
+        if isinstance(output_features, (int, list, tuple)):
 
-        if isinstance(output_features, list):
-            if (
-                max(output_features) > len(variables)
-                or not all(isinstance(feature, int) for feature in output_features)
-            ):
-                raise ValueError(
-                    "output_features must be a list solely comprised of integers and the "
-                    "maximum integer cannot be greater than the length of variables. Got "
-                    f"{output_features} for output_features and {len(variables)} for the "
-                    f"length of variables."
-                )
+            if isinstance(output_features, int):
+                if len(variables) > output_features:
+                    raise ValueError(
+                        "If output_features is an integer, the value cannot be greater than "
+                        f"the length of variables. Got {output_features} for output_features "
+                        f"and {len(variables)} for the length of variables."
+                    )
 
-        if isinstance(output_features, tuple):
-            num_combos = 0
-            for n in range(len(variables)):
-                num_combos += len(list(combinations(variables, n + 1)))
-            if (
-                not all(isinstance(feature, tuple) for feature in output_features)
-                or len(output_features) > num_combos
-            ):
-                raise ValueError(
-                    "output_features must a tuple solely comprised of tuples and the maximum "
-                    f"number of tuples cannot exceed {num_combos}. Got {output_features} instead."
-                )
+            if isinstance(output_features, list):
+                if (
+                    max(output_features) > len(variables)
+                    or not all(isinstance(feature, int) for feature in output_features)
+                ):
+                    raise ValueError(
+                        "output_features must be a list solely comprised of integers and the "
+                        "maximum integer cannot be greater than the length of variables. Got "
+                        f"{output_features} for output_features and {len(variables)} for the "
+                        f"length of variables."
+                    )
 
+            if isinstance(output_features, tuple):
+                num_combos = 0
+                for n in range(len(variables)):
+                    num_combos += len(list(combinations(variables, n + 1)))
+                if (
+                    not all(isinstance(feature, tuple) for feature in output_features)
+                    or len(output_features) > num_combos
+                ):
+                    raise ValueError(
+                        "output_features must a tuple solely comprised of tuples and the maximum "
+                        f"number of tuples cannot exceed {num_combos}. Got {output_features} instead."
+                    )
+        else:
+            raise ValueError(
+                f"output_features must an integer, list or tuple. Got {output_features} instead."
+            )
+        
         if not isinstance(regression, bool):
             raise ValueError(
                 f"regression must be a boolean value. Got {regression} instead."
@@ -127,3 +133,27 @@ class DecisionTreeCreation(BaseCreation):
         """
         # common checks and attributes
         X = super().fit(X, y)
+
+
+
+    def _make_decision_tree(self):
+        """Instantiate decision tree."""
+
+        if self.regression is True:
+            est = DecisionTreeRegressor(max_depth=self.max_depth)
+        else:
+            est = DecisionTreeClassifier(max_depth=self.max_depth)
+
+        return est
+
+
+    def _create_variable_combinations(self):
+        """
+        Create a list of the different combinations of variables that will be
+        used to create new features.
+        """
+        variable_combinations = []
+        if isinstance(self.output_features, int):
+            for num in range(self.output_features):
+                variable_combinations += list(combinations(self.variables, num + 1))
+
