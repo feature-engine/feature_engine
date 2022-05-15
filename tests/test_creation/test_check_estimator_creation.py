@@ -9,6 +9,7 @@ from feature_engine.creation import (
     CombineWithReferenceFeature,
     CyclicalTransformer,
     MathematicalCombination,
+    DecisionTreeCreation,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
