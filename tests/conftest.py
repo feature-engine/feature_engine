@@ -215,3 +215,41 @@ def df_normal_dist():
     df.columns = ["var"]
 
     return df
+
+@pytest.fixture(scope="module")
+def df_creation():
+    data = {
+        "Name": ["tom", "nick", "krish", "megan", "peter", "jordan", "fred", "sam", "alexa", "brittany"],
+        "City": [
+            "London",
+            "Manchester",
+            "Liverpool",
+            "Bristol",
+            "Manchester",
+            "Liverpool",
+            "London",
+            "Liverpool",
+            "Manchester",
+            "London"],
+        "Studies": [
+            "Bachelor",
+            "Bachelor",
+            "PhD",
+            "Masters",
+            "Bachelor",
+            "PhD",
+            "None",
+            "Masters",
+            "Masters",
+            "Bachelor"
+        ],
+        "Age": [20, 44, 19, 33, 51, 40, 41, 37, 30, 54],
+        "Height_cm": [164, 150, 178, 158, 188, 190, 168, 174, 176, 171],
+        "Marks": [1.0, 0.8, 0.6, 0.1, 0.3, 0.4, 0.8, 0.6, 0.5, 0.2],
+        "Avg_5k_run_minutes": [22.5, 16.2, 18.3, 24.2, 20, 17.8, 22, 21.9, 19.7, 23],
+        "Best_40m_dash_seconds": [4.1, 5.8, 3.9, 6.2, 4.3, 4.5, 7.2, 4.4, 4.1, 6.7],
+        "Plays_Football": [1, 1, 1, 0, 0, 1, 0, 1, 0, 0],
+    }
+
+    df = pd.DataFrame(data)
+    return df
