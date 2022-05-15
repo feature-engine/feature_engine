@@ -43,7 +43,6 @@ class DecisionTreeCreation(BaseCreation):
         self,
         variables: List[Union[str, int]] = None,
         output_features: Union[int, List[int], Tuple[tuple, ...]] = None,
-        new_variable_name: Optional[str] = None,
         regression: bool = True,
         max_depth: int = 3,
         missing_value: str = "raise",
@@ -53,53 +52,53 @@ class DecisionTreeCreation(BaseCreation):
         if (
             not isinstance(variables, list)
             or not all(isinstance(var, (int, str)) for var in variables)
-            or len(variables) < 2
             or len(set(variables)) != len(variables)
         ):
             raise ValueError(
-                "variables must a list of string or integers with a least 2 "
+                "variables must a list of strings or integers comprise of "
                 f"distinct variables. Got {variables} instead."
             )
 
-        # checks for output_features
-        if isinstance(output_features, (int, list, tuple)):
-
-            if isinstance(output_features, int):
-                if len(variables) > output_features:
-                    raise ValueError(
-                        "If output_features is an integer, the value cannot be greater than "
-                        f"the length of variables. Got {output_features} for output_features "
-                        f"and {len(variables)} for the length of variables."
-                    )
-
-            if isinstance(output_features, list):
-                if (
-                    max(output_features) > len(variables)
-                    or not all(isinstance(feature, int) for feature in output_features)
-                ):
-                    raise ValueError(
-                        "output_features must be a list solely comprised of integers and the "
-                        "maximum integer cannot be greater than the length of variables. Got "
-                        f"{output_features} for output_features and {len(variables)} for the "
-                        f"length of variables."
-                    )
-
-            if isinstance(output_features, tuple):
-                num_combos = 0
-                for n in range(len(variables)):
-                    num_combos += len(list(combinations(variables, n + 1)))
-                if (
-                    not all(isinstance(feature, tuple) for feature in output_features)
-                    or len(output_features) > num_combos
-                ):
-                    raise ValueError(
-                        "output_features must a tuple solely comprised of tuples and the maximum "
-                        f"number of tuples cannot exceed {num_combos}. Got {output_features} instead."
-                    )
-        else:
+        if (
+                not isinstance(output_features, (int, list, tuple))
+                and output_features is not None
+        ):
             raise ValueError(
                 f"output_features must an integer, list or tuple. Got {output_features} instead."
             )
+
+        if isinstance(output_features, int):
+            if output_features > len(variables):
+                raise ValueError(
+                    "If output_features is an integer, the value cannot be greater than "
+                    f"the length of variables. Got {output_features} for output_features "
+                    f"and {len(variables)} for the length of variables."
+                )
+
+        if isinstance(output_features, list):
+            if (
+                    max(output_features) > len(variables)
+                    or not all(isinstance(feature, int) for feature in output_features)
+            ):
+                raise ValueError(
+                    "output_features must be a list solely comprised of integers and the "
+                    "maximum integer cannot be greater than the length of variables. Got "
+                    f"{output_features} for output_features and {len(variables)} for the "
+                    f"length of variables."
+                )
+
+        if isinstance(output_features, tuple):
+            num_combos = 0
+            for n in range(1, len(variables) + 1):
+                num_combos += len(list(combinations(variables, n)))
+            if (
+                    not all(isinstance(feature, (str, tuple)) for feature in output_features)
+                    or len(output_features) > num_combos
+            ):
+                raise ValueError(
+                    "output_features must a tuple solely comprised of tuples and the maximum "
+                    f"number of tuples cannot exceed {num_combos}. Got {output_features} instead."
+                )
 
         if not isinstance(regression, bool):
             raise ValueError(
@@ -134,6 +133,7 @@ class DecisionTreeCreation(BaseCreation):
         # common checks and attributes
         X = super().fit(X, y)
 
+        self.variable_combinations_ = self._create_variable_combinations()
 
     def _make_decision_tree(self):
         """Instantiate decision tree."""
@@ -151,23 +151,30 @@ class DecisionTreeCreation(BaseCreation):
         used to create new features.
         """
         variable_combinations = []
-        if isinstance(self.output_features, int):
-            for num in range(1, self.output_features + 1):
-                variable_combinations += list(combinations(self.variables, num))
-            variable_combinations = [list(var) for var in variable_combinations]
-
-        elif isinstance(self.output_features, list):
-            for num in self.output_features:
-                variable_combinations += list(combinations(self.variables, num))
-            variable_combinations = [list(var) for var in variable_combinations]
-
-        # output_features is a tuple
-        else:
+        if isinstance(self.output_features, tuple):
             for feature in self.output_features:
                 if isinstance(feature, str):
-                    variable_combinations += [feature]
+                    variable_combinations.append([feature])
                 else:
-                    variable_combinations += list(feature)
+                    variable_combinations.append(list(feature))
+
+        else:
+            if self.output_features is None:
+                for num in range(1, len(self.variables) + 1):
+                    variable_combinations += list(combinations(self.variables, num))
+
+            elif isinstance(self.output_features, int):
+                for num in range(1, self.output_features + 1):
+                    variable_combinations += list(combinations(self.variables, num))
+
+            # output_feature is a list
+            else:
+                for num in self.output_features:
+                    variable_combinations += list(combinations(self.variables, num))
+
+            # transform all elements to lists to slice X dataframe
+            variable_combinations = [list(var) for var in variable_combinations]
 
         return variable_combinations
+
 
