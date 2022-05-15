@@ -5,6 +5,7 @@ variables in the dataframe.
 from .cyclical_features import CyclicalFeatures
 from .math_features import MathFeatures
 from .relative_features import RelativeFeatures
+from .decision_tree import DecisionTreeCreation
 
 # FIXME: remove in version 1.4
 from .combine_with_reference_feature import CombineWithReferenceFeature
@@ -18,4 +19,5 @@ __all__ = [
     "MathFeatures",
     "RelativeFeatures",
     "CyclicalFeatures",
+    "DecisionTreeCreation",
 ]
