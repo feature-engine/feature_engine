@@ -4,7 +4,8 @@ import pytest
 
 from feature_engine.creation import DecisionTreeCreation
 
-@pytest.mark.parameterize(
+
+@pytest.mark.parametrize(
     "_variables", [["var_A", 3, "var_A"], ["var_C", 3.3, 4], 84]
 )
 def test_create_variable_combinations(df_creation):
@@ -95,7 +96,10 @@ def test_create_variable_combinations(df_creation):
     transformer = DecisionTreeCreation(
         variables=["Age", "Studies", "Avg_5k_run_minutes", "Height_cm"],
         output_features=(
-            "Height_cm", ("Avg_5k_run_minutes", "Height_cm"), "Age", ("Age", "Studies", "Height_cm")
+            "Height_cm",
+            ("Avg_5k_run_minutes", "Height_cm"),
+            "Age",
+            ("Age", "Studies", "Height_cm")
         ),
         regression=True,
         max_depth=3,
