@@ -137,8 +137,13 @@ class DecisionTreeCreation(BaseCreation):
         self.variable_combinations_ = self._create_variable_combinations()
         estimator = self._make_decision_tree()
 
-        fitted_estimators = {}
-        for combo in self.variable_combinations_:
+        self.variable_combination_indices_ = {}
+        self.fitted_estimators_ = {}
+        for idx, combo in enumerate(self.variable_combinations_):
+            self.variable_combination_indices_[f"estimator_{idx}"] = combo
+            self.fitted_estimators_[f"estimator_{idx}"] = estimator.fit(X[combo], y)
+
+        return self
 
 
     def _make_decision_tree(self):
@@ -184,3 +189,16 @@ class DecisionTreeCreation(BaseCreation):
         return variable_combinations
 
 
+    def _create_new_features_names(self):
+        """Generate a dictionary of the names for the new features"""
+        new_features_names = {}
+
+        for idx, combo in self.variable_combination_indices_.items():
+            if len(combo) == 1:
+                new_features_names[idx] = f"{combo[0]}_tree"
+
+            else:
+                combo_joined = "_".join(combo)
+                new_features_names[idx] = f"{combo_joined}_tree"
+
+        return new_features_names
