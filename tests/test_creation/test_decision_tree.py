@@ -5,9 +5,6 @@ import pytest
 from feature_engine.creation import DecisionTreeCreation
 
 
-@pytest.mark.parametrize(
-    "_variables", [["var_A", 3, "var_A"], ["var_C", 3.3, 4], 84]
-)
 def test_create_variable_combinations(df_creation):
     # output_features is None
     transformer = DecisionTreeCreation(
