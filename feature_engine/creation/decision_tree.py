@@ -131,9 +131,15 @@ class DecisionTreeCreation(BaseCreation):
             The target variable that is used to train the decision tree.
         """
         # common checks and attributes
+        # TODO: We don't need to check_variables b/c BaseCreation fit() performs action
         X = super().fit(X, y)
 
         self.variable_combinations_ = self._create_variable_combinations()
+        estimator = self._make_decision_tree()
+
+        fitted_estimators = {}
+        for combo in self.variable_combinations_:
+
 
     def _make_decision_tree(self):
         """Instantiate decision tree."""
