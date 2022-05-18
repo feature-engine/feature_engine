@@ -110,3 +110,16 @@ def test_create_variable_combinations(df_creation):
     ]
     results = transformer._create_variable_combinations()
     assert results == expected_results
+
+
+def test_error_when_dependent_variable_fitted_by_decision_tree(df_creation):
+    transformer = DecisionTreeCreation(
+        variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
+        output_features=[1, 3],
+        regression=True,
+        max_depth=3,
+        missing_value="raise",
+        drop_original=False
+    )
+    with pytest.raises(ValueError):
+        transformer.fit(df_creation, df_creation["Avg_5k_run_minutes"])
