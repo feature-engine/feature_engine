@@ -7,7 +7,6 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from feature_engine.creation.base_creation import BaseCreation
 from feature_engine._docstrings.methods import (
-    _fit_not_learn_docstring,
     _fit_transform_docstring,
 )
 from feature_engine._docstrings.fit_attributes import (
@@ -22,7 +21,15 @@ from feature_engine._docstrings.class_inputs import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
-
+@Substitution(
+    variables=_variables_numerical_docstring,
+    missing_values=_missing_values_docstring,
+    drop_original=_drop_original_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    transform=BaseCreation._transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class DecisionTreeCreation(BaseCreation):
     """
     DecisionTreeCreation() creates a new variable by applying user-indicated variables with
@@ -34,9 +41,65 @@ class DecisionTreeCreation(BaseCreation):
     using OneHotEncoder as sparse matrices can be detrimental to a decision tree's performance.
 
 
+    Parameters
+    ----------
+    {variables}
+
+    output_features: integer, list or tuple, default=None
+        Where the user assigns the permutations of variables that will be used to create
+        the new feature(s).
+
+        If the user passes an integer, then that number corresponds to the largest size of
+        combinations to be used to create the new features:
+
+            If the user passes 3 variables, ["var_A", "var_B", "var_C"], then
+                - output_features = 1 returns new features based on the predictions of
+                    each individual variable, generating 3 new features.
+                - output_features = 2 returns all possible combinations of 2 variables,
+                    i.e., ("var_A", "var_B"), ("var_A", "var_C"), and ("var_B", "var_C"),
+                    in addition to the 3 new variables create by output_features = 1.
+                    Resulting in a total of 6 new features.
+                - output_features = 3 returns new one new feature based on ["var_A", "var_B",
+                    "var_C"] in addition to the 6 new features created by output_features = 1 and
+                    output_features = 2. Resulting in a total of 7 new features.
+                - output_features >= 4 returns an error, more combinations than number of variables
+                    provided by user.
+
+        If the user passes a list, it must be comprised of integers and the greatest integer cannot
+        be greater than the number of variables passed by the user. Each integer create all the possible
+        combinations of that size.
+
+            If the user passes 4 variables, ["var_A", "var_B", "var_C", "var_D"] and output_features = [2,3]
+            then the following combinations will be used to create new features: ("var_A", "var_B"),
+            ("var_A", "var_C"), ("var_A", "var_D"), ("var_B", "var_C"), ("var_B", "var_D"), ("var_C", "var_D"),
+            ("var_A", "var_B", "var_C"), ("var_A", "var_B", "var_D"), ("var_A", "var_C", "var_D"), and ("var_B",
+            "var_C", "var_D").
+
+        If the user passes a tuple, it must be comprised of strings and/or tuples that indicate how to combine
+        the variables, e.g. output_features = ("var_C", ("var_A", "var_C"), "var_C", ("var_B", "var_D").
+
+        If the user passes None, then all possible combinations will be created. This is analagous to the user
+        passing an integer that is equal to the number of provided variables when the class is initiated.
 
 
+    {missing_values}
 
+    {drop_original}
+
+    Attributes
+    ----------
+    {feature_names_in_}
+
+    {n_features_in_}
+
+    Methods
+    -------
+    fit:
+        Builds a decision tree estimator(s).
+
+    {transform}
+
+    {fit_transform}
 
     """
     def __init__(
