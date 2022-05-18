@@ -133,6 +133,7 @@ class DecisionTreeCreation(BaseCreation):
         # common checks and attributes
         # TODO: We don't need to check_variables b/c BaseCreation fit() performs action
         X = super().fit(X, y)
+        self._check_dependent_variable_not_fitted_by_estimator(X, y)
 
         self.variable_combinations_ = self._create_variable_combinations()
         self.variable_combination_indices_ = {}
@@ -225,3 +226,19 @@ class DecisionTreeCreation(BaseCreation):
                 new_features_names[idx] = f"{combo_joined}_tree"
 
         return new_features_names
+
+    def _check_dependent_variable_not_fitted_by_estimator(
+            self, X: pd.DataFrame, y: pd.Series
+    ) -> None:
+        """
+        Raise error if one of the variables to be fitted by the decision tree
+        is the dependent variable.
+        """
+        # TODO: Is this neccessary?
+        # Wouldn't doing so be a circular reference?
+        for variable in self.variables_:
+            if X[variable] == y:
+                raise ValueError(
+                    "Dependent variable cannot also be one of the estimator's "
+                    "fitted variables."
+                )
