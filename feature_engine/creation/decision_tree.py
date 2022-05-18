@@ -34,20 +34,18 @@ class DecisionTreeCreation(BaseCreation):
     """
     DecisionTreeCreation() creates a new variable by applying user-indicated variables with
     a decision tree. The class uses either scikit-learn's DecisionTreeClassifier or
-    DecisionTreeRegressor, pending the target value.
+    DecisionTreeRegressor, pending the predictor variable.
 
     Currently, scikit-learn decision-tree classes do not support categorical variables.
     Categorical variables must be converted to numerical values. There are criticisms of
     using OneHotEncoder as sparse matrices can be detrimental to a decision tree's performance.
-
 
     Parameters
     ----------
     {variables}
 
     output_features: integer, list or tuple, default=None
-        Where the user assigns the permutations of variables that will be used to create
-        the new feature(s).
+        Assign the permutations of variables that will be used to create the new feature(s).
 
         If the user passes an integer, then that number corresponds to the largest size of
         combinations to be used to create the new features:
@@ -59,14 +57,14 @@ class DecisionTreeCreation(BaseCreation):
                     i.e., ("var_A", "var_B"), ("var_A", "var_C"), and ("var_B", "var_C"),
                     in addition to the 3 new variables create by output_features = 1.
                     Resulting in a total of 6 new features.
-                - output_features = 3 returns new one new feature based on ["var_A", "var_B",
+                - output_features = 3 returns one new feature based on ["var_A", "var_B",
                     "var_C"] in addition to the 6 new features created by output_features = 1 and
                     output_features = 2. Resulting in a total of 7 new features.
-                - output_features >= 4 returns an error, more combinations than number of variables
-                    provided by user.
+                - output_features >= 4 returns an error, a larger size of combination than number
+                    of variables provided by user.
 
-        If the user passes a list, it must be comprised of integers and the greatest integer cannot
-        be greater than the number of variables passed by the user. Each integer create all the possible
+        If the user passes a list, the list must be comprised of integers and the greatest integer cannot
+        be greater than the number of variables passed by the user. Each integer creates all the possible
         combinations of that size.
 
             If the user passes 4 variables, ["var_A", "var_B", "var_C", "var_D"] and output_features = [2,3]
@@ -78,9 +76,14 @@ class DecisionTreeCreation(BaseCreation):
         If the user passes a tuple, it must be comprised of strings and/or tuples that indicate how to combine
         the variables, e.g. output_features = ("var_C", ("var_A", "var_C"), "var_C", ("var_B", "var_D").
 
-        If the user passes None, then all possible combinations will be created. This is analagous to the user
+        If the user passes None, then all possible combinations will be created. This is analogous to the user
         passing an integer that is equal to the number of provided variables when the class is initiated.
 
+    regression: boolean, default = True
+        Select whether the decision tree is performing a regression or classification.
+
+    max_depth: integer, default = True
+        The maximum depth of the tree. Used to mitigate the risk of over-fitting.
 
     {missing_values}
 
@@ -100,6 +103,10 @@ class DecisionTreeCreation(BaseCreation):
     {transform}
 
     {fit_transform}
+
+    Notes
+    -----
+
 
     """
     def __init__(
