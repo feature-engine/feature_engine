@@ -135,16 +135,40 @@ class DecisionTreeCreation(BaseCreation):
         X = super().fit(X, y)
 
         self.variable_combinations_ = self._create_variable_combinations()
-        estimator = self._make_decision_tree()
 
         self.variable_combination_indices_ = {}
         self.fitted_estimators_ = {}
         for idx, combo in enumerate(self.variable_combinations_):
             self.variable_combination_indices_[f"estimator_{idx}"] = combo
+            estimator = self._make_decision_tree()
             self.fitted_estimators_[f"estimator_{idx}"] = estimator.fit(X[combo], y)
 
         return self
 
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Creates new features using scikit-learn's decision tree.
+
+        Parameters
+        ----------
+        X: Pandas DataFrame of shame = [n_samples, n_features]
+            The data to be transformed.
+
+        Returns
+        -------
+        X_new: Pandas dataframe.
+            The original dataframe plus the additional features.
+        """
+        X = super().transform(X)
+        self.new_features_names_ = self._create_new_features_names()
+
+        for idx, estimator in self.fitted_estimators_.items():
+            new_feature = self.new_features_names_[idx]
+            X[new_feature] = estimator.predict(
+                X[self.variable_combination_indices_[idx]]
+            )
+
+        return X
 
     def _make_decision_tree(self):
         """Instantiate decision tree."""
@@ -169,6 +193,7 @@ class DecisionTreeCreation(BaseCreation):
                 else:
                     variable_combinations.append(list(feature))
 
+        # if output_features is None, int or list.
         else:
             if self.output_features is None:
                 for num in range(1, len(self.variables) + 1):
@@ -187,7 +212,6 @@ class DecisionTreeCreation(BaseCreation):
             variable_combinations = [list(var) for var in variable_combinations]
 
         return variable_combinations
-
 
     def _create_new_features_names(self):
         """Generate a dictionary of the names for the new features"""
