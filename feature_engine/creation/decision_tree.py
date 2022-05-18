@@ -1,8 +1,7 @@
 from itertools import combinations
-from typing import List, Optional, Tuple, Union
+from typing import List, Tuple, Union
 
 import pandas as pd
-from sklearn.utils.validation import check_is_fitted
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from feature_engine.creation.base_creation import BaseCreation
@@ -21,6 +20,7 @@ from feature_engine._docstrings.class_inputs import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
+
 @Substitution(
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
@@ -32,55 +32,62 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 )
 class DecisionTreeCreation(BaseCreation):
     """
-    DecisionTreeCreation() creates a new variable by applying user-indicated variables with
-    a decision tree. The class uses either scikit-learn's DecisionTreeClassifier or
-    DecisionTreeRegressor, pending the predictor variable.
+    DecisionTreeCreation() creates a new variable by applying user-indicated variables
+    with a decision tree. The class uses either scikit-learn's DecisionTreeClassifier
+    or DecisionTreeRegressor, pending the predictor variable.
 
     Currently, scikit-learn decision-tree classes do not support categorical variables.
-    Categorical variables must be converted to numerical values. There are criticisms of
-    using OneHotEncoder as sparse matrices can be detrimental to a decision tree's performance.
+    Categorical variables must be converted to numerical values. There are criticisms
+    of using OneHotEncoder as sparse matrices can be detrimental to a decision tree's
+    performance.
 
     Parameters
     ----------
     {variables}
 
     output_features: integer, list or tuple, default=None
-        Assign the permutations of variables that will be used to create the new feature(s).
+        Assign the permutations of variables that will be used to create the new
+        feature(s).
 
-        If the user passes an integer, then that number corresponds to the largest size of
-        combinations to be used to create the new features:
+        If the user passes an integer, then that number corresponds to the largest
+        size of combinations to be used to create the new features:
 
             If the user passes 3 variables, ["var_A", "var_B", "var_C"], then
-                - output_features = 1 returns new features based on the predictions of
-                    each individual variable, generating 3 new features.
-                - output_features = 2 returns all possible combinations of 2 variables,
-                    i.e., ("var_A", "var_B"), ("var_A", "var_C"), and ("var_B", "var_C"),
-                    in addition to the 3 new variables create by output_features = 1.
-                    Resulting in a total of 6 new features.
-                - output_features = 3 returns one new feature based on ["var_A", "var_B",
-                    "var_C"] in addition to the 6 new features created by output_features = 1 and
-                    output_features = 2. Resulting in a total of 7 new features.
-                - output_features >= 4 returns an error, a larger size of combination than number
-                    of variables provided by user.
+                - output_features = 1 returns new features based on the predictions
+                    of each individual variable, generating 3 new features.
+                - output_features = 2 returns all possible combinations of 2
+                    variables, i.e., ("var_A", "var_B"), ("var_A", "var_C"), and
+                    ("var_B", "var_C"), in addition to the 3 new variables create
+                    by output_features = 1. Resulting in a total of 6 new features.
+                - output_features = 3 returns one new feature based on ["var_A",
+                    "var_B", "var_C"] in addition to the 6 new features created by
+                    output_features = 1 and output_features = 2. Resulting in a total
+                    of 7 new features.
+                - output_features >= 4 returns an error, a larger size of combination
+                    than number of variables provided by user.
 
-        If the user passes a list, the list must be comprised of integers and the greatest integer cannot
-        be greater than the number of variables passed by the user. Each integer creates all the possible
-        combinations of that size.
+        If the user passes a list, the list must be comprised of integers and the
+        greatest integer cannot be greater than the number of variables passed by
+        the user. Each integer creates all the possible combinations of that size.
 
-            If the user passes 4 variables, ["var_A", "var_B", "var_C", "var_D"] and output_features = [2,3]
-            then the following combinations will be used to create new features: ("var_A", "var_B"),
-            ("var_A", "var_C"), ("var_A", "var_D"), ("var_B", "var_C"), ("var_B", "var_D"), ("var_C", "var_D"),
-            ("var_A", "var_B", "var_C"), ("var_A", "var_B", "var_D"), ("var_A", "var_C", "var_D"), and ("var_B",
-            "var_C", "var_D").
+            If the user passes 4 variables, ["var_A", "var_B", "var_C", "var_D"]
+            and output_features = [2,3] then the following combinations will be
+            used to create new features: ("var_A", "var_B"), ("var_A", "var_C"),
+            ("var_A", "var_D"), ("var_B", "var_C"), ("var_B", "var_D"), ("var_C",
+            "var_D"), ("var_A", "var_B", "var_C"), ("var_A", "var_B", "var_D"),
+            ("var_A", "var_C", "var_D"), and ("var_B", "var_C", "var_D").
 
-        If the user passes a tuple, it must be comprised of strings and/or tuples that indicate how to combine
-        the variables, e.g. output_features = ("var_C", ("var_A", "var_C"), "var_C", ("var_B", "var_D").
+        If the user passes a tuple, it must be comprised of strings and/or tuples
+        that indicate how to combine the variables, e.g. output_features =
+        ("var_C", ("var_A", "var_C"), "var_C", ("var_B", "var_D").
 
-        If the user passes None, then all possible combinations will be created. This is analogous to the user
-        passing an integer that is equal to the number of provided variables when the class is initiated.
+        If the user passes None, then all possible combinations will be
+        created. This is analogous to the user passing an integer that is equal
+        to the number of provided variables when the class is initiated.
 
     regression: boolean, default = True
-        Select whether the decision tree is performing a regression or classification.
+        Select whether the decision tree is performing a regression or
+        classification.
 
     max_depth: integer, default = True
         The maximum depth of the tree. Used to mitigate the risk of over-fitting.
@@ -134,27 +141,30 @@ class DecisionTreeCreation(BaseCreation):
                 and output_features is not None
         ):
             raise ValueError(
-                f"output_features must an integer, list or tuple. Got {output_features} instead."
+                f"output_features must an integer, list or tuple. Got "
+                f"{output_features} instead."
             )
 
         if isinstance(output_features, int):
             if output_features > len(variables):
                 raise ValueError(
-                    "If output_features is an integer, the value cannot be greater than "
-                    f"the length of variables. Got {output_features} for output_features "
-                    f"and {len(variables)} for the length of variables."
+                    "If output_features is an integer, the value cannot be "
+                    f"greater than the length of variables. Got {output_features} "
+                    "for output_features and {len(variables)} for the length "
+                    "of variables."
                 )
 
         if isinstance(output_features, list):
             if (
                     max(output_features) > len(variables)
-                    or not all(isinstance(feature, int) for feature in output_features)
+                    or not all(
+                            isinstance(feature, int) for feature in output_features
+                        )
             ):
                 raise ValueError(
-                    "output_features must be a list solely comprised of integers and the "
-                    "maximum integer cannot be greater than the length of variables. Got "
-                    f"{output_features} for output_features and {len(variables)} for the "
-                    f"length of variables."
+                    "output_features must be a list solely comprised of integers "
+                    "and the maximum integer cannot be greater than the length of "
+                    f"variables. Got {output_features} for output_features and "
                 )
 
         if isinstance(output_features, tuple):
@@ -162,12 +172,15 @@ class DecisionTreeCreation(BaseCreation):
             for n in range(1, len(variables) + 1):
                 num_combos += len(list(combinations(variables, n)))
             if (
-                    not all(isinstance(feature, (str, tuple)) for feature in output_features)
+                    not all(
+                        isinstance(feature, (str, tuple)) for feature in output_features
+                    )
                     or len(output_features) > num_combos
             ):
                 raise ValueError(
-                    "output_features must a tuple solely comprised of tuples and the maximum "
-                    f"number of tuples cannot exceed {num_combos}. Got {output_features} instead."
+                    "output_features must a tuple solely comprised of tuples and "
+                    f"the maximum number of tuples cannot exceed {num_combos}. Got "
+                    f"{output_features} instead."
                 )
 
         if not isinstance(regression, bool):
@@ -309,6 +322,6 @@ class DecisionTreeCreation(BaseCreation):
         for variable in self.variables:
             if X[variable].equals(y):
                 raise ValueError(
-                    "Dependent variable cannot also be one of the variables to be fitted "
-                    "by the decision tree. Check the {variable} variable."
+                    "Dependent variable cannot also be one of the variables to be "
+                    "fitted by the decision tree. Check the {variable} variable."
                 )

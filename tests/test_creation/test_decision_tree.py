@@ -123,3 +123,4 @@ def test_error_when_dependent_variable_fitted_by_decision_tree(df_creation):
     )
     with pytest.raises(ValueError):
         transformer.fit(df_creation, df_creation["Avg_5k_run_minutes"])
+        

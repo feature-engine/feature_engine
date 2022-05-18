@@ -216,10 +216,22 @@ def df_normal_dist():
 
     return df
 
+
 @pytest.fixture(scope="module")
 def df_creation():
     data = {
-        "Name": ["tom", "nick", "krish", "megan", "peter", "jordan", "fred", "sam", "alexa", "brittany"],
+        "Name": [
+            "tom",
+            "nick",
+            "krish",
+            "megan",
+            "peter",
+            "jordan",
+            "fred",
+            "sam",
+            "alexa",
+            "brittany"
+        ],
         "City": [
             "London",
             "Manchester",
