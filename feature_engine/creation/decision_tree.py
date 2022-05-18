@@ -135,9 +135,9 @@ class DecisionTreeCreation(BaseCreation):
         X = super().fit(X, y)
 
         self.variable_combinations_ = self._create_variable_combinations()
-
         self.variable_combination_indices_ = {}
         self.fitted_estimators_ = {}
+
         for idx, combo in enumerate(self.variable_combinations_):
             self.variable_combination_indices_[f"estimator_{idx}"] = combo
             estimator = self._make_decision_tree()
@@ -151,7 +151,7 @@ class DecisionTreeCreation(BaseCreation):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shame = [n_samples, n_features]
+        X: Pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
@@ -178,7 +178,6 @@ class DecisionTreeCreation(BaseCreation):
             est = DecisionTreeClassifier(max_depth=self.max_depth)
 
         return est
-
 
     def _create_variable_combinations(self):
         """
