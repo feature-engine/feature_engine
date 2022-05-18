@@ -236,9 +236,9 @@ class DecisionTreeCreation(BaseCreation):
         """
         # TODO: Is this neccessary?
         # Wouldn't doing so be a circular reference?
-        for variable in self.variables_:
-            if X[variable] == y:
+        for variable in self.variables:
+            if X[variable].equals(y):
                 raise ValueError(
-                    "Dependent variable cannot also be one of the estimator's "
-                    "fitted variables."
+                    "Dependent variable cannot also be one of the variables to be fitted "
+                    "by the decision tree. Check the {variable} variable."
                 )
