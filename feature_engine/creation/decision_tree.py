@@ -119,6 +119,7 @@ class DecisionTreeCreation(BaseCreation):
     def __init__(
         self,
         variables: List[Union[str, int]] = None,
+        # TODO: What is the correct typing hint?
         output_features: Union[int, List[int], Tuple[tuple, ...]] = None,
         regression: bool = True,
         max_depth: int = 3,
@@ -199,7 +200,7 @@ class DecisionTreeCreation(BaseCreation):
         self.regression = regression
         self.max_depth = max_depth
 
-    def fit(self, X: pd.DataFrame, y: pd.Series) -> None:
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         The transformer learns the target variable values associated with
         the user-provided features using a decision tree.
