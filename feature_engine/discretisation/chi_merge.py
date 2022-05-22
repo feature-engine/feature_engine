@@ -2,6 +2,7 @@
 from typing import List, Optional, Union
 
 import pandas as pd
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine._docstrings.methods import _fit_transform_docstring
@@ -12,7 +13,16 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na,
+    _check_X_matches_training_df,
+    check_X,
+)
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
+)
 
 
 
@@ -74,7 +84,16 @@ class ChiMergeDiscretiser(BaseDiscretiser):
             y is not needed in this encoder. You can pass y or None.
 
         """
-        pass
+        # check input dataframe
+        X = check_X(X)
+        _check_contains_na(X)
+        _check_contains_inf(X)
+
+        # find or check for numerical variables
+        self.variables = _find_or_check_numerical_variables(X, self.variables)
+
+
+         pass
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -90,4 +109,12 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         X_new: pandas dataframe of shape = [n_samples, n_features]
             The transformed data with the discrete variables.
         """
+        # check that fit method has been called
+        check_is_fitted(self)
+
+        # check if X is a dataframe
+        X = check_X(X)
+
+        
+
         pass
