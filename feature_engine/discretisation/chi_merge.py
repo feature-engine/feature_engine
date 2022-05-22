@@ -29,7 +29,9 @@ from feature_engine.variable_manipulation import (
 class ChiMergeDiscretiser(BaseDiscretiser):
     """"
 
-
+    Chi-Squared test is a statistical hypothesis test that assumes (the null hypothesis)
+    that the observed frequencies for a categorical variable match the expected frequencies
+    for the categorical variable.
 
 
 
@@ -71,7 +73,7 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         self.min_intervals = min_intervals
         self.max_intervals = max_intervals
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series]):
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Learn the limits of the intervals using the chi-square test.
 
@@ -115,6 +117,56 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         # check if X is a dataframe
         X = check_X(X)
 
-        
+
 
         pass
+
+    def _create_contingency_table(self, feature: pd.Series, class_labels: pd.Series):
+        """
+        Generates a frequency table in which the labels organized into bins.
+
+        Parameters
+        ----------
+        feature: pandas series = [n_samples, ]
+            The data to discretised.
+
+        class_labels: pandas series = [n_samples, ]
+            The categorical data that will be arranged in the bins.
+
+        Returns
+        -------
+        TBD
+
+
+        """
+
+        unique_values = sorted(set(feature), reverse=False)
+        unique_labels = sorted(set(class_labels))
+        count_dict = {label: 0 for label in unique_labels}
+        zeros = [0 for i in range(len(unique_labels))]
+        frequency_table = {val: zeros for val in unique_values}
+
+        for feature_val, label_val in zip(feature, class_labels):
+            print(feature_val)
+            for idx, interval_key in enumerate(frequency_table.keys()):
+                min_interval = list(frequency_table.keys())[idx]
+                max_interval = list(frequency_table.keys())[idx + 1]
+                table_col_index = unique_labels.index(label_val)
+
+                print(idx, min_interval, max_interval)
+                if interval_key == max(unique_values):
+                    frequency_table[interval_key][label_val] += 1
+                    print(feature_val, label_val, min_interval, max_interval, table_col_index)
+                    print(frequency_table)
+                    break
+
+                if min_interval <= feature_val and feature_val < max_interval:
+                    print(feature_val, label_val, min_interval, max_interval, table_col_index)
+                    frequency_table[min_interval][label_val] += 1
+                    print(frequency_table)
+                    break
+
+
+    def _calc_chi_sqaure(self):
+
+
