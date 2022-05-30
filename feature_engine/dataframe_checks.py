@@ -115,7 +115,11 @@ def check_y(
     """
 
     if y is None:
-        raise ValueError("y cannot be None.")
+        raise ValueError(
+            "requires y to be passed, but the target y is None",
+            "Expected array-like (array or non-string sequence), got None",
+            "y should be a 1d array",
+        )
 
     elif isinstance(y, pd.Series):
         if y.isnull().any():
