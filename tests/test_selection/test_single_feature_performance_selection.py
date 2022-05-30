@@ -199,3 +199,53 @@ def test_automatic_variable_selection(df_test):
     }
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_raises_error_if_evaluating_single_variable_and_threshold_is_None(df_test):
+    X, y = df_test
+
+    sel = SelectBySingleFeaturePerformance(
+        RandomForestClassifier(random_state=1), variables=["var_1"], threshold=None
+    )
+
+    with pytest.raises(ValueError):
+        sel.fit(X, y)
+
+
+def test_test_selector_with_one_variable(df_test):
+    X, y = df_test
+
+    sel = SelectBySingleFeaturePerformance(
+        RandomForestClassifier(random_state=1),
+        variables=["var_0"],
+        threshold=0.5,
+    )
+    sel.fit(X, y)
+
+    # expected result
+    Xtransformed = X.copy()
+
+    assert sel.features_to_drop_ == []
+    assert sel.feature_performance_ == {
+        "var_0": 0.5957642619540211,
+    }
+    # test transform output
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+    sel = SelectBySingleFeaturePerformance(
+        RandomForestClassifier(random_state=1),
+        variables=["var_3"],
+        threshold=0.5,
+    )
+    sel.fit(X, y)
+
+    # expected result
+    Xtransformed = X.copy()
+    Xtransformed.drop(columns=["var_3"], inplace=True)
+
+    assert sel.features_to_drop_ == ["var_3"]
+    assert sel.feature_performance_ == {
+        "var_3": 0.4752954458526748,
+    }
+    # test transform output
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)

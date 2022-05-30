@@ -53,7 +53,9 @@ _univariate_estimators = [
     DropConstantFeatures(missing_values="ignore"),
     DropHighPSIFeatures(bins=5),
     SelectByTargetMeanPerformance(bins=3, regression=False, threshold=0),
-    SelectBySingleFeaturePerformance(estimator=_logreg, scoring="accuracy", threshold=0),
+    SelectBySingleFeaturePerformance(
+        estimator=_logreg, scoring="accuracy", threshold=0
+    ),
 ]
 
 _model_based_estimators = [
@@ -62,6 +64,7 @@ _model_based_estimators = [
     RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy", threshold=-100),
 ]
+
 
 @pytest.mark.parametrize("estimator", _estimators)
 def test_check_estimator_from_sklearn(estimator):
