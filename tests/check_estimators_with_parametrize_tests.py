@@ -133,7 +133,7 @@ def test_sklearn_compatible_transformer(estimator, check):
             LogisticRegression(max_iter=2, random_state=1), scoring="accuracy"
         ),
         RecursiveFeatureElimination(
-            LogisticRegression(max_iter=2, random_state=1), scoring="accuracy"
+            LogisticRegression(max_iter=2, random_state=1), scoring="accuracy", threshold=-100,
         ),
         SelectByTargetMeanPerformance(scoring="r2_score", bins=3),
     ]

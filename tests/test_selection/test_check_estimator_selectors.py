@@ -32,10 +32,10 @@ _estimators = [
     DropHighPSIFeatures(bins=5),
     SmartCorrelatedSelection(),
     SelectByShuffling(estimator=_logreg, scoring="accuracy"),
-    SelectByTargetMeanPerformance(bins=3),
+    SelectByTargetMeanPerformance(bins=3, regression=False),
     SelectBySingleFeaturePerformance(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy"),
-    RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy"),
+    RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy", threshold=-100),
 ]
 
 

@@ -3,7 +3,7 @@ from typing import List, Union
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
@@ -142,13 +142,19 @@ class BaseRecursiveSelector(BaseSelector):
         """
 
         # check input dataframe
-        X = check_X(X)
+        X, y = check_X_y(X, y)
 
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
 
         # find numerical variables or check variables entered by user
         self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
+
+        if len(self.variables_) < 2:
+            raise ValueError(
+                "In order to select features from a group, we need at least 2 or more "
+                "variables. Got 1 variable instead."
+            )
 
         # save input features
         self._get_feature_names_in(X)
@@ -184,7 +190,7 @@ class BaseRecursiveSelector(BaseSelector):
         # Aggregate the feature importance returned in each fold
         self.feature_importances_ = feature_importances_cv.mean(axis=1)
 
-        return X
+        return X, y
 
     def _more_tags(self):
         tags_dict = _return_tags()
@@ -195,4 +201,8 @@ class BaseRecursiveSelector(BaseSelector):
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+
+        msg = "transformers need more than 1 feature to work"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+
         return tags_dict

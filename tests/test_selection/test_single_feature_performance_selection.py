@@ -107,17 +107,20 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     assert sel.threshold == -6000
     # fit params
     assert sel.features_to_drop_ == [0, 2, 3, 4, 5, 6, 8, 9]
-    assert sel.feature_performance_ == {
-        0: -7657.154138192973,
-        1: -5966.662211695372,
-        2: -6613.779604700854,
-        3: -6502.621725718592,
-        4: -9415.586278197177,
-        5: -11760.999622926094,
-        6: -6592.584431571728,
-        7: -5270.563893676307,
-        8: -7641.414795123177,
-        9: -6287.557824391035,
+    rounded_perfs = {
+        key: round(sel.feature_performance_[key], 2) for key in sel.feature_performance_
+    }
+    assert rounded_perfs == {
+        0: -7657.15,
+        1: -5966.66,
+        2: -6613.78,
+        3: -6488.93,
+        4: -9415.59,
+        5: -11761.0,
+        6: -6592.58,
+        7: -5270.56,
+        8: -7547.2,
+        9: -6287.56
     }
     # test transform output
     print(sel.transform(X))

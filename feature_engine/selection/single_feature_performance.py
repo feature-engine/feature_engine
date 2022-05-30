@@ -4,7 +4,11 @@ from typing import List, Union
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_checks import (
+    check_X_y,
+    _check_contains_na,
+    _check_contains_inf,
+)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -156,7 +160,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         """
 
         # check input dataframe
-        X = check_X(X)
+        X, y = check_X_y(X, y)
 
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
@@ -202,11 +206,11 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
     def _more_tags(self):
         tags_dict = _return_tags()
-        tags_dict["allow_nan"] = True
         tags_dict["variables"] = "numerical"
         tags_dict["requires_y"] = True
         # add additional test that fails
         tags_dict["_xfail_checks"][
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
         return tags_dict

@@ -7,7 +7,7 @@ from sklearn.metrics import get_scorer
 from sklearn.model_selection import check_cv, cross_validate
 from sklearn.utils.validation import check_random_state
 
-from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -162,19 +162,11 @@ class SelectByShuffling(BaseSelector):
            Target variable. Required to train the estimator.
         """
 
-        # check input dataframe
-        X = check_X(X)
+        X, y = check_X_y(X, y)
 
         # reset the index
         X = X.reset_index(drop=True)
-
-        if isinstance(y, pd.Series):
-            y = y.reset_index(drop=True)
-
-        # Enforce y to have the iloc attribute required for the calculation of the
-        # model performance for the different folds.
-        if hasattr(y, "iloc") is False:
-            y = pd.Series(y)
+        y = y.reset_index(drop=True)
 
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
