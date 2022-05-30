@@ -28,7 +28,7 @@ from tests.estimator_checks.variable_selection_checks import (
 )
 
 
-def check_feature_engine_estimator(estimator):
+def check_feature_engine_estimator(estimator, needs_group: bool = False):
     """
     Performs checks of common functionality to all transformers.
 
@@ -78,27 +78,14 @@ def check_feature_engine_estimator(estimator):
         check_error_if_y_not_passed(estimator)
 
     if hasattr(estimator, "variables"):
-        # tests for selection classes only:
-        if hasattr(estimator, "confirm_variables"):
-            if tags["variables"] == "numerical":
-                check_numerical_variables_assignment(estimator, needs_group=True)
-            elif tags["variables"] == "categorical":
-                check_categorical_variables_assignment(estimator, needs_group=True)
-            elif tags["variables"] == "all":
-                check_all_types_variables_assignment(estimator, needs_group=True)
-            elif tags["variables"] == "datetime":
-                check_datetime_variables_assignment(estimator, needs_group=True)
-
-        # tests for all other transformers
-        else:
-            if tags["variables"] == "numerical":
-                check_numerical_variables_assignment(estimator)
-            elif tags["variables"] == "categorical":
-                check_categorical_variables_assignment(estimator)
-            elif tags["variables"] == "all":
-                check_all_types_variables_assignment(estimator)
-            elif tags["variables"] == "datetime":
-                check_datetime_variables_assignment(estimator)
+        if tags["variables"] == "numerical":
+            check_numerical_variables_assignment(estimator, needs_group=needs_group)
+        elif tags["variables"] == "categorical":
+            check_categorical_variables_assignment(estimator, needs_group=needs_group)
+        elif tags["variables"] == "all":
+            check_all_types_variables_assignment(estimator, needs_group=needs_group)
+        elif tags["variables"] == "datetime":
+            check_datetime_variables_assignment(estimator, needs_group=needs_group)
 
     # Tests based on transformer's init parameters
     if hasattr(estimator, "cv"):

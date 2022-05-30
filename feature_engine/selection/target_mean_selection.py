@@ -232,8 +232,14 @@ class SelectByTargetMeanPerformance(BaseSelector):
         # find all variables or check those entered are present in the dataframe
         self.variables_ = _find_all_variables(X, self.variables_, exclude_datetime=True)
 
-        # check that there are more than 1 variable to select from
-        self._check_variable_number()
+        if len(self.variables_) == 1 and self.threshold is None:
+            raise ValueError(
+                "When evaluating a single feature you need to manually set a value "
+                "for the threshold. "
+                f"The transformer is evaluating the performance of {self.variables_} "
+                f"and the threshold was left to {self.threshold} when initializing "
+                f"the transformer."
+            )
 
         # save input features
         self._get_feature_names_in(X)

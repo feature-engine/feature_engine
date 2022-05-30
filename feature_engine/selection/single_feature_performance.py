@@ -167,7 +167,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         if len(self.variables_) == 1 and self.threshold is None:
             raise ValueError(
                 "When evaluating a single feature you need to manually set a value "
-                "for the threshold."
+                "for the threshold. "
                 f"The transformer is evaluating the performance of {self.variables_} "
                 f"and the threshold was left to {self.threshold} when initializing "
                 f"the transformer."
