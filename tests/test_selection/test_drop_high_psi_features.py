@@ -248,9 +248,11 @@ quantile_test = [(0.5, 50), (0.33, 33), (0.17, 17), (0.81, 81)]
 def test_calculation_quantile(split_frac, expected):
     """Test the calculation of the quantiles using numerical values."""
     df = pd.DataFrame(
-        {"A": [it for it in range(0, 101)],
-         "B": [it for it in range(0, 101)],
-         "C": [it for it in range(0, 101)]}
+        {
+            "A": [it for it in range(0, 101)],
+            "B": [it for it in range(0, 101)],
+            "C": [it for it in range(0, 101)],
+        }
     )
 
     test = DropHighPSIFeatures(
@@ -290,9 +292,11 @@ def test_calculation_distinct_value_categorical():
     """Test the calculation of the quantiles using distinct values when reference
     variable is categorical."""
     df = pd.DataFrame(
-        {"A": [it for it in range(0, 30)],
-         "B": [it for it in range(0, 30)],
-         "C": ["A", "B", "C", "D", "D", "D"] * 5}
+        {
+            "A": [it for it in range(0, 30)],
+            "B": [it for it in range(0, 30)],
+            "C": ["A", "B", "C", "D", "D", "D"] * 5,
+        }
     )
 
     test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct=False)
@@ -305,9 +309,11 @@ def test_calculation_distinct_value_categorical():
     assert test.cut_off_ == "B"
 
     df = pd.DataFrame(
-        {"A": [it for it in range(0, 30)],
-         "B": [it for it in range(0, 30)],
-         "C": ["A", "A", "A", "B", "C", "D"] * 5}
+        {
+            "A": [it for it in range(0, 30)],
+            "B": [it for it in range(0, 30)],
+            "C": ["A", "A", "A", "B", "C", "D"] * 5,
+        }
     )
 
     test = DropHighPSIFeatures(split_col="C", split_frac=0.5, split_distinct=False)
@@ -354,10 +360,18 @@ def test_calculation_df_split_with_different_variable_types(df_mixed_types):
         results[split_col] = test.psi_values_
         cut_offs[split_col] = test.cut_off_
 
-    assert results["A"] == pytest.approx({'B': 0.0, 'A_bis': 8.283089355027482, 'B_bis': 0.0}, 12)
-    assert results["B"] == pytest.approx({'A': 3.0375978817052403, 'A_bis': 3.0375978817052403, 'B_bis': 0.0}, 12)
-    assert results["C"] == pytest.approx({"A": 2.27819841127893, "B": 0.0, "A_bis": 2.27819841127893, "B_bis": 0.0}, 12)
-    assert results["time"] == pytest.approx({"A": 8.283089355027482, "B": 0.0, "A_bis": 8.283089355027482, "B_bis": 0.0}, 12)
+    assert results["A"] == pytest.approx(
+        {"B": 0.0, "A_bis": 8.283089355027482, "B_bis": 0.0}, 12
+    )
+    assert results["B"] == pytest.approx(
+        {"A": 3.0375978817052403, "A_bis": 3.0375978817052403, "B_bis": 0.0}, 12
+    )
+    assert results["C"] == pytest.approx(
+        {"A": 2.27819841127893, "B": 0.0, "A_bis": 2.27819841127893, "B_bis": 0.0}, 12
+    )
+    assert results["time"] == pytest.approx(
+        {"A": 8.283089355027482, "B": 0.0, "A_bis": 8.283089355027482, "B_bis": 0.0}, 12
+    )
 
     expected_cut_offs = {"A": 9.5, "B": 1.5, "C": "B", "time": date(2019, 1, 10)}
 
@@ -366,7 +380,9 @@ def test_calculation_df_split_with_different_variable_types(df_mixed_types):
     # Test when no data frame with mixed data types when no split_col is provided.
     test = DropHighPSIFeatures(split_frac=0.5)
     test.fit_transform(df_mixed_types)
-    assert test.psi_values_ == pytest.approx({"A": 8.283089355027482, "B": 0.0, "A_bis": 8.283089355027482, "B_bis": 0.0}, 12)
+    assert test.psi_values_ == pytest.approx(
+        {"A": 8.283089355027482, "B": 0.0, "A_bis": 8.283089355027482, "B_bis": 0.0}, 12
+    )
 
 
 # =========== tests for user entered cut_off values ===========

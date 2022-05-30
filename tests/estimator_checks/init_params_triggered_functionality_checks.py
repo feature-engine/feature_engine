@@ -191,7 +191,7 @@ def check_raises_error_if_only_1_variable(estimator):
 
     msg = (
         "The selector needs at least 2 or more variables to select from. "
-        f"Got only 1 variable: ['var_1']."
+        "Got only 1 variable: ['var_1']."
     )
     with pytest.raises(ValueError) as record:
         sel.fit(X, y)

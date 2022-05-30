@@ -120,7 +120,7 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
         6: -6592.58,
         7: -5270.56,
         8: -7547.2,
-        9: -6287.56
+        9: -6287.56,
     }
     # test transform output
     print(sel.transform(X))

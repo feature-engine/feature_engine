@@ -4,11 +4,7 @@ from typing import List, Union
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import (
-    check_X_y,
-    _check_contains_na,
-    _check_contains_inf,
-)
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,

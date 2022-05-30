@@ -33,7 +33,12 @@ def check_numerical_variables_assignment(estimator, needs_group=False):
     if needs_group is True:
         _input_vars_ls = [["var_1", "var_2", "var_3", "var_11"], None]
     else:
-        _input_vars_ls = ["var_1", ["var_2"], ["var_1", "var_2", "var_3", "var_11"], None]
+        _input_vars_ls = [
+            "var_1",
+            ["var_2"],
+            ["var_1", "var_2", "var_3", "var_11"],
+            None,
+        ]
 
     # the estimator
     transformer = clone(estimator)
