@@ -4,8 +4,8 @@ from sklearn.base import clone
 
 from tests.estimator_checks.dataframe_for_checks import test_df
 from tests.estimator_checks.fit_functionality_checks import (
-    check_feature_names_in,
     check_error_if_y_not_passed,
+    check_feature_names_in,
 )
 from tests.estimator_checks.get_feature_names_out_checks import (
     check_get_feature_names_out,
@@ -14,17 +14,15 @@ from tests.estimator_checks.init_params_allowed_values_checks import (
     check_error_param_missing_values,
 )
 from tests.estimator_checks.init_params_triggered_functionality_checks import (
-    check_takes_cv_constructor,
     check_drop_original_variables,
+    check_takes_cv_constructor,
 )
-from tests.estimator_checks.non_fitted_error_checks import (
-    check_raises_non_fitted_error,
-)
+from tests.estimator_checks.non_fitted_error_checks import check_raises_non_fitted_error
 from tests.estimator_checks.variable_selection_checks import (
-    check_numerical_variables_assignment,
-    check_categorical_variables_assignment,
     check_all_types_variables_assignment,
+    check_categorical_variables_assignment,
     check_datetime_variables_assignment,
+    check_numerical_variables_assignment,
 )
 
 
@@ -85,7 +83,7 @@ def check_feature_engine_estimator(estimator, needs_group: bool = False):
         elif tags["variables"] == "all":
             check_all_types_variables_assignment(estimator, needs_group=needs_group)
         elif tags["variables"] == "datetime":
-            check_datetime_variables_assignment(estimator, needs_group=needs_group)
+            check_datetime_variables_assignment(estimator)
 
     # Tests based on transformer's init parameters
     if hasattr(estimator, "cv"):
