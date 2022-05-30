@@ -58,15 +58,24 @@ def test_confirm_variables(estimator):
         return check_confirm_variables(estimator)
 
 
-@pytest.mark.parametrize("estimator", _estimators)
-def test_raises_error_if_only_1_variable(estimator):
-    if estimator.__class__.__name__ != "DropFeatures":
-        return check_raises_error_if_only_1_variable(estimator)
-
-
 @pytest.mark.parametrize("estimator", _estimators[8:11])
 def test_raises_error_when_no_estimator_passed(estimator):
     # this selectors need an estimator as an input param
     # test error otherwise.
     with pytest.raises(TypeError):
         estimator()
+
+
+_multivariate_estimators = [
+    DropDuplicateFeatures(),
+    DropCorrelatedFeatures(),
+    SmartCorrelatedSelection(),
+    SelectByShuffling(estimator=_logreg, scoring="accuracy"),
+    RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy"),
+    RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy", threshold=-100),
+]
+
+
+@pytest.mark.parametrize("estimator", _multivariate_estimators)
+def test_raises_error_if_only_1_variable(estimator):
+    return check_raises_error_if_only_1_variable(estimator)
