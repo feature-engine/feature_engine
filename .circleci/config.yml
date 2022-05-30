@@ -108,7 +108,6 @@ workflows:
   version: 2
   test-all:
     jobs:
-      - test_feature_engine_py37
       - test_feature_engine_py38
       - test_feature_engine_py39
       - test_style
@@ -116,7 +115,6 @@ workflows:
       - test_type
       - package_and_upload_to_pypi:
           requires:
-            - test_feature_engine_py37
             - test_feature_engine_py38
             - test_feature_engine_py39
             - test_style
