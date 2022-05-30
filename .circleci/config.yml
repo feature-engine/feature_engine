@@ -22,19 +22,6 @@ init_pypirc: &init_pypirc
       echo -e "password = $FE_PYPI_API_KEY" >> ~/.pypirc
 
 jobs:
-  test_feature_engine_py37:
-    docker:
-      - image: circleci/python:3.7.6
-    working_directory: ~/project
-    steps:
-      - checkout:
-          path: ~/project
-      - *prepare_tox
-      - run:
-          name: Run tests with Python 3.7
-          command: |
-            tox -e py37
-
   test_feature_engine_py38:
     docker:
       - image: circleci/python:3.8.0
