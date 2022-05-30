@@ -109,13 +109,13 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     """
 
     def __init__(
-        self,
-        estimator,
-        scoring: str = "roc_auc",
-        cv=3,
-        threshold: Union[int, float] = None,
-        variables: Variables = None,
-        confirm_variables: bool = False,
+            self,
+            estimator,
+            scoring: str = "roc_auc",
+            cv=3,
+            threshold: Union[int, float] = None,
+            variables: Variables = None,
+            confirm_variables: bool = False,
     ):
 
         if threshold:
@@ -164,8 +164,14 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         # find numerical variables or check variables entered by user
         self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
-        # check that there are more than 1 variable to select from
-        self._check_variable_number()
+        if len(self.variables_) == 1 and self.threshold is None:
+            raise ValueError(
+                "When evaluating a single feature you need to manually set a value "
+                "for the threshold."
+                f"The transformer is evaluating the performance of {self.variables_} "
+                f"and the threshold was left to {self.threshold} when initializing "
+                f"the transformer."
+            )
 
         self.feature_performance_ = {}
 
