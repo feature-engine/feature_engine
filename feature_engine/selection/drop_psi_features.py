@@ -322,6 +322,9 @@ class DropHighPSIFeatures(BaseSelector):
         if self.split_col in self.variables_:
             self.variables_.remove(self.split_col)
 
+        # check that there are more than 1 variable to select from
+        self._check_variable_number()
+
         if self.missing_values == "raise":
             # check if dataset contains na or inf
             _check_contains_na(X, self.variables_)

@@ -230,7 +230,10 @@ class SelectByTargetMeanPerformance(BaseSelector):
         self._confirm_variables(X)
 
         # find all variables or check those entered are present in the dataframe
-        self.variables_ = _find_all_variables(X, self.variables_)
+        self.variables_ = _find_all_variables(X, self.variables_, exclude_datetime=True)
+
+        # check that there are more than 1 variable to select from
+        self._check_variable_number()
 
         # save input features
         self._get_feature_names_in(X)
@@ -284,4 +287,6 @@ class SelectByTargetMeanPerformance(BaseSelector):
         tags_dict["requires_y"] = True
         tags_dict["binary_only"] = True
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        msg = "transformers need more than 1 feature to work"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
         return tags_dict

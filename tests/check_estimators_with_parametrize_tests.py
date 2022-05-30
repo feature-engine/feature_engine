@@ -135,7 +135,7 @@ def test_sklearn_compatible_transformer(estimator, check):
         RecursiveFeatureElimination(
             LogisticRegression(max_iter=2, random_state=1), scoring="accuracy", threshold=-100,
         ),
-        SelectByTargetMeanPerformance(scoring="r2_score", bins=3),
+        SelectByTargetMeanPerformance(scoring="roc_auc", bins=3, regression=False),
     ]
 )
 def test_sklearn_compatible_selectors(estimator, check):

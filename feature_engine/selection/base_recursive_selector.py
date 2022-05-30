@@ -150,11 +150,8 @@ class BaseRecursiveSelector(BaseSelector):
         # find numerical variables or check variables entered by user
         self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
-        if len(self.variables_) < 2:
-            raise ValueError(
-                "In order to select features from a group, we need at least 2 or more "
-                "variables. Got 1 variable instead."
-            )
+        # check that there are more than 1 variable to select from
+        self._check_variable_number()
 
         # save input features
         self._get_feature_names_in(X)

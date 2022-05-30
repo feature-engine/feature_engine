@@ -174,6 +174,9 @@ class SelectByShuffling(BaseSelector):
         # find numerical variables or check variables entered by user
         self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
+        # check that there are more than 1 variable to select from
+        self._check_variable_number()
+
         # train model with all features and cross-validation
         model = cross_validate(
             self.estimator,
@@ -257,4 +260,8 @@ class SelectByShuffling(BaseSelector):
         tags_dict["_xfail_checks"][
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
+
+        msg = "transformers need more than 1 feature to work"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+
         return tags_dict

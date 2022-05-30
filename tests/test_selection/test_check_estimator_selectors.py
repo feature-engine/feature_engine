@@ -7,6 +7,7 @@ from tests.estimator_checks.estimator_checks import (
 )
 from tests.estimator_checks.init_params_triggered_functionality_checks import (
     check_confirm_variables,
+    check_raises_error_if_only_1_variable,
 )
 from feature_engine.selection import (
     DropConstantFeatures,
@@ -55,6 +56,12 @@ def test_check_estimator_from_feature_engine(estimator):
 def test_confirm_variables(estimator):
     if estimator.__class__.__name__ != "DropFeatures":
         return check_confirm_variables(estimator)
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_raises_error_if_only_1_variable(estimator):
+    if estimator.__class__.__name__ != "DropFeatures":
+        return check_raises_error_if_only_1_variable(estimator)
 
 
 @pytest.mark.parametrize("estimator", _estimators[8:11])

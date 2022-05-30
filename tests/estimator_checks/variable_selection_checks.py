@@ -13,7 +13,7 @@ from sklearn import clone
 from tests.estimator_checks.dataframe_for_checks import test_df
 
 
-def check_numerical_variables_assignment(estimator):
+def check_numerical_variables_assignment(estimator, needs_group=False):
     """
     Checks that transformers that work only with numerical variables, correctly set
     the values for the attributes `variables` and `variables_`.
@@ -30,7 +30,10 @@ def check_numerical_variables_assignment(estimator):
     X, y = test_df(categorical=True)
 
     # input variables to test
-    _input_vars_ls = ["var_1", ["var_2"], ["var_1", "var_2", "var_3", "var_11"], None]
+    if needs_group is True:
+        _input_vars_ls = [["var_1", "var_2", "var_3", "var_11"], None]
+    else:
+        _input_vars_ls = ["var_1", ["var_2"], ["var_1", "var_2", "var_3", "var_11"], None]
 
     # the estimator
     transformer = clone(estimator)
@@ -65,7 +68,7 @@ def check_numerical_variables_assignment(estimator):
         transformer.fit(X, y)
 
 
-def check_categorical_variables_assignment(estimator):
+def check_categorical_variables_assignment(estimator, needs_group=False):
     """
     Checks that transformers that work only with categorical variables, correctly set
     the values for the attributes `variables` and `variables_`.
@@ -86,7 +89,10 @@ def check_categorical_variables_assignment(estimator):
     X[["cat_var2"]] = X[["cat_var2"]].astype("category")
 
     # input variables to test
-    _input_vars_ls = ["cat_var1", ["cat_var1"], ["cat_var1", "cat_var2"], None]
+    if needs_group is True:
+        _input_vars_ls = [["cat_var1", "cat_var2"], None]
+    else:
+        _input_vars_ls = ["cat_var1", ["cat_var1"], ["cat_var1", "cat_var2"], None]
 
     # the estimator
     transformer = clone(estimator)
@@ -121,7 +127,7 @@ def check_categorical_variables_assignment(estimator):
         transformer.fit(X, y)
 
 
-def check_all_types_variables_assignment(estimator):
+def check_all_types_variables_assignment(estimator, needs_group=False):
     """
     Checks that transformers that work with all types of variables, correctly set
     the values for the attributes `variables` and `variables_`.
@@ -140,12 +146,18 @@ def check_all_types_variables_assignment(estimator):
     X[["cat_var2"]] = X[["cat_var2"]].astype("category")
 
     # input variables to test
-    _input_vars_ls = [
-        "var_1",
-        ["cat_var1"],
-        ["var_1", "var_2", "cat_var1", "cat_var2"],
-        None,
-    ]
+    if needs_group is True:
+        _input_vars_ls = [
+            ["var_1", "var_2", "cat_var1", "cat_var2"],
+            None,
+        ]
+    else:
+        _input_vars_ls = [
+            "var_1",
+            ["cat_var1"],
+            ["var_1", "var_2", "cat_var1", "cat_var2"],
+            None,
+        ]
 
     # the estimator
     transformer = clone(estimator)

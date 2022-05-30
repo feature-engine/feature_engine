@@ -168,6 +168,9 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         # find numerical variables or check variables entered by user
         self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
+        # check that there are more than 1 variable to select from
+        self._check_variable_number()
+
         self.feature_performance_ = {}
 
         # train a model for every feature and store the performance
@@ -213,4 +216,8 @@ class SelectBySingleFeaturePerformance(BaseSelector):
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+
+        msg = "transformers need more than 1 feature to work"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+
         return tags_dict

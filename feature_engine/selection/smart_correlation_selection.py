@@ -222,6 +222,9 @@ class SmartCorrelatedSelection(BaseSelector):
         # find all numerical variables or check those entered are in the dataframe
         self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
 
+        # check that there are more than 1 variable to select from
+        self._check_variable_number()
+
         if self.missing_values == "raise":
             # check if dataset contains na
             _check_contains_na(X, self.variables_)
