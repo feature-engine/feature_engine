@@ -109,13 +109,13 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     """
 
     def __init__(
-            self,
-            estimator,
-            scoring: str = "roc_auc",
-            cv=3,
-            threshold: Union[int, float] = None,
-            variables: Variables = None,
-            confirm_variables: bool = False,
+        self,
+        estimator,
+        scoring: str = "roc_auc",
+        cv=3,
+        threshold: Union[int, float] = None,
+        variables: Variables = None,
+        confirm_variables: bool = False,
     ):
 
         if threshold:
