@@ -137,7 +137,7 @@ def check_raises_error_when_input_not_a_df(estimator):
         with pytest.raises(TypeError):
             transformer.fit(not_df)
 
-        # transformer.fit(X, y)
-        # # test transforming not a df
-        # with pytest.raises(TypeError):
-        #     transformer.transform(not_df)
+        transformer.fit(X, y)
+        # test transforming not a df
+        with pytest.raises(TypeError):
+            transformer.transform(not_df)
