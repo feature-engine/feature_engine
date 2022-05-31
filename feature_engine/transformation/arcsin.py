@@ -155,7 +155,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
         # inverse_transform
-        X.loc[:, self.variables_] = np.exp((np.sin(X.loc[:, self.variables_])), 2)
+        X.loc[:, self.variables_] = (np.sin(X.loc[:, self.variables_])) ** 2
 
         return X
 

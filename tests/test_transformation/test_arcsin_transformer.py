@@ -5,7 +5,7 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.transformation import ArcsinTransformer
 
 
-def test_transform_and_invert(df_vartypes):
+def test_transform_and_inverse_transform(df_vartypes):
     transformer = ArcsinTransformer(variables=["Marks"])
     X = transformer.fit_transform(df_vartypes)
 
@@ -28,36 +28,41 @@ def test_transform_and_invert(df_vartypes):
 
 def test_fit_raises_error_if_na_in_df(df_na):
     # test case 2: when dataset contains na, fit method
+    transformer = ArcsinTransformer(variables=["Marks"])
     with pytest.raises(ValueError):
-        transformer = ArcsinTransformer()
         transformer.fit(df_na)
 
 
 def test_transform_raises_error_if_na_in_df(df_vartypes, df_na):
     # test case 3: when dataset contains na, transform method
+    transformer = ArcsinTransformer(variables=["Marks"])
+    transformer.fit(df_vartypes)
     with pytest.raises(ValueError):
-        transformer = ArcsinTransformer(variables=["Marks"])
-        transformer.fit(df_vartypes)
-        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
+        transformer.transform(df_na[df_vartypes.columns])
 
 
-def test_error_if_df_contains_outside_range_value(df_vartypes):
+def test_error_if_df_contains_outside_range_values(df_vartypes):
     # test error when data contains value outside range [0, +1]
-    df_neg = df_vartypes.copy()
-    df_neg.loc[1, "Marks"] = 2
+    df_out_range = df_vartypes.copy()
+    df_out_range.loc[1, "Marks"] = 2
 
-    transformer = ArcsinTransformer()
-
+    transformer = ArcsinTransformer(variables=["Marks"])
     # test case 4: when variable contains value outside range, fit
     with pytest.raises(ValueError):
-        transformer.fit(df_neg)
+        transformer.fit(df_out_range)
 
     # test case 5: when variable contains value outside range, transform
+    transformer.fit(df_vartypes)
     with pytest.raises(ValueError):
-        transformer.transform(df_neg)
+        transformer.transform(df_out_range)
+
+    # when selecting variables automatically and some are outside range
+    transformer = ArcsinTransformer()
+    with pytest.raises(ValueError):
+        transformer.fit(df_vartypes)
 
 
 def test_non_fitted_error(df_vartypes):
-    transformer = ArcsinTransformer()
+    transformer = ArcsinTransformer(variables="Marks")
     with pytest.raises(NotFittedError):
         transformer.transform(df_vartypes)
