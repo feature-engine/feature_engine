@@ -7,18 +7,22 @@ import numpy as np
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X
 from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
 )
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitMixin,
+    CategoricalMethodsMixin,
+)
 
 
 @Substitution(
@@ -29,7 +33,7 @@ from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class OneHotEncoder(BaseCategoricalTransformer):
+class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The OneHotEncoder() replaces categorical variables by a set of binary variables
     representing each one of the unique categories in the variable.
@@ -180,7 +184,7 @@ class OneHotEncoder(BaseCategoricalTransformer):
             None.
         """
 
-        X = self._check_X(X)
+        X = check_X(X)
         self._check_or_select_variables(X)
         self._get_feature_names_in(X)
 
