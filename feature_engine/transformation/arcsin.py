@@ -36,16 +36,17 @@ class ArcsinTransformer(BaseNumericalTransformer):
     """
     The ArcsinTransformer() applies the arcsin transformation to numerical variables.
 
-    The arcsine transformation, also called arcsin square root transformation,
-    or angular transformation, takes the form of asin(sqrt(x)) where x is a real number
+    The arcsin transformation, also called arcsin square root transformation, or
+    angular transformation, takes the form of arcsin(sqrt(x)) where x is a real number
     between 0 and 1.
 
     The arcsin square root transformation helps in dealing with probabilities,
-    percents, and proportions.
+    percents, and proportions. It aims to stabilize the variance of the variable and
+    return more evenly distributed (Gaussian looking) values.
 
-    The ArcsinTransformer() only works with numerical variables between 0 and 1.
-    If a variable contains a value outside of this range, the transformer will
-    raise an error.
+    The ArcsinTransformer() only works with numerical variables which values are
+    between 0 and 1. If a variable contains values outside of this range, the
+    transformer will raise an error.
 
     A list of variables can be passed as an argument. Alternatively, the transformer
     will automatically select and transform all numerical variables.
@@ -100,11 +101,11 @@ class ArcsinTransformer(BaseNumericalTransformer):
         # check input dataframe
         X = super()._fit_from_varlist(X)
 
-        # check if the variables is in the correct range
+        # check if the variables are in the correct range
         if ((X[self.variables_] < 0) | (X[self.variables_] > 1)).any().any():
             raise ValueError(
                 "Some variables contain values outside the possible range 0-1. "
-                "can't apply arcsin transformation. "
+                "Can't apply the arcsin transformation. "
             )
 
         return self
@@ -127,11 +128,11 @@ class ArcsinTransformer(BaseNumericalTransformer):
         # check input dataframe and if class was fitted
         X = super().transform(X)
 
-        # check if the variables is in the correct range
+        # check if the variables are in the correct range
         if ((X[self.variables_] < 0) | (X[self.variables_] > 1)).any().any():
             raise ValueError(
                 "Some variables contain values outside the possible range 0-1. "
-                "can't apply arcsin transformation. "
+                "Can't apply the arcsin transformation."
             )
 
         # transform
@@ -154,7 +155,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
         # inverse_transform
-        X.loc[:, self.variables_] = (np.sin(X.loc[:, self.variables_])) ** 2
+        X.loc[:, self.variables_] = np.exp((np.sin(X.loc[:, self.variables_])), 2)
 
         return X
 
@@ -165,7 +166,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
         # values are less than 0 or greater than 1. Nothing to do with the test itself
         # but mostly with the data created and used in the test
         msg = (
-            "transformers raise errors when data is outside [-1, 1] range, thus this"
+            "transformers raise errors when data is outside [0, 1] range, thus this"
             "check fails"
         )
         tags_dict["_xfail_checks"]["check_estimators_dtypes"] = msg
