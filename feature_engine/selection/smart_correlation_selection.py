@@ -290,18 +290,21 @@ class SmartCorrelatedSelection(BaseSelector):
         # select the feature with least missing values
         if self.selection_method == "missing_values":
             for feature_group in self.correlated_feature_sets_:
+                feature_group = list(feature_group)  # type: ignore
                 f = X[feature_group].isnull().sum().sort_values(ascending=True).index[0]
                 _selected_features.append(f)
 
         # select the feature with most unique values
         elif self.selection_method == "cardinality":
             for feature_group in self.correlated_feature_sets_:
+                feature_group = list(feature_group)  # type: ignore
                 f = X[feature_group].nunique().sort_values(ascending=False).index[0]
                 _selected_features.append(f)
 
         # select the feature with biggest variance
         elif self.selection_method == "variance":
             for feature_group in self.correlated_feature_sets_:
+                feature_group = list(feature_group)  # type: ignore
                 f = X[feature_group].std().sort_values(ascending=False).index[0]
                 _selected_features.append(f)
 
