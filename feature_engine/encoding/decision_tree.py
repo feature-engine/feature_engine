@@ -7,19 +7,23 @@ import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
-from feature_engine.discretisation import DecisionTreeDiscretiser
-from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X_y
+from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
 )
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitMixin,
+    CategoricalMethodsMixin,
+)
 from feature_engine.encoding.ordinal import OrdinalEncoder
 from feature_engine.tags import _return_tags
 
@@ -32,7 +36,7 @@ from feature_engine.tags import _return_tags
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class DecisionTreeEncoder(BaseCategoricalTransformer):
+class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The DecisionTreeEncoder() encodes categorical variables with predictions
     of a decision tree.
@@ -188,7 +192,7 @@ class DecisionTreeEncoder(BaseCategoricalTransformer):
             The target variable. Required to train the decision tree and for
             ordered ordinal encoding.
         """
-        X, y = self._check_X_y(X, y)
+        X, y = check_X_y(X, y)
 
         # confirm model type and target variables are compatible.
         if self.regression is True:
