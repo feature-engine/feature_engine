@@ -269,10 +269,12 @@ def test_find_or_check_datetime_variables_when_numeric_is_cast_as_category_or_ob
 
 def test_find_all_variables(df_vartypes):
     all_vars = ["Name", "City", "Age", "Marks", "dob"]
+    all_vars_no_dt = ["Name", "City", "Age", "Marks"]
     user_vars = ["Name", "City"]
     non_existing_vars = ["Grades"]
 
     assert _find_all_variables(df_vartypes) == all_vars
+    assert _find_all_variables(df_vartypes, exclude_datetime=True) == all_vars_no_dt
     assert _find_all_variables(df_vartypes, ["Name", "City"]) == user_vars
 
     with pytest.raises(KeyError):

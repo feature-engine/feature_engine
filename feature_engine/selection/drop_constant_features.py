@@ -190,9 +190,6 @@ class DropConstantFeatures(BaseSelector):
         tags_dict["variables"] = "all"
         # add additional test that fails
         tags_dict["_xfail_checks"][
-            "check_fit2d_1feature"
-        ] = "the transformer needs at least 2 columns to compare, ok to fail"
-        tags_dict["_xfail_checks"][
             "check_fit2d_1sample"
         ] = "the transformer raises an error when dropping all columns, ok to fail"
         return tags_dict

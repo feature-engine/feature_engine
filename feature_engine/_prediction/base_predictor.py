@@ -11,6 +11,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
     check_X,
+    check_X_y,
 )
 from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
@@ -112,16 +113,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
             The target variable.
         """
         # check if 'X' is a dataframe
-        X = check_X(X)
-
-        # Check X and y for consistent length
-        if len(X) != len(y):
-            raise ValueError(
-                "There is a mismatch in the number of observations in X and y."
-            )
-
-        if isinstance(y, pd.Series) and any(X.index != y.index):
-            raise ValueError("There is a mismatch in the index of X and y.")
+        X, y = check_X_y(X, y)
 
         # find categorical and numerical variables
         (

@@ -120,6 +120,9 @@ class DropDuplicateFeatures(BaseSelector):
         # find all variables or check those entered are in the dataframe
         self.variables_ = _find_all_variables(X, self.variables_)
 
+        # check that there are more than 1 variable to select from
+        self._check_variable_number()
+
         if self.missing_values == "raise":
             # check if dataset contains na
             _check_contains_na(X, self.variables_)
@@ -170,4 +173,8 @@ class DropDuplicateFeatures(BaseSelector):
         tags_dict = _return_tags()
         tags_dict["allow_nan"] = True
         tags_dict["variables"] = "all"
+
+        msg = "transformers need more than 1 feature to work"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+
         return tags_dict
