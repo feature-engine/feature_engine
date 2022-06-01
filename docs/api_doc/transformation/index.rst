@@ -15,6 +15,7 @@ mathematical transformations.
    PowerTransformer
    BoxCoxTransformer
    YeoJohnsonTransformer
+   ArcsinTransformer
 
 
 Transformers in other Libraries
