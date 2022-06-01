@@ -7,7 +7,7 @@ from sklearn.metrics import get_scorer
 from sklearn.model_selection import check_cv, cross_validate
 from sklearn.utils.validation import check_random_state
 
-from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -162,25 +162,20 @@ class SelectByShuffling(BaseSelector):
            Target variable. Required to train the estimator.
         """
 
-        # check input dataframe
-        X = check_X(X)
+        X, y = check_X_y(X, y)
 
         # reset the index
         X = X.reset_index(drop=True)
-
-        if isinstance(y, pd.Series):
-            y = y.reset_index(drop=True)
-
-        # Enforce y to have the iloc attribute required for the calculation of the
-        # model performance for the different folds.
-        if hasattr(y, "iloc") is False:
-            y = pd.Series(y)
+        y = y.reset_index(drop=True)
 
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
 
         # find numerical variables or check variables entered by user
         self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
+
+        # check that there are more than 1 variable to select from
+        self._check_variable_number()
 
         # train model with all features and cross-validation
         model = cross_validate(
@@ -265,4 +260,8 @@ class SelectByShuffling(BaseSelector):
         tags_dict["_xfail_checks"][
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
+
+        msg = "transformers need more than 1 feature to work"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+
         return tags_dict

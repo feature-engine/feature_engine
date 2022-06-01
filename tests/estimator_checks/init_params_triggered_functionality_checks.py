@@ -174,3 +174,26 @@ def check_confirm_variables(estimator):
 
     sel.fit(Xs, y)
     assert sel.variables_ == ["var_" + str(i) for i in range(10)]
+
+
+def check_raises_error_if_only_1_variable(estimator):
+    """For feature selection transformers.
+
+    Checks that the transformer has 2 or more
+    variables to select from during the search procedure.
+    """
+    X, y = test_df()
+    estimator = clone(estimator)
+    sel = estimator.set_params(
+        variables=["var_1"],
+        confirm_variables=False,
+    )
+
+    msg = (
+        "The selector needs at least 2 or more variables to select from. "
+        "Got only 1 variable: ['var_1']."
+    )
+    with pytest.raises(ValueError) as record:
+        sel.fit(X, y)
+
+    assert str(record.value) == msg

@@ -118,7 +118,7 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
            Target variable. Required to train the estimator.
         """
 
-        X = super().fit(X, y)
+        X, y = super().fit(X, y)
 
         # Sort the feature importance values decreasingly
         self.feature_importances_.sort_values(ascending=False, inplace=True)

@@ -22,19 +22,6 @@ init_pypirc: &init_pypirc
       echo -e "password = $FE_PYPI_API_KEY" >> ~/.pypirc
 
 jobs:
-  test_feature_engine_py37:
-    docker:
-      - image: circleci/python:3.7.6
-    working_directory: ~/project
-    steps:
-      - checkout:
-          path: ~/project
-      - *prepare_tox
-      - run:
-          name: Run tests with Python 3.7
-          command: |
-            tox -e py37
-
   test_feature_engine_py38:
     docker:
       - image: circleci/python:3.8.0
@@ -51,6 +38,19 @@ jobs:
   test_feature_engine_py39:
     docker:
       - image: circleci/python:3.9.0
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run tests with Python 3.9
+          command: |
+            tox -e py39
+
+  test_feature_engine_py310:
+    docker:
+      - image: circleci/python:3.10.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -121,17 +121,17 @@ workflows:
   version: 2
   test-all:
     jobs:
-      - test_feature_engine_py37
       - test_feature_engine_py38
       - test_feature_engine_py39
+      - test_feature_engine_py310
       - test_style
       - test_docs
       - test_type
       - package_and_upload_to_pypi:
           requires:
-            - test_feature_engine_py37
             - test_feature_engine_py38
             - test_feature_engine_py39
+            - test_feature_engine_py310
             - test_style
             - test_docs
             - test_type

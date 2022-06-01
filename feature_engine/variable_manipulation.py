@@ -250,7 +250,7 @@ def _find_or_check_datetime_variables(
 
 
 def _find_all_variables(
-    X: pd.DataFrame, variables: Variables = None
+    X: pd.DataFrame, variables: Variables = None, exclude_datetime: bool = False,
 ) -> List[Union[str, int]]:
     """
     If variables are None, captures all variables in the dataframe in a list.
@@ -271,10 +271,12 @@ def _find_all_variables(
     -------
     variables : List of numerical variables
     """
-
+    # find all variables in dataset
     if variables is None:
-        # find all variables in dataset
-        variables_ = X.columns.to_list()
+        if exclude_datetime is True:
+            variables_ = X.select_dtypes(exclude="datetime").columns.to_list()
+        else:
+            variables_ = X.columns.to_list()
 
     elif isinstance(variables, (str, int)):
         if variables not in X.columns.to_list():
