@@ -79,10 +79,12 @@ class CategoricalInitExpandedMixin(CategoricalInitMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
         errors: str = "ignore",
+        supports_errors_encode: bool = False
     ) -> None:
-        if errors not in ["raise", "ignore"]:
+        supported_errors = ["raise", "ignore"] + (["encode"] if supports_errors_encode else [])
+        if errors not in supported_errors:
             raise ValueError(
-                "errors takes only values 'raise' and 'ignore ."
+                f"errors takes only values {', '.join(supported_errors)}. "
                 f"Got {errors} instead."
             )
 
