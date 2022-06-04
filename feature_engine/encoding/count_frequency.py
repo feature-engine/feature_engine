@@ -157,10 +157,11 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
                 self.encoder_dict_[var] = X[var].value_counts().to_dict(dct_init)
 
             elif self.encoding_method == "frequency":
-                n_obs = float(len(X))
                 self.encoder_dict_[var] = (
-                    X[var].value_counts() / n_obs
-                ).to_dict(dct_init)
+                    X[var]
+                    .value_counts(normalize=True)
+                    .to_dict(dct_init)
+                )
 
         self._check_encoding_dictionary()
 
