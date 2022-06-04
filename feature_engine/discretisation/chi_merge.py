@@ -168,7 +168,7 @@ class ChiMergeDiscretiser(BaseDiscretiser):
                     break
 
 
-    def _calc_chi_sqaure(self, array: np.array) -> float:
+    def _calc_chi_square(self, array: np.array) -> float:
         """
         Calculates chi-squared. Using the following equation:
 
