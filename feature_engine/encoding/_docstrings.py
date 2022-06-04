@@ -15,9 +15,15 @@ _ignore_format_docstring = """ignore_format: bool, default=False
 
 _errors_docstring = """errors: string, default='ignore'
         Indicates what to do, when categories not present in the train set are
-        encountered during transform. If 'raise', then rare categories will raise an
-        error. If 'ignore', then rare categories will be set as NaN and a warning will
-        be raised instead.
+        encountered during transform. If 'raise', then unseen categories will raise an
+        error. If 'ignore', then unseen categories will be set as NaN and a warning will
+        be raised instead. If 'encode', then unseen categories will be encoded according
+        to the default strategy from the transformer, provided that it supports it.
+    """.rstrip()
+
+_errors_docstring_with_encode = _errors_docstring + """
+        If 'encode', then unseen categories will be encoded according to the default
+        strategy from the transformer (see the 'Notes' section for details).
     """.rstrip()
 
 _transform_docstring = """transform:

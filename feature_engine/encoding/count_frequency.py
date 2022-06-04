@@ -1,6 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from collections import defaultdict
 from typing import List, Optional, Union
 
 import pandas as pd
@@ -17,7 +18,7 @@ from feature_engine._docstrings.methods import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.encoding._docstrings import (
-    _errors_docstring,
+    _errors_docstring_with_encode,
     _ignore_format_docstring,
     _transform_docstring,
     _variables_docstring,
@@ -31,7 +32,7 @@ from feature_engine.encoding.base_encoder import (
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
-    errors=_errors_docstring,
+    errors=_errors_docstring_with_encode,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -102,9 +103,8 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
 
     Notes
     -----
-    NAN are introduced when encoding categories that were not present in the training
-    dataset. If this happens, try grouping infrequent categories using the
-    RareLabelEncoder().
+    When using ``errors="encode"``, unseen categories (not seen in the call to ``fit``)
+    will be encoded as zeros.
 
     There is a similar implementation in the the open-source package
     `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
@@ -127,7 +127,7 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
             raise ValueError(
                 "encoding_method takes only values 'count' and 'frequency'"
             )
-        super().__init__(variables, ignore_format, errors)
+        super().__init__(variables, ignore_format, errors, True)
 
         self.encoding_method = encoding_method
 
@@ -149,15 +149,16 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
         self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
+        dct_init = defaultdict(lambda: 0) if self.errors == "encode" else {}
 
         # learn encoding maps
         for var in self.variables_:
             if self.encoding_method == "count":
-                self.encoder_dict_[var] = X[var].value_counts().to_dict()
+                self.encoder_dict_[var] = X[var].value_counts().to_dict(dct_init)
 
             elif self.encoding_method == "frequency":
                 n_obs = float(len(X))
-                self.encoder_dict_[var] = (X[var].value_counts() / n_obs).to_dict()
+                self.encoder_dict_[var] = (X[var].value_counts() / n_obs).to_dict(dct_init)
 
         self._check_encoding_dictionary()
 
