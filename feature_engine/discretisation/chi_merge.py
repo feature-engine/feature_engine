@@ -83,8 +83,9 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         X: pandas dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the variables
             to be transformed.
-        y: None
-            y is not needed in this encoder. You can pass y or None.
+
+        y: pd.Series
+            y is the predicted variables.
 
         """
         # check input dataframe
@@ -118,11 +119,10 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         # check if X is a dataframe
         X = check_X(X)
 
-
-
         pass
 
-    def _create_contingency_table(self, feature: pd.Series, class_labels: pd.Series):
+
+    def _create_contingency_table(self, X: pd.DataFrame, y: pd.Series, variable: str) -> dict:
         """
         Generates a frequency table in which the labels organized into bins.
 
@@ -131,41 +131,28 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         feature: pandas series = [n_samples, ]
             The data to discretised.
 
-        class_labels: pandas series = [n_samples, ]
+        y: pandas series = [n_samples, ]
             The categorical data that will be arranged in the bins.
+
+        variable: str
+            The variable used to count the frequency of the class labels.
 
         Returns
         -------
-        TBD
+        contingency_table: dict
+            A frequency table of the tables for each unvariable feature value.
 
 
         """
 
-        unique_values = sorted(set(feature), reverse=False)
-        unique_labels = sorted(set(class_labels))
-        count_dict = {label: 0 for label in unique_labels}
-        zeros = [0 for i in range(len(unique_labels))]
-        frequency_table = {val: zeros for val in unique_values}
+        unique_values = sorted(set(X[variable]))
+        unique_labels = list(set(y))
+        contingency_table = {l: [0] * len(unique_labels) for l in unique_values}
 
-        for feature_val, label_val in zip(feature, class_labels):
-            print(feature_val)
-            for idx, interval_key in enumerate(frequency_table.keys()):
-                min_interval = list(frequency_table.keys())[idx]
-                max_interval = list(frequency_table.keys())[idx + 1]
-                table_col_index = unique_labels.index(label_val)
+        for value, label in zip(X[variable], y):
+            contingency_table[value][label] += 1
 
-                print(idx, min_interval, max_interval)
-                if interval_key == max(unique_values):
-                    frequency_table[interval_key][label_val] += 1
-                    print(feature_val, label_val, min_interval, max_interval, table_col_index)
-                    print(frequency_table)
-                    break
-
-                if min_interval <= feature_val and feature_val < max_interval:
-                    print(feature_val, label_val, min_interval, max_interval, table_col_index)
-                    frequency_table[min_interval][label_val] += 1
-                    print(frequency_table)
-                    break
+        return contingency_table
 
 
     def _calc_chi_square(self, array: np.array) -> float:
@@ -223,5 +210,6 @@ class ChiMergeDiscretiser(BaseDiscretiser):
                     chi2 += (actual_val - expected_val) ** 2 / float(expected_val)
 
         return chi2
+
 
 
