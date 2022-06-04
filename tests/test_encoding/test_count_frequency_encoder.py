@@ -170,6 +170,7 @@ def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
             encoder.fit(df_enc)
             encoder.transform(df_enc_na)
 
+
 def test_zero_encoding_for_new_categories():
     df_fit = pd.DataFrame({
         "col1": ["a", "a", "b", "a", "c"],
