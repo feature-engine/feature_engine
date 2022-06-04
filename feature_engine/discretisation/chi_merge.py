@@ -1,6 +1,7 @@
 
 from typing import List, Optional, Union
 
+import numpy as np
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
@@ -167,6 +168,60 @@ class ChiMergeDiscretiser(BaseDiscretiser):
                     break
 
 
-    def _calc_chi_sqaure(self):
+    def _calc_chi_sqaure(self, array: np.array) -> float:
+        """
+        Calculates chi-squared. Using the following equation:
+
+        # TODO: Add chi2 formula docstring
+
+        Parameters
+        ----------
+        X: np.array = [2, n_features]
+            Two sequential rows from the contingency table.
+
+        Returns
+        -------
+        chi2: float
+            Determines whether two sets of measurements are related.
+        """
+
+        if not isinstance(array, np.array):
+            raise ValueError(
+                f"array must be a numpy array. Got {type(array)} instead."
+            )
+
+        if array.shape[0] != 2:
+            raise ValueError(
+                f"array must be comprised of 2 rows. Got "
+                f"{array.shape[0]} instead"
+            )
+
+        shape = array.shape
+        num_obs = float(array.sum())
+        rows_sums = {}
+        cols_sums = {}
+        chi2 = 0
+
+        # calculate row-wise summations
+        for row_idx in range(shape[0]):
+            rows_sums[row_idx] = array[row_idx, :].sum()
+
+        # calculate column-wise summations
+        for col_idx in range(shape[1]):
+            cols_sums[col_idx] = array[:, col_idx].sum()
+
+        # iterate through all expect and actual value pairs.
+        for row_idx in range(shape[0]):
+            for col_idx in range(shape[1]):
+                expected_val = rows_sums[row_idx] * cols_sums[col_idx] / num_obs
+                actual_val = array[row_idx, col_idx]
+
+                if expected_val == 0:
+                    # prevents NaN error
+                    chi2 += 0
+                else:
+                    chi2 += (actual_val - expected_val) ** 2 / float(expected_val)
+
+        return chi2
 
 
