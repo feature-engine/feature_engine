@@ -69,7 +69,10 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
     References
     ----------
-    .. [1] Weisberg S. "Yeo-Johnson Power Transformations".
+    .. [1] Yeo, In-Kwon and Johnson, Richard (2000). A new family of power transformations
+        to improve normality or symmetry. Biometrika, 87, 954-959.
+        
+    .. [2] Weisberg S. "Yeo-Johnson Power Transformations".
         https://www.stat.umn.edu/arc/yjpower.pdf
     """
 
