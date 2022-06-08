@@ -30,7 +30,7 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
     transform=BaseCreation._transform_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class DecisionTreeCreation(BaseCreation):
+class DecisionTreeFeatures(BaseCreation):
     """
     DecisionTreeCreation() creates a new variable by applying user-indicated variables
     with a decision tree. The class uses either scikit-learn's DecisionTreeClassifier
@@ -123,6 +123,7 @@ class DecisionTreeCreation(BaseCreation):
         output_features: Union[int, List[int], Tuple[tuple, ...]] = None,
         regression: bool = True,
         max_depth: int = 3,
+        random_state: int = 0,
         missing_value: str = "raise",
         drop_original: bool = False,
     ) -> None:
@@ -194,11 +195,16 @@ class DecisionTreeCreation(BaseCreation):
                 f"max_depth must be an integer. Got {max_depth} instead."
             )
 
+        if not isinstance(random_state, int):
+            raise ValueError(
+                f"random_state must be an integer. Got {random_state} instead."
+            )
         super().__init__(missing_value, drop_original)
         self.variables = variables
         self.output_features = output_features
         self.regression = regression
         self.max_depth = max_depth
+        self.random_state = random_state
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -258,9 +264,11 @@ class DecisionTreeCreation(BaseCreation):
     def _make_decision_tree(self):
         """Instantiate decision tree."""
         if self.regression is True:
-            est = DecisionTreeRegressor(max_depth=self.max_depth)
+            est = DecisionTreeRegressor(max_depth=self.max_depth,
+                                        random_state=self.random_state)
         else:
-            est = DecisionTreeClassifier(max_depth=self.max_depth)
+            est = DecisionTreeClassifier(max_depth=self.max_depth,
+                                         random_state=self.random_state)
 
         return est
 
