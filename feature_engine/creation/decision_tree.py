@@ -320,18 +320,4 @@ class DecisionTreeFeatures(BaseCreation):
 
         return new_features_names
 
-    def _check_dependent_variable_not_fitted_by_estimator(
-            self, X: pd.DataFrame, y: pd.Series
-    ) -> None:
-        """
-        Raise error if one of the variables to be fitted by the decision tree
-        is the dependent variable.
-        """
-        # TODO: Is this neccessary?
-        # Wouldn't doing so be a circular reference?
-        for variable in self.variables:
-            if X[variable].equals(y):
-                raise ValueError(
-                    "Dependent variable cannot also be one of the variables to be "
-                    "fitted by the decision tree. Check the {variable} variable."
-                )
+   
