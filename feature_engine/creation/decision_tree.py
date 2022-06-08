@@ -15,7 +15,6 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.class_inputs import (
     _variables_numerical_docstring,
     _drop_original_docstring,
-    _missing_values_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.variable_manipulation import _find_or_check_numerical_variables
@@ -23,7 +22,6 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
 
 @Substitution(
     variables=_variables_numerical_docstring,
-    missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -89,10 +87,8 @@ class DecisionTreeFeatures(BaseCreation):
         Select whether the decision tree is performing a regression or
         classification.
 
-    max_depth: integer, default = True
+    max_depth: integer, default = 3
         The maximum depth of the tree. Used to mitigate the risk of over-fitting.
-
-    {missing_values}
 
     {drop_original}
 
@@ -124,7 +120,6 @@ class DecisionTreeFeatures(BaseCreation):
         regression: bool = True,
         max_depth: int = 3,
         random_state: int = 0,
-        missing_value: str = "raise",
         drop_original: bool = False,
     ) -> None:
 
@@ -199,12 +194,18 @@ class DecisionTreeFeatures(BaseCreation):
             raise ValueError(
                 f"random_state must be an integer. Got {random_state} instead."
             )
-        super().__init__(missing_value, drop_original)
+
+        if not isinstance(drop_original, bool):
+            raise TypeError(
+                "drop_original takes only boolean values True and False. "
+                f"Got {drop_original} instead."
+            )
         self.variables = variables
         self.output_features = output_features
         self.regression = regression
         self.max_depth = max_depth
         self.random_state = random_state
+        self.drop_original = drop_original
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
