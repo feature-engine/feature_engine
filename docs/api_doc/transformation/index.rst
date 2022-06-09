@@ -1,7 +1,7 @@
 .. -*- mode: rst -*-
 
-Math Transformations
-====================
+Variance Stabilizing Transformations
+====================================
 
 Feature-engine's variable transformers transform numerical variables with various
 mathematical transformations.
@@ -12,10 +12,10 @@ mathematical transformations.
    LogTransformer
    LogCpTransformer
    ReciprocalTransformer
+   ArcsinTransformer
    PowerTransformer
    BoxCoxTransformer
    YeoJohnsonTransformer
-   ArcsinTransformer
 
 
 Transformers in other Libraries
