@@ -122,7 +122,7 @@ class DecisionTreeFeatures(BaseCreation):
         random_state: int = 0,
         drop_original: bool = False,
     ) -> None:
-
+        # check variables
         if (
             not isinstance(variables, list)
             or not all(isinstance(var, (int, str)) for var in variables)
@@ -130,7 +130,7 @@ class DecisionTreeFeatures(BaseCreation):
         ):
             raise ValueError(
                 "variables must a list of strings or integers comprise of "
-                f"distinct variables. Got {variables} instead."
+                f"distinct values. Got {variables} instead."
             )
 
         if (
@@ -141,17 +141,21 @@ class DecisionTreeFeatures(BaseCreation):
                 f"output_features must an integer, list or tuple. Got "
                 f"{output_features} instead."
             )
-
+        # check user is not creating combinations comprised of more variables
+        # than the number of variables provided in the 'variables' param
         if isinstance(output_features, int):
             if output_features > len(variables):
                 raise ValueError(
                     "If output_features is an integer, the value cannot be "
-                    f"greater than the length of variables. Got {output_features} "
-                    "for output_features and {len(variables)} for the length "
+                    f"greater than the number of variables. Got {output_features} "
+                    f"for output_features and {len(variables)} for the number "
                     "of variables."
                 )
 
         if isinstance(output_features, list):
+            # Check (1) user is not creating combinations comprised of more variables
+            # than the number of variables allowed by the 'variables' param or
+            # (2) the list is only comprised of integers
             if (
                     max(output_features) > len(variables)
                     or not all(
@@ -159,15 +163,25 @@ class DecisionTreeFeatures(BaseCreation):
                         )
             ):
                 raise ValueError(
-                    "output_features must be a list solely comprised of integers "
-                    "and the maximum integer cannot be greater than the length of "
-                    f"variables. Got {output_features} for output_features and "
+                    "output_features must be a list comprised of integers. The "
+                    "maximum integer cannot be greater than the number of variables "
+                    f"passed in the 'variable' param. Got {output_features} for "
+                    f"output_features and {len(variables)} for the number of variables. "
+                    "param."
                 )
 
         if isinstance(output_features, tuple):
+            # TODO: Add check to determine that output_features is only comprised of variables
+            # TODO: that are included in the 'variables' param
+
+            # calculate maximum number of subsequences/combinations of variables
             num_combos = 0
             for n in range(1, len(variables) + 1):
+                # combinations returns all subsequences of 'n' length from 'variables'
                 num_combos += len(list(combinations(variables, n)))
+
+            # check (1) each element in output_features is either a string or tuple or
+            # (2) user only passes strings and tuples.
             if (
                     not all(
                         isinstance(feature, (str, tuple)) for feature in output_features
@@ -175,9 +189,9 @@ class DecisionTreeFeatures(BaseCreation):
                     or len(output_features) > num_combos
             ):
                 raise ValueError(
-                    "output_features must a tuple solely comprised of tuples and "
-                    f"the maximum number of tuples cannot exceed {num_combos}. Got "
-                    f"{output_features} instead."
+                    "output_features must be comprised of tuples and strings."
+                    f"output_features cannot contain more feature combinations than "
+                    f"{num_combos}. Got {output_features} instead."
                 )
 
         if not isinstance(regression, bool):
@@ -185,9 +199,9 @@ class DecisionTreeFeatures(BaseCreation):
                 f"regression must be a boolean value. Got {regression} instead."
             )
 
-        if not isinstance(max_depth, int):
+        if not isinstance(max_depth, int) and max_depth is not None:
             raise ValueError(
-                f"max_depth must be an integer. Got {max_depth} instead."
+                f"max_depth must be an integer or None. Got {max_depth} instead."
             )
 
         if not isinstance(random_state, int):
@@ -320,4 +334,4 @@ class DecisionTreeFeatures(BaseCreation):
 
         return new_features_names
 
-   
+
