@@ -236,13 +236,10 @@ class DecisionTreeFeatures(BaseCreation):
             The target variable that is used to train the decision tree.
         """
         # common checks and attributes
-        # TODO: We don't need to check_variables b/c BaseCreation fit() performs action
-        X = super().fit(X, y)
-        self._check_dependent_variable_not_fitted_by_estimator(X, y)
 
         self.variable_combinations_ = self._create_variable_combinations()
         self.variable_combination_indices_ = {}
-        self.fitted_estimators_ = {}
+        self._fitted_estimators_ = {}
 
         for idx, combo in enumerate(self.variable_combinations_):
             self.variable_combination_indices_[f"estimator_{idx}"] = combo
