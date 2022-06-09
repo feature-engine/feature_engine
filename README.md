@@ -102,10 +102,10 @@ transforming parameters from the data and then transform it.
 * LogTransformer
 * LogCpTransformer
 * ReciprocalTransformer
+* ArcsinTransformer
 * PowerTransformer
 * BoxCoxTransformer
 * YeoJohnsonTransformer
-* ArcsinTransformer
 
 ### Variable Creation:
  * MathFeatures

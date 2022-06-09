@@ -57,7 +57,6 @@ Documentation
     - Fixed source of logo in readme (`Mohamed Emad <https://github.com/iMezemz>`_)
 
 
-
 Deprecations
 ~~~~~~~~~~~~
 

@@ -14,7 +14,7 @@ Blogs
 - `Streamlining Feature Engineering Pipelines with Feature-engine <https://towardsdatascience.com/streamlining-feature-engineering-pipelines-with-feature-engine-e781d551f470?gi=e0fa6e5c0c1a/>`_.
 - `Feature Engineering for Machine Learning: A comprehensive Overview <https://trainindata.medium.com/feature-engineering-for-machine-learning-a-comprehensive-overview-a7ad04c896f8>`_.
 - `Feature Selection for Machine Learning: A comprehensive Overview <https://trainindata.medium.com/feature-selection-for-machine-learning-a-comprehensive-overview-bd571db5dd2d>`_.
-
+- `Variance Stabilizing Transformations <https://trainindata.medium.com/variance-stabilizing-transformations-in-machine-learning-20e5383862dd>`_.
 
 Videos
 ------

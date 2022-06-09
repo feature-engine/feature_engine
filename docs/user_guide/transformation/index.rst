@@ -12,6 +12,13 @@ over a wider value range. See the following illustration:
 .. figure::  ../../images/Variable_Transformation.png
    :align:   center
 
+
+Article
+-------
+
+We added a lot of information about **variance stabilizing transformations** in this
+`article <https://trainindata.medium.com/variance-stabilizing-transformations-in-machine-learning-20e5383862dd>`_.
+
 **Note**
 
 Note however, that improving the value spread is not always possible and it depends
