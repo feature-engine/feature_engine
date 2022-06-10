@@ -237,17 +237,24 @@ class DecisionTreeFeatures(BaseCreation):
         """
         # common checks and attributes
 
+        # TODO: Add checks
         self.variable_combinations_ = self._create_variable_combinations()
-        self._variable_combinations_and_fitted_estimators_ = []
+        self._estimators = []
 
-        # create list of tuples
-        # each tuple is a pair of a variable combination and fitted estimator
+        # fit a decision tree for each combination of variables
         for combo in self.variable_combinations_:
             estimator = self._make_decision_tree()
-            self._variable_combination_and_fitted_estimator_pairs_.append(
-                (combo, estimator.fit(X[combo], y))
-            )
+            self._estimators.append(estimator.fit(X[combo], y))
 
+        # create a tuple of tuples
+        # inner tuple is a variable combination and a fitted estimator
+        self.output_features_ = tuple(
+            [
+                (combo, estimator) for combo, estimator in zip(
+                self.variable_combinations_, self._estimators
+            )
+            ]
+        )
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
