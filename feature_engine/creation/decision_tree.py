@@ -2,9 +2,10 @@ from itertools import combinations
 from typing import List, Tuple, Union
 
 import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from feature_engine.creation.base_creation import BaseCreation
+
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
 )
@@ -25,10 +26,9 @@ from feature_engine.variable_manipulation import _find_or_check_numerical_variab
     drop_original=_drop_original_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
-    transform=BaseCreation._transform_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class DecisionTreeFeatures(BaseCreation):
+class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
     """
     DecisionTreeCreation() creates a new variable by applying user-indicated variables
     with a decision tree. The class uses either scikit-learn's DecisionTreeClassifier
@@ -252,9 +252,10 @@ class DecisionTreeFeatures(BaseCreation):
             [
                 (combo, estimator) for combo, estimator in zip(
                 self.variable_combinations_, self._estimators
-            )
+                )
             ]
         )
+
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
