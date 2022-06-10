@@ -1,9 +1,10 @@
 from itertools import combinations
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
@@ -17,7 +18,16 @@ from feature_engine._docstrings.class_inputs import (
     _drop_original_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.variable_manipulation import _find_or_check_numerical_variables
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_X_matches_training_df,
+    check_X,
+)
+from feature_engine.variable_manipulation import (
+    _check_input_parameter_variables,
+    _find_all_variables,
+)
+
 
 
 @Substitution(
@@ -234,30 +244,43 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         y: pandas Series or np.array = [n_samples,]
             The target variable that is used to train the decision tree.
         """
-        # common checks and attributes
+        # TODO: may move to init()
+        # categorical and numerical variables
+        self.variables_ = _find_all_variables(X, self.variables)
 
-        # TODO: Add checks
+        # basic checks
+        X = check_X(X)
+        _check_contains_inf(X, self.variables_)
+
+        # get all sets of variables that will be used to create new features
         self.variable_combinations_ = self._create_variable_combinations()
         self._estimators = []
 
-        # fit a decision tree for each combination of variables
+        # fit a decision tree for each set of variables
         for combo in self.variable_combinations_:
             estimator = self._make_decision_tree()
             self._estimators.append(estimator.fit(X[combo], y))
 
         # create a tuple of tuples
-        # inner tuple is a variable combination and a fitted estimator
+        # inner tuple's elements: variable combination; and fitted estimator
         self.output_features_ = tuple(
             [
                 (combo, estimator) for combo, estimator in zip(
                 self.variable_combinations_, self._estimators
-                )
+            )
             ]
         )
 
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
+        # save train set shape
+        self.n_features_in_ = X.shape[1]
+
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+
+def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Creates new features using scikit-learn's decision tree.
 

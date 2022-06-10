@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from feature_engine.creation import DecisionTreeCreation
+from feature_engine.creation import DecisionTreeFeatures
 
 
 def test_create_variable_combinations(df_creation):
     # output_features is None
-    transformer = DecisionTreeCreation(
+    transformer = DecisionTreeFeatures(
         variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
         output_features=None,
         regression=True,
@@ -37,7 +37,7 @@ def test_create_variable_combinations(df_creation):
     assert results == expected_results
 
     # output_features is an integer
-    transformer = DecisionTreeCreation(
+    transformer = DecisionTreeFeatures(
         variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
         output_features=3,
         regression=True,
@@ -66,7 +66,7 @@ def test_create_variable_combinations(df_creation):
     assert results == expected_results
 
     # output_features is a list of integers
-    transformer = DecisionTreeCreation(
+    transformer = DecisionTreeFeatures(
         variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
         output_features=[1, 3],
         regression=True,
@@ -89,7 +89,7 @@ def test_create_variable_combinations(df_creation):
     assert results == expected_results
 
     # output_features
-    transformer = DecisionTreeCreation(
+    transformer = DecisionTreeFeatures(
         variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
         output_features=(
             "Height_cm",
@@ -113,7 +113,7 @@ def test_create_variable_combinations(df_creation):
 
 
 def test_error_when_dependent_variable_fitted_by_decision_tree(df_creation):
-    transformer = DecisionTreeCreation(
+    transformer = DecisionTreeFeatures(
         variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
         output_features=[1, 3],
         regression=True,
