@@ -31,6 +31,12 @@ Podcasts
 En Español
 ----------
 
+Empezamos una nueva website con blogs en español. Chequeala:
+
+- `Entrena en Datos <http://www.entrenaendatos.com/>`_.
+
+Ademas, te pueden interesar:
+
 - `Ingeniería de variables para machine learning <https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C>`_, Curso Online.
 - `Ingeniería de variables, MachinLenin <https://www.youtube.com/watch?v=NhCxOOoFXds>`_, charla con video online.
 
