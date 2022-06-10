@@ -238,13 +238,13 @@ class DecisionTreeFeatures(BaseCreation):
         # common checks and attributes
 
         self.variable_combinations_ = self._create_variable_combinations()
-        self.variable_combination_indices_ = {}
-        self._fitted_estimators_ = {}
+        self._variable_combinations_and_fitted_estimators_ = []
 
-        for idx, combo in enumerate(self.variable_combinations_):
-            self.variable_combination_indices_[f"estimator_{idx}"] = combo
+        for combo in self.variable_combinations_:
             estimator = self._make_decision_tree()
-            self.fitted_estimators_[f"estimator_{idx}"] = estimator.fit(X[combo], y)
+            self._variable_combinations_and_fitted_estimators_.append(
+                (combo, estimator.fit(X[combo], y))
+            )
 
         return self
 
