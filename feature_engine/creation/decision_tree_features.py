@@ -282,26 +282,35 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
 
 def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Creates new features using scikit-learn's decision tree.
+        Create new features using a decision tree.
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: Pandas DataFrame of shame = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
         X_new: Pandas dataframe.
-            The original dataframe plus the additional features.
-        """
-        X = super().transform(X)
-        self.new_features_names_ = self._create_new_features_names()
+            Either the original dataframe plus the new features or
+            a dataframe of only the new features.
 
-        for var_combo, estimator in self._variable_combination_and_fitted_estimator_pairs_:
-            new_feature = self.new_features_names_[idx]
-            X[new_feature] = estimator.predict(
-                X[self.variable_combination_indices_[idx]]
-            )
+        """
+
+        check_is_fitted(self)
+        _check_X_matches_training_df(X, self.n_features_in_)
+
+        # get new feature names for dataframe column names
+        self.feature_names_ = self.get_feature_names_out(
+            input_features=self.variable_combinations_
+        )
+
+        # create new features and add them to the original dataframe
+        for (var_combo, estimator), name in zip(self.output_features_, self.feature_names_):
+            X[name] = estimator.predict(X[var_combo])
+
+        if self.drop_original:
+            X.drop(columns=self.variables_, inplace=True)
 
         return X
 
