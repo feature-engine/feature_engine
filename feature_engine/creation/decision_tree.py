@@ -240,9 +240,11 @@ class DecisionTreeFeatures(BaseCreation):
         self.variable_combinations_ = self._create_variable_combinations()
         self._variable_combinations_and_fitted_estimators_ = []
 
+        # create list of tuples
+        # each tuple is a pair of a variable combination and fitted estimator
         for combo in self.variable_combinations_:
             estimator = self._make_decision_tree()
-            self._variable_combinations_and_fitted_estimators_.append(
+            self._variable_combination_and_fitted_estimator_pairs_.append(
                 (combo, estimator.fit(X[combo], y))
             )
 
@@ -265,7 +267,7 @@ class DecisionTreeFeatures(BaseCreation):
         X = super().transform(X)
         self.new_features_names_ = self._create_new_features_names()
 
-        for idx, estimator in self.fitted_estimators_.items():
+        for var_combo, estimator in self._variable_combination_and_fitted_estimator_pairs_:
             new_feature = self.new_features_names_[idx]
             X[new_feature] = estimator.predict(
                 X[self.variable_combination_indices_[idx]]
