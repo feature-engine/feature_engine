@@ -39,7 +39,7 @@ from feature_engine.variable_manipulation import (
 )
 class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
     """
-    DecisionTreeCreation() creates a new variable by applying user-indicated variables
+    DecisionTreeFeatures() creates a new variable by applying user-indicated variables
     with a decision tree. The class uses either scikit-learn's DecisionTreeClassifier
     or DecisionTreeRegressor, pending the predictor variable.
 
@@ -112,7 +112,8 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
     fit:
         Builds a decision tree estimator(s).
 
-    {transform}
+    transform:
+        Adds new features.
 
     {fit_transform}
 
@@ -280,7 +281,7 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         return self
 
 
-def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Create new features using a decision tree.
 
