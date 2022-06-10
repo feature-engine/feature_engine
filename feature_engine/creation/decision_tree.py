@@ -5,7 +5,6 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
 )
@@ -327,18 +326,36 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
 
         return variable_combinations
 
-    def _create_new_features_names(self):
-        """Generate a dictionary of the names for the new features"""
-        new_features_names = {}
+    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
+        """
+        Get output feature names for transformation.
 
-        for idx, combo in self.variable_combination_indices_.items():
+        Parameters
+        ----------
+        input_features: list, default=None
+            If input_features is None, then the names of all the
+            variables in the transformed dataset (original + new variables) is returned.
+            Alternatively, only the names for the new features derived from
+            input_features will be returned.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        feature_names = []
+
+        for combo in self.variable_combinations_:
             if len(combo) == 1:
-                new_features_names[idx] = f"{combo[0]}_tree"
+                feature_names.append(f"{combo[0]}_tree")
 
             else:
                 combo_joined = "_".join(combo)
-                new_features_names[idx] = f"{combo_joined}_tree"
+                feature_names.append(f"{combo_joined}_tree")
 
-        return new_features_names
+        if input_features is None:
+            feature_names = self.variables + feature_names
+
+        return feature_names
 
 
