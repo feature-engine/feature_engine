@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 import scipy.stats as stats
+from scipy.special import inv_boxcox
 
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine._docstrings.methods import _fit_transform_docstring
@@ -136,6 +137,17 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         for feature in self.variables_:
             X[feature] = stats.boxcox(X[feature], lmbda=self.lambda_dict_[feature])
 
+        return X
+
+    def inv_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        
+        # check input dataframe
+        X = super().transform(X)
+        
+        # inverse transform
+        for feature in self.variables_:
+            X[feature] = inv_boxcox(X[feature])
+            
         return X
 
     def _more_tags(self):
