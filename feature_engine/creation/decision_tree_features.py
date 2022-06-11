@@ -26,7 +26,6 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
     _find_all_variables,
 )
 
@@ -333,8 +332,8 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
 
     def _create_variable_combinations(self):
         """
-        Create a list of the different combinations of variables that will be
-        used to create new features.
+        Create a list of the different combinations of variables that are used
+        to create new features.
         """
         variable_combinations = []
         if isinstance(self.output_features, tuple):
