@@ -140,14 +140,14 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         return X
 
     def inv_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        
+
         # check input dataframe
         X = super().transform(X)
-        
+
         # inverse transform
         for feature in self.variables_:
             X[feature] = inv_boxcox(X[feature])
-            
+
         return X
 
     def _more_tags(self):
