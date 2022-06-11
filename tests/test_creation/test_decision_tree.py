@@ -5,7 +5,7 @@ import pytest
 from feature_engine.creation import DecisionTreeFeatures
 
 
-def test_create_variable_combinations(df_creation):
+def test_get_feature_names_out(df_creation):
     # output_features is None
     transformer = DecisionTreeFeatures(
         variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
@@ -106,6 +106,37 @@ def test_create_variable_combinations(df_creation):
     ]
     results = transformer._create_variable_combinations()
     assert results == expected_results
+
+
+def test_get_unique_values_from_output_features():
+    output_features = (
+        "Age",
+        ("Avg_5k_run_minutes", "Plays_Football"),
+        ("Age", "Marks", "Avg_5k_run_minutes", "Height_cm"),
+        ("City", "Studies", "Plays_Football"),
+        ("Height_cm", "Marks", "Studies", "City")
+    )
+
+    transformer = DecisionTreeFeatures(
+        variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm", "Plays_Football"],
+        output_features=output_features,
+        regression=False,
+        max_depth=3,
+        drop_original=False
+    )
+
+    unique_values = sorted(transformer._get_unique_values_from_output_features())
+    expected_results = [
+        "Age",
+        "Avg_5k_run_minutes",
+        "City",
+        "Height_cm",
+        "Marks",
+        "Plays_Football",
+        "Studies",
+    ]
+
+    assert unique_values == expected_results
 
 
 @pytest.mark.parametrize(
