@@ -132,7 +132,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         # check input dataframe and if class was fitted
         X = super().transform(X)
-
+        
         # transform
         for feature in self.variables_:
             X[feature] = stats.boxcox(X[feature], lmbda=self.lambda_dict_[feature])
@@ -146,7 +146,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         # inverse transform
         for feature in self.variables_:
-            X[feature] = inv_boxcox(X[feature])
+            X[feature] = inv_boxcox(X[feature], lmbda=self.lambda_dict_[feature])
 
         return X
 
