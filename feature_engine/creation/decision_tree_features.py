@@ -395,4 +395,24 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
 
         return feature_names
 
+    def _get_unique_values_from_output_features(self) -> List:
+        """
+        Get unique values from output_features when it is a tuple.
 
+        """
+        unique_features = []
+
+        # transform all elements in output_features to a list
+        features_list = [
+            list(features) if type(features) is tuple else [features]
+            for features in self.output_features
+        ]
+
+        # merge all lists into 1 list
+        for lst in features_list:
+            unique_features += lst
+
+        # get unique values
+        unique_features = list(set(unique_features))
+
+        return unique_features
