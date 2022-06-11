@@ -7,15 +7,15 @@ import pandas as pd
 import scipy.stats as stats
 from scipy.special import inv_boxcox
 
-from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
 from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
-from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
@@ -132,7 +132,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         # check input dataframe and if class was fitted
         X = super().transform(X)
-        
+
         # transform
         for feature in self.variables_:
             X[feature] = stats.boxcox(X[feature], lmbda=self.lambda_dict_[feature])
@@ -140,13 +140,26 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         return X
 
     def inv_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Apply the inverse BoxCox transformation.
 
-        # check input dataframe
+        Parameters
+        ----------
+        X: Pandas DataFrame of shape = [n_samples, n_features]
+            The data to be inverse transformed.
+
+        Returns
+        -------
+        X_new: pandas dataframe
+            The dataframe with the original variables.
+        """
+
+        # check input dataframe and if class was fitted
         X = super().transform(X)
 
         # inverse transform
         for feature in self.variables_:
-            X[feature] = inv_boxcox(X[feature], lmbda=self.lambda_dict_[feature])
+            X[feature] = inv_boxcox(X[feature], self.lambda_dict_[feature])
 
         return X
 
