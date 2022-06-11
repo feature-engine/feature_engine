@@ -32,7 +32,7 @@ from feature_engine.variable_manipulation import (
 
 
 @Substitution(
-    variables=_variables_all_docstring,
+    variables=_variables_all_docstring, # TODO: May change to numerical
     drop_original=_drop_original_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,

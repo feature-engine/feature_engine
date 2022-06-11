@@ -108,4 +108,24 @@ def test_create_variable_combinations(df_creation):
     assert results == expected_results
 
 
+@pytest.mark.parametrize(
+    "_output_features",
+    [
+        6,
+        [1, 3, 5],
+        [1, 2, "Marks"],
+        (("Age", "Marks"), 3),
+        "Height_cm",
+        ("Avg_5k_run_minutes", ("Height_cm", "Banana"), ("Marks", "Height_cm"))
 
+    ],
+)
+def test_error_when_output_features_not_permitted(_output_features):
+    with pytest.raises(ValueError):
+        transformer = DecisionTreeFeatures(
+            variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
+            output_features=_output_features,
+            regression=True,
+            max_depth=3,
+            drop_original=True
+        )
