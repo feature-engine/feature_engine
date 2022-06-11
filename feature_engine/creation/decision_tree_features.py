@@ -12,11 +12,13 @@ from feature_engine._docstrings.methods import (
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
 from feature_engine._docstrings.class_inputs import (
-    _variables_numerical_docstring,
+    _variables_all_docstring,
     _drop_original_docstring,
 )
+
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
@@ -31,17 +33,18 @@ from feature_engine.variable_manipulation import (
 
 
 @Substitution(
-    variables=_variables_numerical_docstring,
+    variables=_variables_all_docstring,
     drop_original=_drop_original_docstring,
+    variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
 class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
     """
-    DecisionTreeFeatures() creates a new variable by applying user-indicated variables
-    with a decision tree. The class uses either scikit-learn's DecisionTreeClassifier
-    or DecisionTreeRegressor, pending the predictor variable.
+    DecisionTreeFeatures() creates a new variable by using a decision tree.
+    The class allows for the use scikit-learn's DecisionTreeClassifier or
+    DecisionTreeRegressor.
 
     Currently, scikit-learn decision-tree classes do not support categorical variables.
     Categorical variables must be converted to numerical values. There are criticisms
@@ -103,6 +106,8 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
+    {variables_}
+
     {feature_names_in_}
 
     {n_features_in_}
