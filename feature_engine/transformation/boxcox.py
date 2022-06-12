@@ -5,16 +5,20 @@ from typing import List, Optional, Union
 
 import pandas as pd
 import scipy.stats as stats
+from scipy.special import inv_boxcox
 
-from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
 from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
-from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+    _inverse_transform_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
@@ -25,6 +29,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
+    inverse_transform=_inverse_transform_docstring,
 )
 class BoxCoxTransformer(BaseNumericalTransformer):
     """
@@ -73,6 +78,8 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         Learn the optimal lambda for the BoxCox transformation.
 
     {fit_transform}
+
+    {inverse_transform}
 
     transform:
         Apply the BoxCox transformation.
@@ -135,6 +142,30 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         # transform
         for feature in self.variables_:
             X[feature] = stats.boxcox(X[feature], lmbda=self.lambda_dict_[feature])
+
+        return X
+
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Convert the data back to the original representation.
+
+        Parameters
+        ----------
+        X: Pandas DataFrame of shape = [n_samples, n_features]
+            The data to be inverse transformed.
+
+        Returns
+        -------
+        X_new: pandas dataframe
+            The dataframe with the original variables.
+        """
+
+        # check input dataframe and if class was fitted
+        X = super().transform(X)
+
+        # inverse transform
+        for feature in self.variables_:
+            X[feature] = inv_boxcox(X[feature], self.lambda_dict_[feature])
 
         return X
 
