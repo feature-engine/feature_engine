@@ -139,7 +139,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         return X
 
-    def inv_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Apply the inverse BoxCox transformation.
 
