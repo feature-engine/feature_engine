@@ -107,7 +107,7 @@ class CategoricalInitWithEncodeExpandedMixin(CategoricalInitExpandedMixin):
 
     {ignore_format}
 
-    {_errors_docstring_with_encode}
+    {errors}
     """
 
     def __init__(
