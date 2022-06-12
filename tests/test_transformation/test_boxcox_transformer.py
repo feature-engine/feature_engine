@@ -6,12 +6,9 @@ from feature_engine.transformation import BoxCoxTransformer
 
 
 def test_automatically_finds_variables(df_vartypes):
-    # test case 1: automatically select variables
-    print("\nInside function")
-    print(df_vartypes)
+    # test case 1: automatically select variablesssssss
     transformer = BoxCoxTransformer(variables=None)
     X = transformer.fit_transform(df_vartypes)
-    print("\n", X)
 
     # expected output
     transf_df = df_vartypes.copy()
