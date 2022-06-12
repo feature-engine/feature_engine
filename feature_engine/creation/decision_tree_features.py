@@ -24,6 +24,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_X_matches_training_df,
     check_X,
+    check_X_y,
 )
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -242,12 +243,19 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         y: pandas Series or np.array = [n_samples,]
             The target variable that is used to train the decision tree.
         """
-        # TODO: may move to init()
-        # categorical and numerical variables
-        self.variables_ = _find_all_variables(X, self.variables)
+
+        # only numerical variables
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+
+        # confirm all variables in output_features are valid variable
+        # TODO: Discuss best approach to check output_features compatibility
+        if isinstance(self.output_features, tuple):
+            unique_features = _get_unique_values_from_output_features()
+            _check_output_features_are_permitted(unique_features)
 
         # basic checks
         X = check_X(X)
+        X, y = check_X_y(X, y)
         _check_contains_inf(X, self.variables_)
 
         # get all sets of variables that will be used to create new features
@@ -409,8 +417,16 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
 
         return unique_features
 
-    def _check_that_output_features_are_numerical_variables(self):
+    # TODO: Will most likely expand to include other checks
+    def _check_output_features_are_permitted(self, unique_features: List = None) -> None:
         """
-        Confirm that all output_features are included in the dataset's
+        Confirm that all elements of output_features are included in the dataset's
         numerical variables. If not raise an error.
         """
+        # check if unique_features is a subset of self.variables_
+        if not (set(unique_features).issubset(set(self.variables_))):
+            raise ValueError(
+                "All of the unique values of output_features are not a subset of "
+                f"the dataset's variables. The unique features are {unique_features}. "
+                f"The dataset's variables are {self.variables_}."
+            )
