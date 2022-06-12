@@ -7,8 +7,11 @@ from feature_engine.transformation import BoxCoxTransformer
 
 def test_automatically_finds_variables(df_vartypes):
     # test case 1: automatically select variables
+    print("\nInside function")
+    print(df_vartypes)
     transformer = BoxCoxTransformer(variables=None)
     X = transformer.fit_transform(df_vartypes)
+    print("\n", X)
 
     # expected output
     transf_df = df_vartypes.copy()
@@ -22,6 +25,16 @@ def test_automatically_finds_variables(df_vartypes):
     assert transformer.n_features_in_ == 5
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df)
+
+    # test inverse_transform
+    Xit = transformer.inverse_transform(X)
+
+    # convert numbers to original format.
+    Xit["Age"] = Xit["Age"].round().astype("int64")
+    Xit["Marks"] = Xit["Marks"].round(1)
+
+    # test
+    pd.testing.assert_frame_equal(Xit, df_vartypes)
 
 
 def test_fit_raises_error_if_df_contains_na(df_na):
