@@ -13,7 +13,10 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+    _inverse_transform_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.tags import _return_tags
@@ -26,6 +29,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
+    inverse_transform=_inverse_transform_docstring,
 )
 class BoxCoxTransformer(BaseNumericalTransformer):
     """
@@ -74,6 +78,8 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         Learn the optimal lambda for the BoxCox transformation.
 
     {fit_transform}
+
+    {inverse_transform}
 
     transform:
         Apply the BoxCox transformation.
@@ -141,7 +147,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Apply the inverse BoxCox transformation.
+        Convert the data back to the original representation.
 
         Parameters
         ----------
