@@ -15,7 +15,7 @@ from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.class_inputs import (
-    _variables_all_docstring,
+    _variables_numerical_docstring,
     _drop_original_docstring,
 )
 
@@ -26,13 +26,14 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.variable_manipulation import (
-    _find_all_variables,
+    _check_input_parameter_variables,
+    _find_or_check_numerical_variables,
 )
 
 
 
 @Substitution(
-    variables=_variables_all_docstring, # TODO: May change to numerical
+    variables=_variables_numerical_docstring,
     drop_original=_drop_original_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -136,17 +137,8 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         random_state: int = 0,
         drop_original: bool = False,
     ) -> None:
-        # check variables
-        if (
-            not isinstance(variables, list)
-            or not all(isinstance(var, (int, str)) for var in variables)
-            or len(set(variables)) != len(variables)
-        ):
-            raise ValueError(
-                "variables must a list of strings or integers comprise of "
-                f"distinct values. Got {variables} instead."
-            )
 
+        # check that output_features is a compatible type
         if (
                 not isinstance(output_features, (int, list, tuple))
                 and output_features is not None
@@ -183,13 +175,14 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
                     f"output_features and {len(variables)} for the number of variables. "
                     "param."
                 )
-
+        # TODO: Should check be moved to after the class attributes are created?
         if isinstance(output_features, tuple):
             # TODO: Add check to determine that output_features is only comprised of variables
             # TODO: that are included in the 'variables' param
 
             # calculate maximum number of subsequences/combinations of variables
             num_combos = 0
+            # TODO: Raises error when variables is None. Must resolve.
             for n in range(1, len(variables) + 1):
                 # combinations returns all subsequences of 'n' length from 'variables'
                 num_combos += len(list(combinations(variables, n)))
@@ -228,7 +221,7 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
                 "drop_original takes only boolean values True and False. "
                 f"Got {drop_original} instead."
             )
-        self.variables = variables
+        self.variables = _check_input_parameter_variables(variables)
         self.output_features = output_features
         self.regression = regression
         self.max_depth = max_depth
@@ -301,7 +294,6 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
             a dataframe of only the new features.
 
         """
-
         check_is_fitted(self)
         _check_X_matches_training_df(X, self.n_features_in_)
 
@@ -416,3 +408,9 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         unique_features = list(set(unique_features))
 
         return unique_features
+
+    def _check_that_output_features_are_numerical_variables(self):
+        """
+        Confirm that all output_features are included in the dataset's
+        numerical variables. If not raise an error.
+        """
