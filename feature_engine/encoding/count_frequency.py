@@ -24,7 +24,7 @@ from feature_engine.encoding._docstrings import (
     _variables_docstring,
 )
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitExpandedMixin,
+    CategoricalInitWithEncodeExpandedMixin,
     CategoricalMethodsMixin,
 )
 
@@ -40,7 +40,9 @@ from feature_engine.encoding.base_encoder import (
     transform=_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
+class CountFrequencyEncoder(
+    CategoricalInitWithEncodeExpandedMixin, CategoricalMethodsMixin
+):
     """
     The CountFrequencyEncoder() replaces categories by either the count or the
     percentage of observations per category.
@@ -127,7 +129,7 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
             raise ValueError(
                 "encoding_method takes only values 'count' and 'frequency'"
             )
-        super().__init__(variables, ignore_format, errors, True)
+        super().__init__(variables, ignore_format, errors)
 
         self.encoding_method = encoding_method
 
