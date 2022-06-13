@@ -1,6 +1,34 @@
 Version 1.4.X
 =============
 
+Version 1.4.1
+-------------
+
+Deployed: 13th June 2022
+
+Contributors
+~~~~~~~~~~~~
+
+    - `Sangam <https://github.com/SangamSwadiK>`_
+    - `Soledad Galli <https://github.com/solegalli>`_
+
+Enhancements
+~~~~~~~~~~~~
+
+    - The `BoxCoxTransformer` has now `inverse_transform` functionality (`Sangam <https://github.com/SangamSwadiK>`_)
+
+Bug fixes
+~~~~~~~~~
+
+    - Fix test on Python 3.10  in CircleCI (`Sangam <https://github.com/SangamSwadiK>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+    - Fix numpy typing error related to numpy newest version (`Sangam <https://github.com/SangamSwadiK>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+    - Update python versions in setup file (`Soledad Galli <https://github.com/solegalli>`_)
+
+
 Version 1.4.0
 -------------
 
