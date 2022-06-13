@@ -106,7 +106,7 @@ class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
 
         return super().fit(X, y)
 
-    def predict(self, X: pd.DataFrame) -> np.typing.ndarray:
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
         """
         Predict using the average of the target mean value across variables.
 
