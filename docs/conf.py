@@ -294,3 +294,8 @@ linkcode_resolve = make_linkcode_resolve(
     "blob/master/"
     "{package}/{path}#L{lineno}",
 )
+
+
+def setup(app):
+    kwargs = {"defer data-domain":"feature-engine.readthedocs.io"}
+    app.add_js_file("https://plausible.io/js/plausible.js", **kwargs)
