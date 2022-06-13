@@ -125,7 +125,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
 
         return super().fit(X, y)
 
-    def predict_proba(self, X: pd.DataFrame) -> np.array:
+    def predict_proba(self, X: pd.DataFrame) -> np.typing.ndarray:
         """
         Predict class probabilities for X.
 
@@ -148,7 +148,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         prob = self._predict(X)
         return np.vstack([1 - prob, prob]).T
 
-    def predict_log_proba(self, X: pd.DataFrame) -> np.array:
+    def predict_log_proba(self, X: pd.DataFrame) -> np.typing.ndarray:
         """
         Predict class log-probabilities for X.
 
@@ -167,7 +167,7 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         """
         return np.log(self.predict_proba(X))
 
-    def predict(self, X: pd.DataFrame) -> np.array:
+    def predict(self, X: pd.DataFrame) -> np.typing.ndarray:
         """
         Predict class for X.
 
