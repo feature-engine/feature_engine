@@ -16,6 +16,7 @@ Enhancements
 ~~~~~~~~~~~~
 
     - The `BoxCoxTransformer` has now `inverse_transform` functionality (`Sangam <https://github.com/SangamSwadiK>`_)
+    - Transformers now check for duplicated variable names entered in the init `variables` parameter (`Soledad Galli <https://github.com/solegalli>`_)
 
 Bug fixes
 ~~~~~~~~~
