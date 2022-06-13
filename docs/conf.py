@@ -23,7 +23,6 @@ sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("../"))
 sys.path.insert(1, os.path.dirname(os.path.abspath("../")) + os.sep + "feature_engine")
 sys.path.insert(0, os.path.abspath("sphinxext"))
-sys.path.insert(0, os.path.abspath("pydata_sphinx_theme"))
 from github_link import make_linkcode_resolve
 
 # -- General configuration ------------------------------------------------
