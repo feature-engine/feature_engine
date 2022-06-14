@@ -76,5 +76,5 @@ def test_create_contingency_table():
 
     # check results
     assert contingency_table == expected_results
-    # check all flowers are included
+    # confirm all flowers are included
     assert table_flower_count == num_flowers

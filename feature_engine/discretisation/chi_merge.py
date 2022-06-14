@@ -124,7 +124,7 @@ class ChiMergeDiscretiser(BaseDiscretiser):
 
         Parameters
         ----------
-        feature: pandas series = [n_samples, ]
+        X: pandas series = [n_samples, ]
             The data to discretised.
 
         y: pandas series = [n_samples, ]
@@ -143,7 +143,10 @@ class ChiMergeDiscretiser(BaseDiscretiser):
 
         unique_values = sorted(set(X[variable]))
         unique_labels = list(set(y))
-        contingency_table = {l: [0] * len(unique_labels) for l in unique_values}
+        # stores frequency distribution for each unique value
+        contingency_table = {
+            val: np.array([0] * len(unique_labels)) for val in unique_values
+        }
 
         for value, label in zip(X[variable], y):
             contingency_table[value][label] += 1
@@ -167,17 +170,6 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         chi2: float
             Determines whether two sets of measurements are related.
         """
-
-        if not isinstance(array, np.array):
-            raise ValueError(
-                f"array must be a numpy array. Got {type(array)} instead."
-            )
-
-        if array.shape[0] != 2:
-            raise ValueError(
-                f"array must be comprised of 2 rows. Got "
-                f"{array.shape[0]} instead"
-            )
 
         shape = array.shape
         num_obs = float(array.sum())
