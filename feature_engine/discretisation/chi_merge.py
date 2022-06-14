@@ -48,7 +48,7 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         return_object: bool = False,
         return_boundaries: bool = False,
     ) -> None:
-
+        # TODO: Add threshold must be >= 0
         if not isinstance(threshold, float) or threshold >= 1:
             raise ValueError(
                 "threshold must be a float and less than one. "
@@ -67,7 +67,7 @@ class ChiMergeDiscretiser(BaseDiscretiser):
                 "max_intervals must be an integer that is less than or "
                 f"equal to 15. Got {max_intervals} instead."
             )
-        super().__init(return_object, return_boundaries)
+        super().__init__(return_object, return_boundaries)
 
         self.variables = _check_input_parameter_variables(variables)
         self.threshold = threshold
@@ -97,8 +97,6 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         self.variables = _find_or_check_numerical_variables(X, self.variables)
 
 
-         pass
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Sort the variable values into the intervals.
@@ -118,8 +116,6 @@ class ChiMergeDiscretiser(BaseDiscretiser):
 
         # check if X is a dataframe
         X = check_X(X)
-
-        pass
 
 
     def _create_contingency_table(self, X: pd.DataFrame, y: pd.Series, variable: str) -> dict:
