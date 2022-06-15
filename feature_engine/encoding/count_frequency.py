@@ -148,6 +148,9 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
 
         y: pandas Series, default = None
             y is not needed in this encoder. You can pass y or None.
+
+        threshold : list of floats
+            Thresholds for each column needed for binning rare categories
         """
         X = check_X(X)
         self._check_or_select_variables(X)
@@ -158,7 +161,6 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
         if not isinstance(threshold, list):
             threshold = [None] * len(self.variables_)
 
-        # print(self.variables_)
         # learn encoding maps
         for var, threshold in zip(self.variables_, threshold):
 
