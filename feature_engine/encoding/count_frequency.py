@@ -131,7 +131,12 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
 
         self.encoding_method = encoding_method
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(
+        self,
+        X: pd.DataFrame,
+        y: Optional[pd.Series] = None,
+        threshold: Optional[List[Optional[float]]] = None,
+    ):
         """
         Learn the counts or frequencies which will be used to replace the categories.
 
@@ -150,9 +155,35 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
 
         self.encoder_dict_ = {}
 
+        if not isinstance(threshold, list):
+            threshold = [None] * len(self.variables_)
+
+        # print(self.variables_)
         # learn encoding maps
-        for var in self.variables_:
-            if self.encoding_method == "count":
+        for var, threshold in zip(self.variables_, threshold):
+
+            if (self.encoding_method == "count") and threshold:
+                temp = {"backoff_bin": 0}
+                for k, v in X[var].value_counts().to_dict().items():
+                    if v <= threshold:
+                        temp["backoff_bin"] = temp["backoff_bin"] + v
+                    else:
+                        temp[k] = v
+
+                self.encoder_dict_[var] = temp
+
+            elif (self.encoding_method == "frequency") and threshold:
+                temp = {"backoff_bin": 0}
+                n_obs = float(len(X))
+                for k, v in (X[var].value_counts() / n_obs).to_dict().items():
+                    if v <= threshold:
+                        temp["backoff_bin"] = temp["backoff_bin"] + v
+                    else:
+                        temp[k] = v
+
+                self.encoder_dict_[var] = temp
+
+            elif self.encoding_method == "count":
                 self.encoder_dict_[var] = X[var].value_counts().to_dict()
 
             elif self.encoding_method == "frequency":
