@@ -116,7 +116,7 @@ class CategoricalInitWithEncodeExpandedMixin(CategoricalInitExpandedMixin):
         ignore_format: bool = False,
         errors: str = "ignore"
     ) -> None:
-        supported_errors = ["raise", "ignore" "encode"]
+        supported_errors = ["raise", "ignore", "encode"]
         if errors not in supported_errors:
             raise ValueError(
                 f"errors takes only values {', '.join(supported_errors)}. "
