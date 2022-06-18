@@ -2,6 +2,7 @@
 from typing import List, Optional, Union
 
 import numpy as np
+from numpy.typing import NDArray
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
@@ -96,7 +97,9 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         # find or check for numerical variables
         # self.variables = _find_or_check_numerical_variables(X, self.variables)
 
-        self.contingency_table_ = self._create_contingency_table(X, y, self.variables)
+        self.frequency_matrix_intervals_, self.frequency_matrix_ = (
+            self._create_frequency_matrix(X, y, self.variables)
+        )
         self.chi2_scores_dict_ = self._create_chi_square_scores_dict()
 
 
@@ -120,8 +123,8 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         # check if X is a dataframe
         X = check_X(X)
 
-
-    def _create_contingency_table(self, X: pd.DataFrame, y: pd.Series, variable: str) -> dict:
+    # TODO: How to type hint 2 numpy arrays
+    def _create_frequency_matrix(self, X: pd.DataFrame, y: pd.Series, variable: str) -> [NDArray, NDArray]:
         """
         Generates a frequency table in which the labels organized into bins.
 
@@ -143,18 +146,18 @@ class ChiMergeDiscretiser(BaseDiscretiser):
 
 
         """
-
-        unique_values = sorted(set(X[variable]))
-        unique_labels = list(set(y))
-        # stores frequency distribution for each unique value
-        contingency_table = {
-            val: np.array([0] * len(unique_labels)) for val in unique_values
-        }
+        frequency_matrix_intervals = np.sort(np.unique(X[variable]))
+        unique_class_values = np.sort(np.unique(y))
+        frequency_matrix = np.zeros(
+            (len(frequency_matrix_intervals), len(unique_class_values))
+        )
 
         for value, label in zip(X[variable], y):
-            contingency_table[value][label] += 1
+            row_idx = np.where(frequency_matrix_intervals == value)[0][0]
+            col_idx = np.where(unique_class_values == label)[0][0]
+            frequency_matrix[row_idx][col_idx] += 1
 
-        return contingency_table
+        return frequency_matrix_intervals, frequency_matrix
 
 
     def _calc_chi_square(self, array: np.array) -> float:
