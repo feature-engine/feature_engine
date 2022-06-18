@@ -100,7 +100,7 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         self.frequency_matrix_intervals_, self.frequency_matrix_ = (
             self._create_frequency_matrix(X, y, self.variables)
         )
-        self.chi2_scores_dict_ = self._create_chi_square_scores_dict()
+        self._perform_chi_merge()
 
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -205,11 +205,10 @@ class ChiMergeDiscretiser(BaseDiscretiser):
 
         return chi2
 
-    def _create_chi_square_scores_dict(self):
+    def _perform_chi_merge(self) -> None:
         """
-        Calculate all chi-square scores for each adjacent distribution of
-        the contingency table. The dictionary keys correspond to the
-        lower-bound of the interval.
+        Merge adjacent distributions until the the minimum chi-square is greater than
+        the threshold or the number of frequency-matrix intervals.
 
         Parameters
         ----------
@@ -217,17 +216,36 @@ class ChiMergeDiscretiser(BaseDiscretiser):
 
         Returns
         -------
-        chi2_scores: dict
-            The chi-square scores for each adjacent distribution
+        None
 
         """
-        chi2_scores = {}
-        unique_values = list(self.contingency_table_.keys())
-        frequency_distributions = np.array(list(self.contingency_table_.values()))
 
-        for idx in range(2, len(unique_values) + 1):
-            chi2 = self._calc_chi_square(frequency_distributions[idx - 2: idx])
-            chi2_scores[unique_values[idx - 2]] = chi2
+        chi_test = {}
 
-        return chi2_scores
+        while self.frequency_matrix_.shape[0] > self.min_intervals:
+
+            chi_test = {}
+            shape = self.frequency_matrix_.shape
+
+            for row_idx in range(0, shape[0] - 1):
+                row_idx_2 = row_idx + 1
+                chi2 = self._calc_chi_square(
+                    self.frequency_matrix_[row_idx: row_idx_2 + 1]
+                )
+
+                if chi2 not in chi_test:
+                    chi_test[chi2] = []
+
+                chi_test[chi2].append((row_idx, row_idx_2))
+                smallest = min(chi_test.keys())
+                biggest = max(chi_test.keys())
+
+            if smallest < self.threshold:
+                for lower_bound, upper_bound in list(reversed(chi_test[smallest])):
+                    for col_idx in range(shape[1]):
+                        self.frequency_matrix_[lower_bound, col_idx] += self.frequency_matrix_[upper_bound, col_idx]
+                    self.frequency_matrix_ = np.delete(self.frequency_matrix_, upper_bound, 0)
+                    self.frequency_matrix_intervals_ = np.delete(self.frequency_matrix_intervals_, upper_bound, 0)
+            else:
+                break
 
