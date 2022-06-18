@@ -90,11 +90,14 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         """
         # check input dataframe
         X = check_X(X)
-        _check_contains_na(X)
-        _check_contains_inf(X)
+        _check_contains_na(X, self.variables)
+        _check_contains_inf(X, self.variables)
 
         # find or check for numerical variables
-        self.variables = _find_or_check_numerical_variables(X, self.variables)
+        # self.variables = _find_or_check_numerical_variables(X, self.variables)
+
+        self.contingency_table_ = self._create_contingency_table(X, y, self.variables)
+        self.chi2_scores_dict_ = self._create_chi_square_scores_dict()
 
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -199,5 +202,29 @@ class ChiMergeDiscretiser(BaseDiscretiser):
 
         return chi2
 
+    def _create_chi_square_scores_dict(self):
+        """
+        Calculate all chi-square scores for each sequential distribution of
+        the contingency table. The dictionary keys correspond to the
+        lower-bound of the interval.
 
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        chi2_scores: dict
+            The chi-square score for each sequential distribution
+            
+        """
+        chi2_scores = {}
+        unique_values = list(self.contingency_table_.keys())
+        frequency_distributions = np.array(list(self.contingency_table_.values()))
+
+        for idx in range(2, len(unique_values) + 1):
+            chi2 = self._calc_chi_square(frequency_distributions[idx - 2: idx])
+            chi2_scores[unique_values[idx - 2]] = chi2
+
+        return chi2_scores
 
