@@ -204,7 +204,7 @@ class ChiMergeDiscretiser(BaseDiscretiser):
 
     def _create_chi_square_scores_dict(self):
         """
-        Calculate all chi-square scores for each sequential distribution of
+        Calculate all chi-square scores for each adjacent distribution of
         the contingency table. The dictionary keys correspond to the
         lower-bound of the interval.
 
@@ -215,8 +215,8 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         Returns
         -------
         chi2_scores: dict
-            The chi-square score for each sequential distribution
-            
+            The chi-square scores for each adjacent distribution
+
         """
         chi2_scores = {}
         unique_values = list(self.contingency_table_.keys())
