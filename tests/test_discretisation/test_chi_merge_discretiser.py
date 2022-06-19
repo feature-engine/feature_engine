@@ -15,8 +15,8 @@ iris["flower"] = datasets.load_iris().target
 
 def test_create_contingency_table():
     transformer = ChiMergeDiscretiser(
-        variables=["sepal_length", "sepal_width"],
-        threshold=0.8,
+        variables="sepal_length",
+        threshold=1.4,
         min_intervals=2,
         max_intervals=10,
         return_object=False,
@@ -78,3 +78,27 @@ def test_create_contingency_table():
     assert contingency_table == expected_results
     # confirm all flowers are included
     assert table_flower_count == num_flowers
+
+
+def test_chi_merge():
+
+    transformer = ChiMergeDiscretiser(
+        variables="sepal_length",
+        threshold=1.4,
+        min_intervals=2,
+        max_intervals=10,
+        return_object=False,
+        return_boundaries=False,
+    )
+
+    transformer.fit(
+        iris[["sepal_length", "sepal_width", "petal_length"]], iris["flower"]
+    )
+
+    chi_test = transformer._perform_chi_merge()
+    chi_scores_round = pd.Series(transformer.chi_test_.keys()).round(1)
+    expected_results = pd.Series(
+        [4.1, 2.4, 8.6, 2.9, 1.7, 1.8, 2.2, 4.8, 4.1, 3.2, 1.5, 3.6]
+    )
+
+    assert chi_scores_round == expected_results
