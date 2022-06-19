@@ -100,7 +100,7 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         self.frequency_matrix_intervals_, self.frequency_matrix_ = (
             self._create_frequency_matrix(X, y, self.variables)
         )
-        self._perform_chi_merge()
+        self.chi_test_ = self._perform_chi_merge()
 
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -249,3 +249,4 @@ class ChiMergeDiscretiser(BaseDiscretiser):
             else:
                 break
 
+        return chi_test
