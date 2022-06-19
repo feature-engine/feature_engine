@@ -96,9 +96,9 @@ def test_chi_merge():
     )
 
     chi_test = transformer._perform_chi_merge()
-    chi_scores_round = pd.Series(transformer.chi_test_.keys()).round(1)
+    chi_scores_round = pd.Series(chi_test.keys()).round(1)
     expected_results = pd.Series(
         [4.1, 2.4, 8.6, 2.9, 1.7, 1.8, 2.2, 4.8, 4.1, 3.2, 1.5, 3.6]
     )
 
-    assert chi_scores_round == expected_results
+    assert (chi_scores_round == expected_results).all()

@@ -237,13 +237,18 @@ class ChiMergeDiscretiser(BaseDiscretiser):
                     chi_test[chi2] = []
 
                 chi_test[chi2].append((row_idx, row_idx_2))
-                smallest = min(chi_test.keys())
-                biggest = max(chi_test.keys())
+            smallest = min(chi_test.keys())
+            biggest = max(chi_test.keys())
 
             if smallest < self.threshold:
+
+                # reversee list allows code to remove the upperbound as it is updating the frequency matrix
                 for lower_bound, upper_bound in list(reversed(chi_test[smallest])):
                     for col_idx in range(shape[1]):
+                        # merge upperbound distribution into lowerbound distribution
                         self.frequency_matrix_[lower_bound, col_idx] += self.frequency_matrix_[upper_bound, col_idx]
+
+                    # delete upperbound and its distribution from the frequeny matrix
                     self.frequency_matrix_ = np.delete(self.frequency_matrix_, upper_bound, 0)
                     self.frequency_matrix_intervals_ = np.delete(self.frequency_matrix_intervals_, upper_bound, 0)
             else:
