@@ -43,16 +43,16 @@ class ChiMergeDiscretiser(BaseDiscretiser):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        threshold: float = 0.9,
+        threshold: Union[float, int] = 1.4,
         min_intervals: int = 2,
         max_intervals: int = 10,
         return_object: bool = False,
         return_boundaries: bool = False,
     ) -> None:
-        # TODO: Add threshold must be >= 0
-        if not isinstance(threshold, float) or threshold >= 1:
+
+        if not isinstance(threshold, (int, float)) or threshold < 0:
             raise ValueError(
-                "threshold must be a float and less than one. "
+                "threshold must be a positive integer or a float. "
                 f"Got {threshold} instead."
             )
 
