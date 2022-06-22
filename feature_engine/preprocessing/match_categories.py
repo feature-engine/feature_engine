@@ -2,42 +2,42 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from .._docstrings.fit_attributes import (
+from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
-from .._docstrings.substitute import Substitution
-from ..encoding._docstrings import (
-    _errors_docstring,
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
 )
-from ..encoding.base_encoder import BaseCategorical
+from feature_engine.dataframe_checks import _check_contains_na
+from feature_engine.encoding.base_encoder import CategoricalInitMixin, CategoricalMethodsMixin
 
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
-    errors=_errors_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
 )
-class CategoryEncoder(BaseCategorical):
+class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
     """
-    CategoryEncoder() ensures that categorical variables are encoded as pandas'
-    'categorical' dtype instead of generic python 'object' or other dtypes.
-    Under the hood, 'categorical' dtype is a representation that maps each
+    MatchCategories() ensures that categorical variables are encoded as pandas
+    `'categorical'` dtype, instead of generic python `'object'` or other dtypes.
+
+    Under the hood, `'categorical'` dtype is a representation that maps each
     category to an integer, thus providing a more memory-efficient object
-    structure than e.g. 'str' and allowing faster grouping, mapping, and similar
+    structure than e.g., 'str', and allowing faster grouping, mapping, and similar
     operations on the resulting object.
 
-    This transformer remembers the encodings or levels that represent each
-    category, and can thus be used to ensure that the correct encoding gets
+    MatchCategories() remembers the encodings or levels that represent each
+    category, and can thus can be used to ensure that the correct encoding gets
     applied when passing categorical data to modeling packages that support this
     dtype, or to prevent unseen categories from reaching a further transformer
-    or estimator in some pipeline, for example.
+    or estimator in a pipeline, for example.
 
     Parameters
     ----------
@@ -45,11 +45,9 @@ class CategoryEncoder(BaseCategorical):
 
     {ignore_format}
 
-    {errors}
-
     Attributes
     ----------
-    encoder_dict_:
+    category_dict_:
         Dictionary with the category encodings assigned to each variable.
 
     {variables_}
@@ -61,18 +59,24 @@ class CategoryEncoder(BaseCategorical):
     Methods
     -------
     fit:
-        Learn the ecodings or levels to use for each variable.
+        Learn the encodings or levels to use for each variable.
 
     transform:
-        Encode the variables as categorical dtype
+        Enforce the type of categorical variables as dtype `categorical`.
     """
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore",
+        missing_values: str = "raise",
     ) -> None:
-        super().__init__(variables, ignore_format, errors, errors != "raise")
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError(
+                "missing_values takes only values 'raise' or 'ignore'. "
+                f"Got {missing_values} instead."
+            )
+        super().__init__(variables, ignore_format)
+        self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -89,13 +93,16 @@ class CategoryEncoder(BaseCategorical):
         """
         X = self._check_X(X)
         self._check_or_select_variables(X)
+
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_)
+
         self._get_feature_names_in(X)
 
-        self.encoder_dict_ = dict()
+        self.category_dict_ = dict()
         for var in self.variables_:
-            self.encoder_dict_[var] = pd.Categorical(X[var]).categories
+            self.category_dict_[var] = pd.Categorical(X[var]).categories
 
-        self._check_encoding_dictionary()
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -114,8 +121,39 @@ class CategoryEncoder(BaseCategorical):
         """
         X = self._check_transform_input_and_state(X)
 
-        for feature, levels in self.encoder_dict_.items():
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_)
+
+        for feature, levels in self.category_dict_.items():
             X = X.assign(**{feature: pd.Categorical(X[feature], levels)})
 
         self._check_nas_in_result(X)
         return X
+
+    def _check_nas_in_result(self, X: pd.DataFrame):
+        #TODO: what is this method for?
+        # check if NaN values were introduced by the encoding
+        if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
+
+            # obtain the name(s) of the columns have null values
+            nan_columns = (
+                X[self.encoder_dict_.keys()]
+                .columns[X[self.encoder_dict_.keys()].isnull().any()]
+                .tolist()
+            )
+
+            if len(nan_columns) > 1:
+                nan_columns_str = ", ".join(nan_columns)
+            else:
+                nan_columns_str = nan_columns[0]
+
+            if self.errors == "ignore":
+                warnings.warn(
+                    "During the encoding, NaN values were introduced in the feature(s) "
+                    f"{nan_columns_str}."
+                )
+            elif self.errors == "raise":
+                raise ValueError(
+                    "During the encoding, NaN values were introduced in the feature(s) "
+                    f"{nan_columns_str}."
+                )

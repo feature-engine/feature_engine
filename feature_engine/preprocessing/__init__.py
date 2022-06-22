@@ -3,10 +3,10 @@ The module preprocessing includes classes and functions for general data pre-pro
 and transformation.
 """
 
-from .category_encoder import CategoryEncoder
+from .match_categories import MatchCategories
 from .match_columns import MatchVariables
 
 __all__ = [
+    "MatchCategories",
     "MatchVariables",
-    "CategoryEncoder"
 ]
