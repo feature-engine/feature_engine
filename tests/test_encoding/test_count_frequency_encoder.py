@@ -1,7 +1,8 @@
-from numpy import nan
+import warnings
+
 import pandas as pd
 import pytest
-import warnings
+from numpy import nan
 
 from feature_engine.encoding import CountFrequencyEncoder
 
