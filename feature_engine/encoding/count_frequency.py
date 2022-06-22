@@ -18,21 +18,19 @@ from feature_engine._docstrings.methods import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.encoding._docstrings import (
-    _errors_docstring_with_encode,
+    _errors_docstring,
     _ignore_format_docstring,
     _transform_docstring,
     _variables_docstring,
 )
-from feature_engine.encoding.base_encoder import (
-    CategoricalInitWithEncodeExpandedMixin,
-    CategoricalMethodsMixin,
-)
+from feature_engine.encoding.base_encoder import CategoricalMethodsMixin
 
+_errors_docstring = _errors_docstring + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
-    errors=_errors_docstring_with_encode,
+    errors=_errors_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -40,9 +38,7 @@ from feature_engine.encoding.base_encoder import (
     transform=_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class CountFrequencyEncoder(
-    CategoricalInitWithEncodeExpandedMixin, CategoricalMethodsMixin
-):
+class CountFrequencyEncoder(CategoricalMethodsMixin):
     """
     The CountFrequencyEncoder() replaces categories by either the count or the
     percentage of observations per category.
@@ -105,10 +101,7 @@ class CountFrequencyEncoder(
 
     Notes
     -----
-    When using ``errors="encode"``, unseen categories (not seen in the call to ``fit``)
-    will be encoded as zeros.
-
-    There is a similar implementation in the the open-source package
+    There is a similar implementation in the open-source package
     `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
 
     See Also
