@@ -24,9 +24,16 @@ from feature_engine.encoding._docstrings import (
     _transform_docstring,
     _variables_docstring,
 )
-from feature_engine.encoding.base_encoder import CategoricalInitMixin, CategoricalMethodsMixin
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitMixin,
+    CategoricalMethodsMixin,
+)
 
-_errors_docstring = _errors_docstring + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
+_errors_docstring = (
+    _errors_docstring
+    + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
+)
+
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
@@ -157,9 +164,7 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
             elif self.encoding_method == "frequency":
                 self.encoder_dict_[var] = (
-                    X[var]
-                    .value_counts(normalize=True)
-                    .to_dict(dct_init)
+                    X[var].value_counts(normalize=True).to_dict(dct_init)
                 )
 
         self._check_encoding_dictionary()

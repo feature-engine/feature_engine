@@ -16,8 +16,8 @@ _ignore_format_docstring = """ignore_format: bool, default=False
 _errors_docstring = """errors: string, default='ignore'
         Indicates what to do, when categories not present in the train set are
         encountered during transform. If `'raise'`, then unseen categories will raise an
-        error. If `'ignore'`, then unseen categories will be set as NaN and a warning will
-        be raised instead.
+        error. If `'ignore'`, then unseen categories will be set as NaN and a warning 
+        will be raised instead.
     """.rstrip()
 
 _transform_docstring = """transform:
