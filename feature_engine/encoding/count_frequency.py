@@ -24,7 +24,7 @@ from feature_engine.encoding._docstrings import (
     _transform_docstring,
     _variables_docstring,
 )
-from feature_engine.encoding.base_encoder import CategoricalMethodsMixin
+from feature_engine.encoding.base_encoder import CategoricalInitMixin, CategoricalMethodsMixin
 
 _errors_docstring = _errors_docstring + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
 
@@ -39,7 +39,7 @@ _errors_docstring = _errors_docstring + """ If `'encode'`, unseen categories wil
     transform=_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class CountFrequencyEncoder(CategoricalMethodsMixin):
+class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The CountFrequencyEncoder() replaces categories by either the count or the
     percentage of observations per category.
