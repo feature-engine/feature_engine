@@ -14,7 +14,6 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.encoding._docstrings import (
     _errors_docstring,
-    _errors_docstring_with_encode,
     _ignore_format_docstring,
     _variables_docstring,
 )
@@ -79,47 +78,11 @@ class CategoricalInitExpandedMixin(CategoricalInitMixin):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore"
+        errors: str = "ignore",
     ) -> None:
-        supported_errors = ["raise", "ignore"]
-        if errors not in supported_errors:
+        if errors not in ["raise", "ignore"]:
             raise ValueError(
-                f"errors takes only values {', '.join(supported_errors)}. "
-                f"Got {errors} instead."
-            )
-
-        super().__init__(variables, ignore_format)
-        self.errors = errors
-
-
-@Substitution(
-    ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
-    errors=_errors_docstring_with_encode,
-)
-class CategoricalInitWithEncodeExpandedMixin(CategoricalInitExpandedMixin):
-    """Shared initialization parameters across transformers. Contains additional
-    initialization parameters respect to the parent class.
-
-    Parameters
-    ----------
-    {variables}.
-
-    {ignore_format}
-
-    {errors}
-    """
-
-    def __init__(
-        self,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        ignore_format: bool = False,
-        errors: str = "ignore"
-    ) -> None:
-        supported_errors = ["raise", "ignore", "encode"]
-        if errors not in supported_errors:
-            raise ValueError(
-                f"errors takes only values {', '.join(supported_errors)}. "
+                "errors takes only values 'raise' and 'ignore ."
                 f"Got {errors} instead."
             )
 
