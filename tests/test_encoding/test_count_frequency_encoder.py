@@ -2,9 +2,8 @@ import warnings
 
 import pandas as pd
 import pytest
-from numpy import nan
-
 from feature_engine.encoding import CountFrequencyEncoder
+from numpy import nan
 
 
 def test_encode_1_variable_with_counts(df_enc):

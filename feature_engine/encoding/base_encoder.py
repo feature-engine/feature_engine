@@ -21,8 +21,7 @@ from sklearn.utils.validation import check_is_fitted
 
 
 @Substitution(
-    ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
+    ignore_format=_ignore_format_docstring, variables=_variables_docstring,
 )
 class CategoricalInitMixin:
     """Shared initialization parameters across transformers.
@@ -72,7 +71,7 @@ class CategoricalInitExpandedMixin(CategoricalInitMixin):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore"
+        errors: str = "ignore",
     ) -> None:
         check_parameter_errors(errors, ["raise", "ignore"])
         super().__init__(variables, ignore_format)
@@ -80,8 +79,7 @@ class CategoricalInitExpandedMixin(CategoricalInitMixin):
 
 
 @Substitution(
-    ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
+    ignore_format=_ignore_format_docstring, variables=_variables_docstring,
 )
 class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
     """Shared methods across categorical transformers.
