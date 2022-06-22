@@ -17,6 +17,7 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
+from feature_engine.encoding._helper_functions import check_parameter_errors
 from feature_engine.encoding._docstrings import (
     _errors_docstring,
     _ignore_format_docstring,
@@ -120,11 +121,14 @@ class CountFrequencyEncoder(CategoricalMethodsMixin):
 
         if encoding_method not in ["count", "frequency"]:
             raise ValueError(
-                "encoding_method takes only values 'count' and 'frequency'"
+                "encoding_method takes only values 'count' and 'frequency'. "
+                f"Got {encoding_method} instead."
             )
-        super().__init__(variables, ignore_format, errors)
 
+        check_parameter_errors(errors, ["ignore", "raise", "encode"])
+        super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
+        self.errors = errors
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
