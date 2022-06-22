@@ -20,11 +20,6 @@ _errors_docstring = """errors: string, default='ignore'
         be raised instead.
     """.rstrip()
 
-_errors_docstring_with_encode = _errors_docstring + """
-        If 'encode', then unseen categories will be encoded according to the default
-        strategy from the transformer (see the 'Notes' section for details).
-    """.rstrip()
-
 _transform_docstring = """transform:
         Encode the categories to numbers.
     """.rstrip()

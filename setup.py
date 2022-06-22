@@ -8,7 +8,7 @@ DESCRIPTION = "Feature engineering package with Scikit-learn's fit transform fun
 URL = "http://github.com/feature-engine/feature_engine"
 EMAIL = "solegalli@protonmail.com"
 AUTHOR = "Soledad Galli"
-REQUIRES_PYTHON = ">=3.6.0"
+REQUIRES_PYTHON = ">=3.8.0"
 
 # description
 with open("README.md", "r") as fh:
@@ -46,11 +46,9 @@ setup(name=NAME,
       classifiers=[
           # Trove classifiers
           # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
-          "License :: OSI Approved :: MIT License",
-          "Programming Language :: Python",
-          "Programming Language :: Python :: 3",
-          "Programming Language :: Python :: 3.6",
-          "Programming Language :: Python :: 3.7",
+          "License :: OSI Approved :: BSD License",
           "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
       ],
       zip_safe=False)

@@ -5,34 +5,31 @@ from collections import defaultdict
 from typing import List, Optional, Union
 
 import pandas as pd
-
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-    _variables_attribute_docstring,
-)
-from feature_engine._docstrings.methods import (
-    _fit_transform_docstring,
-    _inverse_transform_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring,
+    _variables_attribute_docstring)
+from feature_engine._docstrings.methods import (_fit_transform_docstring,
+                                                _inverse_transform_docstring)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
-from feature_engine.encoding._docstrings import (
-    _errors_docstring_with_encode,
-    _ignore_format_docstring,
-    _transform_docstring,
-    _variables_docstring,
-)
-from feature_engine.encoding.base_encoder import (
-    CategoricalInitWithEncodeExpandedMixin,
-    CategoricalMethodsMixin,
+from feature_engine.encoding._docstrings import (_errors_docstring,
+                                                 _ignore_format_docstring,
+                                                 _transform_docstring,
+                                                 _variables_docstring)
+from feature_engine.encoding._helper_functions import check_parameter_errors
+from feature_engine.encoding.base_encoder import (CategoricalInitMixin,
+                                                  CategoricalMethodsMixin)
+
+_errors_docstring = (
+    _errors_docstring
+    + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
 )
 
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
-    errors=_errors_docstring_with_encode,
+    errors=_errors_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -40,9 +37,7 @@ from feature_engine.encoding.base_encoder import (
     transform=_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class CountFrequencyEncoder(
-    CategoricalInitWithEncodeExpandedMixin, CategoricalMethodsMixin
-):
+class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The CountFrequencyEncoder() replaces categories by either the count or the
     percentage of observations per category.
@@ -105,10 +100,7 @@ class CountFrequencyEncoder(
 
     Notes
     -----
-    When using ``errors="encode"``, unseen categories (not seen in the call to ``fit``)
-    will be encoded as zeros.
-
-    There is a similar implementation in the the open-source package
+    There is a similar implementation in the open-source package
     `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
 
     See Also
@@ -127,11 +119,14 @@ class CountFrequencyEncoder(
 
         if encoding_method not in ["count", "frequency"]:
             raise ValueError(
-                "encoding_method takes only values 'count' and 'frequency'"
+                "encoding_method takes only values 'count' and 'frequency'. "
+                f"Got {encoding_method} instead."
             )
-        super().__init__(variables, ignore_format, errors)
 
+        check_parameter_errors(errors, ["ignore", "raise", "encode"])
+        super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
+        self.errors = errors
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -160,9 +155,7 @@ class CountFrequencyEncoder(
 
             elif self.encoding_method == "frequency":
                 self.encoder_dict_[var] = (
-                    X[var]
-                    .value_counts(normalize=True)
-                    .to_dict(dct_init)
+                    X[var].value_counts(normalize=True).to_dict(dct_init)
                 )
 
         self._check_encoding_dictionary()

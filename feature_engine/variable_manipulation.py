@@ -27,11 +27,14 @@ def _check_input_parameter_variables(variables: Variables) -> Any:
     """
 
     msg = "variables should be a string, an int or a list of strings or integers."
+    msg_dupes = "the list contains duplicated variable names"
 
     if variables:
         if isinstance(variables, list):
             if not all(isinstance(i, (str, int)) for i in variables):
                 raise ValueError(msg)
+            if len(variables) != len(set(variables)):
+                raise ValueError(msg_dupes)
         else:
             if not isinstance(variables, (str, int)):
                 raise ValueError(msg)
@@ -250,7 +253,9 @@ def _find_or_check_datetime_variables(
 
 
 def _find_all_variables(
-    X: pd.DataFrame, variables: Variables = None, exclude_datetime: bool = False,
+    X: pd.DataFrame,
+    variables: Variables = None,
+    exclude_datetime: bool = False,
 ) -> List[Union[str, int]]:
     """
     If variables are None, captures all variables in the dataframe in a list.
