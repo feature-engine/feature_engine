@@ -188,20 +188,36 @@ def test_zero_encoding_for_unseen_categories_if_errors_is_encode():
         "col1": ["a", "a", "b", "a", "c"],
         "col2": ["1", "2", "3", "1", "2"]
     })
-    df_transf = pd.DataFrame({
+    df_transform = pd.DataFrame({
         "col1": ["a", "d", "b", "a", "c"],
         "col2": ["1", "2", "3", "1", "4"]
     })
+
+    # count encoding
     encoder = CountFrequencyEncoder(errors="encode").fit(df_fit)
-    result = encoder.transform(df_transf)
+    result = encoder.transform(df_transform)
 
     # check that no NaNs are added
     assert pd.isnull(result).sum().sum() == 0
 
-    # check that the counts are correct for both new and old
+    # check that the counts are correct
     expected_result = pd.DataFrame({
         "col1": [3, 0, 1, 3, 1],
         "col2": [2, 2, 1, 2, 0]
+    })
+    pd.testing.assert_frame_equal(result, expected_result)
+
+    # with frequency
+    encoder = CountFrequencyEncoder(encoding_method="frequency", errors="encode").fit(df_fit)
+    result = encoder.transform(df_transform)
+
+    # check that no NaNs are added
+    assert pd.isnull(result).sum().sum() == 0
+
+    # check that the frequencies are correct
+    expected_result = pd.DataFrame({
+        "col1": [0.6, 0, 0.2, 0.6, 0.2],
+        "col2": [0.4, 0.4, 0.2, 0.4, 0]
     })
     pd.testing.assert_frame_equal(result, expected_result)
 
