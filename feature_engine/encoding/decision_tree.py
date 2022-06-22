@@ -206,7 +206,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         else:
             check_classification_targets(y)
 
-        self._check_or_select_variables(X)
+        self._fit(X)
         self._get_feature_names_in(X)
 
         if self.param_grid:

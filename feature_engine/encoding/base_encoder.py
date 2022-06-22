@@ -100,6 +100,10 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
     TransformerMixin brings method fit_transform()
     """
 
+    def _fit(self, X: pd.DataFrame):
+        self._check_or_select_variables(X)
+        _check_contains_na(X, self.variables_)
+
     def _check_or_select_variables(self, X: pd.DataFrame):
         """
         Finds categorical variables, or alternatively checks that the variables
@@ -126,9 +130,6 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
         else:
             # select all variables or check variables entered by the user
             self.variables_ = _find_all_variables(X, self.variables)
-
-        # check if dataset contains na
-        _check_contains_na(X, self.variables_)
 
     def _get_feature_names_in(self, X: pd.DataFrame):
 
@@ -170,9 +171,6 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
         # Check input data contains same number of columns as df used to fit
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        # check if dataset contains na
-        _check_contains_na(X, self.variables_)
-
         # reorder df to match train set
         X = X[self.feature_names_in_]
 
@@ -206,6 +204,9 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
         """
 
         X = self._check_transform_input_and_state(X)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables_)
 
         # replace categories by the learned parameters
         for feature in self.encoder_dict_.keys():
