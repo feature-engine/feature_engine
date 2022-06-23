@@ -176,7 +176,7 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
         y: pandas Series, default = None
             y is not needed in this encoder. You can pass y or None.
 
-        threshold : int if encoding is "count", 
+        threshold : int if encoding is "count",
                     float if encoding is "frequency", default = None
             Thresholds for each column needed for binning infrequent categories
         """
@@ -255,7 +255,7 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
                     .map(self.encoder_dict_[feature])
                 )
             return X
-        
+
     def inverse_transform(self, X: pd.DataFrame):
         """inverse_transform is not implemented for this transformer."""
         return self
