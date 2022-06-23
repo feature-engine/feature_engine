@@ -176,8 +176,7 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
         y: pandas Series, default = None
             y is not needed in this encoder. You can pass y or None.
 
-        threshold : int if encoding is "count",
-                    float if encoding is "frequency", default = None
+        threshold : int/float if encoding is "count" and "frequency", default = None
             Thresholds for each column needed for binning infrequent categories
         """
         X = check_X(X)
