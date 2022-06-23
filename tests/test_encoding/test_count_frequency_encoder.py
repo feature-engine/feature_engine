@@ -257,42 +257,42 @@ def test_error_if_rare_labels_not_permitted_value():
         CountFrequencyEncoder(errors="empanada")
 
 
-def test_error_if_incorrect_threshold_value_for_encoding_is_count():
+def test_error_if_incorrect_threshold_value_for_encoding_count():
     with pytest.raises(ValueError):
         CountFrequencyEncoder(encoding_method="count", threshold=0.75)
 
 
-def test_error_if_incorrect_threshold_value_for_encoding_is_frequency():
+def test_error_if_incorrect_threshold_value_for_encoding_frequency():
     with pytest.raises(ValueError):
         CountFrequencyEncoder(encoding_method="frequency", threshold=105)
 
 
-def test_error_if_incorrect_threshold_type_for_encoding_is_count():
+def test_error_if_incorrect_threshold_type_for_encoding_count():
     with pytest.raises(ValueError):
         CountFrequencyEncoder(encoding_method="count", threshold=[15, 25, 54])
 
 
-def test_error_if_incorrect_threshold_type_for_encoding_is_frequency():
+def test_error_if_incorrect_threshold_type_for_encoding_frequency():
     with pytest.raises(ValueError):
         CountFrequencyEncoder(encoding_method="frequency", threshold=[1.5, None, 54])
 
 
 def test_threshold_encode_all_variables_ignore_format_with_counts(df_enc):
-    # test case : all categorical and numerical variables with counts
+    # test case : all variables with counts
     encoder = CountFrequencyEncoder(
         encoding_method="count",
         ignore_format=True,
-        variables=["var_A", "var_B", "target"],
+        variables=None,
         threshold=6,
     )
+    # init params
+    assert encoder.encoding_method == "count"
+    assert encoder.variables is None
+    assert isinstance(encoder.threshold, int)
+    # fit params
+
     encoder.fit_transform(df_enc)
 
-    # expected result
-    # print(df_enc['var_A'].value_counts().to_dict())
-    # print(df_enc['var_B'].value_counts().to_dict())
-    # print(df_enc['target'].value_counts().to_dict())
-
-    # print(encoder.encoder_dict_)
     assert encoder.encoder_dict_ == {
         "var_A": {"backoff_bin": 10, "B": 10},
         "var_B": {"backoff_bin": 10, "A": 10},
@@ -308,14 +308,15 @@ def test_threshold_encode_all_variables_without_ignore_format_with_counts(df_enc
         variables=None,
         threshold=6,
     )
+
+    # init params
+    assert encoder.encoding_method == "count"
+    assert encoder.variables is None
+    assert isinstance(encoder.threshold, int)
+    # fit params
+
     encoder.fit_transform(df_enc)
 
-    # expected result
-    # print(df_enc['var_A'].value_counts().to_dict())
-    # print(df_enc['var_B'].value_counts().to_dict())
-    # print(df_enc['target'].value_counts().to_dict())
-
-    # print(encoder.encoder_dict_)
     assert encoder.encoder_dict_ == {
         "var_A": {"backoff_bin": 10, "B": 10},
         "var_B": {"backoff_bin": 10, "A": 10},
@@ -327,15 +328,38 @@ def test_automatically_encode_all_variables_without_ignore_format_with_frequency
 ):
     # test case :  all categorical variables with frequency
     encoder = CountFrequencyEncoder(
-        encoding_method="frequency", variables=None, threshold=0.3
+        encoding_method="frequency", ignore_format=False, variables=None, threshold=0.3
     )
-    encoder.fit_transform(df_enc)
 
-    print((df_enc["var_A"].value_counts() / len(df_enc)).to_dict())
-    print((df_enc["var_B"].value_counts() / len(df_enc)).to_dict())
-    print((df_enc["target"].value_counts() / len(df_enc)).to_dict())
-    print(encoder.encoder_dict_)
+    # init params
+    assert encoder.encoding_method == "frequency"
+    assert encoder.variables is None
+    assert isinstance(encoder.threshold, float)
+    # fit params
+
+    encoder.fit_transform(df_enc)
     assert encoder.encoder_dict_ == {
         "var_A": {"backoff_bin": 0.5, "B": 0.5},
         "var_B": {"backoff_bin": 0.5, "A": 0.5},
+    }
+
+
+def test_automatically_encode_all_variables_with_ignore_format_with_frequency(
+    df_enc,
+):
+    # test case :  all variables with frequency
+    encoder = CountFrequencyEncoder(
+        encoding_method="frequency", ignore_format=True, variables=None, threshold=0.3
+    )
+    # init params
+    assert encoder.encoding_method == "frequency"
+    assert encoder.variables is None
+    assert isinstance(encoder.threshold, float)
+    # fit params
+    encoder.fit_transform(df_enc)
+
+    assert encoder.encoder_dict_ == {
+        "var_A": {"backoff_bin": 0.5, "B": 0.5},
+        "var_B": {"backoff_bin": 0.5, "A": 0.5},
+        "target": {"backoff_bin": 0.3, 0: 0.7},
     }
