@@ -179,6 +179,7 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
         threshold : int/float if encoding is "count" and "frequency", default = None
             Thresholds for each column needed for binning infrequent categories
         """
+
         X = check_X(X)
         self._check_or_select_variables(X)
         self._get_feature_names_in(X)
