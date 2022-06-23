@@ -80,7 +80,7 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
 
     threshold: int,float or None, default=None
         With threshold you have the option to perform backoff binning for all
-        columns for the given threshold.
+        columns based on the given threshold.
 
     Attributes
     ----------
@@ -176,8 +176,9 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
         y: pandas Series, default = None
             y is not needed in this encoder. You can pass y or None.
 
-        threshold : list of floats
-            Thresholds for each column needed for binning rare categories
+        threshold : int if encoding is "count", 
+                    float if encoding is "frequency", default = None
+            Thresholds for each column needed for binning infrequent categories
         """
         X = check_X(X)
         self._check_or_select_variables(X)
@@ -254,3 +255,7 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
                     .map(self.encoder_dict_[feature])
                 )
             return X
+        
+    def inverse_transform(self, X: pd.DataFrame):
+        """inverse_transform is not implemented for this transformer."""
+        return self
