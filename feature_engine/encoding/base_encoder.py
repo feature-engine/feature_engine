@@ -4,18 +4,24 @@ from typing import List, Optional, Union
 import pandas as pd
 from feature_engine._docstrings.methods import _get_feature_names_out_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import (_check_contains_na,
-                                             _check_X_matches_training_df,
-                                             check_X)
-from feature_engine.encoding._docstrings import (_errors_docstring,
-                                                 _ignore_format_docstring,
-                                                 _variables_docstring)
+from feature_engine.dataframe_checks import (
+    _check_contains_na,
+    _check_X_matches_training_df,
+    check_X,
+)
+from feature_engine.encoding._docstrings import (
+    _errors_docstring,
+    _ignore_format_docstring,
+    _variables_docstring,
+)
 from feature_engine.encoding._helper_functions import check_parameter_errors
 from feature_engine.get_feature_names_out import _get_feature_names_out
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables, _find_all_variables,
-    _find_or_check_categorical_variables)
+    _check_input_parameter_variables,
+    _find_all_variables,
+    _find_or_check_categorical_variables,
+)
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
