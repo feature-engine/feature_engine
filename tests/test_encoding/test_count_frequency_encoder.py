@@ -246,7 +246,6 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     # transform params
     pd.testing.assert_frame_equal(X, transf_df, check_dtype=False)
     assert X["var_A"].dtypes == int
-
     encoder = CountFrequencyEncoder(encoding_method="frequency", variables=["var_A"])
     X = encoder.fit_transform(df_enc_category_dtypes)
     assert X["var_A"].dtypes == float
@@ -294,9 +293,9 @@ def test_threshold_encode_all_variables_ignore_format_with_counts(df_enc):
     encoder.fit_transform(df_enc)
 
     assert encoder.encoder_dict_ == {
-        "var_A": {"backoff_bin": 10, "B": 10},
-        "var_B": {"backoff_bin": 10, "A": 10},
-        "target": {"backoff_bin": 6, 0: 14},
+        "var_A": {"B": 10, "backoff_bin": 10},
+        "var_B": {"A": 10, "backoff_bin": 10},
+        "target": {0: 14, "backoff_bin": 6},
     }
 
 
@@ -318,8 +317,8 @@ def test_threshold_encode_all_variables_without_ignore_format_with_counts(df_enc
     encoder.fit_transform(df_enc)
 
     assert encoder.encoder_dict_ == {
-        "var_A": {"backoff_bin": 10, "B": 10},
-        "var_B": {"backoff_bin": 10, "A": 10},
+        "var_A": {"B": 10, "backoff_bin": 10},
+        "var_B": {"A": 10, "backoff_bin": 10},
     }
 
 
@@ -339,8 +338,8 @@ def test_automatically_encode_all_variables_without_ignore_format_with_frequency
 
     encoder.fit_transform(df_enc)
     assert encoder.encoder_dict_ == {
-        "var_A": {"backoff_bin": 0.5, "B": 0.5},
-        "var_B": {"backoff_bin": 0.5, "A": 0.5},
+        "var_A": {"B": 0.5, "backoff_bin": 0.5},
+        "var_B": {"A": 0.5, "backoff_bin": 0.5},
     }
 
 
@@ -359,7 +358,36 @@ def test_automatically_encode_all_variables_with_ignore_format_with_frequency(
     encoder.fit_transform(df_enc)
 
     assert encoder.encoder_dict_ == {
-        "var_A": {"backoff_bin": 0.5, "B": 0.5},
-        "var_B": {"backoff_bin": 0.5, "A": 0.5},
-        "target": {"backoff_bin": 0.3, 0: 0.7},
+        "var_A": {"B": 0.5, "backoff_bin": 0.5},
+        "var_B": {"A": 0.5, "backoff_bin": 0.5},
+        "target": {0: 0.7, "backoff_bin": 0.3},
     }
+
+
+def test_error_if_input_df_contains_categories_not_present_in_fit_df_with_threshold(
+    df_enc, df_enc_rare
+):
+    # test case 3: when dataset to be transformed contains categories not present in
+    # training dataset
+
+    msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
+
+    # check for warning when rare_labels equals 'ignore'
+    with pytest.warns(UserWarning) as record:
+        encoder = CountFrequencyEncoder(errors="ignore", threshold=6)
+        encoder.fit(df_enc)
+        encoder.transform(df_enc_rare)
+
+    # check that only one warning was raised
+    assert len(record) == 1
+    # check that the message matches
+    assert record[0].message.args[0] == msg
+
+    # check for error when rare_labels equals 'raise'
+    with pytest.raises(ValueError) as record:
+        encoder = CountFrequencyEncoder(errors="raise", threshold=6)
+        encoder.fit(df_enc)
+        encoder.transform(df_enc_rare)
+
+    # check that the error message matches
+    assert str(record.value) == msg
