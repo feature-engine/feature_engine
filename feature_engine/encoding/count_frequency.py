@@ -3,6 +3,7 @@
 
 from typing import List, Optional, Union
 
+import copy
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
@@ -79,8 +80,12 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
     {errors}
 
     threshold: int,float or None, default=None
-        With threshold you have the option to perform backoff binning for all
-        columns based on the given threshold.
+        if a category is present in less than threshold number / fraction
+        of observations, it will be grouped with other labels, and then replaced
+        by the number/fraction of observations seen in all this rare labels combined.
+        If encoding_method is 'count' then threshold takes an integer.
+        If encoding_method is frequency, then threshold takes a float.
+        If None, no grouping will be performed
 
     Attributes
     ----------
@@ -159,11 +164,7 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
         self.encoding_method = encoding_method
         self.threshold = threshold
 
-    def fit(
-        self,
-        X: pd.DataFrame,
-        y: Optional[pd.Series] = None,
-    ):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         Learn the counts or frequencies which will be used to replace the categories.
 
@@ -176,8 +177,6 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
         y: pandas Series, default = None
             y is not needed in this encoder. You can pass y or None.
 
-        threshold : int/float if encoding is "count" and "frequency", default = None
-            Thresholds for each column needed for binning infrequent categories
         """
 
         X = check_X(X)
@@ -186,75 +185,66 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
 
         self.encoder_dict_ = {}
 
-        if self.threshold is not None and self.encoding_method == "count":
-            # learn encoding maps
-            for var in self.variables_:
-                temp = {"backoff_bin": 0}
-                for k, v in X[var].value_counts().to_dict().items():
-                    if v <= self.threshold:
-                        temp["backoff_bin"] = temp["backoff_bin"] + v
-                    else:
-                        temp[k] = v
-                self.encoder_dict_[var] = temp
+        # Remember unique values for each feature
+        # for validation inside transform
+        self.__hold_unique_feature_values = {}
 
-        elif self.threshold is not None and self.encoding_method == "frequency":
+        if self.encoding_method == "count":
             for var in self.variables_:
-                temp = {"backoff_bin": 0}
+                self.encoder_dict_[var] = X[var].value_counts().to_dict()
+                self.__hold_unique_feature_values[var] = X[var].unique().tolist()
+
+        elif self.encoding_method == "frequency":
+            for var in self.variables_:
                 n_obs = float(len(X))
-                for k, v in (X[var].value_counts() / n_obs).to_dict().items():
-                    if v <= self.threshold:
-                        temp["backoff_bin"] = temp["backoff_bin"] + v
-                    else:
-                        temp[k] = v
-                self.encoder_dict_[var] = temp
+                self.encoder_dict_[var] = (X[var].value_counts() / n_obs).to_dict()
+                self.__hold_unique_feature_values[var] = X[var].unique().tolist()
 
-        else:
-
-            if self.encoding_method == "count":
-                for var in self.variables_:
-                    self.encoder_dict_[var] = X[var].value_counts().to_dict()
-
-            elif self.encoding_method == "frequency":
-                for var in self.variables_:
-                    n_obs = float(len(X))
-                    self.encoder_dict_[var] = (X[var].value_counts() / n_obs).to_dict()
+        if self.threshold is not None:
+            enc_dct_cpy = copy.deepcopy(self.encoder_dict_.copy())
+            for k, v in enc_dct_cpy.items():
+                self.encoder_dict_[k].update(
+                    {
+                        "backoff_bin": sum(
+                            [
+                                self.encoder_dict_[k].pop(key)
+                                for key in [
+                                    key
+                                    for key, value in v.items()
+                                    if value <= self.threshold
+                                ]
+                            ]
+                        )
+                    }
+                )
 
         self._check_encoding_dictionary()
 
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """
-        Replace the categories with counts/frequencies.Replace infrequent categories by
-        the count/frequencies of the 'backoff_bin' based on the threshold provided.
-        In case, no threshold was provided,categories are replaced with
-        counts/frequencies according to encoding_method.
+        """Replace categories with the learned parameters.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The input samples.
+        X: pandas dataframe of shape = [n_samples, n_features].
+            The dataset to transform.
 
         Returns
         -------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The dataframe where categories are encoded.
+        X_new: pandas dataframe of shape = [n_samples, n_features].
+            The dataframe containing the categories replaced by numbers.
         """
+
         X = self._check_transform_input_and_state(X)
 
-        if self.threshold is None:
-            return super().transform(X)
-        else:
-            for feature in self.variables_:
-                keys_before_transform = set(list(X[feature].value_counts().keys()))
-                keys_from_encoder_dict = set(self.encoder_dict_[feature].keys())
-                reminder_keys = keys_before_transform - keys_from_encoder_dict
-                X[feature] = (
-                    X[feature]
-                    .replace(reminder_keys, "backoff_bin")
-                    .map(self.encoder_dict_[feature])
-                )
-            return X
+        for feature in self.variables_:
+            keys_from_encoder_dict = set(self.encoder_dict_[feature].keys())
+            keys_from_fit = set(self.__hold_unique_feature_values[feature])
+            reminder_keys = keys_from_fit - keys_from_encoder_dict
+            X[feature] = X[feature].replace(reminder_keys, "backoff_bin")
+
+        return super().transform(X)
 
     def inverse_transform(self, X: pd.DataFrame):
         """inverse_transform is not implemented for this transformer."""
