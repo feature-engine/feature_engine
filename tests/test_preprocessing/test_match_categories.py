@@ -1,46 +1,35 @@
+import warnings
+
 import pandas as pd
 import pytest
-
 from feature_engine.preprocessing import MatchCategories
 
 
 def test_category_encoder_outputs_correct_dtype():
-    df_str = pd.DataFrame({
-        "col1": ["a", "b", "c"]
-    })
+    df_str = pd.DataFrame({"col1": ["a", "b", "c"]})
     res_str = MatchCategories().fit(df_str).transform(df_str)
     assert res_str.dtypes["col1"] == "category"
 
-    df_float = pd.DataFrame({
-        "col1": [1.0, 2.0, 3.0]
-    })
+    df_float = pd.DataFrame({"col1": [1.0, 2.0, 3.0]})
     tr = MatchCategories(variables=["col1"], ignore_format=True)
     res_float = tr.fit(df_float).transform(df_float)
     assert res_float.dtypes["col1"] == "category"
 
-    df_obj = pd.DataFrame({
-        "col1": ["a", None, -1.0]
-    })
-    res_obj = MatchCategories().fit(df_obj).transform(df_obj)
+    df_obj = pd.DataFrame({"col1": ["a", None, -1.0]})
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        res_obj = MatchCategories(errors="ignore").fit(df_obj).transform(df_obj)
     assert res_obj.dtypes["col1"] == "category"
 
-    df_categ = pd.DataFrame({
-        "col1": pd.Categorical(pd.Series(["a", "b", "c"]))
-    })
+    df_categ = pd.DataFrame({"col1": pd.Categorical(pd.Series(["a", "b", "c"]))})
     res_categ = MatchCategories().fit(df_categ).transform(df_categ)
     assert res_categ.dtypes["col1"] == "category"
 
 
 def test_category_encoder_handles_missing():
-    df_no_nas = pd.DataFrame({
-        "col1": ["a", "b", "c"]
-    })
-    df_nas = pd.DataFrame({
-        "col1": ["a", "b", None]
-    })
-    df_new = pd.DataFrame({
-        "col1": ["a", "b", "d"]
-    })
+    df_no_nas = pd.DataFrame({"col1": ["a", "b", "c"]})
+    df_nas = pd.DataFrame({"col1": ["a", "b", None]})
+    df_new = pd.DataFrame({"col1": ["a", "b", "d"]})
 
     # check that it fails for missing values when using 'raise'
     with pytest.raises(ValueError):
@@ -61,10 +50,7 @@ def test_category_encoder_handles_missing():
 
 
 def test_category_outputs_correct_results():
-    df = pd.DataFrame({
-        "col1": ["a", "b", "c"],
-        "col2": [1.0, 2.0, 3.0]
-    })
+    df = pd.DataFrame({"col1": ["a", "b", "c"], "col2": [1.0, 2.0, 3.0]})
     tr = MatchCategories(variables=["col1", "col2"], ignore_format=True).fit(df)
     res = tr.transform(df)
     pd.testing.assert_frame_equal(df, res, check_dtype=False, check_categorical=False)

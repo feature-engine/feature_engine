@@ -1,23 +1,29 @@
+import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
-
 from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.encoding._docstrings import (
+    _errors_docstring,
     _ignore_format_docstring,
     _variables_docstring,
 )
-from feature_engine.dataframe_checks import _check_contains_na
-from feature_engine.encoding.base_encoder import CategoricalInitMixin, CategoricalMethodsMixin
+from feature_engine.encoding._helper_functions import check_parameter_errors
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitMixin,
+    CategoricalMethodsMixin,
+)
 
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
+    errors=_errors_docstring,
     variables=_variables_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -45,6 +51,8 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
 
     {ignore_format}
 
+    {errors}
+
     Attributes
     ----------
     category_dict_:
@@ -64,19 +72,16 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
     transform:
         Enforce the type of categorical variables as dtype `categorical`.
     """
+
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        missing_values: str = "raise",
+        errors: str = "raise",
     ) -> None:
-        if missing_values not in ["raise", "ignore"]:
-            raise ValueError(
-                "missing_values takes only values 'raise' or 'ignore'. "
-                f"Got {missing_values} instead."
-            )
-        super().__init__(variables, ignore_format)
-        self.missing_values = missing_values
+        check_parameter_errors(errors, ["ignore", "raise"])
+        super().__init__(variables, ignore_format, allow_missing=errors != "raise")
+        self.errors = errors
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -91,12 +96,8 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
         y: pandas Series, default = None
             y is not needed in this encoder. You can pass y or None.
         """
-        X = self._check_X(X)
+        X = check_X(X)
         self._check_or_select_variables(X)
-
-        if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
-
         self._get_feature_names_in(X)
 
         self.category_dict_ = dict()
@@ -121,24 +122,23 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
         """
         X = self._check_transform_input_and_state(X)
 
-        if self.missing_values == "raise":
+        if self.errors == "raise":
             _check_contains_na(X, self.variables_)
 
         for feature, levels in self.category_dict_.items():
-            X = X.assign(**{feature: pd.Categorical(X[feature], levels)})
+            X[feature] = pd.Categorical(X[feature], levels)
 
         self._check_nas_in_result(X)
         return X
 
     def _check_nas_in_result(self, X: pd.DataFrame):
-        #TODO: what is this method for?
         # check if NaN values were introduced by the encoding
-        if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
+        if X[self.category_dict_.keys()].isnull().sum().sum() > 0:
 
             # obtain the name(s) of the columns have null values
             nan_columns = (
-                X[self.encoder_dict_.keys()]
-                .columns[X[self.encoder_dict_.keys()].isnull().any()]
+                X[self.category_dict_.keys()]
+                .columns[X[self.category_dict_.keys()].isnull().any()]
                 .tolist()
             )
 
