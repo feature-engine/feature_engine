@@ -5,6 +5,7 @@ from collections import defaultdict
 from typing import List, Optional, Union
 
 import pandas as pd
+
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -108,6 +109,10 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     Notes
     -----
+    NAN will be introduced when encoding categories that were not present in the
+    training set. If this happens, try grouping infrequent categories using the
+    RareLabelEncoder(), or set `errors='encode'`.
+    
     There is a similar implementation in the open-source package
     `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
 
