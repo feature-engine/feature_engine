@@ -112,7 +112,7 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     NAN will be introduced when encoding categories that were not present in the
     training set. If this happens, try grouping infrequent categories using the
     RareLabelEncoder(), or set `errors='encode'`.
-    
+
     There is a similar implementation in the open-source package
     `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
 
