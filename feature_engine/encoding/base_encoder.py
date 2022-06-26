@@ -2,6 +2,9 @@ import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils.validation import check_is_fitted
+
 from feature_engine._docstrings.methods import _get_feature_names_out_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
@@ -22,12 +25,11 @@ from feature_engine.variable_manipulation import (
     _find_all_variables,
     _find_or_check_categorical_variables,
 )
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
 
 
 @Substitution(
-    ignore_format=_ignore_format_docstring, variables=_variables_docstring,
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
 )
 class CategoricalInitMixin:
     """Shared initialization parameters across transformers.
@@ -85,7 +87,8 @@ class CategoricalInitExpandedMixin(CategoricalInitMixin):
 
 
 @Substitution(
-    ignore_format=_ignore_format_docstring, variables=_variables_docstring,
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
 )
 class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
     """Shared methods across categorical transformers.
