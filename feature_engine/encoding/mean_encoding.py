@@ -5,23 +5,27 @@ from typing import List, Union
 
 import pandas as pd
 
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _inverse_transform_docstring,
 )
-from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.encoding._docstrings import (
     _errors_docstring,
     _ignore_format_docstring,
     _transform_docstring,
     _variables_docstring,
 )
-from feature_engine.encoding.base_encoder import BaseCategorical
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitExpandedMixin,
+    CategoricalMethodsMixin,
+)
 
 
 @Substitution(
@@ -35,7 +39,7 @@ from feature_engine.encoding.base_encoder import BaseCategorical
     transform=_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class MeanEncoder(BaseCategorical):
+class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
     """
     The MeanEncoder() replaces categories by the mean value of the target for each
     category.
@@ -133,8 +137,8 @@ class MeanEncoder(BaseCategorical):
             The target.
         """
 
-        X, y = self._check_X_y(X, y)
-        self._check_or_select_variables(X)
+        X, y = check_X_y(X, y)
+        self._fit(X)
         self._get_feature_names_in(X)
 
         temp = pd.concat([X, y], axis=1)

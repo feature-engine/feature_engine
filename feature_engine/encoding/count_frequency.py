@@ -5,23 +5,27 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _inverse_transform_docstring,
 )
-from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X
 from feature_engine.encoding._docstrings import (
     _errors_docstring,
     _ignore_format_docstring,
     _transform_docstring,
     _variables_docstring,
 )
-from feature_engine.encoding.base_encoder import BaseCategorical
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitExpandedMixin,
+    CategoricalMethodsMixin,
+)
 
 
 @Substitution(
@@ -35,7 +39,7 @@ from feature_engine.encoding.base_encoder import BaseCategorical
     transform=_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class CountFrequencyEncoder(BaseCategorical):
+class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
     """
     The CountFrequencyEncoder() replaces categories by either the count or the
     percentage of observations per category.
@@ -140,8 +144,8 @@ class CountFrequencyEncoder(BaseCategorical):
         y: pandas Series, default = None
             y is not needed in this encoder. You can pass y or None.
         """
-        X = self._check_X(X)
-        self._check_or_select_variables(X)
+        X = check_X(X)
+        self._fit(X)
         self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}

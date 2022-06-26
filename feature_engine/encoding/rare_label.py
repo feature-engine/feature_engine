@@ -7,18 +7,23 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X
 from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
 )
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
+from feature_engine.dataframe_checks import _check_contains_na
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitMixin,
+    CategoricalMethodsMixin,
+)
 
 
 @Substitution(
@@ -29,7 +34,7 @@ from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class RareLabelEncoder(BaseCategoricalTransformer):
+class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The RareLabelEncoder() groups rare or infrequent categories in
     a new category called "Rare", or any other name entered by the user.
@@ -147,8 +152,8 @@ class RareLabelEncoder(BaseCategoricalTransformer):
             y is not required. You can pass y or None.
         """
 
-        X = self._check_X(X)
-        self._check_or_select_variables(X)
+        X = check_X(X)
+        self._fit(X)
         self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
@@ -199,6 +204,9 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         """
 
         X = self._check_transform_input_and_state(X)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables_)
 
         for feature in self.variables_:
             X[feature] = np.where(

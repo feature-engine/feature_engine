@@ -1,0 +1,106 @@
+Version 1.4.X
+=============
+
+Version 1.4.1
+-------------
+
+Deployed: 13th June 2022
+
+Contributors
+~~~~~~~~~~~~
+
+    - `Sangam <https://github.com/SangamSwadiK>`_
+    - `Soledad Galli <https://github.com/solegalli>`_
+
+Enhancements
+~~~~~~~~~~~~
+
+    - The `BoxCoxTransformer` has now `inverse_transform` functionality (`Sangam <https://github.com/SangamSwadiK>`_)
+    - Transformers now check for duplicated variable names entered in the init `variables` parameter (`Soledad Galli <https://github.com/solegalli>`_)
+
+Bug fixes
+~~~~~~~~~
+
+    - Fix test on Python 3.10  in CircleCI (`Sangam <https://github.com/SangamSwadiK>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+    - Fix numpy typing error related to numpy newest version (`Sangam <https://github.com/SangamSwadiK>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+    - Update python versions in setup file (`Soledad Galli <https://github.com/solegalli>`_)
+
+
+Version 1.4.0
+-------------
+
+Deployed: 9th June 2022
+
+Contributors
+~~~~~~~~~~~~
+
+    - `tomtom-95 <https://github.com/tomtom-95>`_
+    - `Fernando Barbosa  <https://github.com/nandevers>`_
+    - `Sangam <https://github.com/SangamSwadiK>`_
+    - `Swati A Firangi <https://github.com/Safirangi>`_
+    - `Mohamed Emad <https://github.com/iMezemz>`_
+    - `Brice <https://github.com/BriceChivu>`_
+    - `Soledad Galli <https://github.com/solegalli>`_
+
+In this release, we fix a major bug that was preventing you guys from using the new module
+introduced in version 1.3: timeseries. We basically, forgot to add the __init__ file and
+for some reason, we did not pick up this error from our development environments. Thank you
+`Brice <https://github.com/BriceChivu>`_ for reporting this very important issue.
+
+In addition, we updated our code base to work with the latest release of Scikit-learn (1.1.1)
+and pandas (1.4.2), which means that like Scikit-learn, we no longer support Python 3.7.
+
+We are delaying the complete deprecation of `MathematicalCombination`, `CombineWithFeatureReference`,
+and `CyclicalTransformer` to our next release (1.5), as this release is a bit short notice,
+to give you more time to adapt your code bases.
+
+In addition, we've added a new transformer, a number of new badges and made some
+enhancements to our code base.
+
+I am very happy to announce that for this release, we had a number of contributions from
+**first time contributors**. Thank you so much for your support!
+
+Thank you so much to all contributors to this release for making it possible!
+
+New transformers
+~~~~~~~~~~~~~~~~
+
+    - **ArcsinTransformer**: transforms variables with the arcsin transformation: arcsin(sqrt(x)) (`tomtom-95 <https://github.com/tomtom-95>`_)
+
+
+Bug fixes
+~~~~~~~~~
+
+    - The `SklearnTransformerWrapper` now accepts categorical variables when used with the FunctionTransformer (`Fernando Barbosa  <https://github.com/nandevers>`_)
+    - Added init file to allow import of time series module (`Soledad Galli <https://github.com/solegalli>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+    - Add Yeo-Johnson article as reference (`Sangam <https://github.com/SangamSwadiK>`_)
+    - Add first timers friendly badge (`Swati A Firangi <https://github.com/Safirangi>`_)
+    - Fixed source of logo in readme (`Mohamed Emad <https://github.com/iMezemz>`_)
+
+
+Deprecations
+~~~~~~~~~~~~
+
+    - We are extending the complete deprecation of `MathematicalCombination`, `CombineWithFeatureReference` and `CyclicalTransformer` to version 1.5
+
+
+Code improvements
+~~~~~~~~~~~~~~~~~
+
+    - Improved message returned when y is not what expected (following sklearn 1.1.1)  (`Soledad Galli <https://github.com/solegalli>`_)
+    - Introduced check for some selectors to ensure user passes more than 1 variable (`Soledad Galli <https://github.com/solegalli>`_)
+
+
+For developers
+~~~~~~~~~~~~~~
+
+    - We broke down base categorical classes into MixIns (`Soledad Galli <https://github.com/solegalli>`_)
+    - Accommodated lack of future pandas support for sets as indexers (`Soledad Galli <https://github.com/solegalli>`_)

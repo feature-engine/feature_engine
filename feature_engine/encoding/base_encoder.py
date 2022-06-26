@@ -1,24 +1,23 @@
 import warnings
-from typing import List, Optional, Union, Tuple
+from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._docstrings.methods import _get_feature_names_out_docstring
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
     check_X,
-    check_X_y,
 )
-from feature_engine.get_feature_names_out import _get_feature_names_out
-from feature_engine._docstrings.substitute import Substitution
-from feature_engine._docstrings.methods import _get_feature_names_out_docstring
 from feature_engine.encoding._docstrings import (
     _errors_docstring,
     _ignore_format_docstring,
     _variables_docstring,
 )
+from feature_engine.get_feature_names_out import _get_feature_names_out
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -31,8 +30,8 @@ from feature_engine.variable_manipulation import (
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
 )
-class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
-    """shared set-up checks and methods across categorical transformers
+class CategoricalInitMixin:
+    """Shared initialization parameters across transformers.
 
     Parameters
     ----------
@@ -66,13 +65,54 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         self.ignore_format = ignore_format
         self.allow_missing = allow_missing
 
-    def _check_X(self, X: pd.DataFrame) -> pd.DataFrame:
-        return check_X(X)
 
-    def _check_X_y(
-        self, X: pd.DataFrame, y: pd.Series
-    ) -> Tuple[pd.DataFrame, pd.Series]:
-        return check_X_y(X, y)
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+    errors=_errors_docstring,
+)
+class CategoricalInitExpandedMixin(CategoricalInitMixin):
+    """Shared initialization parameters across transformers. Contains additional
+    initialization parameters respect to the parent class.
+
+    Parameters
+    ----------
+    {variables}.
+
+    {ignore_format}
+
+    {errors}
+    """
+
+    def __init__(
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        ignore_format: bool = False,
+        errors: str = "ignore",
+    ) -> None:
+        if errors not in ["raise", "ignore"]:
+            raise ValueError(
+                "errors takes only values 'raise' and 'ignore ."
+                f"Got {errors} instead."
+            )
+
+        super().__init__(variables, ignore_format)
+        self.errors = errors
+
+
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+)
+class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
+    """Shared methods across categorical transformers.
+    BaseEstimator brings methods get_params() and set_params().
+    TransformerMixin brings method fit_transform()
+    """
+
+    def _fit(self, X: pd.DataFrame):
+        self._check_or_select_variables(X)
+        _check_contains_na(X, self.variables_)
 
     def _check_or_select_variables(self, X: pd.DataFrame):
         """
@@ -182,6 +222,9 @@ class BaseCategoricalTransformer(BaseEstimator, TransformerMixin):
         """
 
         X = self._check_transform_input_and_state(X)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables_)
 
         # replace categories by the learned parameters
         for feature in self.encoder_dict_.keys():

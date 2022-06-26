@@ -117,7 +117,7 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
            Target variable. Required to train the estimator.
         """
 
-        X = super().fit(X, y)
+        X, y = super().fit(X, y)
 
         # Sort the feature importance values increasingly
         self.feature_importances_.sort_values(ascending=True, inplace=True)
@@ -164,6 +164,11 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
             else:
                 # remove feature and adjust initial performance
                 X_tmp = X_tmp.drop(columns=feature)
+
+                if X_tmp.empty is True:
+                    raise ValueError(
+                        "All features have been removed. Try reducing the threshold."
+                    )
 
                 baseline_model = cross_validate(
                     self.estimator,

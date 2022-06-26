@@ -5,23 +5,27 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _inverse_transform_docstring,
 )
-from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X, check_X_y
 from feature_engine.encoding._docstrings import (
     _errors_docstring,
     _ignore_format_docstring,
     _transform_docstring,
     _variables_docstring,
 )
-from feature_engine.encoding.base_encoder import BaseCategorical
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitExpandedMixin,
+    CategoricalMethodsMixin,
+)
 
 
 @Substitution(
@@ -35,7 +39,7 @@ from feature_engine.encoding.base_encoder import BaseCategorical
     transform=_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class OrdinalEncoder(BaseCategorical):
+class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
     """
     The OrdinalEncoder() replaces categories by ordinal numbers
     (0, 1, 2, 3, etc). The numbers can be ordered based on the mean of the target
@@ -149,11 +153,11 @@ class OrdinalEncoder(BaseCategorical):
         """
 
         if self.encoding_method == "ordered":
-            X, y = self._check_X_y(X, y)
+            X, y = check_X_y(X, y)
         else:
-            X = self._check_X(X)
+            X = check_X(X)
 
-        self._check_or_select_variables(X)
+        self._fit(X)
         self._get_feature_names_in(X)
 
         if self.encoding_method == "ordered":

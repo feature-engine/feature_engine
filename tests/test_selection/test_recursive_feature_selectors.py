@@ -78,7 +78,7 @@ def test_fit_initial_model_performance(
 ):
     X, y = df_test
 
-    sel = _selector(_classifier).fit(X, y)
+    sel = _selector(_classifier, threshold=-100).fit(X, y)
 
     assert np.round(sel.initial_model_performance_, 4) == _roc
 
@@ -153,10 +153,10 @@ _estimators_importance = [
 def test_feature_importances(_estimator, _importance, df_test):
     X, y = df_test
 
-    sel = RecursiveFeatureAddition(_estimator).fit(X, y)
+    sel = RecursiveFeatureAddition(_estimator, threshold=-100).fit(X, y)
     _importance.sort(reverse=True)
     assert list(np.round(sel.feature_importances_.values, 4)) == _importance
 
-    sel = RecursiveFeatureElimination(_estimator).fit(X, y)
+    sel = RecursiveFeatureElimination(_estimator, threshold=-100).fit(X, y)
     _importance.sort(reverse=False)
     assert list(np.round(sel.feature_importances_.values, 4)) == _importance
