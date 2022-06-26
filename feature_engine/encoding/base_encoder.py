@@ -17,6 +17,7 @@ from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
 )
+from feature_engine.encoding._helper_functions import check_parameter_errors
 from feature_engine.get_feature_names_out import _get_feature_names_out
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
@@ -80,12 +81,7 @@ class CategoricalInitExpandedMixin(CategoricalInitMixin):
         ignore_format: bool = False,
         errors: str = "ignore",
     ) -> None:
-        if errors not in ["raise", "ignore"]:
-            raise ValueError(
-                "errors takes only values 'raise' and 'ignore ."
-                f"Got {errors} instead."
-            )
-
+        check_parameter_errors(errors, ["raise", "ignore"])
         super().__init__(variables, ignore_format)
         self.errors = errors
 

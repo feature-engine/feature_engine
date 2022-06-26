@@ -1,6 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from collections import defaultdict
 from typing import List, Optional, Union
 
 import pandas as pd
@@ -22,9 +23,15 @@ from feature_engine.encoding._docstrings import (
     _transform_docstring,
     _variables_docstring,
 )
+from feature_engine.encoding._helper_functions import check_parameter_errors
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitExpandedMixin,
+    CategoricalInitMixin,
     CategoricalMethodsMixin,
+)
+
+_errors_docstring = (
+    _errors_docstring
+    + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
 )
 
 
@@ -39,7 +46,7 @@ from feature_engine.encoding.base_encoder import (
     transform=_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
+class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The CountFrequencyEncoder() replaces categories by either the count or the
     percentage of observations per category.
@@ -102,11 +109,11 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
 
     Notes
     -----
-    NAN are introduced when encoding categories that were not present in the training
-    dataset. If this happens, try grouping infrequent categories using the
-    RareLabelEncoder().
+    NAN will be introduced when encoding categories that were not present in the
+    training set. If this happens, try grouping infrequent categories using the
+    RareLabelEncoder(), or set `errors='encode'`.
 
-    There is a similar implementation in the the open-source package
+    There is a similar implementation in the open-source package
     `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
 
     See Also
@@ -125,11 +132,14 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
 
         if encoding_method not in ["count", "frequency"]:
             raise ValueError(
-                "encoding_method takes only values 'count' and 'frequency'"
+                "encoding_method takes only values 'count' and 'frequency'. "
+                f"Got {encoding_method} instead."
             )
-        super().__init__(variables, ignore_format, errors)
 
+        check_parameter_errors(errors, ["ignore", "raise", "encode"])
+        super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
+        self.errors = errors
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -149,15 +159,17 @@ class CountFrequencyEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixi
         self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
+        dct_init = defaultdict(lambda: 0) if self.errors == "encode" else {}
 
         # learn encoding maps
         for var in self.variables_:
             if self.encoding_method == "count":
-                self.encoder_dict_[var] = X[var].value_counts().to_dict()
+                self.encoder_dict_[var] = X[var].value_counts().to_dict(dct_init)
 
             elif self.encoding_method == "frequency":
-                n_obs = float(len(X))
-                self.encoder_dict_[var] = (X[var].value_counts() / n_obs).to_dict()
+                self.encoder_dict_[var] = (
+                    X[var].value_counts(normalize=True).to_dict(dct_init)
+                )
 
         self._check_encoding_dictionary()
 
