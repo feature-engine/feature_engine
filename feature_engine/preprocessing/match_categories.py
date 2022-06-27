@@ -80,7 +80,7 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
         errors: str = "raise",
     ) -> None:
         check_parameter_errors(errors, ["ignore", "raise"])
-        super().__init__(variables, ignore_format, allow_missing=errors != "raise")
+        super().__init__(variables, ignore_format)
         self.errors = errors
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -99,6 +99,8 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
         X = check_X(X)
         self._check_or_select_variables(X)
         self._get_feature_names_in(X)
+        if self.errors == "raise":
+            _check_contains_na(X, self.variables_)
 
         self.category_dict_ = dict()
         for var in self.variables_:
