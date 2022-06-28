@@ -5,8 +5,15 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
+from sklearn.base import BaseEstimator, TransformerMixin
 
 from feature_engine.creation.base_creation import BaseCreation
+from feature_engine.dataframe_checks import (
+    _check_contains_na,
+    _check_contains_inf,
+    _check_X_matches_training_df,
+    check_X,
+)
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
@@ -33,7 +40,7 @@ from feature_engine.variable_manipulation import _find_or_check_datetime_variabl
     transform=BaseCreation._transform_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class RelativeFeatures(BaseCreation):
+class DatetimeSubtraction(BaseEstimator, TransformerMixin):
     """
     DatetimeSubtraction() applies datetime subtraction between a group
     of variables and one or more reference features. It adds one or more additional
@@ -89,9 +96,9 @@ class RelativeFeatures(BaseCreation):
         self,
         variables: List[Union[str, int]],
         reference: List[Union[str, int]],
-        output_unit: str = 'D',
         missing_values: str = "ignore",
         drop_original: bool = False,
+        output_unit: str = 'D',
     ) -> None:
 
         if (
@@ -114,6 +121,18 @@ class RelativeFeatures(BaseCreation):
                 f"Got {reference} instead."
             )
 
+        if not isinstance(drop_original, bool):
+            raise ValueError(
+                "drop_original takes only booleans True or False. "
+                f"Got {drop_original} instead."
+            )
+
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError(
+                "missing_values takes only values 'raise' or 'ignore'. "
+                f"Got {missing_values} instead."
+            )
+
         valid_output_units = {'D', 'Y', 'M', 'W', 'h', 'm', 's', 'ms', 'us', 'μs', 'ns',
                               'ps', 'fs', 'as'}
 
@@ -121,9 +140,10 @@ class RelativeFeatures(BaseCreation):
             raise ValueError(f"output_unit accepts the following values: "
                              f"{valid_output_units}")
 
-        super().__init__(missing_values, drop_original)
         self.variables = variables
         self.reference = reference
+        self.drop_original = drop_original
+        self.missing_values = missing_values
         self.output_unit = output_unit
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -140,11 +160,22 @@ class RelativeFeatures(BaseCreation):
             It is not needed in this transformer. You can pass y or None.
         """
         # Common checks and attributes
-        X = super().fit(X, y)
+        X = check_X(X)
 
         # check variables are datetime
         self.reference = _find_or_check_datetime_variables(X, self.reference)
         self.variables = _find_or_check_datetime_variables(X, self.variables)
+
+        # check if dataset contains na
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables)
+            _check_contains_inf(X, self.variables)
+
+        # save input features
+        self.feature_names_in_ = X.columns.tolist()
+
+        # save train set shape
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -163,7 +194,17 @@ class RelativeFeatures(BaseCreation):
             The input dataframe plus the new variables.
         """
 
-        X = super().transform(X)
+        # Check method fit has been called
+        check_is_fitted(self)
+
+        # check that input is a dataframe
+        X = check_X(X)
+
+        # Check if input data contains same number of columns as dataframe used to fit.
+        _check_X_matches_training_df(X, self.n_features_in_)
+
+        # reorder variables to match train set
+        X = X[self.feature_names_in_]
 
         self._sub(X)
 
