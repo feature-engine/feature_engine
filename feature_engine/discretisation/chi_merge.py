@@ -208,7 +208,8 @@ class ChiMergeDiscretiser(BaseDiscretiser):
     def _perform_chi_merge(self) -> None:
         """
         Merge adjacent distributions until the the minimum chi-square is greater than
-        the threshold or the number of frequency-matrix intervals.
+        the threshold or the number of frequency-matrix intervals is equal to the
+        limit of the minimum number of intervals.
 
         Parameters
         ----------
@@ -219,8 +220,6 @@ class ChiMergeDiscretiser(BaseDiscretiser):
         None
 
         """
-
-        chi_test = {}
 
         while self.frequency_matrix_.shape[0] > self.min_intervals:
 
@@ -237,20 +236,24 @@ class ChiMergeDiscretiser(BaseDiscretiser):
                     chi_test[chi2] = []
 
                 chi_test[chi2].append((row_idx, row_idx_2))
-            smallest = min(chi_test.keys())
-            biggest = max(chi_test.keys())
 
-            if smallest < self.threshold:
+            # use variable to merge the frequency-matrix intervals that
+            # have the lowest confidence that the frequency distributions are different
+            min_chi_score = min(chi_test.keys())
 
-                # reversee list allows code to remove the upperbound as it is updating the frequency matrix
-                for lower_bound, upper_bound in list(reversed(chi_test[smallest])):
+            if min_chi_score < self.threshold:
+
+                # reverse list allows code to remove the upperbound as it is updating the frequency matrix
+                for lower_bound, upper_bound in list(reversed(chi_test[min_chi_score])):
                     for col_idx in range(shape[1]):
-                        # merge upperbound distribution into lowerbound distribution
+                        # merge upper-bound distribution into lower-bound distribution
                         self.frequency_matrix_[lower_bound, col_idx] += self.frequency_matrix_[upper_bound, col_idx]
 
                     # delete upperbound and its distribution from the frequeny matrix
                     self.frequency_matrix_ = np.delete(self.frequency_matrix_, upper_bound, 0)
                     self.frequency_matrix_intervals_ = np.delete(self.frequency_matrix_intervals_, upper_bound, 0)
+
+            # stop merge when minimum chi-score is greater than or equal to the threshold
             else:
                 break
 
