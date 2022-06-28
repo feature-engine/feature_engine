@@ -1,17 +1,17 @@
+from typing import List
+
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import (
-    _check_input_matches_training_df,
-    _is_dataframe,
-)
-from feature_engine.validation import _return_tags
+from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
+from feature_engine.tags import _return_tags
+from feature_engine.variable_manipulation import _filter_out_variables_not_in_dataframe
 
 
 def get_feature_importances(estimator):
-    """Retrieve feature importances from a fitted estimator"""
+    """Retrieve feature importance from a fitted estimator"""
 
     importances = getattr(estimator, "feature_importances_", None)
 
@@ -31,9 +31,45 @@ def get_feature_importances(estimator):
 
 
 class BaseSelector(BaseEstimator, TransformerMixin):
-    """Transformation shared by all selectors"""
+    """
+    Shared set-up checks and methods across selectors.
 
-    def transform(self, X: pd.DataFrame):
+    Parameters
+    ----------
+    confirm_variables: bool, default=False
+        If set to True, variables that are not present in the input dataframe will be
+        removed from the indicated list of variables. See parameter variables for more
+        details.
+
+    Methods
+    -------
+    transform:
+        Remove non-selected features.
+
+    _confirm_variables:
+        Check that the variables entered by the user exist in the df.
+    """
+
+    _confirm_variables_docstring = """confirm_variables: bool, default=False
+            If set to True, variables that are not present in the input dataframe will
+            be removed from the list of variables. Only used when passing a variable
+            list to the parameter `variables`. See parameter variables for more details.
+            """.rstrip()
+
+    def __init__(
+        self,
+        confirm_variables: bool = False,
+    ) -> None:
+
+        if not isinstance(confirm_variables, bool):
+            raise ValueError(
+                "confirm_variables takes only values True and False. "
+                f"Got {confirm_variables} instead."
+            )
+
+        self.confirm_variables = confirm_variables
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Return dataframe with selected features.
 
@@ -52,16 +88,71 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         # check if input is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # check if number of columns in test dataset matches to train dataset
-        _check_input_matches_training_df(X, self.n_features_in_)
+        _check_X_matches_training_df(X, self.n_features_in_)
+
+        # reorder df to match train set
+        X = X[self.feature_names_in_]
 
         # return the dataframe with the selected features
         return X.drop(columns=self.features_to_drop_)
 
+    def _get_feature_names_in(self, X):
+        """Get the names and number of features in the train set. The dataframe
+        used during fit."""
+
+        self.feature_names_in_ = X.columns.to_list()
+        self.n_features_in_ = X.shape[1]
+
+        return self
+
+    def get_feature_names_out(self, input_features=None) -> List:
+        """Get output feature names for transformation.
+
+        input_features: None
+            This parameter exists only for compatibility with the Scikit-learn
+            pipeline, but has no functionality. You can pass a list of feature names
+            or None.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        feature_names = [
+            f for f in self.feature_names_in_ if f not in self.features_to_drop_
+        ]
+
+        return feature_names
+
+    def _confirm_variables(self, X: pd.DataFrame) -> None:
+        # If required, exclude variables that are not in the input dataframe
+        if self.confirm_variables:
+            self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
+        else:
+            self.variables_ = self.variables
+
+        return None
+
+    def _check_variable_number(self) -> None:
+        """Check that there are multiple variables for the selectors to work with."""
+        if len(self.variables_) < 2:
+            raise ValueError(
+                "The selector needs at least 2 or more variables to select from. "
+                f"Got only 1 variable: {self.variables_}."
+            )
+
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
         # add additional test that fails
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+
+        msg = "transformers need more than 1 feature to work"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+
         return tags_dict

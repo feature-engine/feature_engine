@@ -7,12 +7,35 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X
+from feature_engine.encoding._docstrings import (
+    _ignore_format_docstring,
+    _variables_docstring,
+)
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitMixin,
+    CategoricalMethodsMixin,
+)
 
 
-class RareLabelEncoder(BaseCategoricalTransformer):
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
+class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
-    The RareLabelCategoricalEncoder() groups rare or infrequent categories in
+    The RareLabelEncoder() groups rare or infrequent categories in
     a new category called "Rare", or any other name entered by the user.
 
     For example in the variable colour, if the percentage of observations
@@ -61,18 +84,9 @@ class RareLabelEncoder(BaseCategoricalTransformer):
     replace_with: string, intege or float, default='Rare'
         The value that will be used to replace infrequent categories.
 
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
 
     Attributes
     ----------
@@ -80,20 +94,21 @@ class RareLabelEncoder(BaseCategoricalTransformer):
         Dictionary with the frequent categories, i.e., those that will be kept, per
         variable.
 
-    variables_:
-        The variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Find frequent categories.
+
+    {fit_transform}
+
     transform:
         Group rare categories
-    fit_transform:
-        Fit to data, then transform it.
     """
 
     def __init__(
@@ -136,7 +151,9 @@ class RareLabelEncoder(BaseCategoricalTransformer):
             y is not required. You can pass y or None.
         """
 
-        X = self._check_fit_input_and_variables(X)
+        X = check_X(X)
+        self._check_or_select_variables(X)
+        self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
 
@@ -166,8 +183,6 @@ class RareLabelEncoder(BaseCategoricalTransformer):
                 self.encoder_dict_[var] = X[var].unique()
 
         self._check_encoding_dictionary()
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 

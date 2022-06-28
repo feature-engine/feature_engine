@@ -1,26 +1,33 @@
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
+from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 from feature_engine.transformation import (
     BoxCoxTransformer,
     LogCpTransformer,
+    ArcsinTransformer,
     LogTransformer,
     PowerTransformer,
     ReciprocalTransformer,
     YeoJohnsonTransformer,
 )
 
+_estimators = [
+    BoxCoxTransformer(),
+    LogTransformer(),
+    LogCpTransformer(),
+    ArcsinTransformer(),
+    PowerTransformer(),
+    ReciprocalTransformer(),
+    YeoJohnsonTransformer(),
+]
 
-@pytest.mark.parametrize(
-    "Estimator",
-    [
-        BoxCoxTransformer(),
-        LogTransformer(),
-        LogCpTransformer(),
-        PowerTransformer(),
-        ReciprocalTransformer(),
-        YeoJohnsonTransformer(),
-    ],
-)
-def test_all_transformers(Estimator):
-    return check_estimator(Estimator)
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_check_estimator_from_sklearn(estimator):
+    return check_estimator(estimator)
+
+
+@pytest.mark.parametrize("estimator", _estimators[4:])
+def test_check_estimator_from_feature_engine(estimator):
+    return check_feature_engine_estimator(estimator)

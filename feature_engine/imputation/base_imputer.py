@@ -1,21 +1,40 @@
+from typing import List, Optional, Union
+
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import (
-    _check_input_matches_training_df,
-    _is_dataframe,
-)
-from feature_engine.validation import _return_tags
+from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
+from feature_engine.get_feature_names_out import _get_feature_names_out
+from feature_engine._docstrings.methods import _get_feature_names_out_docstring
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.tags import _return_tags
 
 
 class BaseImputer(BaseEstimator, TransformerMixin):
     """shared set-up checks and methods across imputers"""
 
-    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
+    _variables_numerical_docstring = """variables: list, default=None
+        The list of variables to impute. If None, the imputer will select
+        all numerical variables.
+        """.rstrip()
+
+    _imputer_dict_docstring = """imputer_dict_:
+        Dictionary with the values to replace missing data in each variable.
+        """.rstrip()
+
+    _transform_docstring = """transform:
+        Impute missing data.
+        """.rstrip()
+
+    def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Check that the input is a dataframe and of the same size than the one used
-        in the fit method. Checks absence of NA.
+        Common checks before transforming data:
+
+        - Check transformer was fit
+        - Check that the input is a dataframe
+        - Check that input has same size than the train set used in fit()
+        - Re-orders dataframe features if necessary
 
         Parameters
         ----------
@@ -30,10 +49,13 @@ class BaseImputer(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
 
         # Check that input df contains same number of columns as df used to fit
-        _check_input_matches_training_df(X, self.n_features_in_)
+        _check_X_matches_training_df(X, self.n_features_in_)
+
+        # reorder df to match train set
+        X = X[self.feature_names_in_]
 
         return X
 
@@ -52,16 +74,40 @@ class BaseImputer(BaseEstimator, TransformerMixin):
             The dataframe without missing values in the selected variables.
         """
 
-        X = self._check_transform_input_and_state(X)
+        X = self._transform(X)
 
-        # replaces missing data with the learned parameters
-        for variable in self.imputer_dict_:
-            X[variable].fillna(self.imputer_dict_[variable], inplace=True)
+        # Replace missing data with learned parameters
+        X.fillna(value=self.imputer_dict_, inplace=True)
 
         return X
 
+    def _get_feature_names_in(self, X):
+        """Get the names and number of features in the train set (the dataframe
+        used during fit)."""
+
+        self.feature_names_in_ = X.columns.to_list()
+        self.n_features_in_ = X.shape[1]
+
+        return self
+
+    @Substitution(get_feature_names_out=_get_feature_names_out_docstring)
+    def get_feature_names_out(
+        self, input_features: Optional[List[Union[str, int]]] = None
+    ) -> List[Union[str, int]]:
+        """{get_feature_names_out}"""
+
+        check_is_fitted(self)
+
+        feature_names = _get_feature_names_out(
+            features_in=self.feature_names_in_,
+            transformed_features=self.variables_,
+            input_features=input_features,
+        )
+
+        return feature_names
+
     def _more_tags(self):
         tags_dict = _return_tags()
-        # add additional test that fails
-        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        tags_dict["allow_nan"] = True
+        tags_dict["variables"] = "numerical"
         return tags_dict

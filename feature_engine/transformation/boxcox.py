@@ -5,12 +5,32 @@ from typing import List, Optional, Union
 
 import pandas as pd
 import scipy.stats as stats
+from scipy.special import inv_boxcox
 
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+    _inverse_transform_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
+@Substitution(
+    variables=_variables_numerical_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+    inverse_transform=_inverse_transform_docstring,
+)
 class BoxCoxTransformer(BaseNumericalTransformer):
     """
     The BoxCoxTransformer() applies the BoxCox transformation to numerical
@@ -39,29 +59,30 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of numerical variables to transform. If None, the transformer will
-        automatically find and select all numerical variables.
+    {variables}
 
     Attributes
     ----------
     lambda_dict_:
         Dictionary with the best BoxCox exponent per variable.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn the optimal lambda for the BoxCox transformation.
+
+    {fit_transform}
+
+    {inverse_transform}
+
     transform:
         Apply the BoxCox transformation.
-    fit_transform:
-        Fit to data, then transform it.
 
     References
     ----------
@@ -91,14 +112,12 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X = super()._fit_from_varlist(X)
 
         self.lambda_dict_ = {}
 
         for var in self.variables_:
             _, self.lambda_dict_[var] = stats.boxcox(X[var])
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -126,8 +145,33 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         return X
 
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Convert the data back to the original representation.
+
+        Parameters
+        ----------
+        X: Pandas DataFrame of shape = [n_samples, n_features]
+            The data to be inverse transformed.
+
+        Returns
+        -------
+        X_new: pandas dataframe
+            The dataframe with the original variables.
+        """
+
+        # check input dataframe and if class was fitted
+        X = super().transform(X)
+
+        # inverse transform
+        for feature in self.variables_:
+            X[feature] = inv_boxcox(X[feature], self.lambda_dict_[feature])
+
+        return X
+
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
         # =======  this tests fail because the transformers throw an error
         # when the values are 0. Nothing to do with the test itself but
         # mostly with the data created and used in the test

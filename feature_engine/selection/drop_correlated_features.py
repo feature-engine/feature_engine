@@ -5,7 +5,18 @@ import pandas as pd
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
-    _is_dataframe,
+    check_X,
+)
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.selection._docstring import (
+    _missing_values_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_manipulation import (
@@ -16,6 +27,15 @@ from feature_engine.variable_manipulation import (
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
+@Substitution(
+    confirm_variables=BaseSelector._confirm_variables_docstring,
+    variables=_variables_numerical_docstring,
+    missing_values=_missing_values_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class DropCorrelatedFeatures(BaseSelector):
     """
     DropCorrelatedFeatures() finds and removes correlated features. Correlation is
@@ -29,9 +49,7 @@ class DropCorrelatedFeatures(BaseSelector):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of variables to evaluate. If None, the transformer will evaluate all
-        numerical variables in the dataset.
+    {variables}
 
     method: string or callable, default='pearson'
         Can take 'pearson', 'spearman', 'kendall' or callable. It refers to the
@@ -48,9 +66,9 @@ class DropCorrelatedFeatures(BaseSelector):
         The correlation threshold above which a feature will be deemed correlated with
         another one and removed from the dataset.
 
-    missing_values: str, default=ignore
-        Takes values 'raise' and 'ignore'. Whether the missing values should be raised
-        as error or ignored when determining correlation.
+    {missing_values}
+
+    {confirm_variables}
 
     Attributes
     ----------
@@ -60,20 +78,21 @@ class DropCorrelatedFeatures(BaseSelector):
     correlated_feature_sets_:
         Groups of correlated features. Each list is a group of correlated features.
 
-    variables_:
-        The variables that will be considered for the feature selection.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Find correlated features.
+
+    {fit_transform}
+
     transform:
         Remove correlated features.
-    fit_transform:
-        Fit to the data. Then transform it.
 
     Notes
     -----
@@ -92,6 +111,7 @@ class DropCorrelatedFeatures(BaseSelector):
         method: str = "pearson",
         threshold: float = 0.8,
         missing_values: str = "ignore",
+        confirm_variables: bool = False,
     ):
 
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
@@ -99,6 +119,8 @@ class DropCorrelatedFeatures(BaseSelector):
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
+
+        super().__init__(confirm_variables)
 
         self.variables = _check_input_parameter_variables(variables)
         self.method = method
@@ -119,10 +141,16 @@ class DropCorrelatedFeatures(BaseSelector):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X = check_X(X)
+
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
 
         # find all numerical variables or check those entered are in the dataframe
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
+
+        # check that there are more than 1 variable to select from
+        self._check_variable_number()
 
         if self.missing_values == "raise":
             # check if dataset contains na
@@ -176,14 +204,7 @@ class DropCorrelatedFeatures(BaseSelector):
                 if len(_temp_set) > 1:
                     self.correlated_feature_sets_.append(_temp_set)
 
-        self.n_features_in_ = X.shape[1]
+        # save input features
+        self._get_feature_names_in(X)
 
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseSelector.transform.__doc__

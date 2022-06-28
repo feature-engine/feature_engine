@@ -1,9 +1,12 @@
-.. _cyclical_features:
+.. _cyclical_transformer:
 
 .. currentmodule:: feature_engine.creation
 
 CyclicalTransformer
 ===================
+
+**DEPRECATED: CyclicalTransformer() is deprecated in version 1.3 and will be removed
+in version 1.4. Use CyclicalFeatures() instead.**
 
 The :class:`CyclicalTransformer()` applies cyclical transformations to numerical
 variables. The transformations return 2 new features per variable, according to:

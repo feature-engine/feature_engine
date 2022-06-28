@@ -4,9 +4,27 @@ from typing import List, Union
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import _is_dataframe
+from feature_engine.dataframe_checks import check_X_y
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.selection._docstring import (
+    _cv_docstring,
+    _estimator_docstring,
+    _features_to_drop_docstring,
+    _fit_docstring,
+    _initial_model_performance_docstring,
+    _scoring_docstring,
+    _threshold_docstring,
+    _transform_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
 from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.validation import _return_tags
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
@@ -15,6 +33,22 @@ from feature_engine.variable_manipulation import (
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
+@Substitution(
+    estimator=_estimator_docstring,
+    scoring=_scoring_docstring,
+    threshold=_threshold_docstring,
+    cv=_cv_docstring,
+    variables=_variables_numerical_docstring,
+    confirm_variables=BaseSelector._confirm_variables_docstring,
+    initial_model_performance_=_initial_model_performance_docstring,
+    features_to_drop_=_features_to_drop_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_docstring,
+    transform=_transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class SelectBySingleFeaturePerformance(BaseSelector):
     """
     SelectBySingleFeaturePerformance() selects features based on the performance
@@ -31,69 +65,39 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
     Parameters
     ----------
-    estimator : object
-        A Scikit-learn estimator for regression or classification.
+    {estimator}
 
-    variables: str or list, default=None
-        The list of variable(s) to be evaluated.
-        If None, the transformer will evaluate all numerical variables in the dataset.
+    {variables}
 
-    scoring: str, default='roc_auc'
-        Desired metric to optimise the performance for the estimator. Comes from
-        sklearn.metrics. See the model evaluation documentation for more options:
-        https://scikit-learn.org/stable/modules/model_evaluation.html
+    {scoring}
 
-    threshold: float, int, default = None
-        The value that defines if a feature will be kept or removed.
+    {threshold}
 
-        If the metric is r2, the threshold needs to be set-up within 0 and 1. If the
-        metrics is the roc-auc, the threshold needs to be set-up within 0.5 and 1. For
-        metrics like the mean_square_error and the root_mean_square_error the
-        threshold can be a bigger number.
+    {cv}
 
-        The threshold can be specified by the user. If None, it will be automatically
-        set to the mean performance value of all features.
-
-    cv: int, cross-validation generator or an iterable, default=3
-        Determines the cross-validation splitting strategy. Possible inputs for cv are:
-
-            - None, to use cross_validate's default 5-fold cross validation
-
-            - int, to specify the number of folds in a (Stratified)KFold,
-
-            - CV splitter
-                - (https://scikit-learn.org/stable/glossary.html#term-CV-splitter)
-
-            - An iterable yielding (train, test) splits as arrays of indices.
-
-        For int/None inputs, if the estimator is a classifier and y is either binary or
-        multiclass, StratifiedKFold is used. In all other cases, Fold is used. These
-        splitters are instantiated with `shuffle=False` so the splits will be the same
-        across calls. For more details check Scikit-learn's `cross_validate`'s
-        documentation,
+    {confirm_variables}
 
     Attributes
     ----------
-    features_to_drop_:
-        List with the features to remove from the dataset.
+    {features_to_drop_}
 
     feature_performance_:
         Dictionary with the single feature model performance per feature.
 
-    variables_:
-        The variables that will be considered for the feature selection.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
+
 
     Methods
     -------
-    fit:
-        Find the important features.
-    transform:
-        Reduce X to the selected features.
-    fit_transform:
-        Fit to data, then transform it.
+    {fit}
+
+    {fit_transform}
+
+    {transform}
 
     References
     ----------
@@ -111,6 +115,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         cv=3,
         threshold: Union[int, float] = None,
         variables: Variables = None,
+        confirm_variables: bool = False,
     ):
 
         if threshold:
@@ -130,6 +135,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
                     "0 and 1."
                 )
 
+        super().__init__(confirm_variables)
         self.variables = _check_input_parameter_variables(variables)
         self.estimator = estimator
         self.scoring = scoring
@@ -150,10 +156,22 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         """
 
         # check input dataframe
-        X = _is_dataframe(X)
+        X, y = check_X_y(X, y)
+
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
 
         # find numerical variables or check variables entered by user
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
+
+        if len(self.variables_) == 1 and self.threshold is None:
+            raise ValueError(
+                "When evaluating a single feature you need to manually set a value "
+                "for the threshold. "
+                f"The transformer is evaluating the performance of {self.variables_} "
+                f"and the threshold was left to {self.threshold} when initializing "
+                f"the transformer."
+            )
 
         self.feature_performance_ = {}
 
@@ -186,23 +204,22 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         if len(self.features_to_drop_) == len(X.columns):
             warnings.warn("All features will be dropped, try changing the threshold.")
 
-        self.n_features_in_ = X.shape[1]
+        # save input features
+        self._get_feature_names_in(X)
 
         return self
 
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseSelector.transform.__doc__
-
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
+        tags_dict["requires_y"] = True
         # add additional test that fails
-        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
         tags_dict["_xfail_checks"][
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+
+        msg = "transformers need more than 1 feature to work"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+
         return tags_dict

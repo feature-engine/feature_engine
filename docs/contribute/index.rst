@@ -5,7 +5,7 @@ Contribute
 ==========
 
 Feature-engine is an open source project, originally designed to support the online
-course `Feature Engineering for Machine Learning in Udemy <https://www.udemy.com/feature-engineering-for-machine-learning/?couponCode=FEATENGREPO>`_,
+course `Feature Engineering for Machine Learning <https://courses.trainindata.com/p/feature-engineering-for-machine-learning>`_,
 but has now gained popularity and supports transformations beyond those taught in the
 course.
 
@@ -31,7 +31,7 @@ There are many ways to contribute to Feature-engine:
 - Improve our documentation, i.e., fix typos, improve grammar, or add more code examples.
 - Write a blog, tweet, or share our project with others.
 - Use Feature-engine in your lectures if you teach
-- `Sponsor us <https://github.com/sponsors/solegalli>`_.
+- `Sponsor us <https://github.com/sponsors/feature-engine>`_.
 
 With plenty of ways to get involved, we would be happy for you to support the project.
 You only need to abide by the principles of openness, respect, and consideration of

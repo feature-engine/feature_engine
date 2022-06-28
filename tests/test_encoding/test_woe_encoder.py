@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import WoEEncoder
 
@@ -80,13 +79,6 @@ def test_automatically_select_variables(df_enc):
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
 
-def test_error_target_is_not_passed(df_enc):
-    # test case 2: raises error if target is  not passed
-    encoder = WoEEncoder(variables=None)
-    with pytest.raises(TypeError):
-        encoder.fit(df_enc)
-
-
 def test_warn_if_transform_df_contains_categories_not_seen_in_fit(df_enc, df_enc_rare):
     # test case 3: when dataset to be transformed contains categories not present
     # in training dataset
@@ -155,13 +147,6 @@ def test_error_if_denominator_probability_is_zero():
     # 0, 0]}
     # #     df = pd.DataFrame(df)
     # #     encoder.fit(df[['var_A', 'var_B']], df['target'])
-
-
-def test_non_fitted_error(df_enc):
-    # test case 8: non fitted error
-    with pytest.raises(NotFittedError):
-        imputer = WoEEncoder()
-        imputer.transform(df_enc)
 
 
 def test_error_if_contains_na_in_fit(df_enc_na):

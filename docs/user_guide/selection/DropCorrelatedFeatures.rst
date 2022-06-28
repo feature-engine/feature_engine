@@ -113,3 +113,5 @@ In this notebook, we show how to use :class:`DropCorrelatedFeatures()` with a di
 relation metric:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Drop-Correlated-Features.ipynb>`_
+
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

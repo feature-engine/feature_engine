@@ -14,11 +14,12 @@ Blogs
 - `Streamlining Feature Engineering Pipelines with Feature-engine <https://towardsdatascience.com/streamlining-feature-engineering-pipelines-with-feature-engine-e781d551f470?gi=e0fa6e5c0c1a/>`_.
 - `Feature Engineering for Machine Learning: A comprehensive Overview <https://trainindata.medium.com/feature-engineering-for-machine-learning-a-comprehensive-overview-a7ad04c896f8>`_.
 - `Feature Selection for Machine Learning: A comprehensive Overview <https://trainindata.medium.com/feature-selection-for-machine-learning-a-comprehensive-overview-bd571db5dd2d>`_.
-
+- `Variance Stabilizing Transformations <https://trainindata.medium.com/variance-stabilizing-transformations-in-machine-learning-20e5383862dd>`_.
 
 Videos
 ------
 
+- `Streamlining Feature Engineering Pipes with Feature-engine <https://www.youtube.com/watch?v=0V3_uXX30Ko>`_, Data Science Festival, 2020.
 - `Optimising Feature Engineering Pipelines with Feature-engine <https://www.youtube.com/watch?v=qT-3KUaFYmk/>`_, Pydata Cambridge 2020, from minute 51:43.
 
 
@@ -29,6 +30,12 @@ Podcasts
 
 En Español
 ----------
+
+Empezamos una nueva website con blogs en español. Chequeala:
+
+- `Entrena en Datos <http://www.entrenaendatos.com/>`_.
+
+Ademas, te pueden interesar:
 
 - `Ingeniería de variables para machine learning <https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C>`_, Curso Online.
 - `Ingeniería de variables, MachinLenin <https://www.youtube.com/watch?v=NhCxOOoFXds>`_, charla con video online.

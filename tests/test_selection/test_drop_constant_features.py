@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.selection import DropConstantFeatures
 
@@ -42,23 +41,8 @@ def test_drop_constant_features(df_constant_features):
         }
     )
 
-    # init params
-    assert transformer.tol == 1
-    assert transformer.variables is None
-    # fit attributes
-    assert transformer.variables_ == [
-        "Name",
-        "City",
-        "Age",
-        "Marks",
-        "dob",
-        "const_feat_num",
-        "const_feat_cat",
-        "quasi_feat_num",
-        "quasi_feat_cat",
-    ]
+    # fit attribute
     assert transformer.features_to_drop_ == ["const_feat_num", "const_feat_cat"]
-    assert transformer.n_features_in_ == 9
 
     # transform output
     pd.testing.assert_frame_equal(X, df)
@@ -79,29 +63,13 @@ def test_drop_constant_and_quasiconstant_features(df_constant_features):
         }
     )
 
-    # init params
-    assert transformer.tol == 0.7
-    assert transformer.variables is None
-
     # fit attr
-    assert transformer.variables_ == [
-        "Name",
-        "City",
-        "Age",
-        "Marks",
-        "dob",
-        "const_feat_num",
-        "const_feat_cat",
-        "quasi_feat_num",
-        "quasi_feat_cat",
-    ]
     assert transformer.features_to_drop_ == [
         "const_feat_num",
         "const_feat_cat",
         "quasi_feat_num",
         "quasi_feat_cat",
     ]
-    assert transformer.n_features_in_ == 9
 
     # transform params
     pd.testing.assert_frame_equal(X, df)
@@ -127,49 +95,38 @@ def test_drop_constant_features_with_list_of_variables(df_constant_features):
         }
     )
 
-    # init params
-    assert transformer.tol == 0.7
-    assert transformer.variables == ["Name", "const_feat_num", "quasi_feat_num"]
-
     # fit attr
     assert transformer.features_to_drop_ == ["const_feat_num", "quasi_feat_num"]
-    assert transformer.n_features_in_ == 9
 
     # transform params
     pd.testing.assert_frame_equal(X, df)
 
 
-def test_error_if_fit_input_not_df():
-    # test case 4: input is not a dataframe
-    with pytest.raises(TypeError):
-        DropConstantFeatures().fit({"Name": ["Karthik"]})
-
-
-def test_error_if_tol_out_of_range():
+@pytest.mark.parametrize("tol", [2, "hola", False])
+def test_error_if_tol_value_not_allowed(tol):
     # test case 5: threshold not between 0 and 1
     with pytest.raises(ValueError):
-        DropConstantFeatures(tol=2)
+        DropConstantFeatures(tol=tol)
 
 
-def test_error_if_tol_is_string():
+@pytest.mark.parametrize("tol", [1, 0, 0.5, 0.7])
+def test_tol_init_param(tol):
+    sel = DropConstantFeatures(tol=tol)
+    assert sel.tol == tol
+
+
+@pytest.mark.parametrize("missing", [2, "hola", False])
+def test_error_if_missing_values_not_permitted(missing):
     # test case 5: threshold not between 0 and 1
     with pytest.raises(ValueError):
-        DropConstantFeatures(tol="hola")
+        DropConstantFeatures(missing_values=missing)
 
 
-def test_error_if_missing_values_not_permitted():
-    # test case 5: threshold not between 0 and 1
-    with pytest.raises(ValueError):
-        DropConstantFeatures(missing_values="hola")
-
-
-def test_error_if_input_all_constant_features():
+def test_error_if_all_constant_and_quasi_constant_features():
     # test case 6: when input contains all constant features
     with pytest.raises(ValueError):
         DropConstantFeatures().fit(pd.DataFrame({"col1": [1, 1, 1], "col2": [1, 1, 1]}))
 
-
-def test_error_if_all_constant_and_quasi_constant_features():
     # test case 7: when input contains all constant and quasi constant features
     with pytest.raises(ValueError):
         transformer = DropConstantFeatures(tol=0.7)
@@ -185,14 +142,7 @@ def test_error_if_all_constant_and_quasi_constant_features():
         )
 
 
-def test_non_fitted_error(df_constant_features):
-    # test case 8: when fit is not called prior to transform
-    with pytest.raises(NotFittedError):
-        transformer = DropConstantFeatures()
-        transformer.transform(df_constant_features)
-
-
-def test_missing_values_param():
+def test_missing_values_param_functionality():
 
     df = {
         "Name": ["tom", "nick", "krish", "jack"],
@@ -208,8 +158,8 @@ def test_missing_values_param():
     df = pd.DataFrame(df)
 
     # test raises error if there is na
+    transformer = DropConstantFeatures(missing_values="raise")
     with pytest.raises(ValueError):
-        transformer = DropConstantFeatures(missing_values="raise")
         transformer.fit(df)
 
     # test ignores na

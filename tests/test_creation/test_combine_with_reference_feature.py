@@ -75,7 +75,7 @@ def test_error_when_drop_original_not_bool():
         CombineWithReferenceFeature(
             variables_to_combine=["Age"],
             reference_variables=["Marks"],
-            drop_original="not_a_bool"
+            drop_original="not_a_bool",
         )
 
 
@@ -206,7 +206,7 @@ def test_drop_original_variables(df_vartypes):
     transformer = CombineWithReferenceFeature(
         variables_to_combine=["Age", "Marks"],
         reference_variables=["Age", "Marks"],
-        drop_original=True
+        drop_original=True,
     )
 
     X = transformer.fit_transform(df_vartypes)

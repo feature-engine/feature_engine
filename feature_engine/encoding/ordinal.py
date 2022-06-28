@@ -5,12 +5,43 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine.encoding.base_encoder import BaseCategorical
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+    _inverse_transform_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X, check_X_y
+from feature_engine.encoding._docstrings import (
+    _errors_docstring,
+    _ignore_format_docstring,
+    _transform_docstring,
+    _variables_docstring,
+)
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitExpandedMixin,
+    CategoricalMethodsMixin,
+)
 
 
-class OrdinalEncoder(BaseCategorical):
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+    errors=_errors_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+    transform=_transform_docstring,
+    inverse_transform=_inverse_transform_docstring,
+)
+class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
     """
-    The OrdinalCategoricalEncoder() replaces categories by ordinal numbers
+    The OrdinalEncoder() replaces categories by ordinal numbers
     (0, 1, 2, 3, etc). The numbers can be ordered based on the mean of the target
     per category, or assigned arbitrarily.
 
@@ -38,46 +69,33 @@ class OrdinalEncoder(BaseCategorical):
 
         **'arbitrary'**: categories are numbered arbitrarily.
 
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
 
-    errors: string, default='ignore'
-        Indicates what to do when categories not present in the train set are
-        encountered during transform. If 'raise', then rare categories will raise an
-        error. If 'ignore', then rare categories will be set as NaN and a warning will
-        be raised instead.
+    {errors}
 
     Attributes
     ----------
     encoder_dict_:
         Dictionary with the ordinal number per category, per variable.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Find the integer to replace each category in each variable.
-    transform:
-        Encode the categories to numbers.
-    fit_transform:
-        Fit to the data, then transform it.
-    inverse_transform:
-        Encode the numbers into the original categories.
+
+    {fit_transform}
+
+    {inverse_transform}
+
+    {transform}
 
     Notes
     -----
@@ -107,7 +125,7 @@ class OrdinalEncoder(BaseCategorical):
         encoding_method: str = "ordered",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore"
+        errors: str = "ignore",
     ) -> None:
 
         if encoding_method not in ["ordered", "arbitrary"]:
@@ -134,16 +152,15 @@ class OrdinalEncoder(BaseCategorical):
             Otherwise, y needs to be passed when fitting the transformer.
         """
 
-        X = self._check_fit_input_and_variables(X)
-
-        # join target to predictor variables
         if self.encoding_method == "ordered":
-            if y is None:
-                raise ValueError("Please provide a target y for this encoding method")
+            X, y = check_X_y(X, y)
+        else:
+            X = check_X(X)
 
-            if not isinstance(y, pd.Series):
-                y = pd.Series(y)
+        self._check_or_select_variables(X)
+        self._get_feature_names_in(X)
 
+        if self.encoding_method == "ordered":
             temp = pd.concat([X, y], axis=1)
             temp.columns = list(X.columns) + ["target"]
 
@@ -167,21 +184,4 @@ class OrdinalEncoder(BaseCategorical):
 
         self._check_encoding_dictionary()
 
-        self.n_features_in_ = X.shape[1]
-
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseCategorical.transform.__doc__
-
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().inverse_transform(X)
-
-        return X
-
-    inverse_transform.__doc__ = BaseCategorical.inverse_transform.__doc__

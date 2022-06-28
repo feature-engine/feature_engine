@@ -5,6 +5,9 @@
 CombineWithReferenceFeature
 ===========================
 
+**DEPRECATED: CombineWithReferenceFeature() is deprecated in version 1.3 and will be
+removed in Version 1.4. Use RelativeFeatures() instead.**
+
 :class:`CombineWithReferenceFeature()` combines a group of variables with a group of
 reference variables utilizing basic mathematical operations (subtraction, division,
 addition and multiplication). It returns one or more additional features in the

@@ -1,4 +1,4 @@
-6).. _psi_selection:
+.. _psi_selection:
 
 .. currentmodule:: feature_engine.selection
 
@@ -535,7 +535,7 @@ And the transform method correctly removes the feature.
 
 .. code:: python
 
-    X_transformer = transformer.transform(X)
+    X_transformed = transformer.transform(X)
 
     X_transformed.columns
 
@@ -861,3 +861,4 @@ determine the PSI.
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Drop-High-PSI-Features.ipynb>`_
 
+All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.

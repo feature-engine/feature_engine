@@ -6,9 +6,29 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
+@Substitution(
+    return_object=BaseDiscretiser._return_object_docstring,
+    return_boundaries=BaseDiscretiser._return_boundaries_docstring,
+    binner_dict_=BaseDiscretiser._binner_dict_docstring,
+    fit=BaseDiscretiser._fit_docstring,
+    transform=BaseDiscretiser._transform_docstring,
+    variables=_variables_numerical_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class EqualFrequencyDiscretiser(BaseDiscretiser):
     """
     The EqualFrequencyDiscretiser() divides continuous numerical variables
@@ -27,41 +47,32 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of numerical variables that will be discretised. If None, the
-        EqualFrequencyDiscretiser() will select all numerical variables.
+    {variables}
 
     q: int, default=10
         Desired number of equal frequency intervals / bins.
 
-    return_object: bool, default=False
-        Whether the the discrete variable should be returned as numeric or as
-        object. If you would like to proceed with the engineering of the variable as if
-        it was categorical, use True. Alternatively, keep the default to False.
+    {return_object}
 
-    return_boundaries: bool, default=False
-        Whether the output should be the interval boundaries. If True, it returns
-        the interval boundaries. If False, it returns integers.
+    {return_boundaries}
 
     Attributes
     ----------
-    binner_dict_:
-         Dictionary with the interval limits per variable.
+    {binner_dict_}
 
-    variables_:
-         The variables that will be discretised.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        Find the interval limits.
-    transform:
-        Sort continuous variable values into the intervals.
-    fit_transform:
-        Fit to the data, then transform it.
+    {fit}
+
+    {fit_transform}
+
+    {transform}
 
     See Also
     --------
@@ -107,7 +118,7 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         """
 
         # check input dataframe
-        X = super().fit(X, y)
+        X = super()._fit_from_varlist(X)
 
         self.binner_dict_ = {}
 
@@ -119,7 +130,5 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
             bins[0] = float("-inf")
             bins[len(bins) - 1] = float("inf")
             self.binner_dict_[var] = bins
-
-        self.n_features_in_ = X.shape[1]
 
         return self

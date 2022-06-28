@@ -1,17 +1,33 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.metrics import r2_score, roc_auc_score
-from sklearn.model_selection import KFold
-from sklearn.pipeline import Pipeline
+from sklearn.base import clone
+from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import _check_contains_na, _is_dataframe
-from feature_engine.discretisation import (
-    EqualFrequencyDiscretiser,
-    EqualWidthDiscretiser,
+from feature_engine._prediction.target_mean_classifier import TargetMeanClassifier
+from feature_engine._prediction.target_mean_regressor import TargetMeanRegressor
+from feature_engine.dataframe_checks import check_X_y
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
 )
-from feature_engine.encoding import MeanEncoder
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.selection._docstring import (
+    _cv_docstring,
+    _features_to_drop_docstring,
+    _fit_docstring,
+    _scoring_docstring,
+    _threshold_docstring,
+    _transform_docstring,
+    _variables_attribute_docstring,
+)
+from feature_engine.selection._selection_constants import (
+    _CLASSIFICATION_METRICS,
+    _REGRESSION_METRICS,
+)
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_all_variables,
@@ -20,38 +36,65 @@ from feature_engine.variable_manipulation import (
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
+@Substitution(
+    scoring=_scoring_docstring,
+    threshold=_threshold_docstring,
+    cv=_cv_docstring,
+    confirm_variables=BaseSelector._confirm_variables_docstring,
+    features_to_drop_=_features_to_drop_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_docstring,
+    transform=_transform_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class SelectByTargetMeanPerformance(BaseSelector):
     """
-    SelectByTargetMeanPerformance() uses the mean value of the target per category, or
-    interval if the variable is numerical, as proxy for target estimation. With this
-    proxy and the real target, the selector determines a performance metric for each
-    feature, and then selects them based on this performance metric.
+    SelectByTargetMeanPerformance() uses the mean value of the target per category or
+    per interval(if the variable is numerical), as proxy for target estimation. With
+    this proxy, the selector determines the performance of each feature based on a
+    metric of choice, and then selects the features based on this performance value.
 
-    SelectByTargetMeanPerformance() works with numerical and categorical variables.
-    First, it eparates the training set into train and test sets. Then it works as
-    follows:
+    SelectByTargetMeanPerformance() can evaluate numerical and categorical variables,
+    without much prior manipulation. In other words, you don't need to encode the
+    categorical variables or transform the numerical variables to assess their
+    importance if you use this transformer.
+
+    SelectByTargetMeanPerformance() requires that the dataset is complete, without
+    missing data.
+
+    SelectByTargetMeanPerformance() determines the performance of each variable with
+    cross-validation. More specifically:
 
     For each categorical variable:
 
-    1. Determines the mean target value per category using the train set.
+    1. Determines the mean target value per category in the training folds.
 
-    2. Replaces the categories in the test set by the target mean values.
+    2. Replaces the categories by the target mean values in the test folds.
 
-    3. Using the encoded variables and the real target calculates the roc-auc or r2.
+    3. Determines the performance of the transformed variables in the test folds.
 
-    4. Selects the features which roc-auc or r2 is bigger than the threshold.
 
     For each numerical variable:
 
     1. Discretises the variable into intervals of equal width or equal frequency.
 
-    2. Determines the mean value of the target per interval using the train set.
+    2. Determines the mean value of the target per interval in the training folds.
 
-    3. Replaces the intervals in the test set, by the target mean values.
+    3. Replaces the intervals by the target mean values in the test fold.
 
-    4. Using the transformed variable and the real target calculates the roc-auc or r2.
+    4. Determines the performance of the transformed variable in the test fold.
 
-    5. Selects the features which roc-auc or r2 is bigger than the threshold.
+
+    Finally, it selects the features which performance is bigger than the indicated
+    threshold. If the threshold if left to None, it selects features which performance
+    is bigger than the mean performance of all features.
+
+    All the steps are performed with cross-validation. That means, that intervals and
+    target mean values per interval or category are determined in a certain portion of
+    the data, and evaluated in a left-out sample. The performance metric per variable
+    is the average across the cross-validation folds.
 
     More details in the :ref:`User Guide <target_mean_selection>`.
 
@@ -59,52 +102,47 @@ class SelectByTargetMeanPerformance(BaseSelector):
     ----------
     variables: list, default=None
         The list of variables to evaluate. If None, the transformer will evaluate all
-        variables in the dataset.
-
-    scoring: string, default='roc_auc_score'
-        This indicates the metrics score to perform the feature selection.
-        The current implementation supports 'roc_auc_score' and 'r2_score'.
-
-    threshold: float, default = None
-        The performance threshold above which a feature will be selected.
+        variables in the dataset (except datetime).
 
     bins: int, default = 5
         If the dataset contains numerical variables, the number of bins into which
         the values will be sorted.
 
     strategy: str, default = 'equal_width'
-        Whether to create the bins for discretization of numerical variables of
-        equal width ('equal_width') or equal frequency ('equal_frequency').
+        Whether the bins should of equal width ('equal_width') or equal frequency
+        ('equal_frequency').
 
-    cv: int, default=3
-        Desired cross-validation strategy to fit the estimator.
+    {scoring}
 
-    random_state: int, default=0
-        The random state used to split the data into train and test.
+    {threshold}
+
+    {cv}
+
+    regression: boolean, default=True
+        Indicates whether the target is one for regression or a classification.
+
+    {confirm_variables}
 
     Attributes
     ----------
-    features_to_drop_:
-        List with the features to remove from the dataset.
+    {variables_}
 
     feature_performance_:
-        Dictionary with the performance proxy per feature.
+        Dictionary with the performance of each feature.
 
-    variables_:
-        The variables to consider for the feature selection.
+    {features_to_drop_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
-    fit:
-        Find the important features.
-    transform:
-        Reduce X to the selected features.
-    fit_transform:
-        Fit to data, then transform it.
+    {fit}
 
+    {fit_transform}
+
+    {transform}
 
     Notes
     -----
@@ -127,47 +165,51 @@ class SelectByTargetMeanPerformance(BaseSelector):
     def __init__(
         self,
         variables: Variables = None,
-        scoring: str = "roc_auc_score",
-        threshold: float = 0.5,
         bins: int = 5,
         strategy: str = "equal_width",
-        cv: int = 3,
-        random_state: int = None,
+        scoring: str = "roc_auc",
+        cv=3,
+        threshold: Union[int, float] = None,
+        regression: bool = False,
+        confirm_variables: bool = False,
     ):
 
-        if scoring not in ["roc_auc_score", "r2_score"]:
-            raise ValueError(
-                "At the moment, the selector can evaluate only the "
-                "roc_auc and r2 scores. Please enter either "
-                "'roc_auc_score' or 'r2_score' for the parameter "
-                "'scoring'"
-            )
-
-        if threshold and not isinstance(threshold, (int, float)):
-            raise ValueError("threshold can only take integer or float")
-
         if not isinstance(bins, int):
-            raise TypeError("'bins' takes only integers")
+            raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
         if strategy not in ["equal_width", "equal_frequency"]:
             raise ValueError(
-                "'strategy' takes boolean values 'equal_width' and "
-                "'equal_frequency'."
+                "strategy takes only values 'equal_width' or 'equal_frequency'. "
+                f"Got {strategy} instead."
             )
 
-        if not isinstance(cv, int) or cv <= 1:
-            raise ValueError("cv takes integers bigger than 1")
+        if threshold is not None and not isinstance(threshold, (int, float)):
+            raise ValueError(
+                "threshold can only take integer or float. " f"Got {threshold} instead."
+            )
 
-        if random_state and not isinstance(random_state, int):
-            raise TypeError("'random_state' takes only integers")
+        if regression is True and scoring not in _REGRESSION_METRICS:
+            raise ValueError(
+                f"The metric {scoring} is not suitable for regression. Set the "
+                "parameter regression to False or choose a different performance "
+                "metric."
+            )
 
+        if regression is False and scoring not in _CLASSIFICATION_METRICS:
+            raise ValueError(
+                f"The metric {scoring} is not suitable for classification. Set the"
+                "parameter regression to True or choose a different performance "
+                "metric."
+            )
+
+        super().__init__(confirm_variables)
         self.variables = _check_input_parameter_variables(variables)
-        self.scoring = scoring
-        self.threshold = threshold
         self.bins = bins
         self.strategy = strategy
+        self.scoring = scoring
         self.cv = cv
-        self.random_state = random_state
+        self.threshold = threshold
+        self.regression = regression
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -182,66 +224,56 @@ class SelectByTargetMeanPerformance(BaseSelector):
            Target variable. Required to train the estimator.
         """
         # check input dataframe
-        X = _is_dataframe(X)
+        X, y = check_X_y(X, y)
 
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        # If required exclude variables that are not in the input dataframe
+        self._confirm_variables(X)
 
-        # check variables
-        self.variables_ = _find_all_variables(X, self.variables)
+        # find all variables or check those entered are present in the dataframe
+        self.variables_ = _find_all_variables(X, self.variables_, exclude_datetime=True)
 
-        # check if df contains na
-        _check_contains_na(X, self.variables_)
+        if len(self.variables_) == 1 and self.threshold is None:
+            raise ValueError(
+                "When evaluating a single feature you need to manually set a value "
+                "for the threshold. "
+                f"The transformer is evaluating the performance of {self.variables_} "
+                f"and the threshold was left to {self.threshold} when initializing "
+                f"the transformer."
+            )
 
-        self.n_features_in_ = X.shape[1]
+        # save input features
+        self._get_feature_names_in(X)
 
-        # limit df to variables to smooth code below
-        X = X[self.variables_].copy()
-
-        # find categorical and numerical variables
-        self.variables_categorical_ = list(X.select_dtypes(include="O").columns)
-        self.variables_numerical_ = list(
-            X.select_dtypes(include="number").columns
-        )
-
-        # obtain cross-validation indeces
-        skf = KFold(n_splits=self.cv, shuffle=True, random_state=self.random_state)
-        skf.get_n_splits(X, y)
-
-        if self.variables_categorical_ and self.variables_numerical_:
-            _pipeline = self._make_combined_pipeline()
-
-        elif self.variables_categorical_:
-            _pipeline = self._make_categorical_pipeline()
-
+        # set up the correct estimator
+        if self.regression is True:
+            est = TargetMeanRegressor(
+                bins=self.bins,
+                strategy=self.strategy,
+            )
         else:
-            _pipeline = self._make_numerical_pipeline()
+            est = TargetMeanClassifier(
+                bins=self.bins,
+                strategy=self.strategy,
+            )
 
-        # obtain feature performance with cross-validation
-        feature_importances_cv = []
+        self.feature_performance_ = {}
 
-        for train_index, test_index in skf.split(X, y):
-            X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+        for variable in self.variables_:
+            # clone estimator
+            estimator = clone(est)
 
-            _pipeline.fit(X_train, y_train)
+            # set the estimator to evaluate the required variable
+            estimator.set_params(variables=variable)
 
-            X_test = _pipeline.transform(X_test)
+            model = cross_validate(
+                estimator,
+                X,
+                y,
+                cv=self.cv,
+                scoring=self.scoring,
+            )
 
-            if self.scoring == "roc_auc_score":
-                tmp_split = {
-                    f: roc_auc_score(y_test, X_test[f]) for f in self.variables_
-                }
-            else:
-                tmp_split = {f: r2_score(y_test, X_test[f]) for f in self.variables_}
-
-            feature_importances_cv.append(pd.Series(tmp_split))
-
-        feature_importances_cv = pd.concat(feature_importances_cv, axis=1)
-
-        self.feature_performance_ = feature_importances_cv.mean(  # type: ignore
-            axis=1
-        ).to_dict()
+            self.feature_performance_[variable] = model["test_score"].mean()
 
         # select features
         if not self.threshold:
@@ -255,60 +287,12 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
         return self
 
-    def _make_numerical_pipeline(self):
-
-        if self.strategy == "equal_width":
-            discretizer = EqualWidthDiscretiser(
-                bins=self.bins, variables=self.variables_numerical_, return_object=True
-            )
-        else:
-            discretizer = EqualFrequencyDiscretiser(
-                q=self.bins, variables=self.variables_numerical_, return_object=True
-            )
-
-        encoder = MeanEncoder(variables=self.variables_numerical_)
-
-        _pipeline_numerical = Pipeline(
-            [
-                ("discretization", discretizer),
-                ("encoder", encoder),
-            ]
-        )
-
-        return _pipeline_numerical
-
-    def _make_categorical_pipeline(self):
-
-        return MeanEncoder(variables=self.variables_categorical_)
-
-    def _make_combined_pipeline(self):
-
-        if self.strategy == "equal_width":
-            discretizer = EqualWidthDiscretiser(
-                bins=self.bins, variables=self.variables_numerical_, return_object=True
-            )
-        else:
-            discretizer = EqualFrequencyDiscretiser(
-                q=self.bins, variables=self.variables_numerical_, return_object=True
-            )
-
-        encoder_num = MeanEncoder(variables=self.variables_numerical_)
-        encoder_cat = MeanEncoder(variables=self.variables_categorical_)
-
-        _pipeline_combined = Pipeline(
-            [
-                ("discretization", discretizer),
-                ("encoder_num", encoder_num),
-                ("encoder_cat", encoder_cat),
-            ]
-        )
-
-        return _pipeline_combined
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseSelector.transform.__doc__
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "all"
+        tags_dict["requires_y"] = True
+        tags_dict["binary_only"] = True
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        msg = "transformers need more than 1 feature to work"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+        return tags_dict

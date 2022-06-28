@@ -5,11 +5,35 @@ from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.encoding.base_encoder import BaseCategoricalTransformer
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X
+from feature_engine.encoding._docstrings import (
+    _ignore_format_docstring,
+    _variables_docstring,
+)
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitMixin,
+    CategoricalMethodsMixin,
+)
 
 
-class OneHotEncoder(BaseCategoricalTransformer):
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
+class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The OneHotEncoder() replaces categorical variables by a set of binary variables
     representing each one of the unique categories in the variable.
@@ -71,42 +95,34 @@ class OneHotEncoder(BaseCategoricalTransformer):
         to `True`, will ensure that for every binary variable in the dataset, only 1
         dummy is created.
 
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
 
     Attributes
     ----------
     encoder_dict_:
         Dictionary with the categories for which dummy variables will be created.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
     variables_binary_:
         List with binary variables identified in the data. That is, variables with
         only 2 categories.
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn the unique categories per variable
+
+    {fit_transform}
+
     transform:
         Replace the categorical variables by the binary variables.
-    fit_transform:
-        Fit to the data, then transform it.
 
     Notes
     -----
@@ -168,7 +184,9 @@ class OneHotEncoder(BaseCategoricalTransformer):
             None.
         """
 
-        X = self._check_fit_input_and_variables(X)
+        X = check_X(X)
+        self._check_or_select_variables(X)
+        self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
 
@@ -208,8 +226,6 @@ class OneHotEncoder(BaseCategoricalTransformer):
 
         self._check_encoding_dictionary()
 
-        self.n_features_in_ = X.shape[1]
-
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -245,3 +261,46 @@ class OneHotEncoder(BaseCategoricalTransformer):
     def inverse_transform(self, X: pd.DataFrame):
         """inverse_transform is not implemented for this transformer."""
         return self
+
+    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features: list, default=None
+            Input features. If `input_features` is `None`, then the names of all the
+            variables in the transformed dataset (original + new variables) is returned.
+            Alternatively, only the names for the binary variables derived from
+            input_features will be returned.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        if input_features is None:
+            input_features_ = self.feature_names_in_
+        else:
+            if not isinstance(input_features, list):
+                raise ValueError(
+                    f"input_features must be a list. Got {input_features} instead."
+                )
+            if any(f for f in input_features if f not in self.feature_names_in_):
+                raise ValueError(
+                    "Some of the features requested were not seen during training."
+                )
+            input_features_ = input_features
+
+        # the features not encoded
+        feature_names = [f for f in input_features_ if f not in self.variables_]
+
+        # the encoded features
+        encoded = [f for f in input_features_ if f in self.variables_]
+
+        for feature in encoded:
+            for category in self.encoder_dict_[feature]:
+                feature_names.append(str(feature) + "_" + str(category))
+
+        return feature_names

@@ -1,0 +1,142 @@
+Version 1.3.X
+=============
+
+Version 1.3.0
+-------------
+
+Deployed: 5th May 2022
+
+Contributors
+~~~~~~~~~~~~
+
+    - `Morgan Sell <https://github.com/Morgan-Sell>`_
+    - `Kishan Manani <https://github.com/KishManani>`_
+    - `Gilles Verbockhaven <https://github.com/gverbock>`_
+    - `Noah Green <https://github.com/noahjgreen295>`_
+    - `Ben Reiniger <https://github.com/bmreiniger>`_
+    - `Edoardo Argiolas <https://github.com/dodoarg>`_
+    - `Alejandro Giacometti <https://github.com/janrito>`_
+    - `Tim Vink <https://github.com/timvink>`_
+    - `Soledad Galli <https://github.com/solegalli>`_
+
+In this release, we add the **get_feature_names_out** functionality to all our transformers!
+You asked for it, we delivered :)
+
+In addition, we introduce a **new module** for **time series forecasting**. This module
+will host transformers that create features suitable for, well..., time series forecasting.
+We created three new transformers: **LagFeatures**, **WindowFeatures** and
+**ExpandingWindowFeatures**. We had the extraordinary support from
+`Kishan Manani <https://github.com/KishManani>`_ who is an experienced forecaster, and
+`Morgan Sell <https://github.com/Morgan-Sell>`_ who helped us draft the new classes.
+Thank you both for the incredible work!
+
+We also improved the functionality of our feature creation classes. To do this, we are
+deprecating our former classes, `MathematicalCombination` and `CombineWithFeatureReference`,
+which are a bit of a mouthful, for the new classes `MathFeatures` and `RelativeFeatures`.
+
+We are also renaming the class `CyclicalTransformer` to `CyclicalFeatures`.
+
+We've also enhanced the functionality of the `SelectByTargetMeanPerformance` and
+`SklearnTransformerWrapper`.
+
+In addition, we've had some bug reports and bug fixes that we list below, and a number of
+enhancements to our current classes.
+
+Thank you so much to all contributors to this release for making this massive release
+possible!
+
+New modules
+~~~~~~~~~~~
+
+    - timeseries-forecasting: this module hosts transformers that create features suitable for time series forecasting (`Morgan Sell <https://github.com/Morgan-Sell>`_, `Kishan Manani <https://github.com/KishManani>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+        - LagFeatures
+        - WindowFeatures
+        - ExpandingWindowFeatures
+
+New transformers
+~~~~~~~~~~~~~~~~
+
+    - **LagFeatures**: adds lag versions of the features (`Morgan Sell <https://github.com/Morgan-Sell>`_, `Kishan Manani <https://github.com/KishManani>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+    - **WindowFeatures**: creates features from operations on past time windows (`Morgan Sell <https://github.com/Morgan-Sell>`_, `Kishan Manani <https://github.com/KishManani>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+    - **ExpandingWindowFeatures**: creates features from operations on all past data (`Kishan Manani <https://github.com/KishManani>`_)
+    - **MathFeatures**: replaces `MathematicalCombination` and expands its functionality (`Soledad Galli <https://github.com/solegalli>`_)
+    - **RelativeFeatures**: replaces `CombineWithFeatureReference` and expands its functionality (`Soledad Galli <https://github.com/solegalli>`_)
+    - **CyclicalFeatures**: new name for `CyclicalTransformer` with same functionality (`Soledad Galli <https://github.com/solegalli>`_)
+
+
+New functionality
+~~~~~~~~~~~~~~~~~
+
+    - All our transformers have now the `get_feature_names_out` functionality to obtain the names of the output features (`Alejandro Giacometti <https://github.com/janrito>`_, `Morgan Sell <https://github.com/Morgan-Sell>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+    - SelectByTargetMeanPerformance now uses cross-validation and supports all possible performance metrics for classification and regression (`Morgan Sell <https://github.com/Morgan-Sell>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+
+
+Enhancements
+~~~~~~~~~~~~
+
+    - All our feature selection transformers can now check that the variables were not dropped in a previous selection step (`Gilles Verbockhaven <https://github.com/gverbock>`_)
+    - The `DecisionTreeDiscretiser` and the `DecisionTreeEncoder` now check that the user enters a target suitable for regression or classification (`Morgan Sell <https://github.com/Morgan-Sell>`_)
+    - The `DecisionTreeDiscretiser` and the `DecisionTreeEncoder` now accept all sklearn cross-validation constructors (`Soledad Galli <https://github.com/solegalli>`_)
+    - The `SklearnTransformerWrapper` now implements the method `inverse_transform` (`Soledad Galli <https://github.com/solegalli>`_)
+    - The `SklearnTransformerWrapper` now supports additional transformers, for example, PolynomialFeatures  (`Soledad Galli <https://github.com/solegalli>`_)
+    - The `CategoricalImputer()` now let's you know which variables have more than one mode (`Soledad Galli <https://github.com/solegalli>`_)
+    - The `DatetimeFeatures()` now can extract features from the dataframe index (`Edoardo Argiolas <https://github.com/dodoarg>`_)
+    - Transformers that take y now check that X and y match (`Noah Green <https://github.com/noahjgreen295>`_ and  `Ben Reiniger <https://github.com/bmreiniger>`_)
+
+
+Bug fixes
+~~~~~~~~~
+
+    - The `SklearnTransformerWrapper` now works with cross-validation when using the one hot encoder (`Noah Green <https://github.com/noahjgreen295>`_)
+    - The `SelectByShuffling` now evaluates the initial performance and the performance after shuffling in the same data parts (`Gilles Verbockhaven <https://github.com/gverbock>`_)
+    - **Discretisers**: when setting `return_boundaries=True` the interval limits are now returned as strings and the variables as object data type (`Soledad Galli <https://github.com/solegalli>`_)
+    - `DecisionTreeEncoder` now enforces passing y to `fit()` (`Soledad Galli <https://github.com/solegalli>`_)
+    - `DropMissingData` can now take a string in the `variables` parameter (`Soledad Galli <https://github.com/solegalli>`_)
+    - `DropFeatures` now accepts a string as input of the features_to_drop parameter (`Noah Green <https://github.com/noahjgreen295>`_)
+    - Categorical encoders now work correctly with numpy arrays as inputs (`Noah Green <https://github.com/noahjgreen295>`_ and  `Ben Reiniger <https://github.com/bmreiniger>`_)
+
+
+Documentation
+~~~~~~~~~~~~~
+
+    - Improved user guide for `SelectByTargetMeanPerformance` with lots of tips for troubleshooting (`Soledad Galli <https://github.com/solegalli>`_)
+    - Added guides on how to use `MathFeatures` and `RelativeFeatures` (`Soledad Galli <https://github.com/solegalli>`_)
+    - Expanded user guide on how to use `CyclicalFeatures` with explanation and demos of what these features are (`Soledad Galli <https://github.com/solegalli>`_)
+    - Added a Jupyter notebook with a demo of the `CyclicalFeatures` class (`Soledad Galli <https://github.com/solegalli>`_)
+    - We now display all available methods in the documentation methods summary (`Soledad Galli <https://github.com/solegalli>`_)
+    - Fixes typo in `ArbitraryNumberImputer` documentation (`Tim Vink <https://github.com/timvink>`_)
+
+
+Deprecations
+~~~~~~~~~~~~
+
+    - We are deprecating `MathematicalCombination`, `CombineWithFeatureReference` and `CyclicalTransformer` in version 1.3 and they will be removed in version 1.4
+    - Feature-engine does not longer work with Python 3.6 due to dependence on latest versions of Scikit-learn
+    - In `MatchColumns` the attribute `input_features_` was replaced by `feature_names_in_` to adopt Scikit-learn convention
+
+
+Code improvements
+~~~~~~~~~~~~~~~~~
+
+    - **Imputers**: removed looping over every variable to replace NaN. Now passing imputer dictionary to `pd.fillna()` (`Soledad Galli <https://github.com/solegalli>`_)
+    - `AddMissingIndicators`: removed looping over every variable to add missing indicators. Now using `pd.isna()` (`Soledad Galli <https://github.com/solegalli>`_)
+    - `CategoricalImputer` now captures all modes in one go, without looping over variables (`Soledad Galli <https://github.com/solegalli>`_)
+    - Removed workaround to import docstrings for `transform()` method in various transformers (`Soledad Galli <https://github.com/solegalli>`_)
+
+
+For developers
+~~~~~~~~~~~~~~
+
+    - Created functions and docstrings for common descriptions of methods and attributes (`Soledad Galli <https://github.com/solegalli>`_)
+    - We introduce the use of common tests that are applied to all transformers (`Soledad Galli <https://github.com/solegalli>`_)
+
+Experimental
+~~~~~~~~~~~~
+
+New experimental, currently private module: **prediction**,  that hosts classes that are used by the `SelectByTargetMeanPerformance`
+feature selection transformer. The estimators in this module have functionality that exceed that required by the selector,
+in that, they can output estimates of the target by taking the average across a group of variables.
+
+    - New private module, **prediction** with a regression and a classification estimator (`Morgan Sell <https://github.com/Morgan-Sell>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+    - `TargetMeanRegressor`: estimates the target based on the average target mean value per class or interval, across variables (`Morgan Sell <https://github.com/Morgan-Sell>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+    - `TargetMeanClassifier`: estimates the target based on the average target mean value per class or interval, across variables (`Morgan Sell <https://github.com/Morgan-Sell>`_ and `Soledad Galli <https://github.com/solegalli>`_)

@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import PRatioEncoder
 
@@ -157,13 +156,6 @@ def test_logratio_error_if_numerator_probability_zero():
         df = pd.DataFrame(df)
         encoder = PRatioEncoder(encoding_method="log_ratio")
         encoder.fit(df[["var_A", "var_B"]], df["target"])
-
-
-def test_raises_non_fitted_error(df_enc):
-    # test case 6: non fitted error
-    with pytest.raises(NotFittedError):
-        imputer = PRatioEncoder()
-        imputer.transform(df_enc)
 
 
 def test_error_if_df_contains_na_in_fit(df_enc_na):

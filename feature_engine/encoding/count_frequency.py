@@ -1,14 +1,52 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+from collections import defaultdict
 from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine.encoding.base_encoder import BaseCategorical
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+    _inverse_transform_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X
+from feature_engine.encoding._docstrings import (
+    _errors_docstring,
+    _ignore_format_docstring,
+    _transform_docstring,
+    _variables_docstring,
+)
+from feature_engine.encoding._helper_functions import check_parameter_errors
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitMixin,
+    CategoricalMethodsMixin,
+)
+
+_errors_docstring = (
+    _errors_docstring
+    + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
+)
 
 
-class CountFrequencyEncoder(BaseCategorical):
+@Substitution(
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_docstring,
+    errors=_errors_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+    transform=_transform_docstring,
+    inverse_transform=_inverse_transform_docstring,
+)
+class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The CountFrequencyEncoder() replaces categories by either the count or the
     percentage of observations per category.
@@ -41,54 +79,41 @@ class CountFrequencyEncoder(BaseCategorical):
 
         **'frequency'**: percentage of observations per category
 
-    variables: list, default=None
-        The list of categorical variables that will be encoded. If None, the
-        encoder will find and transform all variables of type object or categorical by
-        default. You can also make the transformer accept numerical variables, see the
-        next parameter.
+    {variables}
 
-    ignore_format: bool, default=False
-        Whether the format in which the categorical variables are cast should be
-        ignored. If False, the encoder will automatically select variables of type
-        object or categorical, or check that the variables entered by the user are of
-        type object or categorical. If True, the encoder will select all variables or
-        accept all variables entered by the user, including those cast as numeric.
+    {ignore_format}
 
-    errors: string, default='ignore'
-        Indicates what to do when categories not present in the train set are
-        encountered during transform. If 'raise', then rare categories will raise an
-        error. If 'ignore', then rare categories will be set as NaN and a warning will
-        be raised instead.
+    {errors}
 
     Attributes
     ----------
     encoder_dict_:
         Dictionary with the count or frequency per category, per variable.
 
-    variables_:
-        The group of variables that will be transformed.
+    {variables_}
 
-    n_features_in_:
-        The number of features in the train set used in fit.
+    {feature_names_in_}
+
+    {n_features_in_}
 
     Methods
     -------
     fit:
         Learn the count or frequency per category, per variable.
-    transform:
-        Encode the categories to numbers.
-    fit_transform:
-        Fit to the data, then transform it.
-    inverse_transform:
-        Encode the numbers into the original categories.
+
+    {fit_transform}
+
+    {inverse_transform}
+
+    {transform}
 
     Notes
     -----
-    NAN are introduced when encoding categories that were not present in the training
-    dataset. If this happens, try grouping infrequent categories using the
-    RareLabelEncoder().
+    NAN will be introduced when encoding categories that were not present in the
+    training set. If this happens, try grouping infrequent categories using the
+    RareLabelEncoder(), or set `errors='encode'`.
 
-    There is a similar implementation in the the open-source package
+    There is a similar implementation in the open-source package
     `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
 
     See Also
@@ -102,16 +127,19 @@ class CountFrequencyEncoder(BaseCategorical):
         encoding_method: str = "count",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore"
+        errors: str = "ignore",
     ) -> None:
 
         if encoding_method not in ["count", "frequency"]:
             raise ValueError(
-                "encoding_method takes only values 'count' and 'frequency'"
+                "encoding_method takes only values 'count' and 'frequency'. "
+                f"Got {encoding_method} instead."
             )
-        super().__init__(variables, ignore_format, errors)
 
+        check_parameter_errors(errors, ["ignore", "raise", "encode"])
+        super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
+        self.errors = errors
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -126,37 +154,23 @@ class CountFrequencyEncoder(BaseCategorical):
         y: pandas Series, default = None
             y is not needed in this encoder. You can pass y or None.
         """
-
-        X = self._check_fit_input_and_variables(X)
+        X = check_X(X)
+        self._check_or_select_variables(X)
+        self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
+        dct_init = defaultdict(lambda: 0) if self.errors == "encode" else {}
 
         # learn encoding maps
         for var in self.variables_:
             if self.encoding_method == "count":
-                self.encoder_dict_[var] = X[var].value_counts().to_dict()
+                self.encoder_dict_[var] = X[var].value_counts().to_dict(dct_init)
 
             elif self.encoding_method == "frequency":
-                n_obs = float(len(X))
-                self.encoder_dict_[var] = (X[var].value_counts() / n_obs).to_dict()
+                self.encoder_dict_[var] = (
+                    X[var].value_counts(normalize=True).to_dict(dct_init)
+                )
 
         self._check_encoding_dictionary()
 
-        self.n_features_in_ = X.shape[1]
-
         return self
-
-    # Ugly work around to import the docstring for Sphinx, otherwise not necessary
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().transform(X)
-
-        return X
-
-    transform.__doc__ = BaseCategorical.transform.__doc__
-
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = super().inverse_transform(X)
-
-        return X
-
-    inverse_transform.__doc__ = BaseCategorical.inverse_transform.__doc__

@@ -1,8 +1,8 @@
 .. -*- mode: rst -*-
 .. currentmodule:: feature_engine.discretisation
 
-Variable Discretisation
-=======================
+Discretisation
+==============
 
 Feature-engine's discretisation transformers transform continuous variables into
 discrete features. This is accomplished, in general, by sorting the variable values

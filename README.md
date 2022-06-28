@@ -1,10 +1,10 @@
 # Feature Engine
 
-![PythonVersion](https://img.shields.io/badge/python-3.6%20|3.7%20|%203.8%20|%203.9-success)
+![PythonVersion](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-success)
 [![License https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md](https://img.shields.io/badge/license-BSD-success.svg)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md)
 [![PyPI version](https://badge.fury.io/py/feature-engine.svg)](https://badge.fury.io/py/feature-engine)
 [![Conda https://anaconda.org/conda-forge/feature_engine](https://anaconda.org/conda-forge/feature_engine/badges/installer/conda.svg)](https://anaconda.org/conda-forge/feature_engine)
-[![CircleCI https://app.circleci.com/pipelines/github/feature-engine/feature_engine?branch=1.1.X](https://img.shields.io/circleci/build/github/feature-engine/feature_engine)](https://app.circleci.com/pipelines/github/feature-engine/feature_engine?branch=1.1.X)
+[![CircleCI https://app.circleci.com/pipelines/github/feature-engine/feature_engine](https://img.shields.io/circleci/build/github/feature-engine/feature_engine/main)](https://app.circleci.com/pipelines/github/feature-engine/feature_engine?)
 [![Documentation Status https://feature-engine.readthedocs.io/en/latest/index.html](https://readthedocs.org/projects/feature-engine/badge/?version=latest)](https://feature-engine.readthedocs.io/en/latest/index.html)
 [![Join the chat at https://gitter.im/feature_engine/community](https://badges.gitter.im/feature_engine/community.svg)](https://gitter.im/feature_engine/community)
 [![Sponsorship https://www.trainindata.com/](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/)
@@ -12,9 +12,10 @@
 [![Downloads](https://pepy.tech/badge/feature-engine/month)](https://pepy.tech/project/feature-engine)
 [![DOI](https://zenodo.org/badge/163630824.svg)](https://zenodo.org/badge/latestdoi/163630824)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.03642/status.svg)](https://doi.org/10.21105/joss.03642)
+[![first-timers-only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat-square)](https://www.firsttimersonly.com/)
 
 
-[<img src="./docs/images/logo/FeatureEngine.png" width="248">](http://feature-engine.readthedocs.io)
+[<img src="https://raw.githubusercontent.com/feature-engine/feature_engine/main/docs/images/logo/FeatureEngine.png" width="248">](http://feature-engine.readthedocs.io)
 
 Feature-engine is a Python library with multiple transformers to engineer and select features for use in machine learning models. 
 Feature-engine's transformers follow Scikit-learn's functionality with fit() and transform() methods to learn the 
@@ -23,9 +24,11 @@ transforming parameters from the data and then transform it.
 
 ## Feature-engine features in the following resources
 
-* [Feature Engineering for Machine Learning, Online Course](https://www.udemy.com/course/feature-engineering-for-machine-learning/?referralCode=A855148E05283015CF06)
+* [Feature Engineering for Machine Learning, Online Course](https://courses.trainindata.com/p/feature-engineering-for-machine-learning)
 
-* [Feature Selection for Machine Learning, Online Course](https://www.udemy.com/course/feature-selection-for-machine-learning/?referralCode=186501DF5D93F48C4F71)
+* [Feature Selection for Machine Learning, Online Course](https://courses.trainindata.com/p/feature-selection-for-machine-learning)
+
+* [Feature Engineering for Time Series Forecasting, Online Course](https://www.courses.trainindata.com/p/feature-engineering-for-forecasting)
 
 * [Deployment of Machine Learning Models, Online Course](https://www.udemy.com/course/deployment-of-machine-learning-models/?referralCode=D4FE5EA129FFD203CFF4)
 
@@ -60,7 +63,8 @@ transforming parameters from the data and then transform it.
 * Variable Transformation
 * Variable Creation
 * Variable Selection
-* Datetime Feature Extraction
+* Datetime Features
+* Time Series
 * Preprocessing
 * Scikit-learn Wrappers
 
@@ -98,14 +102,15 @@ transforming parameters from the data and then transform it.
 * LogTransformer
 * LogCpTransformer
 * ReciprocalTransformer
+* ArcsinTransformer
 * PowerTransformer
 * BoxCoxTransformer
 * YeoJohnsonTransformer
 
 ### Variable Creation:
- * MathematicalCombination
- * CombineWithReferenceFeature
- * CyclicalTransformer
+ * MathFeatures
+ * RelativeFeatures
+ * CyclicalFeatures
 
 ### Feature Selection:
  * DropFeatures
@@ -120,6 +125,14 @@ transforming parameters from the data and then transform it.
  * RecursiveFeatureAddition
  * DropHighPSIFeatures
 
+### Datetime
+ * DatetimeFeatures
+ 
+### Time Series
+ * LagFeatures
+ * WindowFeatures
+ * ExpandingWindowFeatures
+ 
 ### Preprocessing
  * MatchVariables
  
@@ -216,7 +229,8 @@ Now you can build the docs using: ``sphinx-build -b html docs build``
 
 BSD 3-Clause
 
-## Donate
+## Sponsor us
 
-[Sponsor the maintainer](https://github.com/sponsors/solegalli) to support her continue expanding 
-Feature-engine.
+[Sponsor us](https://github.com/sponsors/feature-engine) and support further our 
+mission to democratize machine learning and programming tools through open-source 
+software.

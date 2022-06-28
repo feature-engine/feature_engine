@@ -1,7 +1,7 @@
 .. -*- mode: rst -*-
 
-Variable Transformation
-=======================
+Variance Stabilizing Transformations
+====================================
 
 Feature-engine's variable transformers transform numerical variables with various
 mathematical transformations.
@@ -11,6 +11,13 @@ over a wider value range. See the following illustration:
 
 .. figure::  ../../images/Variable_Transformation.png
    :align:   center
+
+
+Article
+-------
+
+We added a lot of information about **variance stabilizing transformations** in this
+`article <https://trainindata.medium.com/variance-stabilizing-transformations-in-machine-learning-20e5383862dd>`_.
 
 **Note**
 
@@ -25,6 +32,7 @@ on the nature of the variable.
    LogTransformer
    LogCpTransformer
    ReciprocalTransformer
+   ArcsinTransformer
    PowerTransformer
    BoxCoxTransformer
    YeoJohnsonTransformer
