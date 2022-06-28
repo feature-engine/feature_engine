@@ -1,6 +1,6 @@
 # Feature Engine
 
-![PythonVersion](https://img.shields.io/badge/python-3.6%20|3.7%20|%203.8%20|%203.9-success)
+![PythonVersion](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-success)
 [![License https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md](https://img.shields.io/badge/license-BSD-success.svg)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md)
 [![PyPI version](https://badge.fury.io/py/feature-engine.svg)](https://badge.fury.io/py/feature-engine)
 [![Conda https://anaconda.org/conda-forge/feature_engine](https://anaconda.org/conda-forge/feature_engine/badges/installer/conda.svg)](https://anaconda.org/conda-forge/feature_engine)
@@ -12,9 +12,10 @@
 [![Downloads](https://pepy.tech/badge/feature-engine/month)](https://pepy.tech/project/feature-engine)
 [![DOI](https://zenodo.org/badge/163630824.svg)](https://zenodo.org/badge/latestdoi/163630824)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.03642/status.svg)](https://doi.org/10.21105/joss.03642)
+[![first-timers-only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat-square)](https://www.firsttimersonly.com/)
 
 
-[<img src="https://github.com/feature-engine/feature_engine/blob/main/docs/images/logo/FeatureEngine.png" width="248">](http://feature-engine.readthedocs.io)
+[<img src="https://raw.githubusercontent.com/feature-engine/feature_engine/main/docs/images/logo/FeatureEngine.png" width="248">](http://feature-engine.readthedocs.io)
 
 Feature-engine is a Python library with multiple transformers to engineer and select features for use in machine learning models. 
 Feature-engine's transformers follow Scikit-learn's functionality with fit() and transform() methods to learn the 
@@ -26,6 +27,8 @@ transforming parameters from the data and then transform it.
 * [Feature Engineering for Machine Learning, Online Course](https://courses.trainindata.com/p/feature-engineering-for-machine-learning)
 
 * [Feature Selection for Machine Learning, Online Course](https://courses.trainindata.com/p/feature-selection-for-machine-learning)
+
+* [Feature Engineering for Time Series Forecasting, Online Course](https://www.courses.trainindata.com/p/feature-engineering-for-forecasting)
 
 * [Deployment of Machine Learning Models, Online Course](https://www.udemy.com/course/deployment-of-machine-learning-models/?referralCode=D4FE5EA129FFD203CFF4)
 
@@ -99,6 +102,7 @@ transforming parameters from the data and then transform it.
 * LogTransformer
 * LogCpTransformer
 * ReciprocalTransformer
+* ArcsinTransformer
 * PowerTransformer
 * BoxCoxTransformer
 * YeoJohnsonTransformer

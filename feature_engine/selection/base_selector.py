@@ -69,15 +69,6 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         self.confirm_variables = confirm_variables
 
-    def _confirm_variables(self, X: pd.DataFrame) -> None:
-        # If required, exclude variables that are not in the input dataframe
-        if self.confirm_variables:
-            self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
-        else:
-            self.variables_ = self.variables
-
-        return None
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Return dataframe with selected features.
@@ -117,8 +108,13 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         return self
 
-    def get_feature_names_out(self) -> List:
+    def get_feature_names_out(self, input_features=None) -> List:
         """Get output feature names for transformation.
+
+        input_features: None
+            This parameter exists only for compatibility with the Scikit-learn
+            pipeline, but has no functionality. You can pass a list of feature names
+            or None.
 
         Returns
         -------
@@ -133,9 +129,30 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         return feature_names
 
+    def _confirm_variables(self, X: pd.DataFrame) -> None:
+        # If required, exclude variables that are not in the input dataframe
+        if self.confirm_variables:
+            self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
+        else:
+            self.variables_ = self.variables
+
+        return None
+
+    def _check_variable_number(self) -> None:
+        """Check that there are multiple variables for the selectors to work with."""
+        if len(self.variables_) < 2:
+            raise ValueError(
+                "The selector needs at least 2 or more variables to select from. "
+                f"Got only 1 variable: {self.variables_}."
+            )
+
     def _more_tags(self):
         tags_dict = _return_tags()
         tags_dict["variables"] = "numerical"
         # add additional test that fails
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+
+        msg = "transformers need more than 1 feature to work"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+
         return tags_dict

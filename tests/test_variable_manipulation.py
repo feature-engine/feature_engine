@@ -12,30 +12,30 @@ from feature_engine.variable_manipulation import (
 )
 
 
-def test_check_input_parameter_variables():
-    vars_ls = ["var1", "var2", "var1"]
-    vars_int_ls = [0, 1, 2, 3]
-    vars_none = None
-    vars_str = "var1"
-    vars_int = 0
-    vars_tuple = ("var1", "var2")
-    vars_set = {"var1", "var2"}
-    vars_dict = {"var1": 1, "var2": 2}
-
-    assert _check_input_parameter_variables(vars_ls) == ["var1", "var2", "var1"]
-    assert _check_input_parameter_variables(vars_int_ls) == [0, 1, 2, 3]
-    assert _check_input_parameter_variables(vars_none) is None
-    assert _check_input_parameter_variables(vars_str) == "var1"
-    assert _check_input_parameter_variables(vars_int) == 0
-
+@pytest.mark.parametrize(
+    "_input_vars",
+    [
+        ("var1", "var2"),
+        {"var1": 1, "var2": 2},
+        ["var1", "var2", "var2", "var3"],
+        [0, 1, 1, 2],
+    ],
+)
+def test_check_input_parameter_variables_raises_errors(_input_vars):
     with pytest.raises(ValueError):
-        assert _check_input_parameter_variables(vars_tuple)
+        assert _check_input_parameter_variables(_input_vars)
 
-    with pytest.raises(ValueError):
-        assert _check_input_parameter_variables(vars_set)
 
-    with pytest.raises(ValueError):
-        assert _check_input_parameter_variables(vars_dict)
+@pytest.mark.parametrize(
+    "_input_vars",
+    [["var1", "var2", "var3"], [0, 1, 2, 3], "var1", ["var1"], 0, [0]],
+)
+def test_check_input_parameter_variables(_input_vars):
+    assert _check_input_parameter_variables(_input_vars) == _input_vars
+
+
+def test_check_input_parameter_variables_is_none():
+    assert _check_input_parameter_variables(None) is None
 
 
 def test_find_or_check_numerical_variables(df_vartypes, df_numeric_columns):
@@ -206,15 +206,12 @@ def test_find_or_check_datetime_variables(df_datetime):
         _find_or_check_datetime_variables(df_datetime, variables=None)
         == vars_convertible_to_dt
     )
-    assert (
-        _find_or_check_datetime_variables(
-            df_datetime[vars_convertible_to_dt].reindex(
-                columns=["date_obj1", "datetime_range", "date_obj2"]
-            ),
-            variables=None,
-        )
-        == ["date_obj1", "datetime_range", "date_obj2"]
-    )
+    assert _find_or_check_datetime_variables(
+        df_datetime[vars_convertible_to_dt].reindex(
+            columns=["date_obj1", "datetime_range", "date_obj2"]
+        ),
+        variables=None,
+    ) == ["date_obj1", "datetime_range", "date_obj2"]
 
     # when variables are specified
     assert _find_or_check_datetime_variables(df_datetime, var_dt_str) == [var_dt_str]
@@ -226,13 +223,10 @@ def test_find_or_check_datetime_variables(df_datetime):
         _find_or_check_datetime_variables(df_datetime, variables=vars_convertible_to_dt)
         == vars_convertible_to_dt
     )
-    assert (
-        _find_or_check_datetime_variables(
-            df_datetime.join(tz_time),
-            variables=None,
-        )
-        == vars_convertible_to_dt + ["time_objTZ"]
-    )
+    assert _find_or_check_datetime_variables(
+        df_datetime.join(tz_time),
+        variables=None,
+    ) == vars_convertible_to_dt + ["time_objTZ"]
 
     # datetime var cast as categorical
     df_datetime["date_obj1"] = df_datetime["date_obj1"].astype("category")
@@ -269,10 +263,12 @@ def test_find_or_check_datetime_variables_when_numeric_is_cast_as_category_or_ob
 
 def test_find_all_variables(df_vartypes):
     all_vars = ["Name", "City", "Age", "Marks", "dob"]
+    all_vars_no_dt = ["Name", "City", "Age", "Marks"]
     user_vars = ["Name", "City"]
     non_existing_vars = ["Grades"]
 
     assert _find_all_variables(df_vartypes) == all_vars
+    assert _find_all_variables(df_vartypes, exclude_datetime=True) == all_vars_no_dt
     assert _find_all_variables(df_vartypes, ["Name", "City"]) == user_vars
 
     with pytest.raises(KeyError):

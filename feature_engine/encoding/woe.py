@@ -6,23 +6,27 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _inverse_transform_docstring,
 )
-from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.encoding._docstrings import (
     _errors_docstring,
     _ignore_format_docstring,
     _transform_docstring,
     _variables_docstring,
 )
-from feature_engine.encoding.base_encoder import BaseCategorical
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitExpandedMixin,
+    CategoricalMethodsMixin,
+)
 from feature_engine.tags import _return_tags
 
 
@@ -37,7 +41,7 @@ from feature_engine.tags import _return_tags
     transform=_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class WoEEncoder(BaseCategorical):
+class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
     """
     The WoEEncoder() replaces categories by the weight of evidence
     (WoE). The WoE was used primarily in the financial sector to create credit risk
@@ -138,7 +142,7 @@ class WoEEncoder(BaseCategorical):
             Target, must be binary.
         """
 
-        X, y = self._check_X_y(X, y)
+        X, y = check_X_y(X, y)
 
         # check that y is binary
         if y.nunique() != 2:

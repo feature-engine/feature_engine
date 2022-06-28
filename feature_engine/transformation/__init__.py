@@ -8,6 +8,7 @@ from .log import LogCpTransformer, LogTransformer
 from .power import PowerTransformer
 from .reciprocal import ReciprocalTransformer
 from .yeojohnson import YeoJohnsonTransformer
+from .arcsin import ArcsinTransformer
 
 __all__ = [
     "BoxCoxTransformer",
@@ -16,4 +17,5 @@ __all__ = [
     "PowerTransformer",
     "ReciprocalTransformer",
     "YeoJohnsonTransformer",
+    "ArcsinTransformer",
 ]
