@@ -13,7 +13,7 @@ iris = pd.DataFrame(iris_data, columns=col_names)
 iris["flower"] = datasets.load_iris().target
 
 
-def test_create_contingency_table():
+def test_create_frequency_matrix():
     transformer = ChiMergeDiscretiser(
         variables="sepal_length",
         threshold=1.4,
@@ -23,7 +23,7 @@ def test_create_contingency_table():
         return_boundaries=False,
     )
 
-    contingency_table = transformer._create_contingency_table(
+    frequency_matrix = transformer._create_frequency_matrix(
         X=iris[["sepal_length", "sepal_width", "petal_length"]],
         y=iris["flower"],
         variable="sepal_length"
@@ -31,7 +31,7 @@ def test_create_contingency_table():
 
     # number of flowers included in contingency table
     table_flower_count = 0
-    for count_arr in contingency_table.values():
+    for count_arr in frequency_matrix.values():
         table_flower_count += sum(count_arr)
 
     # expected results
@@ -75,7 +75,7 @@ def test_create_contingency_table():
     num_flowers = iris.shape[0]
 
     # check results
-    assert contingency_table == expected_results
+    assert frequency_matrix == expected_results
     # confirm all flowers are included
     assert table_flower_count == num_flowers
 
