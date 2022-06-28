@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn import datasets
@@ -28,14 +29,15 @@ def test_create_frequency_matrix():
         y=iris["flower"],
         variable="sepal_length"
     )
+    lengths = list(frequency_matrix[0])
+    distributions = list(frequency_matrix[1])
+    freq_matrix_dict = {l: list(d) for l, d in zip(lengths, distributions)}
 
-    # number of flowers included in contingency table
-    table_flower_count = 0
-    for count_arr in frequency_matrix.values():
-        table_flower_count += sum(count_arr)
+    # number of flowers accounted for in frequency matrix
+    num_flowers = np.sum(distributions)
 
     # expected results
-    expected_results = {
+    expected_frequency_matrix = {
         4.3: [1, 0, 0],
         4.4: [3, 0, 0],
         4.5: [1, 0, 0],
@@ -72,16 +74,16 @@ def test_create_frequency_matrix():
         7.7: [0, 0, 4],
         7.9: [0, 0, 1]
     }
-    num_flowers = iris.shape[0]
+    expected_num_flowers = iris.shape[0]
 
     # check results
-    assert frequency_matrix == expected_results
+    assert freq_matrix_dict == expected_frequency_matrix
     # confirm all flowers are included
-    assert table_flower_count == num_flowers
+    assert num_flowers == expected_num_flowers
 
 
 def test_chi_merge():
-
+    # test 1 - threshold is 0.5 significance level
     transformer = ChiMergeDiscretiser(
         variables="sepal_length",
         threshold=1.4,
@@ -95,10 +97,19 @@ def test_chi_merge():
         iris[["sepal_length", "sepal_width", "petal_length"]], iris["flower"]
     )
 
-    chi_test = transformer._perform_chi_merge()
-    chi_scores_round = pd.Series(chi_test.keys()).round(1)
-    expected_results = pd.Series(
+    chi_scores = transformer.chi_test_.keys()
+    chi_scores_round = pd.Series(chi_scores).round(1)
+
+    frequency_matrix_intervals = list(transformer.frequency_matrix_intervals_)
+
+    # expected results
+    expected_chi_scores = pd.Series(
         [4.1, 2.4, 8.6, 2.9, 1.7, 1.8, 2.2, 4.8, 4.1, 3.2, 1.5, 3.6]
     )
+    expected_frequency_matrix_intervals = [
+        4.3, 4.9, 5.0, 5.5, 5.6, 5.7, 5.8, 5.9, 6.3, 6.6, 6.7, 7.0, 7.1
+    ]
 
-    assert (chi_scores_round == expected_results).all()
+    # tests - 0.5 significance level
+    assert frequency_matrix_intervals == expected_frequency_matrix_intervals
+    assert (chi_scores_round == expected_chi_scores).all()
