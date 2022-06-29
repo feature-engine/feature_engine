@@ -1,19 +1,21 @@
 
-from typing import List, Optional, Union
+from typing import List, Union
 
 import numpy as np
-from numpy.typing import NDArray
 import pandas as pd
+from numpy.typing import NDArray
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.discretisation.base_discretiser import BaseDiscretiser
-from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.class_inputs import (
+    _variables_numerical_docstring,
+    _drop_original_docstring,
+)
 from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
-from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
@@ -21,13 +23,22 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
+from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
 
-
-
+@Substitution(
+    variables=_variables_numerical_docstring,
+    drop_original=_drop_original_docstring,
+    fit_transform=_fit_transform_docstring,
+    return_objects=BaseDiscretiser._return_object_docstring,
+    return_boundaries=BaseDiscretiser._return_boundaries_docstring,
+    binner_dict_=BaseDiscretiser._binner_dict_docstring,
+    fit=BaseDiscretiser._fit_docstring,
+    transform=BaseDiscretiser._transform_docstring
+)
 class ChiMergeDiscretiser(BaseDiscretiser):
     """"
 
@@ -36,6 +47,44 @@ class ChiMergeDiscretiser(BaseDiscretiser):
     for the categorical variable.
 
 
+    Parameters
+    ---------
+    {variables}
+
+    threshold: float, default=4.6
+        The transformer will merge the frequency distributions until
+        all chi-scores are greater than the threshold.
+
+    min_intervals: int, default=2
+        An additional constraint for the transformer. The transformer
+        stops merging the distributions once the number of frequency matrix
+        intervals equals the min_intervals.
+
+    max_intervals: int, default=2
+        # TODO: Does not exist. Do we need this param?
+
+    {drop_original}
+
+
+    Attributes
+    ----------
+    frequency_matrix_intervals_:
+        The variable values that are used as the upper- and lower-bounds
+        of the frequency matrix.
+
+    frequency_matrix_:
+        The frequency distributions for every interval.
+
+    chi_test_:
+        The chi-scores for all adjacent frequency distributions.
+
+    {binner_dict_}
+
+    {
+
+    Methods:
+    --------
+    {fit}
 
 
 
