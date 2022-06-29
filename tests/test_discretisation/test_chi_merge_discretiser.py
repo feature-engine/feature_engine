@@ -83,7 +83,7 @@ def test_create_frequency_matrix():
 
 
 def test_chi_merge():
-    # test 1 - threshold is 0.5 significance level
+    # Test 1 - threshold is 0.5 significance level
     transformer = ChiMergeDiscretiser(
         variables="sepal_length",
         threshold=1.4,
@@ -111,5 +111,32 @@ def test_chi_merge():
     ]
 
     # tests - 0.5 significance level
+    assert frequency_matrix_intervals == expected_frequency_matrix_intervals
+    assert (chi_scores_round == expected_chi_scores).all()
+
+    # Test 2 - threshold is 0.9 significance level
+    transformer = ChiMergeDiscretiser(
+        variables="sepal_length",
+        threshold=4.6,
+        min_intervals=2,
+        max_intervals=10,
+        return_object=False,
+        return_boundaries=False,
+    )
+
+    transformer.fit(
+        iris[["sepal_length", "sepal_width", "petal_length"]], iris["flower"]
+    )
+
+    chi_scores = transformer.chi_test_.keys()
+    chi_scores_round = pd.Series(chi_scores).round(1)
+
+    frequency_matrix_intervals = list(transformer.frequency_matrix_intervals_)
+
+    # expected results
+    expected_chi_scores = pd.Series([30.9, 6.7, 4.9, 5.9])
+    expected_frequency_matrix_intervals = [4.3, 5.5, 5.8, 6.3, 7.1]
+
+    # tests - 0.9 significance level
     assert frequency_matrix_intervals == expected_frequency_matrix_intervals
     assert (chi_scores_round == expected_chi_scores).all()
