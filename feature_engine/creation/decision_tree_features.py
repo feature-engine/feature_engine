@@ -326,7 +326,7 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
 
         return feature_names
 
-    def _get_unique_values_from_output_features(self) -> List:
+    def _get_distinct_output_features(self) -> List:
         """
         Get unique values from output_features when it is a tuple.
 
@@ -393,7 +393,7 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         if isinstance(self.output_features, tuple):
 
             # confirm all features in output_features are included in variables
-            unique_output_features = self._get_unique_values_from_output_features()
+            unique_output_features = self._get_distinct_output_features()
             if not all(
                     feature in self.variables for feature in unique_output_features
             ):
