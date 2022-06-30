@@ -184,11 +184,8 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         # only numerical variables
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
-        # confirm all variables in output_features are valid variable
-        # TODO: Discuss best approach to check output_features compatibility
-        if isinstance(self.output_features, tuple):
-            unique_features = _get_unique_values_from_output_features()
-            _check_output_features_are_permitted(unique_features)
+        # validate output_features param
+        self._validate_strategy()
 
         # basic checks
         X = check_X(X)
