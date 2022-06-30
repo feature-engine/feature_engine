@@ -255,6 +255,7 @@ def test_output_features_integer_and_classification(df_creation):
         output_features=3,
         regression=False,
         max_depth=3,
+        random_state=0,
         drop_original=False
     )
     X = df_creation.drop("Plays_Football", axis=1)
@@ -297,6 +298,68 @@ def test_output_features_integer_and_classification(df_creation):
         "Age_Avg_5k_run_minutes_tree": [1, 1, 1, 0, 0],
         "Marks_Avg_5k_run_minutes_tree": [0, 1, 1, 0, 0],
         "Age_Marks_Avg_5k_run_minutes_tree": [1, 1, 1, 0, 0],
+    }
+    expected_results_df = pd.DataFrame(expected_results)
+
+    assert results.equals(expected_results_df)
+
+
+def test_output_features_as_list_and_regression(df_creation):
+    X = df_creation.drop("Best_40m_dash_seconds", axis=1)
+    y = df_creation["Best_40m_dash_seconds"]
+
+    transformer = DecisionTreeFeatures(
+        variables=["Age", "Avg_5k_run_minutes", "Plays_Football"],
+        output_features=[2, 3],
+        regression=True,
+        max_depth=2,
+        random_state=0,
+        drop_original=True
+    )
+    transformer.fit(X, y)
+    df_transformed = transformer.transform(X)
+    results = df_transformed.head().round(1)
+
+    expected_results = {
+        "Name": [
+            "tom",
+            "nick",
+            "krish",
+            "megan",
+            "peter",
+        ],
+        "City": [
+            "London",
+            "Manchester",
+            "Liverpool",
+            "Bristol",
+            "Manchester",
+        ],
+        "Studies": [
+            "Bachelor",
+            "Bachelor",
+            "PhD",
+            "Masters",
+            "Bachelor",
+        ],
+        "Height_cm": [164, 150, 178, 158, 188],
+        "Marks": [1.0, 0.8, 0.6, 0.1, 0.3],
+        "Age_Avg_5k_run_minutes_tree": [4.1, 5.8, 4.2, 6.7, 4.2],
+        "Age_Plays_Football_tree": [4.0, 5.6, 4.0, 5.0, 5.6],
+        "Avg_5k_run_minutes_Plays_Football_tree": [
+            4.1,
+            5.8,
+            4.2,
+            6.7,
+            4.2
+        ],
+        "Age_Avg_5k_run_minutes_Plays_Football_tree": [
+            4.1,
+            5.8,
+            4.2,
+            6.7,
+            4.2
+        ]
     }
     expected_results_df = pd.DataFrame(expected_results)
 

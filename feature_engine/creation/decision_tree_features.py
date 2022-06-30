@@ -382,9 +382,9 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
                 )
 
         if isinstance(self.output_features, list):
-            # Check (1) user is not creating combinations comprised of more variables
-            # than the number of variables allowed by the 'variables' param or
-            # (2) the list is only comprised of integers
+            # Check (1) the list is only comprised of integers or
+            # (2) user is not creating combinations comprised of more variables
+            # than the number of variables allowed by the 'variables' param
             if (
                      not all(
                         isinstance(feature, int) for feature in self.output_features
