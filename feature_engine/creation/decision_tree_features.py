@@ -102,7 +102,16 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
     {drop_original}
 
     Attributes
-    ----------
+    ----------    with pytest.raises(ValueError):
+        transformer = DecisionTreeFeatures(
+            variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
+            output_features=3,
+            regression=True,
+            max_depth=3,
+            random_state=_random_state,
+            drop_original=True
+        )
+
     {variables_}
 
     {feature_names_in_}
@@ -140,18 +149,18 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
                 f"regression must be a boolean value. Got {regression} instead."
             )
 
-        if not isinstance(max_depth, int) and max_depth is not None:
+        if not isinstance(max_depth, int) or isinstance(max_depth, bool):
             raise ValueError(
                 f"max_depth must be an integer or None. Got {max_depth} instead."
             )
 
-        if not isinstance(random_state, int):
+        if not isinstance(random_state, int) or isinstance(random_state, bool):
             raise ValueError(
                 f"random_state must be an integer. Got {random_state} instead."
             )
 
         if not isinstance(drop_original, bool):
-            raise TypeError(
+            raise ValueError(
                 "drop_original takes only boolean values True and False. "
                 f"Got {drop_original} instead."
             )

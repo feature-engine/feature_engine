@@ -12,6 +12,7 @@ def test_create_variable_combinations(df_creation):
         output_features=None,
         regression=True,
         max_depth=3,
+        random_state=0,
         drop_original=False
     )
     expected_results = [
@@ -45,6 +46,7 @@ def test_create_variable_combinations(df_creation):
         output_features=3,
         regression=True,
         max_depth=3,
+        random_state=0,
         drop_original=False
     )
     expected_results = [
@@ -77,6 +79,7 @@ def test_create_variable_combinations(df_creation):
         output_features=[1, 3],
         regression=True,
         max_depth=3,
+        random_state=0,
         drop_original=False
     )
     expected_results = [
@@ -108,6 +111,7 @@ def test_create_variable_combinations(df_creation):
         ),
         regression=True,
         max_depth=3,
+        random_state=0,
         drop_original=False
     )
     expected_results = [
@@ -138,6 +142,7 @@ def test_get_distinct_from_output_features():
         output_features=output_features,
         regression=False,
         max_depth=3,
+        random_state=0,
         drop_original=False
     )
 
@@ -174,12 +179,14 @@ def test_error_when_output_features_not_permitted(_output_features, df_creation)
             output_features=_output_features,
             regression=True,
             max_depth=3,
+            random_state=0,
             drop_original=True
         )
         transformer.fit(
             df_creation[["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"]],
             df_creation["Best_40m_dash_seconds"]
         )
+
 
 @pytest.mark.parametrize("_regression",
                             [3, "summer", [3, 4], ("che", "si")],
@@ -192,5 +199,51 @@ def test_error_when_regression_not_permitted(_regression):
             output_features=3,
             regression=_regression,
             max_depth=3,
+            random_state=0,
             drop_original=True
+        )
+
+
+@pytest.mark.parametrize("_max_depth",
+                         ["copado", (3, 5), [1, 2, 3], False],
+                         )
+def test_error_when_max_depth_not_permitted(_max_depth):
+    with pytest.raises(ValueError):
+        transformer = DecisionTreeFeatures(
+            variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
+            output_features=3,
+            regression=True,
+            max_depth=_max_depth,
+            random_state=0,
+            drop_original=True
+        )
+
+
+@pytest.mark.parametrize("_random_state",
+                         ["mountain", (9, 9, 9), [4, 2], True],
+                         )
+def test_error_when_random_state_not_permitted(_random_state):
+    with pytest.raises(ValueError):
+        transformer = DecisionTreeFeatures(
+            variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
+            output_features=3,
+            regression=True,
+            max_depth=3,
+            random_state=_random_state,
+            drop_original=True
+        )
+
+
+@pytest.mark.parametrize("_drop_original",
+                         [36, "playa", [False, True], (True, True)],
+                         )
+def test_error_when_drop_original_not_permitted(_drop_original):
+    with pytest.raises(ValueError):
+        transformer = DecisionTreeFeatures(
+            variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
+            output_features=3,
+            regression=True,
+            max_depth=3,
+            random_state=33,
+            drop_original=_drop_original
         )
