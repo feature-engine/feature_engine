@@ -417,16 +417,70 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
 
         return unique_features
 
-    # TODO: Will most likely expand to include other checks
-    def _check_output_features_are_permitted(self, unique_features: List = None) -> None:
+
+    def _validate_strategy(self) -> None:
         """
-        Confirm that all elements of output_features are included in the dataset's
-        numerical variables. If not raise an error.
+        Validates output_features.
         """
-        # check if unique_features is a subset of self.variables_
-        if not (set(unique_features).issubset(set(self.variables_))):
+        if (
+                not isinstance(self.output_features, (int, list, tuple))
+                and self.output_features is not None
+        ):
             raise ValueError(
-                "All of the unique values of output_features are not a subset of "
-                f"the dataset's variables. The unique features are {unique_features}. "
-                f"The dataset's variables are {self.variables_}."
+                f"output_features must an integer, list or tuple. Got "
+                f"{self.output_features} instead."
             )
+
+        # check user is not creating combinations comprised of more variables
+        # than the number of variables provided in the 'variables' param
+        if isinstance(self.output_features, int):
+            if self.output_features > len(self.variables_):
+                raise ValueError(
+                    "If output_features is an integer, the value cannot be "
+                    f"greater than the number of variables. Got {self.output_features} "
+                    f"for output_features and {len(self.variables_)} for the number "
+                    "of variables."
+                )
+
+        if isinstance(self.output_features, list):
+            # Check (1) user is not creating combinations comprised of more variables
+            # than the number of variables allowed by the 'variables' param or
+            # (2) the list is only comprised of integers
+            if (
+                    max(self.output_features) > len(self.variables_)
+                    or not all(
+                isinstance(feature, int) for feature in output_features
+            )
+            ):
+                raise ValueError(
+                    "output_features must be a list comprised of integers. The "
+                    "maximum integer cannot be greater than the number of variables "
+                    f"passed in the 'variable' param. Got {self.output_features} for "
+                    f"output_features and {len(self.variables_)} for the number of variables. "
+                    "param."
+                )
+
+        if isinstance(self.output_features, tuple):
+
+            # calculate maximum number of subsequences/combinations of variables
+            num_combos = 0
+            for n in range(1, len(self.variables_) + 1):
+                # combinations returns all subsequences of 'n' length from 'variables'
+                num_combos += len(list(combinations(self.variables_, n)))
+
+            # check (1) each element in output_features is either a string or tuple or
+            # (2) user only passes strings and tuples.
+            if (
+                    not all(
+                        isinstance(feature, (str, tuple)) for feature in self.output_features
+                    )
+                    or len(self.output_features) > num_combos
+            ):
+                raise ValueError(
+                    "output_features must be comprised of tuples and strings."
+                    f"output_features cannot contain more feature combinations than "
+                    f"{num_combos}. Got {self.output_features} instead."
+                )
+
+        return self
+
