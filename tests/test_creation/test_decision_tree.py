@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -189,12 +188,12 @@ def test_error_when_output_features_not_permitted(_output_features, df_creation)
 
 
 @pytest.mark.parametrize("_regression",
-                            [3, "summer", [3, 4], ("che", "si")],
-                          )
+                         [3, "summer", [3, 4], ("che", "si")],
+                         )
 def test_error_when_regression_not_permitted(_regression):
 
     with pytest.raises(ValueError):
-        transformer = DecisionTreeFeatures(
+        DecisionTreeFeatures(
             variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
             output_features=3,
             regression=_regression,
@@ -209,7 +208,7 @@ def test_error_when_regression_not_permitted(_regression):
                          )
 def test_error_when_max_depth_not_permitted(_max_depth):
     with pytest.raises(ValueError):
-        transformer = DecisionTreeFeatures(
+        DecisionTreeFeatures(
             variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
             output_features=3,
             regression=True,
@@ -224,7 +223,7 @@ def test_error_when_max_depth_not_permitted(_max_depth):
                          )
 def test_error_when_random_state_not_permitted(_random_state):
     with pytest.raises(ValueError):
-        transformer = DecisionTreeFeatures(
+        DecisionTreeFeatures(
             variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
             output_features=3,
             regression=True,
@@ -239,7 +238,7 @@ def test_error_when_random_state_not_permitted(_random_state):
                          )
 def test_error_when_drop_original_not_permitted(_drop_original):
     with pytest.raises(ValueError):
-        transformer = DecisionTreeFeatures(
+        DecisionTreeFeatures(
             variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
             output_features=3,
             regression=True,
@@ -445,3 +444,8 @@ def test_output_features_as_tuple_and_is_regression(df_creation):
     expected_results_df = pd.DataFrame(expected_results)
 
     assert results.equals(expected_results_df)
+
+
+# TODO: add test when output_featuers is None
+def test_output_features_as_none_and_is_classification(df_creation):
+    pass
