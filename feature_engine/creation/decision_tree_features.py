@@ -139,69 +139,6 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         drop_original: bool = False,
     ) -> None:
 
-        # check that output_features is a compatible type
-        if (
-                not isinstance(output_features, (int, list, tuple))
-                and output_features is not None
-        ):
-            raise ValueError(
-                f"output_features must an integer, list or tuple. Got "
-                f"{output_features} instead."
-            )
-        # check user is not creating combinations comprised of more variables
-        # than the number of variables provided in the 'variables' param
-        if isinstance(output_features, int):
-            if output_features > len(variables):
-                raise ValueError(
-                    "If output_features is an integer, the value cannot be "
-                    f"greater than the number of variables. Got {output_features} "
-                    f"for output_features and {len(variables)} for the number "
-                    "of variables."
-                )
-
-        if isinstance(output_features, list):
-            # Check (1) user is not creating combinations comprised of more variables
-            # than the number of variables allowed by the 'variables' param or
-            # (2) the list is only comprised of integers
-            if (
-                    max(output_features) > len(variables)
-                    or not all(
-                            isinstance(feature, int) for feature in output_features
-                        )
-            ):
-                raise ValueError(
-                    "output_features must be a list comprised of integers. The "
-                    "maximum integer cannot be greater than the number of variables "
-                    f"passed in the 'variable' param. Got {output_features} for "
-                    f"output_features and {len(variables)} for the number of variables. "
-                    "param."
-                )
-        # TODO: Should check be moved to after the class attributes are created?
-        if isinstance(output_features, tuple):
-            # TODO: Add check to determine that output_features is only comprised of variables
-            # TODO: that are included in the 'variables' param
-
-            # calculate maximum number of subsequences/combinations of variables
-            num_combos = 0
-            # TODO: Raises error when variables is None. Must resolve.
-            for n in range(1, len(variables) + 1):
-                # combinations returns all subsequences of 'n' length from 'variables'
-                num_combos += len(list(combinations(variables, n)))
-
-            # check (1) each element in output_features is either a string or tuple or
-            # (2) user only passes strings and tuples.
-            if (
-                    not all(
-                        isinstance(feature, (str, tuple)) for feature in output_features
-                    )
-                    or len(output_features) > num_combos
-            ):
-                raise ValueError(
-                    "output_features must be comprised of tuples and strings."
-                    f"output_features cannot contain more feature combinations than "
-                    f"{num_combos}. Got {output_features} instead."
-                )
-
         if not isinstance(regression, bool):
             raise ValueError(
                 f"regression must be a boolean value. Got {regression} instead."
@@ -284,7 +221,6 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         self.n_features_in_ = X.shape[1]
 
         return self
-
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
