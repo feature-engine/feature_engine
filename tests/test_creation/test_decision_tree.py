@@ -247,3 +247,57 @@ def test_error_when_drop_original_not_permitted(_drop_original):
             random_state=33,
             drop_original=_drop_original
         )
+
+
+def test_output_features_integer_and_classification(df_creation):
+    transformer = DecisionTreeFeatures(
+        variables=["Age", "Marks", "Avg_5k_run_minutes"],
+        output_features=3,
+        regression=False,
+        max_depth=3,
+        drop_original=False
+    )
+    X = df_creation.drop("Plays_Football", axis=1)
+    y = df_creation["Plays_Football"]
+    transformer.fit(X, y)
+    df_transformed = transformer.transform(X)
+    results = df_transformed.head().round(1)
+
+    expected_results = {
+        "Name": [
+            "tom",
+            "nick",
+            "krish",
+            "megan",
+            "peter"
+        ],
+        "City": [
+            "London",
+            "Manchester",
+            "Liverpool",
+            "Bristol",
+            "Manchester",
+        ],
+        "Studies": [
+            "Bachelor",
+            "Bachelor",
+            "PhD",
+            "Masters",
+            "Bachelor",
+        ],
+        "Age": [20, 44, 19, 33, 51],
+        "Height_cm": [164, 150, 178, 158, 188],
+        "Marks": [1.0, 0.8, 0.6, 0.1, 0.3],
+        "Avg_5k_run_minutes": [22.5, 16.2, 18.3, 24.2, 20],
+        "Best_40m_dash_seconds": [4.1, 5.8, 3.9, 6.2, 4.3],
+        "Age_tree": [1, 0, 1, 0, 0],
+        "Marks_tree": [1, 1, 1, 0, 0],
+        "Avg_5k_run_minutes_tree": [1, 1, 1, 0, 0],
+        "Age_Marks_tree": [1, 1, 1, 0, 0],
+        "Age_Avg_5k_run_minutes_tree": [1, 1, 1, 0, 0],
+        "Marks_Avg_5k_run_minutes_tree": [0, 1, 1, 0, 0],
+        "Age_Marks_Avg_5k_run_minutes_tree": [1, 1, 1, 0, 0],
+    }
+    expected_results_df = pd.DataFrame(expected_results)
+
+    assert results.equals(expected_results_df)
