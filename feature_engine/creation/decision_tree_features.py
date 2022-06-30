@@ -392,6 +392,17 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
 
         if isinstance(self.output_features, tuple):
 
+            # confirm all features in output_features are included in variables
+            unique_output_features = self._get_unique_values_from_output_features()
+            if not all(
+                    feature in unique_output_features for variable in self.variables_
+            ):
+                raise ValueError(
+                    "output_features contains features that are not in variables. "
+                    f"Got {unique_output_features} for unique output features. "
+                    f"Got {self.variables_} for variables."
+                )
+
             # calculate maximum number of subsequences/combinations of variables
             num_combos = 0
             for n in range(1, len(self.variables_) + 1):
