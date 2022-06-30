@@ -1,24 +1,21 @@
 from itertools import combinations
-from typing import List, Tuple, Union, Optional
+from typing import List, Optional, Tuple, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine._docstrings.methods import (
-    _fit_transform_docstring,
+from feature_engine._docstrings.class_inputs import (
+    _drop_original_docstring,
+    _variables_numerical_docstring,
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.class_inputs import (
-    _variables_numerical_docstring,
-    _drop_original_docstring,
-)
-
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
@@ -30,7 +27,6 @@ from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
 )
-
 
 
 @Substitution(
@@ -202,12 +198,12 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
             self._estimators.append(estimator.fit(X[combo], y))
 
         # create a tuple of tuples
-        # inner tuple's elements: variable combination; and fitted estimator
+        # inner tuple's elements: (1) variable combination; and fitted estimator
         self.output_features_ = tuple(
             [
                 (combo, estimator) for combo, estimator in zip(
-                self.variable_combinations_, self._estimators
-            )
+                    self.variable_combinations_, self._estimators
+                )
             ]
         )
 
@@ -244,7 +240,9 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         )
 
         # create new features and add them to the original dataframe
-        for (var_combo, estimator), name in zip(self.output_features_, self.feature_names_):
+        for (var_combo, estimator), name in zip(
+                self.output_features_, self.feature_names_
+        ):
             X[name] = estimator.predict(X[var_combo])
 
         if self.drop_original:
@@ -381,15 +379,15 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
             if (
                     max(self.output_features) > len(self.variables_)
                     or not all(
-                isinstance(feature, int) for feature in output_features
-            )
+                        isinstance(feature, int) for feature in self.output_features
+                    )
             ):
                 raise ValueError(
                     "output_features must be a list comprised of integers. The "
                     "maximum integer cannot be greater than the number of variables "
                     f"passed in the 'variable' param. Got {self.output_features} for "
-                    f"output_features and {len(self.variables_)} for the number of variables. "
-                    "param."
+                    f"output_features and {len(self.variables_)} for the number of "
+                    f"variables. "
                 )
 
         if isinstance(self.output_features, tuple):
@@ -404,7 +402,8 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
             # (2) user only passes strings and tuples.
             if (
                     not all(
-                        isinstance(feature, (str, tuple)) for feature in self.output_features
+                        isinstance(feature, (str, tuple)) for feature in
+                        self.output_features
                     )
                     or len(self.output_features) > num_combos
             ):
@@ -415,4 +414,3 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
                 )
 
         return self
-
