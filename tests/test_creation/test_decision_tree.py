@@ -5,8 +5,8 @@ import pytest
 from feature_engine.creation import DecisionTreeFeatures
 
 
-def test_get_feature_names_out(df_creation):
-    # output_features is None
+def test_create_variable_combinations(df_creation):
+    # TEST 1: output_features is None
     transformer = DecisionTreeFeatures(
         variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
         output_features=None,
@@ -32,10 +32,14 @@ def test_get_feature_names_out(df_creation):
         ['Age', 'Marks', 'Avg_5k_run_minutes', 'Height_cm'],
     ]
 
-    results = transformer._create_variable_combinations()
+    transformer.fit(
+        df_creation.drop("Best_40m_dash_seconds", axis=1),
+        df_creation["Best_40m_dash_seconds"],
+    )
+    results = transformer.variable_combinations_
     assert results == expected_results
 
-    # output_features is an integer
+    # TEST 2: output_features is an integer
     transformer = DecisionTreeFeatures(
         variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
         output_features=3,
@@ -60,10 +64,14 @@ def test_get_feature_names_out(df_creation):
         ['Marks', 'Avg_5k_run_minutes', 'Height_cm'],
     ]
 
-    results = transformer._create_variable_combinations()
+    transformer.fit(
+        df_creation.drop("Best_40m_dash_seconds", axis=1),
+        df_creation["Best_40m_dash_seconds"],
+    )
+    results = transformer.variable_combinations_
     assert results == expected_results
 
-    # output_features is a list of integers
+    # TEST 3: output_features is a list of integers
     transformer = DecisionTreeFeatures(
         variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
         output_features=[1, 3],
@@ -82,17 +90,21 @@ def test_get_feature_names_out(df_creation):
         ['Marks', 'Avg_5k_run_minutes', 'Height_cm'],
     ]
 
-    results = transformer._create_variable_combinations()
+    transformer.fit(
+        df_creation.drop("Best_40m_dash_seconds", axis=1),
+        df_creation["Best_40m_dash_seconds"],
+    )
+    results = transformer.variable_combinations_
     assert results == expected_results
 
-    # output_features
+    # TEST 4: output_features is a tuple
     transformer = DecisionTreeFeatures(
         variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
         output_features=(
             "Height_cm",
             ("Avg_5k_run_minutes", "Height_cm"),
             "Age",
-            ("Age", "Studies", "Height_cm")
+            ("Age", "Height_cm")
         ),
         regression=True,
         max_depth=3,
@@ -102,13 +114,17 @@ def test_get_feature_names_out(df_creation):
         ['Height_cm'],
         ['Avg_5k_run_minutes', 'Height_cm'],
         ['Age'],
-        ['Age', 'Studies', 'Height_cm'],
+        ['Age', 'Height_cm'],
     ]
-    results = transformer._create_variable_combinations()
+    transformer.fit(
+        df_creation.drop("Best_40m_dash_seconds", axis=1),
+        df_creation["Best_40m_dash_seconds"],
+    )
+    results = transformer.variable_combinations_
     assert results == expected_results
 
 
-def test_get_unique_values_from_output_features():
+def test_get_distinct_from_output_features():
     output_features = (
         "Age",
         ("Avg_5k_run_minutes", "Plays_Football"),
@@ -125,7 +141,7 @@ def test_get_unique_values_from_output_features():
         drop_original=False
     )
 
-    unique_values = sorted(transformer._get_unique_values_from_output_features())
+    unique_values = sorted(transformer._get_distinct_output_features())
     expected_results = [
         "Age",
         "Avg_5k_run_minutes",
@@ -151,12 +167,30 @@ def test_get_unique_values_from_output_features():
 
     ],
 )
-def test_error_when_output_features_not_permitted(_output_features):
+def test_error_when_output_features_not_permitted(_output_features, df_creation):
+    with pytest.raises(ValueError):
+        transformer = DecisionTreeFeatures(
+            variables=["Age", "Marks", "Height_cm"],
+            output_features=_output_features,
+            regression=True,
+            max_depth=3,
+            drop_original=True
+        )
+        transformer.fit(
+            df_creation[["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"]],
+            df_creation["Best_40m_dash_seconds"]
+        )
+
+@pytest.mark.parametrize("_regression",
+                            [3, "summer", [3, 4], ("che", "si")],
+                          )
+def test_error_when_regression_not_permitted(_regression):
+
     with pytest.raises(ValueError):
         transformer = DecisionTreeFeatures(
             variables=["Age", "Marks", "Avg_5k_run_minutes", "Height_cm"],
-            output_features=_output_features,
-            regression=True,
+            output_features=3,
+            regression=_regression,
             max_depth=3,
             drop_original=True
         )
