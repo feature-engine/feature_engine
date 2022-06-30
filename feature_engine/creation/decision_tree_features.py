@@ -346,17 +346,17 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         # if output_features is None, int or list.
         else:
             if self.output_features is None:
-                for num in range(1, len(self.variables) + 1):
-                    variable_combinations += list(combinations(self.variables, num))
+                for num in range(1, len(self.variables_) + 1):
+                    variable_combinations += list(combinations(self.variables_, num))
 
             elif isinstance(self.output_features, int):
                 for num in range(1, self.output_features + 1):
-                    variable_combinations += list(combinations(self.variables, num))
+                    variable_combinations += list(combinations(self.variables_, num))
 
             # output_feature is a list
             else:
                 for num in self.output_features:
-                    variable_combinations += list(combinations(self.variables, num))
+                    variable_combinations += list(combinations(self.variables_, num))
 
             # transform all elements to lists to slice X dataframe
             variable_combinations = [list(var) for var in variable_combinations]
@@ -416,7 +416,6 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         unique_features = list(set(unique_features))
 
         return unique_features
-
 
     def _validate_strategy(self) -> None:
         """
