@@ -249,7 +249,7 @@ def test_error_when_drop_original_not_permitted(_drop_original):
         )
 
 
-def test_output_features_integer_and_classification(df_creation):
+def test_output_features_as_integer_and_is_classification(df_creation):
     transformer = DecisionTreeFeatures(
         variables=["Age", "Marks", "Avg_5k_run_minutes"],
         output_features=3,
@@ -291,6 +291,8 @@ def test_output_features_integer_and_classification(df_creation):
         "Marks": [1.0, 0.8, 0.6, 0.1, 0.3],
         "Avg_5k_run_minutes": [22.5, 16.2, 18.3, 24.2, 20],
         "Best_40m_dash_seconds": [4.1, 5.8, 3.9, 6.2, 4.3],
+        "Play_Baseball": [1, 0, 1, 0, 1],
+        "Avg_100m_swim_seconds": [101, 153, 123, 201, 200],
         "Age_tree": [1, 0, 1, 0, 0],
         "Marks_tree": [1, 1, 1, 0, 0],
         "Avg_5k_run_minutes_tree": [1, 1, 1, 0, 0],
@@ -304,7 +306,7 @@ def test_output_features_integer_and_classification(df_creation):
     assert results.equals(expected_results_df)
 
 
-def test_output_features_as_list_and_regression(df_creation):
+def test_output_features_as_list_and_is_regression(df_creation):
     X = df_creation.drop("Best_40m_dash_seconds", axis=1)
     y = df_creation["Best_40m_dash_seconds"]
 
@@ -344,6 +346,8 @@ def test_output_features_as_list_and_regression(df_creation):
         ],
         "Height_cm": [164, 150, 178, 158, 188],
         "Marks": [1.0, 0.8, 0.6, 0.1, 0.3],
+        "Play_Baseball": [1, 0, 1, 0, 1],
+        "Avg_100m_swim_seconds": [101, 153, 123, 201, 200],
         "Age_Avg_5k_run_minutes_tree": [4.1, 5.8, 4.2, 6.7, 4.2],
         "Age_Plays_Football_tree": [4.0, 5.6, 4.0, 5.0, 5.6],
         "Avg_5k_run_minutes_Plays_Football_tree": [
@@ -360,6 +364,83 @@ def test_output_features_as_list_and_regression(df_creation):
             6.7,
             4.2
         ]
+    }
+    expected_results_df = pd.DataFrame(expected_results)
+
+    assert results.equals(expected_results_df)
+
+
+def test_output_features_as_tuple_and_is_regression(df_creation):
+    X = df_creation.drop("Best_40m_dash_seconds", axis=1)
+    y = df_creation["Best_40m_dash_seconds"]
+
+    output_features = (
+        "Age",
+        ("Avg_5k_run_minutes", "Plays_Football"),
+        ("Age", "Marks", "Avg_5k_run_minutes", "Height_cm"),
+        ("Plays_Football"),
+        ("Height_cm", "Marks"),
+        ("Play_Baseball", "Avg_100m_swim_seconds"),
+    )
+
+    transformer = DecisionTreeFeatures(
+        variables=None,
+        output_features=output_features,
+        regression=True,
+        max_depth=3,
+        random_state=0,
+        drop_original=True
+    )
+    transformer.fit(X, y)
+    df_transformed = transformer.transform(X)
+    results = df_transformed.head().round(1)
+
+    expected_results = {
+        "Name": [
+            "tom",
+            "nick",
+            "krish",
+            "megan",
+            "peter",
+        ],
+        "City": [
+            "London",
+            "Manchester",
+            "Liverpool",
+            "Bristol",
+            "Manchester",
+        ],
+        "Studies": [
+            "Bachelor",
+            "Bachelor",
+            "PhD",
+            "Masters",
+            "Bachelor",
+        ],
+        "Age_tree": [4.1, 5.0, 3.9, 6.2, 5.0],
+        'Avg_5k_run_minutes_Plays_Football_tree': [
+            4.1,
+            5.8,
+            4.2,
+            6.4,
+            4.2
+        ],
+        "Age_Marks_Avg_5k_run_minutes_Height_cm_tree": [
+            4.1,
+            6.0,
+            3.9,
+            6.0,
+            4.3
+        ],
+        "Plays_Football_tree": [4.5, 4.5, 4.5, 5.7, 5.7],
+        "Height_cm_Marks_tree": [4.1, 6.0, 4.0, 6.0, 4.3],
+        "Play_Baseball_Avg_100m_swim_seconds_tree": [
+            4.1,
+            6.0,
+            3.9,
+            6.0,
+            4.4
+        ],
     }
     expected_results_df = pd.DataFrame(expected_results)
 

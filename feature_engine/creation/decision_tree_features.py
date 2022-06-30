@@ -404,7 +404,7 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
             # confirm all features in output_features are included in variables
             unique_output_features = self._get_distinct_output_features()
             if not all(
-                    feature in self.variables for feature in unique_output_features
+                    feature in self.variables_ for feature in unique_output_features
             ):
                 raise ValueError(
                     "output_features contains features that are not in variables. "
