@@ -377,10 +377,10 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
             # than the number of variables allowed by the 'variables' param or
             # (2) the list is only comprised of integers
             if (
-                    max(self.output_features) > len(self.variables_)
-                    or not all(
+                     not all(
                         isinstance(feature, int) for feature in self.output_features
                     )
+                    or max(self.output_features) > len(self.variables_)
             ):
                 raise ValueError(
                     "output_features must be a list comprised of integers. The "
