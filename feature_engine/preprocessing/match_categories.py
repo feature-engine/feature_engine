@@ -14,7 +14,6 @@ from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
 )
-from feature_engine.encoding._helper_functions import check_parameter_errors
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
