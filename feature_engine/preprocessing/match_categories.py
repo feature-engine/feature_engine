@@ -2,6 +2,7 @@ import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
+from feature_engine._docstrings.class_inputs import _missing_values_docstring
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -10,7 +11,6 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.encoding._docstrings import (
-    _errors_docstring,
     _ignore_format_docstring,
     _variables_docstring,
 )
@@ -23,7 +23,7 @@ from feature_engine.encoding.base_encoder import (
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    errors=_errors_docstring,
+    missing_values=_missing_values_docstring,
     variables=_variables_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -36,7 +36,7 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
 
     Under the hood, `'categorical'` dtype is a representation that maps each
     category to an integer, thus providing a more memory-efficient object
-    structure than e.g., 'str', and allowing faster grouping, mapping, and similar
+    structure than, e.g., 'str', and allowing faster grouping, mapping, and similar
     operations on the resulting object.
 
     MatchCategories() remembers the encodings or levels that represent each
@@ -53,7 +53,7 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
 
     {ignore_format}
 
-    {errors}
+    {missing_values}
 
     Attributes
     ----------
@@ -79,11 +79,17 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "raise",
+        missing_values: str = "raise",
     ) -> None:
-        check_parameter_errors(errors, ["ignore", "raise"])
+
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError(
+                "missing_values takes only values 'raise' or 'ignore'. "
+                f"Got {missing_values} instead."
+            )
+
         super().__init__(variables, ignore_format)
-        self.errors = errors
+        self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -100,9 +106,11 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
         """
         X = check_X(X)
         self._check_or_select_variables(X)
-        self._get_feature_names_in(X)
-        if self.errors == "raise":
+
+        if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
+
+        self._get_feature_names_in(X)
 
         self.category_dict_ = dict()
         for var in self.variables_:
@@ -122,11 +130,11 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
         Returns
         -------
         X_new: pandas dataframe of shape = [n_samples, n_features].
-            The dataframe containing variables encoded as pandas categorical dtype.
+            The dataframe with the variables encoded as pandas categorical dtype.
         """
         X = self._check_transform_input_and_state(X)
 
-        if self.errors == "raise":
+        if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
 
         for feature, levels in self.category_dict_.items():
@@ -139,7 +147,7 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
         # check if NaN values were introduced by the encoding
         if X[self.category_dict_.keys()].isnull().sum().sum() > 0:
 
-            # obtain the name(s) of the columns have null values
+            # obtain the name(s) of the columns that have null values
             nan_columns = (
                 X[self.category_dict_.keys()]
                 .columns[X[self.category_dict_.keys()].isnull().any()]
@@ -151,12 +159,12 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
             else:
                 nan_columns_str = nan_columns[0]
 
-            if self.errors == "ignore":
+            if self.missing_values == "ignore":
                 warnings.warn(
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."
                 )
-            elif self.errors == "raise":
+            elif self.missing_values == "raise":
                 raise ValueError(
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."

@@ -1,7 +1,9 @@
 import warnings
 
+import numpy as np
 import pandas as pd
 import pytest
+
 from feature_engine.preprocessing import MatchCategories
 
 
@@ -18,7 +20,7 @@ def test_category_encoder_outputs_correct_dtype():
     df_obj = pd.DataFrame({"col1": ["a", None, -1.0]})
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        res_obj = MatchCategories(errors="ignore").fit(df_obj).transform(df_obj)
+        res_obj = MatchCategories(missing_values="ignore").fit(df_obj).transform(df_obj)
     assert res_obj.dtypes["col1"] == "category"
 
     df_categ = pd.DataFrame({"col1": pd.Categorical(pd.Series(["a", "b", "c"]))})
@@ -32,25 +34,34 @@ def test_category_encoder_handles_missing():
     df_new = pd.DataFrame({"col1": ["a", "b", "d"]})
 
     # check that it fails for missing values when using 'raise'
+    tr = MatchCategories(missing_values="raise")
     with pytest.raises(ValueError):
-        tr = MatchCategories(errors="raise").fit(df_nas)
-    tr = MatchCategories(errors="raise").fit(df_no_nas)
+        tr.fit(df_nas)
+
+    tr.fit(df_no_nas)
     with pytest.raises(ValueError):
         tr.transform(df_nas)
 
     # check that it doens't fail for missing values when using 'ignore'
-    tr = MatchCategories(errors="ignore").fit(df_nas)
+    tr = MatchCategories(missing_values="ignore").fit(df_nas)
     with pytest.warns(UserWarning):
         tr.transform(df_nas)
 
     # check that it doesn't fail at transforming new values when using 'ignore'
-    tr = MatchCategories(errors="ignore").fit(df_no_nas)
+    tr = MatchCategories(missing_values="ignore").fit(df_no_nas)
     with pytest.warns(UserWarning):
         tr.transform(df_new)
 
 
 def test_category_outputs_correct_results():
     df = pd.DataFrame({"col1": ["a", "b", "c"], "col2": [1.0, 2.0, 3.0]})
-    tr = MatchCategories(variables=["col1", "col2"], ignore_format=True).fit(df)
-    res = tr.transform(df)
+    res = MatchCategories(variables=["col1", "col2"], ignore_format=True).fit_transform(
+        df
+    )
+    pd.testing.assert_frame_equal(df, res, check_dtype=False, check_categorical=False)
+
+    df = pd.DataFrame({"col1": ["a", "b", None], "col2": [1.0, 2.0, np.nan]})
+    res = MatchCategories(
+        variables=["col1", "col2"], ignore_format=True, missing_values="ignore"
+    ).fit_transform(df)
     pd.testing.assert_frame_equal(df, res, check_dtype=False, check_categorical=False)
