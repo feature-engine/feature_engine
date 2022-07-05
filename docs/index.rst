@@ -194,6 +194,7 @@ Forecasting:
 Preprocessing:
 --------------
 
+- :doc:`api_doc/preprocessing/MatchCategories`: ensures categorical variables are of type 'category'
 - :doc:`api_doc/preprocessing/MatchVariables`: ensures that columns in test set match those in train set
 
 Scikit-learn Wrapper:

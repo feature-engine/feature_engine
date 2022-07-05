@@ -138,7 +138,7 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         """
 
         X, y = check_X_y(X, y)
-        self._check_or_select_variables(X)
+        self._fit(X)
         self._get_feature_names_in(X)
 
         temp = pd.concat([X, y], axis=1)
