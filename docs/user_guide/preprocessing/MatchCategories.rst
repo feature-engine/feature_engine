@@ -165,5 +165,5 @@ When to use the transformer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This transformer is useful when creating custom transformers for categorical columns,
-as well as when passing categorical columns to modeling packages that support them
-natively but leave the variable casting to the user.
+as well as when passing categorical columns to modeling packages which support them
+natively but leave the variable casting to the user, such as ``lightgbm`` or ``glum``.
