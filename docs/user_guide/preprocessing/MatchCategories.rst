@@ -6,21 +6,21 @@ MatchCategories
 ===============
 
 :class:`MatchCategories()` ensures that categorical variables are encoded as pandas
-'categorical' dtype, instead of generic python 'object' or other dtypes.
+'categorical' dtype instead of generic python 'object' or other dtypes.
 
 Under the hood, 'categorical' dtype is a representation that maps each
 category to an integer, thus providing a more memory-efficient object
-structure than e.g., 'str', and allowing faster grouping, mapping, and similar
+structure than, for example, 'str', and allowing faster grouping, mapping, and similar
 operations on the resulting object.
 
-MatchCategories() remembers the encodings or levels that represent each
+:class:`MatchCategories()` remembers the encodings or levels that represent each
 category, and can thus can be used to ensure that the correct encoding gets
 applied when passing categorical data to modeling packages that support this
 dtype, or to prevent unseen categories from reaching a further transformer
 or estimator in a pipeline, for example.
 
 Let's explore this with an example. First we load the Titanic dataset and split it into
-a train and a test set:
+a train and a test sets:
 
 .. code:: python
 
@@ -119,10 +119,9 @@ dataset:
     Index(['C', 'Q', 'S'], dtype='object')
 
 
-
-If some category was not present in the training data, it will not map
-to any integer and will this not get encoded (behavior here depends on what one
-passed for 'errors'):
+If some category was not present in the training data, it will not mapped
+to any integer and will thus not get encoded. This behavior can be modified through the
+parameter `errors`:
 
 .. code:: python
 
@@ -165,7 +164,6 @@ passed for 'errors'):
 When to use the transformer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-
 This transformer is useful when creating custom transformers for categorical columns,
 as well as when passing categorical columns to modeling packages that support them
-natively but which leaving their encoding to the user.
+natively but leave the variable casting to the user.

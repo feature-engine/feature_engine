@@ -45,6 +45,8 @@ class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
     dtype, or to prevent unseen categories from reaching a further transformer
     or estimator in a pipeline, for example.
 
+    More details in the :ref:`User Guide <match_categories>`.
+
     Parameters
     ----------
     {variables}
