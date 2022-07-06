@@ -184,17 +184,16 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         y: pandas Series or np.array = [n_samples,]
             The target variable that is used to train the decision tree.
         """
+        # basic checks
+        X = check_X(X)
+        X, y = check_X_y(X, y)
+        _check_contains_inf(X, self.variables_)
 
         # only numerical variables
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # validate output_features param
         self._validate_strategy()
-
-        # basic checks
-        X = check_X(X)
-        X, y = check_X_y(X, y)
-        _check_contains_inf(X, self.variables_)
 
         # get all sets of variables that will be used to create new features
         self.variable_combinations_ = self._create_variable_combinations()
