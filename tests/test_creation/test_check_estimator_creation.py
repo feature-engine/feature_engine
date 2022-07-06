@@ -23,7 +23,7 @@ _estimators = [
     MathematicalCombination(variables_to_combine=["0", "1"]),
     CombineWithReferenceFeature(variables_to_combine=["0"], reference_variables=["1"]),
     CyclicalTransformer(),
-    DecisionTreeCreation(),
+    DecisionTreeFeatures(),
 ]
 
 
