@@ -1,5 +1,5 @@
 from itertools import combinations
-from typing import List, Optional, Tuple, Union
+from typing import Any, Iterable, List, Optional, Tuple, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -136,8 +136,7 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         variables: List[Union[str, int]] = None,
-        # TODO: What is the correct typing hint?
-        output_features: Union[int, List[int], Tuple[tuple, ...]] = None,
+        output_features: Iterable[List[Any]] = None,
         regression: bool = True,
         max_depth: int = 3,
         random_state: int = 0,
@@ -270,7 +269,7 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
 
         return est
 
-    def _create_variable_combinations(self):
+    def _create_variable_combinations(self) -> Iterable[List[Any]]:
         """
         Create a list of the different combinations of variables that are used
         to create new features.
@@ -433,4 +432,3 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
                     f"{num_combos}. Got {self.output_features} instead."
                 )
 
-        return self
