@@ -187,10 +187,12 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         # basic checks
         X = check_X(X)
         X, y = check_X_y(X, y)
-        _check_contains_inf(X, self.variables_)
 
         # only numerical variables
         self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+
+        # additional checks
+        _check_contains_inf(X, self.variables_)
 
         # validate output_features param
         self._validate_strategy()
@@ -238,7 +240,13 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
             a dataframe of only the new features.
 
         """
+        # Check method fit has been called
         check_is_fitted(self)
+
+        # check that input is a dataframe
+        X = check_X(X)
+
+        # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
 
         # get new feature names for dataframe column names
@@ -250,7 +258,7 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         for (var_combo, estimator), name in zip(
                 self.output_features_, self.feature_names_
         ):
-            X[name] = estimator.predict(X[var_combo])
+            X[name] = estimator.predict(X.loc[:,var_combo])
 
         if self.drop_original:
             X.drop(columns=self.variables_, inplace=True)
