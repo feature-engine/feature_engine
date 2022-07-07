@@ -1,5 +1,5 @@
 from itertools import combinations
-from typing import Any, Iterable, List, Optional, Tuple, Union
+from typing import Any, Iterable, List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -258,7 +258,7 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
         for (var_combo, estimator), name in zip(
                 self.output_features_, self.feature_names_
         ):
-            X[name] = estimator.predict(X.loc[:,var_combo])
+            X[name] = estimator.predict(X.loc[:, var_combo])
 
         if self.drop_original:
             X.drop(columns=self.variables_, inplace=True)
@@ -438,4 +438,3 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin):
                     f"output_features cannot contain more feature combinations than "
                     f"{num_combos}. Got {self.output_features} instead."
                 )
-
