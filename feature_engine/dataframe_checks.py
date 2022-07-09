@@ -279,6 +279,7 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
     ------
     ValueError
         If the variable(s) contain np.inf values
+
     """
 
     if np.isinf(X[variables]).values.any():
@@ -288,7 +289,7 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
         )
 
 
-def check_y_is_binary(y: pd.Series) -> None:
+def _check_y_is_binary(y: pd.Series) -> None:
     """
      Checks y, dependent variable, is binary
 
@@ -300,10 +301,16 @@ def check_y_is_binary(y: pd.Series) -> None:
     Raises
     ------
     ValueError
-        If the series has values other than 0 or 1
-
+        If the data series has values other than 0 or 1.
 
     """
     # TODO: Should the check raise an error if y is only 0s or only 1s?
 
-    pass
+    binary_values = [0, 1]
+    unique_values = list(y.unique())
+
+    if not all(val in unique_values for val in binary_values):
+        raise ValueError(
+            "y must be a binary variable comprised only of 0s and 1. "
+            f"Got {unique_values} instead."
+        )
