@@ -8,6 +8,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     _check_X_matches_training_df,
+    _check_y_is_binary,
     check_X,
     check_X_y,
     check_y,
@@ -151,3 +152,14 @@ def test_contains_inf(df_na):
     df_na.fillna(np.inf, inplace=True)
     with pytest.raises(ValueError):
         assert _check_contains_inf(df_na, ["Age", "Marks"])
+
+
+@pytest.mark.parametrize("_variables",
+                         [0, 1, 0, 3, 2, 2],
+                         [1, 2, 1, 1, 2],
+                         ["one", "one", "one"],
+                         )
+def test_check_y_is_binary_not_permitted_values(_variables):
+    with pytest.raises(ValueError):
+        _check_y_is_binary(pd.Series(_variables))
+
