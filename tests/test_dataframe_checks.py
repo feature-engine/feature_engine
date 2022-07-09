@@ -155,9 +155,11 @@ def test_contains_inf(df_na):
 
 
 @pytest.mark.parametrize("_variables",
-                         [0, 1, 0, 3, 2, 2],
-                         [1, 2, 1, 1, 2],
-                         ["one", "one", "one"],
+                         [
+                             [0, 1, 0, 3, 2, 2],
+                             [1, 2, 1, 1, 2],
+                             ["one", "one", "one"],
+                         ]
                          )
 def test_check_y_is_binary_not_permitted_values(_variables):
     with pytest.raises(ValueError):

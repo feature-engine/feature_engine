@@ -309,7 +309,7 @@ def _check_y_is_binary(y: pd.Series) -> None:
     binary_values = [0, 1]
     unique_values = list(y.unique())
 
-    if not all(val in unique_values for val in binary_values):
+    if not all(val in binary_values for val in unique_values):
         raise ValueError(
             "y must be a binary variable comprised only of 0s and 1. "
             f"Got {unique_values} instead."
