@@ -164,4 +164,3 @@ def test_contains_inf(df_na):
 def test_check_y_is_binary_not_permitted_values(_variables):
     with pytest.raises(ValueError):
         _check_y_is_binary(pd.Series(_variables))
-
