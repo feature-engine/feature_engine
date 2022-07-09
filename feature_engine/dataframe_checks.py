@@ -286,3 +286,24 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
             "Some of the variables to transform contain inf values. Check and "
             "remove those before using this transformer."
         )
+
+
+def check_y_is_binary(y: pd.Series) -> None:
+    """
+     Checks y, dependent variable, is binary
+
+    Parameters
+    ----------
+    y : Pandas Series
+        The dataset's series of dependent or predicted variables
+
+    Raises
+    ------
+    ValueError
+        If the series has values other than 0 or 1
+
+
+    """
+    # TODO: Should the check raise an error if y is only 0s or only 1s?
+
+    pass
