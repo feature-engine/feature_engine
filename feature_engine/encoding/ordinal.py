@@ -157,7 +157,7 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         else:
             X = check_X(X)
 
-        self._check_or_select_variables(X)
+        self._fit(X)
         self._get_feature_names_in(X)
 
         if self.encoding_method == "ordered":

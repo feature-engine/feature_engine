@@ -14,7 +14,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_checks import check_X, _check_contains_na
 from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
@@ -185,7 +185,7 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
 
         X = check_X(X)
-        self._check_or_select_variables(X)
+        self._fit(X)
         self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
@@ -246,6 +246,9 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
 
         X = self._check_transform_input_and_state(X)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables_)
 
         for feature in self.variables_:
             for category in self.encoder_dict_[feature]:

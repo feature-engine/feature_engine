@@ -169,7 +169,7 @@ class PRatioEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
                 "used has more than 2 unique values."
             )
 
-        self._check_or_select_variables(X)
+        self._fit(X)
         self._get_feature_names_in(X)
 
         temp = pd.concat([X, y], axis=1)
