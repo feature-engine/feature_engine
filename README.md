@@ -134,6 +134,7 @@ transforming parameters from the data and then transform it.
  * ExpandingWindowFeatures
  
 ### Preprocessing
+ * MatchCategories
  * MatchVariables
  
 ### Wrappers:

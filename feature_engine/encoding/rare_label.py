@@ -19,6 +19,7 @@ from feature_engine.encoding._docstrings import (
     _ignore_format_docstring,
     _variables_docstring,
 )
+from feature_engine.dataframe_checks import _check_contains_na
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
@@ -152,7 +153,7 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
 
         X = check_X(X)
-        self._check_or_select_variables(X)
+        self._fit(X)
         self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
@@ -203,6 +204,9 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
 
         X = self._check_transform_input_and_state(X)
+
+        # check if dataset contains na
+        _check_contains_na(X, self.variables_)
 
         for feature in self.variables_:
             X[feature] = np.where(
