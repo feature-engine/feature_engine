@@ -41,7 +41,7 @@ class InformationValue(BaseSelector):
             Target, must be binary.
 
         """
-
+        # check input dataframe
         X, y = check_X_y(X, y)
 
         if y.nunique() != 2:
@@ -49,3 +49,6 @@ class InformationValue(BaseSelector):
                 "This selector is designed for binary classification. The target "
                 "used has more than 2 unique values."
             )
+
+        # find categorical variables or check variables entered by user
+        self.variables_ = _find_or_check_categorical_variables(X, self.variables)
