@@ -42,7 +42,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     fit_transform=_fit_transform_docstring,
 )
 class DropHighPSIFeatures(BaseSelector):
-    r"""
+    """
     DropHighPSIFeatures drops features which Population Stability Index (PSI) value is
     above a given threshold. The PSI of a numerical feature is an indication of the
     shift in its distribution; a feature with high PSI could therefore be considered
