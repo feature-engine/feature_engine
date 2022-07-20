@@ -61,3 +61,18 @@ class InformationValue(BaseSelector):
 
         # find categorical variables or check variables entered by user
         self.variables_ = _find_or_check_categorical_variables(X, self.variables)
+
+    def _calc_woe(self, X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
+        """
+        Learn and return the WoE for the relevant variables.
+
+        """
+        encoder = WoEEncoder(
+            variables=self.variables_,
+            ignore_format=self.ignore_format,
+            errors=self.errors,
+        )
+        encoder.fit(X, y)
+        X_enc = encoder.transform(X)
+
+        return X_enc
