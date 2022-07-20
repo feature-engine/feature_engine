@@ -16,16 +16,25 @@ from feature_engine.variable_manipulation import (
 class InformationValue(BaseSelector):
     """
 
+
+    See Also
+    --------
+    feature_engine.encoding.WoEEncoder
     """
 
     def __init__(
             self,
             variables: Union[None, int, str, List[Union[str, int]]] = None,
             confirm_variables: bool = False,
-    )
+            gnore_format: bool = False,
+            errors: str = "ignore",
+    ) -> None:
 
         super().__init__(confirm_variables)
         self.variables = _check_input_parameter_variables(variables)
+        # parameters are checked when WoEEncoder is instatiated
+        self.ignore_format = ignore_format
+        self.errors = errors
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
