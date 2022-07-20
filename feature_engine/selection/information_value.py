@@ -62,6 +62,9 @@ class InformationValue(BaseSelector):
         # find categorical variables or check variables entered by user
         self.variables_ = _find_or_check_categorical_variables(X, self.variables)
 
+    def _calc_diff_between_binary_class_distributions(self, X: pd.DataFrame, y: pd.Series):
+        pass
+
     def _calc_woe(self, X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
         """
         Learn and return the WoE for the relevant variables.
