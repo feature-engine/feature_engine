@@ -73,6 +73,27 @@ class InformationValue(BaseSelector):
 
         pass
 
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Returns information value for all the labels of each selected categorical feature.
+
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features].
+            The input dataframe.
+
+        Returns
+        -------
+        X_new: pandas dataframe of shape = [n_samples, n_selected_features]
+            Pandas dataframe with the selected features.
+
+        """
+
+        X = super().transform(X)
+
+        pass
+
     def _calc_diff_between_binary_class_distributions(self, X: pd.DataFrame, y: pd.Series):
         pass
 
