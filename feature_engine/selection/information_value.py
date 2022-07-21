@@ -125,9 +125,9 @@ class InformationValue(BaseSelector):
 
         return encoder_dict
 
-    def _calc_woe(self, X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
+    def _calc_woe_encoder_dict(self, X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
         """
-        Learn and return the WoE for the relevant variables.
+        Learn and return the WoE encoder dictionary for the relevant variables.
 
         """
         encoder = WoEEncoder(
@@ -136,6 +136,5 @@ class InformationValue(BaseSelector):
             errors=self.errors,
         )
         encoder.fit(X, y)
-        X_enc = encoder.transform(X)
 
-        return X_enc
+        return encoder.encoder_dict_
