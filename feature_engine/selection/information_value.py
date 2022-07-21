@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Dict
 
 import numpy as np
 import pandas as pd
@@ -36,7 +36,7 @@ class InformationValue(BaseSelector):
         self.ignore_format = ignore_format
         self.errors = errors
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None):
+    def fit(self, X: pd.DataFrame, y: pd.Series = None) -> None:
         """
         Learn the information value.
 
@@ -70,12 +70,12 @@ class InformationValue(BaseSelector):
         self.class_diff_encoder_dict_ = self._calc_diff_between_class_distributions(X, y)
 
         # get WoE values for values of selected categorical variables
-        self.woe_encoder_dict_ = = self._calc_woe_encoder_dict(X, y)
+        self.woe_encoder_dict_ = self._calc_woe_encoder_dict(X, y)
 
         return self
 
 
-def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Returns information value for all the labels of each selected categorical feature.
 
@@ -120,7 +120,7 @@ def transform(self, X: pd.DataFrame) -> pd.DataFrame:
             pos = temp.groupby([var])["target"].sum() / total_pos
             neg = temp.groupby([var])["non_target"].sum() / total_neg
 
-            temp_grouped = pd.([pos, neg], axis=1)
+            temp_grouped = pd.concat([pos, neg], axis=1)
             temp_grouped["difference"] = temp_grouped["target"] - temp_grouped["non_target"]
 
             encoder_dict[var] = temp_grouped["difference"].to_dict()
