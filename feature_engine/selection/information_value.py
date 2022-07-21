@@ -65,15 +65,17 @@ class InformationValue(BaseSelector):
         # find categorical variables or check variables entered by user
         self.variables_ = _find_or_check_categorical_variables(X, self.variables)
 
+        # derive the difference in the binomial distributions for each unique value
+        # for each selected categorical variable
+        self.class_diff_encoder_dict_ = self._calc_diff_between_class_distributions(X, y)
+
         # get WoE values for values of selected categorical variables
-        X_woe = self._calc_woe(X, y)
+        self.woe_encoder_dict_ = = self._calc_woe_encoder_dict(X, y)
 
-        # if target does not have values 0 and 1, remap values to compute the average
-        # if any(label for label in y.unique() if label not in [0, 1]):
+        return self
 
-        pass
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Returns information value for all the labels of each selected categorical feature.
 
