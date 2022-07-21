@@ -26,7 +26,7 @@ class InformationValue(BaseSelector):
             self,
             variables: Union[None, int, str, List[Union[str, int]]] = None,
             confirm_variables: bool = False,
-            gnore_format: bool = False,
+            ignore_format: bool = False,
             errors: str = "ignore",
     ) -> None:
 
@@ -94,8 +94,36 @@ class InformationValue(BaseSelector):
 
         pass
 
-    def _calc_diff_between_binary_class_distributions(self, X: pd.DataFrame, y: pd.Series):
-        pass
+    def _calc_diff_between_class_distributions(self, X: pd.DataFrame, y: pd.Series) -> Dict:
+        """
+        Returns a dictionary comprised of the categorical variables and the difference
+        between the class distributions for each unique value.
+
+        """
+        temp = pd.concat([X, y], axis=1)
+        temp.columns = list(X.columns) + ["target"]
+
+        if any(label for label in y.unique() if label not in [0, 1]):
+            temp["target"] = np.where(temp["target"] == y.unique()[0], 0, 1)
+
+        # derive the difference in the binomial distributions for each unique value
+        # for each selected categorical variable
+        encoder_dict = {}
+
+        total_pos = temp["target"].sum()
+        total_neg = temp.shape[0] - total_pos
+        temp["non_target"] = np.where(temp["target"] == 1, 0, 1)
+
+        for var in self.variables_:
+            pos = temp.groupby([var])["target"].sum() / total_pos
+            neg = temp.groupby([var])["non_target"].sum() / total_neg
+
+            temp_grouped = pd.([pos, neg], axis=1)
+            temp_grouped["difference"] = temp_grouped["target"] - temp_grouped["non_target"]
+
+            encoder_dict[var] = temp_grouped["difference"].to_dict()
+
+        return encoder_dict
 
     def _calc_woe(self, X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:
         """
