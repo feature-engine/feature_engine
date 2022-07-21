@@ -1,3 +1,6 @@
+# Authors: Morgan Sell <morganpsell@gmail.com>
+# License: BSD 3 clause
+
 from typing import List, Union, Dict
 
 import numpy as np
@@ -72,8 +75,10 @@ class InformationValue(BaseSelector):
         # get WoE values for values of selected categorical variables
         self.woe_encoder_dict_ = self._calc_woe_encoder_dict(X, y)
 
-        return self
+        # get information values for unique values of selected categorical variables
+        self.info_value_encoder_dict_ = self._calc_information_value_encoder_dict()
 
+        return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -140,3 +145,28 @@ class InformationValue(BaseSelector):
         encoder.fit(X, y)
 
         return encoder.encoder_dict_
+
+    def _calc_information_value_encoder_dict(self) -> Dict:
+        """
+        Derive the information value for each value of the selected categorical variables.
+
+        Parameters:
+        -----------
+        None
+
+        Returns:
+        --------
+        iv_encoder_dict: dict
+            The information values for each feature's unique values.
+        """
+
+        iv_encoder_dict = {var: {} for var in self.variables_}
+        class_dist_diff_values = list(self.class_diff_encoder_dict_.values())
+        woe_values = list(self.woe_encoder_dict_.values())
+
+        # calcule information values for each variable's unique values
+        for var, diff_dict, woe_dict in zip(self.variables_, class_dist_diff_values, woe_values):
+            for (key_diff, val_diff), (key_woe, val_woe) in zip(diff_dict.items(), woe_dict.items()):
+                iv_encoder_dict[var][key_diff] = val_diff * val_woe
+
+        return iv_encoder_dict
