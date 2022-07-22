@@ -14,7 +14,9 @@ from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_categorical_variables,
 )
-
+from feature_engine._docstrings.methods import (
+    _get_feature_names_out_docstring,
+)
 
 class InformationValue(BaseSelector):
     """
@@ -170,3 +172,5 @@ class InformationValue(BaseSelector):
                 iv_encoder_dict[var][key_diff] = val_diff * val_woe
 
         return iv_encoder_dict
+
+
