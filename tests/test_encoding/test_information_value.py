@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from feature_engine.selection import InformationValue
+from feature_engine.encoding import InformationValue
 
 
 def _round_dict_of_dict_values(data, ndigits):

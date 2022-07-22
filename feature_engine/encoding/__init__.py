@@ -4,6 +4,7 @@ The module encoding includes classes to transform categorical variables into num
 
 from .count_frequency import CountFrequencyEncoder
 from .decision_tree import DecisionTreeEncoder
+from .information_value import InformationValue
 from .mean_encoding import MeanEncoder
 from .one_hot import OneHotEncoder
 from .ordinal import OrdinalEncoder
@@ -14,6 +15,7 @@ from .woe import WoEEncoder
 __all__ = [
     "CountFrequencyEncoder",
     "DecisionTreeEncoder",
+    "InformationValue",
     "MeanEncoder",
     "OneHotEncoder",
     "OrdinalEncoder",
