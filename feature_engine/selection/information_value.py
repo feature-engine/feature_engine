@@ -31,12 +31,21 @@ class InformationValue(BaseSelector):
             self,
             variables: Union[None, int, str, List[Union[str, int]]] = None,
             confirm_variables: bool = False,
+            sort_values: bool = False,
             ignore_format: bool = False,
             errors: str = "ignore",
     ) -> None:
 
         super().__init__(confirm_variables)
+
+        if not isinstance(sort_values, bool):
+            raise ValueError(
+                "sort_values must be a boolean variable. Got {sort_values} instead."
+            )
+
         self.variables = _check_input_parameter_variables(variables)
+        self.sort_values = sort_values
+
         # parameters are checked when WoEEncoder is instatiated
         self.ignore_format = ignore_format
         self.errors = errors
