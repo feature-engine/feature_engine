@@ -6,7 +6,14 @@ from typing import List, Union, Dict
 import numpy as np
 import pandas as pd
 
-from feature_engine.dataframe_checks import check_X_y
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils.validation import check_is_fitted
+
+from feature_engine.dataframe_checks import (
+    check_X_y,
+    _check_X_matches_training_df,
+    check_X,
+)
 
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.encoding import WoEEncoder
@@ -18,7 +25,7 @@ from feature_engine._docstrings.methods import (
     _get_feature_names_out_docstring,
 )
 
-class InformationValue(BaseSelector):
+class InformationValue(BaseEstimator, TransformerMixin):
     """
 
 
@@ -30,13 +37,10 @@ class InformationValue(BaseSelector):
     def __init__(
             self,
             variables: Union[None, int, str, List[Union[str, int]]] = None,
-            confirm_variables: bool = False,
             sort_values: bool = False,
             ignore_format: bool = False,
             errors: str = "ignore",
     ) -> None:
-
-        super().__init__(confirm_variables)
 
         if not isinstance(sort_values, bool):
             raise ValueError(
@@ -89,6 +93,8 @@ class InformationValue(BaseSelector):
         # get information values for unique values of selected categorical variables
         self.info_value_encoder_dict_ = self._calc_information_value_encoder_dict()
 
+        self.n_features_in_ = X.shape[0]
+
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -108,7 +114,14 @@ class InformationValue(BaseSelector):
 
         """
 
-        X = super().transform(X)
+        # check if fit was performed prior to transform
+        check_is_fitted(self)
+
+        # check that input is a dataframe
+        X = check_X(X)
+
+        # check if number of columns in test dataset matches to train dataset
+        _check_X_matches_training_df(X, self.n_features_in_)
 
         pass
 
