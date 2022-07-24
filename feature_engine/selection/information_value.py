@@ -157,9 +157,9 @@ class InformationValue(BaseSelector):
 
         return encoder.encoder_dict_
 
-    def _calc_information_value_encoder_dict(self) -> Dict:
+    def _calc_information_values(self) -> Dict:
         """
-        Derive the information value for each value of the selected categorical variables.
+        Derive the information value for the selected categorical variables.
 
         Parameters:
         -----------
@@ -171,15 +171,23 @@ class InformationValue(BaseSelector):
             The information values for each feature's unique values.
         """
 
-        iv_encoder_dict = {var: {} for var in self.variables_}
+        info_val_dict = {var: {} for var in self.variables_}
         class_dist_diff_values = list(self.class_diff_encoder_dict_.values())
         woe_values = list(self.woe_encoder_dict_.values())
 
         # calcule information values for each variable's unique values
         for var, diff_dict, woe_dict in zip(self.variables_, class_dist_diff_values, woe_values):
             for (key_diff, val_diff), (key_woe, val_woe) in zip(diff_dict.items(), woe_dict.items()):
-                iv_encoder_dict[var][key_diff] = val_diff * val_woe
+                info_val_dict[var][key_diff] = val_diff * val_woe
 
-        return iv_encoder_dict
+        # sum the information values for each variable
+        information_values = {var: 0 for var in self.variables_}
+
+        for var2, iv_dict_sub in info_val_dict.items():
+            for variable_label, value in iv_dict_sub.items():
+                print(variable_label, value)
+                information_values[var2] += value
+
+        return information_values
 
 
