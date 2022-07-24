@@ -217,4 +217,13 @@ class InformationValue(BaseEstimator, TransformerMixin):
 
         return information_values
 
+    def _get_feature_names_in(self, X):
+        """Get the names and number of features in the train set. The dataframe
+        used during fit."""
+
+        self.feature_names_in_ = X.columns.to_list()
+        self.n_features_in_ = X.shape[1]
+
+        return self
+
 
