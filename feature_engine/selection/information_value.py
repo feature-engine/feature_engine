@@ -129,7 +129,15 @@ class InformationValue(BaseEstimator, TransformerMixin):
         # check if number of columns in test dataset matches to train dataset
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        pass
+        X_new = pd.DataFrame(
+            self.information_values_,
+            columns=["variable", "information_value"]
+        )
+
+        if self.sort_values:
+            X_new.sort_values("information_value", ascending=False, inplace=True)
+
+        return X_new
 
     def _calc_diff_between_class_distributions(self, X: pd.DataFrame, y: pd.Series) -> Dict:
         """
