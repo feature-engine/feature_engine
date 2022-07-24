@@ -77,8 +77,14 @@ class InformationValue(BaseEstimator, TransformerMixin):
                 "used has more than 2 unique values."
             )
 
-        # find categorical variables or check variables entered by user
-        self.variables_ = _find_or_check_categorical_variables(X, self.variables)
+        # check input dataframe
+        X, y = check_X_y(X, y)
+
+        if y.nunique() != 2:
+            raise ValueError(
+                "This selector is designed for binary classification. The target "
+                "used has more than 2 unique values."
+            )
 
         # find categorical variables or check variables entered by user
         self.variables_ = _find_or_check_categorical_variables(X, self.variables)
@@ -87,13 +93,13 @@ class InformationValue(BaseEstimator, TransformerMixin):
         # for each selected categorical variable
         self.class_diff_encoder_dict_ = self._calc_diff_between_class_distributions(X, y)
 
-        # get WoE values for values of selected categorical variables
+        # get WoE values for unique values of selected categorical variables
         self.woe_encoder_dict_ = self._calc_woe_encoder_dict(X, y)
 
         # get information values for unique values of selected categorical variables
-        self.info_value_encoder_dict_ = self._calc_information_value_encoder_dict()
+        self.information_values_ = self._calc_information_values()
 
-        self.n_features_in_ = X.shape[0]
+        self._get_feature_names_in(X)
 
         return self
 
