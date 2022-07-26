@@ -129,10 +129,12 @@ class InformationValue(BaseEstimator, TransformerMixin):
         # check if number of columns in test dataset matches to train dataset
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        X_new = pd.DataFrame(
-            self.information_values_,
-            columns=["variable", "information_value"]
-        )
+        X_new = pd.DataFrame.from_dict(
+            data=self.information_values_,
+            orient="index"
+        ).reset_index()
+
+        X_new.columns = ["variable", "information_value"]
 
         if self.sort_values:
             X_new.sort_values("information_value", ascending=False, inplace=True)
@@ -212,7 +214,6 @@ class InformationValue(BaseEstimator, TransformerMixin):
 
         for var2, iv_dict_sub in info_val_dict.items():
             for variable_label, value in iv_dict_sub.items():
-                print(variable_label, value)
                 information_values[var2] += value
 
         return information_values
