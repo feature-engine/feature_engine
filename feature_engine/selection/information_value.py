@@ -1,29 +1,25 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Union, Dict
+from typing import Dict, List, Union
 
 import numpy as np
 import pandas as pd
-
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._docstrings.methods import _get_feature_names_out_docstring
 from feature_engine.dataframe_checks import (
-    check_X_y,
     _check_X_matches_training_df,
     check_X,
+    check_X_y
 )
-
-from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.encoding import WoEEncoder
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_categorical_variables,
 )
-from feature_engine._docstrings.methods import (
-    _get_feature_names_out_docstring,
-)
+
 
 class InformationValue(BaseEstimator, TransformerMixin):
     """
@@ -91,7 +87,9 @@ class InformationValue(BaseEstimator, TransformerMixin):
 
         # derive the difference in the binomial distributions for each unique value
         # for each selected categorical variable
-        self.class_diff_encoder_dict_ = self._calc_diff_between_class_distributions(X, y)
+        self.class_diff_encoder_dict_ = self._calc_diff_between_class_distributions(
+            X, y
+        )
 
         # get WoE values for unique values of selected categorical variables
         self.woe_encoder_dict_ = self._calc_woe_encoder_dict(X, y)
@@ -105,7 +103,8 @@ class InformationValue(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Returns information value for all the labels of each selected categorical feature.
+        Returns information value for all the labels of each selected categorical
+        feature.
 
 
         Parameters
@@ -141,7 +140,9 @@ class InformationValue(BaseEstimator, TransformerMixin):
 
         return X_new
 
-    def _calc_diff_between_class_distributions(self, X: pd.DataFrame, y: pd.Series) -> Dict:
+    def _calc_diff_between_class_distributions(
+            self, X: pd.DataFrame, y: pd.Series
+    ) -> Dict:
         """
         Returns a dictionary comprised of the categorical variables and the difference
         between the class distributions for each unique value.
@@ -166,7 +167,9 @@ class InformationValue(BaseEstimator, TransformerMixin):
             neg = temp.groupby([var])["non_target"].sum() / total_neg
 
             temp_grouped = pd.concat([pos, neg], axis=1)
-            temp_grouped["difference"] = temp_grouped["target"] - temp_grouped["non_target"]
+            temp_grouped["difference"] = (
+                    temp_grouped["target"] - temp_grouped["non_target"]
+            )
 
             encoder_dict[var] = temp_grouped["difference"].to_dict()
 
@@ -205,8 +208,12 @@ class InformationValue(BaseEstimator, TransformerMixin):
         woe_values = list(self.woe_encoder_dict_.values())
 
         # calcule information values for each variable's unique values
-        for var, diff_dict, woe_dict in zip(self.variables_, class_dist_diff_values, woe_values):
-            for (key_diff, val_diff), (key_woe, val_woe) in zip(diff_dict.items(), woe_dict.items()):
+        for var, diff_dict, woe_dict in zip(
+                self.variables_, class_dist_diff_values, woe_values
+        ):
+            for (key_diff, val_diff), (key_woe, val_woe) in zip(
+                    diff_dict.items(), woe_dict.items()
+            ):
                 info_val_dict[var][key_diff] = val_diff * val_woe
 
         # sum the information values for each variable
@@ -226,5 +233,3 @@ class InformationValue(BaseEstimator, TransformerMixin):
         self.n_features_in_ = X.shape[1]
 
         return self
-
-
