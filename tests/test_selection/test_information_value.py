@@ -86,7 +86,7 @@ def test_error_when_more_than_two_classes(df_enc_numeric):
 
 
 @pytest.mark.parametrize(
-    "_sort_values", [3, "python", (True, False), ["var", "fun"]]
+    "_sort_values", [3, "python", (True, False), ["swim", "fun"]]
 )
 def test_error_when_not_permitted_param_sort_values(_sort_values):
     with pytest.raises(ValueError):
@@ -96,3 +96,50 @@ def test_error_when_not_permitted_param_sort_values(_sort_values):
             ignore_format=True,
             errors="ignore"
         )
+
+
+def test_when_param_sort_values_false(df_enc):
+    transformer = InformationValue(
+        variables=None,
+        sort_values=False,
+        ignore_format=False,
+        errors="ignore"
+    )
+    X = df_enc.drop("target", axis=1)
+    X_tr = transformer.fit_transform(X, df_enc["target"])
+
+    expected_results = {
+        "variable": [
+            "var_A", "var_B", "var_C", "var_D", "var_E",
+        ],
+        "information_value": [
+            0.29706, 0.29706, 0.07818, 0.49496, 0.02462,
+        ]
+    }
+    expected_results_df = pd.DataFrame(expected_results)
+
+    assert X_tr.round(5).equals(expected_results_df)
+
+
+def test_when_param_sort_values_true(df_enc):
+    transformer = InformationValue(
+        variables=None,
+        sort_values=True,
+        ignore_format=False,
+        errors="ignore"
+    )
+    X = df_enc.drop("target", axis=1)
+    X_tr = transformer.fit_transform(X, df_enc["target"])
+
+    expected_results = {
+        "variable": [
+            "var_D", "var_A", "var_B", "var_C", "var_E",
+        ],
+        "information_value": [
+            0.49496, 0.29706, 0.29706, 0.07818, 0.02462,
+        ]
+    }
+    expected_results_df = pd.DataFrame(expected_results)
+
+    # test response
+    assert X_tr.round(5).equals(expected_results_df)
