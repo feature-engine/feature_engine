@@ -130,6 +130,8 @@ def test_when_param_sort_values_true(df_enc):
     )
     X = df_enc.drop("target", axis=1)
     X_tr = transformer.fit_transform(X, df_enc["target"])
+    # reset indices to equal expected_results
+    X_tr = X_tr.reset_index().round(5).drop("index", axis=1)
 
     expected_results = {
         "variable": [
@@ -142,4 +144,4 @@ def test_when_param_sort_values_true(df_enc):
     expected_results_df = pd.DataFrame(expected_results)
 
     # test response
-    assert X_tr.round(5).equals(expected_results_df)
+    assert X_tr.equals(expected_results_df)
