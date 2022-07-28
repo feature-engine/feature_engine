@@ -19,7 +19,7 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
 )
-
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
@@ -34,6 +34,7 @@ from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_categorical_variables,
 )
+
 
 @Substitution(
     variables=_variables_categorical_docstring,
