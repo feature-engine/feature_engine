@@ -8,22 +8,100 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine._docstrings.methods import _get_feature_names_out_docstring
+from feature_engine._docstrings.class_inputs import (
+    _variables_categorical_docstring
+)
+from feature_engine._docstrings.fit_attributes import (
+    _variables_attribute_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+)
+
 from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
     check_X_y
 )
 from feature_engine.encoding import WoEEncoder
+from feature_engine.encoding._docstrings import (
+    _errors_docstring,
+    _ignore_format_docstring,
+)
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_categorical_variables,
 )
 
-
+@Substitution(
+    variables=_variables_categorical_docstring,
+    errors=_errors_docstring,
+    ignore_format=_ignore_format_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in=_feature_names_in_docstring,
+    n_features_in=_n_features_in_docstring,
+    fit_transform=_fit_transform_docstring,
+)
 class InformationValue(BaseEstimator, TransformerMixin):
     """
+    InformationValue() calculates the information value (IV) for each variable.
+    The transformer is only compatible with categorical variables (type 'object'
+    or 'categorical') and binary classification.
 
+    You can pass a list of variables to score. Alternatively, the
+    transformer will find and score all categorical variables (type 'object'
+    or 'categorical').
+
+    IV will allow you to assess each variable's independent contribution to
+    the target variable and rank the variables in terms of their univariate
+    predictive strength.
+
+    Parameters
+    ----------
+    {variables}
+
+    sort_values: bool, default=False
+        Determines whether to sort the variables in ascending order after
+        the information values are calculated.
+
+    {errors}
+
+    {ignore_format}
+
+    Attributes
+    ----------
+    {variables_}
+
+    {feature_names_in}
+
+    {n_features_in}
+
+    class_diff_encoder_dict_:
+         The difference between the binomial distributions of positive and
+         negative classes for each unique value of the selected categorical
+         variables.
+
+    woe_encoder_dict_:
+        Contains the weights of evidence (WoE) for all the unique values of
+        the selected categorical variables.
+
+    information_values_:
+        A dictionary comprised of the information values for the selected
+        categorical variables.
+
+    Methods
+    -------
+    fit:
+        Calculates the information values for the selected categorical
+        variables.
+
+    {fit_transform}
+
+    transform:
+        Returns a dataframe with the variables and their corresponding
+        information values.
 
     See Also
     --------
@@ -60,19 +138,10 @@ class InformationValue(BaseEstimator, TransformerMixin):
             The training input samples.
             Can be the entire dataframe, not just the categorical variables.
 
-        y: pandas series.
+        y: pandas series of shape = [n_samples, ]
             Target, must be binary.
 
         """
-        # check input dataframe
-        X, y = check_X_y(X, y)
-
-        if y.nunique() != 2:
-            raise ValueError(
-                "This selector is designed for binary classification. The target "
-                "used has more than 2 unique values."
-            )
-
         # check input dataframe
         X, y = check_X_y(X, y)
 
@@ -114,8 +183,8 @@ class InformationValue(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_selected_features]
-            Pandas dataframe with the selected features.
+        X_new: pandas dataframe of shape = [n_selected_features, 2]
+            The selected features and corresponding information values.
 
         """
 
@@ -147,7 +216,22 @@ class InformationValue(BaseEstimator, TransformerMixin):
         Returns a dictionary comprised of the categorical variables and the difference
         between the class distributions for each unique value.
 
-        """
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The training input samples.
+            Can be the entire dataframe, not just the categorical variables.
+
+        y: pandas series of shape = [n_samples, ]
+            Target, must be binary.
+
+        Returns
+        -------
+        encoder_dict: dict
+            Difference between the class distributions for each unique value of
+            the selected variables.
+
+q       """
         temp = pd.concat([X, y], axis=1)
         temp.columns = list(X.columns) + ["target"]
 
@@ -179,6 +263,14 @@ class InformationValue(BaseEstimator, TransformerMixin):
         """
         Learn and return the WoE encoder dictionary for the relevant variables.
 
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        iv_encoder_dict: dict
+            The information values for each feature's unique values.
         """
         encoder = WoEEncoder(
             variables=self.variables_,
@@ -193,12 +285,17 @@ class InformationValue(BaseEstimator, TransformerMixin):
         """
         Derive the information value for the selected categorical variables.
 
-        Parameters:
-        -----------
-        None
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The training input samples.
+            Can be the entire dataframe, not just the categorical variables.
 
-        Returns:
-        --------
+        y: pandas series of shape = [n_samples, ]
+            Target, must be binary.
+
+        Returns
+        -------
         iv_encoder_dict: dict
             The information values for each feature's unique values.
         """
@@ -226,7 +323,7 @@ class InformationValue(BaseEstimator, TransformerMixin):
         return information_values
 
     def _get_feature_names_in(self, X):
-        """Get the names and number of features in the train set. The dataframe
+        """Get the names and number of features in the training set. The dataframe
         used during fit."""
 
         self.feature_names_in_ = X.columns.to_list()
