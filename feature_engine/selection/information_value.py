@@ -129,7 +129,7 @@ class InformationValue(BaseEstimator, TransformerMixin):
         self.ignore_format = ignore_format
         self.errors = errors
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None) -> None:
+    def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
         Learn the information value.
 
@@ -288,12 +288,7 @@ q       """
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the categorical variables.
-
-        y: pandas series of shape = [n_samples, ]
-            Target, must be binary.
+        None
 
         Returns
         -------
@@ -301,7 +296,7 @@ q       """
             The information values for each feature's unique values.
         """
 
-        info_val_dict = {var: {} for var in self.variables_}
+        info_val_dict = {var: {} for var in self.variables_}  # type: dict
         class_dist_diff_values = list(self.class_diff_encoder_dict_.values())
         woe_values = list(self.woe_encoder_dict_.values())
 
