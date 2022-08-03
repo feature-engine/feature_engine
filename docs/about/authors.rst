@@ -18,4 +18,7 @@
             <a href='https://github.com/nicogalli'><img src='https://avatars.githubusercontent.com/nicogalli?v=4' class='avatar'width="120" height="120"/></a> <br />
             <p>Nicolas Galli</p>
         </div>
+        <div class="author">
+            <a href='https://github.com/morgan-sell'><img src='https://avatars.githubusercontent.com/morgan-sell?v=4' class='avatar' width="120" height="120" /></a> <br />
+            <p>Morgan Sell</p>
     </div>
