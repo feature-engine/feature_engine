@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from feature_engine.discretisation import MeanDiscretiser
 
@@ -57,3 +58,15 @@ def test_equal_width_strategy():
     expected_results_df = pd.DataFrame(expected_results)
 
     assert df_tr.equals(expected_results_df)
+
+
+@pytest.mark.parametrize("bins_value", ["other", 0.5, [1]])
+def test_error_when_bins_not_number(bins_value):
+    with pytest.raises(ValueError):
+        MeanDiscretiser(bins=bins_value)
+
+
+@pytest.mark.parametrize("strategy_value", ["other", 0.5, [1]])
+def test_error_when_strategy_not_valid(strategy_value):
+    with pytest.raises(ValueError):
+        MeanDiscretiser(bins=strategy_value)
