@@ -64,22 +64,23 @@ def test_error_if_ordinal_encoding_and_no_y_passed(df_enc):
 def test_error_if_input_df_contains_categories_not_present_in_training_df(
     df_enc, df_enc_rare
 ):
-    # test case 4: when dataset to be transformed contains categories not present
-    # in training dataset
     msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
 
     # check for warning when rare_labels equals 'ignore'
-    with pytest.warns(UserWarning) as record:
-        encoder = OrdinalEncoder(errors="ignore")
-        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-        encoder.transform(df_enc_rare[["var_A", "var_B"]])
+    encoder = OrdinalEncoder(errors="ignore")
+    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+    tr_result = encoder.transform(df_enc_rare[["var_A", "var_B"]])
 
-    # check that only one warning was raised
-    assert len(record) == 1
-    # check that the message matches
-    assert record[0].message.args[0] == msg
+    answer = pd.DataFrame(
+        {
+            "var_A": 9 * [0] + 6 * [1] + 4 * [2] + [-1],
+            "var_B": 10 * [0] + 6 * [1] + 4 * [2],
+        }
+    )
 
-    # check for error when rare_labels equals 'raise'
+    # checking that Unknown categories output -1
+    pd.testing.assert_frame_equal(tr_result, answer)
+
     with pytest.raises(ValueError) as record:
         encoder = OrdinalEncoder(errors="raise")
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])

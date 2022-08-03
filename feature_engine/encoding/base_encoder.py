@@ -231,7 +231,11 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
             else:
                 nan_columns_str = nan_columns[0]
 
-            if self.errors == "ignore":
+            if self.__class__.__name__ == "OrdinalEncoder" and self.errors == "ignore":
+                features = list(self.encoder_dict_.keys())
+                X[features] = X[features].fillna(-1).astype("int")
+
+            elif self.errors == "ignore":
                 warnings.warn(
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."
@@ -239,8 +243,7 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
             elif self.errors == "raise":
                 raise ValueError(
                     "During the encoding, NaN values were introduced in the feature(s) "
-                    f"{nan_columns_str}."
-                )
+                    f"{nan_columns_str}.")
 
         return X
 
