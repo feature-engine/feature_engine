@@ -139,6 +139,10 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         # check input dataframe and if class was fitted
         X = super().transform(X)
 
+        # check contains zero or negative values
+        if (X[self.variables_] <= 0).any().any():
+            raise ValueError("Data must be positive.")
+
         # transform
         for feature in self.variables_:
             X[feature] = stats.boxcox(X[feature], lmbda=self.lambda_dict_[feature])
