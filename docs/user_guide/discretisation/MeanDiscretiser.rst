@@ -1,14 +1,19 @@
-.. _target_mean_discretiser:
+.. _mean_discretiser:
 
 .. currentmodule:: feature_engine.discretisation
 
-TargetMeanDiscretiser
-=====================
+MeanDiscretiser
+===============
 
-The :class:`TargetMeanDiscretiser()` sorts numerical variables and organizes the values into bins
-using either :class:`EqualFrequencyDiscretiser()` or :class:`EqualWidthDiscretiser()`. Once the numerical
-variables are separated into bins, :class:`MeanEncoder()` replaces categories with the mean of the
-target per bin interval. The number of bins is determined by the user.
+The :class:`MeanDiscretiser()` sorts numerical variables into bins of equal-width or
+equal-frequency and then returns the mean value of the target per interval.
+
+Under the hood, :class:`MeanDiscretiser()` uses the :class:`EqualFrequencyDiscretiser()`
+or :class:`EqualWidthDiscretiser()` for the discretization into intervals. Once the numerical
+variables are separated into bins, the :class:`MeanEncoder()` replaces the interval limits
+with the mean of the target per bin interval. The number of bins is determined by the user.
+
+**Example**
 
 Let's look at an example using the California Housing Dataset.
 
@@ -16,13 +21,13 @@ First, let's load the data and separate it into train and test:
 
 .. code:: python
 
-	import numpy as np
-	import pandas as pd
-	import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
     from sklearn.datasets import fetch_california_housing
-	from sklearn.model_selection import train_test_split
+    from sklearn.model_selection import train_test_split
 
-    from feature_engine.discretisation import TargetMeanDiscretiser
+    from feature_engine.discretisation import MeanDiscretiser
 
     # Load dataset
     california_dataset = fetch_california_housing()
@@ -31,33 +36,37 @@ First, let's load the data and separate it into train and test:
     # Seperate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
         data, california_dataset["target"], test_size=0.3,
-        random_state=0)
+        random_state=0,
+    )
 
-Now, we set up the :class:`TargetMeanDiscretiser()` to encode the discretised bins and replace
-the bin indices only in the 3 indicated variables using the :class:`EqualFrequencyDiscretiser()`:
+Now, we set up the :class:`MeanDiscretiser()` to sort the 3 indicated variables into 5
+intervals, and then return the mean target value per interval:
 
 .. code:: python
 
     # set up the discretisation transformer
-    disc = TargetMeanDiscretiser(variables=["HouseAge", "AveRooms", "Population"],
-                                strategy="equal_frequency",
-                                bins=5)
+    disc = MeanDiscretiser(variables=["HouseAge", "AveRooms", "Population"],
+                           strategy="equal_frequency",
+                           bins=5,
+                           )
 
     # fit the transformer
     disc.fit(X_train, y_train)
 
-With `fit()` the transformer learns the boundaries of each interval. Then, we can go
-ahead and sort the values into the intervals. The transformer learns the target mean
-value for each interval, which are stored in `encoder_dict_` parameter:
+With `fit()` the transformer learns the boundaries of each interval, and the target mean
+value for each interval, which are stored in `binner_dict_` parameter:
 
 .. code:: python
 
-    disc._pipeline["encoder"].encoder_dict_
+    disc.binner_dict_
 
-The `encoder_dict_` contains the mean value of the target per bin interval, per variable.
+The `binner_dict_` contains the mean value of the target per interval, per variable.
 So we can easily use this dictionary to map the numbers to the discretised bins.
 
+# TODO: after adding the binner_dict_ parameter in the main class, we need to replace this output:
+
 .. code:: python
+
 
     {'HouseAge': {Interval(-inf, 17.0, closed='right'): 2.0806529160739684,
         Interval(17.0, 25.0, closed='right'): 2.097539197771588,
@@ -75,10 +84,11 @@ So we can easily use this dictionary to map the numbers to the discretised bins.
         Interval(1346.0, 1905.0, closed='right'): 2.0454417591204397,
         Interval(1905.0, inf, closed='right'): 2.108366283914729}}
 
-We can now go ahead and replace the bins with the numbers:
+We can now go ahead and replace the numerical variables with the target mean values:
 
-..code:: python
+.. code:: python
 
     # transform the data
     train_t = disc.transform(X_train)
     test_t = disc.transform(X_test)
+

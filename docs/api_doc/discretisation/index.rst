@@ -17,7 +17,7 @@ into continuous intervals.
 :class:`EqualWidthDiscretiser()`         Sorts values into intervals of equal size.
 :class:`ArbitraryDiscretiser()`          Sorts values into intervals predefined by the user.
 :class:`DecisionTreeDiscretiser()`       Replaces values by predictions of a decision tree, which are discrete.
-:class:`TargetMeanDiscretiser()`         Sorts variable into equal frequency or equal width intervals then replaces intervals by the target mean.
+:class:`MeanDiscretiser()`               Sorts variable into equal-frequency or equal-width intervals then replaces intervals by the target mean.
 =====================================  ========================================================================
 
 
@@ -29,7 +29,7 @@ into continuous intervals.
    EqualWidthDiscretiser
    ArbitraryDiscretiser
    DecisionTreeDiscretiser
-   TargetMeanDiscretiser
+   MeanDiscretiser
 
 Additional transformers for discretisation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

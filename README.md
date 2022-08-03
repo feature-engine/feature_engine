@@ -92,6 +92,7 @@ transforming parameters from the data and then transform it.
 * EqualWidthDiscretiser
 * DecisionTreeDiscretiser
 * ArbitraryDiscreriser
+* MeanDiscretiser
 
 ### Outlier Handling methods
 * Winsorizer

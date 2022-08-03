@@ -1,6 +1,7 @@
 from typing import List, Union
 
 import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
@@ -26,8 +27,8 @@ from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
 )
-from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.encoding import MeanEncoder
+from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
@@ -35,10 +36,6 @@ from feature_engine.variable_manipulation import (
 
 
 @Substitution(
-    return_objects=BaseDiscretiser._return_object_docstring,
-    return_boundaries=BaseDiscretiser._return_boundaries_docstring,
-    binner_dict_=BaseDiscretiser._binner_dict_docstring,
-    transform=BaseDiscretiser._transform_docstring,
     variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -46,17 +43,11 @@ from feature_engine.variable_manipulation import (
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class MeanDiscretiser(BaseDiscretiser):
+class MeanDiscretiser(BaseEstimator, TransformerMixin):
     """
     The MeanDiscretiser sorts numerical variables into intervals of equal-widht or
     equal-frequency, and then replaces the interval values by the mean target value
     within each interval.
-
-    The method is inspired by the following article from one of the top solutions of
-    the KDD 2009 competition:
-    Predicting customer behaviour: The University of Melbourne’s KDD Cup report
-    H. Miller, S. Clarke, S. Lane, A. Lonie, D. Lazaridis, S. Petrovski, O. Jones;
-    JMLR W&CP 7:45–55, 2009.
 
     More details in the :ref:`User Guide <mean_discretiser>`.
 
@@ -75,7 +66,8 @@ class MeanDiscretiser(BaseDiscretiser):
     ----------
     {variables_}
 
-    {binner_dict_}
+    binner_dict_:
+        Dictionary with the interval limits and the target mean per variable.
 
     {feature_names_in_}
 
@@ -87,7 +79,8 @@ class MeanDiscretiser(BaseDiscretiser):
 
     {fit_transform}
 
-    {transform}
+    transform:
+        Sort continuous variable values into the intervals, then replace by target mean.
 
     See Also
     --------
@@ -95,9 +88,12 @@ class MeanDiscretiser(BaseDiscretiser):
 
     References
     ----------
-    .. [1] H. Miller, S. Clarke, S. Lane, A. Lonie, D. Lazaridis, S. Petrovski, O.
-    Jones, "Predicting customer behaviour: The University of Melbourne’s KDD Cup
-    report," JMLR W&CP 7:45–55, 2009.
+    The method is inspired by the following article from one of the top solutions of
+    the KDD 2009 competition:
+
+    .. [1] H. Miller, S. Clarke, S. Lane, A. Lonie, D. Lazaridis, S. Petrovski,
+        O. Jones, "Predicting customer behaviour: The University of Melbourne’s KDD Cup
+        report," JMLR W&CP 7:45–55, 2009.
     """
 
     def __init__(
@@ -142,12 +138,6 @@ class MeanDiscretiser(BaseDiscretiser):
         self.variables_ = _find_or_check_numerical_variables(
             X, self.variables
         )
-
-        # check for missing values
-        _check_contains_na(X, self.variables_)
-
-        # check for inf
-        _check_contains_inf(X, self.variables_)
 
         # instantiate pipeline
         self._pipeline = self._make_pipeline()
@@ -233,3 +223,21 @@ class MeanDiscretiser(BaseDiscretiser):
         ])
 
         return pipe
+
+    def get_feature_names_out(self) -> List:
+        """Get output feature names for transformation.
+
+        Returns
+        -------
+        feature_names_out: list
+            The feature names.
+        """
+        check_is_fitted(self)
+
+        return self.feature_names_in_
+
+    # for the check_estimator tests
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
+        return tags_dict
