@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -14,6 +14,7 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
+    _get_feature_names_out_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
@@ -28,6 +29,7 @@ from feature_engine.discretisation import (
     EqualWidthDiscretiser,
 )
 from feature_engine.encoding import MeanEncoder
+from feature_engine.get_feature_names_out import _get_feature_names_out
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
@@ -104,9 +106,7 @@ class MeanDiscretiser(BaseEstimator, TransformerMixin):
     ) -> None:
 
         if not isinstance(bins, int):
-            raise ValueError(
-                f"bins must be an integer. Got {bins} instead."
-            )
+            raise ValueError(f"bins must be an integer. Got {bins} instead.")
         if strategy not in ("equal_frequency", "equal_width"):
             raise ValueError(
                 "strategy must equal 'equal_frequency' or 'equal_width'. "
@@ -135,9 +135,7 @@ class MeanDiscretiser(BaseEstimator, TransformerMixin):
         X, y = check_X_y(X, y)
 
         #  identify numerical variables
-        self.variables_ = _find_or_check_numerical_variables(
-            X, self.variables
-        )
+        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
 
         # instantiate pipeline
         self._pipeline = self._make_pipeline()
@@ -217,24 +215,30 @@ class MeanDiscretiser(BaseEstimator, TransformerMixin):
         """
         Instantiate pipeline comprised of discretiser and encoder.
         """
-        pipe = Pipeline([
-            ("discretiser", self._make_discretiser()),
-            ("encoder", MeanEncoder(variables=self.variables_))
-        ])
+        pipe = Pipeline(
+            [
+                ("discretiser", self._make_discretiser()),
+                ("encoder", MeanEncoder(variables=self.variables_)),
+            ]
+        )
 
         return pipe
 
-    def get_feature_names_out(self) -> List:
-        """Get output feature names for transformation.
+    @Substitution(get_feature_names_out=_get_feature_names_out_docstring)
+    def get_feature_names_out(
+        self, input_features: Optional[List[Union[str, int]]] = None
+    ) -> List[Union[str, int]]:
+        """{get_feature_names_out}"""
 
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
         check_is_fitted(self)
 
-        return self.feature_names_in_
+        feature_names = _get_feature_names_out(
+            features_in=self.feature_names_in_,
+            transformed_features=self.variables_,
+            input_features=input_features,
+        )
+
+        return feature_names
 
     # for the check_estimator tests
     def _more_tags(self):
