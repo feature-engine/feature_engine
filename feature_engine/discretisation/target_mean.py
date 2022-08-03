@@ -46,25 +46,30 @@ from feature_engine.variable_manipulation import (
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class TargetMeanDiscretiser(BaseDiscretiser):
+class MeanDiscretiser(BaseDiscretiser):
     """
+    The MeanDiscretiser sorts numerical variables into intervals of equal-widht or
+    equal-frequency, and then replaces the interval values by the mean target value
+    within each interval.
+
+    The method is inspired by the following article from one of the top solutions of
+    the KDD 2009 competition:
+    Predicting customer behaviour: The University of Melbourne’s KDD Cup report
+    H. Miller, S. Clarke, S. Lane, A. Lonie, D. Lazaridis, S. Petrovski, O. Jones;
+    JMLR W&CP 7:45–55, 2009.
+
+    More details in the :ref:`User Guide <mean_discretiser>`.
 
     Parameters
     ----------
-    strategy: str, default='equal_width'
-        Whether the bins should of equal width ('equal_width') or equal frequency
-        ('equal_frequency').
-
     {variables}
+
+    strategy: str, default='equal_width'
+        Whether the bins should be of equal width ('equal_width') or equal frequency
+        ('equal_frequency').
 
     bins: int, default=10
         Desired number of equal-width or equal-distance intervals / bins.
-
-    errors: string, default='ignore'
-        Indicates what to do when a value is outside the limits indicated in the
-        'binning_dict'. If 'raise', the transformation will raise an error.
-        If 'ignore', values outside the limits are returned as NaN
-        and a warning will be raised instead.
 
     Attributes
     ----------
@@ -86,7 +91,13 @@ class TargetMeanDiscretiser(BaseDiscretiser):
 
     See Also
     --------
-    pandas.cut
+    feature_engine.encoding.MeanEncoder
+
+    References
+    ----------
+    .. [1] H. Miller, S. Clarke, S. Lane, A. Lonie, D. Lazaridis, S. Petrovski, O.
+    Jones, "Predicting customer behaviour: The University of Melbourne’s KDD Cup
+    report," JMLR W&CP 7:45–55, 2009.
     """
 
     def __init__(
@@ -94,7 +105,6 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         bins: int = 10,
         strategy: str = "equal_frequency",
-        errors: str = "ignore",
     ) -> None:
 
         if not isinstance(bins, int):
@@ -107,21 +117,14 @@ class TargetMeanDiscretiser(BaseDiscretiser):
                 f"Got {strategy} instead."
             )
 
-        if errors not in ("ignore", "raise"):
-            raise ValueError(
-                "errors only takes values 'ignore' and 'raise. "
-                f"Got {errors} instead."
-            )
-
         self.variables = _check_input_parameter_variables(variables)
         self.bins = bins
         self.strategy = strategy
-        self.errors = errors
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Learn the boundaries of the selected dicretiser's intervals / bins
-        for the chosen numerical variables.
+        Learn the interval boundaries and the mean value of the target for each
+        interval.
 
         Parameters
         ----------
@@ -149,6 +152,13 @@ class TargetMeanDiscretiser(BaseDiscretiser):
         # instantiate pipeline
         self._pipeline = self._make_pipeline()
         self._pipeline.fit(X, y)
+
+        # TODO: to help the user understand the output of the transformation, we need
+        # to create a dictionary that contains the variable as key, and as value a
+        # tuple where the first item is the limits of the interval, and the second
+        # item is the mean target of the value. We can obtain the interval limits from
+        # the discretiser and the mean target values from the encoder.
+        self.binner_dict_ = {}
 
         # store input features
         self.n_features_in_ = X.shape[1]

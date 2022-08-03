@@ -1,6 +1,6 @@
 import pandas as pd
 
-from feature_engine.discretisation import TargetMeanDiscretiser
+from feature_engine.discretisation import MeanDiscretiser
 
 
 def test_equal_frequency_strategy():
@@ -13,7 +13,7 @@ def test_equal_frequency_strategy():
     df = pd.DataFrame(data)
     target = list(range(10))
 
-    transformer = TargetMeanDiscretiser(
+    transformer = MeanDiscretiser(
         variables=["var_A", "var_D"],
         bins=2,
         strategy="equal_frequency",
@@ -41,7 +41,7 @@ def test_equal_width_strategy():
     }
     df = pd.DataFrame(data)
     target = list(range(10, 30, 2))
-    transformer = TargetMeanDiscretiser(
+    transformer = MeanDiscretiser(
         variables=["var_Y", "var_Z"],
         bins=3,
         strategy="equal_width",
