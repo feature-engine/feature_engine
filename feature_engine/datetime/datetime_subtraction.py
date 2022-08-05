@@ -98,7 +98,7 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         reference: List[Union[str, int]],
         missing_values: str = "ignore",
         drop_original: bool = False,
-        output_unit: str = 'D',
+        output_unit: str = "D",
     ) -> None:
 
         if (
@@ -133,12 +133,28 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
                 f"Got {missing_values} instead."
             )
 
-        valid_output_units = {'D', 'Y', 'M', 'W', 'h', 'm', 's', 'ms', 'us', 'μs', 'ns',
-                              'ps', 'fs', 'as'}
+        valid_output_units = {
+            "D",
+            "Y",
+            "M",
+            "W",
+            "h",
+            "m",
+            "s",
+            "ms",
+            "us",
+            "μs",
+            "ns",
+            "ps",
+            "fs",
+            "as",
+        }
 
         if output_unit not in valid_output_units:
-            raise ValueError(f"output_unit accepts the following values: "
-                             f"{valid_output_units}. Got {output_unit} instead.")
+            raise ValueError(
+                f"output_unit accepts the following values: "
+                f"{valid_output_units}. Got {output_unit} instead."
+            )
 
         self.variables = variables
         self.reference = reference
@@ -202,7 +218,7 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        if self.missing_values == 'raise':
+        if self.missing_values == "raise":
             _check_contains_na(X, self.variables + self.reference)
 
         # reorder variables to match train set
@@ -223,7 +239,8 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         for reference in self.reference:
             new_varnames = [f"{var}_sub_{reference}" for var in self.variables]
             X[new_varnames] = (
-                X[self.variables].sub(X[reference], axis=0)
+                X[self.variables]
+                .sub(X[reference], axis=0)
                 .apply(lambda s: s / np.timedelta64(1, self.output_unit))
             )
 
@@ -281,8 +298,8 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         tags_dict["_xfail_checks"][
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
-        tags_dict["_xfail_checks"][
-            "check_fit2d_1feature"
-        ] = "this transformer works with datasets that contain at least 2 variables. " \
-             "Otherwise, there is nothing to combine"
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = (
+            "this transformer works with datasets that contain at least 2 variables. "
+            "Otherwise, there is nothing to combine"
+        )
         return tags_dict
