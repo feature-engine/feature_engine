@@ -160,7 +160,7 @@ class Winsorizer(WinsorizerBase):
         return X_out
 
     def get_feature_names_out(
-            self, input_features: Optional[List[Union[str, int]]] = None
+        self, input_features: Optional[List[Union[str, int]]] = None
     ) -> List[Union[str, int]]:
         """Get output feature names for transformation.
 

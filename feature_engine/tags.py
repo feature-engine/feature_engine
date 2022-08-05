@@ -22,5 +22,5 @@ def _return_tags():
             "check_fit_idempotent": "Test does not work on dataframes.",
             "check_fit2d_predict1d": "Test not relevant, Feature-engine transformers "
             "only work with dataframes.",
-        }
+        },
     }

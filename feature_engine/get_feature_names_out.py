@@ -5,9 +5,9 @@ from typing import List, Optional, Union
 
 
 def _get_feature_names_out(
-        features_in: List[Union[str, int]],
-        transformed_features: List[Union[str, int]],
-        input_features: Optional[List] = None,
+    features_in: List[Union[str, int]],
+    transformed_features: List[Union[str, int]],
+    input_features: Optional[List] = None,
 ) -> List[Union[str, int]]:
     """
     If input_features is None, returns the names of all variables in the transformed
@@ -46,9 +46,13 @@ def _get_feature_names_out(
             raise ValueError(
                 f"input_features must be a list. Got {input_features} instead."
             )
-        if any([
-            feature for feature in input_features if feature not in transformed_features
-        ]):
+        if any(
+            [
+                feature
+                for feature in input_features
+                if feature not in transformed_features
+            ]
+        ):
             raise ValueError(
                 "Some features in input_features were not transformed by this "
                 "transformer. Pass either None, or a list with the features "
