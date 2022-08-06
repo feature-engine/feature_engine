@@ -141,7 +141,7 @@ class DropHighPSIFeatures(BaseSelector):
         feature will be dropped. The most common threshold values are 0.25 (large shift)
         and 0.10 (medium shift).
         If 'auto' than threshold will be calculated based on size of basis and test 
-        dataframes and number of bins. 
+        dataframes and number of bins with formula proposed by B. Yurdakul.
 
     bins: int, default = 10
         Number of bins or intervals. For continuous features with good value spread, 10
@@ -347,9 +347,10 @@ class DropHighPSIFeatures(BaseSelector):
             )
 
         if self.threshold == 'auto':
-            # threshold = χ2(α,B−1) × (1/N + 1/M) wheres α - quantile (or p value)
-            # B - number of bins, N - size of 1 dataset, M - size of 2 dataset
-            # https://scholarworks.wmich.edu/cgi/viewcontent.cgi?article=4249&context=dissertations
+            # threshold = χ2(α,B−1) × (1/N + 1/M) 
+            # where α - quantile (or p value) B - number of bins, 
+            # N - size of basis dataset, M - size of test dataset
+            # see Statistical Properties of Population Stability Index by B. Yurdakul
             # taking α = 0.999 to get higher threshold
             self.threshold = stats.chi2.ppf(0.999, self.bins-1) * (
                 1. / basis_df.shape[0] + 1. / test_df.shape[0]
