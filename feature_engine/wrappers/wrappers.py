@@ -285,7 +285,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
                 columns=self.transformer_.get_feature_names_out(self.variables_),
                 index=X.index,
             )
-            X = pd.concat([X.drop(columns = self.variables_), new_features_df], axis=1)
+            X = pd.concat([X.drop(columns=self.variables_), new_features_df], axis=1)
 
         # Feature selection: transformers that remove features
         elif self.transformer_.__class__.__name__ in _SELECTORS:
@@ -373,7 +373,11 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
                 added_features = self.transformer_.get_feature_names_out(
                     self.variables_
                 )
-                original_features = [feature for feature in self.feature_names_in_ if feature not in self.variables_]
+                original_features = [
+                    feature
+                    for feature in self.feature_names_in_
+                    if feature not in self.variables_
+                ]
                 feature_names = original_features + list(added_features)
             else:
                 feature_names = list(
