@@ -160,7 +160,8 @@ class WinsorizerBase(BaseOutlier):
     You can select how far out to cap the maximum or minimum values with the
     parameter `'fold'`.
 
-    If `capping_method='gaussian'` fold gives the value to multiply the std.
+    If `capping_method='gaussian'` or `capping_method='mad'` fold gives the value
+    to multiply the std.
 
     If `capping_method='iqr'` fold is the value to multiply the IQR.
 
@@ -170,13 +171,14 @@ class WinsorizerBase(BaseOutlier):
     """.rstrip()
 
     _capping_method_docstring = """capping_method: str, default='gaussian'
-        Desired outlier detection method. Can take 'gaussian', 'iqr' or 'quantiles'.
+        Desired outlier detection method. Can be 'gaussian', 'iqr', 'mad' or 'quantiles'.
 
         The transformer will find the maximum and / or minimum values beyond which a
         data point will be considered an outlier using:
         **'gaussian'**: the Gaussian approximation.
         **'iqr'**: the IQR proximity rule.
         **'quantiles'**: the percentiles.
+        **'mad'**: the Gaussian approximation but using robust statistics.
         """.rstrip()
 
     _tail_docstring = """tail: str, default='right'
@@ -185,9 +187,9 @@ class WinsorizerBase(BaseOutlier):
         """.rstrip()
 
     _fold_docstring = """fold: int or float, default=3
-        The factor used to multiply the std or IQR to calculate the maximum or minimum
+        The factor used to multiply the std, mad or IQR to calculate the maximum or minimum
         allowed values. Recommended values are 2 or 3 for the gaussian approximation,
-        and 1.5 or 3 for the IQR proximity rule.
+        and 1.5 or 3 for the IQR proximity rule and 3 or 3.5 for mad rule.
 
         If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if
         `fold=0.05`, the limits will be the 95th and 5th percentiles.
@@ -206,9 +208,9 @@ class WinsorizerBase(BaseOutlier):
         missing_values: str = "raise",
     ) -> None:
 
-        if capping_method not in ["gaussian", "iqr", "quantiles"]:
+        if capping_method not in ["gaussian", "iqr", "quantiles", "mad"]:
             raise ValueError(
-                "capping_method takes only values 'gaussian', 'iqr' or 'quantiles'"
+                "capping_method takes only values 'gaussian', 'iqr', 'mad' or 'quantiles'"
             )
 
         if tail not in ["right", "left", "both"]:
@@ -259,42 +261,38 @@ class WinsorizerBase(BaseOutlier):
         self.right_tail_caps_ = {}
         self.left_tail_caps_ = {}
 
+        if self.capping_method == "gaussian":
+            bias = X[self.variables_].mean()
+            scale = X[self.variables_].std()
+        elif self.capping_method == "iqr":
+            bias = X[self.variables_].quantile(0.75, 0.25)
+            scale = bias[0] - bias[1]
+        elif self.capping_method == "quantiles":
+            bias = X[self.variables_].quantile(1 - self.fold, self.fold)
+        elif self.capping_method == "mad":
+            bias = X[self.variables_].median()
+            scale = (X[self.variables_] - median).abs().median() / 0.67499
+
         # estimate the end values
         if self.tail in ["right", "both"]:
-            if self.capping_method == "gaussian":
-                self.right_tail_caps_ = (
-                    X[self.variables_].mean() + self.fold * X[self.variables_].std()
-                ).to_dict()
+            if self.capping_method in ("gaussian", "mad"):
+                self.right_tail_caps_ = (bias + self.fold * scale).to_dict()
 
             elif self.capping_method == "iqr":
-                IQR = X[self.variables_].quantile(0.75) - X[self.variables_].quantile(
-                    0.25
-                )
-                self.right_tail_caps_ = (
-                    X[self.variables_].quantile(0.75) + (IQR * self.fold)
-                ).to_dict()
+                self.right_tail_caps_ = (bias[0] + self.fold * scale).to_dict()
 
             elif self.capping_method == "quantiles":
-                self.right_tail_caps_ = (
-                    X[self.variables_].quantile(1 - self.fold).to_dict()
-                )
+                self.right_tail_caps_ = bias[0].to_dict()
 
         if self.tail in ["left", "both"]:
-            if self.capping_method == "gaussian":
-                self.left_tail_caps_ = (
-                    X[self.variables_].mean() - self.fold * X[self.variables_].std()
-                ).to_dict()
+            if self.capping_method in ("gaussian", "mad"):
+                self.left_tail_caps_ = (bias - self.fold * scale).to_dict()
 
             elif self.capping_method == "iqr":
-                IQR = X[self.variables_].quantile(0.75) - X[self.variables_].quantile(
-                    0.25
-                )
-                self.left_tail_caps_ = (
-                    X[self.variables_].quantile(0.25) - (IQR * self.fold)
-                ).to_dict()
+                self.left_tail_caps_ = (bias[1] - self.fold * scale).to_dict()
 
             elif self.capping_method == "quantiles":
-                self.left_tail_caps_ = X[self.variables_].quantile(self.fold).to_dict()
+                self.left_tail_caps_ = bias[1].to_dict()
 
         self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
