@@ -163,6 +163,62 @@ def test_quantile_capping_both_tails_with_fold_15_percent(df_normal_dist):
     assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.11823196128033647, 3)
 
 
+def test_mad_capping_right_tail_with_fold_1(df_normal_dist):
+    # test case 1: median and mad, right tail
+    transformer = Winsorizer(capping_method="mad", tail="right", fold=1)
+    X = transformer.fit_transform(df_normal_dist)
+
+    # expected output
+    df_transf = df_normal_dist.copy()
+    df_transf["var"] = np.where(
+        df_transf["var"] > 0.10988073156011455, 0.10988073156011455, df_transf["var"]
+    )
+
+    # test init params
+    assert transformer.capping_method == "mad"
+    assert transformer.tail == "right"
+    assert transformer.fold == 1
+    # test fit attr
+    assert np.round(transformer.right_tail_caps_["var"], 3) == np.round(
+        0.10988073156011455, 3
+    )
+    assert transformer.left_tail_caps_ == {}
+    assert transformer.n_features_in_ == 1
+    # test transform outputs
+    pd.testing.assert_frame_equal(X, df_transf)
+    assert np.round(X["var"].max(), 3) <= np.round(0.10988073156011455, 3)
+    assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.10988073156011455, 3)
+
+
+def test_mad_capping_both_tails_with_fold_2(df_normal_dist):
+    # test case 2: mean and std, both tails, different fold value
+    transformer = Winsorizer(capping_method="mad", tail="both", fold=2)
+    X = transformer.fit_transform(df_normal_dist)
+
+    # expected output
+    df_transf = df_normal_dist.copy()
+    df_transf["var"] = np.where(
+        df_transf["var"] > 0.2103518511764293, 0.2103518511764293, df_transf["var"]
+    )
+    df_transf["var"] = np.where(
+        df_transf["var"] < -0.19153262728882964, -0.19153262728882964, df_transf["var"]
+    )
+
+    # test fit params
+    assert np.round(transformer.right_tail_caps_["var"], 3) == np.round(
+        0.2103518511764293, 3
+    )
+    assert np.round(transformer.left_tail_caps_["var"], 3) == np.round(
+        -0.19153262728882964, 3
+    )
+    # test transform output
+    pd.testing.assert_frame_equal(X, df_transf)
+    assert np.round(X["var"].max(), 3) <= np.round(0.2103518511764293, 3)
+    assert np.round(X["var"].min(), 3) >= np.round(-0.19153262728882964, 3)
+    assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.2103518511764293, 3)
+    assert np.round(df_normal_dist["var"].min(), 3) < np.round(-0.19153262728882964, 3)
+
+
 def test_indicators_are_added(df_normal_dist):
     transformer = Winsorizer(
         tail="both", capping_method="quantiles", fold=0.1, add_indicators=True
