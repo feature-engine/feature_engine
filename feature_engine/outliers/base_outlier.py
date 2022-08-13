@@ -138,6 +138,7 @@ class WinsorizerBase(BaseOutlier):
 
     - a Gaussian approximation
     - the inter-quantile range proximity rule (IQR)
+    - MAD-median rule (MAD)
     - percentiles
 
     **Gaussian limits:**
@@ -152,6 +153,13 @@ class WinsorizerBase(BaseOutlier):
 
     where IQR is the inter-quartile range: 75th quantile - 25th quantile.
 
+    **MAD limits:**
+
+    - right tail: median + 3* MAD
+    - left tail:  median - 3* MAD
+
+    where MAD is the median absoulte deviation from the median.
+
     **percentiles:**
 
     - right tail: 95th percentile
@@ -160,10 +168,11 @@ class WinsorizerBase(BaseOutlier):
     You can select how far out to cap the maximum or minimum values with the
     parameter `'fold'`.
 
-    If `capping_method='gaussian'` or `capping_method='mad'` fold gives the value
-    to multiply the std.
+    If `capping_method='gaussian'` fold gives the value to multiply the std.
 
     If `capping_method='iqr'` fold is the value to multiply the IQR.
+
+    If `capping_method='mad'` fold is the value to multiply the MAD.
 
     If `capping_method='quantiles'`, fold is the percentile on each tail that should
     be censored. For example, if fold=0.05, the limits will be the 5th and 95th
@@ -189,7 +198,7 @@ class WinsorizerBase(BaseOutlier):
     _fold_docstring = """fold: int or float, default=3
         The factor used to multiply the std, mad or IQR to calculate the maximum or minimum
         allowed values. Recommended values are 2 or 3 for the gaussian approximation,
-        and 1.5 or 3 for the IQR proximity rule and 3 or 3.5 for mad rule.
+        1.5 or 3 for the IQR proximity rule and 3 or 3.5 for MAD rule.
 
         If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if
         `fold=0.05`, the limits will be the 95th and 5th percentiles.
@@ -263,14 +272,15 @@ class WinsorizerBase(BaseOutlier):
 
         if self.capping_method == "gaussian":
             bias = X[self.variables_].mean()
-            scale = X[self.variables_].std()
+            scale = X[self.variables_].std(ddof=0)
         elif self.capping_method == "iqr":
-            bias = X[self.variables_].quantile(0.75, 0.25)
-            scale = bias[0] - bias[1]
+            bias = X[self.variables_].quantile((0.75, 0.25))
+            scale = bias[0.75] - bias[0.25]
         elif self.capping_method == "quantiles":
             bias = X[self.variables_].quantile(1 - self.fold, self.fold)
         elif self.capping_method == "mad":
             bias = X[self.variables_].median()
+            # scaling MAD for normal distribution
             scale = (X[self.variables_] - median).abs().median() / 0.67499
 
         # estimate the end values
@@ -279,20 +289,20 @@ class WinsorizerBase(BaseOutlier):
                 self.right_tail_caps_ = (bias + self.fold * scale).to_dict()
 
             elif self.capping_method == "iqr":
-                self.right_tail_caps_ = (bias[0] + self.fold * scale).to_dict()
+                self.right_tail_caps_ = (bias[0.75] + self.fold * scale).to_dict()
 
             elif self.capping_method == "quantiles":
-                self.right_tail_caps_ = bias[0].to_dict()
+                self.right_tail_caps_ = bias[1 - self.fold].to_dict()
 
         if self.tail in ["left", "both"]:
             if self.capping_method in ("gaussian", "mad"):
                 self.left_tail_caps_ = (bias - self.fold * scale).to_dict()
 
             elif self.capping_method == "iqr":
-                self.left_tail_caps_ = (bias[1] - self.fold * scale).to_dict()
+                self.left_tail_caps_ = (bias[0.25] - self.fold * scale).to_dict()
 
             elif self.capping_method == "quantiles":
-                self.left_tail_caps_ = bias[1].to_dict()
+                self.left_tail_caps_ = bias[self.fold].to_dict()
 
         self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
