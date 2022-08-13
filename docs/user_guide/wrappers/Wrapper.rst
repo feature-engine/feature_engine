@@ -116,6 +116,56 @@ to select only a subset of the variables.
     X_train_t = selector.transform(X_train.fillna(0))
     X_test_t = selector.transform(X_test.fillna(0))
 
+Even though Feature Engine has its own implementation of OneHotEncoder, you may want to use Scikit-Learn Implementation in order to access different options, such as drop first Category.
+
+.. code:: python
+
+    import pandas as pd
+    import numpy as np
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import OneHotEncoder
+
+    df = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
+    X = df[['pclass']]
+    y = df.survived
+    X_train, X_test, y_train, y_test= train_test_split(X, y, test_size=0.2, random_state=42)
+
+    ohe = SklearnTransformerWrapper(OneHotEncoder(sparse=False, drop='first'))
+
+    ohe.fit(X_train)
+
+    X_train_transformed = ohe.transform(X_train)
+    X_test_transformed = ohe.transform(X_test)
+
+
+Let's say you want to use :class:`SklearnTransformerWrapper()` in a more complex context. As you may note there are `?` signs to denote unknown values. Due to the complexity of the transformations needed we'll use a Pipeline to impute missing values, encode categorical features and create interactions for specific variables using Scikit-Learn PolynomialFeatures.
+
+.. code:: python
+    
+    import pandas as pd
+    import numpy as np
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import PolynomialFeatures
+    from sklearn.pipeline import Pipeline
+    from feature_engine.imputation import CategoricalImputer, MeanMedianImputer
+    from feature_engine.encoding import OrdinalEncoder
+    from feature_engine.wrappers import SklearnTransformerWrapper
+
+    df = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
+    X = df[['pclass','sex','age','fare','embarked']].replace('?',np.nan)
+    X[['age', 'fare']] = X[['age', 'fare']].astype('float64')
+    y = df.survived
+
+    X_train, X_test, y_train, y_test= train_test_split(X, y, test_size=0.2, random_state=42)
+    pipeline = Pipeline(steps = [
+        ('ci', CategoricalImputer(imputation_method='frequent')),
+        ('mmi', MeanMedianImputer(imputation_method='mean')),
+        ('od', OrdinalEncoder(encoding_method='arbitrary')),
+        ('pl', SklearnTransformerWrapper(PolynomialFeatures(interaction_only = True, include_bias=False), variables=['pclass','sex']))
+    ])
+    pipeline.fit(X_train)
+    X_train_transformed = pipeline.transform(X_train)
+    X_test_transformed = pipeline.transform(X_test)
 
 More details
 ^^^^^^^^^^^^

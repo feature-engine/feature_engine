@@ -190,6 +190,19 @@ def test_wrap_polynomial_features():
     assert Xw.shape[1] == len(tr.get_feature_names_out(X.columns))
 
 
+def test_wrap_polynomial_features_get_features_name_out():
+    X = fetch_california_housing(as_frame=True).frame
+
+    tr = PolynomialFeatures()
+    tr_wrap = SklearnTransformerWrapper(transformer=PolynomialFeatures())
+    varlist = ["MedInc", "HouseAge", "AveRooms", "AveBedrms"]
+
+    tr.fit(X[varlist])
+    tr_wrap.fit(X[varlist])
+
+    assert (tr.get_feature_names_out() == tr_wrap.get_feature_names_out()).all()
+
+
 # SimpleImputer
 def test_wrap_simple_imputer(df_na):
     variables_to_impute = ["Age", "Marks"]
@@ -264,7 +277,6 @@ def test_sklearn_imputer_allfeatures_with_constant(df_na):
 # One Hot Encoder
 def test_sklearn_ohe_object_one_feature(df_vartypes):
     variables_to_encode = ["Name"]
-    print("This:\n", df_vartypes)
 
     transformer = SklearnTransformerWrapper(
         transformer=OneHotEncoder(sparse=False, dtype=np.int64),
@@ -404,6 +416,15 @@ def test_sklearn_ohe_with_crossvalidation():
         pipeline, X, y, scoring="neg_mean_squared_error", cv=3
     )
     assert not any([np.isnan(i) for i in results])
+
+
+def test_wrap_one_hot_encoder_get_features_name_out(df_vartypes):
+    ohe = OneHotEncoder()
+    ohe_wrap = SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=False))
+    ohe.fit(df_vartypes)
+    ohe_wrap.fit(df_vartypes)
+
+    assert (ohe.get_feature_names_out() == ohe_wrap.get_feature_names_out()).all()
 
 
 @pytest.mark.parametrize(
