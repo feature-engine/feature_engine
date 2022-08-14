@@ -277,11 +277,17 @@ class WinsorizerBase(BaseOutlier):
             bias = X[self.variables_].quantile((0.75, 0.25))
             scale = bias[0.75] - bias[0.25]
         elif self.capping_method == "quantiles":
-            bias = X[self.variables_].quantile(1 - self.fold, self.fold)
+            bias = X[self.variables_].quantile((1 - self.fold, self.fold))
+            scale = bias[1 - self.fold] - bias[self.fold]
         elif self.capping_method == "mad":
             bias = X[self.variables_].median()
-            # scaling MAD for normal distribution
-            scale = (X[self.variables_] - median).abs().median() / 0.67499
+            # scaling factor for normal distribution
+            scale = (X[self.variables_] - bias).abs().median() / 0.67499
+        if (scale == 0).any():
+            raise ValueError(
+                f"Input columns {*scale[scale == 0].index.tolist()} has very low variation,"
+                f"try other capping methods or drop these columns."
+            )
 
         # estimate the end values
         if self.tail in ["right", "both"]:
