@@ -103,11 +103,11 @@ class OutlierTrimmer(WinsorizerBase):
         X = self._check_transform_input_and_state(X)
 
         for feature in self.right_tail_caps_.keys():
-            inliers = X[feature].lt(self.right_tail_caps_[feature])
+            inliers = X[feature].le(self.right_tail_caps_[feature])
             X = X.loc[inliers]
 
         for feature in self.left_tail_caps_.keys():
-            inliers = X[feature].gt(self.left_tail_caps_[feature])
+            inliers = X[feature].ge(self.left_tail_caps_[feature])
             X = X.loc[inliers]
 
         return X
