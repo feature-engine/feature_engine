@@ -94,17 +94,13 @@ class BaseOutlier(BaseEstimator, TransformerMixin):
 
         # replace outliers
         for feature in self.right_tail_caps_.keys():
-            X[feature] = np.where(
-                X[feature] > self.right_tail_caps_[feature],
-                self.right_tail_caps_[feature],
-                X[feature],
+            X[feature] = X[feature].clip(
+                upper=self.right_tail_caps_[feature]
             )
 
         for feature in self.left_tail_caps_.keys():
-            X[feature] = np.where(
-                X[feature] < self.left_tail_caps_[feature],
-                self.left_tail_caps_[feature],
-                X[feature],
+            X[feature] = X[feature].clip(
+                lower=self.left_tail_caps_[feature]
             )
 
         return X
@@ -144,7 +140,7 @@ class WinsorizerBase(BaseOutlier):
     **Gaussian limits:**
 
     - right tail: mean + 3* std
-    - left tail: mean - 3* std
+    - left  tail: mean - 3* std
 
     **IQR limits:**
 
@@ -168,7 +164,7 @@ class WinsorizerBase(BaseOutlier):
     You can select how far out to cap the maximum or minimum values with the
     parameter `'fold'`.
 
-    If `capping_method='gaussian'` fold gives the value to multiply the std.
+    If `capping_method='gaussian'` fold gives the value to multiply the SD.
 
     If `capping_method='iqr'` fold is the value to multiply the IQR.
 
@@ -275,18 +271,19 @@ class WinsorizerBase(BaseOutlier):
             scale = X[self.variables_].std(ddof=0)
         elif self.capping_method == "iqr":
             bias = X[self.variables_].quantile((0.75, 0.25))
-            scale = bias[0.75] - bias[0.25]
+            scale = bias.loc[0.75] - bias.loc[0.25]
         elif self.capping_method == "quantiles":
             bias = X[self.variables_].quantile((1 - self.fold, self.fold))
-            scale = bias[1 - self.fold] - bias[self.fold]
+            scale = bias.loc[1 - self.fold] - bias.loc[self.fold]
         elif self.capping_method == "mad":
             bias = X[self.variables_].median()
             # scaling factor for normal distribution
-            scale = (X[self.variables_] - bias).abs().median() / 0.67499
+            scale = (X[self.variables_] - bias).abs().median() / 0.67449
         if (scale == 0).any():
             raise ValueError(
-                f"Input columns {*scale[scale == 0].index.tolist()} has very low variation,"
-                f"try other capping methods or drop these columns."
+                f"Input columns {scale[scale == 0].index.tolist()!r}"
+                f" have low variation for method {self.capping_method!r}."
+                f" Try other capping methods or drop these columns."
             )
 
         # estimate the end values
@@ -295,20 +292,20 @@ class WinsorizerBase(BaseOutlier):
                 self.right_tail_caps_ = (bias + self.fold * scale).to_dict()
 
             elif self.capping_method == "iqr":
-                self.right_tail_caps_ = (bias[0.75] + self.fold * scale).to_dict()
+                self.right_tail_caps_ = (bias.loc[0.75] + self.fold * scale).to_dict()
 
             elif self.capping_method == "quantiles":
-                self.right_tail_caps_ = bias[1 - self.fold].to_dict()
+                self.right_tail_caps_ = bias.loc[1 - self.fold].to_dict()
 
         if self.tail in ["left", "both"]:
             if self.capping_method in ("gaussian", "mad"):
                 self.left_tail_caps_ = (bias - self.fold * scale).to_dict()
 
             elif self.capping_method == "iqr":
-                self.left_tail_caps_ = (bias[0.25] - self.fold * scale).to_dict()
+                self.left_tail_caps_ = (bias.loc[0.25] - self.fold * scale).to_dict()
 
             elif self.capping_method == "quantiles":
-                self.left_tail_caps_ = bias[self.fold].to_dict()
+                self.left_tail_caps_ = bias.loc[self.fold].to_dict()
 
         self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
