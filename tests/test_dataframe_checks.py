@@ -157,10 +157,31 @@ def test_contains_inf(df_na):
 @pytest.mark.parametrize("_variables",
                          [
                              [0, 1, 0, 3, 2, 2],
-                             [1, 2, 1, 1, 2],
-                             ["one", "one", "one"],
+                             [0.9, 0.9, -0.1, -0.1, 0.9],
+                             ["one", "two", "three"],
+                             [[1, 1], [0, 1], [0, 0], [1,0]]
                          ]
                          )
 def test_check_y_is_binary_not_permitted_values(_variables):
     with pytest.raises(ValueError):
         _check_y_is_binary(pd.Series(_variables))
+
+
+def test_check_y_is_binary_transform_values():
+    # test 1
+    y = pd.Series([1, 2, 1, 2, 2, 2, 1])
+    result = _check_y_is_binary(y)
+    expected_result = pd.Series([0, 1, 0, 1, 1, 1, 0])
+    assert result.equals(expected_result)
+
+    # test 2
+    y = pd.Series(["a", "b", "b", "a", "a", "a", "b"])
+    result = _check_y_is_binary(y)
+    expected_result = pd.Series([0, 1, 1, 0, 0, 0, 1])
+    assert result.equals(expected_result)
+
+    # test 3 - no transform
+    y = pd.Series([1, 1, 1, 0, 0, 1, 1])
+    result = _check_y_is_binary(y)
+    expected_result = pd.Series([1, 1, 1, 0, 0, 1, 1])
+    assert result.equals(expected_result)
