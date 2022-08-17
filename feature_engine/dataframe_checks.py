@@ -7,6 +7,7 @@ from typing import List, Union, Tuple
 import numpy as np
 import pandas as pd
 from scipy.sparse import issparse
+from sklearn.utils.multiclass import type_of_target
 from sklearn.utils.validation import _check_y, check_consistent_length
 
 
@@ -303,14 +304,24 @@ def _check_y_is_binary(y: pd.Series) -> None:
     ValueError
         If the data series has values other than 0 or 1.
 
+    Returns
+    _______
+    y : Pandas Series
+        The dataset's series of dependent or predicted variables.
+        If unique labels are not 0 and 1, function transform binary
+        variables 0 and 1.
+
     """
-    # TODO: Should the check raise an error if y is only 0s or only 1s?
 
-    binary_values = [0, 1]
-    unique_values = list(y.unique())
-
-    if not all(val in binary_values for val in unique_values):
+    if type_of_target(y) != "binary":
         raise ValueError(
             "y must be a binary variable comprised only of 0s and 1. "
-            f"Got {unique_values} instead."
+            f"Got {type_of_target(y)} instead."
         )
+
+    else:
+        # transform class labels to 0 and 1, if not already
+        if any(label for label in y.unique() if label not in [0, 1]):
+            y = pd.Series(np.where(y == y.unique()[0], 0, 1))
+
+    return y
