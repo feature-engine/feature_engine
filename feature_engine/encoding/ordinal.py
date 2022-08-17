@@ -4,6 +4,7 @@
 from typing import List, Optional, Union
 
 import pandas as pd
+from sklearn.utils import deprecated
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -120,6 +121,10 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         https://www.youtube.com/watch?v=KHGGlozsRtA
     """
 
+    @deprecated(
+        "Parameter `errors` is deprecated in version 1.5 and will be replaced in "
+        "version 1.6 by `unseen` instead."
+    )
     def __init__(
         self,
         encoding_method: str = "ordered",

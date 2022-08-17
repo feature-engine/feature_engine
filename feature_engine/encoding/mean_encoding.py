@@ -4,6 +4,7 @@
 from typing import List, Union
 
 import pandas as pd
+from sklearn.utils import deprecated
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -113,7 +114,10 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
        Attributes in Classification and Prediction Problems". ACM SIGKDD Explorations
        Newsletter, 2001. https://dl.acm.org/citation.cfm?id=507538
     """
-
+    @deprecated(
+        "Parameter `errors` is deprecated in version 1.5 and will be replaced in "
+        "version 1.6 by `unseen` instead."
+    )
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
