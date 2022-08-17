@@ -86,7 +86,7 @@ def test_warn_if_transform_df_contains_categories_not_seen_in_fit(df_enc, df_enc
 
     # check for error when rare_labels equals 'raise'
     with pytest.warns(UserWarning) as record:
-        encoder = WoEEncoder(errors="ignore")
+        encoder = WoEEncoder(unseen="ignore")
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         encoder.transform(df_enc_rare[["var_A", "var_B"]])
 
@@ -97,7 +97,7 @@ def test_warn_if_transform_df_contains_categories_not_seen_in_fit(df_enc, df_enc
 
     # check for error when rare_labels equals 'raise'
     with pytest.raises(ValueError) as record:
-        encoder = WoEEncoder(errors="raise")
+        encoder = WoEEncoder(unseen="raise")
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         encoder.transform(df_enc_rare[["var_A", "var_B"]])
 
@@ -298,4 +298,4 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 
 def test_error_if_rare_labels_not_permitted_value():
     with pytest.raises(ValueError):
-        WoEEncoder(errors="empanada")
+        WoEEncoder(unseen="empanada")

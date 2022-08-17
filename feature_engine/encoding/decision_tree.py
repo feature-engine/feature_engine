@@ -219,7 +219,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             encoding_method=self.encoding_method,
             variables=self.variables_,
             ignore_format=self.ignore_format,
-            errors="raise",
+            unseen="raise",
         )
 
         # initialize decision tree discretiser

@@ -13,7 +13,7 @@ _ignore_format_docstring = """ignore_format: bool, default=False
         accept all variables entered by the user, including those cast as numeric.
     """.rstrip()
 
-_errors_docstring = """errors: string, default='ignore'
+_unseen_docstring = """unseen: string, default='ignore'
         Indicates what to do, when categories not present in the train set are
         encountered during transform. If 'raise', then unseen categories will raise an
         error. If 'ignore', then unseen categories will be set as NaN and a warning will

@@ -17,7 +17,7 @@ from feature_engine._docstrings.methods import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X, check_X_y
 from feature_engine.encoding._docstrings import (
-    _errors_docstring,
+    _unseen_docstring,
     _ignore_format_docstring,
     _transform_docstring,
     _variables_docstring,
@@ -31,7 +31,7 @@ from feature_engine.encoding.base_encoder import (
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
-    errors=_errors_docstring,
+    unseen=_unseen_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -73,7 +73,7 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
     {ignore_format}
 
-    {errors}
+    {unseen}
 
     Attributes
     ----------
@@ -125,7 +125,7 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         encoding_method: str = "ordered",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore",
+        unseen: str = "ignore",
     ) -> None:
 
         if encoding_method not in ["ordered", "arbitrary"]:
@@ -133,7 +133,7 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
                 "encoding_method takes only values 'ordered' and 'arbitrary'"
             )
 
-        super().__init__(variables, ignore_format, errors)
+        super().__init__(variables, ignore_format, unseen)
 
         self.encoding_method = encoding_method
 

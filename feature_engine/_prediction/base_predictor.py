@@ -177,7 +177,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         Create pipeline for a dataframe solely comprised of numerical variables
         using a discretiser and an encoder.
         """
-        encoder = MeanEncoder(variables=self.variables_numerical_, errors="raise")
+        encoder = MeanEncoder(variables=self.variables_numerical_, unseen="raise")
 
         pipeline = Pipeline(
             [
@@ -193,14 +193,14 @@ class BaseTargetMeanEstimator(BaseEstimator):
         Instantiate the target mean encoder. Used when all variables are categorical.
         """
 
-        pipeline = MeanEncoder(variables=self.variables_categorical_, errors="raise")
+        pipeline = MeanEncoder(variables=self.variables_categorical_, unseen="raise")
 
         return pipeline
 
     def _make_combined_pipeline(self):
 
-        encoder_num = MeanEncoder(variables=self.variables_numerical_, errors="raise")
-        encoder_cat = MeanEncoder(variables=self.variables_categorical_, errors="raise")
+        encoder_num = MeanEncoder(variables=self.variables_numerical_, unseen="raise")
+        encoder_cat = MeanEncoder(variables=self.variables_categorical_, unseen="raise")
 
         pipeline = Pipeline(
             [
