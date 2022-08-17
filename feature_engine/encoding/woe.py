@@ -154,7 +154,7 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         # if target does not have values 0 and 1, we need to remap, to be able to
         # compute the averages.
         if any(x for x in y.unique() if x not in [0, 1]):
-            y = y.map({y.unique()[0]: 0, y.unique[1]:1})
+            y = y.map({y.unique()[0]: 0, y.unique[1]: 1})
 
         self._fit(X)
         self._get_feature_names_in(X)
@@ -163,16 +163,13 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
         total_pos = y.sum()
         total_neg = len(y) - total_pos
-        inverse_y = y.map({1: 0, 0:1}).copy()
+        inverse_y = y.map({1: 0, 0: 1}).copy()
 
         for var in self.variables_:
             pos = y.groupby(X[var]).sum() / total_pos
             neg = inverse_y.groupby(X[var]).sum() / total_neg
 
-            if (
-                not (pos[:]==0).sum()==0
-                or not (neg[:]==0).sum()==0
-            ):
+            if not (pos[:] == 0).sum() == 0 or not (neg[:] == 0).sum() == 0:
                 raise ValueError(
                     "The proportion of one of the classes for a category in "
                     "variable {} is zero, and log of zero is not defined".format(var)
