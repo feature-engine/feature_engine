@@ -154,14 +154,15 @@ def test_contains_inf(df_na):
         assert _check_contains_inf(df_na, ["Age", "Marks"])
 
 
-@pytest.mark.parametrize("_variables",
-                         [
-                             [0, 1, 0, 3, 2, 2],
-                             [0.9, 0.9, -0.1, -0.1, 0.9],
-                             ["one", "two", "three"],
-                             [[1, 1], [0, 1], [0, 0], [1,0]]
-                         ]
-                         )
+@pytest.mark.parametrize(
+    "_variables",
+    [
+        [0, 1, 0, 3, 2, 2],
+        [0.9, 0.9, -0.1, -0.1, 0.9],
+        ["one", "two", "three"],
+        [[1, 1], [0, 1], [0, 0], [1, 0]],
+    ],
+)
 def test_check_y_is_binary_not_permitted_values(_variables):
     with pytest.raises(ValueError):
         _check_y_is_binary(pd.Series(_variables))
