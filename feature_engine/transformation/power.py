@@ -12,6 +12,7 @@ from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters import _variables_numerical_docstring
+from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
@@ -21,7 +22,6 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.init_parameter_checks import (
     _check_init_parameter_variables,
 )
-from feature_engine.base_transformers import BaseNumericalTransformer
 
 
 @Substitution(
