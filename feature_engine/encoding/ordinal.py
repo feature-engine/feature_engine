@@ -166,7 +166,8 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         for var in self.variables_:
 
             if self.encoding_method == "ordered":
-                t = y.groupby(X[var]).mean().sort_values(ascending=True).index
+                t = y.groupby(X[var]).mean()  # type: ignore
+                t = t.sort_values(ascending=True).index
 
             elif self.encoding_method == "arbitrary":
                 t = X[var].unique()
