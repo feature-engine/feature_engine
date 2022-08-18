@@ -162,8 +162,8 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         self.encoder_dict_ = {}
 
         total_pos = y.sum()
-        total_neg = len(y) - total_pos
-        inverse_y = y.map({1: 0, 0: 1}).copy()
+        inverse_y = y.ne(1).copy()
+        total_neg = inverse_y.sum()
 
         for var in self.variables_:
             pos = y.groupby(X[var]).sum() / total_pos
