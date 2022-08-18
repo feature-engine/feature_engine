@@ -252,8 +252,10 @@ class DropHighPSIFeatures(BaseSelector):
         if not isinstance(switch, bool):
             raise ValueError(f"switch must be a boolean. Got {switch} instead.")
 
-        if (isinstance(threshold, str) and (threshold != 'auto')) or
-        (isinstance(threshold, (float, int)) and threshold < 0):
+        if (
+            (isinstance(threshold, str) and (threshold != 'auto')) or
+            (isinstance(threshold, (float, int)) and threshold < 0)
+        ):
             raise ValueError(
                 f"threshold must be positive float or 'auto'. Got {threshold} instead."
             )
