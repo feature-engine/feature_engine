@@ -160,22 +160,14 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         self._fit(X)
         self._get_feature_names_in(X)
 
-        if self.encoding_method == "ordered":
-            temp = pd.concat([X, y], axis=1)
-            temp.columns = list(X.columns) + ["target"]
-
         # find mappings
         self.encoder_dict_ = {}
 
         for var in self.variables_:
 
             if self.encoding_method == "ordered":
-                t = (
-                    temp.groupby([var])["target"]
-                    .mean()
-                    .sort_values(ascending=True)
-                    .index
-                )
+                t = y.groupby(X[var]).mean()  # type: ignore
+                t = t.sort_values(ascending=True).index
 
             elif self.encoding_method == "arbitrary":
                 t = X[var].unique()
