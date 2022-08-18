@@ -13,11 +13,11 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.encoding._docstrings import (
-    _errors_docstring,
+    _unseen_docstring,
     _ignore_format_docstring,
     _variables_docstring,
 )
-from feature_engine.encoding._helper_functions import check_parameter_errors
+from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.get_feature_names_out import _get_feature_names_out
 from feature_engine.tags import _return_tags
 from feature_engine.variable_manipulation import (
@@ -60,7 +60,7 @@ class CategoricalInitMixin:
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
-    errors=_errors_docstring,
+    unseen=_unseen_docstring,
 )
 class CategoricalInitExpandedMixin(CategoricalInitMixin):
     """Shared initialization parameters across transformers. Contains additional
@@ -72,18 +72,18 @@ class CategoricalInitExpandedMixin(CategoricalInitMixin):
 
     {ignore_format}
 
-    {errors}
+    {unseen}
     """
 
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore",
+        unseen: str = "ignore",
     ) -> None:
-        check_parameter_errors(errors, ["raise", "ignore"])
+        check_parameter_unseen(unseen, ["raise", "ignore"])
         super().__init__(variables, ignore_format)
-        self.errors = errors
+        self.unseen = unseen
 
 
 @Substitution(
@@ -231,12 +231,12 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
             else:
                 nan_columns_str = nan_columns[0]
 
-            if self.errors == "ignore":
+            if self.unseen == "ignore":
                 warnings.warn(
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."
                 )
-            elif self.errors == "raise":
+            elif self.unseen == "raise":
                 raise ValueError(
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."
