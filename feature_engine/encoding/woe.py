@@ -50,7 +50,7 @@ class WoE:
             y = pd.Series(np.where(y == y.min(), 0, 1))
         return X, y
 
-    def _calculate_woe(self, X: pd.DataFrame, y: pd.Series, variable: str):
+    def _calculate_woe(self, X: pd.DataFrame, y: pd.Series, variable: Union[str, int]):
         total_pos = y.sum()
         inverse_y = y.ne(1).copy()
         total_neg = inverse_y.sum()
@@ -208,4 +208,3 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin, WoE):
         # are not suitable
         tags_dict["_skip_test"] = True
         return tags_dict
-
