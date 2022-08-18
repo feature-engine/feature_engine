@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from feature_engine.selection import InformationValue
+from feature_engine.selection import SelectByInformationValue
 
 
 def _round_dict_of_dict_values(data, ndigits):
@@ -32,7 +32,7 @@ def _round_dict_of_dict_values(data, ndigits):
 
 
 def test_class_diff_encoder_dict_calc(df_enc):
-    transformer = InformationValue(
+    transformer = SelectByInformationValue(
         variables=None,
         sort_values=False,
         ignore_format=False,
@@ -53,7 +53,7 @@ def test_class_diff_encoder_dict_calc(df_enc):
 
 
 def test_information_value_calc(df_enc):
-    transformer = InformationValue(
+    transformer = SelectByInformationValue(
         variables=None,
         sort_values=False,
         ignore_format=False,
@@ -73,7 +73,7 @@ def test_information_value_calc(df_enc):
 
 
 def test_error_when_more_than_two_classes(df_enc_numeric):
-    transformer = InformationValue(
+    transformer = SelectByInformationValue(
         variables=None,
         sort_values=True,
         ignore_format=False,
@@ -90,7 +90,7 @@ def test_error_when_more_than_two_classes(df_enc_numeric):
 )
 def test_error_when_not_permitted_param_sort_values(_sort_values):
     with pytest.raises(ValueError):
-        InformationValue(
+        SelectByInformationValue(
             variables=None,
             sort_values=_sort_values,
             ignore_format=True,
@@ -99,7 +99,7 @@ def test_error_when_not_permitted_param_sort_values(_sort_values):
 
 
 def test_when_param_sort_values_false(df_enc):
-    transformer = InformationValue(
+    transformer = SelectByInformationValue(
         variables=None,
         sort_values=False,
         ignore_format=False,
@@ -122,7 +122,7 @@ def test_when_param_sort_values_false(df_enc):
 
 
 def test_when_param_sort_values_true(df_enc):
-    transformer = InformationValue(
+    transformer = SelectByInformationValue(
         variables=None,
         sort_values=True,
         ignore_format=False,

@@ -45,7 +45,7 @@ from feature_engine.variable_manipulation import (
     n_features_in=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class InformationValue(BaseEstimator, TransformerMixin):
+class SelectByInformationValue(BaseEstimator, TransformerMixin):
     """
     InformationValue() calculates the information value (IV) for each variable.
     The transformer is only compatible with categorical variables (type 'object'
