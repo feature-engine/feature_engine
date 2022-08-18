@@ -24,7 +24,7 @@ from feature_engine._variable_handling.variable_type_selection import (
 )
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.parameter_checks import _define_numerical_dict
+from feature_engine.parameter_checks import _check_numerical_dict
 
 
 @Substitution(
@@ -102,7 +102,7 @@ class ArbitraryNumberImputer(BaseImputer):
 
         _check_numerical_dict(imputer_dict)
 
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
 
         self.imputer_dict = imputer_dict
 
