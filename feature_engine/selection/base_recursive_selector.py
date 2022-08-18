@@ -3,13 +3,15 @@ from typing import List, Union
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_or_check_numerical_variables,
+)
 from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
 from feature_engine.tags import _return_tags
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_numerical_variables,
-)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -122,7 +124,7 @@ class BaseRecursiveSelector(BaseSelector):
             raise ValueError("threshold can only be integer or float")
 
         super().__init__(confirm_variables)
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
         self.estimator = estimator
         self.scoring = scoring
         self.threshold = threshold

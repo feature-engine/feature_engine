@@ -4,13 +4,19 @@ from typing import List, Union
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import check_X_y
-from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_or_check_numerical_variables,
+)
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection._docstring import (
     _cv_docstring,
     _estimator_docstring,
@@ -25,10 +31,6 @@ from feature_engine.selection._docstring import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_numerical_variables,
-)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -136,7 +138,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
                 )
 
         super().__init__(confirm_variables)
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
         self.estimator = estimator
         self.scoring = scoring
         self.threshold = threshold
