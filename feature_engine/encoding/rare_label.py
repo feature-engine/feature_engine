@@ -14,10 +14,10 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import _check_contains_na, check_X
-from feature_engine.encoding._docstrings import (
+from feature_engine.dataframe_checks import check_X
+from feature_engine._docstrings.init_parameters import (
+    _variables_categorical_docstring,
     _ignore_format_docstring,
-    _variables_docstring,
 )
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
@@ -27,7 +27,7 @@ from feature_engine.encoding.base_encoder import (
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
+    variables=_variables_categorical_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,

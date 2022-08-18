@@ -36,3 +36,8 @@ _get_feature_names_out_docstring = """
 _inverse_transform_docstring = """inverse_transform:
         Convert the data back to the original representation.
         """.rstrip()
+
+# used in categorical encoders
+_transform_encoders_docstring = """transform:
+        Encode the categories to numbers.
+    """.rstrip()
