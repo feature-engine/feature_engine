@@ -151,40 +151,33 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
                 "used has more than 2 unique values."
             )
 
+        # if target does not have values 0 and 1, we need to remap, to be able to
+        # compute the averages.
+        if y.min() != 0 or y.max() != 1:
+            y = pd.Series(np.where(y == y.min(), 0, 1))
+
         self._fit(X)
         self._get_feature_names_in(X)
 
-        temp = pd.concat([X, y], axis=1)
-        temp.columns = list(X.columns) + ["target"]
-
-        # if target does not have values 0 and 1, we need to remap, to be able to
-        # compute the averages.
-        if any(x for x in y.unique() if x not in [0, 1]):
-            temp["target"] = np.where(temp["target"] == y.unique()[0], 0, 1)
-
         self.encoder_dict_ = {}
 
-        total_pos = temp["target"].sum()
-        total_neg = len(temp) - total_pos
-        temp["non_target"] = np.where(temp["target"] == 1, 0, 1)
+        total_pos = y.sum()
+        inverse_y = y.ne(1).copy()
+        total_neg = inverse_y.sum()
 
         for var in self.variables_:
-            pos = temp.groupby([var])["target"].sum() / total_pos
-            neg = temp.groupby([var])["non_target"].sum() / total_neg
+            pos = y.groupby(X[var]).sum() / total_pos
+            neg = inverse_y.groupby(X[var]).sum() / total_neg
 
-            t = pd.concat([pos, neg], axis=1)
-            t["woe"] = np.log(t["target"] / t["non_target"])
-
-            if (
-                not t.loc[t["target"] == 0, :].empty
-                or not t.loc[t["non_target"] == 0, :].empty
-            ):
+            if not (pos[:] == 0).sum() == 0 or not (neg[:] == 0).sum() == 0:
                 raise ValueError(
                     "The proportion of one of the classes for a category in "
                     "variable {} is zero, and log of zero is not defined".format(var)
                 )
 
-            self.encoder_dict_[var] = t["woe"].to_dict()
+            woe = np.log(pos / neg)
+
+            self.encoder_dict_[var] = woe.to_dict()
 
         self._check_encoding_dictionary()
 
