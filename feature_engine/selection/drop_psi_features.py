@@ -86,10 +86,6 @@ class DropHighPSIFeatures(BaseSelector):
 
     More details in the :ref:`User Guide <psi_selection>`.
 
-    References
-    ----------
-    https://scholarworks.wmich.edu/cgi/viewcontent.cgi?article=4249&context=dissertations
-
     Parameters
     ----------
     split_col: string or int, default=None.
