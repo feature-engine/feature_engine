@@ -154,7 +154,8 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         # if target does not have values 0 and 1, we need to remap, to be able to
         # compute the averages.
         if any(x for x in y.unique() if x not in [0, 1]):
-            y = y.map({y.unique()[0]: 0, y.unique[1]: 1})
+            y = (y - y.min()) / (y.max() - y.min())
+            y = y.astype(int)
 
         self._fit(X)
         self._get_feature_names_in(X)
