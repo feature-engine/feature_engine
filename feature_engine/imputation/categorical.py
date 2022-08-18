@@ -15,6 +15,9 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.init_parameter_checks import (
     _check_init_parameter_variables,
 )
+from feature_engine._variable_handling.init_parameter_checks import (
+_check_input_parameter_variables,
+)
 from feature_engine._variable_handling.variable_type_selection import (
     _find_all_variables,
     _find_or_check_categorical_variables,

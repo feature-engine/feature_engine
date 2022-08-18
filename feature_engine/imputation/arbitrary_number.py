@@ -19,8 +19,9 @@ from feature_engine._variable_handling.init_parameter_checks import (
     _check_init_parameter_variables,
 )
 from feature_engine._variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
-)
+_find_or_check_numerical_variables)
+from feature_engine.dataframe_checks import check_X
+from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.parameter_checks import _check_numerical_dict

@@ -9,13 +9,13 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
-from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters import _variables_numerical_docstring
+
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.init_parameter_checks import (
@@ -149,7 +149,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.param_grid = param_grid
         self.random_state = random_state
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: pd.DataFrame, y: pd.Series):  # type: ignore
         """
         Fit one decision tree per variable to discretize with cross-validation and
         grid-search for hyperparameters.
@@ -176,7 +176,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
             check_classification_targets(y)
 
         # check input dataframe
-        X = super()._fit_from_varlist(X)
+        X = super().fit(X)
 
         if self.param_grid:
             param_grid = self.param_grid

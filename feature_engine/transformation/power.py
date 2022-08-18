@@ -13,6 +13,12 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters import _variables_numerical_docstring
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
@@ -101,7 +107,7 @@ class PowerTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        super()._fit_from_varlist(X)
+        super().fit(X)
 
         return self
 

@@ -7,6 +7,7 @@ import pandas as pd
 import scipy.stats as stats
 from scipy.special import inv_boxcox
 
+
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -114,7 +115,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super()._fit_from_varlist(X)
+        X = super().fit(X)
 
         self.lambda_dict_ = {}
 

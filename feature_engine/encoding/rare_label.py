@@ -13,9 +13,10 @@ from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters import (
-    _ignore_format_docstring,
-    _variables_categorical_docstring,
-)
+_ignore_format_docstring,_variables_categorical_docstring)
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X

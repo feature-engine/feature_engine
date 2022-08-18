@@ -13,6 +13,12 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters import _variables_numerical_docstring
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
@@ -94,7 +100,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super()._fit_from_varlist(X)
+        X = super().fit(X)
 
         # check if the variables contain the value 0
         if (X[self.variables_] == 0).any().any():

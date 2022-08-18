@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
-from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._base_transformers.mixins import FitFromDictMixin
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -30,7 +30,7 @@ from feature_engine._variable_handling.init_parameter_checks import (
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class CyclicalFeatures(BaseNumericalTransformer):
+class CyclicalFeatures(BaseNumericalTransformer, FitFromDictMixin):
     """
     CyclicalFeatures() applies cyclical transformations to numerical
     variables, returning 2 new features per variable, according to:
@@ -127,7 +127,7 @@ class CyclicalFeatures(BaseNumericalTransformer):
             It is not needed in this transformer. You can pass y or None.
         """
         if self.max_values is None:
-            X = super()._fit_from_varlist(X)
+            X = super().fit(X)
             self.max_values_ = X[self.variables_].max().to_dict()
         else:
             X = super()._fit_from_dict(X, self.max_values)
