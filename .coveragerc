@@ -6,3 +6,12 @@ source = feature_engine
 omit =
     */tags.py
     */_docstrings/*
+    */_datetime_constants.py
+    */_docstings.py
+    */_selection_constants.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def _more_tags
+show_missing = True
