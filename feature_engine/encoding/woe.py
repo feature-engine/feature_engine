@@ -153,7 +153,7 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
         # if target does not have values 0 and 1, we need to remap, to be able to
         # compute the averages.
-        if any(x for x in y.unique() if x not in [0, 1]):
+        if y.min() != 0 or y.max() != 1:
             y = pd.Series(np.where(y == y.min(), 0, 1))
 
         self._fit(X)
