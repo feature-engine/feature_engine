@@ -77,7 +77,9 @@ For 'auto' formula we are using chi2 approximation, proposed by B. Yurdakul:
     threshold = \chi^2_{(q,B-1)} . (\frac{1}{N} + \frac{1}{M})
 
 where p - percentile (p-value), B - number of bins, N - size of basis dataset, N - size of test dataset.
+
 In our implementation we are using 99.9th percentile.
+
 As mentioned above number of bins has an impact on PSI value, because with higher number of bins it is easier to find divergence in data and vice versa.
 Same could be said about dataset size - the more data we have, the harder it is to find the difference (if the shift is not drastic).
 This formula tries to catch these relationships and adjust threshold to correctly detect feature drift.
