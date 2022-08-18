@@ -30,6 +30,44 @@ from feature_engine.encoding.base_encoder import (
 from feature_engine.tags import _return_tags
 
 
+class WoE:
+    def _check_fit_input(self, X: pd.DataFrame, y: pd.Series):
+        """
+        Check that X is dataframe, and y a binary series with values 0 and 1.
+        """
+        X, y = check_X_y(X, y)
+
+        # check that y is binary
+        if y.nunique() != 2:
+            raise ValueError(
+                "This encoder is designed for binary classification. The target "
+                "used has more than 2 unique values."
+            )
+
+        # if target does not have values 0 and 1, we need to remap, to be able to
+        # compute the averages.
+        if y.min() != 0 or y.max() != 1:
+            y = pd.Series(np.where(y == y.min(), 0, 1))
+        return X, y
+
+    def _calculate_woe(self, X: pd.DataFrame, y: pd.Series, variable: str):
+        total_pos = y.sum()
+        inverse_y = y.ne(1).copy()
+        total_neg = inverse_y.sum()
+
+        pos = y.groupby(X[variable]).sum() / total_pos
+        neg = inverse_y.groupby(X[variable]).sum() / total_neg
+
+        if not (pos[:] == 0).sum() == 0 or not (neg[:] == 0).sum() == 0:
+            raise ValueError(
+                "The proportion of one of the classes for a category in "
+                "variable {} is zero, and log of zero is not defined".format(variable)
+            )
+
+        woe = np.log(pos / neg)
+        return total_pos, total_neg, woe
+
+
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
@@ -41,7 +79,7 @@ from feature_engine.tags import _return_tags
     transform=_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
+class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin, WoE):
     """
     The WoEEncoder() replaces categories by the weight of evidence
     (WoE). The WoE was used primarily in the financial sector to create credit risk
@@ -142,40 +180,15 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
             Target, must be binary.
         """
 
-        X, y = check_X_y(X, y)
-
-        # check that y is binary
-        if y.nunique() != 2:
-            raise ValueError(
-                "This encoder is designed for binary classification. The target "
-                "used has more than 2 unique values."
-            )
-
-        # if target does not have values 0 and 1, we need to remap, to be able to
-        # compute the averages.
-        if y.min() != 0 or y.max() != 1:
-            y = pd.Series(np.where(y == y.min(), 0, 1))
+        X, y = self._check_fit_input(X, y)
 
         self._fit(X)
         self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
 
-        total_pos = y.sum()
-        inverse_y = y.ne(1).copy()
-        total_neg = inverse_y.sum()
-
         for var in self.variables_:
-            pos = y.groupby(X[var]).sum() / total_pos
-            neg = inverse_y.groupby(X[var]).sum() / total_neg
-
-            if not (pos[:] == 0).sum() == 0 or not (neg[:] == 0).sum() == 0:
-                raise ValueError(
-                    "The proportion of one of the classes for a category in "
-                    "variable {} is zero, and log of zero is not defined".format(var)
-                )
-
-            woe = np.log(pos / neg)
+            _, _, woe = self._calculate_woe(X, y, var)
 
             self.encoder_dict_[var] = woe.to_dict()
 
@@ -195,3 +208,4 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         # are not suitable
         tags_dict["_skip_test"] = True
         return tags_dict
+
