@@ -68,6 +68,19 @@ to the PSI value. The most commonly used thresholds are:
 - Below 10%, the variable has not experienced a significant shift.
 - Above 25%, the variable has experienced a major shift.
 - Between those two values, the shift is intermediate.
+- 'auto' threshold will be calculated based on size of dataset and number of bins.
+
+For 'auto' formula we are using chi2 approximation, proposed by B. Yurdakul:
+
+.. math::
+
+    threshold = \chi^2_{(q,B-1)} . (\frac{1}{N} + \frac{1}{M})
+
+where p - percentile (p-value), B - number of bins, N - size of basis dataset, N - size of test dataset.
+In our implementation we are using 99.9th percentile.
+As mentioned above number of bins has an impact on PSI value, because with higher number of bins it is easier to find divergence in data and vice versa.
+Same could be said about dataset size - the more data we have, the harder it is to find the difference (if the shift is not drastic).
+This formula tries to catch these relationships and adjust threshold to correctly detect feature drift.
 
 
 Procedure
