@@ -140,8 +140,8 @@ class DropHighPSIFeatures(BaseSelector):
         The threshold to drop a feature. If the PSI for a feature is >= threshold, the
         feature will be dropped. The most common threshold values are 0.25 (large shift)
         and 0.10 (medium shift).
-        If 'auto' than threshold will be calculated based on size of basis and test 
-        dataframes and number of bins with formula proposed by B. Yurdakul.
+        If threshold='auto', it will be calculated based on size of dataset and
+        number of bins, see [1].
 
     bins: int, default = 10
         Number of bins or intervals. For continuous features with good value spread, 10
@@ -202,6 +202,12 @@ class DropHighPSIFeatures(BaseSelector):
     --------
     feature_engine.discretisation.EqualFrequencyDiscretiser
     feature_engine.discretisation.EqualWidthDiscretiser
+
+    References
+    ----------
+    .. [1] Yurdakul B. "Statistical properties of population stability index".
+       Western Michigan University, 2018.
+       https://scholarworks.wmich.edu/dissertations/3208/
     """
 
     def __init__(
@@ -251,7 +257,9 @@ class DropHighPSIFeatures(BaseSelector):
             raise ValueError(f"switch must be a boolean. Got {switch} instead.")
 
         if isinstance(threshold, str) and threshold != 'auto':
-            raise ValueError(f"threshold must be float or 'auto'. Got {threshold} instead.")
+            raise ValueError(
+                f"threshold must be float or 'auto'. Got {threshold} instead."
+            )
         elif not isinstance(threshold, (float, int)) or threshold < 0:
             raise ValueError(f"threshold must be >= 0. Got {threshold} instead.")
 
@@ -347,12 +355,11 @@ class DropHighPSIFeatures(BaseSelector):
                 f"and {test_df.shape[0]} samples in the test set. "
                 "Please adjust the value of the cut_off or split_frac."
             )
-
         if self.threshold == 'auto':
-            # threshold = χ2(α,B−1) × (1/N + 1/M) 
-            # where α - quantile (or p value) B - number of bins, 
+            # threshold = χ2(α,B−1) × (1/N + 1/M)
+            # where α - quantile (or 1 - p-value) B - number of bins,
             # N - size of basis dataset, M - size of test dataset
-            # see Statistical Properties of Population Stability Index by B. Yurdakul
+            # see formula (5.2)
             # taking α = 0.999 to get higher threshold
             self.threshold = stats.chi2.ppf(0.999, self.bins-1) * (
                 1. / basis_df.shape[0] + 1. / test_df.shape[0]
