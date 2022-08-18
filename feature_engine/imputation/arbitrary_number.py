@@ -17,7 +17,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.parameter_checks import _define_numerical_dict
+from feature_engine.parameter_checks import _check_numerical_dict
 from feature_engine.variable_manipulation import (
     _check_input_parameter_variables,
     _find_or_check_numerical_variables,
@@ -97,9 +97,11 @@ class ArbitraryNumberImputer(BaseImputer):
         else:
             raise ValueError("arbitrary_number must be numeric of type int or float")
 
+        _check_numerical_dict(imputer_dict)
+
         self.variables = _check_input_parameter_variables(variables)
 
-        self.imputer_dict = _define_numerical_dict(imputer_dict)
+        self.imputer_dict = imputer_dict
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
