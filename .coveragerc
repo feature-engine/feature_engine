@@ -1,0 +1,8 @@
+# configuration for coverage.py
+
+[run]
+branch = True
+source = feature_engine
+omit =
+    */tags.py
+    */_docstrings/*
