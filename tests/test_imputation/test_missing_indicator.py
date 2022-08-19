@@ -1,5 +1,4 @@
 import pytest
-
 from sklearn.pipeline import Pipeline
 
 from feature_engine.imputation import AddMissingIndicator

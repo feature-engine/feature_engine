@@ -5,6 +5,11 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._docstrings.init_parameters import (
+    _ignore_format_docstring,
+    _unseen_docstring,
+    _variables_categorical_docstring,
+)
 from feature_engine._docstrings.methods import _get_feature_names_out_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.init_parameter_checks import (
@@ -19,11 +24,6 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.encoding._docstrings import (
-    _ignore_format_docstring,
-    _unseen_docstring,
-    _variables_docstring,
-)
 from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.get_feature_names_out import _get_feature_names_out
 from feature_engine.tags import _return_tags
@@ -31,7 +31,7 @@ from feature_engine.tags import _return_tags
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
+    variables=_variables_categorical_docstring,
 )
 class CategoricalInitMixin:
     """Shared initialization parameters across transformers.
@@ -61,7 +61,7 @@ class CategoricalInitMixin:
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
+    variables=_variables_categorical_docstring,
     unseen=_unseen_docstring,
 )
 class CategoricalInitExpandedMixin(CategoricalInitMixin):
@@ -90,7 +90,7 @@ class CategoricalInitExpandedMixin(CategoricalInitMixin):
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
+    variables=_variables_categorical_docstring,
 )
 class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
     """Shared methods across categorical transformers.

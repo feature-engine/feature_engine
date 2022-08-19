@@ -4,13 +4,13 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine._docstrings.class_inputs import (
-    _drop_original_docstring,
-    _missing_values_docstring,
-)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
+)
+from feature_engine._docstrings.init_parameters import (
+    _drop_original_docstring,
+    _missing_values_docstring,
 )
 from feature_engine._docstrings.methods import _fit_not_learn_docstring
 from feature_engine._docstrings.substitute import Substitution
