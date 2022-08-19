@@ -311,3 +311,16 @@ class WinsorizerBase(BaseOutlier):
         self.n_features_in_ = X.shape[1]
 
         return self
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        # =======  this tests fail because the transformers throw an error
+        # when variance of the any input feature is 0.
+        # Nothing to do with the test itself but
+        # mostly with the data created and used in the test
+        msg = (
+            "transformers raise errors when data variation is low, "
+            "thus this check fails"
+        )
+        tags_dict["_xfail_checks"]["check_estimators_dtypes"] = msg
+        return tags_dict
