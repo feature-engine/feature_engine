@@ -4,12 +4,12 @@ import pytest
 from sklearn.base import clone
 from sklearn.utils.estimator_checks import check_estimator
 
-from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 from feature_engine.timeseries.forecasting import (
     ExpandingWindowFeatures,
     LagFeatures,
     WindowFeatures,
 )
+from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
 _estimators = [
     LagFeatures(missing_values="ignore"),

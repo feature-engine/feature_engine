@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-
 from sklearn.pipeline import Pipeline
 
 from feature_engine.encoding import OneHotEncoder

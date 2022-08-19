@@ -1,5 +1,5 @@
-import pytest
 import pandas as pd
+import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.encoding import (

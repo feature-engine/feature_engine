@@ -1,8 +1,8 @@
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
-from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 from feature_engine.preprocessing import MatchCategories, MatchVariables
+from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
 _estimators = [MatchCategories(ignore_format=True), MatchVariables()]
 
