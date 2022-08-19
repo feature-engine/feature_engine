@@ -314,6 +314,7 @@ class WinsorizerBase(BaseOutlier):
 
     def _more_tags(self):
         tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
         # =======  this tests fail because the transformers throw an error
         # when variance of the any input feature is 0.
         # Nothing to do with the test itself but
