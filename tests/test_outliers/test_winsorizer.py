@@ -300,23 +300,26 @@ def test_transformer_ignores_na_in_df(df_na):
 
     # expected output
     df_transf = df_na.copy()
-    df_transf["var"] = df_transf["var"].clip(0.8970309389976613, 38.79255087111844)
+    df_transf["Age"] = df_transf["Age"].clip(upper=38.79255087111844)
+    df_transf["Marks"] = df_transf["Marks"].clip(upper=0.8970309389976613)
 
     # test fit params
-    transformer.right_tail_caps_ = {
-        key: round(value, 3) for (key, value) in transformer.right_tail_caps_.items()
-    }
-
-    assert transformer.right_tail_caps_ == {
-        "Age": 38.793,
-        "Marks": 0.897,
-    }
+    assert math.isclose(
+        transformer.right_tail_caps_["Age"],
+        38.79255087111844
+    )
+    assert math.isclose(
+        transformer.right_tail_caps_["Marks"],
+        0.8970309389976613
+    )
     assert transformer.left_tail_caps_ == {}
     assert transformer.n_features_in_ == 6
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
     assert math.isclose(X["Age"].max(), 38.79255087111844)
-    assert math.isclose(df_transf["Age"].max(), 38.79255087111844)
+    assert math.isclose(X["Age"].max(), 38.79255087111844)
+    assert math.isclose(X["Marks"].max(), 0.8970309389976613)
+    assert math.isclose(df_transf["Marks"].max(), 0.8970309389976613)
 
 
 def test_error_if_capping_method_not_permitted():
