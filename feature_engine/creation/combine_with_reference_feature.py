@@ -17,10 +17,6 @@ from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
 )
-from feature_engine._docstrings.methods import (
-    _fit_not_learn_docstring,
-    _fit_transform_docstring,
-)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.variable_type_selection import (
     _find_or_check_numerical_variables,

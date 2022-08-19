@@ -22,7 +22,6 @@ from feature_engine._variable_handling.variable_type_selection import (
 )
 from feature_engine.creation.base_creation import BaseCreation
 
-
 _PERMITTED_FUNCTIONS = [
     "add",
     "sub",

@@ -2,12 +2,14 @@ from typing import Dict
 
 import pandas as pd
 
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_or_check_numerical_variables,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     check_X,
 )
-from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
 class FitFromDictMixin:

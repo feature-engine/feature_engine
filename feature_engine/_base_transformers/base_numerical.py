@@ -10,12 +10,9 @@ from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._docstrings.methods import _get_feature_names_out_docstring
 from feature_engine._docstrings.substitute import Substitution
-<<<<<<< HEAD
 from feature_engine._variable_handling.variable_type_selection import (
     _find_or_check_numerical_variables,
 )
-=======
->>>>>>> refactor base transformer class
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,

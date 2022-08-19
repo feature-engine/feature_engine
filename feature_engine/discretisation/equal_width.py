@@ -17,9 +17,6 @@ from feature_engine._variable_handling.init_parameter_checks import (
     _check_init_parameter_variables,
 )
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
-from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.substitute import Substitution
-from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 
 
 @Substitution(
