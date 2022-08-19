@@ -1,11 +1,8 @@
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
-from feature_engine.creation import (  # FIXME: remove in version 1.4
-    CombineWithReferenceFeature,
+from feature_engine.creation import (
     CyclicalFeatures,
-    CyclicalTransformer,
-    MathematicalCombination,
     MathFeatures,
     RelativeFeatures,
 )
@@ -17,10 +14,6 @@ _estimators = [
         variables=["0", "1"], reference=["0"], func=["add"], missing_values="ignore"
     ),
     CyclicalFeatures(),
-    # FIXME: remove in version 1.4
-    MathematicalCombination(variables_to_combine=["0", "1"]),
-    CombineWithReferenceFeature(variables_to_combine=["0"], reference_variables=["1"]),
-    CyclicalTransformer(),
 ]
 
 
