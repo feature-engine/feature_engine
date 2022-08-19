@@ -1,6 +1,5 @@
 from typing import List, Optional, Union
 
-import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -140,7 +139,7 @@ class WinsorizerBase(BaseOutlier):
     **Gaussian limits:**
 
     - right tail: mean + 3* std
-    - left  tail: mean - 3* std
+    - left tail: mean - 3* std
 
     **IQR limits:**
 
@@ -164,7 +163,7 @@ class WinsorizerBase(BaseOutlier):
     You can select how far out to cap the maximum or minimum values with the
     parameter `'fold'`.
 
-    If `capping_method='gaussian'` fold gives the value to multiply the SD.
+    If `capping_method='gaussian'` fold gives the value to multiply the std.
 
     If `capping_method='iqr'` fold is the value to multiply the IQR.
 
@@ -176,7 +175,7 @@ class WinsorizerBase(BaseOutlier):
     """.rstrip()
 
     _capping_method_docstring = """capping_method: str, default='gaussian'
-        Desired outlier detection method. Can be 'gaussian', 'iqr', 'mad' or 'quantiles'.
+        Desired outlier detection method. Can be 'gaussian', 'iqr', 'mad', 'quantiles'.
 
         The transformer will find the maximum and / or minimum values beyond which a
         data point will be considered an outlier using:
@@ -192,8 +191,9 @@ class WinsorizerBase(BaseOutlier):
         """.rstrip()
 
     _fold_docstring = """fold: int or float, default=3
-        The factor used to multiply the std, mad or IQR to calculate the maximum or minimum
-        allowed values. Recommended values are 2 or 3 for the gaussian approximation,
+        The factor used to multiply the std, MAD or IQR to calculate
+        the maximum or minimum allowed values.
+        Recommended values are 2 or 3 for the gaussian approximation,
         1.5 or 3 for the IQR proximity rule and 3 or 3.5 for MAD rule.
 
         If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if
@@ -215,7 +215,7 @@ class WinsorizerBase(BaseOutlier):
 
         if capping_method not in ["gaussian", "iqr", "quantiles", "mad"]:
             raise ValueError(
-                "capping_method takes only values 'gaussian', 'iqr', 'mad' or 'quantiles'"
+                "capping_method takes only values 'gaussian', 'iqr', 'mad', 'quantiles'"
             )
 
         if tail not in ["right", "left", "both"]:
