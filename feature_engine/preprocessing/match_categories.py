@@ -2,6 +2,7 @@ import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
+
 from feature_engine._docstrings.class_inputs import _missing_values_docstring
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,

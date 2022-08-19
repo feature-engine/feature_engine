@@ -1,6 +1,6 @@
 """Functions to select certain types of variables."""
 
-from typing import Any, List, Tuple, Union
+from typing import List, Tuple, Union
 
 import pandas as pd
 from pandas.api.types import is_categorical_dtype as is_categorical
@@ -8,38 +8,12 @@ from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from pandas.api.types import is_numeric_dtype as is_numeric
 from pandas.api.types import is_object_dtype as is_object
 
+from feature_engine._variable_handling.variable_type_checks import (
+    _is_categorical_and_is_datetime,
+    _is_categorical_and_is_not_datetime,
+)
+
 Variables = Union[None, int, str, List[Union[str, int]]]
-
-
-# set return value typehint to Any to avoid issues with the base transformer fit method
-def _check_input_parameter_variables(variables: Variables) -> Any:
-    """
-    Checks that the input is of the correct type. Allowed  values are None, int, str or
-    list of strings and ints.
-
-    Parameters
-    ----------
-    variables : string, int, list of strings, list of integers. Default=None
-
-    Returns
-    -------
-    variables: same as input
-    """
-
-    msg = "variables should be a string, an int or a list of strings or integers."
-    msg_dupes = "the list contains duplicated variable names"
-
-    if variables:
-        if isinstance(variables, list):
-            if not all(isinstance(i, (str, int)) for i in variables):
-                raise ValueError(msg)
-            if len(variables) != len(set(variables)):
-                raise ValueError(msg_dupes)
-        else:
-            if not isinstance(variables, (str, int)):
-                raise ValueError(msg)
-
-    return variables
 
 
 def _find_or_check_numerical_variables(
@@ -94,33 +68,6 @@ def _find_or_check_numerical_variables(
                 )
 
     return variables
-
-
-def _is_convertible_to_num(column: pd.Series) -> bool:
-    return is_numeric(pd.to_numeric(column, errors="ignore"))
-
-
-def _is_convertible_to_dt(column: pd.Series) -> bool:
-    return is_datetime(pd.to_datetime(column, errors="ignore", utc=True))
-
-
-def _is_categories_num(column: pd.Series) -> bool:
-    return is_numeric(column.dtype.categories)
-
-
-def _is_categorical_and_is_not_datetime(column: pd.Series) -> bool:
-
-    # check for datetime only if object cannot be cast as numeric because
-    # if it could pd.to_datetime would convert it to datetime regardless
-    if is_object(column):
-        is_cat = _is_convertible_to_num(column) or not _is_convertible_to_dt(column)
-
-    # check for datetime only if the type of the categories is not numeric
-    # because pd.to_datetime throws an error when it is an integer
-    elif is_categorical(column):
-        is_cat = _is_categories_num(column) or not _is_convertible_to_dt(column)
-
-    return is_cat
 
 
 def _find_or_check_categorical_variables(
@@ -179,21 +126,6 @@ def _find_or_check_categorical_variables(
                 )
 
     return variables
-
-
-def _is_categorical_and_is_datetime(column: pd.Series) -> bool:
-
-    # check for datetime only if object cannot be cast as numeric because
-    # if it could pd.to_datetime would convert it to datetime regardless
-    if is_object(column):
-        is_dt = not _is_convertible_to_num(column) and _is_convertible_to_dt(column)
-
-    # check for datetime only if the type of the categories is not numeric
-    # because pd.to_datetime throws an error when it is an integer
-    elif is_categorical(column):
-        is_dt = not _is_categories_num(column) and _is_convertible_to_dt(column)
-
-    return is_dt
 
 
 def _find_or_check_datetime_variables(
@@ -306,7 +238,7 @@ def _filter_out_variables_not_in_dataframe(X, variables):
     Function removes variables that the user defines in the argument `variables`
     but that are not present in the input dataframe.
 
-    Useful when ussing several feature selection procedures in a row. The dataframe
+    Useful when using several feature selection procedures in a row. The dataframe
     input to the first selection algorithm likely contains more variables than the
     input dataframe to subsequent selection algorithms, and it is not possible a
     priori, to say which variable will be dropped.

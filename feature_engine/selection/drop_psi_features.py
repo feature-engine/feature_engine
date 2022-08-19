@@ -5,6 +5,18 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_or_check_numerical_variables,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -14,21 +26,11 @@ from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
 )
-from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
-from feature_engine._docstrings.substitute import Substitution
 from feature_engine.selection._docstring import (
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_numerical_variables,
-)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -282,7 +284,7 @@ class DropHighPSIFeatures(BaseSelector):
         super().__init__(confirm_variables)
 
         # Check the variables before assignment.
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
 
         # Set all remaining arguments as attributes.
         self.split_col = split_col

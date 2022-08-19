@@ -4,13 +4,15 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
-from feature_engine.tags import _return_tags
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine._variable_handling.variable_type_selection import (
     _find_all_variables,
     _find_or_check_numerical_variables,
 )
+from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
+from feature_engine.tags import _return_tags
 
 _SELECTORS = [
     "GenericUnivariateSelect",
@@ -191,7 +193,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             )
 
         self.transformer = transformer
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """

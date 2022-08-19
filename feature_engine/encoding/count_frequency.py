@@ -18,9 +18,9 @@ from feature_engine._docstrings.methods import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.encoding._docstrings import (
-    _unseen_docstring,
     _ignore_format_docstring,
     _transform_docstring,
+    _unseen_docstring,
     _variables_docstring,
 )
 from feature_engine.encoding._helper_functions import check_parameter_unseen
@@ -30,8 +30,8 @@ from feature_engine.encoding.base_encoder import (
 )
 
 _unseen_docstring = (
-        _unseen_docstring
-        + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
+    _unseen_docstring
+    + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
 )
 
 

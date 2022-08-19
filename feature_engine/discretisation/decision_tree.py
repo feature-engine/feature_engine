@@ -8,17 +8,19 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
-from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
 from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
-from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.tags import _return_tags
-from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 @Substitution(
@@ -142,7 +144,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.cv = cv
         self.scoring = scoring
         self.regression = regression
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
         self.param_grid = param_grid
         self.random_state = random_state
 
