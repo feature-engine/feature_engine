@@ -6,6 +6,7 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
+from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -21,7 +22,6 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.init_parameter_checks import (
     _check_init_parameter_variables,
 )
-from feature_engine.base_transformers import BaseNumericalTransformer
 from feature_engine.tags import _return_tags
 
 
@@ -94,7 +94,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super()._fit_from_varlist(X)
+        X = super().fit(X)
 
         # check if the variables contain the value 0
         if (X[self.variables_] == 0).any().any():

@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Union
 
 import pandas as pd
 
+from feature_engine._base_transformers.mixins import FitFromDictMixin
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -31,7 +32,7 @@ from feature_engine.tags import _return_tags
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class ArbitraryDiscretiser(BaseDiscretiser):
+class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
     """
     The ArbitraryDiscretiser() divides numerical variables into intervals which limits
     are determined by the user. Thus, it works only with numerical variables.
