@@ -126,7 +126,7 @@ html_theme_options = {
         },
         {
             "name": "Blog",
-            "url": "https://trainindata.medium.com/",
+            "url": "https://www.blog.trainindata.com/",
             "icon": "fab fa-blogger",
         },
         {
