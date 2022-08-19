@@ -323,5 +323,5 @@ class WinsorizerBase(BaseOutlier):
             "transformers raise errors when data variation is low, "
             "thus this check fails"
         )
-        tags_dict["_xfail_checks"]["check_estimators_dtypes"] = msg
+        tags_dict["_xfail_checks"]["check_fit2d_1sample"] = msg
         return tags_dict
