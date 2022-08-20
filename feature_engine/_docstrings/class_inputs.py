@@ -13,8 +13,3 @@ _missing_values_docstring = """missing_values: string, default='raise'
         contain missing values. If 'ignore', missing data will be ignored when learning
         parameters or performing the transformation.
         """.rstrip()
-
-_variables_categorical_docstring = """variables: list, default=None
-        The list of categorical variables to transform. If None, the transformer will
-        automatically find and select all categorical variables.
-    """.rstrip()
