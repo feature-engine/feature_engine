@@ -97,9 +97,16 @@ class SelectByInformationValue(BaseSelector, CategoricalMethodsMixin, WoE):
         ignore_format: bool = False,
         confirm_variables: bool = False,
     ) -> None:
+        if not isinstance(threshold, (int, float)):
+            raise Warning(
+                f"threshold must be a an integer or a float. Got {threshold} "
+                "instead."
+            )
+
         super().__init__(confirm_variables)
         self.variables = _check_input_parameter_variables(variables)
         self.threshold = threshold
+        # Used in WoE class
         self.ignore_format = ignore_format
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
