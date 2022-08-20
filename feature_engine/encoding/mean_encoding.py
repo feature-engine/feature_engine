@@ -141,13 +141,10 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         self._fit(X)
         self._get_feature_names_in(X)
 
-        temp = pd.concat([X, y], axis=1)
-        temp.columns = list(X.columns) + ["target"]
-
         self.encoder_dict_ = {}
 
         for var in self.variables_:
-            self.encoder_dict_[var] = temp.groupby(var)["target"].mean().to_dict()
+            self.encoder_dict_[var] = y.groupby(X[var]).mean().to_dict()
 
         self._check_encoding_dictionary()
 

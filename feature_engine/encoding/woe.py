@@ -30,6 +30,44 @@ from feature_engine.encoding.base_encoder import (
 from feature_engine.tags import _return_tags
 
 
+class WoE:
+    def _check_fit_input(self, X: pd.DataFrame, y: pd.Series):
+        """
+        Check that X is dataframe, and y a binary series with values 0 and 1.
+        """
+        X, y = check_X_y(X, y)
+
+        # check that y is binary
+        if y.nunique() != 2:
+            raise ValueError(
+                "This encoder is designed for binary classification. The target "
+                "used has more than 2 unique values."
+            )
+
+        # if target does not have values 0 and 1, we need to remap, to be able to
+        # compute the averages.
+        if y.min() != 0 or y.max() != 1:
+            y = pd.Series(np.where(y == y.min(), 0, 1))
+        return X, y
+
+    def _calculate_woe(self, X: pd.DataFrame, y: pd.Series, variable: Union[str, int]):
+        total_pos = y.sum()
+        inverse_y = y.ne(1).copy()
+        total_neg = inverse_y.sum()
+
+        pos = y.groupby(X[variable]).sum() / total_pos
+        neg = inverse_y.groupby(X[variable]).sum() / total_neg
+
+        if not (pos[:] == 0).sum() == 0 or not (neg[:] == 0).sum() == 0:
+            raise ValueError(
+                "The proportion of one of the classes for a category in "
+                "variable {} is zero, and log of zero is not defined".format(variable)
+            )
+
+        woe = np.log(pos / neg)
+        return total_pos, total_neg, woe
+
+
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_docstring,
@@ -41,7 +79,7 @@ from feature_engine.tags import _return_tags
     transform=_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
+class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin, WoE):
     """
     The WoEEncoder() replaces categories by the weight of evidence
     (WoE). The WoE was used primarily in the financial sector to create credit risk
@@ -142,49 +180,17 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
             Target, must be binary.
         """
 
-        X, y = check_X_y(X, y)
-
-        # check that y is binary
-        if y.nunique() != 2:
-            raise ValueError(
-                "This encoder is designed for binary classification. The target "
-                "used has more than 2 unique values."
-            )
+        X, y = self._check_fit_input(X, y)
 
         self._fit(X)
         self._get_feature_names_in(X)
 
-        temp = pd.concat([X, y], axis=1)
-        temp.columns = list(X.columns) + ["target"]
-
-        # if target does not have values 0 and 1, we need to remap, to be able to
-        # compute the averages.
-        if any(x for x in y.unique() if x not in [0, 1]):
-            temp["target"] = np.where(temp["target"] == y.unique()[0], 0, 1)
-
         self.encoder_dict_ = {}
 
-        total_pos = temp["target"].sum()
-        total_neg = len(temp) - total_pos
-        temp["non_target"] = np.where(temp["target"] == 1, 0, 1)
-
         for var in self.variables_:
-            pos = temp.groupby([var])["target"].sum() / total_pos
-            neg = temp.groupby([var])["non_target"].sum() / total_neg
+            _, _, woe = self._calculate_woe(X, y, var)
 
-            t = pd.concat([pos, neg], axis=1)
-            t["woe"] = np.log(t["target"] / t["non_target"])
-
-            if (
-                not t.loc[t["target"] == 0, :].empty
-                or not t.loc[t["non_target"] == 0, :].empty
-            ):
-                raise ValueError(
-                    "The proportion of one of the classes for a category in "
-                    "variable {} is zero, and log of zero is not defined".format(var)
-                )
-
-            self.encoder_dict_[var] = t["woe"].to_dict()
+            self.encoder_dict_[var] = woe.to_dict()
 
         self._check_encoding_dictionary()
 

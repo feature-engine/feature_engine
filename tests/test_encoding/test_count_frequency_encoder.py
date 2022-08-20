@@ -194,14 +194,12 @@ def test_transform_raises_error_if_df_contains_na(errors, df_enc, df_enc_na):
 
 
 def test_zero_encoding_for_new_categories():
-    df_fit = pd.DataFrame({
-        "col1": ["a", "a", "b", "a", "c"],
-        "col2": ["1", "2", "3", "1", "2"]
-    })
-    df_transf = pd.DataFrame({
-        "col1": ["a", "d", "b", "a", "c"],
-        "col2": ["1", "2", "3", "1", "4"]
-    })
+    df_fit = pd.DataFrame(
+        {"col1": ["a", "a", "b", "a", "c"], "col2": ["1", "2", "3", "1", "2"]}
+    )
+    df_transf = pd.DataFrame(
+        {"col1": ["a", "d", "b", "a", "c"], "col2": ["1", "2", "3", "1", "4"]}
+    )
     encoder = CountFrequencyEncoder(errors="encode").fit(df_fit)
     result = encoder.transform(df_transf)
 
@@ -209,10 +207,7 @@ def test_zero_encoding_for_new_categories():
     assert pd.isnull(result).sum().sum() == 0
 
     # check that the counts are correct for both new and old
-    expected_result = pd.DataFrame({
-        "col1": [3, 0, 1, 3, 1],
-        "col2": [2, 2, 1, 2, 0]
-    })
+    expected_result = pd.DataFrame({"col1": [3, 0, 1, 3, 1], "col2": [2, 2, 1, 2, 0]})
     pd.testing.assert_frame_equal(result, expected_result)
 
 
