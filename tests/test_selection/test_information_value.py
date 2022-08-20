@@ -34,9 +34,9 @@ def _round_dict_of_dict_values(data, ndigits):
 def test_class_diff_encoder_dict_calc(df_enc):
     transformer = SelectByInformationValue(
         variables=None,
-        sort_values=False,
+        threshold=None,
         ignore_format=False,
-        errors="ignore"
+        onfirm_variables=False
     )
     transformer.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     encoder_dict = transformer.class_diff_encoder_dict_
