@@ -73,7 +73,7 @@ class SelectByInformationValue(BaseSelector, CategoricalMethodsMixin, WoE):
     information_values_:
         A dictionary with the information values for each feature.
 
-    {features_to_drop_}
+    {features_to_drop}
 
     Methods
     -------
