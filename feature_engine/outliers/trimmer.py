@@ -1,7 +1,6 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
@@ -103,13 +102,11 @@ class OutlierTrimmer(WinsorizerBase):
         X = self._check_transform_input_and_state(X)
 
         for feature in self.right_tail_caps_.keys():
-            outliers = np.where(
-                X[feature] > self.right_tail_caps_[feature], True, False
-            )
-            X = X.loc[~outliers]
+            inliers = X[feature].le(self.right_tail_caps_[feature])
+            X = X.loc[inliers]
 
         for feature in self.left_tail_caps_.keys():
-            outliers = np.where(X[feature] < self.left_tail_caps_[feature], True, False)
-            X = X.loc[~outliers]
+            inliers = X[feature].ge(self.left_tail_caps_[feature])
+            X = X.loc[inliers]
 
         return X
