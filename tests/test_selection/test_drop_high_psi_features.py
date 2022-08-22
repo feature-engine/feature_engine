@@ -118,7 +118,13 @@ def test_fit_attributes_auto(df):
         "drift_1": 8.283089355027482,
         "drift_2": 8.283089355027482,
     }
-    assert math.isclose(transformer.threshold, 0.11150865948502628)
+    assert math.isclose(
+        transformer._calculate_auto_threshold(
+            int(df.shape[0]*0.5),
+            int(df.shape[0]*0.5)
+        ),
+        0.11150865948502628
+    )
     assert transformer.variables_ == [
         "var_0",
         "var_1",
