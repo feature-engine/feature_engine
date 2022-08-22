@@ -91,52 +91,36 @@ def test_fit_attributes(df):
     assert transformer.features_to_drop_ == ["drift_1", "drift_2"]
 
 
-def test_fit_attributes_auto(df):
-    """Check the value of the fit attributes.
-    The expected PSI values used in the assertion were determined using
-    the Probatus package.
-    ```
-    from probatus.stat_tests import AutoDist
-    psi_calculator = AutoDist(statistical_tests=["PSI"],
-                    binning_strategies="QuantileBucketer",
-                    bin_count=10)
-    train_df = data.iloc[0:500,:]
-    test_df = data.iloc[500:, :]
-    psi = psi_calculator.compute(train_df, test_df)
-    ```
+def test_auto_calculation():
+    """Check the results of 'auto' calculation
     """
     transformer = DropHighPSIFeatures(threshold='auto', bins=10)
-    transformer.fit_transform(df)
-
-    expected_psi = {
-        "var_0": 0.043828484052281,
-        "var_1": 0.040929870747665395,
-        "var_2": 0.04330418495156895,
-        "var_3": 0.03773286532548153,
-        "var_4": 0.05047388515663041,
-        "var_5": 0.014717735595712466,
-        "drift_1": 8.283089355027482,
-        "drift_2": 8.283089355027482,
-    }
     assert math.isclose(
         transformer._calculate_auto_threshold(
-            int(df.shape[0]*0.5),
-            int(df.shape[0]*0.5)
+            N=500,
+            M=500,
+            q=0.999
         ),
         0.11150865948502628
     )
-    assert transformer.variables_ == [
-        "var_0",
-        "var_1",
-        "var_2",
-        "var_3",
-        "var_4",
-        "var_5",
-        "drift_1",
-        "drift_2",
-    ]
-    assert transformer.psi_values_ == pytest.approx(expected_psi, 12)
-    assert transformer.features_to_drop_ == ["drift_1", "drift_2"]
+    transformer = DropHighPSIFeatures(threshold='auto', bins=32)
+    assert math.isclose(
+        transformer._calculate_auto_threshold(
+            N=1000,
+            M=1500,
+            q=0.95
+        ),
+        0.07497557213394188
+    )
+    transformer = DropHighPSIFeatures(threshold='auto', bins=42)
+    assert math.isclose(
+        transformer._calculate_auto_threshold(
+            N=777,
+            M=666,
+            q=0.99
+        ),
+        0.18111345503169146
+    )
 
 
 # ================ test init parameters =================
