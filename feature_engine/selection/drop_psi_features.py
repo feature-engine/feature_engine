@@ -546,12 +546,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         return cut_off
 
-    def _calculate_auto_threshold(
-        self,
-        N: int,
-        M: int,
-        q: float = 0.999
-    ) -> float:
+    def _calculate_auto_threshold(self, N, M, q = 0.999):
         # threshold = χ2(q,B−1) × (1/N + 1/M)
         # where q - quantile (or 1 - p-value) B - number of bins,
         # N - size of basis dataset, M - size of test dataset
