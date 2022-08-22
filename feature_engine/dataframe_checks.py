@@ -2,7 +2,7 @@
 transform().
 """
 
-from typing import List, Union, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -191,7 +191,7 @@ def check_X_y(
     if isinstance(X, pd.DataFrame) and isinstance(y, pd.Series):
         X, y = _check_X_y(X, y)
         # Check that their indexes match.
-        if not all(y.index == X.index):
+        if X.index.equals(y.index) is False:
             raise ValueError("The indexes of X and y do not match.")
 
     # case 2: X is dataframe and y is something else
@@ -258,7 +258,7 @@ def _check_contains_na(X: pd.DataFrame, variables: List[Union[str, int]]) -> Non
         If the variable(s) contain null values
     """
 
-    if X[variables].isnull().values.any():
+    if X[variables].isnull().any().any():
         raise ValueError(
             "Some of the variables to transform contain NaN. Check and "
             "remove those before using this transformer."
@@ -281,7 +281,7 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
         If the variable(s) contain np.inf values
     """
 
-    if np.isinf(X[variables]).values.any():
+    if np.isinf(X[variables]).any().any():
         raise ValueError(
             "Some of the variables to transform contain inf values. Check and "
             "remove those before using this transformer."

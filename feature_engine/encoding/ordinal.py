@@ -10,18 +10,18 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters import (
+    _ignore_format_docstring,
+    _unseen_docstring,
+    _variables_categorical_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _inverse_transform_docstring,
+    _transform_encoders_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X, check_X_y
-from feature_engine.encoding._docstrings import (
-    _errors_docstring,
-    _ignore_format_docstring,
-    _transform_docstring,
-    _variables_docstring,
-)
 from feature_engine.encoding.base_encoder import (
     CategoricalInitExpandedMixin,
     CategoricalMethodsMixin,
@@ -30,13 +30,13 @@ from feature_engine.encoding.base_encoder import (
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
-    errors=_errors_docstring,
+    variables=_variables_categorical_docstring,
+    unseen=_unseen_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
-    transform=_transform_docstring,
+    transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
 class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
@@ -73,7 +73,7 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
     {ignore_format}
 
-    {errors}
+    {unseen}
 
     Attributes
     ----------
@@ -125,7 +125,7 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         encoding_method: str = "ordered",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore",
+        unseen: str = "ignore",
     ) -> None:
 
         if encoding_method not in ["ordered", "arbitrary"]:
@@ -133,7 +133,7 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
                 "encoding_method takes only values 'ordered' and 'arbitrary'"
             )
 
-        super().__init__(variables, ignore_format, errors)
+        super().__init__(variables, ignore_format, unseen)
 
         self.encoding_method = encoding_method
 
@@ -157,12 +157,8 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         else:
             X = check_X(X)
 
-        self._check_or_select_variables(X)
+        self._fit(X)
         self._get_feature_names_in(X)
-
-        if self.encoding_method == "ordered":
-            temp = pd.concat([X, y], axis=1)
-            temp.columns = list(X.columns) + ["target"]
 
         # find mappings
         self.encoder_dict_ = {}
@@ -170,12 +166,8 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         for var in self.variables_:
 
             if self.encoding_method == "ordered":
-                t = (
-                    temp.groupby([var])["target"]
-                    .mean()
-                    .sort_values(ascending=True)
-                    .index
-                )
+                t = y.groupby(X[var]).mean()  # type: ignore
+                t = t.sort_values(ascending=True).index
 
             elif self.encoding_method == "arbitrary":
                 t = X[var].unique()

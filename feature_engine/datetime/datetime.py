@@ -8,6 +8,24 @@ from pandas.api.types import is_numeric_dtype as is_numeric
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine._variable_handling.variable_type_checks import (
+    _is_categorical_and_is_datetime,
+)
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_or_check_datetime_variables,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
@@ -18,20 +36,6 @@ from feature_engine.datetime._datetime_constants import (
     FEATURES_FUNCTIONS,
     FEATURES_SUFFIXES,
     FEATURES_SUPPORTED,
-)
-from feature_engine._docstrings.methods import (
-    _fit_not_learn_docstring,
-    _fit_transform_docstring,
-)
-from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
-from feature_engine._docstrings.substitute import Substitution
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_datetime_variables,
-    _is_categorical_and_is_datetime,
 )
 
 
@@ -191,7 +195,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
         if utc is not None and not isinstance(utc, bool):
             raise ValueError("utc takes only booleans or None. " f"Got {utc} instead.")
 
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
         self.drop_original = drop_original
         self.missing_values = missing_values
         self.dayfirst = dayfirst

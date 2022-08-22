@@ -1,8 +1,7 @@
 import pandas as pd
 import pytest
 
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
+from feature_engine._variable_handling.variable_type_selection import (
     _filter_out_variables_not_in_dataframe,
     _find_all_variables,
     _find_categorical_and_numerical_variables,
@@ -10,32 +9,6 @@ from feature_engine.variable_manipulation import (
     _find_or_check_datetime_variables,
     _find_or_check_numerical_variables,
 )
-
-
-@pytest.mark.parametrize(
-    "_input_vars",
-    [
-        ("var1", "var2"),
-        {"var1": 1, "var2": 2},
-        ["var1", "var2", "var2", "var3"],
-        [0, 1, 1, 2],
-    ],
-)
-def test_check_input_parameter_variables_raises_errors(_input_vars):
-    with pytest.raises(ValueError):
-        assert _check_input_parameter_variables(_input_vars)
-
-
-@pytest.mark.parametrize(
-    "_input_vars",
-    [["var1", "var2", "var3"], [0, 1, 2, 3], "var1", ["var1"], 0, [0]],
-)
-def test_check_input_parameter_variables(_input_vars):
-    assert _check_input_parameter_variables(_input_vars) == _input_vars
-
-
-def test_check_input_parameter_variables_is_none():
-    assert _check_input_parameter_variables(None) is None
 
 
 def test_find_or_check_numerical_variables(df_vartypes, df_numeric_columns):

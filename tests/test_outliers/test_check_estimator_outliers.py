@@ -1,8 +1,8 @@
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
-from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsorizer
+from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
 _estimators = [
     ArbitraryOutlierCapper(max_capping_dict={"0": 10}),

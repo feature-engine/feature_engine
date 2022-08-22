@@ -12,14 +12,14 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters import (
+    _ignore_format_docstring,
+    _variables_categorical_docstring,
+)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
 from feature_engine.discretisation import DecisionTreeDiscretiser
-from feature_engine.encoding._docstrings import (
-    _ignore_format_docstring,
-    _variables_docstring,
-)
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
@@ -30,7 +30,7 @@ from feature_engine.tags import _return_tags
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
+    variables=_variables_categorical_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -206,7 +206,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         else:
             check_classification_targets(y)
 
-        self._check_or_select_variables(X)
+        self._fit(X)
         self._get_feature_names_in(X)
 
         if self.param_grid:
@@ -219,7 +219,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             encoding_method=self.encoding_method,
             variables=self.variables_,
             ignore_format=self.ignore_format,
-            errors="raise",
+            unseen="raise",
         )
 
         # initialize decision tree discretiser

@@ -12,6 +12,3 @@ by either combining or transforming existing features.
    MathFeatures
    RelativeFeatures
    CyclicalFeatures
-   MathematicalCombination
-   CombineWithReferenceFeature
-   CyclicalTransformer

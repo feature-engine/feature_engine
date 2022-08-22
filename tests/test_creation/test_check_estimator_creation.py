@@ -5,10 +5,6 @@ from feature_engine.creation import (
     CyclicalFeatures,
     MathFeatures,
     RelativeFeatures,
-    # FIXME: remove in version 1.4
-    CombineWithReferenceFeature,
-    CyclicalTransformer,
-    MathematicalCombination,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
@@ -18,10 +14,6 @@ _estimators = [
         variables=["0", "1"], reference=["0"], func=["add"], missing_values="ignore"
     ),
     CyclicalFeatures(),
-    # FIXME: remove in version 1.4
-    MathematicalCombination(variables_to_combine=["0", "1"]),
-    CombineWithReferenceFeature(variables_to_combine=["0"], reference_variables=["1"]),
-    CyclicalTransformer(),
 ]
 
 

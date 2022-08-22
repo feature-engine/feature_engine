@@ -4,16 +4,16 @@
 import numpy as np
 import pandas as pd
 
-from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
-from feature_engine._docstrings.class_inputs import (
-    _variables_numerical_docstring,
+from feature_engine._docstrings.init_parameters import (
     _missing_values_docstring,
+    _variables_numerical_docstring,
 )
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.outliers.base_outlier import WinsorizerBase
 

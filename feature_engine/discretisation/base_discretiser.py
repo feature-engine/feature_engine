@@ -3,7 +3,7 @@
 
 import pandas as pd
 
-from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 
 
 class BaseDiscretiser(BaseNumericalTransformer):

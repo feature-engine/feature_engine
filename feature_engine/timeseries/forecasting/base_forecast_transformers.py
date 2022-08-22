@@ -4,27 +4,29 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.init_parameters import (
+    _drop_original_docstring,
+    _missing_values_docstring,
+)
+from feature_engine._docstrings.methods import _fit_not_learn_docstring
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_or_check_numerical_variables,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine._docstrings.methods import _fit_not_learn_docstring
-from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
-from feature_engine._docstrings.class_inputs import (
-    _drop_original_docstring,
-    _missing_values_docstring,
-)
-from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_numerical_variables,
-)
 
 
 @Substitution(
@@ -74,7 +76,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin):
                 f"Got {drop_original} instead."
             )
 
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
         self.missing_values = missing_values
         self.drop_original = drop_original
 

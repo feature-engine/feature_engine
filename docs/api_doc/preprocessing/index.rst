@@ -9,4 +9,5 @@ and transformation procedures.
 .. toctree::
    :maxdepth: 2
 
+   MatchCategories
    MatchVariables

@@ -6,19 +6,21 @@ from typing import List, Optional, Union
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import check_X
-from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.tags import _return_tags
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine._variable_handling.variable_type_selection import (
     _find_all_variables,
 )
+from feature_engine.dataframe_checks import check_X
+from feature_engine.imputation.base_imputer import BaseImputer
+from feature_engine.tags import _return_tags
 
 
 @Substitution(
@@ -90,7 +92,7 @@ class AddMissingIndicator(BaseImputer):
         if not isinstance(missing_only, bool):
             raise ValueError("missing_only takes values True or False")
 
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
         self.missing_only = missing_only
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):

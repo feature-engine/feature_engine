@@ -4,19 +4,22 @@ import numpy as np
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.base_transformers import BaseNumericalTransformer
-from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine._base_transformers.mixins import FitFromDictMixin
 from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
-from feature_engine._docstrings.class_inputs import (
-    _variables_numerical_docstring,
+from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
+    _variables_numerical_docstring,
 )
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.variable_manipulation import _check_input_parameter_variables
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
 
 
 @Substitution(
@@ -27,7 +30,7 @@ from feature_engine.variable_manipulation import _check_input_parameter_variable
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class CyclicalFeatures(BaseNumericalTransformer):
+class CyclicalFeatures(BaseNumericalTransformer, FitFromDictMixin):
     """
     CyclicalFeatures() applies cyclical transformations to numerical
     variables, returning 2 new features per variable, according to:
@@ -106,7 +109,7 @@ class CyclicalFeatures(BaseNumericalTransformer):
                 f"Got {drop_original} instead."
             )
 
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
         self.max_values = max_values
         self.drop_original = drop_original
 
@@ -124,7 +127,7 @@ class CyclicalFeatures(BaseNumericalTransformer):
             It is not needed in this transformer. You can pass y or None.
         """
         if self.max_values is None:
-            X = super()._fit_from_varlist(X)
+            X = super().fit(X)
             self.max_values_ = X[self.variables_].max().to_dict()
         else:
             X = super()._fit_from_dict(X, self.max_values)

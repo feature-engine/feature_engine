@@ -5,31 +5,33 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._docstrings.init_parameters import (
+    _ignore_format_docstring,
+    _unseen_docstring,
+    _variables_categorical_docstring,
+)
 from feature_engine._docstrings.methods import _get_feature_names_out_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_all_variables,
+    _find_or_check_categorical_variables,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.encoding._docstrings import (
-    _errors_docstring,
-    _ignore_format_docstring,
-    _variables_docstring,
-)
-from feature_engine.encoding._helper_functions import check_parameter_errors
+from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.get_feature_names_out import _get_feature_names_out
 from feature_engine.tags import _return_tags
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_all_variables,
-    _find_or_check_categorical_variables,
-)
 
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
+    variables=_variables_categorical_docstring,
 )
 class CategoricalInitMixin:
     """Shared initialization parameters across transformers.
@@ -53,14 +55,14 @@ class CategoricalInitMixin:
                 f"Got {ignore_format} instead."
             )
 
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
         self.ignore_format = ignore_format
 
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
-    errors=_errors_docstring,
+    variables=_variables_categorical_docstring,
+    unseen=_unseen_docstring,
 )
 class CategoricalInitExpandedMixin(CategoricalInitMixin):
     """Shared initialization parameters across transformers. Contains additional
@@ -72,29 +74,33 @@ class CategoricalInitExpandedMixin(CategoricalInitMixin):
 
     {ignore_format}
 
-    {errors}
+    {unseen}
     """
 
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore",
+        unseen: str = "ignore",
     ) -> None:
-        check_parameter_errors(errors, ["raise", "ignore"])
+        check_parameter_unseen(unseen, ["raise", "ignore"])
         super().__init__(variables, ignore_format)
-        self.errors = errors
+        self.unseen = unseen
 
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
+    variables=_variables_categorical_docstring,
 )
 class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
     """Shared methods across categorical transformers.
     BaseEstimator brings methods get_params() and set_params().
     TransformerMixin brings method fit_transform()
     """
+
+    def _fit(self, X: pd.DataFrame):
+        self._check_or_select_variables(X)
+        _check_contains_na(X, self.variables_)
 
     def _check_or_select_variables(self, X: pd.DataFrame):
         """
@@ -122,9 +128,6 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
         else:
             # select all variables or check variables entered by the user
             self.variables_ = _find_all_variables(X, self.variables)
-
-        # check if dataset contains na
-        _check_contains_na(X, self.variables_)
 
     def _get_feature_names_in(self, X: pd.DataFrame):
 
@@ -166,9 +169,6 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
         # Check input data contains same number of columns as df used to fit
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        # check if dataset contains na
-        _check_contains_na(X, self.variables_)
-
         # reorder df to match train set
         X = X[self.feature_names_in_]
 
@@ -203,6 +203,9 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
 
         X = self._check_transform_input_and_state(X)
 
+        # check if dataset contains na
+        _check_contains_na(X, self.variables_)
+
         # replace categories by the learned parameters
         for feature in self.encoder_dict_.keys():
             X[feature] = X[feature].map(self.encoder_dict_[feature])
@@ -230,12 +233,12 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
             else:
                 nan_columns_str = nan_columns[0]
 
-            if self.errors == "ignore":
+            if self.unseen == "ignore":
                 warnings.warn(
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."
                 )
-            elif self.errors == "raise":
+            elif self.unseen == "raise":
                 raise ValueError(
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."
