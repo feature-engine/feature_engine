@@ -21,6 +21,13 @@ IQR limits:
 
 where IQR is the inter-quartile range: 75th quantile - 25th quantile.
 
+MAD limits:
+
+    - right tail: median + 3* MAD
+    - left tail:  median - 3* MAD
+
+where MAD is the median absoulte deviation from the median.
+
 percentiles or quantiles:
 
 - right tail: 95th percentile
