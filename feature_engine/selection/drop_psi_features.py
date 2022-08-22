@@ -136,8 +136,8 @@ class DropHighPSIFeatures(BaseSelector):
         The threshold to drop a feature. If the PSI for a feature is >= threshold, the
         feature will be dropped. The most common threshold values are 0.25 (large shift)
         and 0.10 (medium shift).
-        If 'auto', the threshold will be calculated based on the size of the base and target
-        dataset and the number of bins.
+        If 'auto', the threshold will be calculated based on the size of the base and
+        target dataset and the number of bins.
 
     bins: int, default = 10
         Number of bins or intervals. For continuous features with good value spread, 10
@@ -353,8 +353,8 @@ class DropHighPSIFeatures(BaseSelector):
                 "Please adjust the value of the cut_off or split_frac."
             )
         if self.threshold == 'auto':
-            threshold = _calculate_auto_threshold(
-                basis_df.shape[0], test_df.shape[0], self.bins
+            threshold = self._calculate_auto_threshold(
+                basis_df.shape[0], test_df.shape[0]
             )
         else:
             threshold = self.threshold
@@ -546,16 +546,15 @@ class DropHighPSIFeatures(BaseSelector):
 
         return cut_off
 
-    @staticmethod
     def _calculate_auto_threshold(
+        self,
         N: int,
         M: int,
-        B: int,
         q: float = 0.999
     ) -> float:
         # threshold = χ2(q,B−1) × (1/N + 1/M)
         # where q - quantile (or 1 - p-value) B - number of bins,
         # N - size of basis dataset, M - size of test dataset
-        # see formula (5.2)
+        # see formula (5.2) from reference
         # taking q = 0.999 to get higher threshold
-        return stats.chi2.ppf(q, B-1) * (1. / N + 1. / M)
+        return stats.chi2.ppf(q, self.bins-1) * (1. / N + 1. / M)
