@@ -123,8 +123,8 @@ class GetFeatureNamesOutMixin:
 
         check_is_fitted(self)
 
-        msg = f"""input features must be None or a list with one or more of the 
-        variables that were used by this transformer. Got {input_features} instead."""
+        msg = f"""input features must be None or a list with one or more of the
+         variables that were used by this transformer. Got {input_features} instead."""
 
         if input_features is None:
             # Return original variables
