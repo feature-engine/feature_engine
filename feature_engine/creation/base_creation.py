@@ -24,9 +24,9 @@ class BaseCreation(BaseEstimator, TransformerMixin):
     """Shared set-up, checks and methods across creation transformers."""
 
     def __init__(
-        self,
-        missing_values: str = "raise",
-        drop_original: bool = False,
+            self,
+            missing_values: str = "raise",
+            drop_original: bool = False,
     ) -> None:
 
         _check_param_missing_values(missing_values)
@@ -116,3 +116,43 @@ class BaseCreation(BaseEstimator, TransformerMixin):
         ] = "this transformer works with datasets that contain at least 2 variables. \
         Otherwise, there is nothing to combine"
         return tags_dict
+
+
+class GetFeatureNamesOutMixin:
+    def _check_input_features(self, input_features):
+
+        check_is_fitted(self)
+
+        msg = f"""input features must be None or a list with one or more of the variables
+        that were used by this transformer. Got {input_features} instead."""
+
+        if input_features is None:
+            # Return original variables
+            input_features_ = self.variables_  # type: ignore
+        else:
+            if not isinstance(input_features, list):
+                raise ValueError(msg)
+            if any([
+                f for f in input_features
+                if f not in self.variables_  # type: ignore
+            ]):
+                raise ValueError(msg)
+            # Return only features entered by user.
+            input_features_ = input_features
+
+        return input_features_
+
+    def _return_feature_names(self, input_features, feature_names, drop_features):
+        # Return names of all variables if input_features is None.
+        if input_features is None or input_features is False:
+            if self.drop_original is True:  # type: ignore
+                # Remove names of variables to drop.
+                original = [
+                    f for f in self.feature_names_in_  # type: ignore
+                    if f not in drop_features
+                ]
+                feature_names = original + feature_names
+            else:
+                feature_names = self.feature_names_in_ + feature_names  # type: ignore
+
+        return feature_names

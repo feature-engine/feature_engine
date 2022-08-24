@@ -17,7 +17,7 @@ from feature_engine._docstrings.methods import (
     _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.creation.base_creation import BaseCreation
+from feature_engine.creation.base_creation import BaseCreation, GetFeatureNamesOutMixin
 
 
 @Substitution(
@@ -29,7 +29,7 @@ from feature_engine.creation.base_creation import BaseCreation
     transform=_transform_creation_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class MathFeatures(BaseCreation):
+class MathFeatures(BaseCreation, GetFeatureNamesOutMixin):
     """
     MathFeatures(() applies functions across multiple features returning one or more
     additional features as a result. It uses `pandas.agg()` to create the features,
@@ -242,15 +242,10 @@ class MathFeatures(BaseCreation):
             else:
                 feature_names = [f"{self.func}_{'_'.join(varlist)}"]
 
-        # organise return of method
-        if input_features is None or input_features is False:
-            if self.drop_original is True:
-                # Remove names of variables to drop.
-                original = [
-                    f for f in self.feature_names_in_ if f not in self.variables
-                ]
-                feature_names = original + feature_names
-            else:
-                feature_names = self.feature_names_in_ + feature_names
+        # Return names of all variables if input_features is None, or just those
+        # derived from input features
+        feature_names = super()._return_feature_names(
+            input_features, feature_names, self.variables
+        )
 
         return feature_names
