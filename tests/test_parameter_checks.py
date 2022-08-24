@@ -1,6 +1,6 @@
 import pytest
 
-from feature_engine.parameter_checks import _check_numerical_dict
+from feature_engine._check_input_parameters.check_input_dictionary import _check_numerical_dict
 
 
 @pytest.mark.parametrize("input_dict", [{"a": 1, "b": "c"}, {1: 1, 2: "c"}])
