@@ -4,32 +4,23 @@ import numpy as np
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
-
-from feature_engine._check_input_parameters.check_init_input_params import (
-    check_param_drop_original,
-)
-from feature_engine._check_input_parameters.check_input_dictionary import (
-    check_numerical_dict,
-)
-from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine._base_transformers.base_numerical import \
+    BaseNumericalTransformer
 from feature_engine._base_transformers.mixins import FitFromDictMixin
+from feature_engine._check_input_parameters.check_init_input_params import \
+    check_param_drop_original
+from feature_engine._check_input_parameters.check_input_dictionary import \
+    check_numerical_dict
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-    _variables_attribute_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring,
+    _variables_attribute_docstring)
 from feature_engine._docstrings.init_parameters import (
-    _drop_original_docstring,
-    _variables_numerical_docstring,
-)
-from feature_engine._docstrings.methods import (
-    _fit_transform_docstring,
-    _transform_creation_docstring,
-)
+    _drop_original_docstring, _variables_numerical_docstring)
+from feature_engine._docstrings.methods import (_fit_transform_docstring,
+                                                _transform_creation_docstring)
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
-    _check_init_parameter_variables,
-)
+from feature_engine._variable_handling.init_parameter_checks import \
+    _check_init_parameter_variables
 
 
 @Substitution(
