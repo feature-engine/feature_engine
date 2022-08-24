@@ -6,20 +6,28 @@ from typing import Optional
 
 import pandas as pd
 
-from feature_engine._check_input_parameters.check_input_dictionary import \
-    check_numerical_dict
+from feature_engine._check_input_parameters.check_input_dictionary import (
+    check_numerical_dict,
+)
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring, _n_features_in_docstring,
-    _variables_attribute_docstring)
-from feature_engine._docstrings.init_parameters import \
-    _missing_values_docstring
-from feature_engine._docstrings.methods import (_fit_not_learn_docstring,
-                                                _fit_transform_docstring)
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
+from feature_engine._docstrings.init_parameters import _missing_values_docstring
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.variable_type_selection import \
-    _find_or_check_numerical_variables
-from feature_engine.dataframe_checks import (_check_contains_inf,
-                                             _check_contains_na, check_X)
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_or_check_numerical_variables,
+)
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na,
+    check_X,
+)
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.tags import _return_tags
 

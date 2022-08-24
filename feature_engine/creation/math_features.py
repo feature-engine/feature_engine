@@ -4,12 +4,18 @@ import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring, _n_features_in_docstring)
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine._docstrings.init_parameters import (
-    _drop_original_docstring, _missing_values_docstring)
-from feature_engine._docstrings.methods import (_fit_not_learn_docstring,
-                                                _fit_transform_docstring,
-                                                _transform_creation_docstring)
+    _drop_original_docstring,
+    _missing_values_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _transform_creation_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.creation.base_creation import BaseCreation
 
