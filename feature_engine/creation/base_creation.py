@@ -5,8 +5,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._check_input_parameters.check_init_input_params import (
-    check_param_drop_original,
-    check_param_missing_values,
+    _check_param_drop_original,
+    _check_param_missing_values,
 )
 from feature_engine._variable_handling.variable_type_selection import (
     _find_or_check_numerical_variables,
@@ -29,8 +29,8 @@ class BaseCreation(BaseEstimator, TransformerMixin):
         drop_original: bool = False,
     ) -> None:
 
-        check_param_missing_values(missing_values)
-        check_param_drop_original(drop_original)
+        _check_param_missing_values(missing_values)
+        _check_param_drop_original(drop_original)
 
         self.missing_values = missing_values
         self.drop_original = drop_original

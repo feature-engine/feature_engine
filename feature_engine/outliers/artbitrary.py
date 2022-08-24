@@ -7,7 +7,7 @@ from typing import Optional
 import pandas as pd
 
 from feature_engine._check_input_parameters.check_input_dictionary import (
-    check_numerical_dict,
+    _check_numerical_dict,
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -104,8 +104,8 @@ class ArbitraryOutlierCapper(BaseOutlier):
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'")
 
-        check_numerical_dict(max_capping_dict)
-        check_numerical_dict(min_capping_dict)
+        _check_numerical_dict(max_capping_dict)
+        _check_numerical_dict(min_capping_dict)
 
         self.max_capping_dict = max_capping_dict
         self.min_capping_dict = min_capping_dict

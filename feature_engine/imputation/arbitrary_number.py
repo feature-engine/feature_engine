@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from feature_engine._check_input_parameters.check_input_dictionary import (
-    check_numerical_dict,
+    _check_numerical_dict,
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -101,7 +101,7 @@ class ArbitraryNumberImputer(BaseImputer):
         else:
             raise ValueError("arbitrary_number must be numeric of type int or float")
 
-        check_numerical_dict(imputer_dict)
+        _check_numerical_dict(imputer_dict)
 
         self.variables = _check_init_parameter_variables(variables)
 

@@ -1,7 +1,7 @@
 from typing import Optional
 
 
-def check_numerical_dict(dict_: Optional[dict]) -> Optional[dict]:
+def _check_numerical_dict(dict_: Optional[dict]) -> Optional[dict]:
     """
     Checks if all values in dictionary are integers and floats. Can take None as
     argument.

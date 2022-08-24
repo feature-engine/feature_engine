@@ -7,10 +7,10 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._base_transformers.mixins import FitFromDictMixin
 from feature_engine._check_input_parameters.check_init_input_params import (
-    check_param_drop_original,
+    _check_param_drop_original,
 )
 from feature_engine._check_input_parameters.check_input_dictionary import (
-    check_numerical_dict,
+    _check_numerical_dict,
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -103,8 +103,8 @@ class CyclicalFeatures(BaseNumericalTransformer, FitFromDictMixin):
         drop_original: Optional[bool] = False,
     ) -> None:
 
-        check_numerical_dict(max_values)
-        check_param_drop_original(drop_original)
+        _check_numerical_dict(max_values)
+        _check_param_drop_original(drop_original)
 
         self.variables = _check_init_parameter_variables(variables)
         self.max_values = max_values

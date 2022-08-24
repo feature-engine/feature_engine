@@ -1,5 +1,5 @@
 
-def check_param_missing_values(missing_values):
+def _check_param_missing_values(missing_values):
     if missing_values not in ["raise", "ignore"]:
         raise ValueError(
             "missing_values takes only values 'raise' or 'ignore'. "
@@ -7,7 +7,7 @@ def check_param_missing_values(missing_values):
         )
 
 
-def check_param_drop_original(drop_original):
+def _check_param_drop_original(drop_original):
     if not isinstance(drop_original, bool):
         raise TypeError(
             "drop_original takes only boolean values True and False. "
