@@ -363,7 +363,7 @@ class DropHighPSIFeatures(BaseSelector):
             )
         else:
             threshold = self.threshold
-            
+
         # set up the discretizer
         if self.strategy == "equal_width":
             bucketer = EqualWidthDiscretiser(bins=self.bins)
