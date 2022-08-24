@@ -22,13 +22,15 @@ from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
-from feature_engine._docstrings.class_inputs import (
+from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
     _missing_values_docstring,
 )
 
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.variable_manipulation import _find_or_check_datetime_variables
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_or_check_datetime_variables,
+)
 
 
 @Substitution(
