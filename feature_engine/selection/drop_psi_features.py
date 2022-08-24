@@ -352,17 +352,18 @@ class DropHighPSIFeatures(BaseSelector):
                 f"and {test_df.shape[0]} samples in the test set. "
                 "Please adjust the value of the cut_off or split_frac."
             )
+
+        # Switch basis and test dataframes if required.
+        if self.switch:
+            test_df, basis_df = basis_df, test_df
+
         if self.threshold == 'auto':
             threshold = self._calculate_auto_threshold(
                 basis_df.shape[0], test_df.shape[0]
             )
         else:
             threshold = self.threshold
-
-        # Switch basis and test dataframes if required.
-        if self.switch:
-            test_df, basis_df = basis_df, test_df
-
+            
         # set up the discretizer
         if self.strategy == "equal_width":
             bucketer = EqualWidthDiscretiser(bins=self.bins)
