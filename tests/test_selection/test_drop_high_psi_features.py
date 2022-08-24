@@ -123,6 +123,47 @@ def test_auto_threshold_calculation():
     )
 
 
+def test_fit_attributes_auto(df):
+    """Check the value of the fit attributes.
+    The expected PSI values used in the assertion were determined using
+    the Probatus package.
+    ```
+    from probatus.stat_tests import AutoDist
+    psi_calculator = AutoDist(statistical_tests=["PSI"],
+                    binning_strategies="QuantileBucketer",
+                    bin_count=10)
+    train_df = data.iloc[0:500,:]
+    test_df = data.iloc[500:, :]
+    psi = psi_calculator.compute(train_df, test_df)
+    ```
+    """
+    transformer = DropHighPSIFeatures(threshold='auto', bins=10)
+    transformer.fit_transform(df)
+
+    expected_psi = {
+        "var_0": 0.043828484052281,
+        "var_1": 0.040929870747665395,
+        "var_2": 0.04330418495156895,
+        "var_3": 0.03773286532548153,
+        "var_4": 0.05047388515663041,
+        "var_5": 0.014717735595712466,
+        "drift_1": 8.283089355027482,
+        "drift_2": 8.283089355027482,
+    }
+    assert transformer.variables_ == [
+        "var_0",
+        "var_1",
+        "var_2",
+        "var_3",
+        "var_4",
+        "var_5",
+        "drift_1",
+        "drift_2",
+    ]
+    assert transformer.psi_values_ == pytest.approx(expected_psi, 12)
+    assert transformer.features_to_drop_ == ["drift_1", "drift_2"]
+
+
 # ================ test init parameters =================
 
 # Define two dictionaries with arguments: one with default values and
