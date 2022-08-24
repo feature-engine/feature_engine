@@ -41,3 +41,8 @@ _inverse_transform_docstring = """inverse_transform:
 _transform_encoders_docstring = """transform:
         Encode the categories to numbers.
     """.rstrip()
+
+# used in creation module
+_transform_creation_docstring = """transform:
+        Create new features.
+    """.rstrip()

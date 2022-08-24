@@ -158,7 +158,7 @@ def test_raises_error_when_init_parameters_not_permitted(df_cyclical):
         # when max_values is not a dictionary
         CyclicalFeatures(max_values=("dayi", 31))
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         # when max_values values are not integers or string
         CyclicalFeatures(max_values={"day": "31"})
 

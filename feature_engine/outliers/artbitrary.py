@@ -26,7 +26,9 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.outliers.base_outlier import BaseOutlier
-from feature_engine._check_input_parameters.check_input_dictionary import _check_numerical_dict
+from feature_engine._check_input_parameters.check_input_dictionary import (
+    check_numerical_dict,
+)
 from feature_engine.tags import _return_tags
 
 
@@ -102,8 +104,8 @@ class ArbitraryOutlierCapper(BaseOutlier):
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'")
 
-        _check_numerical_dict(max_capping_dict)
-        _check_numerical_dict(min_capping_dict)
+        check_numerical_dict(max_capping_dict)
+        check_numerical_dict(min_capping_dict)
 
         self.max_capping_dict = max_capping_dict
         self.min_capping_dict = min_capping_dict

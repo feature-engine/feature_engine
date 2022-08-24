@@ -14,6 +14,7 @@ from feature_engine._docstrings.init_parameters import (
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
+    _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.creation.base_creation import BaseCreation
@@ -25,7 +26,7 @@ from feature_engine.creation.base_creation import BaseCreation
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
-    transform=BaseCreation._transform_docstring,
+    transform=_transform_creation_docstring,
     fit_transform=_fit_transform_docstring,
 )
 class MathFeatures(BaseCreation):

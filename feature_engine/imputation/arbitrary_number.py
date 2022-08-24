@@ -23,7 +23,9 @@ from feature_engine._variable_handling.variable_type_selection import (
 )
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine._check_input_parameters.check_input_dictionary import _check_numerical_dict
+from feature_engine._check_input_parameters.check_input_dictionary import (
+    check_numerical_dict,
+)
 
 
 @Substitution(
@@ -99,7 +101,7 @@ class ArbitraryNumberImputer(BaseImputer):
         else:
             raise ValueError("arbitrary_number must be numeric of type int or float")
 
-        _check_numerical_dict(imputer_dict)
+        check_numerical_dict(imputer_dict)
 
         self.variables = _check_init_parameter_variables(variables)
 
