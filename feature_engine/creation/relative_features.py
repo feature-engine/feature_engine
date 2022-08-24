@@ -15,6 +15,7 @@ from feature_engine._docstrings.init_parameters import (
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
+    _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.variable_type_selection import (
@@ -41,7 +42,7 @@ _PERMITTED_FUNCTIONS = [
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
-    transform=BaseCreation._transform_docstring,
+    transform=_transform_creation_docstring,
     fit_transform=_fit_transform_docstring,
 )
 class RelativeFeatures(BaseCreation):

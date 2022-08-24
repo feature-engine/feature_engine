@@ -6,6 +6,12 @@ from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._base_transformers.mixins import FitFromDictMixin
+from feature_engine._check_input_parameters.check_init_input_params import (
+    _check_param_drop_original,
+)
+from feature_engine._check_input_parameters.check_input_dictionary import (
+    _check_numerical_dict,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -15,7 +21,10 @@ from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+    _transform_creation_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.init_parameter_checks import (
     _check_init_parameter_variables,
@@ -29,6 +38,7 @@ from feature_engine._variable_handling.init_parameter_checks import (
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
+    transform=_transform_creation_docstring,
 )
 class CyclicalFeatures(BaseNumericalTransformer, FitFromDictMixin):
     """
@@ -77,8 +87,7 @@ class CyclicalFeatures(BaseNumericalTransformer, FitFromDictMixin):
 
     {fit_transform}
 
-    transform:
-        Adds new features.
+    {transform}
 
     References
     ----------
@@ -94,20 +103,8 @@ class CyclicalFeatures(BaseNumericalTransformer, FitFromDictMixin):
         drop_original: Optional[bool] = False,
     ) -> None:
 
-        if max_values:
-            if not isinstance(max_values, dict) or not all(
-                isinstance(var, (int, float)) for var in list(max_values.values())
-            ):
-                raise TypeError(
-                    "max_values takes a dictionary where the values are numerical. "
-                    f"Got {max_values} instead."
-                )
-
-        if not isinstance(drop_original, bool):
-            raise TypeError(
-                "drop_original takes only boolean values True and False. "
-                f"Got {drop_original} instead."
-            )
+        _check_numerical_dict(max_values)
+        _check_param_drop_original(drop_original)
 
         self.variables = _check_init_parameter_variables(variables)
         self.max_values = max_values

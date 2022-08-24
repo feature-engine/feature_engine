@@ -6,6 +6,9 @@ from typing import Optional
 
 import pandas as pd
 
+from feature_engine._check_input_parameters.check_input_dictionary import (
+    _check_numerical_dict,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -26,7 +29,6 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.outliers.base_outlier import BaseOutlier
-from feature_engine.parameter_checks import _check_numerical_dict
 from feature_engine.tags import _return_tags
 
 
