@@ -91,8 +91,8 @@ def test_fit_attributes(df):
     assert transformer.features_to_drop_ == ["drift_1", "drift_2"]
 
 
-def test_auto_calculation():
-    """Check the results of 'auto' calculation
+def test_auto_threshold_calculation():
+    """Check the results of 'auto' threshold calculation
     """
     transformer = DropHighPSIFeatures(threshold='auto', bins=10)
     assert math.isclose(
