@@ -4,6 +4,19 @@ import pytest
 from feature_engine.selection import SelectByInformationValue
 
 
+@pytest.mark.parametrize(
+    "_threshold", ["python", (True, False), [4.3, 3]]
+)
+def test_error_when_not_permitted_threshold(_sort_values):
+    with pytest.raises(ValueError):
+        SelectByInformationValue(
+            variables=None,
+            threshold=None,
+            ignore_format=False,
+            confirm_variables=False,
+        )
+
+
 def _round_dict_of_dict_values(data, ndigits):
     """
     Rounds the values of the encoder dictionaries to a given precision

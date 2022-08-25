@@ -93,7 +93,7 @@ class SelectByInformationValue(BaseSelector, CategoricalMethodsMixin, WoE):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        threshold: Union[float, int] = None,
+        threshold: Union[float, int] = 0.2,
         ignore_format: bool = False,
         confirm_variables: bool = False,
     ) -> None:
@@ -140,16 +140,10 @@ class SelectByInformationValue(BaseSelector, CategoricalMethodsMixin, WoE):
             iv = self._calculate_iv(total_pos, total_neg, woe)
             self.information_values_[var] = iv
 
-        # select features
-        if not self.threshold:
-            threshold = pd.Series(self.performance_drifts_).mean()
-        else:
-            threshold = self.threshold
-
         self.features_to_drop_ = [
             f
             for f in self.information_values_.keys()
-            if self.information_values_[f] < threshold
+            if self.information_values_[f] < self.threshold
         ]
 
         return self
