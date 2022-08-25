@@ -193,14 +193,54 @@ def test_wrap_polynomial_features():
 def test_wrap_polynomial_features_get_features_name_out():
     X = fetch_california_housing(as_frame=True).frame
 
-    tr = PolynomialFeatures()
-    tr_wrap = SklearnTransformerWrapper(transformer=PolynomialFeatures())
     varlist = ["MedInc", "HouseAge", "AveRooms", "AveBedrms"]
+    tr_wrap = SklearnTransformerWrapper(
+        transformer=PolynomialFeatures(), variables=varlist
+    )
 
-    tr.fit(X[varlist])
-    tr_wrap.fit(X[varlist])
+    tr_wrap.fit(X)
+    expected_features_all = [
+        "Population",
+        "AveOccup",
+        "Latitude",
+        "Longitude",
+        "MedHouseVal",
+        "1",
+        "MedInc",
+        "HouseAge",
+        "AveRooms",
+        "AveBedrms",
+        "MedInc^2",
+        "MedInc HouseAge",
+        "MedInc AveRooms",
+        "MedInc AveBedrms",
+        "HouseAge^2",
+        "HouseAge AveRooms",
+        "HouseAge AveBedrms",
+        "AveRooms^2",
+        "AveRooms AveBedrms",
+        "AveBedrms^2",
+    ]
+    expected_features_varlist = [
+        "1",
+        "MedInc",
+        "HouseAge",
+        "AveRooms",
+        "AveBedrms",
+        "MedInc^2",
+        "MedInc HouseAge",
+        "MedInc AveRooms",
+        "MedInc AveBedrms",
+        "HouseAge^2",
+        "HouseAge AveRooms",
+        "HouseAge AveBedrms",
+        "AveRooms^2",
+        "AveRooms AveBedrms",
+        "AveBedrms^2",
+    ]
 
-    assert (tr.get_feature_names_out() == tr_wrap.get_feature_names_out()).all()
+    assert tr_wrap.get_feature_names_out() == expected_features_all
+    assert tr_wrap.get_feature_names_out(varlist) == expected_features_varlist
 
 
 # SimpleImputer
@@ -419,12 +459,33 @@ def test_sklearn_ohe_with_crossvalidation():
 
 
 def test_wrap_one_hot_encoder_get_features_name_out(df_vartypes):
-    ohe = OneHotEncoder()
     ohe_wrap = SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=False))
-    ohe.fit(df_vartypes)
     ohe_wrap.fit(df_vartypes)
 
-    assert (ohe.get_feature_names_out() == ohe_wrap.get_feature_names_out()).all()
+    expected_features_all = [
+        "Name_jack",
+        "Name_krish",
+        "Name_nick",
+        "Name_tom",
+        "City_Bristol",
+        "City_Liverpool",
+        "City_London",
+        "City_Manchester",
+        "Age_18",
+        "Age_19",
+        "Age_20",
+        "Age_21",
+        "Marks_0.6",
+        "Marks_0.7",
+        "Marks_0.8",
+        "Marks_0.9",
+        "dob_2020-02-24T00:00:00.000000000",
+        "dob_2020-02-24T00:01:00.000000000",
+        "dob_2020-02-24T00:02:00.000000000",
+        "dob_2020-02-24T00:03:00.000000000",
+    ]
+
+    assert ohe_wrap.get_feature_names_out() == expected_features_all
 
 
 @pytest.mark.parametrize(
