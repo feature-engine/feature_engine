@@ -98,7 +98,7 @@ class SelectByInformationValue(BaseSelector, CategoricalMethodsMixin, WoE):
         confirm_variables: bool = False,
     ) -> None:
         if not isinstance(threshold, (int, float)):
-            raise Warning(
+            raise ValueError(
                 f"threshold must be a an integer or a float. Got {threshold} "
                 "instead."
             )
