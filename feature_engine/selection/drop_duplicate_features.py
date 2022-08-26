@@ -2,13 +2,19 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine.dataframe_checks import _check_contains_na, check_X
-from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_all_variables,
+)
+from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.selection._docstring import (
     _missing_values_docstring,
     _variables_all_docstring,
@@ -16,10 +22,6 @@ from feature_engine.selection._docstring import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_all_variables,
-)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -96,7 +98,7 @@ class DropDuplicateFeatures(BaseSelector):
 
         super().__init__(confirm_variables)
 
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
         self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):

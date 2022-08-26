@@ -6,21 +6,24 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from feature_engine.base_transformers import BaseNumericalTransformer
+from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine._base_transformers.mixins import FitFromDictMixin
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
+from feature_engine._docstrings.init_parameters import _variables_numerical_docstring
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
     _inverse_transform_docstring,
 )
-from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
-from feature_engine._docstrings.class_inputs import _variables_numerical_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
 from feature_engine.tags import _return_tags
-from feature_engine.variable_manipulation import _check_input_parameter_variables
 
 
 @Substitution(
@@ -83,7 +86,7 @@ class LogTransformer(BaseNumericalTransformer):
         if base not in ["e", "10"]:
             raise ValueError("base can take only '10' or 'e' as values")
 
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
         self.base = base
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -105,7 +108,7 @@ class LogTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super()._fit_from_varlist(X)
+        X = super().fit(X)
 
         # check contains zero or negative values
         if (X[self.variables_] <= 0).any().any():
@@ -198,7 +201,7 @@ class LogTransformer(BaseNumericalTransformer):
     fit_transform=_fit_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class LogCpTransformer(BaseNumericalTransformer):
+class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
     """
     The LogCpTransformer() applies the transformation log(x + C), where C is a positive
     constant, to the input variable. It applies the natural logarithm or the base 10
@@ -273,7 +276,7 @@ class LogCpTransformer(BaseNumericalTransformer):
         if not isinstance(C, (int, float, dict)) and not C == "auto":
             raise ValueError("C can take only 'auto', integers or floats")
 
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
         self.base = base
         self.C = C
 
@@ -300,7 +303,7 @@ class LogCpTransformer(BaseNumericalTransformer):
         if isinstance(self.C, dict):
             X = super()._fit_from_dict(X, self.C)
         else:
-            X = super()._fit_from_varlist(X)
+            X = super().fit(X)
 
         self.C_ = self.C
 

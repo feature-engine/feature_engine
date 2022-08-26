@@ -2,12 +2,17 @@
 classes. Provides the base functionality within the fit() and transform() methods
 shared by most transformers, like checking that input is a df, the size, NA, etc.
 """
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._docstrings.methods import _get_feature_names_out_docstring
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_or_check_numerical_variables,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -15,10 +20,7 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.get_feature_names_out import _get_feature_names_out
-from feature_engine._docstrings.methods import _get_feature_names_out_docstring
-from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
-from feature_engine.variable_manipulation import _find_or_check_numerical_variables
 
 
 class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
@@ -26,52 +28,7 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
     variable transformers, discretisers, math combination.
     """
 
-    def _fit_from_dict(self, X: pd.DataFrame, user_dict_: Dict) -> pd.DataFrame:
-        """
-        Checks that input is a dataframe, checks that variables in the dictionary
-        entered by the user are of type numerical.
-
-        Parameters
-        ----------
-        X : Pandas DataFrame
-
-        user_dict_ : Dictionary. Default = None
-            Any dictionary allowed by the transformer and entered by user.
-
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame or a numpy array
-            If any of the variables in the dictionary are not numerical
-        ValueError
-            If there are no numerical variables in the df or the df is empty
-            If the variable(s) contain null values
-
-        Returns
-        -------
-        X : Pandas DataFrame
-            The same dataframe entered as parameter
-        """
-        # check input dataframe
-        X = check_X(X)
-
-        # find or check for numerical variables
-        variables = [x for x in user_dict_.keys()]
-        self.variables_ = _find_or_check_numerical_variables(X, variables)
-
-        # check if dataset contains na or inf
-        _check_contains_na(X, self.variables_)
-        _check_contains_inf(X, self.variables_)
-
-        # save input features
-        self.feature_names_in_ = X.columns.tolist()
-
-        # save train set shape
-        self.n_features_in_ = X.shape[1]
-
-        return X
-
-    def _fit_from_varlist(self, X: pd.DataFrame) -> pd.DataFrame:
+    def fit(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Checks that input is a dataframe, finds numerical variables, or alternatively
         checks that variables entered by the user are of type numerical.

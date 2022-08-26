@@ -6,6 +6,12 @@ from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_categorical_and_numerical_variables,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -19,10 +25,6 @@ from feature_engine.discretisation import (
 )
 from feature_engine.encoding import MeanEncoder
 from feature_engine.tags import _return_tags
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_categorical_and_numerical_variables,
-)
 
 
 class BaseTargetMeanEstimator(BaseEstimator):
@@ -96,7 +98,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
                 f"Got {strategy} instead."
             )
 
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
         self.bins = bins
         self.strategy = strategy
 
@@ -177,7 +179,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         Create pipeline for a dataframe solely comprised of numerical variables
         using a discretiser and an encoder.
         """
-        encoder = MeanEncoder(variables=self.variables_numerical_, errors="raise")
+        encoder = MeanEncoder(variables=self.variables_numerical_, unseen="raise")
 
         pipeline = Pipeline(
             [
@@ -193,14 +195,14 @@ class BaseTargetMeanEstimator(BaseEstimator):
         Instantiate the target mean encoder. Used when all variables are categorical.
         """
 
-        pipeline = MeanEncoder(variables=self.variables_categorical_, errors="raise")
+        pipeline = MeanEncoder(variables=self.variables_categorical_, unseen="raise")
 
         return pipeline
 
     def _make_combined_pipeline(self):
 
-        encoder_num = MeanEncoder(variables=self.variables_numerical_, errors="raise")
-        encoder_cat = MeanEncoder(variables=self.variables_categorical_, errors="raise")
+        encoder_num = MeanEncoder(variables=self.variables_numerical_, unseen="raise")
+        encoder_cat = MeanEncoder(variables=self.variables_categorical_, unseen="raise")
 
         pipeline = Pipeline(
             [

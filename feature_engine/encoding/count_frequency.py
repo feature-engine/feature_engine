@@ -11,39 +11,39 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters import (
+    _ignore_format_docstring,
+    _unseen_docstring,
+    _variables_categorical_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _inverse_transform_docstring,
+    _transform_encoders_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
-from feature_engine.encoding._docstrings import (
-    _errors_docstring,
-    _ignore_format_docstring,
-    _transform_docstring,
-    _variables_docstring,
-)
-from feature_engine.encoding._helper_functions import check_parameter_errors
+from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
 )
 
-_errors_docstring = (
-    _errors_docstring
+_unseen_docstring = (
+    _unseen_docstring
     + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
 )
 
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
-    errors=_errors_docstring,
+    variables=_variables_categorical_docstring,
+    unseen=_unseen_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
-    transform=_transform_docstring,
+    transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
 class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
@@ -83,7 +83,7 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     {ignore_format}
 
-    {errors}
+    {unseen}
 
     Attributes
     ----------
@@ -111,7 +111,7 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     -----
     NAN will be introduced when encoding categories that were not present in the
     training set. If this happens, try grouping infrequent categories using the
-    RareLabelEncoder(), or set `errors='encode'`.
+    RareLabelEncoder(), or set `unseen='encode'`.
 
     There is a similar implementation in the open-source package
     `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
@@ -127,7 +127,7 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         encoding_method: str = "count",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore",
+        unseen: str = "ignore",
     ) -> None:
 
         if encoding_method not in ["count", "frequency"]:
@@ -136,10 +136,10 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 f"Got {encoding_method} instead."
             )
 
-        check_parameter_errors(errors, ["ignore", "raise", "encode"])
+        check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
-        self.errors = errors
+        self.unseen = unseen
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -159,7 +159,7 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
-        dct_init = defaultdict(lambda: 0) if self.errors == "encode" else {}
+        dct_init = defaultdict(lambda: 0) if self.unseen == "encode" else {}
 
         # learn encoding maps
         for var in self.variables_:

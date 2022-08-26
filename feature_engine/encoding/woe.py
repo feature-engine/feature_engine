@@ -11,18 +11,18 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters import (
+    _ignore_format_docstring,
+    _unseen_docstring,
+    _variables_categorical_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _inverse_transform_docstring,
+    _transform_encoders_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
-from feature_engine.encoding._docstrings import (
-    _errors_docstring,
-    _ignore_format_docstring,
-    _transform_docstring,
-    _variables_docstring,
-)
 from feature_engine.encoding.base_encoder import (
     CategoricalInitExpandedMixin,
     CategoricalMethodsMixin,
@@ -32,13 +32,13 @@ from feature_engine.tags import _return_tags
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
-    errors=_errors_docstring,
+    variables=_variables_categorical_docstring,
+    unseen=_unseen_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
-    transform=_transform_docstring,
+    transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
 class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
@@ -76,7 +76,7 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
     {ignore_format}
 
-    {errors}
+    {unseen}
 
     Attributes
     ----------
@@ -123,10 +123,10 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore",
+        unseen: str = "ignore",
     ) -> None:
 
-        super().__init__(variables, ignore_format, errors)
+        super().__init__(variables, ignore_format, unseen)
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -151,40 +151,33 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
                 "used has more than 2 unique values."
             )
 
+        # if target does not have values 0 and 1, we need to remap, to be able to
+        # compute the averages.
+        if y.min() != 0 or y.max() != 1:
+            y = pd.Series(np.where(y == y.min(), 0, 1))
+
         self._fit(X)
         self._get_feature_names_in(X)
 
-        temp = pd.concat([X, y], axis=1)
-        temp.columns = list(X.columns) + ["target"]
-
-        # if target does not have values 0 and 1, we need to remap, to be able to
-        # compute the averages.
-        if any(x for x in y.unique() if x not in [0, 1]):
-            temp["target"] = np.where(temp["target"] == y.unique()[0], 0, 1)
-
         self.encoder_dict_ = {}
 
-        total_pos = temp["target"].sum()
-        total_neg = len(temp) - total_pos
-        temp["non_target"] = np.where(temp["target"] == 1, 0, 1)
+        total_pos = y.sum()
+        inverse_y = y.ne(1).copy()
+        total_neg = inverse_y.sum()
 
         for var in self.variables_:
-            pos = temp.groupby([var])["target"].sum() / total_pos
-            neg = temp.groupby([var])["non_target"].sum() / total_neg
+            pos = y.groupby(X[var]).sum() / total_pos
+            neg = inverse_y.groupby(X[var]).sum() / total_neg
 
-            t = pd.concat([pos, neg], axis=1)
-            t["woe"] = np.log(t["target"] / t["non_target"])
-
-            if (
-                not t.loc[t["target"] == 0, :].empty
-                or not t.loc[t["non_target"] == 0, :].empty
-            ):
+            if not (pos[:] == 0).sum() == 0 or not (neg[:] == 0).sum() == 0:
                 raise ValueError(
                     "The proportion of one of the classes for a category in "
                     "variable {} is zero, and log of zero is not defined".format(var)
                 )
 
-            self.encoder_dict_[var] = t["woe"].to_dict()
+            woe = np.log(pos / neg)
+
+            self.encoder_dict_[var] = woe.to_dict()
 
         self._check_encoding_dictionary()
 

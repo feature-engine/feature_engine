@@ -11,18 +11,18 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters import (
+    _ignore_format_docstring,
+    _unseen_docstring,
+    _variables_categorical_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _inverse_transform_docstring,
+    _transform_encoders_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
-from feature_engine.encoding._docstrings import (
-    _errors_docstring,
-    _ignore_format_docstring,
-    _transform_docstring,
-    _variables_docstring,
-)
 from feature_engine.encoding.base_encoder import (
     CategoricalInitExpandedMixin,
     CategoricalMethodsMixin,
@@ -32,13 +32,13 @@ from feature_engine.tags import _return_tags
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
-    variables=_variables_docstring,
-    errors=_errors_docstring,
+    variables=_variables_categorical_docstring,
+    unseen=_unseen_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
-    transform=_transform_docstring,
+    transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
 class PRatioEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
@@ -93,7 +93,7 @@ class PRatioEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
     {ignore_format}
 
-    {errors}
+    {unseen}
 
     Attributes
     ----------
@@ -133,7 +133,7 @@ class PRatioEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         encoding_method: str = "ratio",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        errors: str = "ignore",
+        unseen: str = "ignore",
     ) -> None:
 
         if encoding_method not in ["ratio", "log_ratio"]:
@@ -141,7 +141,7 @@ class PRatioEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
                 "encoding_method takes only values 'ratio' and 'log_ratio'"
             )
 
-        super().__init__(variables, ignore_format, errors)
+        super().__init__(variables, ignore_format, unseen)
 
         self.encoding_method = encoding_method
 

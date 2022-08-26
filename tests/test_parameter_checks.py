@@ -1,24 +1,17 @@
 import pytest
 
-from feature_engine.parameter_checks import _define_numerical_dict
+from feature_engine._check_input_parameters.check_input_dictionary import (
+    _check_numerical_dict,
+)
 
 
-def test_numerical_dict():
-    input_dict = {"a": 1, "b": 2}
-    expected_output = {"a": 1, "b": 2}
-
-    assert _define_numerical_dict(input_dict) == expected_output
-
-
-def test_not_numerical_dict():
-    input_dict = {"a": 1, "b": "c"}
-
+@pytest.mark.parametrize("input_dict", [{"a": 1, "b": "c"}, {1: 1, 2: "c"}])
+def test_not_numerical_dict(input_dict):
     with pytest.raises(ValueError):
-        assert _define_numerical_dict(input_dict)
+        _check_numerical_dict(input_dict)
 
 
-def test_input_type():
-    input_dict = [1, 2, 3]
-
+@pytest.mark.parametrize("input_dict", [[1, 2, 3], (1, 2, 3), "hola", 5])
+def test_input_type(input_dict):
     with pytest.raises(TypeError):
-        assert _define_numerical_dict(input_dict)
+        _check_numerical_dict(input_dict)

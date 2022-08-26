@@ -3,8 +3,21 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
+import scipy.stats as stats
 from pandas.api.types import is_numeric_dtype
 
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine._variable_handling.init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_or_check_numerical_variables,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -14,21 +27,11 @@ from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
 )
-from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
-from feature_engine._docstrings.substitute import Substitution
 from feature_engine.selection._docstring import (
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.variable_manipulation import (
-    _check_input_parameter_variables,
-    _find_or_check_numerical_variables,
-)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -85,10 +88,6 @@ class DropHighPSIFeatures(BaseSelector):
 
     More details in the :ref:`User Guide <psi_selection>`.
 
-    References
-    ----------
-    https://scholarworks.wmich.edu/cgi/viewcontent.cgi?article=4249&context=dissertations
-
     Parameters
     ----------
     split_col: string or int, default=None.
@@ -135,10 +134,12 @@ class DropHighPSIFeatures(BaseSelector):
         test) will be switched. This is important because the PSI is not symmetric,
         i.e., PSI(a, b) != PSI(b, a)).
 
-    threshold: float, default = 0.25.
+    threshold: float, str, default = 0.25.
         The threshold to drop a feature. If the PSI for a feature is >= threshold, the
         feature will be dropped. The most common threshold values are 0.25 (large shift)
         and 0.10 (medium shift).
+        If 'auto', the threshold will be calculated based on the size of the base and
+        target dataset and the number of bins.
 
     bins: int, default = 10
         Number of bins or intervals. For continuous features with good value spread, 10
@@ -199,6 +200,12 @@ class DropHighPSIFeatures(BaseSelector):
     --------
     feature_engine.discretisation.EqualFrequencyDiscretiser
     feature_engine.discretisation.EqualWidthDiscretiser
+
+    References
+    ----------
+    .. [1] Yurdakul B. "Statistical properties of population stability index".
+       Western Michigan University, 2018.
+       https://scholarworks.wmich.edu/dissertations/3208/
     """
 
     def __init__(
@@ -208,7 +215,7 @@ class DropHighPSIFeatures(BaseSelector):
         split_distinct: bool = False,
         cut_off: Union[None, int, float, datetime.date, List] = None,
         switch: bool = False,
-        threshold: float = 0.25,
+        threshold: Union[float, int, str] = 0.25,
         bins: int = 10,
         strategy: str = "equal_frequency",
         min_pct_empty_bins: float = 0.0001,
@@ -247,8 +254,13 @@ class DropHighPSIFeatures(BaseSelector):
         if not isinstance(switch, bool):
             raise ValueError(f"switch must be a boolean. Got {switch} instead.")
 
-        if not isinstance(threshold, (float, int)) or threshold < 0:
-            raise ValueError(f"threshold must be >= 0. Got {threshold} instead.")
+        if (
+            (isinstance(threshold, str) and (threshold != 'auto')) or
+            (isinstance(threshold, (float, int)) and threshold < 0)
+        ):
+            raise ValueError(
+                f"threshold must be greater than 0 or 'auto'. Got {threshold} instead."
+            )
 
         if not isinstance(bins, int) or bins <= 1:
             raise ValueError(f"bins must be an integer >= 1. Got {bins} instead.")
@@ -282,7 +294,7 @@ class DropHighPSIFeatures(BaseSelector):
         super().__init__(confirm_variables)
 
         # Check the variables before assignment.
-        self.variables = _check_input_parameter_variables(variables)
+        self.variables = _check_init_parameter_variables(variables)
 
         # Set all remaining arguments as attributes.
         self.split_col = split_col
@@ -347,6 +359,13 @@ class DropHighPSIFeatures(BaseSelector):
         if self.switch:
             test_df, basis_df = basis_df, test_df
 
+        if self.threshold == 'auto':
+            threshold = self._calculate_auto_threshold(
+                basis_df.shape[0], test_df.shape[0]
+            )
+        else:
+            threshold = self.threshold
+
         # set up the discretizer
         if self.strategy == "equal_width":
             bucketer = EqualWidthDiscretiser(bins=self.bins)
@@ -373,7 +392,7 @@ class DropHighPSIFeatures(BaseSelector):
                 (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
             )
             # Assess if feature should be dropped
-            if self.psi_values_[feature] > self.threshold:
+            if self.psi_values_[feature] > threshold:
                 self.features_to_drop_.append(feature)
 
         # save input features
@@ -529,3 +548,11 @@ class DropHighPSIFeatures(BaseSelector):
             cut_off = (distance.idxmin()).values[0]
 
         return cut_off
+
+    def _calculate_auto_threshold(self, N, M, q=0.999):
+        # threshold = χ2(q,B−1) × (1/N + 1/M)
+        # where q - quantile (or 1 - p-value) B - number of bins,
+        # N - size of basis dataset, M - size of test dataset
+        # see formula (5.2) from reference
+        # taking q = 0.999 to get higher threshold
+        return stats.chi2.ppf(q, self.bins-1) * (1. / N + 1. / M)

@@ -3,12 +3,12 @@ The module transformation includes classes to transform variables using mathemat
 functions.
 """
 
+from .arcsin import ArcsinTransformer
 from .boxcox import BoxCoxTransformer
 from .log import LogCpTransformer, LogTransformer
 from .power import PowerTransformer
 from .reciprocal import ReciprocalTransformer
 from .yeojohnson import YeoJohnsonTransformer
-from .arcsin import ArcsinTransformer
 
 __all__ = [
     "BoxCoxTransformer",

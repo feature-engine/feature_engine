@@ -1,19 +1,18 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import numpy as np
 import pandas as pd
 
-from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.fit_attributes import (
-    _variables_attribute_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
-from feature_engine._docstrings.class_inputs import (
-    _variables_numerical_docstring,
+from feature_engine._docstrings.init_parameters import (
     _missing_values_docstring,
+    _variables_numerical_docstring,
 )
+from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.outliers.base_outlier import WinsorizerBase
 
@@ -103,13 +102,11 @@ class OutlierTrimmer(WinsorizerBase):
         X = self._check_transform_input_and_state(X)
 
         for feature in self.right_tail_caps_.keys():
-            outliers = np.where(
-                X[feature] > self.right_tail_caps_[feature], True, False
-            )
-            X = X.loc[~outliers]
+            inliers = X[feature].le(self.right_tail_caps_[feature])
+            X = X.loc[inliers]
 
         for feature in self.left_tail_caps_.keys():
-            outliers = np.where(X[feature] < self.left_tail_caps_[feature], True, False)
-            X = X.loc[~outliers]
+            inliers = X[feature].ge(self.left_tail_caps_[feature])
+            X = X.loc[inliers]
 
         return X

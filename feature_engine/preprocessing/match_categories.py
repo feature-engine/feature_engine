@@ -2,18 +2,19 @@ import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
-from feature_engine._docstrings.class_inputs import _missing_values_docstring
+
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters import (
+    _ignore_format_docstring,
+    _missing_values_docstring,
+    _variables_categorical_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X
-from feature_engine.encoding._docstrings import (
-    _ignore_format_docstring,
-    _variables_docstring,
-)
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
@@ -23,7 +24,7 @@ from feature_engine.encoding.base_encoder import (
 @Substitution(
     ignore_format=_ignore_format_docstring,
     missing_values=_missing_values_docstring,
-    variables=_variables_docstring,
+    variables=_variables_categorical_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,

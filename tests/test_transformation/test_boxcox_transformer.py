@@ -36,16 +36,16 @@ def test_automatically_finds_variables(df_vartypes):
 
 def test_fit_raises_error_if_df_contains_na(df_na):
     # test case 2: when dataset contains na, fit method
+    transformer = BoxCoxTransformer()
     with pytest.raises(ValueError):
-        transformer = BoxCoxTransformer()
         transformer.fit(df_na)
 
 
 def test_transform_raises_error_if_df_contains_na(df_vartypes, df_na):
     # test case 3: when dataset contains na, transform method
+    transformer = BoxCoxTransformer()
+    transformer.fit(df_vartypes)
     with pytest.raises(ValueError):
-        transformer = BoxCoxTransformer()
-        transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
 
@@ -55,18 +55,18 @@ def test_error_if_df_contains_negative_values(df_vartypes):
     df_neg.loc[1, "Age"] = -1
 
     # test case 4: when variable contains negative value, fit
+    transformer = BoxCoxTransformer()
     with pytest.raises(ValueError):
-        transformer = BoxCoxTransformer()
         transformer.fit(df_neg)
 
     # test case 5: when variable contains negative value, transform
+    transformer = BoxCoxTransformer()
+    transformer.fit(df_vartypes)
     with pytest.raises(ValueError):
-        transformer = BoxCoxTransformer()
-        transformer.fit(df_vartypes)
         transformer.transform(df_neg)
 
 
 def test_non_fitted_error(df_vartypes):
+    transformer = BoxCoxTransformer()
     with pytest.raises(NotFittedError):
-        transformer = BoxCoxTransformer()
         transformer.transform(df_vartypes)
