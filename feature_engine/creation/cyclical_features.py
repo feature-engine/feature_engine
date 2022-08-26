@@ -148,14 +148,11 @@ class CyclicalFeatures(BaseNumericalTransformer, FitFromDictMixin):
         """
         X = super().transform(X)
 
-        new_feature_cols_sin = [var+'_sin' for var in self.variables_]
-        new_feature_cols_cos = [var+'_sin' for var in self.variables_]
-        X.loc[:, new_feature_cols_sin] = np.sin(
-            2. * X[self.variables_] * np.pi / np.asarray(self.max_values_.values())
-        ).values
-        X.loc[:, new_feature_cols_cos] = np.cos(
-            2. * X[self.variables_] * np.pi / np.asarray(self.max_values_.values())
-        ).values
+        for func in (np.sin, np.cos):
+            new_feature_cols = [f'{var}_{func.__name__}' for var in self.variables_]
+            X.loc[:, new_feature_cols] = func(
+                2. * X[self.variables_] * np.pi / np.asarray(self.max_values_.values())
+            ).values
 
         if self.drop_original:
             X.drop(columns=self.variables_, inplace=True)
