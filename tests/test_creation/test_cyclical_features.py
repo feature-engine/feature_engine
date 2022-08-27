@@ -100,15 +100,6 @@ def test_automatically_find_variables(df_cyclical):
         0.97493,
         -0.43388,
     ]
-    transf_df["day_cos"] = [
-        0.62349,
-        1.0,
-        -0.222521,
-        -0.900969,
-        0.62349,
-        -0.222521,
-        -0.900969,
-    ]
     transf_df["months_sin"] = [
         1.0,
         -0.5,
@@ -117,6 +108,15 @@ def test_automatically_find_variables(df_cyclical):
         0.86603,
         0.0,
         0.0,
+    ]
+    transf_df["day_cos"] = [
+        0.62349,
+        1.0,
+        -0.222521,
+        -0.900969,
+        0.62349,
+        -0.222521,
+        -0.900969,
     ]
     transf_df["months_cos"] = [
         0.0,
@@ -205,8 +205,8 @@ def test_get_feature_names_out(df_cyclical):
     ]
     assert transformer.get_feature_names_out(input_features=["day", "months"]) == [
         "day_sin",
-        "day_cos",
         "months_sin",
+        "day_cos",
         "months_cos",
     ]
 
@@ -220,8 +220,8 @@ def test_get_feature_names_out(df_cyclical):
     ]
     assert transformer.get_feature_names_out(input_features=["day", "months"]) == [
         "day_sin",
-        "day_cos",
         "months_sin",
+        "day_cos",
         "months_cos",
     ]
 
