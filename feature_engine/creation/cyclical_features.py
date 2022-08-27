@@ -196,7 +196,9 @@ class CyclicalFeatures(BaseNumericalTransformer, FitFromDictMixin):
 
         # create the names for the periodic features
         feature_names = [
-            str(var) + suffix for var in input_features_ for suffix in ["_sin", "_cos"]
+            f'{var}_sin' for var in input_features_
+        ] + [
+            f'{var}_cos' for var in input_features_
         ]
 
         # Return names of all variables if input_features is None.
