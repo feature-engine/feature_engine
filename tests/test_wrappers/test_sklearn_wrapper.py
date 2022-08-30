@@ -29,7 +29,6 @@ from sklearn.preprocessing import (
     StandardScaler,
 )
 
-from feature_engine.selection import DropFeatures
 from feature_engine.wrappers import SklearnTransformerWrapper
 
 _transformers = [
@@ -176,8 +175,10 @@ def test_wrap_polynomial_features():
     )
     Xw = tr_wrap.fit_transform(X)
 
-    pd.testing.assert_frame_equal(Xw, pd.concat([X, Xt], axis=1))
-    assert Xw.shape[1] == len(X.columns) + len(tr.get_feature_names_out(varlist))
+    pd.testing.assert_frame_equal(Xw, pd.concat([X.drop(columns=varlist), Xt], axis=1))
+    assert Xw.shape[1] == len(X.drop(columns=varlist).columns) + len(
+        tr.get_feature_names_out(varlist)
+    )
 
     # when variable list is None
     tr_wrap.set_params(variables=None)
@@ -185,8 +186,61 @@ def test_wrap_polynomial_features():
     Xt = pd.DataFrame(tr.fit_transform(X), columns=tr.get_feature_names_out())
     Xw = tr_wrap.fit_transform(X)
 
-    pd.testing.assert_frame_equal(Xw, pd.concat([X, Xt], axis=1))
-    assert Xw.shape[1] == len(X.columns) + len(tr.get_feature_names_out(X.columns))
+    pd.testing.assert_frame_equal(Xw, Xt)
+    assert Xw.shape[1] == len(tr.get_feature_names_out(X.columns))
+
+
+def test_wrap_polynomial_features_get_features_name_out():
+    X = fetch_california_housing(as_frame=True).frame
+
+    varlist = ["MedInc", "HouseAge", "AveRooms", "AveBedrms"]
+    tr_wrap = SklearnTransformerWrapper(
+        transformer=PolynomialFeatures(), variables=varlist
+    )
+
+    tr_wrap.fit(X)
+    expected_features_all = [
+        "Population",
+        "AveOccup",
+        "Latitude",
+        "Longitude",
+        "MedHouseVal",
+        "1",
+        "MedInc",
+        "HouseAge",
+        "AveRooms",
+        "AveBedrms",
+        "MedInc^2",
+        "MedInc HouseAge",
+        "MedInc AveRooms",
+        "MedInc AveBedrms",
+        "HouseAge^2",
+        "HouseAge AveRooms",
+        "HouseAge AveBedrms",
+        "AveRooms^2",
+        "AveRooms AveBedrms",
+        "AveBedrms^2",
+    ]
+    expected_features_varlist = [
+        "1",
+        "MedInc",
+        "HouseAge",
+        "AveRooms",
+        "AveBedrms",
+        "MedInc^2",
+        "MedInc HouseAge",
+        "MedInc AveRooms",
+        "MedInc AveBedrms",
+        "HouseAge^2",
+        "HouseAge AveRooms",
+        "HouseAge AveBedrms",
+        "AveRooms^2",
+        "AveRooms AveBedrms",
+        "AveBedrms^2",
+    ]
+
+    assert tr_wrap.get_feature_names_out() == expected_features_all
+    assert tr_wrap.get_feature_names_out(varlist) == expected_features_varlist
 
 
 # SimpleImputer
@@ -271,7 +325,6 @@ def test_sklearn_ohe_object_one_feature(df_vartypes):
 
     ref = pd.DataFrame(
         {
-            "Name": ["tom", "nick", "krish", "jack"],
             "Name_jack": [0, 0, 0, 1],
             "Name_krish": [0, 0, 1, 0],
             "Name_nick": [0, 1, 0, 0],
@@ -294,8 +347,6 @@ def test_sklearn_ohe_object_many_features(df_vartypes):
 
     ref = pd.DataFrame(
         {
-            "Name": ["tom", "nick", "krish", "jack"],
-            "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Name_jack": [0, 0, 0, 1],
             "Name_krish": [0, 0, 1, 0],
             "Name_nick": [0, 1, 0, 0],
@@ -322,7 +373,6 @@ def test_sklearn_ohe_numeric(df_vartypes):
 
     ref = pd.DataFrame(
         {
-            "Age": [20, 21, 19, 18],
             "Age_18": [0, 0, 0, 1],
             "Age_19": [0, 0, 1, 0],
             "Age_20": [1, 0, 0, 0],
@@ -342,11 +392,6 @@ def test_sklearn_ohe_all_features(df_vartypes):
 
     ref = pd.DataFrame(
         {
-            "Name": ["tom", "nick", "krish", "jack"],
-            "City": ["London", "Manchester", "Liverpool", "Bristol"],
-            "Age": [20, 21, 19, 18],
-            "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
             "Name_jack": [0, 0, 0, 1],
             "Name_krish": [0, 0, 1, 0],
             "Name_nick": [0, 1, 0, 0],
@@ -402,7 +447,6 @@ def test_sklearn_ohe_with_crossvalidation():
                     variables=["AveBedrms_cat"],
                 ),
             ),
-            ("cleanup", DropFeatures(["AveBedrms_cat"])),
             ("model", Lasso()),
         ]
     )
@@ -412,6 +456,36 @@ def test_sklearn_ohe_with_crossvalidation():
         pipeline, X, y, scoring="neg_mean_squared_error", cv=3
     )
     assert not any([np.isnan(i) for i in results])
+
+
+def test_wrap_one_hot_encoder_get_features_name_out(df_vartypes):
+    ohe_wrap = SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=False))
+    ohe_wrap.fit(df_vartypes)
+
+    expected_features_all = [
+        "Name_jack",
+        "Name_krish",
+        "Name_nick",
+        "Name_tom",
+        "City_Bristol",
+        "City_Liverpool",
+        "City_London",
+        "City_Manchester",
+        "Age_18",
+        "Age_19",
+        "Age_20",
+        "Age_21",
+        "Marks_0.6",
+        "Marks_0.7",
+        "Marks_0.8",
+        "Marks_0.9",
+        "dob_2020-02-24T00:00:00.000000000",
+        "dob_2020-02-24T00:01:00.000000000",
+        "dob_2020-02-24T00:02:00.000000000",
+        "dob_2020-02-24T00:03:00.000000000",
+    ]
+
+    assert ohe_wrap.get_feature_names_out() == expected_features_all
 
 
 @pytest.mark.parametrize(
