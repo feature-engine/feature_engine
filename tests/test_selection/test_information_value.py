@@ -44,7 +44,7 @@ def test_error_when_no_categorical_values(df_test):
 
 
 def test_transformer_with_default_params(df_enc):
-    X = df_enc.drop("target", axis=1)
+    X = df_enc.drop("target", axis=1).copy()
     y = df_enc["target"].copy()
 
     transformer = SelectByInformationValue(
@@ -54,31 +54,22 @@ def test_transformer_with_default_params(df_enc):
         confirm_variables=False
     )
     X_tr = transformer.fit_transform(X, y)
+    expected_results_df = X[["var_E"]].copy()
 
-    expected_results = {
-        'var_E': {
-            0: 'R',
-            1: 'R',
-            2: 'R',
-            3: 'R',
-            4: 'R',
-            5: 'R',
-            6: 'R',
-            7: 'S',
-            8: 'S',
-            9: 'S',
-            10: 'S',
-            11: 'T',
-            12: 'T',
-            13: 'T',
-            14: 'T',
-            15: 'T',
-            16: 'T',
-            17: 'T',
-            18: 'T',
-            19: 'T'
-        }
-    }
-    expected_results_df = pd.DataFrame(expected_results)
+    assert X_tr.equals(expected_results_df)
+
+
+def test_transformer_with_selected_variables(df_enc):
+    X = df_enc.drop("target", axis=1).copy()
+    y = df_enc["target"].copy()
+
+    transformer = SelectByInformationValue(
+        variables=["var_A", "var_C", "var_E"],
+        threshold=-0.5,
+        ignore_format=False,
+        confirm_variables=False
+    )
+    X_tr = transformer.fit_transform(X, y)
+    expected_results_df = X[["var_B", "var_D", "var_E"]].copy()
 
     assert X_tr.equals(expected_results_df)
