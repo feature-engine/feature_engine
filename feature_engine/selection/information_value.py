@@ -48,9 +48,11 @@ class SelectByInformationValue(BaseSelector, CategoricalMethodsMixin, WoE):
     transformer will find and score all categorical variables (type 'object'
     or 'categorical').
 
-    IV will allow you to assess each variable's independent contribution to
-    the target variable and rank the variables in terms of their univariate
-    predictive strength.
+    IV will allow you to assess each passed variable's independent contribution to
+    the target variable. The transfomer returns the passed variables that scored
+    higher than the threshold and the variables that were not passed as an init param.
+    In the case of passing None for the 'variables' parameter, the transformer
+    only returns the variables that scored higher than the threshold.
 
     Parameters
     ----------
