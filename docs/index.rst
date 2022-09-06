@@ -178,6 +178,7 @@ Feature Selection:
 - :doc:`api_doc/selection/SelectByTargetMeanPerformance`: selects features based on target mean encoding performance
 - :doc:`api_doc/selection/RecursiveFeatureElimination`: selects features recursively, by evaluating model performance
 - :doc:`api_doc/selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
+- :doc:`api_doc/selection/SelectByInformationValue`: selects features that have an information value greater than a set threshold
 
 Datetime:
 ---------
