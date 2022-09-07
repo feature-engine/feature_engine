@@ -66,6 +66,7 @@ Selection based on feature characteristics
 :class:`DropCorrelatedFeatures()`               ×	                      √	            Drops features that are correlated
 :class:`SmartCorrelatedSelection()`	            ×	                      √	            From a correlated feature group drops the less useful features
 :class:`DropHighPSIFeatures()`	                ×	                      √	            Drops features with high Population Stability Index
+:class:`SelectByInformationValue()`             √                         √             Selects features that have an information value greater than a passthreshold
 ============================================ ======================= ============= ====================================================================================
 
 Selection based on model performance
@@ -114,6 +115,7 @@ Click below to find more details on how to use each one of the transformers.
    DropCorrelatedFeatures
    SmartCorrelatedSelection
    DropHighPSIFeatures
+   SelectByInformationValue
    SelectByShuffling
    SelectBySingleFeaturePerformance
    SelectByTargetMeanPerformance
