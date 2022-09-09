@@ -88,18 +88,18 @@ Let's now load and prepare the credit approval data:
 .. code:: python
 
     # load data
-    data = pd.read_csv("data/crx.data", header=None)
+    data = pd.read_csv('data/crx.data', header=None)
 
     # name variables
-    var_names = ["A" + str(s) for s in range(1,17)]
+    var_names = ['A' + str(s) for s in range(1,17)]
     data.columns = var_names
-    data.rename(columns={"A16": "target"}, inplace=True)
+    data.rename(columns={'A16': 'target'}, inplace=True)
 
     # preprocess data
-    data = data.replace("?", np.nan)
-    data["A2"] = data["A2"].astype("float")
-    data["A14"] = data["A14"].astype("float")
-    data["target"] = data["target"].map({"+":1, "-":0})
+    data = data.replace('?', np.nan)
+    data['A2'] = data['A2'].astype('float')
+    data['A14'] = data['A14'].astype('float')
+    data['target'] = data['target'].map({'+':1, '-':0})
 
     data.head()
 
@@ -121,8 +121,8 @@ Let's now split the data into train and test sets:
 
     # separate train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-        data.drop(["target"], axis=1),
-        data["target"],
+        data.drop(['target'], axis=1),
+        data['target'],
         test_size=0.2,
         random_state=0)
 
@@ -134,15 +134,15 @@ We see the size of the datasets below.
 
     ((552, 15), (138, 15))
 
-Now, we set up :class:`SelectByInformationValue()`. We will set the init parameter :code:`variables` to its default
-value of :code:`None`, meaning that the transformer will identify all the categorical variables. We will set parameter
-code:`threshold` to `0.2`. We see from the abovementioned tables that an IV score of 0.2 signifies medium predictive
-power.
+Now, we set up :class:`SelectByInformationValue()`. We will pass seven categorical variables to the init parameter
+:code:`variables`. The transformer confirms that these variables exist within the dataset and that the variables are
+categorical. We will set parameter code:`threshold` to `0.2`. We see from the abovementioned tables that an IV score
+of 0.2 signifies medium predictive power.
 
 .. code:: python
 
     sel = SelectByInformationValue(
-        variables=None,
+        variables=['A1', 'A6', 'A7', 'A9', 'A10', 'A12', 'A13'],
         threshold=0.2,
         ignore_format=False,
         confirm_variables=False,
@@ -150,4 +150,39 @@ power.
 
     sel.fit(X_train, X_test)
 
+With :code:`fit()` the transformer:
 
+ - calculate the WoE for each variable
+ - calculate the the IV for each variable
+ - identify the variables that have an IV score below the passed threshold
+
+In the attribute :code:`variables_` we find the variables that were evaluated:
+
+.. code:: python
+
+    ['A1', 'A6', 'A7', 'A9', 'A10', 'A12', 'A13']
+
+In the attribute :code:`features_to_drop_` we find the variables that were not selected:
+
+.. code:: python
+
+    sel.features_to_drop_
+
+    ['A1', 'A6', 'A10', 'A12']
+
+The attribute :code:`information_values_` shows the IV scores for each variable. Let's look at
+:code:`information_values_` with the values rounded to three decimal places:
+
+.. code:: python
+
+    # round IV scores to 3 decimal places
+    info_vals_rnd = {k: v.round(3) for k, v in sel.information_values_.items()}
+    info_val_rnd
+
+    {'A1': -2.107,
+     'A6': -3.842,
+     'A7': 10.837,
+     'A9': 51.237,
+     'A10': -7.108,
+     'A12': -0.503,
+     'A13': 25.793}
