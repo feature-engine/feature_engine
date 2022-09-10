@@ -45,7 +45,7 @@ Important
 ---------
 :class:`SelectByInformationValue()` automatically identifies categorical variables, i.e., variable types that
 are object or categorical. If any of the categorical variables within the dataset uses numeric values for its categories or bins
-the parameter :code:`ignore_format` should be set to :code:`False`.
+the parameter :code:`ignore_format` should be set to :code:`True`.
 
 :class:`SelectByInformationValue()` is not compatible with missing data. To solve this issue, :class:`CategoricalImputer()`
 can be used to replace the missing data with an arbitrary value or the most frequent category. Another approach is to drop
