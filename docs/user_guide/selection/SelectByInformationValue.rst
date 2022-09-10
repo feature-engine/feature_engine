@@ -51,6 +51,9 @@ the parameter :code:`ignore_format` should be set to :code:`False`.
 can be used to replace the missing data with an arbitrary value or the most frequent category. Another approach is to drop
 the rows that include the missing data.
 
+IV assumes a linear relationship between the indepdent and dependent variables. Therefore, this selection method should only be
+use with linear models, i.e., logistic regression.
+
 
 Example
 -------
