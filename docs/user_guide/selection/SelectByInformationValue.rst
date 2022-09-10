@@ -186,3 +186,36 @@ The attribute :code:`information_values_` shows the IV scores for each variable.
      'A10': -7.108,
      'A12': -0.503,
      'A13': 25.793}
+
+We see that the transformer correctly selected the features that have an IV score greater than :code:`threshold`
+which was set to 0.2.
+
+With :code:`transform()` we can go ahead and drop the features that do not meet the threshold:
+
+.. code:: python
+
+    Xtr = sel.transform(X_test)
+
+    Xtr.head()
+
+.. code:: python
+
+            A2     A3 A4 A5 A7      A8 A9  A11 A13    A14  A15
+    564  42.17   5.04  u  g  h  12.750  t    0   g   92.0    0
+    519  39.17   1.71  u  g  v   0.125  t    5   g  480.0    0
+    14   45.83  10.50  u  g  v   5.000  t    7   g    0.0    0
+    257  20.00   0.00  u  g  v   0.500  f    0   g  144.0    0
+    88   34.00   4.50  u  g  v   1.000  t    0   g  240.0    0
+
+
+Note that :code:`Xtr` includes numerical features - A2, A3, A8, A11, and A14 - because :class:`SelectByInformationValue()`
+only filters out categorical features. Also, features A4 and A5 remain because these variables were not passed to transformer
+when it was instantiated.
+
+And, finally, we can also obtain the names of the features in the final transformed dataset:
+
+.. code:: python
+
+    sel.get_feature_name_names_out()
+
+    ['A2', 'A3', 'A4', 'A5', 'A7', 'A8', 'A9', 'A11', 'A13', 'A14', 'A15']
