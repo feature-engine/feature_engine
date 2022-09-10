@@ -16,9 +16,10 @@ or bin will have a high WoE value.
 
 :class:`WoE()` is used to calcaulate the WoE values for each category.
 
-Once the WoE is derived, :class:`SelectByInformationValue()` calculates the IV score for each unique category
-or bin. The transformer then sums the individual IV scores for each category deriving the IV score for the entire
-feature. This value assesses the feature's predictive power in capturing the binary dependent variable.
+Once the WoE is derived, :class:`SelectByInformationValue()` calculates the IV for each variable. A variable's IV is essentially
+the weighted sum of the individual WoE values for each category within that variable where the weights incorporate the absolute
+difference between the numerator and denominator. This value assesses the feature's predictive power in capturing the binary
+dependent variable.
 
 The table below presents a general framework for using IV to determine a variable's predictive power:
 
