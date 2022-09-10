@@ -5,9 +5,8 @@
 SelectByInformationValue
 ========================
 
-:class:`SelectByInformationValue()` selects features based on whether the feature's information value is
-greater than the threshold passed by the user. The transformer is only compatible with categorical
-features.
+:class:`SelectByInformationValue()` selects features based on whether the feature's information value score is
+greater than the threshold passed by the user. Information value only applies to categorical features.
 
 Information value (IV) is used to assess a categorical feature's predictive power of a binary-class dependent
 variable. To derive a feature's IV, the weight of evidence (WoE) must first be calculated for each
@@ -15,12 +14,11 @@ unique category or bin that comprises the feature. If a category or bin contains
 of true or positive labels compared to the percentage of false or negative labels, then that category
 or bin will have a high WoE value.
 
-:class:`WoE()` is used to calcaluate the WoE values for each category.
+:class:`WoE()` is used to calcaulate the WoE values for each category.
 
-Once the WoE is derived, :class:`SelectByInformationValue()` calculates the information value (IV)
-for each unique category or bin. The transformer than sums the individual IVs for each category providing
-the IV score for the feature. This value assesses the feature's predictive power in capturing the binary
-dependent variable.
+Once the WoE is derived, :class:`SelectByInformationValue()` calculates the IV score for each unique category
+or bin. The transformer then sums the individual IV scores for each category deriving the IV score for the entire
+feature. This value assesses the feature's predictive power in capturing the binary dependent variable.
 
 The table below presents a general framework for using IV to determine a variable's predictive power:
 
@@ -42,32 +40,21 @@ The table below presents a general framework for using IV to determine a variabl
       - Suspicious, too good to be true
 
 
-+----------------------+---------------------------------+
-| Information Value    | Predictive Power                |
-+======================+=================================+
-| < 0.02               | Useless                         |
-+----------------------+---------------------------------+
-| 0.02 to 0.1          | Weak                            |
-+----------------------+---------------------------------+
-| 0.1 to 0.3           | Medium                          |
-+----------------------+---------------------------------+
-| 0.3 to 0.5           | Strong                          |
-+----------------------+---------------------------------+
-| > 0.5                | Suspicious, too good to be true |
-+----------------------+---------------------------------+
-
-
 Important
 ---------
 :class:`SelectByInformationValue()` automatically identifies categorical variables, i.e., variable types that
-are object or categorical. If any dataset's categorical variables uses numeric values for its categories or bins
-the init parameter :code:`ignore_format` should be set to :code:`False`.
+are object or categorical. If any of the categorical variables within the dataset uses numeric values for its categories or bins
+the parameter :code:`ignore_format` should be set to :code:`False`.
+
+:class:`SelectByInformationValue()` is not compatible with missing data. To solve this issue, :class:`CategoricalImputer()`
+can be used to replace the missing data with an arbitrary value or the most frequent category. Another approach is to drop
+the rows that include the missing data.
 
 
 Example
 -------
 Let's see how to use this transformer to select variables from UC Irvine's credit approval data set which can
-be found `here`_. This dataset concerns credit card applications. All attributes names and values have been changed
+be found `here`_. This dataset concerns credit card applications. All attribute names and values have been changed
 to meaningless symbols to protect confidentiality.
 
 The data is comprised of both numerical and categorical data.
@@ -101,6 +88,9 @@ Let's now load and prepare the credit approval data:
     data['A14'] = data['A14'].astype('float')
     data['target'] = data['target'].map({'+':1, '-':0})
 
+    # drop rows with missing data
+    data.dropna(axis=0, inplace=True)
+
     data.head()
 
 Let's now review the first 5 rows of the dataset:
@@ -132,11 +122,11 @@ We see the size of the datasets below.
 
 .. code:: python
 
-    ((552, 15), (138, 15))
+    ((522, 15), (131, 15))
 
-Now, we set up :class:`SelectByInformationValue()`. We will pass seven categorical variables to the init parameter
+Now, we set up :class:`SelectByInformationValue()`. We will pass seven categorical variables to the parameter
 :code:`variables`. The transformer confirms that these variables exist within the dataset and that the variables are
-categorical. We will set parameter code:`threshold` to `0.2`. We see from the abovementioned tables that an IV score
+categorical. We will set the parameter :code:`threshold` to `0.2`. We see from the abovementioned table that an IV score
 of 0.2 signifies medium predictive power.
 
 .. code:: python
@@ -150,19 +140,19 @@ of 0.2 signifies medium predictive power.
 
     sel.fit(X_train, X_test)
 
-With :code:`fit()` the transformer:
+With :code:`fit()`, the transformer:
 
- - calculate the WoE for each variable
- - calculate the the IV for each variable
- - identify the variables that have an IV score below the passed threshold
+ - calculates the WoE for each variable
+ - calculates the the IV for each variable
+ - identifies the variables that have an IV score below the passed threshold
 
-In the attribute :code:`variables_` we find the variables that were evaluated:
+In the attribute :code:`variables_`, we find the variables that were evaluated:
 
 .. code:: python
 
     ['A1', 'A6', 'A7', 'A9', 'A10', 'A12', 'A13']
 
-In the attribute :code:`features_to_drop_` we find the variables that were not selected:
+In the attribute :code:`features_to_drop_`, we find the variables that were not selected:
 
 .. code:: python
 
@@ -171,7 +161,7 @@ In the attribute :code:`features_to_drop_` we find the variables that were not s
     ['A1', 'A6', 'A10', 'A12']
 
 The attribute :code:`information_values_` shows the IV scores for each variable. Let's look at
-:code:`information_values_` with the values rounded to three decimal places:
+:code:`information_values_` with the the IV scores rounded to three decimal places:
 
 .. code:: python
 
@@ -187,10 +177,10 @@ The attribute :code:`information_values_` shows the IV scores for each variable.
      'A12': -0.503,
      'A13': 25.793}
 
-We see that the transformer correctly selected the features that have an IV score greater than :code:`threshold`
+We see that the transformer correctly selected the features that have an IV score greater than the :code:`threshold`
 which was set to 0.2.
 
-With :code:`transform()` we can go ahead and drop the features that do not meet the threshold:
+With :code:`transform()`, we can go ahead and drop the features that do not meet the threshold:
 
 .. code:: python
 
@@ -208,9 +198,9 @@ With :code:`transform()` we can go ahead and drop the features that do not meet 
     88   34.00   4.50  u  g  v   1.000  t    0   g  240.0    0
 
 
-Note that :code:`Xtr` includes numerical features - A2, A3, A8, A11, and A14 - because :class:`SelectByInformationValue()`
-only filters out categorical features. Also, features A4 and A5 remain because these variables were not passed to transformer
-when it was instantiated.
+Note that :code:`Xtr` includes all the numerical features - i.e., A2, A3, A8, A11, and A14 - because
+:class:`SelectByInformationValue()` only filters out categorical features. Also, features A4 and A5 remain
+because these variables were not passed to the :code:`variables` parameter when the transformer was instantiated.
 
 And, finally, we can also obtain the names of the features in the final transformed dataset:
 
