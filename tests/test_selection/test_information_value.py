@@ -16,7 +16,7 @@ def test_error_when_not_permitted_threshold(_threshold):
         )
 
 
-def test_error_when_more_than_two_classes(df_enc_numeric):
+def test_error_when_not_binary_dependent_variables(df_enc_numeric):
     transformer = SelectByInformationValue(
         variables=None,
         threshold=0.2,
@@ -29,7 +29,7 @@ def test_error_when_more_than_two_classes(df_enc_numeric):
         )
 
 
-def test_error_when_no_categorical_values(df_test):
+def test_error_when_no_categorical_variables(df_test):
     X, y = df_test
 
     transformer = SelectByInformationValue(
@@ -39,7 +39,7 @@ def test_error_when_no_categorical_values(df_test):
         confirm_variables=False
     )
     with pytest.raises(ValueError):
-        transformer.fit_transform(X, y)
+        transformer.fit(X, y)
 
 
 def test_transformer_with_default_params(df_enc):
