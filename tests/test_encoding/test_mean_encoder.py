@@ -306,8 +306,12 @@ def test_auto_smoothing(df_enc):
 
     # expected output
     transf_df = df_enc.copy()
-    var_A_dict = {'A': 0.328335832083958, 'B': 0.20707964601769913, 'C': 0.4541284403669725}
-    var_B_dict = {'A': 0.20707964601769913, 'B': 0.328335832083958, 'C': 0.4541284403669725}
+    var_A_dict = {
+        'A': 0.328335832083958, 'B': 0.20707964601769913, 'C': 0.4541284403669725
+    }
+    var_B_dict = {
+        'A': 0.20707964601769913, 'B': 0.328335832083958, 'C': 0.4541284403669725
+    }
     transf_df["var_A"] = transf_df["var_A"].map(var_A_dict)
     transf_df["var_B"] = transf_df["var_B"].map(var_B_dict)
 
@@ -331,8 +335,12 @@ def test_smoothing(df_enc):
 
     # expected output
     transf_df = df_enc.copy()
-    var_A_dict = {'A': 0.3018867924528302, 'B': 0.2909090909090909, 'C': 0.30769230769230765}
-    var_B_dict = {'A': 0.2909090909090909, 'B': 0.3018867924528302, 'C': 0.30769230769230765}
+    var_A_dict = {
+        'A': 0.3018867924528302, 'B': 0.2909090909090909, 'C': 0.30769230769230765
+    }
+    var_B_dict = {
+        'A': 0.2909090909090909, 'B': 0.3018867924528302, 'C': 0.30769230769230765
+    }
     transf_df["var_A"] = transf_df["var_A"].map(var_A_dict)
     transf_df["var_B"] = transf_df["var_B"].map(var_B_dict)
 
