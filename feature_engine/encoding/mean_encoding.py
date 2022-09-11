@@ -157,7 +157,8 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         self.encoder_dict_ = {}
 
         y_mean = y.mean()
-        y_var = y.var(ddof=0)
+        if self.a == 'auto':
+            y_var = y.var(ddof=0)
         for var in self.variables_:
             if self.a == 'auto':
                 damping = y.groupby(X[var]).var(ddof=0) / y_var
