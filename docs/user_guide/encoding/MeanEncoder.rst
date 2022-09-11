@@ -14,6 +14,17 @@ and Bristol by 0.3.
 The motivation is to try and create a monotonic relationship between the target and
 the encoded categories. This tends to help improve performance of linear models.
 
+On top of that :class:`MeanEncoder()` provides option for smoothing (parameter a), which
+allow user to even out (smooth) output of encoder for categories different number of observations. 
+It works by assigning weighted mean of whole target column (prior) and mean of target within 
+each category (evidence), instead of just evidence. The more samples of the specific category 
+is avaliable, the bigger weight will be assigned to evidence, less samples - bigger weight to prior.
+This parameter could be used as form of regularization. By default a is equal to 0, so no 
+smoothing is applied.
+Another option would be to use 'auto' heuristic, which will determine smoothing factor 
+based on ratio between variance of target within each category (evidence) to variance of 
+the whole target column (prior).
+
 Let's look at an example using the Titanic Dataset.
 
 First, let's load the data and separate it into train and test:
