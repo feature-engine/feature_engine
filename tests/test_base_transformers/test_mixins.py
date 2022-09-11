@@ -9,10 +9,30 @@ class MockClass(GetFeatureNamesOutMixin):
         self.feature_names_in_ = ["var1", "var2", "var3"]
 
 
-@pytest.mark.parametrize("input_features", [None, ["var1", "var2", "var3"], np.array(["var1", "var2", "var3"])])
+class MockClassInt(GetFeatureNamesOutMixin):
+    def __init__(self):
+        self.feature_names_in_ = [1, 2, 3]
+
+
+@pytest.mark.parametrize(
+    "input_features",
+    [None, ["var1", "var2", "var3"], np.array(["var1", "var2", "var3"])],
+)
 def test_GetFeatureNamesOut_permitted_params(input_features):
     transformer = MockClass()
-    assert transformer.get_feature_names_out(input_features=input_features) == transformer.feature_names_in_
+    assert (
+        transformer.get_feature_names_out(input_features=input_features)
+        == transformer.feature_names_in_
+    )
+
+
+@pytest.mark.parametrize("input_features", [None, [1, 2, 3], np.array([1, 2, 3])])
+def test_GetFeatureNamesOut_permitted_params_int(input_features):
+    transformer = MockClassInt()
+    assert (
+        transformer.get_feature_names_out(input_features=input_features)
+        == transformer.feature_names_in_
+    )
 
 
 def test_GetFeatureNamesOut_non_permitted_params():

@@ -73,25 +73,23 @@ class GetFeatureNamesOutMixin:
 
         Parameters
         ----------
-        input_features : array-like of str or None, default=None
-
+        input_features : array or list, default=None
             - If `input_features` is `None`, then `feature_names_in_` is
-              used as feature names in. If `feature_names_in_` is not defined,
-              then the following input feature names are generated:
-              `["x0", "x1", ..., "x(n_features_in_ - 1)"]`.
-            - If `input_features` is an array-like, then `input_features` must
-              match `feature_names_in_` if `feature_names_in_` is defined.
+              used as feature names in.
+            - If `input_features` is an array or list, then `input_features` must
+              match `feature_names_in_`. This parameter exits only for compatibility
+              with the Scikit-learn pipeline.
 
         Raises
         ------
         ValueError
-            If input_features is not a list or any of the features in input_features are
-            not transformed by this transformer.
+            If input_features does not match feature_names_in_ or if it is not a list
+            or an array.
 
         Returns
         -------
-        feature_names: list
-            The name of the features.
+        feature_names_in_: list
+            The input features.
         """
         if input_features is not None:
             msg = "input_features is not equal to feature_names_in_"
