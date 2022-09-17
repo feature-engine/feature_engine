@@ -68,7 +68,7 @@ def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
             )
 
         X = pd.DataFrame(X)
-        X.columns = [str(i) for i in range(X.shape[1])]
+        X.columns = [f"x{i}" for i in range(X.shape[1])]
 
     elif issparse(X):
         raise TypeError("This transformer does not support sparse matrices.")

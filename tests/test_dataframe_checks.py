@@ -23,7 +23,7 @@ def test_check_X_converts_numpy_to_pandas():
     a2D = np.array([[1, 2], [3, 4]])
     a3D = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
 
-    df_2D = pd.DataFrame(a2D, columns=["0", "1"])
+    df_2D = pd.DataFrame(a2D, columns=["x0", "x1"])
     assert_frame_equal(df_2D, check_X(a2D))
 
     with pytest.raises(ValueError):
@@ -111,7 +111,7 @@ def test_check_x_y_reassings_index_when_only_one_input_is_pandas():
     # case 2: X is not a df, y is a series
     df = np.array([[1, 2, 3, 4], [5, 6, 7, 8]]).T
     s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212])
-    df_exp = pd.DataFrame(df, columns=["0", "1"])
+    df_exp = pd.DataFrame(df, columns=["x0", "x1"])
     df_exp.index = s.index
 
     x, y = check_X_y(df, s)
@@ -121,7 +121,7 @@ def test_check_x_y_reassings_index_when_only_one_input_is_pandas():
 
 def test_check_x_y_converts_numpy_to_pandas():
     a2D = np.array([[1, 2], [3, 4], [3, 4], [3, 4]])
-    df_2D = pd.DataFrame(a2D, columns=["0", "1"])
+    df_2D = pd.DataFrame(a2D, columns=["x0", "x1"])
 
     a1D = np.array([1, 2, 3, 4])
     s = pd.Series(a1D)

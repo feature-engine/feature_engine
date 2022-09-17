@@ -1,6 +1,7 @@
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Union
 
 import pandas as pd
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._variable_handling.variable_type_selection import (
     _find_or_check_numerical_variables,
@@ -86,23 +87,41 @@ class GetFeatureNamesOutMixin:
             If input_features does not match feature_names_in_ or if it is not a list
             or an array.
 
+        NonFittedError
+            If method is called before transformer is fit.
+
         Returns
         -------
         feature_names_in_: list
-            The input features.
+            Transformed feature names.
         """
+        check_is_fitted(self)
+
         if input_features is not None:
-            msg = "input_features is not equal to feature_names_in_"
-            if isinstance(input_features, list):
-                if input_features != self.feature_names_in_:
-                    raise ValueError(msg)
-            elif isinstance(input_features, ndarray):
-                if list(input_features) != self.feature_names_in_:
-                    raise ValueError(msg)
+
+            # the feature_names_in_ are "x0", "x1","x2" ..."xn"
+            # it means that the input to fit() was a numpy array.
+            # Thus, we let the user enter the feature names
+            if self.feature_names_in_ == [f"x{i}" for i in range(self.n_features_in_)]:
+                if len(input_features) == self.n_features_in_:
+                    return input_features if isinstance(input_features, list) else list(input_features)
+                else:
+                    raise ValueError(
+                        "The number of input_features does not match the number of "
+                        "features seen in the dataframe used in fit."
+                    )
             else:
-                raise ValueError(
-                    "input_features must be a list or an array. "
-                    "Got {input_features} instead."
-                )
+                msg = "input_features is not equal to feature_names_in_"
+                if isinstance(input_features, list):
+                    if input_features != self.feature_names_in_:
+                        raise ValueError(msg)
+                elif isinstance(input_features, ndarray):
+                    if list(input_features) != self.feature_names_in_:
+                        raise ValueError(msg)
+                else:
+                    raise ValueError(
+                        "input_features must be a list or an array. "
+                        "Got {input_features} instead."
+                    )
 
         return self.feature_names_in_
