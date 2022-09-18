@@ -1,11 +1,16 @@
 import numpy as np
 import pytest
+from sklearn.exceptions import NotFittedError
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine.dataframe_checks import check_X
+
+variables_str = ["Name", "City", "Age", "Marks", "dob"]
+variables_arr = ["x0", "x1", "x2", "x3", "x4"]
+variables_user = ["Dog", "Cat", "Bird", "Frog", "Duck"]
 
 
 class MockTransformer(GetFeatureNamesOutMixin):
@@ -19,9 +24,11 @@ class MockTransformer(GetFeatureNamesOutMixin):
         return X.copy()
 
 
-variables_str = ["Name", "City", "Age", "Marks", "dob"]
-variables_arr = ["x0", "x1", "x2", "x3", "x4"]
-variables_user = ["Dog", "Cat", "Bird", "Frog", "Duck"]
+def test_non_fitted_error(df_vartypes):
+    transformer = MockTransformer()
+    with pytest.raises(NotFittedError):
+        transformer.get_feature_names_out(df_vartypes)
+
 
 # ======== Tests for transformers that do not add new features to the data ========
 
@@ -35,12 +42,12 @@ def test_with_df(df_vartypes, input_features):
     transformer = MockTransformer()
     transformer.fit(df_vartypes)
     assert (
-        transformer.get_feature_names_out(input_features=input_features)
-        == transformer.feature_names_in_
+            transformer.get_feature_names_out(input_features=input_features)
+            == transformer.feature_names_in_
     )
     assert (
-        transformer.get_feature_names_out(input_features=input_features)
-        == variables_str
+            transformer.get_feature_names_out(input_features=input_features)
+            == variables_str
     )
 
 
@@ -65,8 +72,8 @@ def test_with_array(df_vartypes, input_features):
 
     if input_features is None:
         assert (
-            transformer.get_feature_names_out(input_features=input_features)
-            == variables_arr
+                transformer.get_feature_names_out(input_features=input_features)
+                == variables_arr
         )
     else:
         assert transformer.get_feature_names_out(input_features=input_features) == list(
@@ -81,8 +88,8 @@ def test_with_pipeline_and_df(df_vartypes, input_features):
     pipe = Pipeline([("transformer", MockTransformer())])
     pipe.fit(df_vartypes)
     assert (
-        pipe.get_feature_names_out(input_features=input_features)
-        == pipe.named_steps["transformer"].feature_names_in_
+            pipe.get_feature_names_out(input_features=input_features)
+            == pipe.named_steps["transformer"].feature_names_in_
     )
     assert pipe.get_feature_names_out(input_features=input_features) == variables_str
 
@@ -104,7 +111,7 @@ def test_with_pipeline_and_array(df_vartypes, input_features):
 
     if input_features is None:
         assert (
-            pipe.get_feature_names_out(input_features=input_features) == variables_arr
+                pipe.get_feature_names_out(input_features=input_features) == variables_arr
         )
     else:
         assert pipe.get_feature_names_out(input_features=input_features) == list(
@@ -148,7 +155,7 @@ def test_with_pipe_and_skl_transformer_input_array(df_vartypes, input_features):
 
     if input_features is None:
         assert (
-            pipe.get_feature_names_out(input_features=input_features) == variables_arr
+                pipe.get_feature_names_out(input_features=input_features) == variables_arr
         )
     else:
         assert pipe.get_feature_names_out(input_features=input_features) == list(
@@ -272,7 +279,7 @@ def test_new_feature_names_with_df(df_vartypes, features_in, input_features):
     transformer.fit(df_vartypes)
     features_out = list(df_vartypes.columns) + [f"{i}_plus" for i in features_in]
     assert (
-        transformer.get_feature_names_out(input_features=input_features) == features_out
+            transformer.get_feature_names_out(input_features=input_features) == features_out
     )
 
     transformer = MockCreator(variables=features_in, drop_original=True)
@@ -281,7 +288,7 @@ def test_new_feature_names_with_df(df_vartypes, features_in, input_features):
         f"{i}_plus" for i in features_in
     ]
     assert (
-        transformer.get_feature_names_out(input_features=input_features) == features_out
+            transformer.get_feature_names_out(input_features=input_features) == features_out
     )
 
 
@@ -298,7 +305,7 @@ def test_new_feature_names_within_pipeline(df_vartypes, features_in, input_featu
     transformer.fit(df_vartypes)
     features_out = list(df_vartypes.columns) + [f"{i}_plus" for i in features_in]
     assert (
-        transformer.get_feature_names_out(input_features=input_features) == features_out
+            transformer.get_feature_names_out(input_features=input_features) == features_out
     )
 
     transformer = Pipeline(
@@ -311,7 +318,7 @@ def test_new_feature_names_within_pipeline(df_vartypes, features_in, input_featu
         f"{i}_plus" for i in features_in
     ]
     assert (
-        transformer.get_feature_names_out(input_features=input_features) == features_out
+            transformer.get_feature_names_out(input_features=input_features) == features_out
     )
 
 
@@ -320,7 +327,7 @@ def test_new_feature_names_within_pipeline(df_vartypes, features_in, input_featu
     "input_features", [None, variables_str, np.array(variables_str)]
 )
 def test_new_feature_names_pipe_with_skl_transformer_and_df(
-    df_vartypes, features_in, input_features
+        df_vartypes, features_in, input_features
 ):
     pipe = Pipeline(
         [
@@ -348,7 +355,7 @@ def test_new_feature_names_pipe_with_skl_transformer_and_df(
     "input_features", [None, ["Age", "Marks"], np.array(["Age", "Marks"])]
 )
 def test_new_feature_names_pipe_and_skl_transformer_that_adds_features(
-    df_vartypes, input_features
+        df_vartypes, input_features
 ):
     features_in = ["Age", "Marks"]
     df = df_vartypes[features_in].copy()
@@ -363,6 +370,6 @@ def test_new_feature_names_pipe_and_skl_transformer_that_adds_features(
 
     new_features = [f"{i}_plus" for i in features_in]
     assert (
-        pipe.get_feature_names_out(input_features=input_features)
-        == ["1", "Age", "Marks", "Age^2", "Age Marks", "Marks^2"] + new_features
+            pipe.get_feature_names_out(input_features=input_features)
+            == ["1", "Age", "Marks", "Age^2", "Age Marks", "Marks^2"] + new_features
     )
