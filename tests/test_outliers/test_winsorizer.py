@@ -372,7 +372,7 @@ def test_transform_raises_error_if_na_in_input_df(df_vartypes, df_na):
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
 
-def test_get_feature_names_out_input_features_is_none(df_na):
+def test_get_feature_names_out(df_na):
     original_features = df_na.columns.to_list()
     input_features = ["Age", "Marks"]
 
@@ -383,39 +383,18 @@ def test_get_feature_names_out_input_features_is_none(df_na):
 
     out = [f + "_left" for f in input_features]
     assert tr.get_feature_names_out() == original_features + out
+    assert tr.get_feature_names_out(original_features) == original_features + out
 
     tr = Winsorizer(tail="right", add_indicators=True, missing_values="ignore")
     tr.fit(df_na)
 
     out = [f + "_right" for f in input_features]
     assert tr.get_feature_names_out() == original_features + out
+    assert tr.get_feature_names_out(original_features) == original_features + out
 
     tr = Winsorizer(tail="both", add_indicators=True, missing_values="ignore")
     tr.fit(df_na)
 
     out = ["Age_left", "Age_right", "Marks_left", "Marks_right"]
     assert tr.get_feature_names_out() == original_features + out
-
-
-def test_get_feature_names_out_input_features_is_list(df_na):
-    input_features = ["Age", "Marks"]
-
-    # when add_indicators is false, we've got the generic check from estimator_checks.
-    # We need to test only when true.
-    tr = Winsorizer(tail="left", add_indicators=True, missing_values="ignore")
-    tr.fit(df_na)
-
-    out = [f + "_left" for f in input_features]
-    assert tr.get_feature_names_out(input_features) == input_features + out
-
-    tr = Winsorizer(tail="right", add_indicators=True, missing_values="ignore")
-    tr.fit(df_na)
-
-    out = [f + "_right" for f in input_features]
-    assert tr.get_feature_names_out(input_features) == input_features + out
-
-    tr = Winsorizer(tail="both", add_indicators=True, missing_values="ignore")
-    tr.fit(df_na)
-
-    out = ["Age_left", "Age_right", "Marks_left", "Marks_right"]
-    assert tr.get_feature_names_out(input_features) == input_features + out
+    assert tr.get_feature_names_out(original_features) == original_features + out
