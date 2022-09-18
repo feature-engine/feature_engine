@@ -64,19 +64,19 @@ def test_get_feature_names_out(df_na):
     tr.fit(df_na)
 
     out = [f + "_na" for f in original_features]
+    feat_out = original_features + out
 
-    assert tr.get_feature_names_out(input_features=None) == original_features + out
-    assert tr.get_feature_names_out(input_features=original_features) == out
-    assert tr.get_feature_names_out(input_features=original_features[0:2]) == out[0:2]
-    assert tr.get_feature_names_out(input_features=["Name"]) == ["Name_na"]
+    assert tr.get_feature_names_out(input_features=None) == feat_out
+    assert tr.get_feature_names_out(input_features=original_features) == feat_out
 
     tr = AddMissingIndicator(missing_only=True)
     tr.fit(df_na)
 
     out = [f + "_na" for f in original_features[0:-1]]
+    feat_out = original_features + out
 
-    assert tr.get_feature_names_out(input_features=None) == original_features + out
-    assert tr.get_feature_names_out(input_features=original_features) == out
+    assert tr.get_feature_names_out(input_features=None) == feat_out
+    assert tr.get_feature_names_out(input_features=original_features) == feat_out
 
     with pytest.raises(ValueError):
         tr.get_feature_names_out("Name")
@@ -92,8 +92,7 @@ def test_get_feature_names_out_from_pipeline(df_na):
     tr.fit(df_na)
 
     out = [f + "_na" for f in original_features]
+    feat_out = original_features + out
 
-    assert tr.get_feature_names_out(input_features=None) == original_features + out
-    assert tr.get_feature_names_out(input_features=original_features) == out
-    assert tr.get_feature_names_out(input_features=original_features[0:2]) == out[0:2]
-    assert tr.get_feature_names_out(input_features=["Name"]) == ["Name_na"]
+    assert tr.get_feature_names_out(input_features=None) == feat_out
+    assert tr.get_feature_names_out(input_features=original_features) == feat_out
