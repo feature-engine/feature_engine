@@ -252,7 +252,7 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
-                X[str(feature) + "_" + str(category)] = np.where(
+                X[f"{feature}_{category}"] = np.where(
                     X[feature] == category, 1, 0
                 )
 
@@ -265,45 +265,18 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """inverse_transform is not implemented for this transformer."""
         return self
 
-    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
-        """Get output feature names for transformation.
-
-        Parameters
-        ----------
-        input_features: list, default=None
-            Input features. If `input_features` is `None`, then the names of all the
-            variables in the transformed dataset (original + new variables) is returned.
-            Alternatively, only the names for the binary variables derived from
-            input_features will be returned.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        if input_features is None:
-            input_features_ = self.feature_names_in_
-        else:
-            if not isinstance(input_features, list):
-                raise ValueError(
-                    f"input_features must be a list. Got {input_features} instead."
-                )
-            if any(f for f in input_features if f not in self.feature_names_in_):
-                raise ValueError(
-                    "Some of the features requested were not seen during training."
-                )
-            input_features_ = input_features
-
-        # the features not encoded
-        feature_names = [f for f in input_features_ if f not in self.variables_]
-
-        # the encoded features
-        encoded = [f for f in input_features_ if f in self.variables_]
-
-        for feature in encoded:
+    def _get_new_features_name(self) -> List:
+        """Return names of the created features."""
+        feature_names = []
+        for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
-                feature_names.append(str(feature) + "_" + str(category))
+                feature_names.append(f"{feature}_{category}")
+
+        return feature_names
+
+    def _add_new_feature_names(self, feature_names):
+        """Adds new features to df columns, and removes categoricals."""
+        feature_names = feature_names + self._get_new_features_name()
+        feature_names = [f for f in feature_names if f not in self.variables_]
 
         return feature_names
