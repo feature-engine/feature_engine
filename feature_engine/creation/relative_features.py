@@ -6,6 +6,7 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
@@ -39,6 +40,7 @@ _PERMITTED_FUNCTIONS = [
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
+    variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
@@ -85,6 +87,8 @@ class RelativeFeatures(BaseCreation):
 
     Attributes
     ----------
+    {variables_}
+
     {feature_names_in_}
 
     {n_features_in_}
@@ -281,29 +285,8 @@ class RelativeFeatures(BaseCreation):
             X[varname] = X[self.variables].pow(X[reference], axis=0)
         return X
 
-    def get_feature_names_out(self, input_features: Optional[bool] = None) -> List:
-        """Get output feature names for transformation.
-
-        Parameters
-        ----------
-        input_features: bool, default=None
-            If `input_features` is `None`, then the names of all the variables in the
-            transformed dataset (original + new variables) is returned. Alternatively,
-            if `input_features` is True, only the names for the new features will be
-            returned.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        if input_features is not None and not isinstance(input_features, bool):
-            raise ValueError(
-                "input_features takes None or a boolean, True or False. "
-                f"Got {input_features} instead."
-            )
+    def _get_new_features_name(self) -> List:
+        """Return names of the created features."""
 
         # Names of new features
         feature_names = [
@@ -312,17 +295,4 @@ class RelativeFeatures(BaseCreation):
             for reference in self.reference
             for var in self.variables
         ]
-
-        if input_features is None or input_features is False:
-            if self.drop_original is True:
-                # Remove names of variables to drop.
-                original = [
-                    f
-                    for f in self.feature_names_in_
-                    if f not in self.variables + self.reference
-                ]
-                feature_names = original + feature_names
-            else:
-                feature_names = self.feature_names_in_ + feature_names
-
         return feature_names
