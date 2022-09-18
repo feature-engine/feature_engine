@@ -32,6 +32,22 @@ def test_non_fitted_error(df_vartypes):
 
 # ======== Tests for transformers that do not add new features to the data ========
 
+def test_when_input_is_pandas_columns(df_vartypes):
+    input_features = df_vartypes.columns
+    transformer = MockTransformer()
+
+    transformer.fit(df_vartypes)
+    assert (
+            transformer.get_feature_names_out(input_features=input_features)
+            == variables_str
+    )
+
+    transformer.fit(df_vartypes.to_numpy())
+    assert (
+            transformer.get_feature_names_out(input_features=input_features)
+            == variables_str
+    )
+
 
 @pytest.mark.parametrize(
     "input_features", [None, variables_str, np.array(variables_str)]
@@ -47,6 +63,10 @@ def test_with_df(df_vartypes, input_features):
     )
     assert (
             transformer.get_feature_names_out(input_features=input_features)
+            == variables_str
+    )
+    assert (
+            transformer.get_feature_names_out(input_features=df_vartypes.columns)
             == variables_str
     )
 
