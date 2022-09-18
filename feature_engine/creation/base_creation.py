@@ -57,10 +57,16 @@ class BaseCreation(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
             X, self.variables
         )
 
+        if hasattr(self, "reference"):
+            _find_or_check_numerical_variables(X, self.reference)
+
         # check if dataset contains na
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
+            if hasattr(self, "reference"):
+                _check_contains_na(X, self.reference)
+                _check_contains_inf(X, self.reference)
 
         # save input features
         self.feature_names_in_ = X.columns.tolist()
