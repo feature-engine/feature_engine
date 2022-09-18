@@ -1,6 +1,8 @@
 from typing import Dict, List, Union
 
 import pandas as pd
+from numpy import ndarray
+from numpy.typing import ArrayLike
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._variable_handling.variable_type_selection import (
@@ -11,9 +13,6 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     check_X,
 )
-
-from numpy import ndarray
-from numpy.typing import ArrayLike
 
 
 class FitFromDictMixin:
@@ -75,11 +74,11 @@ class GetFeatureNamesOutMixin:
         Parameters
         ----------
         input_features : array or list, default=None
-            - If `input_features` is `None`, then `feature_names_in_` is
-              used as feature names in.
+            This parameter exits only for compatibility with the Scikit-learn pipeline.
+            - If `input_features` is `None`, then `feature_names_in_` is used as
+              feature names in.
             - If `input_features` is an array or list, then `input_features` must
-              match `feature_names_in_`. This parameter exits only for compatibility
-              with the Scikit-learn pipeline.
+              match `feature_names_in_`.
 
         Raises
         ------
@@ -98,13 +97,22 @@ class GetFeatureNamesOutMixin:
         check_is_fitted(self)
 
         if input_features is not None:
-
-            # the feature_names_in_ are "x0", "x1","x2" ..."xn"
-            # it means that the input to fit() was a numpy array.
-            # Thus, we let the user enter the feature names
+            # If input to fit is an array, then the variable names in
+            # feature_names_in_ are "x0", "x1","x2" ..."xn".
             if self.feature_names_in_ == [f"x{i}" for i in range(self.n_features_in_)]:
+
+                # If the input was an array, we let the user enter the variable names.
                 if len(input_features) == self.n_features_in_:
-                    return input_features if isinstance(input_features, list) else list(input_features)
+                    if isinstance(input_features, list):
+                        feature_names = input_features
+                    else:
+                        feature_names = list(input_features)
+
+                    # For transformers that add features to the data.
+                    feature_names = self._add_new_feature_names(feature_names)
+
+                    return feature_names
+
                 else:
                     raise ValueError(
                         "The number of input_features does not match the number of "
@@ -124,4 +132,22 @@ class GetFeatureNamesOutMixin:
                         "Got {input_features} instead."
                     )
 
-        return self.feature_names_in_
+        feature_names = self.feature_names_in_
+
+        # For transformers that add features to the dataframe:
+        feature_names = self._add_new_feature_names(feature_names)
+
+        return feature_names
+
+    def _add_new_feature_names(self, feature_names):
+        # For transformers that add features to the dataframe:
+        if hasattr(self, "_get_new_features_name") and callable(
+            self._get_new_features_name
+        ):
+            feature_names = feature_names + self._get_new_features_name()
+
+            if self.drop_original is True:
+                # Remove names of variables to drop.
+                feature_names = [f for f in feature_names if f not in self.variables_]
+
+        return feature_names

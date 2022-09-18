@@ -1,8 +1,10 @@
 import pytest
 from numpy import inf
 from pandas.testing import assert_frame_equal
+
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from tests.estimator_checks.non_fitted_error_checks import check_raises_non_fitted_error
+
 
 class MockClass(BaseNumericalTransformer):
     def __init__(self):
@@ -28,7 +30,10 @@ def test_transform_method(df_vartypes, df_na):
     transformer = MockClass()
     transformer.fit(df_vartypes)
     assert_frame_equal(transformer.transform(df_vartypes), df_vartypes)
-    assert_frame_equal(transformer.transform(df_vartypes[['City', 'Age', 'Name', 'Marks', 'dob']]), df_vartypes)
+    assert_frame_equal(
+        transformer.transform(df_vartypes[["City", "Age", "Name", "Marks", "dob"]]),
+        df_vartypes,
+    )
 
     with pytest.raises(ValueError):
         transformer.fit(df_na)
