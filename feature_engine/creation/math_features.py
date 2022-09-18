@@ -158,24 +158,6 @@ class MathFeatures(BaseCreation):
         self.func = func
         self.new_variables_names = new_variables_names
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
-        """
-        This transformer does not learn parameters.
-
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The training input samples. Can be the entire dataframe, not just the
-            variables to aggregate.
-
-        y: pandas Series, or np.array. Defaults to None.
-            It is not needed in this transformer. You can pass y or None.
-        """
-        # Common checks and attributes
-        super().fit(X, y)
-
-        return self
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Create and add new variables.

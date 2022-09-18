@@ -38,7 +38,7 @@ class BaseCreation(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Common set-up of creation transformers.
+        This transformer does not learn parameters.
 
         Parameters
         ----------
@@ -74,7 +74,7 @@ class BaseCreation(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         # save train set shape
         self.n_features_in_ = X.shape[1]
 
-        return X
+        return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """

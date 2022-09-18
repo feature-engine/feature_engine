@@ -155,27 +155,6 @@ class RelativeFeatures(BaseCreation):
         self.reference = reference
         self.func = func
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
-        """
-        This transformer does not learn any parameter.
-
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The training input samples. Can be the entire dataframe, not just the
-            variables to transform.
-
-        y: pandas Series, or np.array. Default=None.
-            It is not needed in this transformer. You can pass y or None.
-        """
-        # Common checks and attributes
-        X = super().fit(X, y)
-
-        # check variables are numerical
-        self.reference = _find_or_check_numerical_variables(X, self.reference)
-
-        return self
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Add new features.
