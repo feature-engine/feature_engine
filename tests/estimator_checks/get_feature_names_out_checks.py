@@ -17,33 +17,22 @@ from tests.estimator_checks.dataframe_for_checks import test_df
 def check_get_feature_names_out(estimator):
     """
     Check that the method get_feature_names_out() returns the variable names of
-    the transformed dataframe. In most transformers that would be the same as
-    the variable names in the train set used in fit(). The value is stored in
-    `feature_names_in_`.
+    the transformed dataframe. That would be the same as the variable names in the
+    train set used in fit(). The variable names are stored in `feature_names_in_`.
 
     For those transformers that return additional variables, we need to incorporate
     specific tests, based on the transformer functionality. They will be skipped from
     this test.
     """
-    _skip_test = [
-        "OneHotEncoder",
-        "AddMissingIndicator",
-        "LagFeatures",
-        "WindowFeatures",
-        "ExpandingWindowFeatures",
-        "MathFeatures",
-        "CyclicalFeatures",
-        "RelativeFeatures",
-        "DatetimeFeatures",
-    ]
 
-    if estimator.__class__.__name__ not in _skip_test:
+    # train set
+    X, y = test_df(categorical=True, datetime=True)
 
-        # train set
-        X, y = test_df(categorical=True, datetime=True)
+    # train transformer
+    estimator = clone(estimator)
 
-        # train transformer
-        estimator = clone(estimator)
+    # skip tests for transformers that add features
+    if not hasattr(estimator, "_get_new_features_name"):
         estimator.fit(X, y)
 
         # train pipeline with transformer
@@ -53,48 +42,13 @@ def check_get_feature_names_out(estimator):
         # feature names in train set
         feature_names = list(X.columns)
 
-        # selection transformers
-        if (
-            hasattr(estimator, "confirm_variables")
-            or estimator.__class__.__name__ == "DropFeatures"
-        ):
-            feature_names = [
-                f for f in feature_names if f not in estimator.features_to_drop_
-            ]
+        # test transformer
+        assert estimator.get_feature_names_out(input_features=None) == feature_names
+        assert (
+            estimator.get_feature_names_out(input_features=feature_names)
+            == feature_names
+        )
 
-            # take a few as input features (selectors ignore this parameter)
-            input_features = [feature_names[0:3]]
-
-            # test transformer
-            assert estimator.get_feature_names_out() == feature_names
-            assert estimator.get_feature_names_out(input_features) == feature_names
-            assert estimator.transform(X).shape[1] == len(feature_names)
-
-            # test transformer within pipeline
-            assert pipe.get_feature_names_out() == feature_names
-            assert pipe.get_feature_names_out(input_features) == feature_names
-
-        elif estimator.__class__.__name__ == "MatchVariables":
-            # take a few as input features (these transformers ignore this parameter)
-            input_features = [feature_names[0:3]]
-
-            # test transformer
-            assert estimator.get_feature_names_out() == feature_names
-            assert estimator.get_feature_names_out(input_features) == feature_names
-            assert estimator.transform(X).shape[1] == len(feature_names)
-
-            # test transformer within pipeline
-            assert pipe.get_feature_names_out() == feature_names
-            assert pipe.get_feature_names_out(input_features) == feature_names
-
-        else:
-            input_features = estimator.variables_
-
-            # test transformer
-            assert estimator.get_feature_names_out() == feature_names
-            assert estimator.get_feature_names_out(input_features) == input_features
-            assert estimator.transform(X).shape[1] == len(feature_names)
-
-            # test transformer within pipeline
-            assert pipe.get_feature_names_out() == feature_names
-            assert pipe.get_feature_names_out(input_features) == input_features
+        # test transformer within pipeline
+        assert pipe.get_feature_names_out(input_features=None) == feature_names
+        assert pipe.get_feature_names_out(input_features=feature_names) == feature_names

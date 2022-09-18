@@ -254,9 +254,8 @@ class DropHighPSIFeatures(BaseSelector):
         if not isinstance(switch, bool):
             raise ValueError(f"switch must be a boolean. Got {switch} instead.")
 
-        if (
-            (isinstance(threshold, str) and (threshold != 'auto')) or
-            (isinstance(threshold, (float, int)) and threshold < 0)
+        if (isinstance(threshold, str) and (threshold != "auto")) or (
+            isinstance(threshold, (float, int)) and threshold < 0
         ):
             raise ValueError(
                 f"threshold must be greater than 0 or 'auto'. Got {threshold} instead."
@@ -359,7 +358,7 @@ class DropHighPSIFeatures(BaseSelector):
         if self.switch:
             test_df, basis_df = basis_df, test_df
 
-        if self.threshold == 'auto':
+        if self.threshold == "auto":
             threshold = self._calculate_auto_threshold(
                 basis_df.shape[0], test_df.shape[0]
             )
@@ -555,4 +554,4 @@ class DropHighPSIFeatures(BaseSelector):
         # N - size of basis dataset, M - size of test dataset
         # see formula (5.2) from reference
         # taking q = 0.999 to get higher threshold
-        return stats.chi2.ppf(q, self.bins-1) * (1. / N + 1. / M)
+        return stats.chi2.ppf(q, self.bins - 1) * (1.0 / N + 1.0 / M)

@@ -354,7 +354,9 @@ def test_get_feature_names_out(_drop, df_vartypes):
     X = transformer.fit_transform(df_vartypes)
     feat_out = list(X.columns)
     assert feat_out == transformer.get_feature_names_out(input_features=None)
-    assert feat_out == transformer.get_feature_names_out(input_features=df_vartypes.columns)
+    assert feat_out == transformer.get_feature_names_out(
+        input_features=df_vartypes.columns
+    )
     assert all([f for f in varnames if f in feat_out])
 
 
@@ -382,7 +384,10 @@ def test_get_feature_names_out_from_pipeline(_drop, df_vartypes):
 
     X = pipe.fit_transform(df_vartypes)
     assert list(X.columns) == pipe.get_feature_names_out(input_features=None)
-    assert list(X.columns) == pipe.get_feature_names_out(input_features=df_vartypes.columns)
+    assert list(X.columns) == pipe.get_feature_names_out(
+        input_features=df_vartypes.columns
+    )
+    assert all([f for f in varnames if f in X.columns])
 
 
 @pytest.mark.parametrize("_input_features", ["hola", ["Age", "Marks"]])

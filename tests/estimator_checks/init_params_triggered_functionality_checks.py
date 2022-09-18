@@ -97,12 +97,9 @@ def check_drop_original_variables(estimator):
     estimator.set_params(drop_original=True)
     X_tr = estimator.fit_transform(X, y)
 
-    if hasattr(estimator, "variables_"):
-        vars = estimator.variables_
-    elif hasattr(estimator, "reference"):
-        vars = estimator.variables + estimator.reference
-    else:
-        vars = estimator.variables
+    vars = estimator.variables_
+    if hasattr(estimator, "reference"):
+        vars = vars + estimator.reference
 
     # Check that original variables are not in transformed dataframe
     assert set(vars).isdisjoint(set(X_tr.columns))
@@ -115,10 +112,7 @@ def check_drop_original_variables(estimator):
     estimator.set_params(drop_original=False)
     X_tr = estimator.fit_transform(X, y)
 
-    if hasattr(estimator, "variables_"):
-        vars = estimator.variables_
-    else:
-        vars = estimator.variables
+    vars = estimator.variables_
 
     # Check that original variables are in transformed dataframe
     assert len([f in X_tr.columns for f in vars])

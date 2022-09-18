@@ -360,7 +360,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
         else:
             feature_names = [
                 str(var) + FEATURES_SUFFIXES[feat]
-                for var in self.variables_
+                for var in self.variables_  # type: ignore
                 for feat in self.features_to_extract_
             ]
 

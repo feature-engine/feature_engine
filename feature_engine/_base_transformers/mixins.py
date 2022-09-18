@@ -123,7 +123,9 @@ class GetFeatureNamesOutMixin:
                 if isinstance(input_features, list):
                     if input_features != self.feature_names_in_:
                         raise ValueError(msg)
-                elif isinstance(input_features, ndarray) or isinstance(input_features, pd.core.indexes.base.Index):
+                elif isinstance(input_features, ndarray) or isinstance(
+                    input_features, pd.core.indexes.base.Index
+                ):
                     if list(input_features) != self.feature_names_in_:
                         raise ValueError(msg)
                 else:

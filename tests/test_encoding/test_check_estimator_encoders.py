@@ -65,7 +65,7 @@ def test_check_estimator_from_feature_engine(estimator):
                 index=[101, 105, 42, 76, 88, 92],
             ),
             pd.DataFrame(
-                {"0": [25.5, 25.5, 25.5, 25.5, 45.5, 45.5]},
+                {"x0": [25.5, 25.5, 25.5, 25.5, 45.5, 45.5]},
             ),
         ),
         (
@@ -75,7 +75,7 @@ def test_check_estimator_from_feature_engine(estimator):
                 index=[101, 105, 42, 76, 88, 92],
             ),
             pd.DataFrame(
-                {"0": [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]},
+                {"x0": [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]},
             ),
         ),
         (
@@ -87,7 +87,7 @@ def test_check_estimator_from_feature_engine(estimator):
                 },
                 index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1],
             ),
-            pd.DataFrame({"0": [2, 2, 2, 1, 1, 1, 0, 0, 0]}),
+            pd.DataFrame({"x0": [2, 2, 2, 1, 1, 1, 0, 0, 0]}),
         ),
         (
             PRatioEncoder(),
@@ -96,7 +96,7 @@ def test_check_estimator_from_feature_engine(estimator):
                 index=[101, 105, 42, 76, 88, 92],
             ),
             pd.DataFrame(
-                {"0": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
+                {"x0": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
             ),
         ),
         (
@@ -106,7 +106,7 @@ def test_check_estimator_from_feature_engine(estimator):
                 index=[101, 105, 42, 76, 88, 92],
             ),
             pd.DataFrame(
-                {"0": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+                {"x0": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
             ),
         ),
     ],

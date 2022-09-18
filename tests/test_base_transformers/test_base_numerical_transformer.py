@@ -11,7 +11,7 @@ class MockClass(BaseNumericalTransformer):
         self.variables = None
 
 
-def test_transform_method(df_vartypes, df_na):
+def test_fit_method(df_vartypes, df_na):
     transformer = MockClass()
     res = transformer.fit(df_vartypes)
     assert transformer.feature_names_in_ == list(df_vartypes.columns)
