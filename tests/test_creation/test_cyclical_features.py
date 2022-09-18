@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from numpy import array
 
 from feature_engine.creation import CyclicalFeatures
 
@@ -162,7 +163,7 @@ def test_raises_error_when_init_parameters_not_permitted(df_cyclical):
         # when max_values values are not integers or string
         CyclicalFeatures(max_values={"day": "31"})
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         # when drop original is not a boolean
         CyclicalFeatures(drop_original="True")
 
@@ -194,41 +195,31 @@ def test_max_values_mapping(df_cyclical):
     pd.testing.assert_frame_equal(X, transf_df)
 
 
-def test_get_feature_names_out(df_cyclical):
+@pytest.mark.parametrize(
+    "input_features", [None, ["day", "months"], array(["day", "months"])]
+)
+def test_get_feature_names_out(df_cyclical, input_features):
     # default features from all variables
     transformer = CyclicalFeatures()
     X = transformer.fit_transform(df_cyclical)
-    assert list(X.columns) == transformer.get_feature_names_out()
-    assert transformer.get_feature_names_out(input_features=["day"]) == [
-        "day_sin",
-        "day_cos",
-    ]
-    assert transformer.get_feature_names_out(input_features=["day", "months"]) == [
+    feat_out = list(df_cyclical.columns) + [
         "day_sin",
         "day_cos",
         "months_sin",
         "months_cos",
     ]
 
-    # default features from 1 variable
+    assert list(X.columns) == transformer.get_feature_names_out()
+    assert transformer.get_feature_names_out(input_features=input_features) == feat_out
+
+    with pytest.raises(ValueError):
+        transformer.get_feature_names_out(input_features=["day"])
+
+    with pytest.raises(ValueError):
+        transformer.get_feature_names_out(input_features=["sandia", "banana"])
+
     transformer = CyclicalFeatures(drop_original=True)
     X = transformer.fit_transform(df_cyclical)
+    feat_out = ["day_sin", "day_cos", "months_sin", "months_cos"]
     assert list(X.columns) == transformer.get_feature_names_out()
-    assert transformer.get_feature_names_out(input_features=["day"]) == [
-        "day_sin",
-        "day_cos",
-    ]
-    assert transformer.get_feature_names_out(input_features=["day", "months"]) == [
-        "day_sin",
-        "day_cos",
-        "months_sin",
-        "months_cos",
-    ]
-
-    with pytest.raises(ValueError):
-        # assert error when user passes a string instead of list
-        transformer.get_feature_names_out(input_features="day")
-
-    with pytest.raises(ValueError):
-        # assert error when uses passes features that were not lagged
-        transformer.get_feature_names_out(input_features=["color"])
+    assert transformer.get_feature_names_out(input_features=input_features) == feat_out

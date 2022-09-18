@@ -5,7 +5,10 @@ import pandas as pd
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
-from feature_engine._base_transformers.mixins import FitFromDictMixin
+from feature_engine._base_transformers.mixins import (
+    FitFromDictMixin,
+    GetFeatureNamesOutMixin,
+)
 from feature_engine._check_input_parameters.check_init_input_params import (
     _check_param_drop_original,
 )
@@ -40,7 +43,9 @@ from feature_engine._variable_handling.init_parameter_checks import (
     fit_transform=_fit_transform_docstring,
     transform=_transform_creation_docstring,
 )
-class CyclicalFeatures(BaseNumericalTransformer, FitFromDictMixin):
+class CyclicalFeatures(
+    BaseNumericalTransformer, FitFromDictMixin, GetFeatureNamesOutMixin
+):
     """
     CyclicalFeatures() applies cyclical transformations to numerical
     variables, returning 2 new features per variable, according to:
@@ -127,7 +132,7 @@ class CyclicalFeatures(BaseNumericalTransformer, FitFromDictMixin):
             X = super().fit(X)
             self.max_values_ = X[self.variables_].max().to_dict()
         else:
-            X = super()._fit_from_dict(X, self.max_values)
+            super()._fit_from_dict(X, self.max_values)
             self.max_values_ = self.max_values
 
         return self
@@ -158,55 +163,9 @@ class CyclicalFeatures(BaseNumericalTransformer, FitFromDictMixin):
 
         return X
 
-    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
-        """Get output feature names for transformation.
-
-        Parameters
-        ----------
-        input_features: list, default=None
-            Input features. If `input_features` is `None`, then the names of all the
-            variables in the transformed dataset (original + new variables) is returned.
-            Alternatively, only the names for the new features derived from
-            input_features will be returned.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        # Create names for all features or just the indicated ones.
-        if input_features is None:
-            input_features_ = self.variables_
-        else:
-            if not isinstance(input_features, list):
-                raise ValueError(
-                    f"input_features must be a list. Got {input_features} instead."
-                )
-            if any([f for f in input_features if f not in self.variables_]):
-                raise ValueError(
-                    "Some features in input_features were not used to create new "
-                    "variables. You can only get the names of the new features "
-                    "with this function."
-                )
-            # Create just indicated lag features.
-            input_features_ = input_features
-
-        # create the names for the periodic features
+    def _get_new_features_name(self) -> List:
+        """Return names of the created features."""
         feature_names = [
-            str(var) + suffix for var in input_features_ for suffix in ["_sin", "_cos"]
+            f"{var}_{suffix}" for var in self.variables_ for suffix in ["sin", "cos"]
         ]
-
-        # Return names of all variables if input_features is None.
-        if input_features is None:
-            if self.drop_original is True:
-                # Remove names of variables to drop.
-                original = [
-                    f for f in self.feature_names_in_ if f not in self.variables_
-                ]
-                feature_names = original + feature_names
-            else:
-                feature_names = self.feature_names_in_ + feature_names
-
         return feature_names
