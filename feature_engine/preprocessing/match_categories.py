@@ -19,6 +19,7 @@ from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
 )
+from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 
 
 @Substitution(
@@ -29,7 +30,9 @@ from feature_engine.encoding.base_encoder import (
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
 )
-class MatchCategories(CategoricalInitMixin, CategoricalMethodsMixin):
+class MatchCategories(
+    CategoricalInitMixin, CategoricalMethodsMixin, GetFeatureNamesOutMixin
+):
     """
     MatchCategories() ensures that categorical variables are encoded as pandas
     `'categorical'` dtype, instead of generic python `'object'` or other dtypes.
