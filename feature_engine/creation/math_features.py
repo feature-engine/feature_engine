@@ -1,11 +1,11 @@
 from typing import Any, List, Optional, Union
 
 import pandas as pd
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
@@ -23,6 +23,7 @@ from feature_engine.creation.base_creation import BaseCreation
 @Substitution(
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
+    variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
@@ -73,6 +74,8 @@ class MathFeatures(BaseCreation):
 
     Attributes
     ----------
+    {variables_}
+
     {feature_names_in_}
 
     {n_features_in_}
@@ -189,7 +192,7 @@ class MathFeatures(BaseCreation):
         """
         X = super().transform(X)
 
-        new_variable_names = self.get_feature_names_out(input_features=True)
+        new_variable_names = self._get_new_features_name()
 
         if len(new_variable_names) == 1:
             X[new_variable_names[0]] = X[self.variables].agg(self.func, axis=1)
@@ -201,36 +204,15 @@ class MathFeatures(BaseCreation):
 
         return X
 
-    def get_feature_names_out(self, input_features: Optional[bool] = None) -> List:
-        """Get output feature names for transformation.
-
-        Parameters
-        ----------
-        input_features: bool, default=None
-            If `input_features` is `None`, then the names of all the variables in the
-            transformed dataset (original + new variables) is returned. Alternatively,
-            if `input_features` is True, only the names for the new features will be
-            returned.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        if input_features is not None and not isinstance(input_features, bool):
-            raise ValueError(
-                "input_features takes None or a boolean, True or False. "
-                f"Got {input_features} instead."
-            )
+    def _get_new_features_name(self) -> List:
+        """Return names of the created features."""
 
         # create name of the new variables
         if self.new_variables_names is not None:
             feature_names = self.new_variables_names
 
         else:
-            varlist = [str(var) for var in self.variables]
+            varlist = [f"{var}" for var in self.variables_]
 
             if isinstance(self.func, list):
                 functions = [
@@ -241,16 +223,5 @@ class MathFeatures(BaseCreation):
                 ]
             else:
                 feature_names = [f"{self.func}_{'_'.join(varlist)}"]
-
-        # organise return of method
-        if input_features is None or input_features is False:
-            if self.drop_original is True:
-                # Remove names of variables to drop.
-                original = [
-                    f for f in self.feature_names_in_ if f not in self.variables
-                ]
-                feature_names = original + feature_names
-            else:
-                feature_names = self.feature_names_in_ + feature_names
 
         return feature_names

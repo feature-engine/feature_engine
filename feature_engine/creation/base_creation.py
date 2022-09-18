@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._check_input_parameters.check_init_input_params import (
     _check_param_drop_original,
     _check_param_missing_values,
@@ -20,7 +21,7 @@ from feature_engine.dataframe_checks import (
 from feature_engine.tags import _return_tags
 
 
-class BaseCreation(BaseEstimator, TransformerMixin):
+class BaseCreation(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """Shared set-up, checks and methods across creation transformers."""
 
     def __init__(
@@ -52,14 +53,14 @@ class BaseCreation(BaseEstimator, TransformerMixin):
         X = check_X(X)
 
         # check variables are numerical
-        self.variables: List[Union[str, int]] = _find_or_check_numerical_variables(
+        self.variables_: List[Union[str, int]] = _find_or_check_numerical_variables(
             X, self.variables
         )
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables)
-            _check_contains_inf(X, self.variables)
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
         # save input features
         self.feature_names_in_ = X.columns.tolist()
@@ -95,8 +96,8 @@ class BaseCreation(BaseEstimator, TransformerMixin):
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables)
-            _check_contains_inf(X, self.variables)
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
         # reorder variables to match train set
         X = X[self.feature_names_in_]
