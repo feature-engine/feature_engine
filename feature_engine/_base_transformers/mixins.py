@@ -146,7 +146,7 @@ class GetFeatureNamesOutMixin:
         ):
             feature_names = feature_names + self._get_new_features_name()
 
-            if self.drop_original is True:
+            if self.drop_original is True and self.variables_ is not None:
                 # Remove names of variables to drop.
                 feature_names = [f for f in feature_names if f not in self.variables_]
 

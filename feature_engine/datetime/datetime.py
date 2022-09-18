@@ -8,6 +8,7 @@ from pandas.api.types import is_numeric_dtype as is_numeric
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -45,7 +46,7 @@ from feature_engine.datetime._datetime_constants import (
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class DatetimeFeatures(BaseEstimator, TransformerMixin):
+class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """
     DatetimeFeatures extracts date and time features from datetime variables, adding
     new columns to the dataset. DatetimeFeatures can extract datetime information from
@@ -349,88 +350,17 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin):
 
         return X
 
-    def get_feature_names_out(
-        self, input_features: Optional[Union[List, str]] = None
-    ) -> List:
-        """Get output feature names for transformation.
-
-        Parameters
-        ----------
-        input_features: str, list, default=None
-            Input features. If `None`, then the names of all the variables in the
-            transformed dataset (original + new variables) is returned. If 'index',
-            then the name of the features created from the index is returned. If list
-            with feature names, the names for the datetime features derived from
-            the variables in the list will be returned."
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        # special case index
-        if self.variables_ is None:
-
-            if input_features is None:
-                feature_names = (
-                    self.feature_names_in_ + self._get_datetime_feature_names("index")
-                )
-
-            elif input_features == "index":
-                feature_names = self._get_datetime_feature_names("index")
-
-            else:
-                raise ValueError(
-                    "The dataframe index was used to extract date and time variables."
-                    "Thus, input_features can only be None or 'index'. "
-                    f"Got {input_features} instead."
-                )
-
-        else:
-            # Return all features in transformed output.
-            if input_features is None:
-                # All datetime features.
-                feature_names = self._get_datetime_feature_names(self.variables_)
-
-                if self.drop_original is True:
-                    # Remove names of variables to drop.
-                    original = [
-                        f for f in self.feature_names_in_ if f not in self.variables_
-                    ]
-                    feature_names = original + feature_names
-                else:
-                    feature_names = self.feature_names_in_ + feature_names
-
-            else:
-                # Return features requested by user.
-                if not isinstance(input_features, list):
-                    raise ValueError(
-                        f"input_features must be a list. Got {input_features} instead."
-                    )
-                if any([f for f in input_features if f not in self.variables_]):
-                    raise ValueError(
-                        "Some features in input_features were not used to extract new "
-                        "variables. Pass either None, or a list with the features that "
-                        "were used to create date and time features."
-                    )
-                # Create just indicated features.
-                feature_names = self._get_datetime_feature_names(input_features)
-
-        return feature_names
-
-    def _get_datetime_feature_names(self, input_features: Union[List, str]):
+    def _get_new_features_name(self):
         """create the names for the datetime features."""
 
-        if input_features == "index":
+        if self.variables == "index":
             feature_names = [
                 FEATURES_SUFFIXES[feat][1:] for feat in self.features_to_extract_
             ]
         else:
             feature_names = [
                 str(var) + FEATURES_SUFFIXES[feat]
-                for var in input_features
+                for var in self.variables_
                 for feat in self.features_to_extract_
             ]
 
