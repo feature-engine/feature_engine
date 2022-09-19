@@ -64,7 +64,7 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
     Parameters
     ----------
-    a: int, float, str, default=0.0
+    smoothing: int, float, str, default=0.0
         Smoothing factor, should be >= 0. If 0 then no smoothing is applied,
         higher values lead to stronger smoothing (higher weight of prior mean).
         When a = 0.0, no smoothing is applied - regular mean encoder.
@@ -121,7 +121,7 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
     def __init__(
         self,
-        a: Union[int, float, str] = 0.0,
+        smoothing: Union[int, float, str] = 0.0,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
         unseen: str = "ignore",
@@ -132,9 +132,10 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
             (isinstance(a, (float, int)) and a < 0)
         ):
             raise ValueError(
-                f"a must be greater than 0 or 'auto'. Got {a} instead."
+                f"smoothing must be greater than 0 or 'auto'. "
+                f"Got {smoothing} instead."
             )
-        self.a = a
+        self.smoothing = smoothing
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -156,19 +157,19 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
         self.encoder_dict_ = {}
 
-        y_mean = y.mean()
+        y_prior = y.mean()
         if self.a == 'auto':
             y_var = y.var(ddof=0)
         for var in self.variables_:
             if self.a == 'auto':
                 damping = y.groupby(X[var]).var(ddof=0) / y_var
             else:
-                damping = self.a
+                damping = self.smoothing
             counts = X[var].value_counts()
             smoothing = counts / (counts + damping)
             self.encoder_dict_[var] = (
                 smoothing * y.groupby(X[var]).mean() +
-                (1. - smoothing) * y_mean
+                (1. - smoothing) * y_prior
             ).to_dict()
 
         self._check_encoding_dictionary()
