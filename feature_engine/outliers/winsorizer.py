@@ -172,8 +172,8 @@ class Winsorizer(WinsorizerBase):
                 indicators.append(str(cl) + "_right")
         return indicators
 
-    def _add_new_feature_names(self, feature_names):
-        """Adds new features to df columns, and removes categoricals."""
+    def _add_new_feature_names(self, feature_names) -> List:
+        """Adds names of outlier indicators to transformed variable names."""
         if self.add_indicators is True:
             feature_names = feature_names + self._get_new_features_name()
         return feature_names
