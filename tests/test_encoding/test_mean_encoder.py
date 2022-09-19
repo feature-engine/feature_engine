@@ -300,7 +300,7 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 
 
 def test_auto_smoothing(df_enc):
-    encoder = MeanEncoder(a='auto')
+    encoder = MeanEncoder(smoothing='auto')
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     X = encoder.transform(df_enc[["var_A", "var_B"]])
 
@@ -329,7 +329,7 @@ def test_auto_smoothing(df_enc):
 
 
 def test_smoothing(df_enc):
-    encoder = MeanEncoder(a=100)
+    encoder = MeanEncoder(smoothing=100)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     X = encoder.transform(df_enc[["var_A", "var_B"]])
 
