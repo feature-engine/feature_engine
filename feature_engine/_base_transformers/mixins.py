@@ -75,23 +75,13 @@ class GetFeatureNamesOutMixin:
         ----------
         input_features : array or list, default=None
             This parameter exits only for compatibility with the Scikit-learn pipeline.
-            - If `input_features` is `None`, then `feature_names_in_` is used as
-              feature names in.
-            - If `input_features` is an array or list, then `input_features` must
-              match `feature_names_in_`.
 
-        Raises
-        ------
-        ValueError
-            If input_features does not match feature_names_in_ or if it is not a list
-            or an array.
-
-        NonFittedError
-            If method is called before transformer is fit.
+            - If `None`, then `feature_names_in_` is used as feature names in.
+            - If an array or list, then `input_features` must match `feature_names_in_`.
 
         Returns
         -------
-        feature_names_in_: list
+        feature_names_out: list
             Transformed feature names.
         """
         check_is_fitted(self)
