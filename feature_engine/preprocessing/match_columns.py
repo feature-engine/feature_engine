@@ -7,9 +7,10 @@ from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.tags import _return_tags
+from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 
 
-class MatchVariables(BaseEstimator, TransformerMixin):
+class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """
     MatchVariables() ensures that the same variables observed in the train set
     are present in the test set. If the dataset to transform contains variables that
@@ -199,23 +200,6 @@ class MatchVariables(BaseEstimator, TransformerMixin):
         X = X.reindex(columns=self.feature_names_in_, fill_value=self.fill_value)
 
         return X
-
-    def get_feature_names_out(self, input_features=None) -> List:
-        """Get output feature names for transformation.
-
-        input_features: None
-            This parameter exists only for compatibility with the Scikit-learn
-            pipeline, but has no functionality. You can pass a list of feature names
-            or None.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        return self.feature_names_in_
 
     # for the check_estimator tests
     def _more_tags(self):

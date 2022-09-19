@@ -1,7 +1,6 @@
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Union
 
 import pandas as pd
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -201,7 +200,7 @@ class WindowFeatures(BaseForecastTransformer):
                 .shift(periods=self.periods, freq=self.freq)
             )
 
-        tmp.columns = self.get_feature_names_out(self.variables_)
+        tmp.columns = self._get_new_features_name()
 
         X = X.merge(tmp, left_index=True, right_index=True, how="left")
 
@@ -210,40 +209,8 @@ class WindowFeatures(BaseForecastTransformer):
 
         return X
 
-    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
-        """
-        Get output feature names for transformation.
-
-        Parameters
-        ----------
-        input_features: list, default=None
-            Input features. If `input_features` is `None`, then the names of all the
-            variables in the transformed dataset (original + new variables) is returned.
-            Alternatively, only the names for the window features derived from
-            input_features will be returned.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        # create names for all window features or just the indicated ones.
-        if input_features is None:
-            input_features_ = self.variables_
-        else:
-            if not isinstance(input_features, list):
-                raise ValueError(
-                    f"input_features must be a list. Got {input_features} instead."
-                )
-            if any([f for f in input_features if f not in self.variables_]):
-                raise ValueError(
-                    "Some of the indicated features were not used to create window "
-                    "features."
-                )
-            # create just indicated window features
-            input_features_ = input_features
+    def _get_new_features_name(self) -> List:
+        """Get names of the lag features."""
 
         if not isinstance(self.functions, list):
             functions_ = [self.functions]
@@ -254,25 +221,14 @@ class WindowFeatures(BaseForecastTransformer):
             feature_names = [
                 f"{feature}_window_{win}_{agg}"
                 for win in self.window
-                for feature in input_features_
+                for feature in self.variables_
                 for agg in functions_
             ]
         else:
             feature_names = [
                 f"{feature}_window_{self.window}_{agg}"
-                for feature in input_features_
+                for feature in self.variables_
                 for agg in functions_
             ]
-
-        # return names of all variables if input_features is None
-        if input_features is None:
-            if self.drop_original is True:
-                # removes names of variables to drop
-                original = [
-                    f for f in self.feature_names_in_ if f not in self.variables_
-                ]
-                feature_names = original + feature_names
-            else:
-                feature_names = self.feature_names_in_ + feature_names
 
         return feature_names

@@ -5,7 +5,7 @@ from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Wins
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
 _estimators = [
-    ArbitraryOutlierCapper(max_capping_dict={"0": 10}),
+    ArbitraryOutlierCapper(max_capping_dict={"x0": 10}),
     OutlierTrimmer(),
     Winsorizer(),
 ]

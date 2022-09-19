@@ -169,16 +169,16 @@ added at the back of the dataframe.
     2020-05-15 12:45:00               31.51              49.84               0.79
     2020-05-15 13:00:00               32.15              52.35               0.65
 
-We can get the names of all the lag features created for the variable "irradiation" as
-follows:
+We can get the names of all the lag features as follows:
 
 .. code:: python
 
-    lag_f.get_feature_names_out(["irradiation"])
+    lag_f.get_feature_names_out()
 
 .. code:: python
 
-    ['irradiation_lag_1', 'irradiation_lag_2']
+    ['ambient_temp_lag_1', 'module_temp_lag_1', 'irradiation_lag_1',
+     'ambient_temp_lag_2', 'module_temp_lag_2', 'irradiation_lag_2']
 
 
 Lag based on datetime
@@ -356,15 +356,4 @@ all the features in the output dataframe.
      'ambient_temp_lag_2',
      'module_temp_lag_2',
      'irradiation_lag_2']
-
-Alternatively, we can obtain the names of the lag features created from one or more
-input features as follows:
-
-.. code:: python
-
-    lag_f.get_feature_names_out(input_features=["irradiation"])
-
-.. code:: python
-
-    ['irradiation_lag_1', 'irradiation_lag_2']
 

@@ -1,11 +1,11 @@
-from typing import List, Optional, Union
+from typing import List, Union
 
 import pandas as pd
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
@@ -18,9 +18,6 @@ from feature_engine._docstrings.methods import (
     _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
-)
 from feature_engine.creation.base_creation import BaseCreation
 
 _PERMITTED_FUNCTIONS = [
@@ -39,6 +36,7 @@ _PERMITTED_FUNCTIONS = [
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
+    variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
@@ -85,6 +83,8 @@ class RelativeFeatures(BaseCreation):
 
     Attributes
     ----------
+    {variables_}
+
     {feature_names_in_}
 
     {n_features_in_}
@@ -151,27 +151,6 @@ class RelativeFeatures(BaseCreation):
         self.variables = variables
         self.reference = reference
         self.func = func
-
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
-        """
-        This transformer does not learn any parameter.
-
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The training input samples. Can be the entire dataframe, not just the
-            variables to transform.
-
-        y: pandas Series, or np.array. Default=None.
-            It is not needed in this transformer. You can pass y or None.
-        """
-        # Common checks and attributes
-        X = super().fit(X, y)
-
-        # check variables are numerical
-        self.reference = _find_or_check_numerical_variables(X, self.reference)
-
-        return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -281,29 +260,8 @@ class RelativeFeatures(BaseCreation):
             X[varname] = X[self.variables].pow(X[reference], axis=0)
         return X
 
-    def get_feature_names_out(self, input_features: Optional[bool] = None) -> List:
-        """Get output feature names for transformation.
-
-        Parameters
-        ----------
-        input_features: bool, default=None
-            If `input_features` is `None`, then the names of all the variables in the
-            transformed dataset (original + new variables) is returned. Alternatively,
-            if `input_features` is True, only the names for the new features will be
-            returned.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        if input_features is not None and not isinstance(input_features, bool):
-            raise ValueError(
-                "input_features takes None or a boolean, True or False. "
-                f"Got {input_features} instead."
-            )
+    def _get_new_features_name(self) -> List:
+        """Return names of the created features."""
 
         # Names of new features
         feature_names = [
@@ -312,17 +270,4 @@ class RelativeFeatures(BaseCreation):
             for reference in self.reference
             for var in self.variables
         ]
-
-        if input_features is None or input_features is False:
-            if self.drop_original is True:
-                # Remove names of variables to drop.
-                original = [
-                    f
-                    for f in self.feature_names_in_
-                    if f not in self.variables + self.reference
-                ]
-                feature_names = original + feature_names
-            else:
-                feature_names = self.feature_names_in_ + feature_names
-
         return feature_names

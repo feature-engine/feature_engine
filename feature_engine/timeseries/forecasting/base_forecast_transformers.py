@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -36,7 +37,7 @@ from feature_engine.tags import _return_tags
     fit=_fit_not_learn_docstring,
     n_features_in_=_n_features_in_docstring,
 )
-class BaseForecastTransformer(BaseEstimator, TransformerMixin):
+class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """
     Shared methods across time-series forecasting transformers.
 

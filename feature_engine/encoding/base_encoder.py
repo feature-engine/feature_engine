@@ -1,16 +1,16 @@
 import warnings
-from typing import List, Optional, Union
+from typing import List, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._docstrings.init_parameters import (
     _ignore_format_docstring,
     _unseen_docstring,
     _variables_categorical_docstring,
 )
-from feature_engine._docstrings.methods import _get_feature_names_out_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.init_parameter_checks import (
     _check_init_parameter_variables,
@@ -25,7 +25,6 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.encoding._helper_functions import check_parameter_unseen
-from feature_engine.get_feature_names_out import _get_feature_names_out
 from feature_engine.tags import _return_tags
 
 
@@ -92,7 +91,7 @@ class CategoricalInitExpandedMixin(CategoricalInitMixin):
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
 )
-class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
+class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """Shared methods across categorical transformers.
     BaseEstimator brings methods get_params() and set_params().
     TransformerMixin brings method fit_transform()
@@ -269,22 +268,6 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin):
             X[feature] = X[feature].map(inv_map)
 
         return X
-
-    @Substitution(get_feature_names_out=_get_feature_names_out_docstring)
-    def get_feature_names_out(
-        self, input_features: Optional[List[Union[str, int]]] = None
-    ) -> List[Union[str, int]]:
-        """{get_feature_names_out}"""
-
-        check_is_fitted(self)
-
-        feature_names = _get_feature_names_out(
-            features_in=self.feature_names_in_,
-            transformed_features=self.variables_,
-            input_features=input_features,
-        )
-
-        return feature_names
 
     def _more_tags(self):
         tags_dict = _return_tags()

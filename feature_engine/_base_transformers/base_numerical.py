@@ -2,14 +2,11 @@
 classes. Provides the base functionality within the fit() and transform() methods
 shared by most transformers, like checking that input is a df, the size, NA, etc.
 """
-from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine._docstrings.methods import _get_feature_names_out_docstring
-from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.variable_type_selection import (
     _find_or_check_numerical_variables,
 )
@@ -19,11 +16,13 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.get_feature_names_out import _get_feature_names_out
+from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine.tags import _return_tags
 
 
-class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
+class BaseNumericalTransformer(
+    BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin
+):
     """Shared set-up procedures across numerical transformers, i.e.,
     variable transformers, discretisers, math combination.
     """
@@ -113,22 +112,6 @@ class BaseNumericalTransformer(BaseEstimator, TransformerMixin):
         X = X[self.feature_names_in_]
 
         return X
-
-    @Substitution(get_feature_names_out=_get_feature_names_out_docstring)
-    def get_feature_names_out(
-        self, input_features: Optional[List[Union[str, int]]] = None
-    ) -> List[Union[str, int]]:
-        """{get_feature_names_out}"""
-
-        check_is_fitted(self)
-
-        feature_names = _get_feature_names_out(
-            features_in=self.feature_names_in_,
-            transformed_features=self.variables_,
-            input_features=input_features,
-        )
-
-        return feature_names
 
     # for the check_estimator tests
     def _more_tags(self):

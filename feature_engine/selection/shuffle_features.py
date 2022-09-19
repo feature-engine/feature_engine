@@ -25,6 +25,7 @@ from feature_engine.selection._docstring import (
     _estimator_docstring,
     _features_to_drop_docstring,
     _fit_docstring,
+    _get_support_docstring,
     _initial_model_performance_docstring,
     _scoring_docstring,
     _threshold_docstring,
@@ -53,6 +54,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     fit=_fit_docstring,
     transform=_transform_docstring,
     fit_transform=_fit_transform_docstring,
+    get_support=_get_support_docstring,
 )
 class SelectByShuffling(BaseSelector):
     """
@@ -115,6 +117,8 @@ class SelectByShuffling(BaseSelector):
     {fit}
 
     {fit_transform}
+
+    {get_support}
 
     {transform}
 

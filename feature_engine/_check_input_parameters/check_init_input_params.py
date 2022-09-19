@@ -9,7 +9,7 @@ def _check_param_missing_values(missing_values):
 
 def _check_param_drop_original(drop_original):
     if not isinstance(drop_original, bool):
-        raise TypeError(
+        raise ValueError(
             "drop_original takes only boolean values True and False. "
             f"Got {drop_original} instead."
         )

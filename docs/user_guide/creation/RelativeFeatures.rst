@@ -140,25 +140,6 @@ Which will return the names of all the variables in the transformed data:
      'Age_pow_Age',
      'Marks_pow_Age']
 
-Or, we can obtain the names of the new variables only:
-
-.. code:: python
-
-    transformer.get_feature_names_out(input_features=True)
-
-Which will return the names of the new features:
-
-.. code:: python
-
-    ['Age_sub_Age',
-     'Marks_sub_Age',
-     'Age_div_Age',
-     'Marks_div_Age',
-     'Age_mod_Age',
-     'Marks_mod_Age',
-     'Age_pow_Age',
-     'Marks_pow_Age']
-
 
 More details
 ^^^^^^^^^^^^

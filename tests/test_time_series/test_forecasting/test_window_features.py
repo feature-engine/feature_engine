@@ -54,7 +54,6 @@ def test_error_when_non_permitted_param_functions(_functions):
 
 def test_get_feature_names_out(df_time):
     # input features
-    input_features = ["ambient_temp", "module_temp", "irradiation"]
     original_features = ["ambient_temp", "module_temp", "irradiation", "color"]
 
     # case 1: 1 window, multiple variables, multiple functions
@@ -70,14 +69,13 @@ def test_get_feature_names_out(df_time):
         "irradiation_window_3_mean",
         "irradiation_window_3_sum",
     ]
-    assert tr.get_feature_names_out(input_features=None) == original_features + output
-    assert tr.get_feature_names_out(input_features=input_features) == output
-    assert tr.get_feature_names_out(input_features=input_features[0:2]) == output[0:4]
-    assert tr.get_feature_names_out(input_features=[input_features[0]]) == output[0:2]
+    output = original_features + output
+    assert tr.get_feature_names_out(input_features=None) == output
+    assert tr.get_feature_names_out(input_features=original_features) == output
 
     with pytest.raises(ValueError):
         # get error when a user passes a string instead of list
-        tr.get_feature_names_out(input_features=input_features[0])
+        tr.get_feature_names_out(input_features=["ambient_temp"])
 
     with pytest.raises(ValueError):
         # assert error when uses passes features that were not transformed
@@ -95,8 +93,9 @@ def test_get_feature_names_out(df_time):
         "ambient_temp_window_2_mean",
         "ambient_temp_window_2_count",
     ]
-    assert tr.get_feature_names_out(input_features=None) == original_features + output
-    assert tr.get_feature_names_out(input_features=["ambient_temp"]) == output
+    output = original_features + output
+    assert tr.get_feature_names_out(input_features=None) == output
+    assert tr.get_feature_names_out(input_features=df_time.columns) == output
 
     # case 3: multiple windows, multiple variables, multiple functions
     tr = WindowFeatures(window=[2, 3], functions=["mean", "sum"])
@@ -117,16 +116,9 @@ def test_get_feature_names_out(df_time):
         "irradiation_window_3_mean",
         "irradiation_window_3_sum",
     ]
-    assert tr.get_feature_names_out(input_features=None) == original_features + output
-    assert tr.get_feature_names_out(input_features=input_features) == output
-    assert (
-        tr.get_feature_names_out(input_features=input_features[0:2])
-        == output[0:4] + output[6:10]
-    )
-    assert (
-        tr.get_feature_names_out(input_features=[input_features[0]])
-        == output[0:2] + output[6:8]
-    )
+    output = original_features + output
+    assert tr.get_feature_names_out(input_features=None) == output
+    assert tr.get_feature_names_out(input_features=original_features) == output
 
     # case 4: 1 window, multiple variables, 1 function
     tr = WindowFeatures(window=2, functions=["mean"])
@@ -138,12 +130,10 @@ def test_get_feature_names_out(df_time):
         "module_temp_window_2_mean",
         "irradiation_window_2_mean",
     ]
-    assert tr.get_feature_names_out(input_features=None) == original_features + output
-    assert tr.get_feature_names_out(input_features=input_features) == output
-    assert tr.get_feature_names_out(input_features=input_features[0:2]) == output[0:2]
-    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [output[0]]
+    output = original_features + output
+    assert tr.get_feature_names_out(input_features=None) == output
 
-    # case 4: When function is a string
+    # case 5: When function is a string
     tr = WindowFeatures(window=2, functions="mean")
     tr.fit(df_time)
 
@@ -153,10 +143,24 @@ def test_get_feature_names_out(df_time):
         "module_temp_window_2_mean",
         "irradiation_window_2_mean",
     ]
-    assert tr.get_feature_names_out(input_features=None) == original_features + output
-    assert tr.get_feature_names_out(input_features=input_features) == output
-    assert tr.get_feature_names_out(input_features=input_features[0:2]) == output[0:2]
-    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [output[0]]
+    output = original_features + output
+    assert tr.get_feature_names_out(input_features=None) == output
+    assert tr.get_feature_names_out(input_features=original_features) == output
+
+    # case 6: drop_original is True
+    tr = WindowFeatures(window=2, functions="mean", drop_original=True)
+    tr.fit(df_time)
+
+    # expected
+    output = [
+        "ambient_temp_window_2_mean",
+        "module_temp_window_2_mean",
+        "irradiation_window_2_mean",
+    ]
+    assert tr.get_feature_names_out(input_features=None) == ["color"] + output
+    assert (
+        tr.get_feature_names_out(input_features=original_features) == ["color"] + output
+    )
 
 
 def test_single_window_when_using_periods(df_time):

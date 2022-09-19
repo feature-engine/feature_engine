@@ -40,6 +40,9 @@ class DropFeatures(BaseSelector):
     get_feature_names_out:
         Get output feature names for transformation.
 
+    get_support:
+        Get a mask, or integer index, of the features selected.
+
     get_params:
         Get parameters for this estimator.
 

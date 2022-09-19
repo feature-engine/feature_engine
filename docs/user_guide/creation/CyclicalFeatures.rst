@@ -92,31 +92,6 @@ new:
 
     ['day', 'months', 'day_sin', 'day_cos', 'months_sin', 'months_cos']
 
-Or we can return the names of the new features only, as follows:
-
-.. code:: python
-
-    cyclical.get_feature_names_out(["months", "day"])
-
-which will return the names of all the new features:
-
-.. code:: python
-
-    ['months_sin', 'months_cos', 'day_sin', 'day_cos']
-
-Or, if we are interested in the new features derived of a particular variable, we can
-obtain their names as follows:
-
-.. code:: python
-
-    cyclical.get_feature_names_out(["day"])
-
-which will return the names of all the new features derived from `day`:
-
-.. code:: python
-
-    ['day_sin', 'day_cos']
-
 
 Motivation
 ----------

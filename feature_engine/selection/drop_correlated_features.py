@@ -20,6 +20,7 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.selection._docstring import (
+    _get_support_docstring,
     _missing_values_docstring,
     _variables_attribute_docstring,
     _variables_numerical_docstring,
@@ -37,6 +38,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
+    get_support=_get_support_docstring,
 )
 class DropCorrelatedFeatures(BaseSelector):
     """
@@ -92,6 +94,8 @@ class DropCorrelatedFeatures(BaseSelector):
         Find correlated features.
 
     {fit_transform}
+
+    {get_support}
 
     transform:
         Remove correlated features.

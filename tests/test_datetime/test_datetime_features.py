@@ -451,72 +451,47 @@ def test_get_feature_names_out(df_datetime, df_datetime_transformed):
     transformer = DatetimeFeatures()
     X = transformer.fit_transform(df_datetime)
     assert list(X.columns) == transformer.get_feature_names_out()
-    assert transformer.get_feature_names_out(input_features=vars_dt) == [
-        var + feat for var in vars_dt for feat in feat_names_default
-    ]
-    assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
-        "date_obj1" + feat for feat in feat_names_default
-    ]
+    assert list(X.columns) == transformer.get_feature_names_out(df_datetime.columns)
+
+    with pytest.raises(ValueError):
+        transformer.get_feature_names_out(input_features=vars_dt)
+
+    with pytest.raises(ValueError):
+        transformer.get_feature_names_out(input_features=["date_obj1"])\
 
     # default features from 1 variable
     transformer = DatetimeFeatures(variables="date_obj1")
     X = transformer.fit_transform(df_datetime)
     assert list(X.columns) == transformer.get_feature_names_out()
-    assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
-        "date_obj1" + feat for feat in feat_names_default
-    ]
+    assert list(X.columns) == transformer.get_feature_names_out(df_datetime.columns)
 
     # all features
     transformer = DatetimeFeatures(features_to_extract="all")
     X = transformer.fit_transform(df_datetime)
     assert list(X.columns) == transformer.get_feature_names_out()
-    feat_names_all = [FEATURES_SUFFIXES[feat] for feat in FEATURES_SUPPORTED]
-    assert transformer.get_feature_names_out(input_features=vars_dt) == [
-        var + feat for var in vars_dt for feat in feat_names_all
-    ]
-    assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
-        "date_obj1" + feat for feat in feat_names_all
-    ]
 
     # specified features
     transformer = DatetimeFeatures(features_to_extract=["semester", "week"])
     X = transformer.fit_transform(df_datetime)
     assert list(X.columns) == transformer.get_feature_names_out()
-    assert transformer.get_feature_names_out(input_features=vars_dt) == [
-        var + "_" + feat for var in vars_dt for feat in ["semester", "week"]
-    ]
-    assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
-        "date_obj1_" + feat for feat in ["semester", "week"]
-    ]
 
     # features were extracted from index
     transformer = DatetimeFeatures(
         variables="index", features_to_extract=["semester", "week"]
     )
     X = transformer.fit_transform(dates_idx_dt)
+    assert list(X.columns) == transformer.get_feature_names_out()
+
     # user passes something else than index as input_features
     with pytest.raises(ValueError):
         transformer.get_feature_names_out(input_features="not_index")
     with pytest.raises(ValueError):
         transformer.get_feature_names_out(input_features=["still", "not", "index"])
-    # input_features is None
-    assert list(X.columns) == transformer.get_feature_names_out()
-    # input_features is index
-    assert ["semester", "week"] == transformer.get_feature_names_out(
-        input_features="index"
-    )
 
     # when drop original is False
     transformer = DatetimeFeatures(drop_original=False)
     X = transformer.fit_transform(df_datetime)
     assert list(X.columns) == transformer.get_feature_names_out()
-    assert transformer.get_feature_names_out(input_features=vars_dt) == [
-        var + feat for var in vars_dt for feat in feat_names_default
-    ]
-    assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
-        "date_obj1" + feat for feat in feat_names_default
-    ]
-
     with pytest.raises(ValueError):
         # assert error when user passes a string instead of list
         transformer.get_feature_names_out(input_features="date_obj1")
@@ -530,9 +505,4 @@ def test_get_feature_names_out_from_pipeline(df_datetime, df_datetime_transforme
     transformer = Pipeline([("transformer", DatetimeFeatures())])
     X = transformer.fit_transform(df_datetime)
     assert list(X.columns) == transformer.get_feature_names_out()
-    assert transformer.get_feature_names_out(input_features=vars_dt) == [
-        var + feat for var in vars_dt for feat in feat_names_default
-    ]
-    assert transformer.get_feature_names_out(input_features=["date_obj1"]) == [
-        "date_obj1" + feat for feat in feat_names_default
-    ]
+    assert list(X.columns) == transformer.get_feature_names_out(df_datetime.columns)

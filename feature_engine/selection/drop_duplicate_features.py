@@ -16,6 +16,7 @@ from feature_engine._variable_handling.variable_type_selection import (
 )
 from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.selection._docstring import (
+    _get_support_docstring,
     _missing_values_docstring,
     _variables_all_docstring,
     _variables_attribute_docstring,
@@ -34,6 +35,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
+    get_support=_get_support_docstring,
 )
 class DropDuplicateFeatures(BaseSelector):
     """
@@ -80,6 +82,8 @@ class DropDuplicateFeatures(BaseSelector):
         Find duplicated features.
 
     {fit_transform}
+
+    {get_support}
 
     transform:
         Remove duplicated features.

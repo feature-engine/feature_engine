@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -159,42 +159,21 @@ class Winsorizer(WinsorizerBase):
 
         return X_out
 
-    def get_feature_names_out(
-        self, input_features: Optional[List[Union[str, int]]] = None
-    ) -> List[Union[str, int]]:
-        """Get output feature names for transformation.
+    def _get_new_features_name(self) -> List:
+        """Return names of the created features."""
+        if self.tail == "left":
+            indicators = [str(cl) + "_left" for cl in self.variables_]
+        elif self.tail == "right":
+            indicators = [str(cl) + "_right" for cl in self.variables_]
+        else:
+            indicators = []
+            for cl in self.variables_:
+                indicators.append(str(cl) + "_left")
+                indicators.append(str(cl) + "_right")
+        return indicators
 
-        Parameters
-        ----------
-        input_features: str, list, default=None
-            If `None`, then the names of all the variables in the transformed dataset
-            is returned. If list with feature names, the features in the list, plus
-            the outlier indicators (if added), will be returned.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        feature_names = super().get_feature_names_out(input_features)
-
+    def _add_new_feature_names(self, feature_names) -> List:
+        """Adds names of outlier indicators to transformed variable names."""
         if self.add_indicators is True:
-
-            if input_features is None:
-                features = self.variables_
-            else:
-                features = input_features
-
-            if self.tail == "left":
-                indicators = [str(cl) + "_left" for cl in features]
-            elif self.tail == "right":
-                indicators = [str(cl) + "_right" for cl in features]
-            else:
-                indicators = []
-                for cl in features:
-                    indicators.append(str(cl) + "_left")
-                    indicators.append(str(cl) + "_right")
-
-            feature_names = feature_names + indicators
-
+            feature_names = feature_names + self._get_new_features_name()
         return feature_names

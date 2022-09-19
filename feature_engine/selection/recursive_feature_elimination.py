@@ -11,6 +11,7 @@ from feature_engine.selection._docstring import (
     _cv_docstring,
     _features_to_drop_docstring,
     _fit_docstring,
+    _get_support_docstring,
     _initial_model_performance_docstring,
     _scoring_docstring,
     _threshold_docstring,
@@ -38,6 +39,7 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
     fit=_fit_docstring,
     transform=_transform_docstring,
     fit_transform=_fit_transform_docstring,
+    get_support=_get_support_docstring,
 )
 class RecursiveFeatureElimination(BaseRecursiveSelector):
     """
@@ -99,6 +101,8 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
     {fit}
 
     {fit_transform}
+
+    {get_support}
 
     {transform}
 

@@ -1,10 +1,9 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import List, Union
 
 import pandas as pd
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -189,7 +188,7 @@ class LagFeatures(BaseForecastTransformer):
                     axis=0,
                 )
 
-        tmp.columns = self.get_feature_names_out(self.variables_)
+        tmp.columns = self._get_new_features_name()
 
         X = X.merge(tmp, left_index=True, right_index=True, how="left")
 
@@ -198,72 +197,29 @@ class LagFeatures(BaseForecastTransformer):
 
         return X
 
-    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
-        """Get output feature names for transformation.
-
-        Parameters
-        ----------
-        input_features: list, default=None
-            Input features. If `input_features` is `None`, then the names of all the
-            variables in the transformed dataset (original + new variables) is returned.
-            Alternatively, only the names for the lag features derived from
-            input_features will be returned.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        # Create names for all lag features or just the indicated ones.
-        if input_features is None:
-            # Create all lag features.
-            input_features_ = self.variables_
-        else:
-            if not isinstance(input_features, list):
-                raise ValueError(
-                    f"input_features must be a list. Got {input_features} instead."
-                )
-            if any([f for f in input_features if f not in self.variables_]):
-                raise ValueError(
-                    "Some features in input_features were not lagged. You can only get"
-                    "the names of the lagged features with this function."
-                )
-            # Create just indicated lag features.
-            input_features_ = input_features
+    def _get_new_features_name(self) -> List:
+        """Get names of the lag features."""
 
         # create the names for the lag features
         if isinstance(self.freq, list):
             feature_names = [
-                str(feature) + f"_lag_{fr}"
+                f"{feature}_lag_{fr}"
                 for fr in self.freq
-                for feature in input_features_
+                for feature in self.variables_
             ]
         elif self.freq is not None:
             feature_names = [
-                str(feature) + f"_lag_{self.freq}" for feature in input_features_
+                f"{feature}_lag_{self.freq}" for feature in self.variables_
             ]
         elif isinstance(self.periods, list):
             feature_names = [
-                str(feature) + f"_lag_{pr}"
+                f"{feature}_lag_{pr}"
                 for pr in self.periods
-                for feature in input_features_
+                for feature in self.variables_
             ]
         else:
             feature_names = [
-                str(feature) + f"_lag_{self.periods}" for feature in input_features_
+                f"{feature}_lag_{self.periods}" for feature in self.variables_
             ]
-
-        # Return names of all variables if input_features is None.
-        if input_features is None:
-            if self.drop_original is True:
-                # Remove names of variables to drop.
-                original = [
-                    f for f in self.feature_names_in_ if f not in self.variables_
-                ]
-                feature_names = original + feature_names
-            else:
-                feature_names = self.feature_names_in_ + feature_names
 
         return feature_names

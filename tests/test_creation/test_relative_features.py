@@ -55,7 +55,7 @@ def test_error_if_func_not_supported(_func):
 
 def test_error_when_drop_original_not_bool():
     for drop_original in ["True", [True]]:
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             RelativeFeatures(
                 variables=["Age"],
                 reference=["Marks"],
@@ -351,11 +351,13 @@ def test_get_feature_names_out(_drop, df_vartypes):
         "Age_sub_Marks",
         "Marks_sub_Marks",
     ]
-
     X = transformer.fit_transform(df_vartypes)
-    assert list(X.columns) == transformer.get_feature_names_out(input_features=None)
-    assert list(X.columns) == transformer.get_feature_names_out(input_features=False)
-    assert varnames == transformer.get_feature_names_out(input_features=True)
+    feat_out = list(X.columns)
+    assert feat_out == transformer.get_feature_names_out(input_features=None)
+    assert feat_out == transformer.get_feature_names_out(
+        input_features=df_vartypes.columns
+    )
+    assert all([f for f in varnames if f in feat_out])
 
 
 @pytest.mark.parametrize("_drop", [True, False])
@@ -382,8 +384,10 @@ def test_get_feature_names_out_from_pipeline(_drop, df_vartypes):
 
     X = pipe.fit_transform(df_vartypes)
     assert list(X.columns) == pipe.get_feature_names_out(input_features=None)
-    assert list(X.columns) == pipe.get_feature_names_out(input_features=False)
-    assert varnames == pipe.get_feature_names_out(input_features=True)
+    assert list(X.columns) == pipe.get_feature_names_out(
+        input_features=df_vartypes.columns
+    )
+    assert all([f for f in varnames if f in X.columns])
 
 
 @pytest.mark.parametrize("_input_features", ["hola", ["Age", "Marks"]])

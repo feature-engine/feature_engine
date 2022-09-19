@@ -9,9 +9,9 @@ from feature_engine.creation import (
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
 _estimators = [
-    MathFeatures(variables=["0", "1"], func="mean", missing_values="ignore"),
+    MathFeatures(variables=["x0", "x1"], func="mean", missing_values="ignore"),
     RelativeFeatures(
-        variables=["0", "1"], reference=["0"], func=["add"], missing_values="ignore"
+        variables=["x0", "x1"], reference=["x0"], func=["add"], missing_values="ignore"
     ),
     CyclicalFeatures(),
 ]

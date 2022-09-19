@@ -33,7 +33,6 @@ def test_permitted_param_periods(_periods):
 
 def test_get_feature_names_out_multiple_variables_and_functions(df_time):
     # input features
-    input_features = ["ambient_temp", "module_temp", "irradiation"]
     original_features = ["ambient_temp", "module_temp", "irradiation", "color"]
 
     tr = ExpandingWindowFeatures(functions=["mean", "sum"])
@@ -48,10 +47,9 @@ def test_get_feature_names_out_multiple_variables_and_functions(df_time):
         "irradiation_expanding_mean",
         "irradiation_expanding_sum",
     ]
-    assert tr.get_feature_names_out(input_features=None) == original_features + output
-    assert tr.get_feature_names_out(input_features=input_features) == output
-    assert tr.get_feature_names_out(input_features=input_features[0:2]) == output[0:4]
-    assert tr.get_feature_names_out(input_features=[input_features[0]]) == output[0:2]
+    output = original_features + output
+    assert tr.get_feature_names_out(input_features=None) == output
+    assert tr.get_feature_names_out(input_features=original_features) == output
 
 
 def test_get_feature_names_out_single_variable_and_multiple_functions(df_time):
@@ -69,8 +67,8 @@ def test_get_feature_names_out_single_variable_and_multiple_functions(df_time):
         "ambient_temp_expanding_mean",
         "ambient_temp_expanding_count",
     ]
-    assert tr.get_feature_names_out(input_features=None) == original_features + output
-    assert tr.get_feature_names_out(input_features=["ambient_temp"]) == output
+    output = original_features + output
+    assert tr.get_feature_names_out(input_features=None) == output
 
 
 def test_get_feature_names_out_single_variable_and_single_function(df_time):
@@ -84,8 +82,8 @@ def test_get_feature_names_out_single_variable_and_single_function(df_time):
     output = [
         "ambient_temp_expanding_sum",
     ]
-    assert tr.get_feature_names_out(input_features=None) == original_features + output
-    assert tr.get_feature_names_out(input_features=["ambient_temp"]) == output
+    output = original_features + output
+    assert tr.get_feature_names_out(input_features=None) == output
 
 
 def test_expanding_sum_single_var(df_time):

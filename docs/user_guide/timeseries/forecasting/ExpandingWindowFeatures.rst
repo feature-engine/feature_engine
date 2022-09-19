@@ -175,19 +175,6 @@ get_feature_names_out() method:
      'irradiation_expanding_max',
      'irradiation_expanding_std']
 
-We can get the names of the expanding window features created for the variable
-"irradiation" as follows:
-
-.. code:: python
-
-    win_f.get_feature_names_out(["irradiation"])
-
-.. code:: python
-
-    ['irradiation_expanding_mean',
-     'irradiation_expanding_max',
-     'irradiation_expanding_std']
-
 
 Working with pandas series
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -290,13 +277,3 @@ all the features in the output dataframe.
      'module_temp_expanding_mean',
      'irradiation_expanding_mean']
 
-Alternatively, we can obtain the names of the expanding window features created from one or more
-input features as follows:
-
-.. code:: python
-
-    win_f.get_feature_names_out(input_features=["irradiation"])
-
-.. code:: python
-
-    ['irradiation_expanding_mean']

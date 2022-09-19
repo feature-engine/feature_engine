@@ -24,7 +24,7 @@ from tests.estimator_checks.init_params_triggered_functionality_checks import (
 _logreg = LogisticRegression(C=0.0001, max_iter=2, random_state=1)
 
 _estimators = [
-    DropFeatures(features_to_drop=["0"]),
+    DropFeatures(features_to_drop=["x0"]),
     DropConstantFeatures(missing_values="ignore"),
     DropDuplicateFeatures(),
     DropCorrelatedFeatures(),

@@ -14,7 +14,7 @@ _estimators = [
     DecisionTreeDiscretiser(regression=False),
     EqualFrequencyDiscretiser(),
     EqualWidthDiscretiser(),
-    ArbitraryDiscretiser(binning_dict={"0": [-np.Inf, 0, np.Inf]}),
+    ArbitraryDiscretiser(binning_dict={"x0": [-np.Inf, 0, np.Inf]}),
 ]
 
 
