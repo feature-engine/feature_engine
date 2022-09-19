@@ -14,13 +14,19 @@ and Bristol by 0.3.
 The motivation is to try and create a monotonic relationship between the target and
 the encoded categories. This tends to help improve performance of linear models.
 
-On top of that :class:`MeanEncoder()` provides option for smoothing (parameter a), which
-allow user to even out (smooth) output of encoder for categories with different number 
-of observations. 
+:class:`MeanEncoder()` also provides option for smoothing, which allow user to even out (smooth) 
+output of high-cardinal features.
 It works by assigning weighted mean of the whole target column (prior) and mean of target within 
 each category (evidence), instead of just evidence. The more samples of the specific category 
 is avaliable, the bigger weight will be assigned to evidence, less samples - bigger weight to prior.
-This parameter could be used as form of regularization. By default a is equal to 0, so no 
+
+Smoothing factor is calculated with this formula:
+
+\lambda = \frac{n}{n + m}
+
+where n is the number of observations in category, and m is the smoothing parameter.
+
+Smoothing could be used as form of regularization. By default smoothing is equal to 0, so no 
 smoothing is applied.
 Another option would be to use 'auto' heuristic, which will determine smoothing factor 
 based on ratio between variance of target within each category to variance of the whole target column.
