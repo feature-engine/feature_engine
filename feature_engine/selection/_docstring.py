@@ -68,3 +68,7 @@ _fit_docstring = """fit:
 _transform_docstring = """transform:
         Reduce X to the selected features.
         """.rstrip()
+
+_get_support_docstring = """get_support:
+        Get a mask, or integer index, of the features selected.
+        """.rstrip()

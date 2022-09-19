@@ -141,7 +141,7 @@ class BaseSelector(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         support : array
             An index that selects the retained features from a feature vector.
             If `indices` is False, this is a boolean array of shape
-            [# input features], in which an element is True iff its
+            [# input features], in which an element is True if its
             corresponding feature is selected for retention. If `indices` is
             True, this is an integer array of shape [# output features] whose
             values are indices into the input feature vector.

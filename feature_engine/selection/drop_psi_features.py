@@ -28,6 +28,7 @@ from feature_engine.discretisation import (
     EqualWidthDiscretiser,
 )
 from feature_engine.selection._docstring import (
+    _get_support_docstring,
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
@@ -43,6 +44,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
+    get_support=_get_support_docstring,
 )
 class DropHighPSIFeatures(BaseSelector):
     r"""
@@ -192,6 +194,8 @@ class DropHighPSIFeatures(BaseSelector):
         Find features with high PSI values.
 
     {fit_transform}
+
+    {get_support}
 
     transform:
         Remove features with high PSI values.

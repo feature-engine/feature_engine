@@ -23,6 +23,7 @@ from feature_engine.selection._docstring import (
     _cv_docstring,
     _features_to_drop_docstring,
     _fit_docstring,
+    _get_support_docstring,
     _scoring_docstring,
     _threshold_docstring,
     _transform_docstring,
@@ -50,6 +51,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     fit=_fit_docstring,
     transform=_transform_docstring,
     fit_transform=_fit_transform_docstring,
+    get_support=_get_support_docstring,
 )
 class SelectByTargetMeanPerformance(BaseSelector):
     """
@@ -143,6 +145,8 @@ class SelectByTargetMeanPerformance(BaseSelector):
     {fit}
 
     {fit_transform}
+
+    {get_support}
 
     {transform}
 
