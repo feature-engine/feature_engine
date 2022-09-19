@@ -96,7 +96,9 @@ class CyclicalFeatures(
     References
     ----------
     https://ianlondon.github.io/blog/encoding-cyclical-features-24hour-time/
+
     https://towardsdatascience.com/cyclical-features-encoding-its-about-time-ce23581845ca
+
     http://blog.davidkaleko.com/feature-engineering-cyclical-features.html
     """
 
