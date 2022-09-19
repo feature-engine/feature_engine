@@ -224,12 +224,12 @@ def test_sort_index(df_time):
     X_tr = transformer.fit_transform(Xs)
 
     A = X[transformer.variables_].iloc[0:4].values
-    B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
+    B = X_tr[transformer._get_new_features_name()].iloc[1:5].values
     assert (A == B).all()
 
     transformer = LagFeatures(sort_index=False)
     X_tr = transformer.fit_transform(Xs)
 
     A = Xs[transformer.variables_].iloc[0:4].values
-    B = X_tr[transformer.get_feature_names_out(transformer.variables_)].iloc[1:5].values
+    B = X_tr[transformer._get_new_features_name()].iloc[1:5].values
     assert (A == B).all()

@@ -1,10 +1,9 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import List, Union
 
 import pandas as pd
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -189,7 +188,7 @@ class LagFeatures(BaseForecastTransformer):
                     axis=0,
                 )
 
-        tmp.columns = self.get_feature_names_out(self.variables_)
+        tmp.columns = self._get_new_features_name()
 
         X = X.merge(tmp, left_index=True, right_index=True, how="left")
 
