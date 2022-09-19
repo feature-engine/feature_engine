@@ -150,8 +150,8 @@ class AddMissingIndicator(BaseImputer):
         """Return names of the created features."""
         return [f"{feat}_na" for feat in self.variables_]
 
-    def _add_new_feature_names(self, feature_names):
-        """Adds new features to df columns, and removes categoricals."""
+    def _add_new_feature_names(self, feature_names) -> List:
+        """Adds names of new features."""
         return feature_names + self._get_new_features_name()
 
     def _more_tags(self):
