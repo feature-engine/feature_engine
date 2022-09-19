@@ -104,6 +104,9 @@ class BaseCreation(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
+            if hasattr(self, "reference"):
+                _check_contains_na(X, self.reference)
+                _check_contains_inf(X, self.reference)
 
         # reorder variables to match train set
         X = X[self.feature_names_in_]
