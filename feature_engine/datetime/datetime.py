@@ -350,7 +350,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
 
         return X
 
-    def _get_new_features_name(self):
+    def _get_new_features_name(self) -> List:
         """create the names for the datetime features."""
 
         if self.variables == "index":
