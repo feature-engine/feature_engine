@@ -128,8 +128,8 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
     ) -> None:
         super().__init__(variables, ignore_format, unseen)
         if (
-            (isinstance(a, str) and (a != 'auto')) or
-            (isinstance(a, (float, int)) and a < 0)
+            (isinstance(smoothing, str) and (smoothing != 'auto')) or
+            (isinstance(smoothing, (float, int)) and smoothing < 0)
         ):
             raise ValueError(
                 f"smoothing must be greater than 0 or 'auto'. "
@@ -158,18 +158,18 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         self.encoder_dict_ = {}
 
         y_prior = y.mean()
-        if self.a == 'auto':
+        if self.smoothing == 'auto':
             y_var = y.var(ddof=0)
         for var in self.variables_:
-            if self.a == 'auto':
+            if self.smoothing == 'auto':
                 damping = y.groupby(X[var]).var(ddof=0) / y_var
             else:
                 damping = self.smoothing
             counts = X[var].value_counts()
-            smoothing = counts / (counts + damping)
+            _lambda = counts / (counts + damping)
             self.encoder_dict_[var] = (
-                smoothing * y.groupby(X[var]).mean() +
-                (1. - smoothing) * y_prior
+                _lambda * y.groupby(X[var]).mean() +
+                (1. - _lambda) * y_prior
             ).to_dict()
 
         self._check_encoding_dictionary()
