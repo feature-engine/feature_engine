@@ -111,6 +111,11 @@ class GetFeatureNamesOutMixin:
                     # For transformers that add features to the data.
                     feature_names = self._add_new_feature_names(feature_names)
 
+                    # For transformers that remove features from data, i..e, selectors.
+                    feature_names = self._remove_feature_names(
+                        feature_names, indices=True
+                    )
+
                     return feature_names
 
                 else:
@@ -139,6 +144,9 @@ class GetFeatureNamesOutMixin:
         # For transformers that add features to the dataframe:
         feature_names = self._add_new_feature_names(feature_names)
 
+        # For transformers that remove features from data, i..e, selectors.
+        feature_names = self._remove_feature_names(feature_names, indices=False)
+
         return feature_names
 
     def _add_new_feature_names(self, feature_names):
@@ -152,4 +160,16 @@ class GetFeatureNamesOutMixin:
                 # Remove names of variables to drop.
                 feature_names = [f for f in feature_names if f not in self.variables_]
 
+        return feature_names
+
+    def _remove_feature_names(self, feature_names, indices=False) -> List:
+        # For transformers that remove features from data, i..e, selectors.
+        if hasattr(self, "features_to_drop_"):
+            if indices is True:
+                mask = self.get_support(indices=True)
+                feature_names = [feature_names[i] for i in mask]
+            else:
+                feature_names = [
+                    f for f in feature_names if f not in self.features_to_drop_
+                ]
         return feature_names

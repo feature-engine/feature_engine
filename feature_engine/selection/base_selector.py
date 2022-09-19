@@ -1,10 +1,9 @@
-from typing import List
-
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._variable_handling.variable_type_selection import (
     _filter_out_variables_not_in_dataframe,
 )
@@ -32,7 +31,7 @@ def get_feature_importances(estimator):
     return importances
 
 
-class BaseSelector(BaseEstimator, TransformerMixin):
+class BaseSelector(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """
     Shared set-up checks and methods across selectors.
 
@@ -110,27 +109,6 @@ class BaseSelector(BaseEstimator, TransformerMixin):
 
         return self
 
-    def get_feature_names_out(self, input_features=None) -> List:
-        """Get output feature names for transformation.
-
-        input_features: None
-            This parameter exists only for compatibility with the Scikit-learn
-            pipeline, but has no functionality. You can pass a list of feature names
-            or None.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        feature_names = [
-            f for f in self.feature_names_in_ if f not in self.features_to_drop_
-        ]
-
-        return feature_names
-
     def _confirm_variables(self, X: pd.DataFrame) -> None:
         # If required, exclude variables that are not in the input dataframe
         if self.confirm_variables:
@@ -147,6 +125,32 @@ class BaseSelector(BaseEstimator, TransformerMixin):
                 "The selector needs at least 2 or more variables to select from. "
                 f"Got only 1 variable: {self.variables_}."
             )
+
+    def get_support(self, indices=False):
+        """
+        Get a mask, or integer index, of the features selected.
+
+        Parameters
+        ----------
+        indices : bool, default=False
+            If True, the return value will be an array of integers, rather
+            than a boolean mask.
+
+        Returns
+        -------
+        support : array
+            An index that selects the retained features from a feature vector.
+            If `indices` is False, this is a boolean array of shape
+            [# input features], in which an element is True iff its
+            corresponding feature is selected for retention. If `indices` is
+            True, this is an integer array of shape [# output features] whose
+            values are indices into the input feature vector.
+        """
+        mask = [
+            True if f not in self.features_to_drop_ else False
+            for f in self.feature_names_in_
+        ]
+        return mask if not indices else np.where(mask)[0]
 
     def _more_tags(self):
         tags_dict = _return_tags()

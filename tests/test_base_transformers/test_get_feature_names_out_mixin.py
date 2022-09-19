@@ -269,6 +269,9 @@ def test_raise_error_when_input_feature_non_permitted(df_vartypes):
     assert "number of input_features does not match" in str(record)
 
 
+# ================ Tests for transformers that add features to the data =======
+
+
 class MockCreator(GetFeatureNamesOutMixin):
     def __init__(self, variables, drop_original):
         self.variables = variables
@@ -286,9 +289,6 @@ class MockCreator(GetFeatureNamesOutMixin):
 
     def _get_new_features_name(self):
         return [f"{i}_plus" for i in self.variables_]
-
-
-# ================ Tests for transformers that add features to the data =======
 
 
 @pytest.mark.parametrize("features_in", [["Age", "Marks"], ["Name", "dob"]])
@@ -394,3 +394,148 @@ def test_new_feature_names_pipe_and_skl_transformer_that_adds_features(
         pipe.get_feature_names_out(input_features=input_features)
         == ["1", "Age", "Marks", "Age^2", "Age Marks", "Marks^2"] + new_features
     )
+
+
+# ================ Tests for transformers that remove features to the data =======
+
+
+class MockSelector(GetFeatureNamesOutMixin):
+    def fit(self, X, y=None):
+        X = check_X(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
+        self.features_to_drop_ = list(X.columns)[0:2]
+        return self
+
+    def transform(self, X):
+        return X.drop(columns=self.features_to_drop_)
+
+    def get_support(self, indices=False):
+        mask = [
+            True if f not in self.features_to_drop_ else False
+            for f in self.feature_names_in_
+        ]
+        return mask if not indices else np.where(mask)[0]
+
+
+@pytest.mark.parametrize(
+    "input_features", [None, variables_str, np.array(variables_str)]
+)
+def test_remove_features_in_df(df_vartypes, input_features):
+    transformer = MockSelector()
+    transformer.fit(df_vartypes)
+    features_out = list(df_vartypes.columns)[2:]
+    assert (
+        transformer.get_feature_names_out(input_features=input_features) == features_out
+    )
+
+
+@pytest.mark.parametrize(
+    "input_features",
+    [None, variables_arr, np.array(variables_arr), variables_str, variables_user],
+)
+def test_remove_features_in_array(df_vartypes, input_features):
+    transformer = MockSelector()
+    transformer.fit(df_vartypes.to_numpy())
+    if input_features is None:
+        features_out = ["x2", "x3", "x4"]
+    else:
+        features_out = list(input_features)[2:]
+    assert (
+        transformer.get_feature_names_out(input_features=input_features) == features_out
+    )
+
+
+@pytest.mark.parametrize(
+    "input_features", [None, variables_str, np.array(variables_str)]
+)
+def test_remove_feature_names_within_pipeline_when_df(df_vartypes, input_features):
+    transformer = Pipeline([("transformer", MockSelector())])
+    transformer.fit(df_vartypes)
+    features_out = list(df_vartypes.columns)[2:]
+    assert (
+        transformer.get_feature_names_out(input_features=input_features) == features_out
+    )
+
+
+@pytest.mark.parametrize(
+    "input_features", [None, variables_str, np.array(variables_str)]
+)
+def test_remove_feature_names_pipe_with_skl_transformer_and_df(
+    df_vartypes, input_features
+):
+    df_vartypes = df_vartypes.drop(["dob"], axis=1)
+    if input_features is not None:
+        input_features = input_features[0:-1]
+
+    pipe = Pipeline(
+        [
+            ("transformer", MockSelector()),
+            ("imputer", SimpleImputer(strategy="constant")),
+        ]
+    )
+    pipe.fit(df_vartypes)
+    features_out = list(df_vartypes.columns)[2:]
+    assert all(
+        pipe.get_feature_names_out(input_features=input_features) == features_out
+    )
+
+    pipe = Pipeline(
+        [
+            ("imputer", SimpleImputer(strategy="constant")),
+            ("transformer", MockSelector()),
+        ]
+    )
+    pipe.fit(df_vartypes)
+    features_out = list(df_vartypes.columns)[2:]
+    assert pipe.get_feature_names_out(input_features=input_features) == features_out
+
+
+@pytest.mark.parametrize(
+    "input_features", [None, variables_str, variables_arr, variables_user]
+)
+def test_new_feature_names_pipe_with_skl_transformer_and_array(
+    df_vartypes, input_features
+):
+    df_vartypes = df_vartypes.drop(["dob"], axis=1)
+
+    pipe = Pipeline(
+        [
+            ("imputer", SimpleImputer(strategy="constant")),
+            ("transformer", MockSelector()),
+        ]
+    )
+    pipe.fit(df_vartypes.to_numpy())
+
+    if input_features is not None:
+        input_features = input_features[0:-1]
+        features_out = input_features[2:]
+        assert pipe.get_feature_names_out(input_features=input_features) == features_out
+    else:
+        features_out = ["x2", "x3"]
+        assert pipe.get_feature_names_out(input_features=input_features) == features_out
+
+
+@pytest.mark.parametrize(
+    "input_features", [None, ["Age", "Marks"], np.array(["Age", "Marks"])]
+)
+def test_remove_feature_names_pipe_and_skl_transformer_that_adds_features(
+    df_vartypes, input_features
+):
+    features_in = ["Age", "Marks"]
+    df = df_vartypes[features_in].copy()
+
+    pipe = Pipeline(
+        [
+            ("poly", PolynomialFeatures()),
+            ("transformer", MockSelector()),
+        ]
+    )
+    pipe.fit(df)
+
+    assert pipe.get_feature_names_out(input_features=input_features) == [
+        "Marks",
+        "Age^2",
+        "Age Marks",
+        "Marks^2",
+    ]

@@ -40,8 +40,15 @@ def check_get_feature_names_out(estimator):
     # feature names in train set
     feature_names = list(X.columns)
 
+    # tests for transformers that ADD OR REMOVE features:
+    if hasattr(estimator, "_get_new_features_name") or hasattr(
+        estimator, "features_to_drop_"
+    ):
+        assert estimator.get_feature_names_out() == list(Xt.columns)
+        assert estimator.get_feature_names_out(X.columns) == list(Xt.columns)
+
     # tests for transformers that DO NOT ADD OR REMOVE features:
-    if not hasattr(estimator, "_get_new_features_name"):
+    else:
 
         # test transformer
         assert estimator.get_feature_names_out(input_features=None) == feature_names
@@ -58,8 +65,3 @@ def check_get_feature_names_out(estimator):
         # test transformer within pipeline
         assert pipe.get_feature_names_out(input_features=None) == feature_names
         assert pipe.get_feature_names_out(input_features=feature_names) == feature_names
-
-    # tests for transformers that ADD OR REMOVE features:
-    if hasattr(estimator, "_get_new_features_name") or hasattr(estimator, "features_to_drop_"):
-        assert estimator.get_feature_names_out() == list(Xt.columns)
-        assert estimator.get_feature_names_out(X.columns) == list(Xt.columns)

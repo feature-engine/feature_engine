@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Union
 
 import pandas as pd
 
@@ -18,9 +18,6 @@ from feature_engine._docstrings.methods import (
     _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
-)
 from feature_engine.creation.base_creation import BaseCreation
 
 _PERMITTED_FUNCTIONS = [

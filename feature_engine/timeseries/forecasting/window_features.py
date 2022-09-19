@@ -1,7 +1,6 @@
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Union
 
 import pandas as pd
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,

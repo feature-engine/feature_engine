@@ -158,7 +158,9 @@ def test_get_feature_names_out(df_time):
         "irradiation_window_2_mean",
     ]
     assert tr.get_feature_names_out(input_features=None) == ["color"] + output
-    assert tr.get_feature_names_out(input_features=original_features) == ["color"] + output
+    assert (
+        tr.get_feature_names_out(input_features=original_features) == ["color"] + output
+    )
 
 
 def test_single_window_when_using_periods(df_time):
