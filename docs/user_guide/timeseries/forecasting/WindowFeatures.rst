@@ -283,22 +283,6 @@ get_feature_names_out() method:
      'irradiation_window_60min_max',
      'irradiation_window_60min_std']
 
-We can get the names of the window features created for the variable "irradiation" as
-follows:
-
-.. code:: python
-
-    win_f.get_feature_names_out(["irradiation"])
-
-.. code:: python
-
-    ['irradiation_window_30min_mean',
-     'irradiation_window_30min_max',
-     'irradiation_window_30min_std',
-     'irradiation_window_60min_mean',
-     'irradiation_window_60min_max',
-     'irradiation_window_60min_std']
-
 
 Working with pandas series
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -416,13 +400,3 @@ all the features in the output dataframe.
      'module_temp_window_3_mean',
      'irradiation_window_3_mean']
 
-Alternatively, we can obtain the names of the lag features created from one or more
-input features as follows:
-
-.. code:: python
-
-    win_f.get_feature_names_out(input_features=["irradiation"])
-
-.. code:: python
-
-    ['irradiation_window_3_mean']

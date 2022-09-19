@@ -98,15 +98,6 @@ Finally, we can obtain the name of the variables in the returned data as follows
      'var_date2_month_end',
      'var_date2_day_of_year']
 
-Or we can obtain the names of the features created from a certain variable as follows:
-
-.. code:: python
-
-    dtfs.get_feature_names_out(["var_date2"])
-
-.. code:: python
-
-    ['var_date2_month', 'var_date2_month_end', 'var_date2_day_of_year']
 
 Extract time features
 ~~~~~~~~~~~~~~~~~~~~~
@@ -176,26 +167,6 @@ Finally, if we want to obtain the names of the variables in the output data, we 
 
     ['not_a_dt', 'var_time1_minute', 'var_time2_minute']
 
-We can obtain the date and time features derived from both our datetime variables as
-follows:
-
-.. code:: python
-
-    dfts.get_feature_names_out(['var_time1', 'var_time2'])
-
-.. code:: python
-
-    ['var_time1_minute', 'var_time2_minute']
-
-Or, we can obtain the features derived from just one of the variables like this:
-
-.. code:: python
-
-    dfts.get_feature_names_out(['var_time1'])
-
-.. code:: python
-
-    ['var_time1_minute']
 
 Extract date and time features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -337,18 +308,6 @@ We can obtain the name of all the variables in the output dataframe as follows:
      'hour',
      'minute',
      'second']
-
-
-Alternatively, we can obtain the name of the features created from the index as
-follows:
-
-.. code:: python
-
-    dtf.get_feature_names_out("index")
-
-.. code:: python
-
-    ['month', 'year', 'day_of_week', 'day_of_month', 'hour', 'minute', 'second']
 
 
 Important
