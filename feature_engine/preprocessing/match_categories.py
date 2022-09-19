@@ -74,6 +74,18 @@ class MatchCategories(
     fit:
         Learn the encodings or levels to use for each variable.
 
+    fit_transform:
+        Fit to the data. Then transform it.
+
+    get_feature_names_out:
+        Get output feature names for transformation.
+
+    get_params:
+        Get parameters for this estimator.
+
+    set_params:
+        Set the parameters of this estimator.
+
     transform:
         Enforce the type of categorical variables as dtype `categorical`.
     """
