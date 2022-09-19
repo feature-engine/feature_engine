@@ -273,7 +273,7 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         return feature_names
 
-    def _add_new_feature_names(self, feature_names):
+    def _add_new_feature_names(self, feature_names) -> List:
         """Adds new features to df columns, and removes categoricals."""
         feature_names = feature_names + self._get_new_features_name()
         feature_names = [f for f in feature_names if f not in self.variables_]
