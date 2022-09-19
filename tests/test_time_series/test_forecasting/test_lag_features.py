@@ -38,7 +38,6 @@ def test_error_when_non_permitted_param_sort_index(_sort_index):
 
 def test_get_feature_names_out(df_time):
     # input features
-    input_features = ["ambient_temp", "module_temp", "irradiation"]
     original_features = ["ambient_temp", "module_temp", "irradiation", "color"]
 
     # When freq is a string:
@@ -47,14 +46,14 @@ def test_get_feature_names_out(df_time):
 
     # Expected
     out = ["ambient_temp_lag_1D", "module_temp_lag_1D", "irradiation_lag_1D"]
-    assert tr.get_feature_names_out(input_features=None) == original_features + out
-    assert tr.get_feature_names_out(input_features=input_features) == out
-    assert tr.get_feature_names_out(input_features=input_features[0:1]) == out[0:1]
-    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [out[0]]
+    out = original_features + out
+    assert tr.get_feature_names_out(input_features=None) == out
+    assert tr.get_feature_names_out(input_features=original_features) == out
+    assert tr.get_feature_names_out(input_features=df_time.columns) == out
 
     with pytest.raises(ValueError):
         # assert error when user passes a string instead of list
-        tr.get_feature_names_out(input_features=input_features[0])
+        tr.get_feature_names_out(input_features=original_features[0])
 
     with pytest.raises(ValueError):
         # assert error when uses passes features that were not lagged
@@ -66,10 +65,10 @@ def test_get_feature_names_out(df_time):
 
     # Expected
     out = ["ambient_temp_lag_2", "module_temp_lag_2", "irradiation_lag_2"]
-    assert tr.get_feature_names_out(input_features=None) == original_features + out
-    assert tr.get_feature_names_out(input_features=input_features) == out
-    assert tr.get_feature_names_out(input_features=input_features[0:1]) == out[0:1]
-    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [out[0]]
+    out = original_features + out
+    assert tr.get_feature_names_out(input_features=None) == out
+    assert tr.get_feature_names_out(input_features=original_features) == out
+    assert tr.get_feature_names_out(input_features=df_time.columns) == out
 
     # When freq is a list:
     tr = LagFeatures(freq=["3D", "2D"])
@@ -84,16 +83,10 @@ def test_get_feature_names_out(df_time):
         "module_temp_lag_2D",
         "irradiation_lag_2D",
     ]
+    out = original_features + out
 
-    assert tr.get_feature_names_out(input_features=None) == original_features + out
-    assert tr.get_feature_names_out(input_features=input_features) == out
-    assert (
-        tr.get_feature_names_out(input_features=input_features[0:1])
-        == out[0:1] + out[3:4]
-    )
-    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [out[0]] + [
-        out[3]
-    ]
+    assert tr.get_feature_names_out(input_features=None) == out
+    assert tr.get_feature_names_out(input_features=df_time.columns) == out
 
     # When periods is a list:
     tr = LagFeatures(periods=[2, 3])
@@ -108,16 +101,10 @@ def test_get_feature_names_out(df_time):
         "module_temp_lag_3",
         "irradiation_lag_3",
     ]
+    out = original_features + out
 
-    assert tr.get_feature_names_out(input_features=None) == original_features + out
-    assert tr.get_feature_names_out(input_features=input_features) == out
-    assert (
-        tr.get_feature_names_out(input_features=input_features[0:1])
-        == out[0:1] + out[3:4]
-    )
-    assert tr.get_feature_names_out(input_features=[input_features[0]]) == [out[0]] + [
-        out[3]
-    ]
+    assert tr.get_feature_names_out(input_features=None) == out
+    assert tr.get_feature_names_out(input_features=original_features) == out
 
     # When drop original is true.
     tr = LagFeatures(freq="1D", drop_original=True)
@@ -126,7 +113,7 @@ def test_get_feature_names_out(df_time):
     # Expected
     out = ["ambient_temp_lag_1D", "module_temp_lag_1D", "irradiation_lag_1D"]
     assert tr.get_feature_names_out(input_features=None) == ["color"] + out
-    assert tr.get_feature_names_out(input_features=input_features) == out
+    assert tr.get_feature_names_out(input_features=original_features) == ["color"] + out
 
 
 def test_correct_lag_when_using_periods(df_time):
