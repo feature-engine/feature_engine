@@ -67,7 +67,7 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
     smoothing: int, float, str, default=0.0
         Smoothing factor, should be >= 0. If 0 then no smoothing is applied,
         higher values lead to stronger smoothing (higher weight of prior mean).
-        Could be used as form of regulrization or to combat high cardinality in 
+        Could be used as form of regulrization or to combat high cardinality in
         categorical features.
 
     {variables}
