@@ -63,19 +63,6 @@ jobs:
           command: |
             tox -e py310
 
-  test_codedov:
-    docker:
-      - image: circleci/python:3.9.0
-    working_directory: ~/project
-    steps:
-      - checkout:
-          path: ~/project
-      - *prepare_tox
-      - run:
-          name: Run codecoverage
-          command: |
-            tox -e codecov
-
   test_style:
     docker:
       - image: circleci/python:3.9.0
@@ -115,6 +102,24 @@ jobs:
           command: |
             tox -e typechecks
 
+  upload_codedov:
+    docker:
+      - image: circleci/python:3.9.0
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Install dependencies
+          command: |
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install -r test_requirements.txt
+      - run:
+          name: Run tests and collect coverage
+          command: pytest --cov feature_engine
+      - codecov/upload
+
   package_and_upload_to_pypi:
     <<: *defaults
     steps:
@@ -142,6 +147,7 @@ workflows:
       - test_style
       - test_docs
       - test_type
+      - upload_codedov
       - package_and_upload_to_pypi:
           requires:
             - test_feature_engine_py38
