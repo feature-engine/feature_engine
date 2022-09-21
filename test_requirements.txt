@@ -3,6 +3,7 @@ pytest>=5.4.1
 
 # repo maintenance tooling
 black>=21.5b1
+coverage>=6.4.4
 flake8>=3.9.2
 mypy>=0.740
 isort>=5.8.0
