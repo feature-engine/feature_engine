@@ -146,7 +146,7 @@ workflows:
       - test_style
       - test_docs
       - test_type
-      - upload_codedov
+      - upload_codecov
       - package_and_upload_to_pypi:
           requires:
             - test_feature_engine_py38
