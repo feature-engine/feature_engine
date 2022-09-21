@@ -1,0 +1,15 @@
+# configuration for coverage.py
+
+[run]
+branch = True
+source = feature_engine
+include = */feature_engine/*
+omit =
+    */setup.py
+
+
+[report]
+exclude_lines =
+    pragma: no cover
+
+show_missing = True
