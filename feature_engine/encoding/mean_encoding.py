@@ -48,6 +48,26 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
     and grey is 0.5, 0.8 and 0.1 respectively, blue is replaced by 0.5, red by 0.8
     and grey by 0.1.
 
+    For rare categories, i.e., those with few observations, the mean target value
+    might be less reliable. To mitigate poor estimates returned for rare categories,
+    the mean target value can be determined as a mixture of the target mean value for
+    the entire data set (also called the prior) and the mean target value for the
+    category (the posterior), weighted by the number of observations:
+
+    .. math::
+
+        mapping = (w_i) posterior + (1-w_i) prior
+
+    where the weight is calculated as:
+
+      .. math::
+
+        w_i = n_i t / (s + n_i t)
+
+    In the previous equation, t is the target variance in the entire dataset, s is the
+    target variance within the category and n is the number of observations for the
+    category.
+
     The encoder will encode only categorical variables by default (type 'object' or
     'categorical'). You can pass a list of variables to encode. Alternatively, the
     encoder will find and encode all categorical variables (type 'object' or
@@ -64,17 +84,19 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
     Parameters
     ----------
-    smoothing: int, float, str, default=0.0
-        Smoothing factor, should be >= 0. If 0 then no smoothing is applied,
-        higher values lead to stronger smoothing (higher weight of prior mean).
-        Could be used as form of regulrization or to combat high cardinality in
-        categorical features.
-
     {variables}
 
     {ignore_format}
 
     {unseen}
+
+    smoothing: int, float, str, default=0.0
+        Smoothing factor. Should be >= 0. If 0 then no smoothing is applied, and the
+        mean target value per category is returned without modification. If 'auto' then
+        wi is calculated as described above and the category is encoded as the blended
+        values of the prior and the posterior. If int or float, then the wi is
+        calculated as ni / (ni+smoothing). Higher values lead to stronger smoothing
+        (higher weight of prior).
 
     Attributes
     ----------
