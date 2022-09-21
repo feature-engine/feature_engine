@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  codecov: codecov/codecov@3.2.3
 
 defaults: &defaults
   docker:
@@ -60,6 +62,19 @@ jobs:
           name: Run tests with Python 3.10
           command: |
             tox -e py310
+
+  test_codedov:
+    docker:
+      - image: circleci/python:3.9.0
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run codecoverage
+          command: |
+            tox -e codecov
 
   test_style:
     docker:
