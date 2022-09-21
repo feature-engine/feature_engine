@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  codecov: codecov/codecov@3.2.3
 
 defaults: &defaults
   docker:
@@ -100,6 +102,23 @@ jobs:
           command: |
             tox -e typechecks
 
+  upload_codecov:
+    docker:
+      - image: circleci/python:3.9.0
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Run tests and collect coverage
+          command: |
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install -r test_requirements.txt
+            coverage run -m pytest -v
+            coverage report
+      - codecov/upload
+
   package_and_upload_to_pypi:
     <<: *defaults
     steps:
@@ -127,6 +146,7 @@ workflows:
       - test_style
       - test_docs
       - test_type
+      - upload_codecov
       - package_and_upload_to_pypi:
           requires:
             - test_feature_engine_py38
