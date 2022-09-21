@@ -299,6 +299,64 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     assert X["var_A"].dtypes == float
 
 
+def test_auto_smoothing(df_enc):
+    encoder = MeanEncoder(smoothing='auto')
+    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+    X = encoder.transform(df_enc[["var_A", "var_B"]])
+
+    # expected output
+    transf_df = df_enc.copy()
+    var_A_dict = {
+        'A': 0.328335832083958, 'B': 0.20707964601769913, 'C': 0.4541284403669725
+    }
+    var_B_dict = {
+        'A': 0.20707964601769913, 'B': 0.328335832083958, 'C': 0.4541284403669725
+    }
+    transf_df["var_A"] = transf_df["var_A"].map(var_A_dict)
+    transf_df["var_B"] = transf_df["var_B"].map(var_B_dict)
+
+    # test init params
+    assert encoder.variables is None
+    # test fit attr
+    assert encoder.variables_ == ["var_A", "var_B"]
+    assert encoder.encoder_dict_ == {
+        "var_A": var_A_dict,
+        "var_B": var_B_dict,
+    }
+    assert encoder.n_features_in_ == 2
+    # test transform output
+    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+
+
+def test_smoothing(df_enc):
+    encoder = MeanEncoder(smoothing=100)
+    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+    X = encoder.transform(df_enc[["var_A", "var_B"]])
+
+    # expected output
+    transf_df = df_enc.copy()
+    var_A_dict = {
+        'A': 0.3018867924528302, 'B': 0.2909090909090909, 'C': 0.30769230769230765
+    }
+    var_B_dict = {
+        'A': 0.2909090909090909, 'B': 0.3018867924528302, 'C': 0.30769230769230765
+    }
+    transf_df["var_A"] = transf_df["var_A"].map(var_A_dict)
+    transf_df["var_B"] = transf_df["var_B"].map(var_B_dict)
+
+    # test init params
+    assert encoder.variables is None
+    # test fit attr
+    assert encoder.variables_ == ["var_A", "var_B"]
+    assert encoder.encoder_dict_ == {
+        "var_A": var_A_dict,
+        "var_B": var_B_dict,
+    }
+    assert encoder.n_features_in_ == 2
+    # test transform output
+    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+
+
 def test_error_if_rare_labels_not_permitted_value():
     with pytest.raises(ValueError):
         MeanEncoder(unseen="empanada")

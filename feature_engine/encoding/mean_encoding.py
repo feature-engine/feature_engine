@@ -48,6 +48,26 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
     and grey is 0.5, 0.8 and 0.1 respectively, blue is replaced by 0.5, red by 0.8
     and grey by 0.1.
 
+    For rare categories, i.e., those with few observations, the mean target value
+    might be less reliable. To mitigate poor estimates returned for rare categories,
+    the mean target value can be determined as a mixture of the target mean value for
+    the entire data set (also called the prior) and the mean target value for the
+    category (the posterior), weighted by the number of observations:
+
+    .. math::
+
+        mapping = (w_i) posterior + (1-w_i) prior
+
+    where the weight is calculated as:
+
+      .. math::
+
+        w_i = n_i t / (s + n_i t)
+
+    In the previous equation, t is the target variance in the entire dataset, s is the
+    target variance within the category and n is the number of observations for the
+    category.
+
     The encoder will encode only categorical variables by default (type 'object' or
     'categorical'). You can pass a list of variables to encode. Alternatively, the
     encoder will find and encode all categorical variables (type 'object' or
@@ -69,6 +89,14 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
     {ignore_format}
 
     {unseen}
+
+    smoothing: int, float, str, default=0.0
+        Smoothing factor. Should be >= 0. If 0 then no smoothing is applied, and the
+        mean target value per category is returned without modification. If 'auto' then
+        wi is calculated as described above and the category is encoded as the blended
+        values of the prior and the posterior. If int or float, then the wi is
+        calculated as ni / (ni+smoothing). Higher values lead to stronger smoothing
+        (higher weight of prior).
 
     Attributes
     ----------
@@ -119,9 +147,18 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
         unseen: str = "ignore",
+        smoothing: Union[int, float, str] = 0.0,
     ) -> None:
-
         super().__init__(variables, ignore_format, unseen)
+        if (
+            (isinstance(smoothing, str) and (smoothing != 'auto')) or
+            (isinstance(smoothing, (float, int)) and smoothing < 0)
+        ):
+            raise ValueError(
+                f"smoothing must be greater than 0 or 'auto'. "
+                f"Got {smoothing} instead."
+            )
+        self.smoothing = smoothing
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -143,8 +180,20 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
         self.encoder_dict_ = {}
 
+        y_prior = y.mean()
+        if self.smoothing == 'auto':
+            y_var = y.var(ddof=0)
         for var in self.variables_:
-            self.encoder_dict_[var] = y.groupby(X[var]).mean().to_dict()
+            if self.smoothing == 'auto':
+                damping = y.groupby(X[var]).var(ddof=0) / y_var
+            else:
+                damping = self.smoothing
+            counts = X[var].value_counts()
+            _lambda = counts / (counts + damping)
+            self.encoder_dict_[var] = (
+                _lambda * y.groupby(X[var]).mean() +
+                (1. - _lambda) * y_prior
+            ).to_dict()
 
         self._check_encoding_dictionary()
 

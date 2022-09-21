@@ -100,11 +100,33 @@ in the dataset, and the mean target value per category can be determined with so
 However, if variables are highly cardinal, with only very few observations for some labels,
 then the mean target value for those categories will be unreliable.
 
-To encode highly cardinal variables using target mean encoding, we could either group
-infrequent categories first using the :class:`RareLabelEncoder()`. Alternatively, we
-may want to choose different encoding methods that use blends of probabilities to try and
-better estimate the encoding mappings, like those available in the open-source package
-Category encoders through the transformers
+To encode highly cardinal variables using target mean encoding, we could group
+infrequent categories first using the :class:`RareLabelEncoder()`.
+
+Alternatively, the :class:`MeanEncoder()` provides an option to "smooth" the mean target
+value estimated for rare categories. In these cases, the target estimates can be determined
+as a mixture of two values: the mean target value per category (the posterior) and
+the mean target value in the entire dataset (the prior).
+
+.. math::
+
+        mapping = (w_i) posterior + (1-w_i) prior
+
+The two values are “blended” using a weighting factor (wi) which is a function of the category
+group size and the variance of the target in the data (t) and within the category (s):
+
+.. math::
+
+    w_i = n_i t / (s + n_i t)
+
+When the category group is large, the weighing factor aroximates 1 and therefore more
+weight is given to the posterior. When the category group size is small, then the weight
+becomes relevant and more weight is given to the prior.
+
+
+Finally, you may want to check different implementations of encoding methods that use
+blends of probabilities, which are available in the open-source package Category encoders
+through the transformers
 `M-estimate <https://contrib.scikit-learn.org/category_encoders/mestimate.html>`_ and
 `Target Encoder <https://contrib.scikit-learn.org/category_encoders/targetencoder.html>`_.
 
