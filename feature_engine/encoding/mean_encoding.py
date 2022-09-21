@@ -144,10 +144,10 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
     def __init__(
         self,
-        smoothing: Union[int, float, str] = 0.0,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
         unseen: str = "ignore",
+        smoothing: Union[int, float, str] = 0.0, 
     ) -> None:
         super().__init__(variables, ignore_format, unseen)
         if (
