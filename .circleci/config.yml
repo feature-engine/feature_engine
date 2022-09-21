@@ -102,7 +102,7 @@ jobs:
           command: |
             tox -e typechecks
 
-  upload_codedov:
+  upload_codecov:
     docker:
       - image: circleci/python:3.9.0
     working_directory: ~/project
@@ -110,14 +110,13 @@ jobs:
       - checkout:
           path: ~/project
       - run:
-          name: Install dependencies
+          name: Run tests and collect coverage
           command: |
             pip install --upgrade pip
             pip install -r requirements.txt
             pip install -r test_requirements.txt
-      - run:
-          name: Run tests and collect coverage
-          command: pytest --cov feature_engine
+            coverage run -m pytest -v
+            coverage report
       - codecov/upload
 
   package_and_upload_to_pypi:

@@ -7,4 +7,3 @@ coverage>=6.4.4
 flake8>=3.9.2
 isort>=5.8.0
 mypy>=0.740
-pytest-cov>=3.0.0
