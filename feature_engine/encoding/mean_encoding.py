@@ -181,10 +181,8 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         self.encoder_dict_ = {}
 
         y_prior = y.mean()
-        if self.unseen == "encode":
-            dct_init = defaultdict(lambda: y_prior)
-        else:
-            dct_init = {}
+        dct_init = defaultdict(lambda: y_prior) if self.unseen == "encode" else {}
+
         if self.smoothing == 'auto':
             y_var = y.var(ddof=0)
         for var in self.variables_:
