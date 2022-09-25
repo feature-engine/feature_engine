@@ -364,7 +364,7 @@ def test_error_if_rare_labels_not_permitted_value(df_enc):
     with pytest.raises(ValueError):
         encoder = MeanEncoder(unseen="raise")
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-        encode.transform(df_unseen)
+        encoder.transform(df_unseen)
 
     encoder = MeanEncoder(unseen="encode")
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
