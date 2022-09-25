@@ -183,7 +183,7 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         y_prior = y.mean()
         dct_init = defaultdict(
             lambda: y_prior
-        ) if self.unseen == "encode" else {} # type: Union[dict, defaultdict]
+        ) if self.unseen == "encode" else {}  # type: Union[dict, defaultdict]
 
         if self.smoothing == 'auto':
             y_var = y.var(ddof=0)
