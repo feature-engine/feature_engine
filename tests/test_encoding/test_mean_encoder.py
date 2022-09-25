@@ -368,4 +368,4 @@ def test_error_if_rare_labels_not_permitted_value(df_enc):
 
     encoder = MeanEncoder(unseen="encode")
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    assert (encoder.transform(df_unseen) == df_enc["target"].mean()).all()
+    assert (encoder.transform(df_unseen) == df_enc["target"].mean()).all(axis=None)
