@@ -1,9 +1,9 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Union
-
 import pandas as pd
+from typing import List, Union
+from collections import defaultdict
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
