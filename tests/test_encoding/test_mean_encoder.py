@@ -357,6 +357,15 @@ def test_smoothing(df_enc):
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
 
-def test_error_if_rare_labels_not_permitted_value():
+def test_error_if_rare_labels_not_permitted_value(df_enc):
+    df_unseen = pd.DataFrame({"var_A": ["D"], "var_B": ["D"]})
     with pytest.raises(ValueError):
         MeanEncoder(unseen="empanada")
+    with pytest.raises(ValueError):
+        encoder = MeanEncoder(unseen="raise")
+        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+        encode.transform(df_unseen)
+
+    encoder = MeanEncoder(unseen="encode")
+    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+    assert (encode.transform(df_unseen) == df_enc["target"].mean()).all()
