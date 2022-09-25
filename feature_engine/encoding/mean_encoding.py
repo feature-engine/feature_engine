@@ -22,9 +22,16 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
+from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.encoding.base_encoder import (
     CategoricalInitExpandedMixin,
     CategoricalMethodsMixin,
+)
+
+
+_unseen_docstring = (
+    _unseen_docstring
+    + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
 )
 
 
@@ -149,7 +156,7 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         unseen: str = "ignore",
         smoothing: Union[int, float, str] = 0.0,
     ) -> None:
-        super().__init__(variables, ignore_format, unseen)
+        super().__init__(variables, ignore_format)
         if (
             (isinstance(smoothing, str) and (smoothing != 'auto')) or
             (isinstance(smoothing, (float, int)) and smoothing < 0)
@@ -159,6 +166,8 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
                 f"Got {smoothing} instead."
             )
         self.smoothing = smoothing
+        check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
+        self.unseen = unseen
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -185,10 +194,10 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
             lambda: y_prior
         ) if self.unseen == "encode" else {}  # type: Union[dict, defaultdict]
 
-        if self.smoothing == 'auto':
+        if self.smoothing == "auto":
             y_var = y.var(ddof=0)
         for var in self.variables_:
-            if self.smoothing == 'auto':
+            if self.smoothing == "auto":
                 damping = y.groupby(X[var]).var(ddof=0) / y_var
             else:
                 damping = self.smoothing
