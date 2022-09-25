@@ -1,9 +1,9 @@
-.. _onehot_encoder:
+.. _string_similarity:
 
 .. currentmodule:: feature_engine.encoding
 
 
-OneHotEncoder
+StringSimilarityEncoder
 =============
 
 The :class:`StringSimilarityEncoder()` replaces categorical variables by a set of
