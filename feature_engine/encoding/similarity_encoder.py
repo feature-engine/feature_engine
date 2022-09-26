@@ -54,8 +54,8 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     majority of the observations in the dataset. This behaviour can be specified with
     the parameter `top_categories`.
 
-    The encoder has the option to specify the behaviour when NaN is present in the variable,
-    see parameter `handle_missing`.
+    The encoder has the option to specify the behaviour when NaN is present in the
+    variable, see parameter `handle_missing`.
 
     The encoder will encode only categorical variables by default (type 'object' or
     'categorical'). You can pass a list of variables to encode. Alternatively, the
@@ -75,8 +75,8 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     top_categories: int, default=None
         If None, dummy variables will be created for each unique category of the
         variable. Alternatively, we can indicate in the number of most frequent
-        categories to encode. In this case, similarity variables will be created only for
-        those popular categories and the rest will be ignored.
+        categories to encode. In this case, similarity variables will be created
+        only for those popular categories and the rest will be ignored.
 
     handle_missing : str, default='impute'
         Action to perform when NaN is seen.
@@ -111,11 +111,11 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     Notes
     -----
-    This encoder will encode new categories by measuring string similarity between seen
-    unseen categories.
+    This encoder will encode new categories by measuring string similarity between
+    seen and unseen categories.
     
-    No preprocessing is applied, so it is on user to prepare string categorical variables
-    for this transformer.
+    No preprocessing is applied, so it's on user to prepare string categorical
+    variables for this transformer.
 
     The original categorical variables are removed from the returned dataset when we
     apply the transform() method. In their place, the binary variables are returned.
@@ -129,8 +129,8 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     ----------
     .. [1] Cerda P, Varoquaux G, Kégl B. "Similarity encoding for learning with dirty
        categorical variables". Machine Learning, Springer Verlag, 2018.
-    .. [2] Cerda P, Varoquaux G. "Encoding high-cardinality string categorical variables".
-       IEEE Transactions on Knowledge & Data Engineering, 2020.
+    .. [2] Cerda P, Varoquaux G. "Encoding high-cardinality string categorical
+       variables". IEEE Transactions on Knowledge & Data Engineering, 2020.
     """
 
     def __init__(
