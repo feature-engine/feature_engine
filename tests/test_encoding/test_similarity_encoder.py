@@ -93,4 +93,4 @@ def test_nan_behaviour(df_enc_big, df_enc_big_na):
 
     encoder = StringSimilarityEncoder(handle_missing='ignore')
     X = encoder.fit_transform(df_enc_big_na)
-    assert X.isna().any(1) == df_enc_big_na.isna().any(1)
+    assert (X.isna().any(1) == df_enc_big_na.isna().any(1)).all()
