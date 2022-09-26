@@ -61,6 +61,7 @@ defeat the purpose of these encoding techniques.
    PRatioEncoder
    DecisionTreeEncoder
    RareLabelEncoder
+   StringSimilarityEncoder
 
 
 Additional categorical encoding transformations ara available in the open-source package
