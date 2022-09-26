@@ -113,7 +113,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     -----
     This encoder will encode new categories by measuring string similarity between
     seen and unseen categories.
-    
+
     No preprocessing is applied, so it's on user to prepare string categorical
     variables for this transformer.
 
