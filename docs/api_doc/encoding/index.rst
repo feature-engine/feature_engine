@@ -27,6 +27,7 @@ and make the transformers also accept numerical variables as input.
    PRatioEncoder
    DecisionTreeEncoder
    RareLabelEncoder
+   StringSimilarityEncoder
 
 Other categorical encoding libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
