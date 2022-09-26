@@ -249,7 +249,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             if self.handle_missing == 'ignore':
                 X.loc[X[var].isna(), new_features] = np.nan
 
-        return X[self.get_feature_names_out()].drop(self.variables_, axis=1)
+        return X.drop(self.variables_, axis=1)
 
     def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
         """Get output feature names for transformation.
