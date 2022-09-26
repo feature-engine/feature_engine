@@ -42,8 +42,8 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The StringSimilarityEncoder() replaces categorical variables by a set of
     float variables representing similarity between unique categories in the variable.
-    This new variables will have values in range between 0 and 1, where 0 is the least similar
-    and 1 is the complete match.
+    This new variables will have values in range between 0 and 1, where 0 is the least
+    similar and 1 is the exact match.
     This encoding is an alternative to OneHotEncoder in the case of poorly
     defined categorical variables.
 
@@ -175,7 +175,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self._get_feature_names_in(X)
         self.encoder_dict_ = {}
 
-        if (self.handle_missing == 'error'):
+        if self.handle_missing == 'error':
             _check_contains_na(X, self.variables_)
             for var in self.variables_:
                 self.encoder_dict_[var] = (
@@ -228,7 +228,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         check_is_fitted(self)
         X = self._check_transform_input_and_state(X)
-        if (self.handle_missing == 'error'):
+        if self.handle_missing == 'error':
             _check_contains_na(X, self.variables_)
 
         for var in self.variables_:
