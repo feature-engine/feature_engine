@@ -9,13 +9,14 @@ StringSimilarityEncoder
 The :class:`StringSimilarityEncoder()` replaces categorical variables by a set of
 float variables representing similarity between unique categories in the variable.
 This new variables will have values in range between 0 and 1, where 0 is the least similar
-and 1 is the complete match.
+and 1 is the exact match.
 This encoding is an alternative to OneHotEncoder in the case of poorly
 defined (or 'dirty') categorical variables.
 
 For example, from the categorical variable "Profession" with categories
 ('Data Analyst', 'Business Analyst', 'Product Analyst', 'Project Manager', 'Software Engineer'),
-we can generate the float variables which will take value from 0 to 1, based on how text strings are similar.
+we can generate the float variables which will take value from 0 to 1, based on how smilar
+these text strings are.
 
 **Encoding only popular categories**
 
@@ -30,7 +31,8 @@ when the categorical variables are highly cardinal, to control the expansion of 
 
 The encoder has three options on dealing with missing values, specified by parameter `handle_missing`:
   1. Ignore NaNs (option `ignore`) - will leave NaN in resulting dataframe after transformation.
-     Could be useful, if the next step in the pipeline will be imputer or ML algortih with imputing capabilities.
+     Could be useful, if the next step in the pipeline will be imputer or ML algorithm with
+     imputing capabilities.
   2. Impute NaNs (option `impute`) - will impute NaN with an empty string, most of the time it will
      be represented as 0 in resulting dataframe. This is the default option.
   3. Raise an error (option `error`) - will raise an error if NaN is present during `fit`, `transform` or
@@ -38,7 +40,7 @@ The encoder has three options on dealing with missing values, specified by param
 
 **Note**
 
-This encoder will encode new categories by measuring string similarity between seen unseen categories.
+This encoder will encode new categories by measuring string similarity between seen and unseen categories.
 
 No preprocessing is applied, so it is on user to prepare string categorical variables for this transformer.
 
@@ -47,6 +49,7 @@ into a train and a test set:
 
 .. code:: python
 
+        import string
 	import numpy as np
 	import pandas as pd
 	import matplotlib.pyplot as plt
@@ -54,21 +57,43 @@ into a train and a test set:
 
 	from feature_engine.encoding import StringSimilarityEncoder
 
-	# Load dataset
-	def load_titanic():
-		data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-		data = data.replace('?', np.nan)
-		data['home.dest'] = data['home.dest'].str.strip().str.replace(',', '').str.replace('/', '').str.replace('  ', ' ')
-    data['name'] = data['name'].str.strip().str.replace(',', '').str.replace('.', '', regex=False).str.replace('  ', ' ')
-    data['ticket'] = data['ticket'].str.strip().str.replace('/', '').str.replace('.', '', regex=False).str.replace('  ', ' ')
-		return data
+	# Helper function for loading and preprocessing data
+	def load_titanic() -> pd.DataFrame:
+	    translate_table = str.maketrans('' , '', string.punctuation)
+	    data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
+	    data = data.replace('?', np.nan)
+	    data['home.dest'] = (
+		data['home.dest']
+		.str.strip()
+		.str.translate(translate_table)
+		.str.replace('  ', ' ')
+		.str.lower()
+	    )
+	    data['name'] = (
+		data['name']
+		.str.strip()
+		.str.translate(translate_table)
+		.str.replace('  ', ' ')
+		.str.lower()
+	    )
+	    data['ticket'] = (
+		data['ticket']
+		.str.strip()
+		.str.translate(translate_table)
+		.str.replace('  ', ' ')
+		.str.lower()
+	    )
+	    return data
 	
 	data = load_titanic()
 
 	# Separate into train and test sets
 	X_train, X_test, y_train, y_test = train_test_split(
-				data.drop(['survived', 'sex', 'cabin', 'embarked'], axis=1),
-				data['survived'], test_size=0.3, random_state=0)
+	    data.drop(['survived', 'sex', 'cabin', 'embarked'], axis=1),
+	    data['survived'],
+	    test_size=0.3,
+	    random_state=0
+	)
 
 Now, we set up the encoder to encode only the 2 most frequent categories of each of the
 3 indicated categorical variables:
