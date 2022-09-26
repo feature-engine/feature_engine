@@ -98,7 +98,7 @@ def test_nan_behaviour(df_enc_big, df_enc_big_na):
 
 def test_get_feature_names_out(df_enc):
     original_features = ["target"]
-    input_features = df_enc.columns
+    input_features = df_enc.columns.tolist()
 
     tr = StringSimilarityEncoder()
     tr.fit(df_enc)
