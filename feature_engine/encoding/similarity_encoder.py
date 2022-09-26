@@ -183,7 +183,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .value_counts()
                     .head(self.top_categories)
                     .index
-                    .values
+                    .tolist()
                 )
         elif self.handle_missing == 'impute':
             for var in self.variables_:
@@ -193,7 +193,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .value_counts()
                     .head(self.top_categories)
                     .index
-                    .values
+                    .tolist()
                 )
         elif self.handle_missing == 'ignore':
             for var in self.variables_:
@@ -202,7 +202,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .value_counts(dropna=True)
                     .head(self.top_categories)
                     .index
-                    .values
+                    .tolist()
                 )
 
         self._check_encoding_dictionary()
