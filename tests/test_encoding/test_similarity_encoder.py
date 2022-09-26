@@ -104,8 +104,8 @@ def test_get_feature_names_out(df_enc):
     tr.fit(df_enc)
 
     out = [
+        "var_A_B",  # sort by popularity within variable
         "var_A_A",
-        "var_A_B",
         "var_A_C",
         "var_B_A",
         "var_B_B",
