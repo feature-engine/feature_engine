@@ -96,38 +96,81 @@ def test_nan_behaviour(df_enc_big, df_enc_big_na):
     assert (X.isna().any(1) == df_enc_big_na.isna().any(1)).all()
 
 
-def test_get_feature_names_out(df_enc):
-    original_features = ["target"]
-    input_features = df_enc.columns.tolist()
+def test_get_feature_names_out(df_enc_big, df_enc_big_na):
+    input_features = df_enc_big.columns.tolist()
 
     tr = StringSimilarityEncoder()
-    tr.fit(df_enc)
+    tr.fit(df_enc_big)
 
+    # sort by popularity within variable
     out = [
-        "var_A_B",  # sort by popularity within variable
+        "var_A_B",
+        "var_A_D",
         "var_A_A",
+        "var_A_G",
         "var_A_C",
+        "var_A_E",
+        "var_A_F",
         "var_B_A",
+        "var_B_D",
         "var_B_B",
+        "var_B_G",
         "var_B_C",
+        "var_B_E",
+        "var_B_F",
+        "var_C_C",
+        "var_C_D",
+        "var_C_B",
+        "var_C_G",
+        "var_C_A",
+        "var_C_E",
+        "var_C_F",
     ]
 
-    feat_out = original_features + out
-
-    assert tr.get_feature_names_out(input_features=None) == feat_out
-    assert tr.get_feature_names_out(input_features=input_features) == feat_out
+    assert tr.get_feature_names_out(input_features=None) == out
+    assert tr.get_feature_names_out(input_features=input_features) == out
 
     tr = StringSimilarityEncoder(top_categories=1)
-    tr.fit(df_enc)
+    tr.fit(df_enc_big)
 
-    out = ["var_A_B", "var_B_A"]
-    feat_out = original_features + out
+    out = ["var_A_B", "var_B_A", "var_C_C"]
 
-    assert tr.get_feature_names_out(input_features=None) == feat_out
-    assert tr.get_feature_names_out(input_features=input_features) == feat_out
+    assert tr.get_feature_names_out(input_features=None) == out
+    assert tr.get_feature_names_out(input_features=input_features) == out
 
     with pytest.raises(ValueError):
         tr.get_feature_names_out("var_A")
 
     with pytest.raises(ValueError):
         tr.get_feature_names_out(["var_A", "hola"])
+
+    tr = StringSimilarityEncoder()
+    tr.fit(df_enc_big_na)
+
+    out = [
+        "var_A_B",
+        "var_A_D",
+        "var_A_G",
+        "var_A_A",
+        "var_A_C",
+        "var_A_E",
+        "var_A_F",
+        "var_A_None",
+        "var_B_A",
+        "var_B_D",
+        "var_B_B",
+        "var_B_G",
+        "var_B_C",
+        "var_B_E",
+        "var_B_F",
+        "var_C_C",
+        "var_C_D",
+        "var_C_B",
+        "var_C_G",
+        "var_C_A",
+        "var_C_E",
+        "var_C_F",
+    ]
+
+    assert tr.get_feature_names_out(input_features=None) == out
+    assert tr.get_feature_names_out(input_features=input_features) == out
