@@ -328,7 +328,7 @@ def test_auto_smoothing(df_enc):
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
 
-def test_smoothing(df_enc):
+def test_value_smoothing(df_enc):
     encoder = MeanEncoder(smoothing=100)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     X = encoder.transform(df_enc[["var_A", "var_B"]])
@@ -357,15 +357,14 @@ def test_smoothing(df_enc):
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
 
-def test_error_if_rare_labels_not_permitted_value(df_enc):
-    df_unseen = pd.DataFrame({"var_A": ["D"], "var_B": ["D"]})
+def test_error_if_rare_labels_not_permitted_value():
     with pytest.raises(ValueError):
         MeanEncoder(unseen="empanada")
-    with pytest.raises(ValueError):
-        encoder = MeanEncoder(unseen="raise")
-        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-        encoder.transform(df_unseen)
 
+
+def test_encoding_new_categories(df_enc):
+    df_unseen = pd.DataFrame({"var_A": ["D"], "var_B": ["D"]})
     encoder = MeanEncoder(unseen="encode")
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    assert (encoder.transform(df_unseen) == df_enc["target"].mean()).all(axis=None)
+    df_transformed = encoder.transform(df_unseen)
+    assert (df_transformed == df_enc["target"].mean()).all(axis=None)
