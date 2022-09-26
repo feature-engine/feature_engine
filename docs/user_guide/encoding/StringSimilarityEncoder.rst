@@ -4,7 +4,7 @@
 
 
 StringSimilarityEncoder
-=============
+=======================
 
 The :class:`StringSimilarityEncoder()` replaces categorical variables by a set of
 float variables representing similarity between unique categories in the variable.
