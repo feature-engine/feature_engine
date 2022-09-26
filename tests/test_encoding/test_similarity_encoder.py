@@ -91,76 +91,8 @@ def test_nan_behaviour(df_enc_big, df_enc_big_na):
 
     encoder = StringSimilarityEncoder(handle_missing='impute')
     X = encoder.fit_transform(df_enc_big_na)
-    assert X.isna().sum() == 0
+    assert X.isna().sum(axis=None) == 0
 
     encoder = StringSimilarityEncoder(handle_missing='ignore')
     X = encoder.fit_transform(df_enc_big_na)
     assert X.isna() == df_enc_big_na.isna()
-
-
-def test_get_feature_names_out(df_enc_binary):
-    original_features = ["var_num"]
-    input_features = ["var_A", "var_B", "var_C", "var_D"]
-
-    tr = StringSimilarityEncoder()
-    tr.fit(df_enc_binary)
-
-    out = [
-        "var_A_A",
-        "var_A_B",
-        "var_A_C",
-        "var_B_A",
-        "var_B_B",
-        "var_B_C",
-        "var_C_AHA",
-        "var_C_UHU",
-        "var_D_OHO",
-        "var_D_EHE",
-    ]
-
-    assert tr.get_feature_names_out(input_features=None) == original_features + out
-    assert tr.get_feature_names_out(input_features=input_features) == out
-    assert tr.get_feature_names_out(input_features=input_features[0:2]) == out[0:6]
-    assert tr.get_feature_names_out(input_features=[input_features[0]]) == out[0:3]
-
-    tr = StringSimilarityEncoder(top_categories=1)
-    tr.fit(df_enc_binary)
-
-    out = ["var_A_B", "var_B_A", "var_C_AHA", "var_D_EHE"]
-
-    assert tr.get_feature_names_out(input_features=None) == original_features + out
-    assert tr.get_feature_names_out(input_features=input_features) == out
-    assert tr.get_feature_names_out(input_features=input_features[0:2]) == out[0:2]
-    assert tr.get_feature_names_out(input_features=[input_features[3]]) == [out[3]]
-
-    with pytest.raises(ValueError):
-        tr.get_feature_names_out("var_A")
-
-    with pytest.raises(ValueError):
-        tr.get_feature_names_out(["var_A", "hola"])
-
-
-def test_get_feature_names_out_from_pipeline(df_enc_binary):
-    original_features = ["var_num"]
-    input_features = ["var_A", "var_B", "var_C", "var_D"]
-
-    tr = Pipeline([("transformer", StringSimilarityEncoder())])
-    tr.fit(df_enc_binary)
-
-    out = [
-        "var_A_A",
-        "var_A_B",
-        "var_A_C",
-        "var_B_A",
-        "var_B_B",
-        "var_B_C",
-        "var_C_AHA",
-        "var_C_UHU",
-        "var_D_OHO",
-        "var_D_EHE",
-    ]
-
-    assert tr.get_feature_names_out(input_features=None) == original_features + out
-    assert tr.get_feature_names_out(input_features=input_features) == out
-    assert tr.get_feature_names_out(input_features=input_features[0:2]) == out[0:6]
-    assert tr.get_feature_names_out(input_features=[input_features[0]]) == out[0:3]
