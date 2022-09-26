@@ -94,3 +94,39 @@ def test_nan_behaviour(df_enc_big, df_enc_big_na):
     encoder = StringSimilarityEncoder(handle_missing='ignore')
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().any(1) == df_enc_big_na.isna().any(1)).all()
+
+
+def test_get_feature_names_out(df_enc):
+    input_features = df_enc.columns
+
+    tr = StringSimilarityEncoder()
+    tr.fit(df_enc)
+
+    out = [
+        "var_A_A",
+        "var_A_B",
+        "var_A_C",
+        "var_B_A",
+        "var_B_B",
+        "var_B_C",
+    ]
+
+    feat_out = original_features + out
+
+    assert tr.get_feature_names_out(input_features=None) == feat_out
+    assert tr.get_feature_names_out(input_features=input_features) == feat_out
+
+    tr = StringSimilarityEncoder(top_categories=1)
+    tr.fit(df_enc)
+
+    out = ["var_A_B", "var_B_A"]
+    feat_out = original_features + out
+
+    assert tr.get_feature_names_out(input_features=None) == feat_out
+    assert tr.get_feature_names_out(input_features=input_features) == feat_out
+
+    with pytest.raises(ValueError):
+        tr.get_feature_names_out("var_A")
+
+    with pytest.raises(ValueError):
+        tr.get_feature_names_out(["var_A", "hola"])
