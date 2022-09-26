@@ -1,9 +1,9 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
-
-import pandas as pd
 from typing import List, Union
 from collections import defaultdict
+
+import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -31,7 +31,7 @@ from feature_engine.encoding.base_encoder import (
 
 _unseen_docstring = (
     _unseen_docstring
-    + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
+    + """ If `'encode'`, unseen categories will be encoded with the prior."""
 )
 
 
