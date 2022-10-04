@@ -251,11 +251,11 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 encoded[X[var].isna(), :] = np.nan
             new_values.append(encoded)
 
-        new_features = _get_new_features_name()
-        X.loc[:, new_features] = np.hstack(new_values) 
+        new_features = self._get_new_features_name()
+        X.loc[:, new_features] = np.hstack(new_values)
 
         return X.drop(self.variables_, axis=1)
-    
+
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""
         feature_names = []
