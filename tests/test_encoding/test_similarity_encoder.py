@@ -77,20 +77,26 @@ def test_error_if_handle_missing_invalid():
         StringSimilarityEncoder(handle_missing='propagate')
 
 
-def test_nan_behaviour(df_enc_big, df_enc_big_na):
+def test_nan_behaviour_error_fit(df_enc_big_na):
+    encoder = StringSimilarityEncoder(handle_missing='error')
     with pytest.raises(ValueError):
-        encoder = StringSimilarityEncoder(handle_missing='error')
         encoder.fit(df_enc_big_na)
 
+
+def test_nan_behaviour_error_transform(df_enc_big, df_enc_big_na):
+    encoder = StringSimilarityEncoder(handle_missing='error')
+    encoder.fit(df_enc_big)
     with pytest.raises(ValueError):
-        encoder = StringSimilarityEncoder(handle_missing='error')
-        encoder.fit(df_enc_big)
         encoder.transform(df_enc_big_na)
 
+
+def test_nan_behaviour_impute(df_enc_big_na)
     encoder = StringSimilarityEncoder(handle_missing='impute')
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().sum() == 0).all(axis=None)
 
+
+def test_nan_behaviour_ignore(df_enc_big_na)
     encoder = StringSimilarityEncoder(handle_missing='ignore')
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().any(1) == df_enc_big_na.isna().any(1)).all()
