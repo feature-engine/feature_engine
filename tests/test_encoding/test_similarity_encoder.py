@@ -90,13 +90,13 @@ def test_nan_behaviour_error_transform(df_enc_big, df_enc_big_na):
         encoder.transform(df_enc_big_na)
 
 
-def test_nan_behaviour_impute(df_enc_big_na)
+def test_nan_behaviour_impute(df_enc_big_na):
     encoder = StringSimilarityEncoder(handle_missing='impute')
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().sum() == 0).all(axis=None)
 
 
-def test_nan_behaviour_ignore(df_enc_big_na)
+def test_nan_behaviour_ignore(df_enc_big_na):
     encoder = StringSimilarityEncoder(handle_missing='ignore')
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().any(1) == df_enc_big_na.isna().any(1)).all()
