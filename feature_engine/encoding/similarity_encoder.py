@@ -44,6 +44,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     float variables representing similarity between unique categories in the variable.
     This new variables will have values in range between 0 and 1, where 0 is the least
     similar and 1 is the exact match.
+    The similarity measure is gestalt pattern matching.
     This encoding is an alternative to OneHotEncoder in the case of poorly
     defined categorical variables.
 
@@ -124,6 +125,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     --------
     feature_engine.encoding.OneHotEncoder
     dirty_cat.SimilarityEncoder
+    difflib.SequenceMatcher
 
     References
     ----------
@@ -142,11 +144,13 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     ):
         if top_categories and not isinstance(top_categories, int):
             raise ValueError(
-                "top_categories takes only integer numbers, 1, 2, 3, etc."
+                f"top_categories takes only integer numbers, 1, 2, 3, etc."
+                f" Got {top_categories} instead."
             )
         if handle_missing not in ('error', 'impute', 'ignore'):
             raise ValueError(
-                "handle_missing should be one of 'error', 'impute' or 'ignore'"
+                f"handle_missing should be one of 'error', 'impute' or 'ignore'."
+                f" Got {handle_missing} instead."
             )
         super().__init__(variables, ignore_format)
         self.top_categories = top_categories
@@ -231,6 +235,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         if self.handle_missing == 'error':
             _check_contains_na(X, self.variables_)
 
+        new_values = []
         for var in self.variables_:
             if self.handle_missing == 'impute':
                 X[var] = X[var].fillna('')
@@ -242,57 +247,30 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             encoded = np.vstack(
                 X[var].map(column_encoder_dict).values
             )
-            new_features = np.asarray(
-                [f'{var}_{i}' if i else f'{var}_None' for i in self.encoder_dict_[var]]
-            )
-            X.loc[:, new_features] = encoded
             if self.handle_missing == 'ignore':
-                X.loc[X[var].isna(), new_features] = np.nan
+                encoded[X[var].isna(), :] = np.nan
+            new_values.append(encoded)
+
+        new_features = _get_new_features_name()
+        X.loc[:, new_features] = np.hstack(new_values) 
 
         return X.drop(self.variables_, axis=1)
-
-    def get_feature_names_out(self, input_features: Optional[List] = None) -> List:
-        """Get output feature names for transformation.
-
-        Parameters
-        ----------
-        input_features: list, default=None
-            Input features. If `input_features` is `None`, then the names of all the
-            variables in the transformed dataset (original + new variables) is returned.
-            Alternatively, only the names for the binary variables derived from
-            input_features will be returned.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        if input_features is None:
-            input_features_ = self.feature_names_in_
-        else:
-            if not isinstance(input_features, list):
-                raise ValueError(
-                    f"input_features must be a list. Got {input_features} instead."
-                )
-            if any(f for f in input_features if f not in self.feature_names_in_):
-                raise ValueError(
-                    "Some of the features requested were not seen during training."
-                )
-            input_features_ = input_features
-
-        # the features not encoded
-        feature_names = [f for f in input_features_ if f not in self.variables_]
-
-        # the encoded features
-        encoded = [f for f in input_features_ if f in self.variables_]
-
-        for feature in encoded:
+    
+    def _get_new_features_name(self) -> List:
+        """Return names of the created features."""
+        feature_names = []
+        for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
-                if category:
-                    feature_names.append(f'{feature}_{category}')
+                if category == '':
+                    feature_names.append(f"{feature}_None")
                 else:
-                    feature_names.append(f'{feature}_None')
+                    feature_names.append(f"{feature}_{category}")
+
+        return feature_names
+
+    def _add_new_feature_names(self, feature_names) -> List:
+        """Adds new features to df columns, and removes categoricals."""
+        feature_names = feature_names + self._get_new_features_name()
+        feature_names = [f for f in feature_names if f not in self.variables_]
 
         return feature_names
