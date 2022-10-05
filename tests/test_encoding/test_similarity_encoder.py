@@ -102,7 +102,14 @@ def test_nan_behaviour_ignore(df_enc_big_na):
     assert (X.isna().any(1) == df_enc_big_na.isna().any(1)).all()
 
 
-def test_get_feature_names_out(df_enc_big, df_enc_big_na):
+def test_inverse_transform_error(df_enc_big):
+    encoder = StringSimilarityEncoder()
+    X = encoder.fit_transform(df_enc_big)
+    with pytest.raises(NotImplementedError):
+        df_enc_big.inverse_transform(X)
+
+
+def test_get_feature_names_out(df_enc_big):
     input_features = df_enc_big.columns.tolist()
 
     tr = StringSimilarityEncoder()
@@ -149,6 +156,10 @@ def test_get_feature_names_out(df_enc_big, df_enc_big_na):
 
     with pytest.raises(ValueError):
         tr.get_feature_names_out(["var_A", "hola"])
+
+
+def test_get_feature_names_out_na(df_enc_big_na):
+    input_features = df_enc_big_na.columns.tolist()
 
     tr = StringSimilarityEncoder()
     tr.fit(df_enc_big_na)
