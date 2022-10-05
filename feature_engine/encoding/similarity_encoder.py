@@ -269,7 +269,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
                 if category == '':
-                    feature_names.append(f"{feature}_None")
+                    feature_names.append(f"{feature}_nan")
                 else:
                     feature_names.append(f"{feature}_{category}")
 
