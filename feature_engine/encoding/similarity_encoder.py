@@ -118,6 +118,9 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     No preprocessing is applied, so it's on user to prepare string categorical
     variables for this transformer.
 
+    This encoder has option to ignore format of the column. This allow user to encode
+    'numerical' categories that are more useful to count as strings, than numbers.
+
     The original categorical variables are removed from the returned dataset when we
     apply the transform() method. In their place, the binary variables are returned.
 
@@ -125,7 +128,6 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     --------
     feature_engine.encoding.OneHotEncoder
     dirty_cat.SimilarityEncoder
-    difflib.SequenceMatcher
 
     References
     ----------
@@ -145,12 +147,12 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         if top_categories and not isinstance(top_categories, int):
             raise ValueError(
                 f"top_categories takes only integer numbers, 1, 2, 3, etc."
-                f" Got {top_categories} instead."
+                f" Got {top_categories!r} instead."
             )
         if handle_missing not in ('error', 'impute', 'ignore'):
             raise ValueError(
                 f"handle_missing should be one of 'error', 'impute' or 'ignore'."
-                f" Got {handle_missing} instead."
+                f" Got {handle_missing!r} instead."
             )
         super().__init__(variables, ignore_format)
         self.top_categories = top_categories
