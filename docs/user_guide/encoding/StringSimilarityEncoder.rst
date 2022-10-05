@@ -9,14 +9,17 @@ StringSimilarityEncoder
 The :class:`StringSimilarityEncoder()` replaces categorical variables by a set of
 float variables representing similarity between unique categories in the variable.
 This new variables will have values in range between 0 and 1, where 0 is the least similar
-and 1 is the exact match.
+and 1 is the exact match. Gestalt pattern matching is used as implemented in
+:class:`SequanceMatcher()` quick_ratio method from difflib. It is calculated as
+
+.. math::
+
+    GPM = 2 M / T
+
+where T is the total number of elements in both sequences and M is the number of matches.
+
 This encoding is an alternative to OneHotEncoder in the case of poorly
 defined (or 'dirty') categorical variables.
-
-For example, from the categorical variable "Profession" with categories
-('Data Analyst', 'Business Analyst', 'Product Analyst', 'Project Manager', 'Software Engineer'),
-we can generate the float variables which will take value from 0 to 1, based on how smilar
-these text strings are.
 
 **Encoding only popular categories**
 
@@ -43,6 +46,9 @@ The encoder has three options on dealing with missing values, specified by param
 This encoder will encode new categories by measuring string similarity between seen and unseen categories.
 
 No preprocessing is applied, so it is on user to prepare string categorical variables for this transformer.
+
+This encoder has option to ignore format of the column. This allow user to encode 'numerical' categories
+that are more useful to count as strings, than numbers.
 
 Let's look at an example using the Titanic Dataset. First we load the data and divide it
 into a train and a test set:
