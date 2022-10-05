@@ -281,3 +281,9 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         feature_names = [f for f in feature_names if f not in self.variables_]
 
         return feature_names
+
+    def inverse_transform(self, X: pd.DataFrame):
+        """inverse_transform is not implemented for this transformer."""
+        raise NotImplementedError(
+            "inverse_transform is not implemented for this transformer."
+        )
