@@ -161,7 +161,7 @@ def test_get_feature_names_out(df_enc_big, df_enc_big_na):
         "var_A_C",
         "var_A_E",
         "var_A_F",
-        "var_A_None",
+        "var_A_nan",
         "var_B_A",
         "var_B_D",
         "var_B_B",
