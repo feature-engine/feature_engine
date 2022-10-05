@@ -11,6 +11,7 @@ from feature_engine.encoding import (
     PRatioEncoder,
     RareLabelEncoder,
     WoEEncoder,
+    StringSimilarityEncoder
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
@@ -28,6 +29,7 @@ _estimators = [
     ),
     WoEEncoder(ignore_format=True),
     PRatioEncoder(ignore_format=True),
+    StringSimilarityEncoder(ignore_format=True),
 ]
 
 
@@ -45,6 +47,7 @@ _estimators = [
     RareLabelEncoder(),
     WoEEncoder(),
     PRatioEncoder(),
+    StringSimilarityEncoder(),
 ]
 
 
