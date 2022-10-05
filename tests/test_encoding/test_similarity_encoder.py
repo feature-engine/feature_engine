@@ -106,7 +106,7 @@ def test_inverse_transform_error(df_enc_big):
     encoder = StringSimilarityEncoder()
     X = encoder.fit_transform(df_enc_big)
     with pytest.raises(NotImplementedError):
-        df_enc_big.inverse_transform(X)
+        encoder.inverse_transform(X)
 
 
 def test_get_feature_names_out(df_enc_big):
