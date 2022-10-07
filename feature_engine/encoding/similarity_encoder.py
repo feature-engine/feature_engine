@@ -186,7 +186,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             for var in self.variables_:
                 self.encoder_dict_[var] = (
                     X[var]
-                    .astype(str)
+                    .astype('object')
                     .value_counts()
                     .head(self.top_categories)
                     .index
@@ -196,8 +196,8 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             for var in self.variables_:
                 self.encoder_dict_[var] = (
                     X[var]
-                    .astype(str)
-                    .replace('nan', '')
+                    .astype('object')
+                    .fillna('')
                     .value_counts()
                     .head(self.top_categories)
                     .index
@@ -207,7 +207,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             for var in self.variables_:
                 self.encoder_dict_[var] = (
                     X[var]
-                    .astype(str)
+                    .astype('object')
                     .value_counts(dropna=True)
                     .head(self.top_categories)
                     .index
@@ -243,7 +243,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         new_values = []
         for var in self.variables_:
             if self.ignore_format:
-                X[var] = X[var].astype(str)
+                X[var] = X[var].astype('object')
             if self.handle_missing == 'impute':
                 X[var] = X[var].fillna('')
             new_categories = X[var].dropna().unique()
