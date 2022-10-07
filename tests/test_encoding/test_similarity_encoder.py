@@ -189,7 +189,7 @@ def test_get_feature_names_out_na(df_enc_big_na):
         "var_C_F",
     ]
 
-    assert encoder.encoder_dict_ == {
+    assert tr.encoder_dict_ == {
         "var_A": ["B", "D", "G", "A", "C", "E", "F", ""],
         "var_B": ["A", "D", "B", "G", "C", "E", "F"],
         "var_C": ["C", "D", "G", "B", "A", "E", "F"],
