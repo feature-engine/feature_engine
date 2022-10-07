@@ -24,7 +24,11 @@ from feature_engine.encoding.base_encoder import (
 
 
 def _gpm_fast(x1: str, x2: str) -> float:
-    return difflib.SequenceMatcher(None, x1, x2).quick_ratio()
+    return difflib.SequenceMatcher(
+        None,
+        str(x1),
+        str(x2)
+    ).quick_ratio()
 
 
 _gpm_fast_vec = np.vectorize(_gpm_fast)
@@ -186,7 +190,6 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             for var in self.variables_:
                 self.encoder_dict_[var] = (
                     X[var]
-                    .astype('object')
                     .value_counts()
                     .head(self.top_categories)
                     .index
@@ -196,7 +199,6 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             for var in self.variables_:
                 self.encoder_dict_[var] = (
                     X[var]
-                    .astype('object')
                     .fillna('')
                     .value_counts()
                     .head(self.top_categories)
@@ -207,7 +209,6 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             for var in self.variables_:
                 self.encoder_dict_[var] = (
                     X[var]
-                    .astype('object')
                     .value_counts(dropna=True)
                     .head(self.top_categories)
                     .index
@@ -242,8 +243,6 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         new_values = []
         for var in self.variables_:
-            if self.ignore_format:
-                X[var] = X[var].astype('object')
             if self.handle_missing == 'impute':
                 X[var] = X[var].fillna('')
             new_categories = X[var].dropna().unique()
