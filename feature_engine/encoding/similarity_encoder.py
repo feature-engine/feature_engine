@@ -172,11 +172,10 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Can be the entire dataframe, not just seleted variables.
+            Can be the entire dataframe, not just the variables to encode.
 
         y: pandas series, default=None
-            Target. It is not needed in this encoded. You can pass y or
-            None.
+            Target. It is not needed in this encoded. You can pass y or None.
         """
 
         X = check_X(X)
