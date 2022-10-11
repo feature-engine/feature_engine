@@ -1,33 +1,44 @@
+from difflib import SequenceMatcher
 import pandas as pd
 import pytest
 from feature_engine.encoding import StringSimilarityEncoder
+from feature_engine.encoding.similarity_encoder import _gpm_fast, _gpm_fast_vec
+
+
+@pytest.mark.parametrize("strings", [("hola", "chau"), ("hi there", "hi here"), (100, 1000)])
+def test_gpm_fast(strings):
+    str1, str2 = strings
+    assert SequenceMatcher(
+        None,
+        str(str1),
+        str(str2)
+    ).quick_ratio() == _gpm_fast(str1, str2)
 
 
 def test_encode_top_categories():
-
     df = pd.DataFrame(
         {
             "var_A": ["A"] * 5
-            + ["B"] * 11
-            + ["C"] * 4
-            + ["D"] * 9
-            + ["E"] * 2
-            + ["F"] * 2
-            + ["G"] * 7,
+                     + ["B"] * 11
+                     + ["C"] * 4
+                     + ["D"] * 9
+                     + ["E"] * 2
+                     + ["F"] * 2
+                     + ["G"] * 7,
             "var_B": ["A"] * 11
-            + ["B"] * 7
-            + ["C"] * 4
-            + ["D"] * 9
-            + ["E"] * 2
-            + ["F"] * 2
-            + ["G"] * 5,
+                     + ["B"] * 7
+                     + ["C"] * 4
+                     + ["D"] * 9
+                     + ["E"] * 2
+                     + ["F"] * 2
+                     + ["G"] * 5,
             "var_C": ["A"] * 4
-            + ["B"] * 5
-            + ["C"] * 11
-            + ["D"] * 9
-            + ["E"] * 2
-            + ["F"] * 2
-            + ["G"] * 7,
+                     + ["B"] * 5
+                     + ["C"] * 11
+                     + ["D"] * 9
+                     + ["E"] * 2
+                     + ["F"] * 2
+                     + ["G"] * 7,
         }
     )
 
