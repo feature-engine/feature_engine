@@ -89,13 +89,13 @@ def test_error_if_handle_missing_invalid():
 
 
 def test_nan_behaviour_error_fit(df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing='error')
+    encoder = StringSimilarityEncoder(handle_missing='raise')
     with pytest.raises(ValueError):
         encoder.fit(df_enc_big_na)
 
 
 def test_nan_behaviour_error_transform(df_enc_big, df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing='error')
+    encoder = StringSimilarityEncoder(handle_missing='raise')
     encoder.fit(df_enc_big)
     with pytest.raises(ValueError):
         encoder.transform(df_enc_big_na)

@@ -81,7 +81,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     handle_missing : str, default='impute'
         Action to perform when NaN is seen.
-            'error' - raise an error;
+            'raise' - raise an error;
             'impute' - impute NaN with an empty string;
             'ignore' - ignore NaN and leave them in resulting columns.
 
@@ -148,9 +148,9 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             raise ValueError(
                 f"top_categories takes only integers. Got {top_categories!r} instead."
             )
-        if handle_missing not in ("error", "impute", "ignore"):
+        if handle_missing not in ("raise", "impute", "ignore"):
             raise ValueError(
-                "handle_missing should be one of 'error', 'impute' or 'ignore'."
+                "handle_missing should be one of 'raise', 'impute' or 'ignore'."
                 f" Got {handle_missing!r} instead."
             )
         super().__init__(variables, ignore_format)
@@ -179,7 +179,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self._get_feature_names_in(X)
         self.encoder_dict_ = {}
 
-        if self.handle_missing == "error":
+        if self.handle_missing == "raise":
             _check_contains_na(X, self.variables_)
             for var in self.variables_:
                 self.encoder_dict_[var] = (
@@ -220,13 +220,13 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         -------
         X_new: pandas dataframe.
             The transformed dataframe. The shape of the dataframe will be different from
-            the original as it includes the similarity variables in place of the of the
+            the original as it includes the similarity variables in place of the
             original categorical ones.
         """
 
         check_is_fitted(self)
         X = self._check_transform_input_and_state(X)
-        if self.handle_missing == "error":
+        if self.handle_missing == "raise":
             _check_contains_na(X, self.variables_)
 
         new_values = []
