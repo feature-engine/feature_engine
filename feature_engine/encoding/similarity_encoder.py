@@ -1,6 +1,6 @@
 from typing import List, Optional, Union
 
-import difflib
+from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
@@ -24,7 +24,7 @@ from feature_engine.encoding.base_encoder import (
 
 
 def _gpm_fast(x1: str, x2: str) -> float:
-    return difflib.SequenceMatcher(
+    return SequenceMatcher(
         None,
         str(x1),
         str(x2)
@@ -150,12 +150,11 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     ):
         if top_categories and not isinstance(top_categories, int):
             raise ValueError(
-                f"top_categories takes only integer numbers, 1, 2, 3, etc."
-                f" Got {top_categories!r} instead."
+                f"top_categories takes only integers. Got {top_categories!r} instead."
             )
         if handle_missing not in ('error', 'impute', 'ignore'):
             raise ValueError(
-                f"handle_missing should be one of 'error', 'impute' or 'ignore'."
+                "handle_missing should be one of 'error', 'impute' or 'ignore'."
                 f" Got {handle_missing!r} instead."
             )
         super().__init__(variables, ignore_format)
