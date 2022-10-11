@@ -1,44 +1,46 @@
 from difflib import SequenceMatcher
+
 import pandas as pd
 import pytest
+
 from feature_engine.encoding import StringSimilarityEncoder
 from feature_engine.encoding.similarity_encoder import _gpm_fast, _gpm_fast_vec
 
 
-@pytest.mark.parametrize("strings", [("hola", "chau"), ("hi there", "hi here"), (100, 1000)])
+@pytest.mark.parametrize(
+    "strings", [("hola", "chau"), ("hi there", "hi here"), (100, 1000)]
+)
 def test_gpm_fast(strings):
     str1, str2 = strings
-    assert SequenceMatcher(
-        None,
-        str(str1),
-        str(str2)
-    ).quick_ratio() == _gpm_fast(str1, str2)
+    assert SequenceMatcher(None, str(str1), str(str2)).quick_ratio() == _gpm_fast(
+        str1, str2
+    )
 
 
 def test_encode_top_categories():
     df = pd.DataFrame(
         {
             "var_A": ["A"] * 5
-                     + ["B"] * 11
-                     + ["C"] * 4
-                     + ["D"] * 9
-                     + ["E"] * 2
-                     + ["F"] * 2
-                     + ["G"] * 7,
+            + ["B"] * 11
+            + ["C"] * 4
+            + ["D"] * 9
+            + ["E"] * 2
+            + ["F"] * 2
+            + ["G"] * 7,
             "var_B": ["A"] * 11
-                     + ["B"] * 7
-                     + ["C"] * 4
-                     + ["D"] * 9
-                     + ["E"] * 2
-                     + ["F"] * 2
-                     + ["G"] * 5,
+            + ["B"] * 7
+            + ["C"] * 4
+            + ["D"] * 9
+            + ["E"] * 2
+            + ["F"] * 2
+            + ["G"] * 5,
             "var_C": ["A"] * 4
-                     + ["B"] * 5
-                     + ["C"] * 11
-                     + ["D"] * 9
-                     + ["E"] * 2
-                     + ["F"] * 2
-                     + ["G"] * 7,
+            + ["B"] * 5
+            + ["C"] * 11
+            + ["D"] * 9
+            + ["E"] * 2
+            + ["F"] * 2
+            + ["G"] * 7,
         }
     )
 
@@ -85,30 +87,30 @@ def test_error_if_top_categories_not_integer():
 
 def test_error_if_handle_missing_invalid():
     with pytest.raises(ValueError):
-        StringSimilarityEncoder(handle_missing='propagate')
+        StringSimilarityEncoder(handle_missing="propagate")
 
 
 def test_nan_behaviour_error_fit(df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing='raise')
+    encoder = StringSimilarityEncoder(handle_missing="raise")
     with pytest.raises(ValueError):
         encoder.fit(df_enc_big_na)
 
 
 def test_nan_behaviour_error_transform(df_enc_big, df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing='raise')
+    encoder = StringSimilarityEncoder(handle_missing="raise")
     encoder.fit(df_enc_big)
     with pytest.raises(ValueError):
         encoder.transform(df_enc_big_na)
 
 
 def test_nan_behaviour_impute(df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing='impute')
+    encoder = StringSimilarityEncoder(handle_missing="impute")
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().sum() == 0).all(axis=None)
 
 
 def test_nan_behaviour_ignore(df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing='ignore')
+    encoder = StringSimilarityEncoder(handle_missing="ignore")
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().any(1) == df_enc_big_na.isna().any(1)).all()
 
