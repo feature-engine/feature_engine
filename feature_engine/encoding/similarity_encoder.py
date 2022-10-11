@@ -1,6 +1,6 @@
+from difflib import SequenceMatcher
 from typing import List, Optional, Union
 
-from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
 from sklearn.utils.validation import check_is_fitted
@@ -24,11 +24,7 @@ from feature_engine.encoding.base_encoder import (
 
 
 def _gpm_fast(x1: str, x2: str) -> float:
-    return SequenceMatcher(
-        None,
-        str(x1),
-        str(x2)
-    ).quick_ratio()
+    return SequenceMatcher(None, str(x1), str(x2)).quick_ratio()
 
 
 _gpm_fast_vec = np.vectorize(_gpm_fast)
@@ -144,7 +140,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     def __init__(
         self,
         top_categories: Union[None, int] = None,
-        handle_missing: str = 'impute',
+        handle_missing: str = "impute",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
     ):
@@ -152,7 +148,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             raise ValueError(
                 f"top_categories takes only integers. Got {top_categories!r} instead."
             )
-        if handle_missing not in ('error', 'impute', 'ignore'):
+        if handle_missing not in ("error", "impute", "ignore"):
             raise ValueError(
                 "handle_missing should be one of 'error', 'impute' or 'ignore'."
                 f" Got {handle_missing!r} instead."
@@ -183,34 +179,28 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self._get_feature_names_in(X)
         self.encoder_dict_ = {}
 
-        if self.handle_missing == 'error':
+        if self.handle_missing == "error":
             _check_contains_na(X, self.variables_)
             for var in self.variables_:
                 self.encoder_dict_[var] = (
-                    X[var]
-                    .value_counts()
-                    .head(self.top_categories)
-                    .index
-                    .tolist()
+                    X[var].value_counts().head(self.top_categories).index.tolist()
                 )
-        elif self.handle_missing == 'impute':
+        elif self.handle_missing == "impute":
             for var in self.variables_:
                 self.encoder_dict_[var] = (
                     X[var]
-                    .fillna('')
+                    .fillna("")
                     .value_counts()
                     .head(self.top_categories)
-                    .index
-                    .tolist()
+                    .index.tolist()
                 )
-        elif self.handle_missing == 'ignore':
+        elif self.handle_missing == "ignore":
             for var in self.variables_:
                 self.encoder_dict_[var] = (
                     X[var]
                     .value_counts(dropna=True)
                     .head(self.top_categories)
-                    .index
-                    .tolist()
+                    .index.tolist()
                 )
 
         self._check_encoding_dictionary()
@@ -236,22 +226,20 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         check_is_fitted(self)
         X = self._check_transform_input_and_state(X)
-        if self.handle_missing == 'error':
+        if self.handle_missing == "error":
             _check_contains_na(X, self.variables_)
 
         new_values = []
         for var in self.variables_:
-            if self.handle_missing == 'impute':
-                X[var] = X[var].fillna('')
+            if self.handle_missing == "impute":
+                X[var] = X[var].fillna("")
             new_categories = X[var].dropna().unique()
             column_encoder_dict = {
                 x: _gpm_fast_vec(x, self.encoder_dict_[var]) for x in new_categories
             }
             column_encoder_dict[np.nan] = [np.nan] * len(self.encoder_dict_[var])
-            encoded = np.vstack(
-                X[var].map(column_encoder_dict).values
-            )
-            if self.handle_missing == 'ignore':
+            encoded = np.vstack(X[var].map(column_encoder_dict).values)
+            if self.handle_missing == "ignore":
                 encoded[X[var].isna(), :] = np.nan
             new_values.append(encoded)
 
@@ -265,7 +253,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         feature_names = []
         for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
-                if category == '':
+                if category == "":
                     feature_names.append(f"{feature}_nan")
                 else:
                     feature_names.append(f"{feature}_{category}")
