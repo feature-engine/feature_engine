@@ -104,7 +104,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     missing_values : str, default='impute'
         Indicates if missing values should be ignored, raised or imputed. If 'raise' the
-        transformer will return an error if the the datasets to `fit` or `transform`
+        transformer will return an error if the datasets to `fit` or `transform`
         contain missing values. If 'ignore', missing data will be ignored when learning
         parameters or performing the transformation. If 'impute', the transformer will
         replace missing values with an empty string, '', and then return the similarity
