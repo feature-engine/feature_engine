@@ -87,6 +87,7 @@ transforming parameters from the data and then transform it.
 * PRatioEncoder
 * RareLabelEncoder
 * DecisionTreeEncoder
+* StringSimilarityEncoder
 
 ### Discretisation methods
 * EqualFrequencyDiscretiser
