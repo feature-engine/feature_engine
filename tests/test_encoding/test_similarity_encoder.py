@@ -91,30 +91,30 @@ def test_error_if_top_categories_not_integer(top_cat):
 )
 def test_error_if_handle_missing_invalid(handle_missing):
     with pytest.raises(ValueError):
-        StringSimilarityEncoder(handle_missing=handle_missing)
+        StringSimilarityEncoder(missing_values=handle_missing)
 
 
 def test_nan_behaviour_error_fit(df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing="raise")
+    encoder = StringSimilarityEncoder(missing_values="raise")
     with pytest.raises(ValueError):
         encoder.fit(df_enc_big_na)
 
 
 def test_nan_behaviour_error_transform(df_enc_big, df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing="raise")
+    encoder = StringSimilarityEncoder(missing_values="raise")
     encoder.fit(df_enc_big)
     with pytest.raises(ValueError):
         encoder.transform(df_enc_big_na)
 
 
 def test_nan_behaviour_impute(df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing="impute")
+    encoder = StringSimilarityEncoder(missing_values="impute")
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().sum() == 0).all(axis=None)
 
 
 def test_nan_behaviour_ignore(df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing="ignore")
+    encoder = StringSimilarityEncoder(missing_values="ignore")
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().any(1) == df_enc_big_na.isna().any(1)).all()
 
