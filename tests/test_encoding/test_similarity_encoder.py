@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from feature_engine.encoding import StringSimilarityEncoder
-from feature_engine.encoding.similarity_encoder import _gpm_fast, _gpm_fast_vec
+from feature_engine.encoding.similarity_encoder import _gpm_fast
 
 
 @pytest.mark.parametrize(
@@ -80,14 +80,18 @@ def test_encode_top_categories():
     assert "var_B_F" not in X.columns
 
 
-def test_error_if_top_categories_not_integer():
+@pytest.mark.parametrize("top_cat", ["hello", 0.5, [1]])
+def test_error_if_top_categories_not_integer(top_cat):
     with pytest.raises(ValueError):
-        StringSimilarityEncoder(top_categories=0.5)
+        StringSimilarityEncoder(top_categories=top_cat)
 
 
-def test_error_if_handle_missing_invalid():
+@pytest.mark.parametrize(
+    "handle_missing", ["error", "propagate", ["raise"], 1, 0.1, False]
+)
+def test_error_if_handle_missing_invalid(handle_missing):
     with pytest.raises(ValueError):
-        StringSimilarityEncoder(handle_missing="propagate")
+        StringSimilarityEncoder(handle_missing=handle_missing)
 
 
 def test_nan_behaviour_error_fit(df_enc_big_na):
