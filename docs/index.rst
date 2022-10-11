@@ -130,7 +130,7 @@ Categorical Encoders: Encoders
 - :doc:`api_doc/encoding/PRatioEncoder`: replaces categories by a ratio of probabilities
 - :doc:`api_doc/encoding/DecisionTreeEncoder`: replaces categories by predictions of a decision tree
 - :doc:`api_doc/encoding/RareLabelEncoder`: groups infrequent categories
-- :doc:`api_doc/encoding/StringSimilarityEncoder`: performs string similarity encoding for poorly defined categories
+- :doc:`api_doc/encoding/StringSimilarityEncoder`: encodes categories based on string similarity
 
 Variable Discretisation: Discretisers
 -------------------------------------
