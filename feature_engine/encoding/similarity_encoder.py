@@ -233,9 +233,9 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         for var in self.variables_:
             if self.handle_missing == "impute":
                 X[var] = X[var].fillna("")
-            new_categories = X[var].dropna().unique()
+            categories = X[var].dropna().unique()
             column_encoder_dict = {
-                x: _gpm_fast_vec(x, self.encoder_dict_[var]) for x in new_categories
+                x: _gpm_fast_vec(x, self.encoder_dict_[var]) for x in categories
             }
             column_encoder_dict[np.nan] = [np.nan] * len(self.encoder_dict_[var])
             encoded = np.vstack(X[var].map(column_encoder_dict).values)
