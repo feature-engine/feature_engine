@@ -204,15 +204,18 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
                 else:
                     X[feature] = X[feature].astype("float")
 
-        # check if nan values were introduced by the transformation
-        self._check_nan_values_after_transformation(X)
+        if self.unseen == "encode":
+            X[self.variables_] = X[self.variables_].fillna(self._unseen, downcast="infer")
+        else:
+            # check if nan values were introduced by the transformation
+            self._check_nan_values_after_transformation(X)
 
         return X
 
     def _check_nan_values_after_transformation(self, X):
 
         # check if NaN values were introduced by the encoding
-        if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
+        if X[self.variables_].isnull().sum().sum() > 0:
 
             # obtain the name(s) of the columns have null values
             nan_columns = (

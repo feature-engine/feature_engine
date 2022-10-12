@@ -1,7 +1,6 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from collections import defaultdict
 from typing import List, Optional, Union
 
 import pandas as pd
@@ -159,18 +158,19 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self._get_feature_names_in(X)
 
         self.encoder_dict_ = {}
-        dct_init = defaultdict(lambda: 0) if self.unseen == "encode" else {}
 
         # learn encoding maps
         for var in self.variables_:
             if self.encoding_method == "count":
-                self.encoder_dict_[var] = X[var].value_counts().to_dict(dct_init)
+                self.encoder_dict_[var] = X[var].value_counts().to_dict()
 
             elif self.encoding_method == "frequency":
                 self.encoder_dict_[var] = (
-                    X[var].value_counts(normalize=True).to_dict(dct_init)
+                    X[var].value_counts(normalize=True).to_dict()
                 )
 
-        self._check_encoding_dictionary()
+        # unseen categories are replaced by 0
+        if self.unseen == "encode":
+            self._unseen = 0
 
         return self

@@ -21,6 +21,7 @@ class MockClass(CategoricalMethodsMixin):
         self.feature_names_in_ = ["words"]
         self.variables_ = ["words"]
         self.unseen = unseen
+        self._unseen = -1
 
     def fit(self):
         return self
@@ -29,7 +30,6 @@ class MockClass(CategoricalMethodsMixin):
 def test_categorical_methods_mixin_transform_no_unseen():
     input_df = pd.DataFrame({"words": ["dog", "dig", "cat"]})
     output_df = pd.DataFrame({"words": [1, 0.66, 0]})
-
     enc = MockClass()
     pd.testing.assert_frame_equal(enc.transform(input_df), output_df)
 
@@ -37,7 +37,6 @@ def test_categorical_methods_mixin_transform_no_unseen():
 def test_categorical_methods_mixin_transform_ignore_unseen():
     input_df = pd.DataFrame({"words": ["dog", "dig", "bird"]})
     output_df = pd.DataFrame({"words": [1, 0.66, np.nan]})
-
     enc = MockClass(unseen="ignore")
     pd.testing.assert_frame_equal(enc.transform(input_df), output_df)
 
@@ -47,6 +46,13 @@ def test_categorical_methods_mixin_transform_raise_unseen():
     enc = MockClass(unseen="raise")
     with pytest.raises(ValueError):
         enc.transform(input_df)
+
+
+def test_categorical_methods_mixin_transform_encode_unseen():
+    input_df = pd.DataFrame({"words": ["dog", "dig", "bird"]})
+    output_df = pd.DataFrame({"words": [1, 0.66, -1]})
+    enc = MockClass(unseen="encode")
+    pd.testing.assert_frame_equal(enc.transform(input_df), output_df)
 
 
 def test_categorical_methods_mixin_raises_error_when_nan_introduced():
