@@ -1,7 +1,6 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 from typing import List, Union
-from collections import defaultdict
 
 import pandas as pd
 
