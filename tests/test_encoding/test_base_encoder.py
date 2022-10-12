@@ -1,15 +1,14 @@
-import warnings
 import numpy as np
 import pandas as pd
 import pytest
 
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
-    CategoricalMethodsMixin,
     CategoricalInitExpandedMixin,
+    CategoricalMethodsMixin,
 )
 
-@pytest.mark.parametrize("param", [1, "hola", [1,2,0], (True, False)])
+
+@pytest.mark.parametrize("param", [1, "hola", [1, 2, 0], (True, False)])
 def test_categorical_init_mixin_raises_error(param):
     with pytest.raises(ValueError):
         CategoricalInitExpandedMixin(ignore_format=param)
@@ -17,7 +16,7 @@ def test_categorical_init_mixin_raises_error(param):
 
 class MockClass(CategoricalMethodsMixin):
     def __init__(self, unseen=None):
-        self.encoder_dict_ = {"words":{"dog": 1, "dig": 0.66, "cat": 0}}
+        self.encoder_dict_ = {"words": {"dog": 1, "dig": 0.66, "cat": 0}}
         self.n_features_in_ = 1
         self.feature_names_in_ = ["words"]
         self.variables_ = ["words"]
