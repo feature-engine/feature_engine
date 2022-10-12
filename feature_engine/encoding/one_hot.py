@@ -251,9 +251,7 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
-                X[f"{feature}_{category}"] = np.where(
-                    X[feature] == category, 1, 0
-                )
+                X[f"{feature}_{category}"] = np.where(X[feature] == category, 1, 0)
 
         # drop the original non-encoded variables.
         X.drop(labels=self.variables_, axis=1, inplace=True)

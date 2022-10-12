@@ -165,9 +165,7 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 self.encoder_dict_[var] = X[var].value_counts().to_dict()
 
             elif self.encoding_method == "frequency":
-                self.encoder_dict_[var] = (
-                    X[var].value_counts(normalize=True).to_dict()
-                )
+                self.encoder_dict_[var] = X[var].value_counts(normalize=True).to_dict()
 
         # unseen categories are replaced by 0
         if self.unseen == "encode":

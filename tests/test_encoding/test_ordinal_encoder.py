@@ -176,7 +176,7 @@ def test_error_if_rare_labels_not_permitted_value():
 
 def test_inverse_transform_when_no_unseen():
     df = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
-    enc =OrdinalEncoder(encoding_method="arbitrary")
+    enc = OrdinalEncoder(encoding_method="arbitrary")
     enc.fit(df)
     dft = enc.transform(df)
     pd.testing.assert_frame_equal(enc.inverse_transform(dft), df)

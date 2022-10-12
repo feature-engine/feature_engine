@@ -29,9 +29,9 @@ from feature_engine.encoding.base_encoder import (
 )
 
 _unseen_docstring = (
-    _unseen_docstring
-    + """ If `'encode'`, unseen categories will be encoded as -1."""
+    _unseen_docstring + """ If `'encode'`, unseen categories will be encoded as -1."""
 )
+
 
 @Substitution(
     ignore_format=_ignore_format_docstring,

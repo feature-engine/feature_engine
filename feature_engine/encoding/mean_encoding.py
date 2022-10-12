@@ -157,9 +157,8 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         smoothing: Union[int, float, str] = 0.0,
     ) -> None:
         super().__init__(variables, ignore_format)
-        if (
-            (isinstance(smoothing, str) and (smoothing != 'auto')) or
-            (isinstance(smoothing, (float, int)) and smoothing < 0)
+        if (isinstance(smoothing, str) and (smoothing != "auto")) or (
+            isinstance(smoothing, (float, int)) and smoothing < 0
         ):
             raise ValueError(
                 f"smoothing must be greater than 0 or 'auto'. "
@@ -204,8 +203,7 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
             counts = X[var].value_counts()
             _lambda = counts / (counts + damping)
             self.encoder_dict_[var] = (
-                _lambda * y.groupby(X[var]).mean() +
-                (1. - _lambda) * y_prior
+                _lambda * y.groupby(X[var]).mean() + (1.0 - _lambda) * y_prior
             ).to_dict()
 
         return self
