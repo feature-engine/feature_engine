@@ -89,7 +89,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     With `ignore_format=True` you have the option to encode numerical variables as well.
     Encoding numerical variables with similarity measures make sense for example for
-    variables like barcodes. In this casel, you can either enter the list of variables
+    variables like barcodes. In this case, you can either enter the list of variables
     to encode (recommended), or the transformer will automatically select all variables.
 
     More details in the :ref:`User Guide <string_similarity>`.
@@ -204,13 +204,18 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             _check_contains_na(X, self.variables_)
             for var in self.variables_:
                 self.encoder_dict_[var] = (
-                    X[var].value_counts().head(self.top_categories).index.tolist()
+                    X[var]
+                    .astype(str)
+                    .value_counts()
+                    .head(self.top_categories)
+                    .index.tolist()
                 )
         elif self.missing_values == "impute":
             for var in self.variables_:
                 self.encoder_dict_[var] = (
                     X[var]
-                    .fillna("")
+                    .astype(str)
+                    .replace("nan", "")
                     .value_counts()
                     .head(self.top_categories)
                     .index.tolist()
@@ -219,6 +224,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             for var in self.variables_:
                 self.encoder_dict_[var] = (
                     X[var]
+                    .astype(str)
                     .value_counts(dropna=True)
                     .head(self.top_categories)
                     .index.tolist()
@@ -253,13 +259,13 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         new_values = []
         for var in self.variables_:
             if self.missing_values == "impute":
-                X[var] = X[var].fillna("")
-            categories = X[var].dropna().unique()
+                X[var] = X[var].astype(str).replace("nan", "")
+            categories = X[var].dropna().astype(str).unique()
             column_encoder_dict = {
                 x: _gpm_fast_vec(x, self.encoder_dict_[var]) for x in categories
             }
-            column_encoder_dict[np.nan] = [np.nan] * len(self.encoder_dict_[var])
-            encoded = np.vstack(X[var].map(column_encoder_dict).values)
+            column_encoder_dict["nan"] = [np.nan] * len(self.encoder_dict_[var])
+            encoded = np.vstack(X[var].astype(str).map(column_encoder_dict).values)
             if self.missing_values == "ignore":
                 encoded[X[var].isna(), :] = np.nan
             new_values.append(encoded)
