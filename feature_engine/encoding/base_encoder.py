@@ -173,19 +173,6 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
 
         return X
 
-    def _check_encoding_dictionary(self):
-        """After fit(), the encoders should return a dictionary with the original values
-        to numerical mappings as key, values. This function checks that the dictionary
-        was created and is not empty.
-        """
-
-        # check that dictionary is not empty
-        if len(self.encoder_dict_) == 0:
-            raise ValueError(
-                "Encoder could not be fitted. Check the parameters and the variables "
-                "in your dataframe."
-            )
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Replace categories with the learned parameters.
 
@@ -217,6 +204,13 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
                 else:
                     X[feature] = X[feature].astype("float")
 
+        # check if nan values were introduced by the transformation
+        self._check_nan_values_after_transformation(X)
+
+        return X
+
+    def _check_nan_values_after_transformation(self, X):
+
         # check if NaN values were introduced by the encoding
         if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
 
@@ -242,8 +236,6 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."
                 )
-
-        return X
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Convert the encoded variable back to the original values.
