@@ -182,8 +182,6 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 )
                 self.encoder_dict_[var] = X[var].unique()
 
-        self._check_encoding_dictionary()
-
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:

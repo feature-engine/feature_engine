@@ -207,8 +207,6 @@ class PRatioEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
                 else:
                     self.encoder_dict_[var] = (t.p1 / t.p0).to_dict()
 
-        self._check_encoding_dictionary()
-
         return self
 
     def _more_tags(self):

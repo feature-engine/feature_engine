@@ -179,8 +179,6 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
             self.encoder_dict_[var] = woe.to_dict()
 
-        self._check_encoding_dictionary()
-
         return self
 
     def _more_tags(self):

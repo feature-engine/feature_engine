@@ -223,8 +223,6 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 category = X[var].unique()[0]
                 self.encoder_dict_[var] = [category]
 
-        self._check_encoding_dictionary()
-
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
