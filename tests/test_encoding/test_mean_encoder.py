@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -368,3 +369,34 @@ def test_encoding_new_categories(df_enc):
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     df_transformed = encoder.transform(df_unseen)
     assert (df_transformed == df_enc["target"].mean()).all(axis=None)
+
+
+def test_inverse_transform_when_no_unseen():
+    df = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    y = [1, 0, 1, 0, 1, 0]
+    enc = MeanEncoder()
+    enc.fit(df, y)
+    dft = enc.transform(df)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df)
+
+
+def test_inverse_transform_when_ignore_unseen():
+    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
+    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", np.nan]})
+    y = [1, 0, 1, 0, 1, 0]
+    enc = MeanEncoder(unseen="ignore")
+    enc.fit(df1, y)
+    dft = enc.transform(df2)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df3)
+
+
+def test_inverse_transform_when_encode_unseen():
+    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
+    y = [1, 0, 1, 0, 1, 0]
+    enc = MeanEncoder(unseen="encode")
+    enc.fit(df1, y)
+    dft = enc.transform(df2)
+    with pytest.raises(NotImplementedError):
+        enc.inverse_transform(dft)

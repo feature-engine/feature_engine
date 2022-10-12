@@ -262,7 +262,9 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     def inverse_transform(self, X: pd.DataFrame):
         """inverse_transform is not implemented for this transformer."""
-        return self
+        raise NotImplementedError(
+            "inverse_transform is not implemented for this transformer."
+        )
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""

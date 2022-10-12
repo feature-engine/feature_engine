@@ -190,9 +190,9 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         self.encoder_dict_ = {}
 
         y_prior = y.mean()
-        dct_init = defaultdict(
-            lambda: y_prior
-        ) if self.unseen == "encode" else {}  # type: Union[dict, defaultdict]
+
+        if self.unseen == "encode":
+            self._unseen = y_prior
 
         if self.smoothing == "auto":
             y_var = y.var(ddof=0)
@@ -206,11 +206,33 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
             self.encoder_dict_[var] = (
                 _lambda * y.groupby(X[var]).mean() +
                 (1. - _lambda) * y_prior
-            ).to_dict(dct_init)
-
-        self._check_encoding_dictionary()
+            ).to_dict()
 
         return self
+
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Convert the encoded variable back to the original values.
+
+        Note that if unseen was set to 'encode', then this method is not implemented.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features].
+            The transformed dataframe.
+
+        Returns
+        -------
+        X_tr: pandas dataframe of shape = [n_samples, n_features].
+            The un-transformed dataframe, with the categorical variables containing the
+            original values.
+        """
+
+        if self.unseen == "encode":
+            raise NotImplementedError(
+                "inverse_transform is not implemented for this transformer."
+            )
+        else:
+            return super().inverse_transform(X)
 
     def _more_tags(self):
         tags_dict = super()._more_tags()
