@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -171,3 +172,39 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 def test_error_if_rare_labels_not_permitted_value():
     with pytest.raises(ValueError):
         OrdinalEncoder(unseen="empanada")
+
+
+def test_inverse_transform_when_no_unseen():
+    df = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    enc =OrdinalEncoder(encoding_method="arbitrary")
+    enc.fit(df)
+    dft = enc.transform(df)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df)
+
+
+def test_inverse_transform_when_ignore_unseen():
+    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
+    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", np.nan]})
+    enc = OrdinalEncoder(encoding_method="arbitrary", unseen="ignore")
+    enc.fit(df1)
+    dft = enc.transform(df2)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df3)
+
+
+def test_inverse_transform_when_encode_unseen():
+    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
+    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", np.nan]})
+    enc = OrdinalEncoder(encoding_method="arbitrary", unseen="encode")
+    enc.fit(df1)
+    dft = enc.transform(df2)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df3)
+
+
+def test_encoding_new_categories(df_enc):
+    df_unseen = pd.DataFrame({"var_A": ["D"], "var_B": ["D"]})
+    encoder = OrdinalEncoder(encoding_method="arbitrary", unseen="encode")
+    encoder.fit(df_enc[["var_A", "var_B"]])
+    df_transformed = encoder.transform(df_unseen)
+    assert (df_transformed == -1).all(axis=None)

@@ -21,12 +21,17 @@ from feature_engine._docstrings.methods import (
     _transform_encoders_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.dataframe_checks import check_X, check_X_y
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitExpandedMixin,
+    CategoricalInitMixin,
     CategoricalMethodsMixin,
 )
 
+_unseen_docstring = (
+    _unseen_docstring
+    + """ If `'encode'`, unseen categories will be encoded as -1."""
+)
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
@@ -39,7 +44,7 @@ from feature_engine.encoding.base_encoder import (
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
+class OrdinalEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The OrdinalEncoder() replaces categories by ordinal numbers
     (0, 1, 2, 3, etc). The numbers can be ordered based on the mean of the target
@@ -133,9 +138,10 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
                 "encoding_method takes only values 'ordered' and 'arbitrary'"
             )
 
-        super().__init__(variables, ignore_format, unseen)
-
+        check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
+        super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
+        self.unseen = unseen
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Learn the numbers to be used to replace the categories in each
@@ -174,6 +180,7 @@ class OrdinalEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
 
             self.encoder_dict_[var] = {k: i for i, k in enumerate(t, 0)}
 
-        self._check_encoding_dictionary()
+        if self.unseen == "encode":
+            self._unseen = -1
 
         return self
