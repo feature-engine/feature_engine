@@ -1,10 +1,23 @@
+from difflib import SequenceMatcher
+
 import pandas as pd
 import pytest
+
 from feature_engine.encoding import StringSimilarityEncoder
+from feature_engine.encoding.similarity_encoder import _gpm_fast
+
+
+@pytest.mark.parametrize(
+    "strings", [("hola", "chau"), ("hi there", "hi here"), (100, 1000)]
+)
+def test_gpm_fast(strings):
+    str1, str2 = strings
+    assert SequenceMatcher(None, str(str1), str(str2)).quick_ratio() == _gpm_fast(
+        str1, str2
+    )
 
 
 def test_encode_top_categories():
-
     df = pd.DataFrame(
         {
             "var_A": ["A"] * 5
@@ -67,37 +80,41 @@ def test_encode_top_categories():
     assert "var_B_F" not in X.columns
 
 
-def test_error_if_top_categories_not_integer():
+@pytest.mark.parametrize("top_cat", ["hello", 0.5, [1]])
+def test_error_if_top_categories_not_integer(top_cat):
     with pytest.raises(ValueError):
-        StringSimilarityEncoder(top_categories=0.5)
+        StringSimilarityEncoder(top_categories=top_cat)
 
 
-def test_error_if_handle_missing_invalid():
+@pytest.mark.parametrize(
+    "handle_missing", ["error", "propagate", ["raise"], 1, 0.1, False]
+)
+def test_error_if_handle_missing_invalid(handle_missing):
     with pytest.raises(ValueError):
-        StringSimilarityEncoder(handle_missing='propagate')
+        StringSimilarityEncoder(missing_values=handle_missing)
 
 
 def test_nan_behaviour_error_fit(df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing='error')
+    encoder = StringSimilarityEncoder(missing_values="raise")
     with pytest.raises(ValueError):
         encoder.fit(df_enc_big_na)
 
 
 def test_nan_behaviour_error_transform(df_enc_big, df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing='error')
+    encoder = StringSimilarityEncoder(missing_values="raise")
     encoder.fit(df_enc_big)
     with pytest.raises(ValueError):
         encoder.transform(df_enc_big_na)
 
 
 def test_nan_behaviour_impute(df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing='impute')
+    encoder = StringSimilarityEncoder(missing_values="impute")
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().sum() == 0).all(axis=None)
 
 
 def test_nan_behaviour_ignore(df_enc_big_na):
-    encoder = StringSimilarityEncoder(handle_missing='ignore')
+    encoder = StringSimilarityEncoder(missing_values="ignore")
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().any(1) == df_enc_big_na.isna().any(1)).all()
 
