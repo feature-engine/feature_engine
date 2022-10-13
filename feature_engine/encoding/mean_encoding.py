@@ -23,7 +23,7 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
 from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitExpandedMixin,
+    CategoricalInitMixin,
     CategoricalMethodsMixin,
 )
 
@@ -45,7 +45,7 @@ _unseen_docstring = (
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
+class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The MeanEncoder() replaces categories by the mean value of the target for each
     category.
