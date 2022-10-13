@@ -10,6 +10,7 @@ Contributors
 ~~~~~~~~~~~~
 
     - `Gleb Levitski <https://github.com/GLevV>`_
+    - `David Cortes <https://github.com/david-cortes>`_
     - `Alfonso Tobar <https://github.com/datacubeR>`_
     - `Morgan Sell <https://github.com/Morgan-Sell>`_
     - `Soledad Galli <https://github.com/solegalli>`_
@@ -29,6 +30,7 @@ New transformers
 ~~~~~~~~~~~~~~~~
 
     - **StringSimilarityEncoder**: encodes categorical variables based on string similarity (`Gleb Levitski <https://github.com/GLevV>`_)
+    - **MatchCategories**: matches the categories in train and test set when of type pandas categorical (`David Cortes <https://github.com/david-cortes>`_)
 
 
 New functionality
@@ -37,6 +39,7 @@ New functionality
     - The `MeanEncoder` can now implement smoothing during the encoding to handle high cardinality (`Gleb Levitski <https://github.com/GLevV>`_)
     - The `MeanlEncoder` can now encode unseen categories (`Gleb Levitski <https://github.com/GLevV>`_)
     - The `OrdinalEncoder` can now encode unseen categories (`Soledad Galli <https://github.com/solegalli>`_)
+    - The `CountFrequencyEncoder` can now encode unseen categories (`David Cortes <https://github.com/david-cortes>`_)
     - All outlier transformers can now detect outliers based on the MAD rule (`Gleb Levitski <https://github.com/GLevV>`_)
     - Add automatic calculation of PSI threshold in `DripHighPSIFeatures` (`Gleb Levitski <https://github.com/GLevV>`_)
 
