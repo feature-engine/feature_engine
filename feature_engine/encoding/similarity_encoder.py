@@ -230,8 +230,6 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .index.tolist()
                 )
 
-        self._check_encoding_dictionary()
-
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
