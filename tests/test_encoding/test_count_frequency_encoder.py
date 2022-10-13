@@ -200,7 +200,7 @@ def test_zero_encoding_for_new_categories():
         {"col1": ["a", "a", "b", "a", "c"], "col2": ["1", "2", "3", "1", "2"]}
     )
     df_transf = pd.DataFrame(
-        {"col1": ["a", "dog", "b", "a", "c"], "col2": ["1", "2", "3", "1", "4"]}
+        {"col1": ["a", "d", "b", "a", "c"], "col2": ["1", "2", "3", "1", "4"]}
     )
     encoder = CountFrequencyEncoder(unseen="encode").fit(df_fit)
 
