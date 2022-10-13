@@ -128,8 +128,11 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             raise ValueError("n_categories takes only positive integer numbers")
 
         if max_n_categories is not None:
-            if not isinstance(max_n_categories, int) or\
-                    isinstance(max_n_categories, int) and max_n_categories < 0:
+            if (
+                not isinstance(max_n_categories, int)
+                or isinstance(max_n_categories, int)
+                and max_n_categories < 0
+            ):
                 raise ValueError("max_n_categories takes only positive integer numbers")
 
         super().__init__(variables, ignore_format)
@@ -220,5 +223,3 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         raise NotImplementedError(
             "inverse_transform is not implemented for this transformer."
         )
-
-
