@@ -499,3 +499,9 @@ def test_get_feature_names_out_from_pipeline(df_enc_binary):
 def test_raises_error_when_not_allowed_smoothing_param_in_init(drop_binary):
     with pytest.raises(ValueError):
         OneHotEncoder(drop_last_binary=drop_binary)
+
+
+def test_inverse_transform_raises_not_implemented_error(df_enc_binary):
+    enc = OneHotEncoder().fit(df_enc_binary)
+    with pytest.raises(NotImplementedError):
+        enc.inverse_transform(df_enc_binary)
