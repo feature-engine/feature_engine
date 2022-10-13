@@ -1,7 +1,6 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 from typing import List, Union
-from collections import defaultdict
 
 import pandas as pd
 
@@ -21,10 +20,10 @@ from feature_engine._docstrings.methods import (
     _transform_encoders_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X_y
 from feature_engine.encoding._helper_functions import check_parameter_unseen
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitExpandedMixin,
+    CategoricalInitMixin,
     CategoricalMethodsMixin,
 )
 
@@ -46,7 +45,7 @@ _unseen_docstring = (
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
+class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The MeanEncoder() replaces categories by the mean value of the target for each
     category.
@@ -158,9 +157,10 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
     ) -> None:
         super().__init__(variables, ignore_format)
         if (
-            (isinstance(smoothing, str) and (smoothing != 'auto')) or
-            (isinstance(smoothing, (float, int)) and smoothing < 0)
-        ):
+            not isinstance(smoothing, (str, float, int))
+            or isinstance(smoothing, str)
+            and (smoothing != "auto")
+        ) or (isinstance(smoothing, (float, int)) and smoothing < 0):
             raise ValueError(
                 f"smoothing must be greater than 0 or 'auto'. "
                 f"Got {smoothing} instead."
@@ -190,9 +190,9 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         self.encoder_dict_ = {}
 
         y_prior = y.mean()
-        dct_init = defaultdict(
-            lambda: y_prior
-        ) if self.unseen == "encode" else {}  # type: Union[dict, defaultdict]
+
+        if self.unseen == "encode":
+            self._unseen = y_prior
 
         if self.smoothing == "auto":
             y_var = y.var(ddof=0)
@@ -204,13 +204,34 @@ class MeanEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
             counts = X[var].value_counts()
             _lambda = counts / (counts + damping)
             self.encoder_dict_[var] = (
-                _lambda * y.groupby(X[var]).mean() +
-                (1. - _lambda) * y_prior
-            ).to_dict(dct_init)
-
-        self._check_encoding_dictionary()
+                _lambda * y.groupby(X[var]).mean() + (1.0 - _lambda) * y_prior
+            ).to_dict()
 
         return self
+
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Convert the encoded variable back to the original values.
+
+        Note that if unseen was set to 'encode', then this method is not implemented.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features].
+            The transformed dataframe.
+
+        Returns
+        -------
+        X_tr: pandas dataframe of shape = [n_samples, n_features].
+            The un-transformed dataframe, with the categorical variables containing the
+            original values.
+        """
+
+        if self.unseen == "encode":
+            raise NotImplementedError(
+                "inverse_transform is not implemented for this transformer."
+            )
+        else:
+            return super().inverse_transform(X)
 
     def _more_tags(self):
         tags_dict = super()._more_tags()

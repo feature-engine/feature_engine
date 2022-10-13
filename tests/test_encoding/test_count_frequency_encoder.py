@@ -1,5 +1,6 @@
 import warnings
 
+import numpy as np
 import pandas as pd
 import pytest
 from numpy import nan
@@ -363,3 +364,31 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 def test_exception_if_unseen_gets_not_permitted_value(errors):
     with pytest.raises(ValueError):
         CountFrequencyEncoder(unseen=errors)
+
+
+def test_inverse_transform_when_no_unseen():
+    df = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    enc = CountFrequencyEncoder()
+    enc.fit(df)
+    dft = enc.transform(df)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df)
+
+
+def test_inverse_transform_when_ignore_unseen():
+    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
+    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", np.nan]})
+    enc = CountFrequencyEncoder(unseen="ignore")
+    enc.fit(df1)
+    dft = enc.transform(df2)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df3)
+
+
+def test_inverse_transform_when_encode_unseen():
+    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
+    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", np.nan]})
+    enc = CountFrequencyEncoder(unseen="encode")
+    enc.fit(df1)
+    dft = enc.transform(df2)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df3)

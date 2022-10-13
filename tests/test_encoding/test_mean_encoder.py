@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -300,17 +301,21 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 
 
 def test_auto_smoothing(df_enc):
-    encoder = MeanEncoder(smoothing='auto')
+    encoder = MeanEncoder(smoothing="auto")
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     X = encoder.transform(df_enc[["var_A", "var_B"]])
 
     # expected output
     transf_df = df_enc.copy()
     var_A_dict = {
-        'A': 0.328335832083958, 'B': 0.20707964601769913, 'C': 0.4541284403669725
+        "A": 0.328335832083958,
+        "B": 0.20707964601769913,
+        "C": 0.4541284403669725,
     }
     var_B_dict = {
-        'A': 0.20707964601769913, 'B': 0.328335832083958, 'C': 0.4541284403669725
+        "A": 0.20707964601769913,
+        "B": 0.328335832083958,
+        "C": 0.4541284403669725,
     }
     transf_df["var_A"] = transf_df["var_A"].map(var_A_dict)
     transf_df["var_B"] = transf_df["var_B"].map(var_B_dict)
@@ -336,10 +341,14 @@ def test_value_smoothing(df_enc):
     # expected output
     transf_df = df_enc.copy()
     var_A_dict = {
-        'A': 0.3018867924528302, 'B': 0.2909090909090909, 'C': 0.30769230769230765
+        "A": 0.3018867924528302,
+        "B": 0.2909090909090909,
+        "C": 0.30769230769230765,
     }
     var_B_dict = {
-        'A': 0.2909090909090909, 'B': 0.3018867924528302, 'C': 0.30769230769230765
+        "A": 0.2909090909090909,
+        "B": 0.3018867924528302,
+        "C": 0.30769230769230765,
     }
     transf_df["var_A"] = transf_df["var_A"].map(var_A_dict)
     transf_df["var_B"] = transf_df["var_B"].map(var_B_dict)
@@ -368,3 +377,40 @@ def test_encoding_new_categories(df_enc):
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     df_transformed = encoder.transform(df_unseen)
     assert (df_transformed == df_enc["target"].mean()).all(axis=None)
+
+
+def test_inverse_transform_when_no_unseen():
+    df = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    y = [1, 0, 1, 0, 1, 0]
+    enc = MeanEncoder()
+    enc.fit(df, y)
+    dft = enc.transform(df)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df)
+
+
+def test_inverse_transform_when_ignore_unseen():
+    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
+    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", np.nan]})
+    y = [1, 0, 1, 0, 1, 0]
+    enc = MeanEncoder(unseen="ignore")
+    enc.fit(df1, y)
+    dft = enc.transform(df2)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df3)
+
+
+def test_inverse_transform_when_encode_unseen():
+    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
+    y = [1, 0, 1, 0, 1, 0]
+    enc = MeanEncoder(unseen="encode")
+    enc.fit(df1, y)
+    dft = enc.transform(df2)
+    with pytest.raises(NotImplementedError):
+        enc.inverse_transform(dft)
+
+
+@pytest.mark.parametrize("smoothing", ["hello", ["auto"], -1])
+def test_raises_error_when_not_allowed_smoothing_param_in_init(smoothing):
+    with pytest.raises(ValueError):
+        MeanEncoder(smoothing=smoothing)

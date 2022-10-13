@@ -212,3 +212,15 @@ def test_variables_cast_as_category(df_enc_big):
     assert encoder.n_features_in_ == 3
     # test transform output
     pd.testing.assert_frame_equal(X, df)
+
+
+@pytest.mark.parametrize("max_n_categories", ["hello", ["auto"], -1, 0.5])
+def test_raises_error_when_not_allowed_smoothing_param_in_init(max_n_categories):
+    with pytest.raises(ValueError):
+        RareLabelEncoder(max_n_categories=max_n_categories)
+
+
+def test_inverse_transform_raises_not_implemented_error(df_enc_big):
+    enc = RareLabelEncoder().fit(df_enc_big)
+    with pytest.raises(NotImplementedError):
+        enc.inverse_transform(df_enc_big)

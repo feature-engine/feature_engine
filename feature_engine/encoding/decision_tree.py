@@ -267,7 +267,9 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     def inverse_transform(self, X: pd.DataFrame):
         """inverse_transform is not implemented for this transformer."""
-        return self
+        raise NotImplementedError(
+            "inverse_transform is not implemented for this transformer."
+        )
 
     def _more_tags(self):
         tags_dict = _return_tags()

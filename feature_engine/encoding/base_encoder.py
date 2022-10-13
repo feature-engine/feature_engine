@@ -8,7 +8,6 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._docstrings.init_parameters import (
     _ignore_format_docstring,
-    _unseen_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
@@ -24,7 +23,6 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.tags import _return_tags
 
 
@@ -61,40 +59,13 @@ class CategoricalInitMixin:
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
-    unseen=_unseen_docstring,
-)
-class CategoricalInitExpandedMixin(CategoricalInitMixin):
-    """Shared initialization parameters across transformers. Contains additional
-    initialization parameters respect to the parent class.
-
-    Parameters
-    ----------
-    {variables}.
-
-    {ignore_format}
-
-    {unseen}
-    """
-
-    def __init__(
-        self,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        ignore_format: bool = False,
-        unseen: str = "ignore",
-    ) -> None:
-        check_parameter_unseen(unseen, ["raise", "ignore"])
-        super().__init__(variables, ignore_format)
-        self.unseen = unseen
-
-
-@Substitution(
-    ignore_format=_ignore_format_docstring,
-    variables=_variables_categorical_docstring,
 )
 class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """Shared methods across categorical transformers.
-    BaseEstimator brings methods get_params() and set_params().
-    TransformerMixin brings method fit_transform()
+
+    - BaseEstimator brings methods get_params() and set_params().
+    - TransformerMixin brings method fit_transform()
+    - GetFeatureNamesOutMixin brings method get_feature_names_out().
     """
 
     def _fit(self, X: pd.DataFrame):
@@ -119,7 +90,7 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
             If there are no categorical variables in the df or the df is empty
             If the variable(s) contain null values
         """
-        if not self.ignore_format:
+        if self.ignore_format is False:
             # find categorical variables or check variables entered by user are object
             self.variables_: List[
                 Union[str, int]
@@ -129,6 +100,10 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
             self.variables_ = _find_all_variables(X, self.variables)
 
     def _get_feature_names_in(self, X: pd.DataFrame):
+        """
+        Returns attributes `featrure_names_in_` and `n_feature_names_in_`, which are
+        standard for all transformers in the library.
+        """
 
         # save input features
         self.feature_names_in_ = X.columns.tolist()
@@ -173,19 +148,6 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
 
         return X
 
-    def _check_encoding_dictionary(self):
-        """After fit(), the encoders should return a dictionary with the original values
-        to numerical mappings as key, values. This function checks that the dictionary
-        was created and is not empty.
-        """
-
-        # check that dictionary is not empty
-        if len(self.encoder_dict_) == 0:
-            raise ValueError(
-                "Encoder could not be fitted. Check the parameters and the variables "
-                "in your dataframe."
-            )
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Replace categories with the learned parameters.
 
@@ -217,8 +179,20 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
                 else:
                     X[feature] = X[feature].astype("float")
 
+        if self.unseen == "encode":
+            X[self.variables_] = X[self.variables_].fillna(
+                self._unseen, downcast="infer"
+            )
+        else:
+            # check if nan values were introduced by the transformation
+            self._check_nan_values_after_transformation(X)
+
+        return X
+
+    def _check_nan_values_after_transformation(self, X):
+
         # check if NaN values were introduced by the encoding
-        if X[self.encoder_dict_.keys()].isnull().sum().sum() > 0:
+        if X[self.variables_].isnull().sum().sum() > 0:
 
             # obtain the name(s) of the columns have null values
             nan_columns = (
@@ -242,8 +216,6 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."
                 )
-
-        return X
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Convert the encoded variable back to the original values.
