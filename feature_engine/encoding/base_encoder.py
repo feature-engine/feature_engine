@@ -62,8 +62,10 @@ class CategoricalInitMixin:
 )
 class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """Shared methods across categorical transformers.
-    BaseEstimator brings methods get_params() and set_params().
-    TransformerMixin brings method fit_transform()
+
+    - BaseEstimator brings methods get_params() and set_params().
+    - TransformerMixin brings method fit_transform()
+    - GetFeatureNamesOutMixin brings method get_feature_names_out().
     """
 
     def _fit(self, X: pd.DataFrame):
@@ -88,7 +90,7 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
             If there are no categorical variables in the df or the df is empty
             If the variable(s) contain null values
         """
-        if not self.ignore_format:
+        if self.ignore_format is False:
             # find categorical variables or check variables entered by user are object
             self.variables_: List[
                 Union[str, int]
@@ -98,6 +100,10 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
             self.variables_ = _find_all_variables(X, self.variables)
 
     def _get_feature_names_in(self, X: pd.DataFrame):
+        """
+        Returns attributes `featrure_names_in_` and `n_feature_names_in_`, which are
+        standard for all transformers in the library.
+        """
 
         # save input features
         self.feature_names_in_ = X.columns.tolist()
