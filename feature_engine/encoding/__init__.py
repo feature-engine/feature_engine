@@ -9,6 +9,7 @@ from .one_hot import OneHotEncoder
 from .ordinal import OrdinalEncoder
 from .probability_ratio import PRatioEncoder
 from .rare_label import RareLabelEncoder
+from .similarity_encoder import StringSimilarityEncoder
 from .woe import WoEEncoder
 
 __all__ = [
@@ -17,7 +18,8 @@ __all__ = [
     "MeanEncoder",
     "OneHotEncoder",
     "OrdinalEncoder",
-    "RareLabelEncoder",
-    "WoEEncoder",
     "PRatioEncoder",
+    "RareLabelEncoder",
+    "StringSimilarityEncoder",
+    "WoEEncoder",
 ]
