@@ -217,4 +217,8 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     def inverse_transform(self, X: pd.DataFrame):
         """inverse_transform is not implemented for this transformer."""
-        return self
+        raise NotImplementedError(
+            "inverse_transform is not implemented for this transformer."
+        )
+
+
