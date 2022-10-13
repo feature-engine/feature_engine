@@ -8,7 +8,6 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._docstrings.init_parameters import (
     _ignore_format_docstring,
-    _unseen_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
@@ -24,7 +23,6 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.tags import _return_tags
 
 
