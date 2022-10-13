@@ -22,9 +22,10 @@ from feature_engine._docstrings.methods import (
     _transform_encoders_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.dataframe_checks import check_X_y
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitExpandedMixin,
+    CategoricalInitMixin,
     CategoricalMethodsMixin,
 )
 from feature_engine.tags import _return_tags
@@ -41,7 +42,7 @@ from feature_engine.tags import _return_tags
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
+class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The WoEEncoder() replaces categories by the weight of evidence
     (WoE). The WoE was used primarily in the financial sector to create credit risk
@@ -126,7 +127,9 @@ class WoEEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
         unseen: str = "ignore",
     ) -> None:
 
-        super().__init__(variables, ignore_format, unseen)
+        super().__init__(variables, ignore_format)
+        check_parameter_unseen(unseen, ["ignore", "raise"])
+        self.unseen = unseen
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """

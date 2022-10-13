@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitExpandedMixin,
+    CategoricalInitMixin,
     CategoricalMethodsMixin,
 )
 
@@ -11,7 +11,7 @@ from feature_engine.encoding.base_encoder import (
 @pytest.mark.parametrize("param", [1, "hola", [1, 2, 0], (True, False)])
 def test_categorical_init_mixin_raises_error(param):
     with pytest.raises(ValueError):
-        CategoricalInitExpandedMixin(ignore_format=param)
+        CategoricalInitMixin(ignore_format=param)
 
 
 class MockClass(CategoricalMethodsMixin):

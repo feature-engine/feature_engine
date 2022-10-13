@@ -61,35 +61,6 @@ class CategoricalInitMixin:
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
-    unseen=_unseen_docstring,
-)
-class CategoricalInitExpandedMixin(CategoricalInitMixin):
-    """Shared initialization parameters across transformers. Contains additional
-    initialization parameters respect to the parent class.
-
-    Parameters
-    ----------
-    {variables}.
-
-    {ignore_format}
-
-    {unseen}
-    """
-
-    def __init__(
-        self,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
-        ignore_format: bool = False,
-        unseen: str = "ignore",
-    ) -> None:
-        check_parameter_unseen(unseen, ["raise", "ignore"])
-        super().__init__(variables, ignore_format)
-        self.unseen = unseen
-
-
-@Substitution(
-    ignore_format=_ignore_format_docstring,
-    variables=_variables_categorical_docstring,
 )
 class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """Shared methods across categorical transformers.

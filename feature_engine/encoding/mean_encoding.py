@@ -20,8 +20,8 @@ from feature_engine._docstrings.methods import (
     _transform_encoders_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X_y
 from feature_engine.encoding._helper_functions import check_parameter_unseen
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,

@@ -23,9 +23,10 @@ from feature_engine._docstrings.methods import (
     _transform_encoders_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.dataframe_checks import check_X_y
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitExpandedMixin,
+    CategoricalInitMixin,
     CategoricalMethodsMixin,
 )
 from feature_engine.tags import _return_tags
@@ -46,7 +47,7 @@ from feature_engine.tags import _return_tags
     "PRatioEncoder() is deprecated in version 1.5 and will be removed in "
     "version 1.6. Use WoEEncoder() instead for a similar approach."
 )
-class PRatioEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
+class PRatioEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
     The PRatioEncoder() replaces categories by the ratio of the probability of the
     target = 1 and the probability of the target = 0.
@@ -145,10 +146,10 @@ class PRatioEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
             raise ValueError(
                 "encoding_method takes only values 'ratio' and 'log_ratio'"
             )
-
-        super().__init__(variables, ignore_format, unseen)
-
+        super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
+        check_parameter_unseen(unseen, ["ignore", "raise"])
+        self.unseen = unseen
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
