@@ -131,3 +131,11 @@ def test_error_when_regression_is_false_and_target_is_continuous(df_enc):
     with pytest.raises(ValueError):
         encoder = DecisionTreeEncoder(regression=False)
         encoder.fit(df_enc[["var_A", "var_B"]], y)
+
+
+def test_inverse_transform_raises_not_implemented_error(df_enc):
+    random = np.random.RandomState(42)
+    y = random.normal(0, 10, len(df_enc))
+    encoder = DecisionTreeEncoder(regression=True).fit(df_enc[["var_A", "var_B"]], y)
+    with pytest.raises(NotImplementedError):
+        encoder.inverse_transform(df_enc[["var_A", "var_B"]])
