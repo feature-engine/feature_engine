@@ -408,3 +408,8 @@ def test_inverse_transform_when_encode_unseen():
     dft = enc.transform(df2)
     with pytest.raises(NotImplementedError):
         enc.inverse_transform(dft)
+
+@pytest.mark.parametrize("smoothing", ["hello", ["auto"], -1])
+def test_raises_error_when_not_allowed_smoothing_param_in_init(smoothing):
+    with pytest.raises(ValueError):
+        MeanEncoder(smoothing=smoothing)

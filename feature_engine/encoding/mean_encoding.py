@@ -156,9 +156,11 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         smoothing: Union[int, float, str] = 0.0,
     ) -> None:
         super().__init__(variables, ignore_format)
-        if (isinstance(smoothing, str) and (smoothing != "auto")) or (
-            isinstance(smoothing, (float, int)) and smoothing < 0
-        ):
+        if (
+            not isinstance(smoothing, (str, float, int))
+            or isinstance(smoothing, str)
+            and (smoothing != "auto")
+        ) or (isinstance(smoothing, (float, int)) and smoothing < 0):
             raise ValueError(
                 f"smoothing must be greater than 0 or 'auto'. "
                 f"Got {smoothing} instead."
