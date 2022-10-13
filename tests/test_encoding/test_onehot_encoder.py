@@ -493,3 +493,9 @@ def test_get_feature_names_out_from_pipeline(df_enc_binary):
 
     assert tr.get_feature_names_out(input_features=None) == feat_out
     assert tr.get_feature_names_out(input_features=input_features) == feat_out
+
+
+@pytest.mark.parametrize("drop_binary", ["hello", ["auto"], -1, 100, 0.5])
+def test_raises_error_when_not_allowed_smoothing_param_in_init(drop_binary):
+    with pytest.raises(ValueError):
+        OneHotEncoder(drop_last_binary=drop_binary)
