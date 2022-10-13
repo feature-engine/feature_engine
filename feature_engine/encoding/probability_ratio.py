@@ -5,6 +5,7 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.utils import deprecated
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -40,6 +41,10 @@ from feature_engine.tags import _return_tags
     fit_transform=_fit_transform_docstring,
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
+)
+@deprecated(
+    "PRatioEncoder() is deprecated in version 1.5 and will be removed in "
+    "version 1.6. Use WoEEncoder() instead for a similar approach."
 )
 class PRatioEncoder(CategoricalInitExpandedMixin, CategoricalMethodsMixin):
     """
