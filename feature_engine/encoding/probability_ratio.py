@@ -49,6 +49,9 @@ from feature_engine.tags import _return_tags
 )
 class PRatioEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
+    **DEPRECATED: PRatioEncoder() is deprecated in version 1.5 and will be
+    removed in Version 1.6. Use WoEEncoder() instead.**
+
     The PRatioEncoder() replaces categories by the ratio of the probability of the
     target = 1 and the probability of the target = 0.
 
