@@ -143,7 +143,7 @@ class SelectByInformationValue(BaseSelector, WoE):
         self.threshold = threshold
         self.confirm_variables = confirm_variables
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None):
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Learn the information value.
 
