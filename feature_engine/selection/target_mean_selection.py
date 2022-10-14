@@ -113,7 +113,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         the values will be sorted.
 
     strategy: str, default = 'equal_width'
-        Whether the bins should of equal width ('equal_width') or equal frequency
+        Whether the bins should be of equal width ('equal_width') or equal frequency
         ('equal_frequency').
 
     {scoring}

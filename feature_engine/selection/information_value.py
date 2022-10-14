@@ -51,19 +51,37 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 )
 class SelectByInformationValue(BaseSelector, WoE):
     """
-    InformationValue() calculates the information value (IV) for each variable.
-    The transformer is only compatible with categorical variables (type 'object'
-    or 'categorical') and binary classification.
+    SelectByInformationValue() selects features based on their information value (IV).
+    The IV is calculated as:
 
-    You can pass a list of variables to score. Alternatively, the
-    transformer will find and score all categorical variables (type 'object'
-    or 'categorical').
+     .. math::
 
-    IV will allow you to assess each passed variable's independent contribution to
-    the target variable. The transfomer returns the passed variables that scored
-    higher than the threshold and the variables that were not passed as an init param.
-    In the case of passing None for the 'variables' parameter, the transformer
-    only returns the variables that scored higher than the threshold.
+       IV = ∑ (fraction of positive cases - fraction of negative cases) * WoE
+
+    where:
+
+    - the fraction of positive cases is the proportion of observations of class 1,
+        from the total class 1 observations.
+    - the fraction of negative cases is the proportion of observations of class 0,
+        from the total class 0 observations.
+    - WoE is the weight of the evidence.
+
+    SelectByInformationValue() is only suitable to select features for binary
+    classification.
+
+    SelectByInformationValue() can determine the IV for numerical and categorical
+    variables. For numerical variables, it first sorts the variables into intervals,
+    and then determines the IV.
+
+    You can pass a list of variables to examine. Alternatively, the transformer will
+    examine all variables.
+
+    The IV allows you to assess each variable's independent contribution to the target
+    variable. The transformer selects those variables whose IV is higher than the
+    threshold.
+
+    More details in the :ref:`User Guide <information_value>`.
+
 
     Parameters
     ----------
@@ -76,10 +94,12 @@ class SelectByInformationValue(BaseSelector, WoE):
         the values will be sorted.
 
     strategy: str, default = 'equal_width'
-        Whether the bins should of equal width ('equal_width') or equal frequency
+        Whether the bins should be of equal width ('equal_width') or equal frequency
         ('equal_frequency').
 
-    {threshold}
+    threshold: float, int, default = 0.2.
+        The threshold to drop a feature. If the IV for a feature is < threshold, the
+        feature will be dropped.
 
     {confirm_variables}
 
@@ -87,14 +107,14 @@ class SelectByInformationValue(BaseSelector, WoE):
     ----------
     {variables_}
 
-    {feature_names_in}
-
-    {n_features_in}
-
     information_values_:
         A dictionary with the information values for each feature.
 
     {features_to_drop}
+
+    {feature_names_in}
+
+    {n_features_in}
 
     Methods
     -------
@@ -111,6 +131,16 @@ class SelectByInformationValue(BaseSelector, WoE):
     See Also
     --------
     feature_engine.encoding.WoEEncoder
+    feature_engine.discretisation.EqualWidthDiscretiser
+    feature_engine.discretisation.EqualFrequencyDiscretiser
+
+    References
+    ----------
+    .. [1] Weight of evidence and information value explained
+        https://www.listendata.com/2015/03/weight-of-evidence-woe-and-information.html
+
+    .. [2] WoE and IV for continuous variables
+        https://www.listendata.com/2019/08/WOE-IV-Continuous-Dependent.html
     """
 
     def __init__(
@@ -145,13 +175,12 @@ class SelectByInformationValue(BaseSelector, WoE):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Learn the information value.
+        Learn the information value. Find features with IV above the threshold.
 
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Can be the entire dataframe, not just the categorical variables.
 
         y: pandas series of shape = [n_samples, ]
             Target, must be binary.
