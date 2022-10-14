@@ -174,7 +174,7 @@ Feature Selection:
 - :doc:`api_doc/selection/DropCorrelatedFeatures`: drops correlated variables from a dataframe
 - :doc:`api_doc/selection/SmartCorrelatedSelection`: selects best features from correlated groups
 - :doc:`api_doc/selection/DropHighPSIFeatures`: selects features based on the Population Stability Index (PSI)
-- :doc:`api_doc/selection/SelectByInformationValue`: selects features by evaluating model performance after feature shuffling
+- :doc:`api_doc/selection/SelectByInformationValue`: selects features based on their information value
 - :doc:`api_doc/selection/SelectByShuffling`: selects features by evaluating model performance after feature shuffling
 - :doc:`api_doc/selection/SelectBySingleFeaturePerformance`: selects features based on their performance on univariate estimators
 - :doc:`api_doc/selection/SelectByTargetMeanPerformance`: selects features based on target mean encoding performance
