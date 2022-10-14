@@ -104,7 +104,7 @@ def test_transformer_with_default_params():
     assert X_tr.equals(exp_df)
 
 
-def test_transformer_with_nmerical_and_categorical_variables(df_enc):
+def test_transformer_with_numerical_and_categorical_variables(df_enc):
     df = pd.DataFrame(
         {
             "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
@@ -136,3 +136,21 @@ def test_transformer_with_nmerical_and_categorical_variables(df_enc):
     assert sel.information_values_ == exp_dict
     assert sel.features_to_drop_ == features_to_drop
     assert X_tr.equals(exp_df)
+
+
+def test_transformer_with_equal_frequency_discretization(df_enc):
+    df = pd.DataFrame({
+        "var_C": np.linspace(0, 20, num=20),
+        "var_D": np.linspace(0, 20, num=20),
+        "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+    })
+    X = df.drop("target", axis=1).copy()
+    y = df["target"].copy()
+
+    sel = SelectByInformationValue(bins=3, strategy="equal_frequency")
+    sel.fit(df.drop("target", axis=1), df["target"])
+    sel.fit(X, y)
+
+    exp_dict = {'var_C': 0.010625883395914762, 'var_D': 0.010625883395914762}
+
+    assert sel.information_values_ == exp_dict
