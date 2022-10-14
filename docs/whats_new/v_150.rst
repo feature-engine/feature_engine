@@ -31,7 +31,7 @@ New transformers
 
     - **StringSimilarityEncoder**: encodes categorical variables based on string similarity (`Gleb Levitski <https://github.com/GLevV>`_)
     - **MatchCategories**: matches the categories in train and test set when of type pandas categorical (`David Cortes <https://github.com/david-cortes>`_)
-
+    - **SelectByInformationValue**: selects features based on the information value (`Morgan Sell <https://github.com/Morgan-Sell>`_ and `Soledad Galli <https://github.com/solegalli>`_)
 
 New functionality
 ~~~~~~~~~~~~~~~~~
@@ -42,6 +42,7 @@ New functionality
     - The `CountFrequencyEncoder` can now encode unseen categories (`David Cortes <https://github.com/david-cortes>`_)
     - All outlier transformers can now detect outliers based on the MAD rule (`Gleb Levitski <https://github.com/GLevV>`_)
     - Add automatic calculation of PSI threshold in `DripHighPSIFeatures` (`Gleb Levitski <https://github.com/GLevV>`_)
+    - All feature selection transformers now have the method `get_support()` (`Soledad Galli <https://github.com/solegalli>`_)
 
 Bug fixes
 ~~~~~~~~~
@@ -56,7 +57,7 @@ Documentation
     - Add more resources to documentation (`Soledad Galli <https://github.com/solegalli>`_)
     - User guide for `StringSimilarityEncoder` (`Gleb Levitski <https://github.com/GLevV>`_)
     - New Jupyter notebook for `StringSimilarityEncoder` (`Gleb Levitski <https://github.com/GLevV>`_)
-
+    - User guide for SelectByInformationValue (`Morgan Sell <https://github.com/Morgan-Sell>`_ and `Soledad Galli <https://github.com/solegalli>`_)
 
 Deprecations
 ~~~~~~~~~~~~
