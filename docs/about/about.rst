@@ -34,7 +34,7 @@ and maintenance:
 
 
 Former core contributors
------------------
+------------------------
 
 The following people are former core contributors to Feature-engine’s development
 and maintenance:

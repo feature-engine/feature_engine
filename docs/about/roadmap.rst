@@ -32,10 +32,14 @@ unwanted stages of the development.
 Vision
 ------
 
-At the moment, Feature-engine's functionality is tailored to cross-sectional or tabular
-data, mostly numerical or categorical. But we would like to extend its functionality
-to work with datetime, text and time series. In the following figure we show how we
-would like the overall structure of Feature-engine to look like:
+At the moment, Feature-engine's functionality is tailored to tabular data, with numerical,
+categorical, or datetime variables. We started supporting the creation of features for
+time series forecasting in 2022.
+
+But we would like to extend Feature-engine's functionality to work with text and time
+series, as well as, expand its current functionality for tabular data.
+
+In the following figure we show the overall structure and vision for Feature-engine:
 
 .. figure::  ../images/FeatureEnginePackageStructure.png
    :align:   center
@@ -45,15 +49,15 @@ would like the overall structure of Feature-engine to look like:
 Current functionality
 ---------------------
 
-Most of the functionality for cross-sectional data is already included in the package.
-We expand and update this arm of the library, based on user feedback and suggestions
+Most of the functionality for tabular data is already included in the package.
+We expand and update this arm of the library, based on user feedback and suggestions,
 and our own research in the field. In grey, the transformers that are not yet included
 in the package:
 
 .. figure::  ../images/FeatureEnginePackageStructureCrossSectional.png
    :align:   center
 
-   Transformers for cross-sectional data
+   Transformers for tabular data
 
 The current transformations supported by Feature-engine return features that are easy
 to interpret, and the effects of the transformations are clear and easy to understand.
@@ -68,11 +72,6 @@ are currently contemplating the incorporation of this functionality to the packa
 Wanted functionality
 --------------------
 
-We are interested in adding a module that creates date and time related features from
-datetime variables. This module would include transformers to extract all possible date
-and time related features, like hr, min, sec, day, year, is_weekend, etc. And it would
-also include transformers to capture elapsed time between 2 or more variables.
-
 We would also like to add a module that returns straightforward features from simple
 text variables, to capture text complexity, like for example counting the number
 of words, unique words, lexical complexity, number of paragraphs and sentences. We would
@@ -85,11 +84,7 @@ detail into these new modules.
 
    New models wanted: datetime and text
 
-In addition, we are evaluating whether including a module to extract features from time
-series is possible, within the current design of the package, and if it adds real value
-compared to the functionality already existing in pandas and Scipy, and in other well
-established open source projects like `tsfresh <https://tsfresh.readthedocs.io/en/latest/>`_
-and `featuretools <https://featuretools.alteryx.com/en/stable/index.html>`_.
+In addition, we would like to expand our module for time series forecasting features.
 The transformations we are considering are shown in this image:
 
 .. figure::  ../images/FeatureEnginePackageStructureTimeseries.png
