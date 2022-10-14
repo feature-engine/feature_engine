@@ -150,4 +150,4 @@ More details about feature selection can be found in the following resources:
 
 - `Feature Selection Online Course <https://courses.trainindata.com/p/feature-selection-for-machine-learning>`_
 - `Feature Selection book <https://leanpub.com/feature-selection-in-machine-learning/>`_
-- `Tran in data's blog <https://www.blog.trainindata.com/>`_
+- `Train in data's blog <https://www.blog.trainindata.com/>`_
