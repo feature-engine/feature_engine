@@ -1,6 +1,3 @@
-# Authors: Morgan Sell <morganpsell@gmail.com>
-# License: BSD 3 clause
-
 from typing import List, Union
 
 import numpy as np
