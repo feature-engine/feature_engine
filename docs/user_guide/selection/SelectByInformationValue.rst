@@ -6,19 +6,36 @@ SelectByInformationValue
 ========================
 
 :class:`SelectByInformationValue()` selects features based on whether the feature's information value score is
-greater than the threshold passed by the user. Information value only applies to categorical features.
+greater than the threshold passed by the user.
 
-Information value (IV) is used to assess a categorical feature's predictive power of a binary-class dependent
+The IV is calculated as:
+
+.. math::
+
+   IV = ∑ (fraction of positive cases - fraction of negative cases) * WoE
+
+where:
+
+- the fraction of positive cases is the proportion of observations of class 1, from the total class 1 observations.
+- the fraction of negative cases is the proportion of observations of class 0, from the total class 0 observations.
+- WoE is the weight of the evidence.
+
+The WoE is calculated as:
+
+.. math::
+
+   WoE = ln(fraction of positive cases / fraction of negative cases)
+
+Information value (IV) is used to assess a feature's predictive power of a binary-class dependent
 variable. To derive a feature's IV, the weight of evidence (WoE) must first be calculated for each
 unique category or bin that comprises the feature. If a category or bin contains a large percentage
 of true or positive labels compared to the percentage of false or negative labels, then that category
 or bin will have a high WoE value.
 
-:class:`WoE()` is used to calcaulate the WoE values for each category.
-
-Once the WoE is derived, :class:`SelectByInformationValue()` calculates the IV for each variable. A variable's IV is essentially
-the weighted sum of the individual WoE values for each category within that variable where the weights incorporate the absolute
-difference between the numerator and denominator. This value assesses the feature's predictive power in capturing the binary
+Once the WoE is derived, :class:`SelectByInformationValue()` calculates the IV for each variable.
+A variable's IV is essentially the weighted sum of the individual WoE values for each category or bin
+within that variable where the weights incorporate the absolute difference between the
+numerator and denominator. This value assesses the feature's predictive power in capturing the binary
 dependent variable.
 
 The table below presents a general framework for using IV to determine a variable's predictive power:
@@ -40,19 +57,7 @@ The table below presents a general framework for using IV to determine a variabl
     * - > 0.5
       - Suspicious, too good to be true
 
-
-Important
----------
-:class:`SelectByInformationValue()` automatically identifies categorical variables, i.e., variable types that
-are object or categorical. If any of the categorical variables within the dataset uses numeric values for its categories or bins
-the parameter :code:`ignore_format` should be set to :code:`True`.
-
-:class:`SelectByInformationValue()` is not compatible with missing data. To solve this issue, :class:`CategoricalImputer()`
-can be used to replace the missing data with an arbitrary value or the most frequent category. Another approach is to drop
-the rows that include the missing data.
-
-IV assumes a linear relationship between the indepdent and dependent variables. Therefore, this selection method should only be
-use with linear models, i.e., logistic regression.
+Table taken from `listendata <https://www.listendata.com/2015/03/weight-of-evidence-woe-and-information.html>`_.
 
 
 Example
@@ -72,7 +77,7 @@ Let's import the required libraries and classes:
     import pandas as pd
     import numpy as np
     from sklearn.model_selection import train_test_split
-    from feature_engine import SelectByInformationValue
+    from feature_engine.selection import SelectByInformationValue
 
 Let's now load and prepare the credit approval data:
 
@@ -128,27 +133,25 @@ We see the size of the datasets below.
 
     ((522, 15), (131, 15))
 
-Now, we set up :class:`SelectByInformationValue()`. We will pass seven categorical variables to the parameter
-:code:`variables`. The transformer confirms that these variables exist within the dataset and that the variables are
-categorical. We will set the parameter :code:`threshold` to `0.2`. We see from the abovementioned table that an IV score
-of 0.2 signifies medium predictive power.
+Now, we set up :class:`SelectByInformationValue()`. We will pass six categorical
+variables to the parameter :code:`variables`. We will set the parameter :code:`threshold`
+to `0.2`. We see from the above mentioned table that an IV score of 0.2 signifies medium
+predictive power.
 
 .. code:: python
 
     sel = SelectByInformationValue(
-        variables=['A1', 'A6', 'A7', 'A9', 'A10', 'A12', 'A13'],
+        variables=['A1', 'A6', 'A9', 'A10', 'A12', 'A13'],
         threshold=0.2,
-        ignore_format=False,
-        confirm_variables=False,
     )
 
-    sel.fit(X_train, X_test)
+    sel.fit(X_train, y_train)
 
 With :code:`fit()`, the transformer:
 
  - calculates the WoE for each variable
  - calculates the the IV for each variable
- - identifies the variables that have an IV score below the passed threshold
+ - identifies the variables that have an IV score below the threshold
 
 In the attribute :code:`variables_`, we find the variables that were evaluated:
 
@@ -162,27 +165,30 @@ In the attribute :code:`features_to_drop_`, we find the variables that were not 
 
     sel.features_to_drop_
 
-    ['A1', 'A6', 'A10', 'A12']
+    ['A1', 'A12', 'A13']
 
-The attribute :code:`information_values_` shows the IV scores for each variable. Let's look at
-:code:`information_values_` with the the IV scores rounded to three decimal places:
+The attribute :code:`information_values_` shows the IV scores for each variable.
 
 .. code:: python
 
-    # round IV scores to 3 decimal places
-    info_vals_rnd = {k: v.round(3) for k, v in sel.information_values_.items()}
-    info_val_rnd
+   {'A1': 0.0009535686492270659,
+    'A6': 0.6006252129425703,
+    'A9': 2.9184484098456807,
+    'A10': 0.8606638171665587,
+    'A12': 0.012251943759377052,
+    'A13': 0.04383964979386022}
 
-    {'A1': -2.107,
-     'A6': -3.842,
-     'A7': 10.837,
-     'A9': 51.237,
-     'A10': -7.108,
-     'A12': -0.503,
-     'A13': 25.793}
+We see that the transformer correctly selected the features that have an IV score greater
+than the :code:`threshold` which was set to 0.2.
 
-We see that the transformer correctly selected the features that have an IV score greater than the :code:`threshold`
-which was set to 0.2.
+The transformer also has the method `get_support` with similar functionality to Scikit-learn's
+selectors method. If you execute `sel.get_support()`, you obtain:
+
+.. code:: python
+
+    [False, True, True, True, True, True, True,
+     True, True, True, True, False, False, True,
+     True]
 
 With :code:`transform()`, we can go ahead and drop the features that do not meet the threshold:
 
@@ -194,22 +200,80 @@ With :code:`transform()`, we can go ahead and drop the features that do not meet
 
 .. code:: python
 
-            A2     A3 A4 A5 A7      A8 A9  A11 A13    A14  A15
-    564  42.17   5.04  u  g  h  12.750  t    0   g   92.0    0
-    519  39.17   1.71  u  g  v   0.125  t    5   g  480.0    0
-    14   45.83  10.50  u  g  v   5.000  t    7   g    0.0    0
-    257  20.00   0.00  u  g  v   0.500  f    0   g  144.0    0
-    88   34.00   4.50  u  g  v   1.000  t    0   g  240.0    0
+            A2     A3 A4 A5  A6 A7      A8 A9 A10  A11    A14  A15
+    564  42.17   5.04  u  g   q  h  12.750  t   f    0   92.0    0
+    519  39.17   1.71  u  g   x  v   0.125  t   t    5  480.0    0
+    14   45.83  10.50  u  g   q  v   5.000  t   t    7    0.0    0
+    257  20.00   0.00  u  g   d  v   0.500  f   f    0  144.0    0
+    88   34.00   4.50  u  g  aa  v   1.000  t   f    0  240.0    0
 
 
 Note that :code:`Xtr` includes all the numerical features - i.e., A2, A3, A8, A11, and A14 - because
-:class:`SelectByInformationValue()` only filters out categorical features. Also, features A4 and A5 remain
-because these variables were not passed to the :code:`variables` parameter when the transformer was instantiated.
+we only evaluated a few of the categorical features.
 
 And, finally, we can also obtain the names of the features in the final transformed dataset:
 
 .. code:: python
 
-    sel.get_feature_name_names_out()
+    sel.get_feature_names_out()
 
-    ['A2', 'A3', 'A4', 'A5', 'A7', 'A8', 'A9', 'A11', 'A13', 'A14', 'A15']
+    ['A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A14', 'A15']
+
+
+If we want to select from categorical and numerical variables, we can do so as well by
+sorting the numerical variables into bins first. Let's sort them into 5 bins of equal-frequency:
+
+.. code:: python
+
+    sel = SelectByInformationValue(
+        bins=5,
+        strategy="equal_frequency",
+        threshold=0.2,
+    )
+
+    sel.fit(X_train.drop(["A4", "A5", "A7"], axis=1), y_train)
+
+If we now inspect the information values:
+
+.. code:: python
+
+   sel.information_values_
+
+We see the following:
+
+.. code:: python
+
+    {'A1': 0.0009535686492270659,
+     'A2': 0.10319123021570434,
+     'A3': 0.2596258749173557,
+     'A6': 0.6006252129425703,
+     'A8': 0.7291628533346297,
+     'A9': 2.9184484098456807,
+     'A10': 0.8606638171665587,
+     'A11': 1.0634602064399297,
+     'A12': 0.012251943759377052,
+     'A13': 0.04383964979386022,
+     'A14': 0.3316668794040285,
+     'A15': 0.6228678069374612}
+
+And if we inspect the features to drop:
+
+.. code:: python
+
+   sel.features_to_drop_
+
+We see the following:
+
+.. code:: python
+
+    ['A1', 'A2', 'A12', 'A13']
+
+
+Note
+----
+
+The WoE is given by a logarithm of a fraction. Thus, if for any category or bin, the fraction of
+observations of class 0 is 0, the WoE is not defined, and the transformer will raise an error.
+
+If you encounter this problem try grouping variables into fewer bins if they are numerical,
+or grouping rare categories with the RareLabelEncoder if they are categorical.
