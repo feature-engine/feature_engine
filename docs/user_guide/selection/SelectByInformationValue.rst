@@ -84,7 +84,7 @@ Let's now load and prepare the credit approval data:
 .. code:: python
 
     # load data
-    data = pd.read_csv('data/crx.data', header=None)
+    data = pd.read_csv('crx.data', header=None)
 
     # name variables
     var_names = ['A' + str(s) for s in range(1,17)]
