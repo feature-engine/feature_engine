@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import pandas as pd
 import pytest
@@ -99,7 +100,8 @@ def test_transformer_with_default_params():
     features_to_drop = ["var_C", "var_E"]
     exp_df = X.drop(features_to_drop, axis=1)
 
-    assert sel.information_values_ == exp_dict
+    for key in exp_dict.keys():
+        assert math.isclose(exp_dict[key], sel.information_values_[key])
     assert sel.features_to_drop_ == features_to_drop
     assert X_tr.equals(exp_df)
 
@@ -133,7 +135,8 @@ def test_transformer_with_numerical_and_categorical_variables(df_enc):
     features_to_drop = ["var_C", "var_D", "var_E"]
     exp_df = X.drop(features_to_drop, axis=1)
 
-    assert sel.information_values_ == exp_dict
+    for key in exp_dict.keys():
+        assert math.isclose(exp_dict[key], sel.information_values_[key])
     assert sel.features_to_drop_ == features_to_drop
     assert X_tr.equals(exp_df)
 
@@ -153,4 +156,5 @@ def test_transformer_with_equal_frequency_discretization(df_enc):
 
     exp_dict = {'var_C': 0.010625883395914762, 'var_D': 0.010625883395914762}
 
-    assert sel.information_values_ == exp_dict
+    for key in exp_dict.keys():
+        assert math.isclose(exp_dict[key], sel.information_values_[key])
