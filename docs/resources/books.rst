@@ -8,7 +8,7 @@ in the following books:
    :width: 200
    :figclass: align-center
    :align: left
-   :target: https://packt.link/python
+   :target: https://amzn.to/3TmOL3I
 
    Python Feature Engineering Cookbook
 

@@ -15,16 +15,20 @@ Contributors
     - `Morgan Sell <https://github.com/Morgan-Sell>`_
     - `Soledad Galli <https://github.com/solegalli>`_
 
-In this release, we fix a major bug that made the get_feature_names_out not compatible
+In this release, we fix a bug that made the `get_feature_names_out` not compatible
 with the Scikit-learn pipeline.
 
 In addition, thanks to `Gleb Levitski <https://github.com/GLevV>`_, we've got a new encoder
-to replace categories by string similarity variables.
+to replace categories by string similarity variables. `Gleb Levitski <https://github.com/GLevV>`_
+also made a number of code enhancements to various transformers across the library, making a
+lot of new functionality available.
 
-`Gleb Levitski <https://github.com/GLevV>`_ also made a number of code enhancements to
-various transformers across the library, making a lot of new functionality available.
+Finally, we'd like to thank `Alfonso Tobar <https://github.com/datacubeR>`_, `David Cortes <https://github.com/david-cortes>`_
+and `Morgan Sell <https://github.com/Morgan-Sell>`_ for creating new transformers, fixing bugs and
+expanding the functionality of Feature-engine.
 
-Thank you so much to all contributors to this release for making it possible!
+Thank you so much to all contributors and to those of you who created issues flagging bugs or
+requesting new functionality.
 
 New transformers
 ~~~~~~~~~~~~~~~~
@@ -47,8 +51,8 @@ New functionality
 Bug fixes
 ~~~~~~~~~
 
-    - Makes `get_feature_names_out` compatible with the Scikit-learn pipeline, for all transformers (`Soledad Galli <https://github.com/solegalli>`_)
-    - The `fit_transform` method in encoders now correctly handles unseen categories or raises not implemented errors (`Soledad Galli <https://github.com/solegalli>`_)
+    - `get_feature_names_out` is now compatible with the Scikit-learn pipeline in all transformers (`Soledad Galli <https://github.com/solegalli>`_)
+    - The `inverse_transform` method in encoders now correctly handles unseen categories or raises not implemented errors (`Soledad Galli <https://github.com/solegalli>`_)
     - Fixes output of `SklearnTransformerWrapper` for `OneHotEncoder` and `PolynomialFeatures` (`Alfonso Tobar <https://github.com/datacubeR>`_)
 
 Documentation
@@ -62,7 +66,7 @@ Documentation
 Deprecations
 ~~~~~~~~~~~~
 
-    = Parameter `errors` in encoders is now replaced by `unseen` (`Soledad Galli <https://github.com/solegalli>`_)
+    - Parameter `errors` in encoders is now replaced by `unseen` (`Soledad Galli <https://github.com/solegalli>`_)
     - The classes `MathematicalCombination`, `CombineWithFeatureReference` and `CyclicalTransformer` are removed (`Soledad Galli <https://github.com/solegalli>`_)
     - We are deprecating `PRatioEncoder` in version 1.5 and it will be removed in version 1.6 (`Soledad Galli <https://github.com/solegalli>`_)
 
