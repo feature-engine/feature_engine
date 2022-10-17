@@ -1,0 +1,87 @@
+Version 1.5.X
+=============
+
+Version 1.5.0
+-------------
+
+Deployed: 17th October 2022
+
+Contributors
+~~~~~~~~~~~~
+
+    - `Gleb Levitski <https://github.com/GLevV>`_
+    - `David Cortes <https://github.com/david-cortes>`_
+    - `Alfonso Tobar <https://github.com/datacubeR>`_
+    - `Morgan Sell <https://github.com/Morgan-Sell>`_
+    - `Soledad Galli <https://github.com/solegalli>`_
+
+In this release, we fix a bug that made the `get_feature_names_out` not compatible
+with the Scikit-learn pipeline.
+
+In addition, thanks to `Gleb Levitski <https://github.com/GLevV>`_, we've got a new encoder
+to replace categories by string similarity variables. `Gleb Levitski <https://github.com/GLevV>`_
+also made a number of code enhancements to various transformers across the library, making a
+lot of new functionality available.
+
+Finally, we'd like to thank `Alfonso Tobar <https://github.com/datacubeR>`_, `David Cortes <https://github.com/david-cortes>`_
+and `Morgan Sell <https://github.com/Morgan-Sell>`_ for creating new transformers, fixing bugs and
+expanding the functionality of Feature-engine.
+
+Thank you so much to all contributors and to those of you who created issues flagging bugs or
+requesting new functionality.
+
+New transformers
+~~~~~~~~~~~~~~~~
+
+    - **StringSimilarityEncoder**: encodes categorical variables based on string similarity (`Gleb Levitski <https://github.com/GLevV>`_)
+    - **MatchCategories**: matches the categories in train and test set when of type pandas categorical (`David Cortes <https://github.com/david-cortes>`_)
+    - **SelectByInformationValue**: selects features based on the information value (`Morgan Sell <https://github.com/Morgan-Sell>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+
+New functionality
+~~~~~~~~~~~~~~~~~
+
+    - The `MeanEncoder` can now implement smoothing during the encoding to handle high cardinality (`Gleb Levitski <https://github.com/GLevV>`_)
+    - The `MeanlEncoder` can now encode unseen categories (`Gleb Levitski <https://github.com/GLevV>`_)
+    - The `OrdinalEncoder` can now encode unseen categories (`Soledad Galli <https://github.com/solegalli>`_)
+    - The `CountFrequencyEncoder` can now encode unseen categories (`David Cortes <https://github.com/david-cortes>`_)
+    - All outlier transformers can now detect outliers based on the MAD rule (`Gleb Levitski <https://github.com/GLevV>`_)
+    - Add automatic calculation of PSI threshold in `DripHighPSIFeatures` (`Gleb Levitski <https://github.com/GLevV>`_)
+    - All feature selection transformers now have the method `get_support()` (`Soledad Galli <https://github.com/solegalli>`_)
+
+Bug fixes
+~~~~~~~~~
+
+    - `get_feature_names_out` is now compatible with the Scikit-learn pipeline in all transformers (`Soledad Galli <https://github.com/solegalli>`_)
+    - The `inverse_transform` method in encoders now correctly handles unseen categories or raises not implemented errors (`Soledad Galli <https://github.com/solegalli>`_)
+    - Fixes output of `SklearnTransformerWrapper` for `OneHotEncoder` and `PolynomialFeatures` (`Alfonso Tobar <https://github.com/datacubeR>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+    - Add more resources to documentation (`Soledad Galli <https://github.com/solegalli>`_)
+    - User guide for `StringSimilarityEncoder` (`Gleb Levitski <https://github.com/GLevV>`_)
+    - New Jupyter notebook for `StringSimilarityEncoder` (`Gleb Levitski <https://github.com/GLevV>`_)
+    - User guide for SelectByInformationValue (`Morgan Sell <https://github.com/Morgan-Sell>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+
+Deprecations
+~~~~~~~~~~~~
+
+    - Parameter `errors` in encoders is now replaced by `unseen` (`Soledad Galli <https://github.com/solegalli>`_)
+    - The classes `MathematicalCombination`, `CombineWithFeatureReference` and `CyclicalTransformer` are removed (`Soledad Galli <https://github.com/solegalli>`_)
+    - We are deprecating `PRatioEncoder` in version 1.5 and it will be removed in version 1.6 (`Soledad Galli <https://github.com/solegalli>`_)
+
+Code improvements
+~~~~~~~~~~~~~~~~~
+
+    - Adds code coverage test (`Soledad Galli <https://github.com/solegalli>`_)
+    - Changes logic of encoding unseen categories to work with inverse_transform  (`Soledad Galli <https://github.com/solegalli>`_)
+    - Increases code coverage for encoders  (`Soledad Galli <https://github.com/solegalli>`_)
+    - Remove CategoricalInitExpandedMixin (`Soledad Galli <https://github.com/solegalli>`_)
+    - Removes checks for encoding dictionaries in all encoders (`Soledad Galli <https://github.com/solegalli>`_)
+    - Refactors creation module (`Soledad Galli <https://github.com/solegalli>`_)
+    - Refactors docstring module (`Soledad Galli <https://github.com/solegalli>`_)
+    - Refactors variable handling module (`Soledad Galli <https://github.com/solegalli>`_)
+    - Refactors numerical dictionary checks (`Soledad Galli <https://github.com/solegalli>`_)
+    - Refactors base transformers module (`Soledad Galli <https://github.com/solegalli>`_)
+    - Makes dataframe checks more performant (`Soledad Galli <https://github.com/solegalli>`_)
+    - Replaces pd.concat by pd.group in all target based encoders (`Soledad Galli <https://github.com/solegalli>`_)

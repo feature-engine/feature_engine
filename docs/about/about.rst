@@ -32,6 +32,15 @@ and maintenance:
 
 .. include:: authors.rst
 
+
+Former core contributors
+------------------------
+
+The following people are former core contributors to Feature-engine’s development
+and maintenance:
+
+.. include:: former_authors.rst
+
 Contributors
 ------------
 
