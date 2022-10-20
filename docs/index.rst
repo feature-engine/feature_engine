@@ -46,10 +46,10 @@ What is unique about Feature-engine?
 
 The following characteristics make Feature-engine unique:
 
-- Feature-engine contains the most exhaustive battery of feature engineering transformations.
+- Feature-engine contains the most exhaustive collection of feature engineering transformations.
 - Feature-engine can transform a specific group of variables in the dataframe.
 - Feature-engine returns dataframes, hence suitable for data exploration and model deployment.
-- Feature-engine is compatible with the Scikit-learn pipeline.
+- Feature-engine is compatible with the Scikit-learn pipeline, Grid and Random search and cross validation.
 - Feature-engine automatically recognizes numerical, categorical and datetime variables.
 - Feature-engine alerts you if a transformation is not possible, e.g., if applying logarithm to negative variables or divisions by 0.
 
@@ -96,7 +96,7 @@ Feature-engine features in the following resources
 - `Feature Engineering for Machine Learning <https://courses.trainindata.com/p/feature-engineering-for-machine-learning>`_, Online Course.
 - `Feature Selection for Machine Learning <https://courses.trainindata.com/p/feature-selection-for-machine-learning>`_, Online Course.
 - `Feature Engineering for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_, Online Course.
-- `Python Feature Engineering Cookbook <https://amzn.to/3TmOL3I>`_, book.
+- `Python Feature Engineering Cookbook <https://packt.link/0ewSo>`_, book.
 - `Feature Selection in Machine Learning with Python <https://leanpub.com/feature-selection-in-machine-learning>`_, book.
 
 More learning resources in the :ref:`**Learning Resources** <learning_resources>`.
