@@ -31,9 +31,9 @@ transforming parameters from the data and then transform it.
 
 * [Feature Engineering for Time Series Forecasting, Online Course](https://www.courses.trainindata.com/p/feature-engineering-for-forecasting)
 
-* [Deployment of Machine Learning Models, Online Course](https://www.udemy.com/course/deployment-of-machine-learning-models/?referralCode=D4FE5EA129FFD203CFF4)
+* [Python Feature Engineering Cookbook](https://packt.link/0ewSo)
 
-* [Python Feature Engineering Cookbook](https://packt.link/python)
+* [Feature Selection in Machine Learning with Python Book](https://leanpub.com/feature-selection-in-machine-learning)
 
 
 ## Blogs about Feature-engine
@@ -41,13 +41,6 @@ transforming parameters from the data and then transform it.
 * [Feature-engine: A new open-source Python package for feature engineering](https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c)
 
 * [Practical Code Implementations of Feature Engineering for Machine Learning with Python](https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd)
-
-
-## En Español
-
-* [Ingeniería de variables para machine learning, Curso Online](https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C)
-
-* [Ingeniería de variables, MachinLenin, charla online](https://www.youtube.com/watch?v=NhCxOOoFXds)
 
 
 ## Documentation
@@ -126,6 +119,7 @@ transforming parameters from the data and then transform it.
  * RecursiveFeatureElimination
  * RecursiveFeatureAddition
  * DropHighPSIFeatures
+ * SelectByInformationValue
 
 ### Datetime
  * DatetimeFeatures
