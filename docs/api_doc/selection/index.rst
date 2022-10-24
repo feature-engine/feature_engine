@@ -4,17 +4,18 @@
 Feature Selection
 =================
 
-Feature-engine's feature selection transformers are used to drop subsets of variables,
-or in other words, to select subsets of variables. Feature-engine hosts selection
-algorithms that are, in general, not available in other libraries. These algorithms have
-been gathered from data science competitions or used in the industry.
+Feature-engine's feature selection transformers are used to drop subsets of variables
+with low predictive value. Feature-engine hosts selection algorithms that are, in general,
+not available in other libraries. These algorithms have been gathered from data science
+competitions or used in the industry.
 
-Feature-engine's transformers select features based on 2 strategies. They either select
-features by looking at the features intrinsic characteristics, like distributions or their
-relationship with other features. Or they select features based on their impact on the
-machine learning model performance.
+Feature-engine's transformers select features based on different strategies. Some algorithms
+remove constant or quasi-constant features. Some algorithms remove duplicated or correlated
+variables. Some algorithms select features based on a machine learning model performance.
+Some transformers implement selection procedures used in finance. And some transformers support
+functionality that has been developed in the industry or in data science competitions.
 
-In the following tables you find the algorithms that belong to either category.
+In the following tables you find the algorithms that belong to each category.
 
 Selection based on feature characteristics
 ------------------------------------------
@@ -27,20 +28,37 @@ Selection based on feature characteristics
 :class:`DropDuplicateFeatures()`                √	                      √             Drops features that are duplicated
 :class:`DropCorrelatedFeatures()`               ×	                      √	            Drops features that are correlated
 :class:`SmartCorrelatedSelection()`	            ×	                      √	            From a correlated feature group drops the less useful features
-:class:`DropHighPSIFeatures()`	                ×	                      √	            Drops features with high Population Stability Index
 ============================================ ======================= ============= ====================================================================================
 
-Selection based on model performance
-------------------------------------
+Selection based on a machine learning model
+-------------------------------------------
+
+============================================ ======================= ============= ====================================================================================
+    Transformer                                Categorical variables   Allows NA	    Description
+============================================ ======================= ============= ====================================================================================
+:class:`SelectBySingleFeaturePerformance()`	    ×	                      ×	            Selects features based on single feature model performance
+:class:`RecursiveFeatureElimination()`          ×                         ×             Removes features recursively by evaluating model performance
+:class:`RecursiveFeatureAddition()`             ×                         ×             Adds features recursively by evaluating model performance
+============================================ ======================= ============= ====================================================================================
+
+Selection methods commonly used in finance
+------------------------------------------
+
+============================================ ======================= ============= ====================================================================================
+    Transformer                                Categorical variables   Allows NA	    Description
+============================================ ======================= ============= ====================================================================================
+:class:`DropHighPSIFeatures()`	                ×	                      √	            Drops features with high Population Stability Index
+:class:`SelectByInformationValue()`	            √                         x             Drops features with low information value
+============================================ ======================= ============= ====================================================================================
+
+Alternative feature selection methods
+-------------------------------------
 
 ============================================ ======================= ============= ====================================================================================
     Transformer                                Categorical variables   Allows NA	    Description
 ============================================ ======================= ============= ====================================================================================
 :class:`SelectByShuffling()`	                ×	                      ×	            Selects features if shuffling their values causes a drop in model performance
-:class:`SelectBySingleFeaturePerformance()`	    ×	                      ×	            Removes observations with missing data from the dataset
 :class:`SelectByTargetMeanPerformance()`        √                         ×             Using the target mean as performance proxy, selects high performing features
-:class:`RecursiveFeatureElimination()`          ×                         ×             Removes features recursively by evaluating model performance
-:class:`RecursiveFeatureAddition()`             ×                         ×             Adds features recursively by evaluating model performance
 ============================================ ======================= ============= ====================================================================================
 
 
@@ -53,12 +71,13 @@ Selection based on model performance
    DropDuplicateFeatures
    DropCorrelatedFeatures
    SmartCorrelatedSelection
-   DropHighPSIFeatures
-   SelectByShuffling
    SelectBySingleFeaturePerformance
-   SelectByTargetMeanPerformance
    RecursiveFeatureElimination
    RecursiveFeatureAddition
+   DropHighPSIFeatures
+   SelectByInformationValue
+   SelectByShuffling
+   SelectByTargetMeanPerformance
 
 Other Feature Selection Libraries
 ---------------------------------
