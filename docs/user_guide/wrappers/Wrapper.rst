@@ -128,6 +128,7 @@ subset of categories using the :class:SklearnTransformerWrapper().
     import numpy as np
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import OneHotEncoder
+    from feature_engine.wrappers import SklearnTransformerWrapper
 
     df = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
     X = df
