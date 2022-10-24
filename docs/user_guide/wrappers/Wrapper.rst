@@ -130,33 +130,50 @@ subset of categories using the :class:SklearnTransformerWrapper().
     from sklearn.preprocessing import OneHotEncoder
     from feature_engine.wrappers import SklearnTransformerWrapper
 
-    df = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-    X = df
-    y = df.survived
-    X_train, X_test, y_train, y_test= train_test_split(X, y, test_size=0.2, random_state=42)
+    # Load dataset
+    def load_titanic():
+        data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
+        data = data.replace('?', np.nan)
+        data['cabin'] = data['cabin'].astype(str).str[0]
+        data['pclass'] = data['pclass'].astype('O')
+        data['embarked'].fillna('C', inplace=True)
+        data.drop(["name", "home.dest", "ticket", "boat", "body"], axis=1, inplace=True)
+        return data
 
-    ohe = SklearnTransformerWrapper(OneHotEncoder(sparse=False, drop='first'), variables = ['pclass','sex'])
+    df = load_titanic()
+
+    X_train, X_test, y_train, y_test= train_test_split(
+        df.drop("survived", axis=1),
+        df["survived"],
+        test_size=0.2,
+        random_state=42,
+    )
+
+    ohe = SklearnTransformerWrapper(
+            OneHotEncoder(sparse=False, drop='first'),
+            variables = ['pclass','sex'])
 
     ohe.fit(X_train)
 
     X_train_transformed = ohe.transform(X_train)
     X_test_transformed = ohe.transform(X_test)
 
-    print(X_train_transformed.head())
-          age   fare     embarked  pclass_2  pclass_3  sex_male
-    772   17   7.8958        S       0.0       1.0       1.0
-    543   36     10.5        S       1.0       0.0       1.0
-    289   18    79.65        S       0.0       0.0       0.0
-    10    47  227.525        C       0.0       0.0       1.0
-    147  NaN     42.4        S       0.0       0.0       1.0
+We can examine the result by executing the following:
 
-    print(X_test_transformed.head())
-          age   fare      embarked  pclass_2  pclass_3  sex_male
-    1148   35    7.125        S       0.0       1.0       1.0
-    1049   20  15.7417        C       0.0       1.0       1.0
-    982   NaN   7.8958        S       0.0       1.0       1.0
-    808   NaN     8.05        S       0.0       1.0       1.0
-    1195  NaN     7.75        Q       0.0       1.0       1.0
+.. code:: python
+
+   print(X_train_transformed.head())
+
+The resulting dataframe is:
+
+.. code:: python
+
+         age  sibsp  parch     fare cabin embarked  pclass_2  pclass_3  sex_male
+    772   17      0      0   7.8958     n        S       0.0       1.0       1.0
+    543   36      0      0     10.5     n        S       1.0       0.0       1.0
+    289   18      0      2    79.65     E        S       0.0       0.0       0.0
+    10    47      1      0  227.525     C        C       0.0       0.0       1.0
+    147  NaN      0      0     42.4     n        S       0.0       0.0       1.0
 
 
 Let's say you want to use :class:`SklearnTransformerWrapper()` in a more complex 
@@ -186,7 +203,9 @@ Scikit-Learn's PolynomialFeatures.
         ('ci', CategoricalImputer(imputation_method='frequent')),
         ('mmi', MeanMedianImputer(imputation_method='mean')),
         ('od', OrdinalEncoder(encoding_method='arbitrary')),
-        ('pl', SklearnTransformerWrapper(PolynomialFeatures(interaction_only = True, include_bias=False), variables=['pclass','sex']))
+        ('pl', SklearnTransformerWrapper(
+            PolynomialFeatures(interaction_only = True, include_bias=False),
+            variables=['pclass','sex']))
     ])
     pipeline.fit(X_train)
     X_train_transformed = pipeline.transform(X_train)
