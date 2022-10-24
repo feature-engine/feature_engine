@@ -57,7 +57,7 @@ Now, we set up :class:`MatchCategories()` and fit it to the train set.
 .. code:: python
 
     # set up the transformer
-    match_categories = MatchCategories(errors="ignore")
+    match_categories = MatchCategories(missing_values="ignore")
 
     # learn the mapping of categories to integers in the train set
     match_categories.fit(train)
