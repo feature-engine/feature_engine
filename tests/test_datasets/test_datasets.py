@@ -20,10 +20,14 @@ def test_load_titanic_return_X_y(predictors_only, expected_X, expected_y):
 
 
 @pytest.mark.parametrize(
-    "raw,predictors_only, null_sum",
+    "handle_missing,predictors_only, null_sum",
     [(True, True, 0), (True, False, 0), (False, True, 266), (False, False, 3855)],
 )
-def test_load_titanic_raw(raw, predictors_only, null_sum):
-    X, y = load_titanic(return_X_y_frame=True, predictors_only=predictors_only, raw=raw)
+def test_load_titanic_raw(handle_missing, predictors_only, null_sum):
+    X, y = load_titanic(
+        return_X_y_frame=True,
+        predictors_only=predictors_only,
+        handle_missing=handle_missing,
+    )
 
     assert X.isnull().sum().sum() == null_sum
