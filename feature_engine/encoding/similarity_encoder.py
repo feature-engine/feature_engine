@@ -156,6 +156,16 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
        categorical variables". Machine Learning, Springer Verlag, 2018.
     .. [2] Cerda P, Varoquaux G. "Encoding high-cardinality string categorical
        variables". IEEE Transactions on Knowledge & Data Engineering, 2020.
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.encoding import StringSimilarityEncoder
+    >>> X = pd.DataFrame(dict(a = [1,2,3,4,5,6], b = ["dog", "dog", "dig", "dagger", "dagger", "hi"]))
+    >>> sse = StringSimilarityEncoder()
+    >>> sse.fit(X)
+    >>> sse.transform(X)
     """
 
     def __init__(

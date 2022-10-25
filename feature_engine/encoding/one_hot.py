@@ -140,6 +140,16 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     .. [1] Niculescu-Mizil, et al. "Winning the KDD Cup Orange Challenge with Ensemble
         Selection". JMLR: Workshop and Conference Proceedings 7: 23-34. KDD 2009
         http://proceedings.mlr.press/v7/niculescu09/niculescu09.pdf
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.encoding import OneHotEncoder
+    >>> X = pd.DataFrame(dict(a = [1,2,3,4], b = ["a", "a", "b", "c"]))
+    >>> ohe = OneHotEncoder()
+    >>> ohe.fit(X)
+    >>> ohe.transform(X)
     """
 
     def __init__(

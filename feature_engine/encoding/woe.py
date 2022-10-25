@@ -156,6 +156,17 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
     feature_engine.encoding.RareLabelEncoder
     feature_engine.discretisation
     category_encoders.woe.WOEEncoder
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.encoding import WoEEncoder
+    >>> X = pd.DataFrame(dict(a = [1,2,3,4,5], b = ["b", "b", "b", "a", "a"]))
+    >>> y = pd.Series([0,1,1,1,0])
+    >>> woe = WoEEncoder()
+    >>> woe.fit(X, y)
+    >>> woe.transform(X)
     """
 
     def __init__(

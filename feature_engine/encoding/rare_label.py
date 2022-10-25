@@ -109,6 +109,16 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     transform:
         Group rare categories
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.encoding import RareLabelEncoder
+    >>> X = pd.DataFrame(dict(a = [1,2,3,4,5,6], b = ["b", "b", "b", "b", "b", "a"]))
+    >>> rle = RareLabelEncoder(n_categories = 1, tol=0.2)
+    >>> rle.fit(X)
+    >>> rle.transform(X)
     """
 
     def __init__(

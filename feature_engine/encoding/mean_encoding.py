@@ -146,6 +146,17 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     .. [1] Micci-Barreca D. "A Preprocessing Scheme for High-Cardinality Categorical
        Attributes in Classification and Prediction Problems". ACM SIGKDD Explorations
        Newsletter, 2001. https://dl.acm.org/citation.cfm?id=507538
+
+        Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.encoding import MeanEncoder
+    >>> X = pd.DataFrame(dict(a = [1,2,3,4,5], b = ["c", "c", "c", "b", "a"]))
+    >>> y = pd.Series([0,1,1,1,0])
+    >>> me = MeanEncoder()
+    >>> me.fit(X,y)
+    >>> me.transform(X)
     """
 
     def __init__(

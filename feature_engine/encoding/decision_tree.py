@@ -156,6 +156,17 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     .. [1] Niculescu-Mizil, et al. "Winning the KDD Cup Orange Challenge with Ensemble
         Selection". JMLR: Workshop and Conference Proceedings 7: 23-34. KDD 2009
         http://proceedings.mlr.press/v7/niculescu09/niculescu09.pdf
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.encoding import DecisionTreeEncoder
+    >>> X = pd.DataFrame(dict(a = [1,2,3,4,5], b = ["b", "b", "b", "a", "a"]))
+    >>> y = pd.Series([2.2,4, 1.5, 3.2, 1.1])
+    >>> ohe = DecisionTreeEncoder(cv=2)
+    >>> ohe.fit(X, y)
+    >>> ohe.transform(X)
     """
 
     def __init__(
