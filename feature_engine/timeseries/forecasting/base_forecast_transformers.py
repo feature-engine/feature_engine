@@ -50,6 +50,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
 
     {drop_original}
 
+
     Attributes
     ----------
     {feature_names_in_}
@@ -63,6 +64,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
+        fill_value: Union[float, int, str] = None,
     ) -> None:
 
         if missing_values not in ["raise", "ignore"]:
@@ -77,9 +79,16 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
                 f"Got {drop_original} instead."
             )
 
+        if not isinstance(fill_value, (float, int, str)):
+            raise ValueError(
+                "fill_value takes only float, integer, or string. "
+                f"Got {fill_value} instead."
+            )
+
         self.variables = _check_init_parameter_variables(variables)
         self.missing_values = missing_values
         self.drop_original = drop_original
+        self.fill_value = fill_value
 
     def _check_index(self, X: pd.DataFrame):
         """

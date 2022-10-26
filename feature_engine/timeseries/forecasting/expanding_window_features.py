@@ -92,6 +92,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
 
     {drop_original}
 
+
     Attributes
     ----------
     variables_:

@@ -36,3 +36,9 @@ _unseen_docstring = """unseen: string, default='ignore'
         error. If 'ignore', then unseen categories will be set as NaN and a warning will
         be raised instead.
     """.rstrip()
+
+
+# used in forecasting
+_fill_values_docstring = """fill_values: Union[float, int, str], default=None
+    The scalar value to use for newly introduced missing values.
+"""
