@@ -12,6 +12,7 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
     _missing_values_docstring,
+    _fill_values_docstring,
 )
 from feature_engine._docstrings.methods import _fit_not_learn_docstring
 from feature_engine._docstrings.substitute import Substitution
@@ -31,6 +32,7 @@ from feature_engine.tags import _return_tags
 
 
 @Substitution(
+    fill_value=_fill_values_docstring,
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -45,6 +47,8 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
     ----------
     variables: str, int, or list of strings or integers, default=None.
         The variables to use to create the new features.
+
+    {fill_value}
 
     {missing_values}
 
@@ -62,10 +66,16 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        fill_value: Union[float, int, str] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
-        fill_value: Union[float, int, str] = None,
     ) -> None:
+
+        if not isinstance(fill_value, (float, int, str)):
+            raise ValueError(
+                "fill_value takes only float, integer, or string. "
+                f"Got {fill_value} instead."
+            )
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
@@ -79,16 +89,11 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
                 f"Got {drop_original} instead."
             )
 
-        if not isinstance(fill_value, (float, int, str)):
-            raise ValueError(
-                "fill_value takes only float, integer, or string. "
-                f"Got {fill_value} instead."
-            )
-
         self.variables = _check_init_parameter_variables(variables)
+        self.fill_value = fill_value
         self.missing_values = missing_values
         self.drop_original = drop_original
-        self.fill_value = fill_value
+
 
     def _check_index(self, X: pd.DataFrame):
         """
