@@ -14,6 +14,7 @@ from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
     _missing_values_docstring,
     _variables_numerical_docstring,
+    _fill_values_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
@@ -29,6 +30,7 @@ from feature_engine.timeseries.forecasting.base_forecast_transformers import (
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
+    fill_value=_fill_values_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
@@ -92,6 +94,8 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
 
     {drop_original}
 
+    {fill_value}
+
 
     Attributes
     ----------
@@ -127,8 +131,10 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         periods: int = 1,
         freq: str = None,
         sort_index: bool = True,
+        fill_value: Union[float, int, str] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
+
     ) -> None:
 
         if not isinstance(functions, (str, list)) or not all(
@@ -146,7 +152,9 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
                 f"periods must be a non-negative integer. Got {periods} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original)
+        super().__init__(
+            variables, missing_values, drop_original, fill_value
+        )
 
         self.min_periods = min_periods
         self.functions = functions
@@ -171,12 +179,27 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         # Common dataframe checks and setting up.
         X = super().transform(X)
 
-        tmp = (
-            X[self.variables_]
-            .expanding(min_periods=self.min_periods)
-            .agg(self.functions)
-            .shift(periods=self.periods, freq=self.freq)
-        )
+        # use pandas shift default autodetect
+        if self.fill_value is None:
+            tmp = (
+                X[self.variables_]
+                .expanding(min_periods=self.min_periods)
+                .agg(self.functions)
+                .shift(periods=self.periods, freq=self.freq)
+            )
+
+        # use user provided value
+        else:
+            tmp = (
+                X[self.variables_]
+                    .expanding(min_periods=self.min_periods)
+                    .agg(self.functions)
+                    .shift(
+                        periods=self.periods,
+                        freq=self.freq,
+                        fill_value=self.fill_value
+                    )
+            )
 
         tmp.columns = self._get_new_features_name()
 
