@@ -2,10 +2,10 @@
 # License: BSD 3 clause
 
 from __future__ import annotations
-from typing import List
+from typing import Hashable, List
 
 import pandas as pd
-
+from pandas._libs import lib
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -14,7 +14,7 @@ from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
     _missing_values_docstring,
     _variables_numerical_docstring,
-    _fill_values_docstring,
+    _fill_value_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
@@ -30,7 +30,7 @@ from feature_engine.timeseries.forecasting.base_forecast_transformers import (
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
-    fill_value=_fill_values_docstring,
+    fill_value=_fill_value_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
@@ -131,7 +131,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         periods: int = 1,
         freq: str = None,
         sort_index: bool = True,
-        fill_value: Union[float, int, str] = None,
+        fill_value: Hashable = lib.no_default,
         missing_values: str = "raise",
         drop_original: bool = False,
 
@@ -179,27 +179,16 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         # Common dataframe checks and setting up.
         X = super().transform(X)
 
-        # use pandas shift default autodetect
-        if self.fill_value is None:
-            tmp = (
-                X[self.variables_]
+        tmp = (
+            X[self.variables_]
                 .expanding(min_periods=self.min_periods)
                 .agg(self.functions)
-                .shift(periods=self.periods, freq=self.freq)
-            )
-
-        # use user provided value
-        else:
-            tmp = (
-                X[self.variables_]
-                    .expanding(min_periods=self.min_periods)
-                    .agg(self.functions)
-                    .shift(
-                        periods=self.periods,
-                        freq=self.freq,
-                        fill_value=self.fill_value
-                    )
-            )
+                .shift(
+                    periods=self.periods,
+                    freq=self.freq,
+                    fill_value=self.fill_value,
+                )
+        )
 
         tmp.columns = self._get_new_features_name()
 
