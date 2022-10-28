@@ -169,7 +169,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     def __init__(
         self,
         top_categories: Optional[int] = None,
-        keywords: Optional[dict[str: list[str]]] = None,
+        keywords: Optional[dict[str: List[str]]] = None,
         missing_values: str = "impute",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
