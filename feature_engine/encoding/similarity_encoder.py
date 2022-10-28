@@ -1,5 +1,5 @@
 from difflib import SequenceMatcher
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 import numpy as np
 import pandas as pd
@@ -171,7 +171,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         top_categories: Optional[int] = None,
         keywords: Optional[dict] = None,
         missing_values: str = "impute",
-        variables: Union[None, int, str, list[Union[str, int]]] = None,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
     ):
         if top_categories and not isinstance(top_categories, int):
@@ -282,7 +282,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         return X.drop(self.variables_, axis=1)
 
-    def _get_new_features_name(self) -> list:
+    def _get_new_features_name(self) -> List:
         """Return names of the created features."""
         feature_names = []
         for feature in self.variables_:
@@ -294,7 +294,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         return feature_names
 
-    def _add_new_feature_names(self, feature_names: list) -> list:
+    def _add_new_feature_names(self, feature_names: List) -> List:
         """Creates new features names and removes original categorical variables."""
         feature_names = feature_names + self._get_new_features_name()
         feature_names = [f for f in feature_names if f not in self.variables_]
