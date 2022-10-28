@@ -13,7 +13,7 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
     _missing_values_docstring,
-    _fill_values_docstring,
+    _fill_value_docstring,
 )
 from feature_engine._docstrings.methods import _fit_not_learn_docstring
 from feature_engine._docstrings.substitute import Substitution
@@ -33,7 +33,7 @@ from feature_engine.tags import _return_tags
 
 
 @Substitution(
-    fill_value=_fill_values_docstring,
+    fill_value=_fill_value_docstring,
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -88,7 +88,6 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         self.fill_value = fill_value
         self.missing_values = missing_values
         self.drop_original = drop_original
-
 
     def _check_index(self, X: pd.DataFrame):
         """
