@@ -102,13 +102,21 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         categories to encode. In this case, similarity variables will be created
         only for those popular categories.
 
-    missing_values : str, default='impute'
+    missing_values: str, default='impute'
         Indicates if missing values should be ignored, raised or imputed. If 'raise' the
         transformer will return an error if the datasets to `fit` or `transform`
         contain missing values. If 'ignore', missing data will be ignored when learning
         parameters or performing the transformation. If 'impute', the transformer will
         replace missing values with an empty string, '', and then return the similarity
         measures.
+
+    keywords: dict, default=None
+        User defined dictionary of keywords, dict(feature: [keyword1, keyword2, ...]).
+        Instead of finding top_k categories in features, encoder will use this keywords
+        to create similarity variables. Useful when someone has domain knowledge of the
+        problem. Could be defined only for several features; in this case for specified
+        features keywords will be used and most common categories will be used for
+        unspecified.
 
     {variables}
 
@@ -160,7 +168,8 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     def __init__(
         self,
-        top_categories: Union[None, int] = None,
+        top_categories: Optional[int] = None,
+        keywords: Optional[dict[str: list[str]]] = None,
         missing_values: str = "impute",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
@@ -174,9 +183,19 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 "missing_values should be one of 'raise', 'impute' or 'ignore'."
                 f" Got {missing_values!r} instead."
             )
+        if keywords and not isinstance(keywords, dict):
+            raise ValueError(
+                f"keywords should be dict or None. Got {keywords!r} instead."
+            )
+            if not all(isinstance(item, list) for item in keywords):
+                raise ValueError(
+                    "Items in keywords should be lists."
+                    f" Got {keywords.items()!r} instead."
+                )
         super().__init__(variables, ignore_format)
         self.top_categories = top_categories
         self.missing_values = missing_values
+        self.keywords = keywords
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -198,34 +217,24 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         X = check_X(X)
         self._check_or_select_variables(X)
         self._get_feature_names_in(X)
+        if self.keywords:
+            if not all(item in self.variables_ for item in self.keywords.keys())
+                raise ValueError(
+                    "keywords have columns that are not present in the dataset"
+                )
         self.encoder_dict_ = {}
 
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
-            for var in self.variables_:
-                self.encoder_dict_[var] = (
-                    X[var]
-                    .astype(str)
-                    .value_counts()
-                    .head(self.top_categories)
-                    .index.tolist()
-                )
-        elif self.missing_values == "impute":
-            for var in self.variables_:
+        for var in self.variables_:
+            if self.keywords and self.keywords.get(var):
+                self.encoder_dict_[var] = self.keywords[var]
+            else:
                 self.encoder_dict_[var] = (
                     X[var]
                     .astype(str)
                     .replace("nan", "")
                     .value_counts()
-                    .head(self.top_categories)
-                    .index.tolist()
-                )
-        elif self.missing_values == "ignore":
-            for var in self.variables_:
-                self.encoder_dict_[var] = (
-                    X[var]
-                    .astype(str)
-                    .value_counts(dropna=True)
                     .head(self.top_categories)
                     .index.tolist()
                 )
