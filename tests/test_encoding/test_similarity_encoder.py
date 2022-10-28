@@ -278,8 +278,8 @@ def test_encode_top_categories_w_keywords():
     assert encoder.n_features_in_ == 3
     assert encoder.encoder_dict_ == {
         "var_A": ["XYZ"],
-        "var_B": ["A", "D", "B", "G"],
-        "var_C": ["C", "D", "G", "B"],
+        "var_B": ["A", "D"],
+        "var_C": ["C", "D"],
     }
     # test transform output
     for col in transf.keys():
