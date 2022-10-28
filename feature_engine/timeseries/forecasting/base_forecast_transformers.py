@@ -1,6 +1,7 @@
-from typing import List, Optional, Union
+from typing import Hashable, List, Optional, Union
 
 import pandas as pd
+from pandas._libs import lib
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -66,16 +67,10 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        fill_value: Union[float, int, str] = None,
+        fill_value: Hashable = lib.no_default,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
-
-        if not isinstance(fill_value, (float, int, str)):
-            raise ValueError(
-                "fill_value takes only float, integer, or string. "
-                f"Got {fill_value} instead."
-            )
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
