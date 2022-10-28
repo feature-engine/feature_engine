@@ -1,5 +1,5 @@
 from difflib import SequenceMatcher
-from typing import List, Optional, Union
+from typing import List, Optional, Union, TypedDict
 
 import numpy as np
 import pandas as pd
@@ -169,7 +169,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     def __init__(
         self,
         top_categories: Optional[int] = None,
-        keywords: Optional[dict[str: List[str]]] = None,
+        keywords: Optional[TypedDict[str, List[str]]] = None,
         missing_values: str = "impute",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
