@@ -37,8 +37,7 @@ _unseen_docstring = """unseen: string, default='ignore'
         be raised instead.
     """.rstrip()
 
-
 # used in forecasting
-_fill_values_docstring = """fill_values: Union[float, int, str], default=None
+_fill_value_docstring = """fill_values: Hashable, default=lib.no_default
     The scalar value to use for newly introduced missing values.
 """
