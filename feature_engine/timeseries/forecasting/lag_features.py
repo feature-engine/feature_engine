@@ -1,9 +1,10 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Union
+from typing import Hashable, List, Union
 
 import pandas as pd
+from pandas._libs import lib
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -11,6 +12,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
+    _fill_value_docstring,
     _missing_values_docstring,
     _variables_numerical_docstring,
 )
@@ -70,6 +72,8 @@ class LagFeatures(BaseForecastTransformer):
     sort_index: bool, default=True
         Whether to order the index of the dataframe before creating the lag features.
 
+    {fill_value}
+
     {missing_values}
 
     {drop_original}
@@ -103,6 +107,7 @@ class LagFeatures(BaseForecastTransformer):
         periods: Union[int, List[int]] = 1,
         freq: Union[str, List[str]] = None,
         sort_index: bool = True,
+        fill_value: Hashable = lib.no_default,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
@@ -129,7 +134,9 @@ class LagFeatures(BaseForecastTransformer):
                 "sort_index takes values True and False." f"Got {sort_index} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original)
+        super().__init__(
+            variables, missing_values, drop_original, fill_value
+        )
 
         self.periods = periods
         self.freq = freq
@@ -161,6 +168,7 @@ class LagFeatures(BaseForecastTransformer):
                     tmp = X[self.variables_].shift(
                         freq=fr,
                         axis=0,
+                        fill_value=self.fill_value,
                     )
                     df_ls.append(tmp)
                 tmp = pd.concat(df_ls, axis=1)
@@ -169,6 +177,7 @@ class LagFeatures(BaseForecastTransformer):
                 tmp = X[self.variables_].shift(
                     freq=self.freq,
                     axis=0,
+                    fill_value=self.fill_value,
                 )
 
         else:
@@ -178,6 +187,7 @@ class LagFeatures(BaseForecastTransformer):
                     tmp = X[self.variables_].shift(
                         periods=pr,
                         axis=0,
+                        fill_value=self.fill_value,
                     )
                     df_ls.append(tmp)
                 tmp = pd.concat(df_ls, axis=1)
@@ -186,6 +196,7 @@ class LagFeatures(BaseForecastTransformer):
                 tmp = X[self.variables_].shift(
                     periods=self.periods,
                     axis=0,
+                    fill_value=self.fill_value,
                 )
 
         tmp.columns = self._get_new_features_name()
