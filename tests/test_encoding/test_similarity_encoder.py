@@ -226,7 +226,7 @@ def test_keywords_bad_items():
 
 
 def test_keywords_dont_match(df_enc_big):
-    encoder = StringSimilarityEncoder(keywords={"column": "hola"})
+    encoder = StringSimilarityEncoder(keywords={"column": ["hola"]})
     with pytest.raises(ValueError):
         encoder.fit(df_enc_big)
 
@@ -265,8 +265,7 @@ def test_encode_top_categories_w_keywords():
     assert encoder.top_categories == 2
     # test fit attr
     transf = {
-        "var_A_D": 9,
-        "var_A_B": 11,
+        "var_A_XYZ": 0,
         "var_B_A": 11,
         "var_B_D": 9,
         "var_C_D": 9,
