@@ -1,6 +1,7 @@
-from typing import Callable, List, Union
+from typing import Callable, Hashable, List, Union
 
 import pandas as pd
+from pandas._libs import lib
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -8,6 +9,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
+    _fill_value_docstring,
     _missing_values_docstring,
     _variables_numerical_docstring,
 )
@@ -24,6 +26,7 @@ from feature_engine.timeseries.forecasting.base_forecast_transformers import (
 @Substitution(
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
+    fill_value=_fill_value_docstring,
     drop_original=_drop_original_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -94,6 +97,8 @@ class WindowFeatures(BaseForecastTransformer):
     sort_index: bool, default=True
         Whether to order the index of the dataframe before creating the features.
 
+    {fill_value}
+
     {missing_values}
 
     {drop_original}
@@ -132,6 +137,7 @@ class WindowFeatures(BaseForecastTransformer):
         periods: int = 1,
         freq: str = None,
         sort_index: bool = True,
+        fill_value: Hashable = lib.no_default,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
@@ -154,7 +160,7 @@ class WindowFeatures(BaseForecastTransformer):
                 f"periods must be a positive integer. Got {periods} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original)
+        super().__init__(variables, missing_values, drop_original, fill_value)
 
         self.window = window
         self.min_periods = min_periods
@@ -187,7 +193,11 @@ class WindowFeatures(BaseForecastTransformer):
                     X[self.variables_]
                     .rolling(window=win)
                     .agg(self.functions)
-                    .shift(periods=self.periods, freq=self.freq)
+                    .shift(
+                        periods=self.periods,
+                        freq=self.freq,
+                        fill_value=self.fill_value
+                    )
                 )
                 df_ls.append(tmp)
             tmp = pd.concat(df_ls, axis=1)
@@ -197,7 +207,11 @@ class WindowFeatures(BaseForecastTransformer):
                 X[self.variables_]
                 .rolling(window=self.window)
                 .agg(self.functions)
-                .shift(periods=self.periods, freq=self.freq)
+                .shift(
+                    periods=self.periods,
+                    freq=self.freq,
+                    fill_value=self.fill_value
+                )
             )
 
         tmp.columns = self._get_new_features_name()
