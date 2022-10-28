@@ -217,12 +217,12 @@ def test_get_feature_names_out_na(df_enc_big_na):
 
 def test_keywords_bad_type():
     with pytest.raises(ValueError):
-        encoder = StringSimilarityEncoder(keywords="hola")
+        StringSimilarityEncoder(keywords="hola")
 
 
 def test_keywords_bad_items():
     with pytest.raises(ValueError):
-        encoder = StringSimilarityEncoder(keywords={"column": "hola"})
+        StringSimilarityEncoder(keywords={"column": "hola"})
 
 
 def test_keywords_dont_match(df_enc_big):
@@ -288,7 +288,7 @@ def test_encode_top_categories_w_keywords():
     assert "var_B_F" not in X.columns
 
 
-def test_get_feature_names_out_w_keywords(df_enc_big):
+def test_get_feature_names_out_w_keywords(df_enc_big_na):
     input_features = df_enc_big_na.columns.tolist()
 
     tr = StringSimilarityEncoder(keywords={"var_A": ["XYZ"]})
