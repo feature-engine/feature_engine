@@ -187,11 +187,11 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             raise ValueError(
                 f"keywords should be dict or None. Got {keywords!r} instead."
             )
-            if not all(isinstance(item, list) for item in keywords.values()):
-                raise ValueError(
-                    "Items in keywords should be lists."
-                    f" Got {keywords.values()!r} instead."
-                )
+        if not all(isinstance(item, list) for item in keywords.values()):
+            raise ValueError(
+                "Items in keywords should be lists."
+                f" Got {keywords.values()!r} instead."
+            )
         super().__init__(variables, ignore_format)
         self.top_categories = top_categories
         self.missing_values = missing_values
