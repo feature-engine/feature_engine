@@ -282,7 +282,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         return X.drop(self.variables_, axis=1)
 
-    def _get_new_features_name(self) -> List:
+    def _get_new_features_name(self) -> List[str]:
         """Return names of the created features."""
         feature_names = []
         for feature in self.variables_:
@@ -294,7 +294,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         return feature_names
 
-    def _add_new_feature_names(self, feature_names: List) -> List:
+    def _add_new_feature_names(self, feature_names: List[str]) -> List[str]:
         """Creates new features names and removes original categorical variables."""
         feature_names = feature_names + self._get_new_features_name()
         feature_names = [f for f in feature_names if f not in self.variables_]
