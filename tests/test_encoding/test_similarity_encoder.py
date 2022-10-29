@@ -287,6 +287,58 @@ def test_encode_top_categories_w_keywords():
     assert "var_B_F" not in X.columns
 
 
+def test_encode_full_keywords():
+    df = pd.DataFrame(
+        {
+            "var_A": ["A"] * 5
+            + ["B"] * 11
+            + ["C"] * 4
+            + ["D"] * 9
+            + ["E"] * 2
+            + ["F"] * 2
+            + ["G"] * 7,
+            "var_B": ["A"] * 11
+            + ["B"] * 7
+            + ["C"] * 4
+            + ["D"] * 9
+            + ["E"] * 2
+            + ["F"] * 2
+            + ["G"] * 5,
+            "var_C": ["A"] * 4
+            + ["B"] * 5
+            + ["C"] * 11
+            + ["D"] * 9
+            + ["E"] * 2
+            + ["F"] * 2
+            + ["G"] * 7,
+        }
+    )
+
+    encoder = StringSimilarityEncoder(keywords={"var_A": ["X"], "var_B": ["Y"], "var_C": ["Z"]})
+    X = encoder.fit_transform(df)
+
+    # test fit attr
+    transf = {
+        "var_A_X": 0,
+        "var_B_Y": 0,
+        "var_C_Z": 0,
+    }
+
+    # test fit attr
+    assert encoder.variables_ == ["var_A", "var_B", "var_C"]
+    assert encoder.n_features_in_ == 3
+    assert encoder.encoder_dict_ == {
+        "var_A": ["X"],
+        "var_B": ["Y"],
+        "var_C": ["Z"],
+    }
+    # test transform output
+    for col in transf.keys():
+        assert X[col].sum() == transf[col]
+    assert "var_B" not in X.columns
+    assert "var_B_F" not in X.columns
+
+
 def test_get_feature_names_out_w_keywords(df_enc_big_na):
     input_features = df_enc_big_na.columns.tolist()
 
