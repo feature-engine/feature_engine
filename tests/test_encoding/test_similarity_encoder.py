@@ -314,7 +314,9 @@ def test_encode_full_keywords():
         }
     )
 
-    encoder = StringSimilarityEncoder(keywords={"var_A": ["X"], "var_B": ["Y"], "var_C": ["Z"]})
+    encoder = StringSimilarityEncoder(
+        keywords={"var_A": ["X"], "var_B": ["Y"], "var_C": ["Z"]}
+    )
     X = encoder.fit_transform(df)
 
     # test fit attr
