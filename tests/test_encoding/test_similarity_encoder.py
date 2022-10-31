@@ -221,20 +221,20 @@ def test_keywords_bad_type(keywords):
         StringSimilarityEncoder(keywords=keywords)
 
 
-@pytest.mark.parametrize("keywords", ["hello", 0.5, 1])
-def test_keywords_bad_items(keywords):
+@pytest.mark.parametrize("item", ["hello", 0.5, 1])
+def test_keywords_bad_items(item):
     with pytest.raises(ValueError):
-        StringSimilarityEncoder(keywords={"column": keywords})
+        StringSimilarityEncoder(keywords={"var_A": item})
 
 
-@pytest.mark.parametrize("keywords", ["hello", 0.5, 1])
-def test_keywords_dont_match(df_enc_big, keywords):
-    encoder = StringSimilarityEncoder(keywords={"column": [keywords]})
+@pytest.mark.parametrize("key", ["hello", 0.5, 1])
+def test_keywords_bad_keys(df_enc_big, key):
+    encoder = StringSimilarityEncoder(keywords={key: ["A"]})
     with pytest.raises(ValueError):
         encoder.fit(df_enc_big)
 
 
-def test_encode_top_categories_w_keywords():
+def test_encode_partial_keywords():
     df = pd.DataFrame(
         {
             "var_A": ["A"] * 5
