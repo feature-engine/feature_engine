@@ -114,8 +114,8 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         User defined dictionary of keywords, dict(feature: [keyword1, keyword2, ...]).
         Instead of finding top_k categories in features, encoder will use this keywords
         to create similarity variables. Useful when someone has domain knowledge of the
-        problem. Could be defined only partially, not for all features. In this case, for
-        features not specified in keywords, categories will be extracted from data.
+        problem. Could be defined only partially, not for all features. In this case,
+        for features not specified in keywords, they will be extracted from data.
 
     {variables}
 
