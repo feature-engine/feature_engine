@@ -193,11 +193,7 @@ class WindowFeatures(BaseForecastTransformer):
                     X[self.variables_]
                     .rolling(window=win)
                     .agg(self.functions)
-                    .shift(
-                        periods=self.periods,
-                        freq=self.freq,
-                        fill_value=self.fill_value
-                    )
+                    .shift(periods=self.periods, freq=self.freq, fill_value=self.fill_value)
                 )
                 df_ls.append(tmp)
             tmp = pd.concat(df_ls, axis=1)
@@ -207,11 +203,7 @@ class WindowFeatures(BaseForecastTransformer):
                 X[self.variables_]
                 .rolling(window=self.window)
                 .agg(self.functions)
-                .shift(
-                    periods=self.periods,
-                    freq=self.freq,
-                    fill_value=self.fill_value
-                )
+                .shift(periods=self.periods, freq=self.freq, fill_value=self.fill_value)
             )
 
         tmp.columns = self._get_new_features_name()

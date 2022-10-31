@@ -183,11 +183,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
             X[self.variables_]
                 .expanding(min_periods=self.min_periods)
                 .agg(self.functions)
-                .shift(
-                    periods=self.periods,
-                    freq=self.freq,
-                    fill_value=self.fill_value,
-                )
+                .shift(periods=self.periods, freq=self.freq, fill_value=self.fill_value)
         )
 
         tmp.columns = self._get_new_features_name()
