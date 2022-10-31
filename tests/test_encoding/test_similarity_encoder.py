@@ -215,18 +215,21 @@ def test_get_feature_names_out_na(df_enc_big_na):
     assert tr.get_feature_names_out(input_features=input_features) == out
 
 
-def test_keywords_bad_type():
+@pytest.mark.parametrize("keywords", ["hello", 0.5, [1]])
+def test_keywords_bad_type(keywords):
     with pytest.raises(ValueError):
-        StringSimilarityEncoder(keywords="hola")
+        StringSimilarityEncoder(keywords=keywords)
 
 
-def test_keywords_bad_items():
+@pytest.mark.parametrize("keywords", ["hello", 0.5, 1])
+def test_keywords_bad_items(keywords):
     with pytest.raises(ValueError):
-        StringSimilarityEncoder(keywords={"column": "hola"})
+        StringSimilarityEncoder(keywords={"column": keywords})
 
 
-def test_keywords_dont_match(df_enc_big):
-    encoder = StringSimilarityEncoder(keywords={"column": ["hola"]})
+@pytest.mark.parametrize("keywords", ["hello", 0.5, 1])
+def test_keywords_dont_match(df_enc_big, keywords):
+    encoder = StringSimilarityEncoder(keywords={"column": [keywords]})
     with pytest.raises(ValueError):
         encoder.fit(df_enc_big)
 
@@ -287,7 +290,7 @@ def test_encode_top_categories_w_keywords():
     assert "var_B_F" not in X.columns
 
 
-def test_encode_full_keywords():
+def test_encode_complete_keywords():
     df = pd.DataFrame(
         {
             "var_A": ["A"] * 5
