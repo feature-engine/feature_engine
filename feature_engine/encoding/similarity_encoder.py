@@ -114,9 +114,8 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         User defined dictionary of keywords, dict(feature: [keyword1, keyword2, ...]).
         Instead of finding top_k categories in features, encoder will use this keywords
         to create similarity variables. Useful when someone has domain knowledge of the
-        problem. Could be defined only for several features; in this case for specified
-        features keywords will be used and most common categories will be used for
-        unspecified.
+        problem. Could be defined only partially, not for all features. In this case, for
+        features not specified in keywords, categories will be extracted from data.
 
     {variables}
 
@@ -226,18 +225,43 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
-        for var in self.variables_:
-            if self.keywords and self.keywords.get(var):
-                self.encoder_dict_[var] = self.keywords[var]
-            else:
-                self.encoder_dict_[var] = (
-                    X[var]
-                    .astype(str)
-                    .replace("nan", "")
-                    .value_counts()
-                    .head(self.top_categories)
-                    .index.tolist()
-                )
+            for var in self.variables_:
+                if self.keywords and self.keywords.get(var):
+                    self.encoder_dict_[var] = self.keywords[var]
+                else:
+                    self.encoder_dict_[var] = (
+                        X[var]
+                        .astype(str)
+                        .value_counts()
+                        .head(self.top_categories)
+                        .index.tolist()
+                    )
+        elif self.missing_values == "impute":
+            for var in self.variables_:
+                if self.keywords and self.keywords.get(var):
+                    self.encoder_dict_[var] = self.keywords[var]
+                else:
+                    self.encoder_dict_[var] = (
+                        X[var]
+                        .astype(str)
+                        .replace("nan", "")
+                        .value_counts()
+                        .head(self.top_categories)
+                        .index.tolist()
+                    )
+        elif self.missing_values == "ignore":
+            for var in self.variables_:
+                if self.keywords and self.keywords.get(var):
+                    self.encoder_dict_[var] = self.keywords[var]
+                else:
+                    self.encoder_dict_[var] = (
+                        X[var]
+                        .astype(str)
+                        .drop("nan")
+                        .value_counts(dropna=True)
+                        .head(self.top_categories)
+                        .index.tolist()
+                    )
 
         return self
 
