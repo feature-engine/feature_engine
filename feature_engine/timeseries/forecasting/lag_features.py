@@ -12,7 +12,6 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
-    _fill_value_docstring,
     _missing_values_docstring,
     _variables_numerical_docstring,
 )
@@ -72,7 +71,6 @@ class LagFeatures(BaseForecastTransformer):
     sort_index: bool, default=True
         Whether to order the index of the dataframe before creating the lag features.
 
-    {fill_value}
 
     {missing_values}
 

@@ -9,9 +9,9 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters import (
     _drop_original_docstring,
-    _fill_value_docstring,
     _missing_values_docstring,
     _variables_numerical_docstring,
+    _fill_value_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
@@ -103,6 +103,7 @@ class WindowFeatures(BaseForecastTransformer):
 
     {drop_original}
 
+
     Attributes
     ----------
     variables_:
@@ -160,7 +161,7 @@ class WindowFeatures(BaseForecastTransformer):
                 f"periods must be a positive integer. Got {periods} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original, fill_value)
+        super().__init__(variables, fill_value, missing_values, drop_original)
 
         self.window = window
         self.min_periods = min_periods

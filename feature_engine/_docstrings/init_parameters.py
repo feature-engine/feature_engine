@@ -39,5 +39,5 @@ _unseen_docstring = """unseen: string, default='ignore'
 
 # used in forecasting
 _fill_value_docstring = """fill_values: Hashable, default=lib.no_default
-    The scalar value to use for newly introduced missing values.
-"""
+        The scalar value to use for newly introduced missing values.
+    """.rstrip()
