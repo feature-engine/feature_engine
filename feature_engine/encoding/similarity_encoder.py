@@ -226,42 +226,35 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
             for var in self.variables_:
-                if self.keywords and self.keywords.get(var):
-                    self.encoder_dict_[var] = self.keywords[var]
-                else:
-                    self.encoder_dict_[var] = (
-                        X[var]
-                        .astype(str)
-                        .value_counts()
-                        .head(self.top_categories)
-                        .index.tolist()
-                    )
+                self.encoder_dict_[var] = (
+                    X[var]
+                    .astype(str)
+                    .value_counts()
+                    .head(self.top_categories)
+                    .index.tolist()
+                )
         elif self.missing_values == "impute":
             for var in self.variables_:
-                if self.keywords and self.keywords.get(var):
-                    self.encoder_dict_[var] = self.keywords[var]
-                else:
-                    self.encoder_dict_[var] = (
-                        X[var]
-                        .astype(str)
-                        .replace("nan", "")
-                        .value_counts()
-                        .head(self.top_categories)
-                        .index.tolist()
-                    )
+                self.encoder_dict_[var] = (
+                    X[var]
+                    .astype(str)
+                    .replace("nan", "")
+                    .value_counts()
+                    .head(self.top_categories)
+                    .index.tolist()
+                )
         elif self.missing_values == "ignore":
             for var in self.variables_:
-                if self.keywords and self.keywords.get(var):
-                    self.encoder_dict_[var] = self.keywords[var]
-                else:
-                    self.encoder_dict_[var] = (
-                        X[var]
-                        .astype(str)
-                        .drop("nan", errors="ignore")
-                        .value_counts(dropna=True)
-                        .head(self.top_categories)
-                        .index.tolist()
-                    )
+                self.encoder_dict_[var] = (
+                    X[var]
+                    .astype(str)
+                    .drop("nan", errors="ignore")
+                    .value_counts(dropna=True)
+                    .head(self.top_categories)
+                    .index.tolist()
+                )
+        for var in self.keywords.keys():
+            self.encoder_dict_[var] = self.keywords[var]
 
         return self
 
