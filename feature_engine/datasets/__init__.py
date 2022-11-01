@@ -1,3 +1,3 @@
-from .data import load_titanic
+from .titanic import load_titanic
 
 __all__ = ["load_titanic"]
