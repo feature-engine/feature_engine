@@ -132,9 +132,7 @@ class LagFeatures(BaseForecastTransformer):
                 "sort_index takes values True and False." f"Got {sort_index} instead."
             )
 
-        super().__init__(
-            variables, missing_values, drop_original, fill_value
-        )
+        super().__init__(variables, fill_value, missing_values, drop_original)
 
         self.periods = periods
         self.freq = freq
