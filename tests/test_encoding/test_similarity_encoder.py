@@ -111,12 +111,22 @@ def test_nan_behaviour_impute(df_enc_big_na):
     encoder = StringSimilarityEncoder(missing_values="impute")
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().sum() == 0).all(axis=None)
+    assert encoder.encoder_dict_ == {
+        "var_A": ["B", "D", "G", "A", "C", "E", "F", ""],
+        "var_B": ["A", "D", "B", "G", "C", "E", "F"],
+        "var_C": ["C", "D", "B", "G", "A", "E", "F"],
+    }
 
 
 def test_nan_behaviour_ignore(df_enc_big_na):
     encoder = StringSimilarityEncoder(missing_values="ignore")
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().any(1) == df_enc_big_na.isna().any(1)).all()
+    assert encoder.encoder_dict_ == {
+        "var_A": ["B", "D", "G", "A", "C", "E", "F"],
+        "var_B": ["A", "D", "B", "G", "C", "E", "F"],
+        "var_C": ["C", "D", "B", "G", "A", "E", "F"],
+    }
 
 
 def test_inverse_transform_error(df_enc_big):
