@@ -254,8 +254,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .index.tolist()
                 )
         if self.keywords:
-            for var in self.keywords.keys():
-                self.encoder_dict_[var] = self.keywords[var]
+            self.encoder_dict_.update(self.keywords)
 
         return self
 
