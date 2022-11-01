@@ -250,7 +250,6 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .astype(str)
                     .value_counts(dropna=True)
                     .drop("nan", errors="ignore")
-                    .sort_values()
                     .head(self.top_categories)
                     .index.tolist()
                 )
