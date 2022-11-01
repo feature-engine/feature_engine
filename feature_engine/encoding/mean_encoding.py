@@ -147,16 +147,22 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
        Attributes in Classification and Prediction Problems". ACM SIGKDD Explorations
        Newsletter, 2001. https://dl.acm.org/citation.cfm?id=507538
 
-        Examples
+    Examples
     --------
 
     >>> import pandas as pd
     >>> from feature_engine.encoding import MeanEncoder
-    >>> X = pd.DataFrame(dict(a = [1,2,3,4,5], b = ["c", "c", "c", "b", "a"]))
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3,4,5], x2 = ["c", "c", "c", "b", "a"]))
     >>> y = pd.Series([0,1,1,1,0])
     >>> me = MeanEncoder()
     >>> me.fit(X,y)
     >>> me.transform(X)
+       x1        x2
+    0   1  0.666667
+    1   2  0.666667
+    2   3  0.666667
+    3   4  1.000000
+    4   5  0.000000
     """
 
     def __init__(

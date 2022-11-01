@@ -162,11 +162,30 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     >>> import pandas as pd
     >>> from feature_engine.encoding import DecisionTreeEncoder
-    >>> X = pd.DataFrame(dict(a = [1,2,3,4,5], b = ["b", "b", "b", "a", "a"]))
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3,4,5], x2 = ["b", "b", "b", "a", "a"]))
     >>> y = pd.Series([2.2,4, 1.5, 3.2, 1.1])
-    >>> ohe = DecisionTreeEncoder(cv=2)
-    >>> ohe.fit(X, y)
-    >>> ohe.transform(X)
+    >>> dte = DecisionTreeEncoder(cv=2)
+    >>> dte.fit(X, y)
+    >>> dte.transform(X)
+       x1        x2
+    0   1  2.566667
+    1   2  2.566667
+    2   3  2.566667
+    3   4  2.150000
+    4   5  2.150000
+
+    You can also use it for classification by using `regression=False`.
+
+    >>> y = pd.Series([0,1,1,1,0])
+    >>> dte = DecisionTreeEncoder(regression=False, cv=2)
+    >>> dte.fit(X, y)
+    >>> dte.transform(X)
+       x1        x2
+    0   1  0.666667
+    1   2  0.666667
+    2   3  0.666667
+    3   4  0.500000
+    4   5  0.500000
     """
 
     def __init__(

@@ -162,10 +162,15 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     >>> import pandas as pd
     >>> from feature_engine.encoding import StringSimilarityEncoder
-    >>> X = pd.DataFrame(dict(a = [1,2,3,4,5,6], b = ["dog", "dog", "dig", "dagger", "dagger", "hi"]))
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3,4], x2 = ["dog", "dig", "dagger", "hi"]))
     >>> sse = StringSimilarityEncoder()
     >>> sse.fit(X)
     >>> sse.transform(X)
+       x1    x2_dog    x2_dig  x2_dagger  x2_hi
+    0   1  1.000000  0.666667   0.444444    0.0
+    1   2  0.666667  1.000000   0.444444    0.4
+    2   3  0.444444  0.444444   1.000000    0.0
+    3   4  0.000000  0.400000   0.000000    1.0
     """
 
     def __init__(

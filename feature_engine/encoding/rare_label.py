@@ -115,10 +115,17 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     >>> import pandas as pd
     >>> from feature_engine.encoding import RareLabelEncoder
-    >>> X = pd.DataFrame(dict(a = [1,2,3,4,5,6], b = ["b", "b", "b", "b", "b", "a"]))
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3,4,5,6], x2 = ["b", "b", "b", "b", "b", "a"]))
     >>> rle = RareLabelEncoder(n_categories = 1, tol=0.2)
     >>> rle.fit(X)
     >>> rle.transform(X)
+       x1    x2
+    0   1     b
+    1   2     b
+    2   3     b
+    3   4     b
+    4   5     b
+    5   6  Rare
     """
 
     def __init__(

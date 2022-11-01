@@ -146,10 +146,15 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     >>> import pandas as pd
     >>> from feature_engine.encoding import OneHotEncoder
-    >>> X = pd.DataFrame(dict(a = [1,2,3,4], b = ["a", "a", "b", "c"]))
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3,4], x2 = ["a", "a", "b", "c"]))
     >>> ohe = OneHotEncoder()
     >>> ohe.fit(X)
     >>> ohe.transform(X)
+       x1  x2_a  x2_b  x2_c
+    0   1     1     0     0
+    1   2     1     0     0
+    2   3     0     1     0
+    3   4     0     0     1
     """
 
     def __init__(

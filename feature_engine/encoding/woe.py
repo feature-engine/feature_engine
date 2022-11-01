@@ -162,11 +162,17 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
 
     >>> import pandas as pd
     >>> from feature_engine.encoding import WoEEncoder
-    >>> X = pd.DataFrame(dict(a = [1,2,3,4,5], b = ["b", "b", "b", "a", "a"]))
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3,4,5], x2 = ["b", "b", "b", "a", "a"]))
     >>> y = pd.Series([0,1,1,1,0])
     >>> woe = WoEEncoder()
     >>> woe.fit(X, y)
     >>> woe.transform(X)
+       x1        x2
+    0   1  0.287682
+    1   2  0.287682
+    2   3  0.287682
+    3   4 -0.405465
+    4   5 -0.405465
     """
 
     def __init__(
