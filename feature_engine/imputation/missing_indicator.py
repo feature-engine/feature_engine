@@ -80,6 +80,22 @@ class AddMissingIndicator(BaseImputer):
     transform:
         Add the missing indicators.
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.imputation import AddMissingIndicator
+    >>> X = pd.DataFrame(dict(x1 = [np.nan,1,1,0,np.nan], x2 = ["a", np.nan, "b", np.nan, "a"]))
+    >>> ami = AddMissingIndicator()
+    >>> ami.fit(X)
+    >>> ami.transform(X)
+        x1   x2  x1_na  x2_na
+    0  NaN    a      1      0
+    1  1.0  NaN      0      1
+    2  1.0    b      0      0
+    3  0.0  NaN      0      1
+    4  NaN    a      1      0
     """
 
     def __init__(
