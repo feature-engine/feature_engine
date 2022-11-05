@@ -299,3 +299,4 @@ linkcode_resolve = make_linkcode_resolve(
 def setup(app):
     kwargs = {"defer data-domain":"feature-engine.readthedocs.io"}
     app.add_js_file("https://plausible.io/js/plausible.js", **kwargs)
+    app.add_js_file("js/copybutton.js")
