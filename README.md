@@ -3,7 +3,7 @@
 ![PythonVersion](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-success)
 [![License https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md](https://img.shields.io/badge/license-BSD-success.svg)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md)
 [![PyPI version](https://badge.fury.io/py/feature-engine.svg)](https://badge.fury.io/py/feature-engine)
-[![Conda https://anaconda.org/conda-forge/feature_engine](https://anaconda.org/conda-forge/feature_engine/badges/installer/conda.svg)](https://anaconda.org/conda-forge/feature_engine)
+[![Conda https://anaconda.org/conda-forge/feature_engine](https://anaconda.org/conda-forge/feature_engine/badges/version.svg)](https://anaconda.org/conda-forge/feature_engine)
 [![CircleCI https://app.circleci.com/pipelines/github/feature-engine/feature_engine](https://img.shields.io/circleci/build/github/feature-engine/feature_engine/main)](https://app.circleci.com/pipelines/github/feature-engine/feature_engine?)
 [![codecov](https://codecov.io/github/feature-engine/feature_engine/branch/master/graph/badge.svg?token=ZBKKSN6ERL)](https://codecov.io/github/feature-engine/feature_engine)
 [![Documentation Status https://feature-engine.readthedocs.io/en/latest/index.html](https://readthedocs.org/projects/feature-engine/badge/?version=latest)](https://feature-engine.readthedocs.io/en/latest/index.html)
