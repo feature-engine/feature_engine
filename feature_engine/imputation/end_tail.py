@@ -110,6 +110,22 @@ class EndTailImputer(BaseImputer):
 
     {transform}
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.imputation import EndTailImputer
+    >>> X = pd.DataFrame(dict(x1 = [np.nan,0.5, 0.5, 0,np.nan]))
+    >>> eti = EndTailImputer(imputation_method='gaussian', tail='right', fold=3)
+    >>> eti.fit(X)
+    >>> eti.transform(X)
+             x1
+    0  1.199359
+    1  0.500000
+    2  0.500000
+    3  0.000000
+    4  1.199359
     """
 
     def __init__(

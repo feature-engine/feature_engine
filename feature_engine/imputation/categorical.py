@@ -101,6 +101,22 @@ class CategoricalImputer(BaseImputer):
 
     {transform}
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.imputation import CategoricalImputer
+    >>> X = pd.DataFrame(dict(x1 = [np.nan,1,1,0,np.nan], x2 = ["a", np.nan, "b", np.nan, "a"]))
+    >>> ci = CategoricalImputer(imputation_method='frequent')
+    >>> ci.fit(X)
+    >>> ci.transform(X)
+        x1 x2
+    0  NaN  a
+    1  1.0  a
+    2  1.0  b
+    3  0.0  a
+    4  NaN  a
     """
 
     def __init__(

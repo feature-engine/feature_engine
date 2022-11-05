@@ -110,6 +110,22 @@ class RandomSampleImputer(BaseImputer):
 
     {transform}
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.imputation import RandomSampleImputer
+    >>> X = pd.DataFrame(dict(x1 = [np.nan,1,1,0,np.nan], x2 = ["a", np.nan, "b", np.nan, "a"]))
+    >>> rsi = RandomSampleImputer()
+    >>> rsi.fit(X)
+    >>> rsi.transform(X)
+        x1 x2
+    0  1.0  a
+    1  1.0  b
+    2  1.0  b
+    3  0.0  a
+    4  1.0  a
     """
 
     def __init__(
