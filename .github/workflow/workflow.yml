@@ -8,20 +8,16 @@ jobs:
       PYTHON: '3.9'
     steps:
     - uses: checkout@v3
+      with:
+        fetch-depth: ‘2’
+
     - name: Setup Python
       uses: actions/setup-python@master
       with:
         python-version: 3.9
     - name: Generate Report
       run: |
-        pip install codecov
-        pip install pytest-cov
-        pytest --cov=./ --cov-report=xml
-        codecov
+        pip install coverage
+        coverage run -m pytest
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v3.1.1
-      with:
-        directory: ./coverage/reports/
-        env_vars: OS,PYTHON
-        files: /home/runner/work/feature-engine/feature_engine/coverage.xml
-        flags: tests
