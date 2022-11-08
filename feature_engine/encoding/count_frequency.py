@@ -119,6 +119,30 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     --------
     feature_engine.encoding.RareLabelEncoder
     category_encoders.count.CountEncoder
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.encoding import CountFrequencyEncoder
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3,4], x2 = ["c", "a", "b", "c"]))
+    >>> cf = CountFrequencyEncoder(encoding_method='count')
+    >>> cf.fit(X)
+    >>> cf.transform(X)
+       x1  x2
+    0   1   2
+    1   2   1
+    2   3   1
+    3   4   2
+
+    >>> cf = CountFrequencyEncoder(encoding_method='frequency')
+    >>> cf.fit(X)
+    >>> cf.transform(X)
+       x1    x2
+    0   1  0.50
+    1   2  0.25
+    2   3  0.25
+    3   4  0.50
     """
 
     def __init__(

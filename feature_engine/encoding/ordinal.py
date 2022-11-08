@@ -123,6 +123,34 @@ class OrdinalEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     .. [1] Galli S. "Machine Learning in Financial Risk Assessment".
         https://www.youtube.com/watch?v=KHGGlozsRtA
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.encoding import OrdinalEncoder
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3,4], x2 = ["c", "a", "b", "c"]))
+    >>> y = pd.Series([0,1,1,0])
+    >>> od = OrdinalEncoder(encoding_method='arbitrary')
+    >>> od.fit(X)
+    >>> od.transform(X)
+       x1  x2
+    0   1   0
+    1   2   1
+    2   3   2
+    3   4   0
+
+    You can also consider the order of the target variable:
+
+    >>> y = pd.Series([1,0,1,1])
+    >>> od = OrdinalEncoder(encoding_method='ordered')
+    >>> od.fit(X, y)
+    >>> od.transform(X)
+       x1  x2
+    0   1   2
+    1   2   0
+    2   3   1
+    3   4   2
     """
 
     def __init__(
