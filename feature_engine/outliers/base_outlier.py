@@ -216,7 +216,7 @@ class WinsorizerBase(BaseOutlier):
 
         self.capping_method = capping_method
         self.tail = tail
-        self.fold = 0.05
+        self.fold = fold
         self.variables = _check_init_parameter_variables(variables)
         self.missing_values = missing_values
 
