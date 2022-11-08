@@ -176,8 +176,8 @@ class WinsorizerBase(BaseOutlier):
         Recommended values are 2 or 3 for the gaussian approximation,
         1.5 or 3 for the IQR proximity rule and 3 or 3.5 for MAD rule.
 
-        If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if
-        `fold=0.05`, the limits will be the 95th and 5th percentiles.
+        The `'fold'` indicates the percentile.
+        eg: if fold=0.05, the limits will be the 95th and 5th percentiles.
 
         **Note**: Outliers will be removed up to a maximum of the 20th percentiles on
         both sides. Thus, when `capping_method='quantile'`, then `'fold'` takes values
@@ -215,7 +215,7 @@ class WinsorizerBase(BaseOutlier):
 
         self.capping_method = capping_method
         self.tail = tail
-        self.fold = fold
+        self.fold = 0.05 if (capping_method=="quantiles") & (fold==3) else fold
         self.variables = _check_init_parameter_variables(variables)
         self.missing_values = missing_values
 
