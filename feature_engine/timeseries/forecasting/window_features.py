@@ -127,7 +127,7 @@ class WindowFeatures(BaseForecastTransformer):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         window: Union[str, int, Callable, List[int], List[str]] = 3,
-        min_periods: int = None,
+        min_periods: Union[int, None] = None,
         functions: Union[str, List[str]] = "mean",
         periods: int = 1,
         freq: str = None,
