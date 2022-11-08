@@ -223,9 +223,14 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 )
         self.encoder_dict_ = {}
 
+        if self.keywords:
+            self.encoder_dict_.update(self.keywords)
+            cols_to_iterate = [x if x not in self.keywords for x in self.variables_]
+        else:
+            cols_to_iterate = self.variables_
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
-            for var in self.variables_:
+            for var in cols_to_iterate:
                 self.encoder_dict_[var] = (
                     X[var]
                     .astype(str)
@@ -234,7 +239,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .index.tolist()
                 )
         elif self.missing_values == "impute":
-            for var in self.variables_:
+            for var in cols_to_iterate:
                 self.encoder_dict_[var] = (
                     X[var]
                     .astype(str)
@@ -244,7 +249,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .index.tolist()
                 )
         elif self.missing_values == "ignore":
-            for var in self.variables_:
+            for var in cols_to_iterate:
                 self.encoder_dict_[var] = (
                     X[var]
                     .astype(str)
@@ -253,8 +258,6 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .head(self.top_categories)
                     .index.tolist()
                 )
-        if self.keywords:
-            self.encoder_dict_.update(self.keywords)
 
         return self
 
