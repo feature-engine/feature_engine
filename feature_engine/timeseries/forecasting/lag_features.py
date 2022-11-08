@@ -101,7 +101,7 @@ class LagFeatures(BaseForecastTransformer):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         periods: Union[int, List[int]] = 1,
-        freq: Union[str, List[str]] = None,
+        freq: Union[str, List[str], None] = None,
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
