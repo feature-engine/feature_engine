@@ -175,7 +175,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         strategy: str = "equal_width",
         scoring: str = "roc_auc",
         cv=3,
-        threshold: Union[int, float] = None,
+        threshold: Union[int, float, None] = None,
         regression: bool = False,
         confirm_variables: bool = False,
     ):
