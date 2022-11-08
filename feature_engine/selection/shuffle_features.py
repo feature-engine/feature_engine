@@ -138,7 +138,7 @@ class SelectByShuffling(BaseSelector):
         estimator,
         scoring: str = "roc_auc",
         cv=3,
-        threshold: Union[float, int] = None,
+        threshold: Union[float, int, None] = None,
         variables: Variables = None,
         random_state: int = None,
         confirm_variables: bool = False,
