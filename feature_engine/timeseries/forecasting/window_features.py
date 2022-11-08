@@ -130,7 +130,7 @@ class WindowFeatures(BaseForecastTransformer):
         min_periods: Union[int, None] = None,
         functions: Union[str, List[str]] = "mean",
         periods: int = 1,
-        freq: str = None,
+        freq: Union[str, None] = None,
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
