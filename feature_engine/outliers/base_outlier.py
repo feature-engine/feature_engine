@@ -170,12 +170,13 @@ class WinsorizerBase(BaseOutlier):
         distribution. Can take 'left', 'right' or 'both'.
         """.rstrip()
 
-    _fold_docstring = """fold: int or float, default=3
+    _fold_docstring = """fold: int or float, default=3 or 0.05 (quantile)
         The factor used to multiply the std, MAD or IQR to calculate
         the maximum or minimum allowed values.
         Recommended values are 2 or 3 for the gaussian approximation,
         1.5 or 3 for the IQR proximity rule and 3 or 3.5 for MAD rule.
 
+        If `capping_method='quantile'`,the fold default=0.05,
         The `'fold'` indicates the percentile.
         eg: if fold=0.05, the limits will be the 95th and 5th percentiles.
 
