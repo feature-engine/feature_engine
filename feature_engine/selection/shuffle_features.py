@@ -140,7 +140,7 @@ class SelectByShuffling(BaseSelector):
         cv=3,
         threshold: Union[float, int, None] = None,
         variables: Variables = None,
-        random_state: int = None,
+        random_state: Union[int, None] = None,
         confirm_variables: bool = False,
     ):
 
