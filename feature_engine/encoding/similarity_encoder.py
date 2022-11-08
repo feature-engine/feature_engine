@@ -225,7 +225,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         if self.keywords:
             self.encoder_dict_.update(self.keywords)
-            cols_to_iterate = [x if x not in self.keywords for x in self.variables_]
+            cols_to_iterate = [x for x in self.variables_ if x not in self.keywords]
         else:
             cols_to_iterate = self.variables_
         if self.missing_values == "raise":
