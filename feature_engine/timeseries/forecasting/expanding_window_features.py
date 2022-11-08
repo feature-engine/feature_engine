@@ -124,7 +124,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         min_periods: int | None = None,
         functions: str | list[str] = "mean",
         periods: int = 1,
-        freq: str = None,
+        freq: str | None = None,
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
