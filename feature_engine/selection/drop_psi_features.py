@@ -214,7 +214,7 @@ class DropHighPSIFeatures(BaseSelector):
 
     def __init__(
         self,
-        split_col: str = None,
+        split_col: Union[str, None] = None,
         split_frac: float = 0.5,
         split_distinct: bool = False,
         cut_off: Union[None, int, float, datetime.date, List] = None,

@@ -119,7 +119,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         estimator,
         scoring: str = "roc_auc",
         cv=3,
-        threshold: Union[int, float] = None,
+        threshold: Union[int, float, None] = None,
         variables: Variables = None,
         confirm_variables: bool = False,
     ):
