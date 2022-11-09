@@ -149,9 +149,7 @@ class WinsorizerBase(BaseOutlier):
 
     If `capping_method='mad'` fold is the value to multiply the MAD.
 
-    If `capping_method='quantiles'`, fold is the percentile on each tail that should
-    be censored. For example, if fold=0.05, the limits will be the 5th and 95th
-    percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
+    If `capping_method='quantiles'`, check unit_test
     """.rstrip()
 
     _capping_method_docstring = """capping_method: str, default='gaussian'
