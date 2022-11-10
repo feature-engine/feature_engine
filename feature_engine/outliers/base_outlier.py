@@ -204,7 +204,7 @@ class WinsorizerBase(BaseOutlier):
         if fold <= 0:
             raise ValueError("fold takes only positive numbers")
 
-        if capping_method == "quantiles" and fold > 0.2:
+        if capping_method == "quantiles" and fold > 0.2 and fold != 3:
             raise ValueError(
                 "with capping_method ='quantiles', fold takes values between 0 and "
                 "0.20 only."
