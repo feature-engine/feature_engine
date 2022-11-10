@@ -235,7 +235,8 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         if self.keywords:
             if not all(item in self.variables_ for item in self.keywords.keys()):
                 raise ValueError(
-                    "keywords have columns that are not present in the dataset"
+                    "There are variables in keywords that are not present "
+                    "in the dataset."
                 )
         self.encoder_dict_ = {}
 
