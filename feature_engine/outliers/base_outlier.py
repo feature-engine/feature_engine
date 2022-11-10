@@ -149,7 +149,9 @@ class WinsorizerBase(BaseOutlier):
 
     If `capping_method='mad'` fold is the value to multiply the MAD.
 
-    If `capping_method='quantiles'`, check unit_test
+    If `capping_method='quantiles'`, fold is the percentile on each tail that should
+    be censored. For example, if fold=0.05, the limits will be the 5th and 95th
+    percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
     """.rstrip()
 
     _capping_method_docstring = """capping_method: str, default='gaussian'
@@ -168,15 +170,14 @@ class WinsorizerBase(BaseOutlier):
         distribution. Can take 'left', 'right' or 'both'.
         """.rstrip()
 
-    _fold_docstring = """fold: int or float, default=3 or 0.05 (quantile)
+    _fold_docstring = """fold: int or float, default=0.05 if `capping_method` is `quantile`, or 3 otherwise.
         The factor used to multiply the std, MAD or IQR to calculate
         the maximum or minimum allowed values.
         Recommended values are 2 or 3 for the gaussian approximation,
         1.5 or 3 for the IQR proximity rule and 3 or 3.5 for MAD rule.
 
-        If `capping_method='quantile'`,the fold default=0.05,
-        The `'fold'` indicates the percentile.
-        eg: if fold=0.05, the limits will be the 95th and 5th percentiles.
+        If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if
+        `fold=0.05`, the limits will be the 95th and 5th percentiles.
 
         **Note**: Outliers will be removed up to a maximum of the 20th percentiles on
         both sides. Thus, when `capping_method='quantile'`, then `'fold'` takes values
