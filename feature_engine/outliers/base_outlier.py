@@ -201,14 +201,15 @@ class WinsorizerBase(BaseOutlier):
         if tail not in ["right", "left", "both"]:
             raise ValueError("tail takes only values 'right', 'left' or 'both'")
 
-        if fold != None and fold <= 0 :
-            raise ValueError("fold takes only positive numbers")
+        if fold != None:
+            if fold <= 0 :
+                raise ValueError("fold takes only positive numbers")
 
-        if fold != None and capping_method == "quantiles" and fold > 0.2:
-            raise ValueError(
-                "with capping_method ='quantiles', fold takes values between 0 and "
-                "0.20 only."
-            )
+            if capping_method == "quantiles" and fold > 0.2:
+                raise ValueError(
+                    "with capping_method ='quantiles', fold takes values between 0 and "
+                    "0.20 only."
+                )
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'")
