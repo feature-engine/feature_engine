@@ -235,7 +235,7 @@ def test_sort_index(df_time):
     assert (A == B).all()
 
 
-def test_permitted_param_fill_value(df_time):
+def test_permitted_param_fill_value_when_using_freq(df_time):
 
     expected_results = {
         "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52],
@@ -258,5 +258,32 @@ def test_permitted_param_fill_value(df_time):
     print(df_tr.head())
     print(transformer.fill_value)
     # check results
-    test_df = expected_results_df.head(2).copy()
-    assert df_tr.head(2).equals(test_df)
+    test_df = expected_results_df.head().copy()
+    assert df_tr.head().equals(test_df)
+
+
+def test_permitted_param_fill_value_when_using_periods(df_time):
+
+    expected_results = {
+        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67],
+        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49, 0.57],
+        "color": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
+        "ambient_temp_lag_3": ['fill', 'fill', 'fill', 31.31, 31.51, 32.15, 32.39],
+    }
+
+    expected_results_df = pd.DataFrame(data=expected_results, index=df_time.index[:7])
+
+    # create transformer
+    transformer = LagFeatures(
+        variables="ambient_temp",
+        periods=3,
+        fill_value="fill",
+        drop_original=True
+    )
+
+    df_tr = transformer.fit_transform(df_time)
+    print(df_tr.head())
+    print(transformer.fill_value)
+    # check results
+    test_df = expected_results_df.head().copy()
+    assert df_tr.head().equals(test_df)
