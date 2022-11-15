@@ -164,7 +164,6 @@ class LagFeatures(BaseForecastTransformer):
                     tmp = X[self.variables_].shift(
                         freq=fr,
                         axis=0,
-                        fill_value=self.fill_value,
                     )
                     df_ls.append(tmp)
                 tmp = pd.concat(df_ls, axis=1)
@@ -173,7 +172,6 @@ class LagFeatures(BaseForecastTransformer):
                 tmp = X[self.variables_].shift(
                     freq=self.freq,
                     axis=0,
-                    fill_value=self.fill_value,
                 )
 
         else:
@@ -183,7 +181,6 @@ class LagFeatures(BaseForecastTransformer):
                     tmp = X[self.variables_].shift(
                         periods=pr,
                         axis=0,
-                        fill_value=self.fill_value,
                     )
                     df_ls.append(tmp)
                 tmp = pd.concat(df_ls, axis=1)
@@ -192,12 +189,15 @@ class LagFeatures(BaseForecastTransformer):
                 tmp = X[self.variables_].shift(
                     periods=self.periods,
                     axis=0,
-                    fill_value=self.fill_value,
                 )
 
         tmp.columns = self._get_new_features_name()
 
         X = X.merge(tmp, left_index=True, right_index=True, how="left")
+
+        # if user passes a fill_value, fill NaN
+        if self.fill_value != lib.no_default:
+            X.fillna(self.fill_value, inplace=True)
 
         if self.drop_original:
             X = X.drop(self.variables_, axis=1)
