@@ -201,8 +201,8 @@ class WinsorizerBase(BaseOutlier):
         if tail not in ["right", "left", "both"]:
             raise ValueError("tail takes only values 'right', 'left' or 'both'")
 
-        if fold != None:
-            if fold <= 0 :
+        if fold is not None:
+            if fold <= 0:
                 raise ValueError("fold takes only positive numbers")
 
             if capping_method == "quantiles" and fold > 0.2:
@@ -216,8 +216,10 @@ class WinsorizerBase(BaseOutlier):
 
         self.capping_method = capping_method
         self.tail = tail
-        if fold == None:
+        if fold is None:
             self.fold = 0.05 if capping_method == "quantiles" else 3
+        else:
+            self.fold=fold
         self.variables = _check_init_parameter_variables(variables)
         self.missing_values = missing_values
 
