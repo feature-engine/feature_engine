@@ -198,7 +198,7 @@ def test_correct_lag_when_using_freq(df_time):
             axis=1,
         )
     )
-
+    print(df_tr.head())
     # When freq is a list
     transformer = LagFeatures(freq=["1h", "15min"])
     df_tr = transformer.fit_transform(df_time)
@@ -233,3 +233,30 @@ def test_sort_index(df_time):
     A = Xs[transformer.variables_].iloc[0:4].values
     B = X_tr[transformer._get_new_features_name()].iloc[1:5].values
     assert (A == B).all()
+
+
+def test_permitted_param_fill_value(df_time):
+
+    expected_results = {
+        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52],
+        "color": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
+        "irradiation_lag_1h": ['fill', 'fill', 'fill', 'fill', 0.51, 0.79, 0.65],
+        "module_temp_lag_1h": ['fill', 'fill', 'fill', 'fill', 49.18, 49.84, 52.35],
+    }
+
+    expected_results_df = pd.DataFrame(data=expected_results, index=df_time.index[:7])
+
+    # create transformer
+    transformer = LagFeatures(
+        variables=["irradiation", "module_temp"],
+        freq="1h",
+        fill_value="fill",
+        drop_original=True
+    )
+
+    df_tr = transformer.fit_transform(df_time)
+    print(df_tr.head())
+    print(transformer.fill_value)
+    # check results
+    test_df = expected_results_df.head(2).copy()
+    assert df_tr.head(2).equals(test_df)

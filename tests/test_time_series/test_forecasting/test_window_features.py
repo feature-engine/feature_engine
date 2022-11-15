@@ -450,3 +450,28 @@ def test_sort_index(df_time):
     assert_frame_equal(
         df_tr[transformer.variables_], Xs[transformer.variables_].sort_index()
     )
+
+
+def test_fill_value_param(df_time):
+
+    expected_results = {
+        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5],
+        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01],
+        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49],
+        "color": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
+        "module_temp_window_3_median": ['fill', 'fill', 'fill', 49.84, 50.63, 50.63],
+        "irradiation_window_3_median": ['fill', 'fill', 'fill', 0.65, 0.76, 0.65],
+    }
+
+    expected_results_df = pd.DataFrame(data=expected_results, index=df_time.index[:6])
+
+    # create transformer
+    transformer = WindowFeatures(
+        variables=["module_temp", "irradiation"],
+        window=3,
+        functions=["median"],
+        fill_value="fill"
+    )
+    df_tr = transformer.fit_transform(df_time)
+
+    assert df_tr.head(6).equals(expected_results_df)
