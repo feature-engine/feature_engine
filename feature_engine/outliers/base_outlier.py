@@ -188,7 +188,7 @@ class WinsorizerBase(BaseOutlier):
         self,
         capping_method: str = "gaussian",
         tail: str = "right",
-        fold: Union[int, float] = 9999,
+        fold: Union[None, int, float] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
     ) -> None:
@@ -201,7 +201,7 @@ class WinsorizerBase(BaseOutlier):
         if tail not in ["right", "left", "both"]:
             raise ValueError("tail takes only values 'right', 'left' or 'both'")
 
-        if fold != 9999:
+        if fold is not None:
             if fold <= 0:
                 raise ValueError("fold takes only positive numbers")
 
@@ -216,7 +216,7 @@ class WinsorizerBase(BaseOutlier):
 
         self.capping_method = capping_method
         self.tail = tail
-        if fold == 9999:
+        if fold is None:
             self.fold = 0.05 if capping_method == "quantiles" else 3
         else:
             self.fold = fold
