@@ -161,13 +161,13 @@ def test_quantile_fold_default_value(df_normal_dist):
     transformer = Winsorizer(capping_method="quantiles")
     assert transformer.fold == 0.05
 
-
-def test_other_fold_default_value(df_normal_dist):
+@pytest.mark.parametrize( 
+     "strings", ["gaussian", "iqr", "mad"] 
+ ) 
+def test_other_fold_default_value(strings):
     # test case 2: Test gaussian, iqr, mad, with fold default = 3
-    capping_method_list = ["gaussian", "iqr", "mad"]
-    for method in capping_method_list:
-        transformer = Winsorizer(capping_method=method)
-        assert transformer.fold == 3
+    transformer = Winsorizer(capping_method=strings)
+    assert transformer.fold == 3
 
 
 def test_mad_capping_right_tail_with_fold_1(df_normal_dist):

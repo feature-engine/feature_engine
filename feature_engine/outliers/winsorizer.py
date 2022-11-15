@@ -96,7 +96,7 @@ class Winsorizer(WinsorizerBase):
         self,
         capping_method: str = "gaussian",
         tail: str = "right",
-        fold: Union[int, float] = 3,
+        fold: Union[None, int, float] = None,
         add_indicators: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
