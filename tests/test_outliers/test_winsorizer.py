@@ -156,6 +156,21 @@ def test_quantile_capping_right_tail_with_fold_15_percent(df_normal_dist):
     assert math.isclose(df_transf["var"].max(), 0.11823196128033647)
 
 
+def test_quantile_fold_default_value():
+    # test case 1: Test quantiles, with fold default = 0.05
+    transformer = Winsorizer(capping_method="quantiles")
+    assert transformer.fold == 0.05
+
+
+@pytest.mark.parametrize(
+     "strings", ["gaussian", "iqr", "mad"]
+ )
+def test_other_fold_default_value(strings):
+    # test case 2: Test gaussian, iqr, mad, with fold default = 3
+    transformer = Winsorizer(capping_method=strings)
+    assert transformer.fold == 3
+
+
 def test_mad_capping_right_tail_with_fold_1(df_normal_dist):
     # test case 1: median and mad, right tail
     transformer = Winsorizer(capping_method="mad", tail="right", fold=1)

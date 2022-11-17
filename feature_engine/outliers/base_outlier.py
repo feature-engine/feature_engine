@@ -170,7 +170,7 @@ class WinsorizerBase(BaseOutlier):
         distribution. Can take 'left', 'right' or 'both'.
         """.rstrip()
 
-    _fold_docstring = """fold: int or float, default=3
+    _fold_docstring = """fold: int or float, default=0.05 if `quantile`, or 3 otherwise.
         The factor used to multiply the std, MAD or IQR to calculate
         the maximum or minimum allowed values.
         Recommended values are 2 or 3 for the gaussian approximation,
@@ -204,7 +204,7 @@ class WinsorizerBase(BaseOutlier):
         if fold <= 0:
             raise ValueError("fold takes only positive numbers")
 
-        if capping_method == "quantiles" and fold > 0.2:
+        if capping_method == "quantiles" and fold > 0.2 and fold != 3:
             raise ValueError(
                 "with capping_method ='quantiles', fold takes values between 0 and "
                 "0.20 only."
@@ -215,7 +215,7 @@ class WinsorizerBase(BaseOutlier):
 
         self.capping_method = capping_method
         self.tail = tail
-        self.fold = fold
+        self.fold = 0.05 if (capping_method == "quantiles") & (fold == 3) else fold
         self.variables = _check_init_parameter_variables(variables)
         self.missing_values = missing_values
 
