@@ -5,33 +5,52 @@
 LagFeatures
 ===========
 
-The :class:`LagFeatures` adds lag features to the dataframe. A lag feature is a feature
-with information about a prior time step.
+Lag features are commonly used in time series forecasting with traditional machine
+learning models, like linear regression or random forests. A lag feature is a feature with
+information about a prior time step of the time series.
 
-When forecasting the future values of a variable the past values of that variable are
-likely to be predictive. Past values of other accompanying predictive features can also
-help us improve our forecast. Thus, in forecasting, it is common practice to create lag
-features from target series and predictive variables.
+When forecasting the future values of a variable, the past values of that same variable
+are likely to be predictive. Past values of other predictive features can also be useful
+for our forecast. Thus, in forecasting, it is common practice to create lag features from
+time series data and use them as input to machine learning algorithms.
 
-A lag feature is the target or feature k period(s) in the past, where k is the lag and
-is to be set by the user. We can create features with multiple lags by varying k. There
-are 2 ways in which we can indicate the lag k using :class:`LagFeatures`. We can
-indicate the lag using the parameter `periods`. This parameter takes integers that
-indicate the number of rows forward that the features will be lagged. Alternatively,
-we can use the parameter `freq`, which takes a string with the period and frequency,
-and lags features based on the datetime index. For example, if we pass `freq="1D"`, the
-values of the features will be moved 1 day forward.
+What is a lag feature?
+----------------------
+
+A lag feature is the value of the time series **k** period(s) in the past, where **k** is
+the lag and is to be set by the user.  By varying k, we can create features with multiple lags.
+
+In Python, we can create lag features by using the pandas method `shift`. For example, by
+executing `X[my_variable].shift(freq=”1H”, axis=0)`, we create a new feature consisting of
+lagged values of `my_variable` by 1 hour.
+
+Feature-engine’s :class:`LagFeatures` automates the creation of lag features from multiple
+variables and by using multiple lags. It uses pandas `shift` under the hood, and automatically
+concatenates the new features to the input dataframe.
+
+Automating lag feature creation
+-------------------------------
+
+There are 2 ways in which we can indicate the lag k using :class:`LagFeatures`. Just like
+with pandas `shift`, we can indicate the lag using the parameter `periods`. This parameter
+takes integers that indicate the number of rows forward that the features will be lagged.
+
+Alternatively, we can use the parameter `freq`, which takes a string with the period and
+frequency, and lags features based on the datetime index. For example, if we pass `freq="1D"`,
+the values of the features will be moved 1 day forward.
 
 The :class:`LagFeatures` transformer works very similarly to `pandas.shift`, but unlike
-`pandas.shift` we can indicate the lag using either `periods` or `freq` but not both.
-Also, unlike `pandas.shift`, we can only lag features forward. The :class:`LagFeatures`
-has several advantages over `pandas.shift` however. First, it can create features with
-multiple values of k at the same time. Second, it adds the features with a name to the
-original dataframe. Third, it has the methods `fit()` and `transform()` that make it
-compatible with the Scikit-learn's `Pipeline` and cross-validation functions.
+`pandas.shift` we can indicate the lag using either `periods` or `freq` but not both at the
+same time. Also, unlike `pandas.shift`, we can only lag features forward.
 
-Note that to be compatible with :class:`LagFeatures`, the dataframe's index must have
-unique values and no NaN.
+:class:`LagFeatures` has several advantages over `pandas.shift`:
+
+- First, it can create features with multiple values of k at the same time.
+- Second, it adds the features with a name to the original dataframe.
+- Third, it has the methods `fit()` and `transform()` that make it compatible with the Scikit-learn's `Pipeline` and cross-validation functions.
+
+Note that, in the current implementation, :class:`LagFeatures` only works with dataframes whose index,
+containing the time series timestamp, contains unique values and no NaN.
 
 Examples
 --------
@@ -181,10 +200,12 @@ We can get the names of all the lag features as follows:
      'ambient_temp_lag_2', 'module_temp_lag_2', 'irradiation_lag_2']
 
 
-Lag based on datetime
-~~~~~~~~~~~~~~~~~~~~~
+Lag features based on datetime
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can also lag features utilizing information in the datetime index of the dataframe.
+We can also lag features utilizing information in the timestamp of the dataframe, which
+is commonly cast as datetime.
+
 Let's for example create features by lagging 2 of the numerical variables 30 minutes
 forward.
 
@@ -329,8 +350,8 @@ just need to remember to drop the original series after the transformation:
     2020-05-15 13:00:00               31.51
 
 
-Getting the name of the variables
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Getting the name of the lag features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can easily obtain the name of the original and new variables with the method
 `get_feature_names_out`. By using the method with the default parameters, we obtain
@@ -357,3 +378,40 @@ all the features in the output dataframe.
      'module_temp_lag_2',
      'irradiation_lag_2']
 
+
+Determining the right lag
+-------------------------
+
+We can create multiple lag features by utilizing various lags. But how do we decide which
+lag is a good lag?
+
+There are multiple ways to do this.
+
+We can create features by using multiple lags and then determine the best features by using
+feature selection.
+
+Alternatively, we can determine the best lag through time series analysis by evaluating
+the autocorrelation or partial autocorrelation of the time series.
+
+You can find examples of autocorrelation, partial autocorrelation and cross-correlation
+plots in `Train in Data’s github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/07-Lag-Features>`_.
+
+For tutorials on how to create lag features for forecasting, check the course
+`Feature Engineering for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_.
+
+Lags from the target vs lags from predictor variables
+-----------------------------------------------------
+Very often, we want to forecast the values of just one time series. For example, we want
+to forecast sales in the next month. The sales variable is our target variable, and we can
+create features by lagging past sales values.
+
+We could also create lag features from accompanying predictive variables. For example, if we
+want to predict pollutant concentration in the next few hours, we can create lag features
+from past pollutant concentrations. In addition, we can create lag features from accompanying
+time series values, like the concentrations of other gases, or the temperature or humidity.
+
+See also
+--------
+
+Check out the additional transformers to create winddow features through the use of
+rolling windows (:class:`WindowFeatures`) or expanding windows (:class:`ExpandingWindowFeatures`).
