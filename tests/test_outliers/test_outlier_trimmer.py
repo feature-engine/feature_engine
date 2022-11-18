@@ -2,6 +2,7 @@
 # License: BSD 3 clause
 
 import pandas as pd
+import pytest
 
 from feature_engine.outliers import OutlierTrimmer
 
@@ -79,3 +80,18 @@ def test_transformer_ignores_na_in_df(df_na):
 
     pd.testing.assert_frame_equal(X, df_transf)
     assert len(X) == 5
+
+
+def test_quantile_fold_default_value():
+    # test case 1: Test quantiles, with fold default = 0.05
+    transformer = OutlierTrimmer(capping_method="quantiles")
+    assert transformer.fold == 0.05
+
+
+@pytest.mark.parametrize(
+     "strings", ["gaussian", "iqr", "mad"]
+ )
+def test_other_fold_default_value(strings):
+    # test case 2: Test gaussian, iqr, mad, with fold default = 3
+    transformer = OutlierTrimmer(capping_method=strings)
+    assert transformer.fold == 3

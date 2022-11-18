@@ -1,6 +1,43 @@
 Version 1.5.X
 =============
 
+Version 1.5.2
+-------------
+
+Deployed: 21th November 2022
+
+Contributors
+~~~~~~~~~~~~
+
+    - `Gleb Levitski <https://github.com/GLevV>`_
+    - `Alfonso Tobar <https://github.com/datacubeR>`_
+    - `pxn39 <https://github.com/px39n>`_
+    - `Soledad Galli <https://github.com/solegalli>`_
+
+In this release, we expand the functionality of existing classes and the documentation.
+
+
+New functionality
+~~~~~~~~~~~~~~~~~
+
+    - The `StringSimilarityEncoder` can now create similarity variables based on keywords entered by the user (`Gleb Levitski <https://github.com/GLevV>`_)
+    - The `Winsorizer` and `OutlierTrimmer` now automatically adjust the fold parameter based on the `capping_method` (`pxn39 <https://github.com/px39n>`_)
+
+Bug fixes
+~~~~~~~~~
+
+    - type checks errors raised by newer versions (`Gleb Levitski <https://github.com/GLevV>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+    - Add code snippets to categorical encoding API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Add code snippets to imputation API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Update user guide of forecasting feature transformers (`Soledad Galli <https://github.com/solegalli>`_)
+    - Update user guide of datetime features and creation module (`Soledad Galli <https://github.com/solegalli>`_)
+    - Fix badges in README (`Gleb Levitski <https://github.com/GLevV>`_)
+
+
 Version 1.5.0
 -------------
 
