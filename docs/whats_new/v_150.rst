@@ -21,7 +21,7 @@ New functionality
 ~~~~~~~~~~~~~~~~~
 
     - The `StringSimilarityEncoder` can now create similarity variables based on keywords entered by the user (`Gleb Levitski <https://github.com/GLevV>`_)
-    - The `Winsorizer` and `OutlierTrimmer` now automatically adjust the fold parameter based on the `capping_method` (`pxn39 <https://github.com/px39n>`_)
+    - The `Winsorizer` and `OutlierTrimmer` now automatically adjust the value of the `fold` parameter based on the `capping_method` (`pxn39 <https://github.com/px39n>`_)
 
 Bug fixes
 ~~~~~~~~~
