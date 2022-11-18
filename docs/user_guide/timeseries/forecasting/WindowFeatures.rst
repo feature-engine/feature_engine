@@ -472,7 +472,7 @@ You can find examples of window features and its considerations in
 `Train in Data’s github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/08-Window-Features>`_.
 
 You can find examples of window features used together with supervised learning in
-`Train in Data’s github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/02-Time-Series-Forecasting>`_.
+`This section of the former github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/02-Time-Series-Forecasting>`_.
 
 For tutorials on how to create window features for forecasting, check the course
 `Feature Engineering for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_.
