@@ -87,6 +87,26 @@ class ArbitraryNumberImputer(BaseImputer):
     See Also
     --------
     feature_engine.imputation.EndTailImputer
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.imputation import ArbitraryNumberImputer
+    >>> X = pd.DataFrame(dict(
+    >>>        x1 = [np.nan,1,1,0,np.nan],
+    >>>        x2 = ["a", np.nan, "b", np.nan, "a"],
+    >>>       ))
+    >>> ani = ArbitraryNumberImputer(arbitrary_number=-999)
+    >>> ani.fit(X)
+    >>> ani.transform(X)
+          x1   x2
+    0 -999.0    a
+    1    1.0  NaN
+    2    1.0    b
+    3    0.0  NaN
+    4 -999.0    a
     """
 
     def __init__(
