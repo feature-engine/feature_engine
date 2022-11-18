@@ -5,20 +5,58 @@
 ExpandingWindowFeatures
 =======================
 
-:class:`ExpandingWindowFeatures` adds expanding window features to the dataframe.
-Window features are the result of applying an aggregation operation (e.g., mean,
-min, max, etc.) to a variable over a past window. For an expanding window feature,
-the window spans from the start of the data up to, but not including, the
-time point at which the feature is being computed.
+Window features are variables created by performing mathematical operations over a window
+of past data in a time series.
 
-For example, the mean value of all the data prior to the current value is an
-expanding window feature. The maximum value of all the rows prior to the
-current row is another expanding window feature.
+**Rolling window features** are created by performing aggregations over a **sliding partition**
+(or moving window) of past data points of the time series data. The window size in this case is constant.
+
+**Expanding window features** are created by performing aggregations over an **expanding partition**
+of past values of the time series. The window size increases as we approach more recent values.
+
+An example of an expanding window feature is the mean value of all the data points prior
+to the current row / value. The maximum value of all the rows prior to the current row is
+another expanding window feature.
+
+For an expanding window feature suitable for forecasting, the window spans from the start
+of the data up to, but not including, the first point of forecast.
+
+Expanding window features can be used for forecasting by using traditional machine learning
+models, like linear regression.
+
+Expanding window features with pandas
+--------------------------------------
+
+In Python, we can create expanding window features by utilizing pandas method `expanding`.
+For example, by executing:
+
+.. code:: python
+
+    X[["var_1", "var_2"].expanding(min_periods=3).agg(["max", "mean"])
+
+we create 2 window features for each variable, `var_1` and `var_2`, by taking the maximum and
+average value of all observations up to (and including) a certain row.
+
+If we want to use those features for forecasting using traditional machine learning algorithms,
+we would also shift the window forward with pandas method `shift`:
+
+.. code:: python
+
+    X[["var_1", "var_2"].expanding(min_periods=3).agg(["max", "mean"]).shift(period=1)
+
+
+Expanding window features with Feature-engine
+----------------------------------------------
+
+:class:`ExpandingWindowFeatures` adds expanding window features to the dataframe.
+
+Window features are the result of applying an aggregation operation (e.g., mean,
+min, max, etc.) to a variable over a window of past data.
 
 When forecasting the future values of a variable, the past values of that variable are
 likely to be predictive. To capitalize on the past values of a variable, we can simply
-lag features with :class:`LagFeatures`. We can also create features that summarise all
-the past values into a single quantity utilising :class:`ExpandingWindowFeatures`.
+lag features with :class:`LagFeatures`. We can also create features that summarise the
+past values into a single quantity utilising :class:`ExpandingWindowFeatures`.
 
 :class:`ExpandingWindowFeatures` works on top of `pandas.expanding`, `pandas.aggregate`
 and `pandas.shift`.
@@ -41,8 +79,8 @@ name to the original dataframe. It also has the methods `fit()` and `transform()
 that make it compatible with the Scikit-learn's `Pipeline` and cross-validation
 functions.
 
-Note that to be compatible with :class:`ExpandingWindowFeatures` the dataframe's
-index must have unique values and no NaN.
+Note that, in the current implementation, :class:`ExpandingWindowFeatures` only works with
+dataframes whose index, containing the time series timestamp, contains unique values and no NaN.
 
 Examples
 --------
@@ -153,7 +191,7 @@ attribute of the :class:`ExpandingWindowFeatures`.
     ['ambient_temp', 'module_temp', 'irradiation']
 
 We can obtain the names of the variables in the returned dataframe using the
-get_feature_names_out() method:
+`get_feature_names_out()` method:
 
 .. code:: python
 
@@ -256,8 +294,7 @@ Getting the name of the variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can easily obtain the name of the original and new variables with the method
-`get_feature_names_out`. By using the method with the default parameters, we obtain
-all the features in the output dataframe.
+`get_feature_names_out`.
 
 .. code:: python
 
@@ -277,3 +314,15 @@ all the features in the output dataframe.
      'module_temp_expanding_mean',
      'irradiation_expanding_mean']
 
+See also
+--------
+
+You can find examples of window features and its considerations in
+`Train in Data’s github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/08-Window-Features>`_.
+
+For tutorials on how to create window features for forecasting, check the course
+`Feature Engineering for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_.
+
+Check out the additional transformers to create rolling window features
+(:class:`WindowFeatures`) or lag features, by lagging past values of the time
+series data (:class:`LagFeatures`).

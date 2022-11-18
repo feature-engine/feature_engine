@@ -38,7 +38,7 @@ we create 2 window features for each variable, `var_1` and `var_2`, by taking th
 average value of the current and 2 previous rows of data.
 
 If we want to use those features for forecasting using traditional machine learning algorithms,
-we would also have to shift the window forward with pandas method `shift`:
+we would also shift the window forward with pandas method `shift`:
 
 .. code:: python
 
