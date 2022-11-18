@@ -290,8 +290,8 @@ just need to remember to drop the original series after the transformation:
     2020-05-15 12:45:00                    31.656667                       32.15
     2020-05-15 13:00:00                    31.840000                       32.39
 
-Getting the name of the variables
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Getting the name of the new features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can easily obtain the name of the original and new variables with the method
 `get_feature_names_out`.
