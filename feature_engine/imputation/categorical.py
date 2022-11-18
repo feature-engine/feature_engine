@@ -107,7 +107,10 @@ class CategoricalImputer(BaseImputer):
     >>> import pandas as pd
     >>> import numpy as np
     >>> from feature_engine.imputation import CategoricalImputer
-    >>> X = pd.DataFrame(dict(x1 = [np.nan,1,1,0,np.nan], x2 = ["a", np.nan, "b", np.nan, "a"]))
+    >>> X = pd.DataFrame(dict(
+    >>>        x1 = [np.nan,1,1,0,np.nan],
+    >>>        x2 = ["a", np.nan, "b", np.nan, "a"],
+    >>>        ))
     >>> ci = CategoricalImputer(imputation_method='frequent')
     >>> ci.fit(X)
     >>> ci.transform(X)
