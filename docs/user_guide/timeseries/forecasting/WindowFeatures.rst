@@ -5,31 +5,72 @@
 WindowFeatures
 ==============
 
-:class:`WindowFeatures` adds window features to the dataframe. Window features are
-the result of window operations over the variables. Window operations are operations that
-perform an aggregation over a sliding partition of past values. A window feature is,
-then, a feature created after computing mathematical functions (e.g., mean, min,
-max, etc.) within a window over the past data.
+Window features are commonly used in time series forecasting with traditional machine
+learning models, like linear regression models. Window features are created by
+performing mathematical operations over windows of data.
 
-For example, the mean value of the previous 3 months of data is a window feature. The
-maximum value of the previous three rows of data is another window feature.
+For example, the mean “sales” value of the previous 3 months of data is a window feature.
+The maximum “revenue” of the previous three rows of data is another window feature.
 
-When forecasting the future values of a variable, the past values of that variable are
-likely to be predictive. To capitalize on the past values of a variable, we can simply
-lag features with :class:`LagFeatures`. And, we can as well create features that
-take in consideration the values in the past but within a window.
+In time series forecasting, we want to predict future values of the time series. To do this,
+we can create window features by performing mathematical operations over windows of past
+values of the time series data.
 
-To create window features we need to determine a number of parameters. First, we need
-to identify the size of the window or windows in which we will perform the operations.
-For example, we can take the average of the variable over 3 months, or 6 weeks. We also
-need to determine how far back is the window located respect to the value we want to
-forecast. For example, I can take the average of the last 3 weeks of data to forecast
-this week of data, or I can take the average of the last 3 weeks of data to forecast
-next weeks data, leaving a gap of a window in between the window feature and the
-forecasting point.
 
-:class:`WindowFeatures` transformer works on top of `pandas.rolling`, `pandas.aggregate`
-and `pandas.shift`. With `pandas.rolling`, :class:`WindowFeatures` determines the size
+Rolling window features with pandas
+-----------------------------------
+
+Window features are the result of window operations over the variables. Rolling window operations are
+operations that perform an aggregation over a **sliding partition** of past values of the time
+series data.
+
+A window feature is, then, a feature created after computing mathematical
+functions (e.g., mean, min, max, etc.) within a window over the past data.
+
+In Python, we can create window features by utilizing pandas method `rolling`. For example,
+by executing:
+
+.. code:: python
+
+    X[["var_1", "var_2"].rolling(window=3).agg(["max", "mean"])
+
+we create 2 window features for each variable, `var_1` and `var_2`, by taking the maximum and
+average value of the current and 2 previous rows of data.
+
+If we want to use those features for forecasting using traditional machine learning algorithms,
+we would also have to shift the window forward with pandas method `shift`:
+
+.. code:: python
+
+    X[["var_1", "var_2"].rolling(window=3).agg(["max", "mean"]).shift(period=1)
+
+
+Sliding window features with Feature-engine
+-------------------------------------------
+
+:class:`WindowFeatures` can automatically create and add window features to the dataframe, by performing
+multiple mathematical operations over different window sizes over various numerical variables.
+
+Thus, :class:`WindowFeatures` creates and adds new features to the data set automatically
+through the use of windows over historical data.
+
+Window features: parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To create window features we need to determine a number of parameters. First, we need to
+identify the size of the window or windows in which we will perform the operations. For
+example, we can take the average of the variable over 3 months, or 6 weeks.
+
+We also need to determine how far back is the window located respect to the data point we
+want to forecast. For example, I can take the average of the last 3 weeks of data to forecast
+this week of data, or I can take the average of the last 3 weeks of data to forecast next
+weeks data, leaving a gap of a window in between the window feature and the forecasting point.
+
+WindowFeatures: under the hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:class:`WindowFeatures` works on top of `pandas.rolling`, `pandas.aggregate` and
+`pandas.shift`. With `pandas.rolling`, :class:`WindowFeatures` determines the size
 of the windows for the operations. With `pandas.rolling` we can specify the window size
 with an integer, a string or a function. With :class:`WindowFeatures`, in addition, we
 can pass a list of integers, strings or functions, to perform computations over multiple
@@ -46,17 +87,17 @@ this week with the average of the past 3 weeks of data, we should shift the valu
 week forward. If we want to forecast next week with the last 3 weeks of data, we should
 forward the value 2 weeks forward.
 
-:class:`WindowFeatures` will add the new variables with a representative name to the
+:class:`WindowFeatures` will add the new features with a representative name to the
 original dataframe. It also has the methods `fit()` and `transform()` that make it
 compatible with the Scikit-learn's `Pipeline` and cross-validation functions.
 
-Note that to be compatible with :class:`WindowFeatures` the dataframe's index must have
-unique values and no NaN.
+Note that, in the current implementation, :class:`WindowFeatures` only works with dataframes whose index,
+containing the time series timestamp, contains unique values and no NaN.
 
 Examples
 --------
 
-Let's create a toy dataset to demonstrate the functionality of :class:`WindowFeatures`.
+Let's create a toy time series dataset to demonstrate the functionality of :class:`WindowFeatures`.
 The dataframe contains 3 numerical variables, a categorical variable, and a datetime
 index.
 
@@ -90,9 +131,11 @@ Below we see the output of our toy dataframe:
 
 Now we will create window features from the numerical variables. By setting
 `window=["30min", "60min"]` we perform calculations over windows of 30 and 60
-minutes, respectively. If you look at our toy dataframe, you'll notice that 30 minutes
-corresponds to 2 rows of data, and 60 minutes are 4 rows of data. So, we will perform calculations
-over 2 and then 4 rows of data, respectively.
+minutes, respectively.
+
+If you look at our toy dataframe, you'll notice that 30 minutes corresponds to 2 rows of
+data, and 60 minutes are 4 rows of data. So, we will perform calculations over 2 and then
+4 rows of data, respectively.
 
 In `functions`, we indicate all the operations that we want to perform over those windows.
 In our example below, we want to calculate the mean and the standard deviation of the
@@ -375,8 +418,8 @@ just need to remember to drop the original series after the transformation:
 
 
 
-Getting the name of the variables
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Getting the name of the new features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can easily obtain the name of the original and new variables with the method
 `get_feature_names_out`. By using the method with the default parameters, we obtain
@@ -400,3 +443,46 @@ all the features in the output dataframe.
      'module_temp_window_3_mean',
      'irradiation_window_3_mean']
 
+
+Windows from the target vs windows from predictor variables
+-----------------------------------------------------------
+
+Very often, we work with univariate time series, for example, the total sales revenue of a
+retail company. We want to forecast future sales values. The sales variable is our target
+variable, and we can extract features from windows of past sales values.
+
+We could also work with multivariate time series, where we have sales in different
+countries, or alternatively, multiple time series, like pollutant concentration in the
+air, accompanied by concentrations of other gases, temperature, and humidity.
+
+When working with multivariate time series, like sales in multiple countries, we would
+extract features from windows of past data for each country separately.
+
+When working with multiple time series, like pollutant concentration, gas concentration,
+temperature, and humidity, pollutant concentration is our target variable, and the other
+time series are accompanying predictive variables. We can create window features from
+past pollutant concentrations, that is, from past time steps of our target variable.
+And, in addition, we can create features from windows of past data from accompanying
+time series, like the concentrations of other gases or the temperature or humidity.
+
+See also
+--------
+
+You can find examples of window features and its considerations in
+`Train in Data’s github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/08-Window-Features>`_.
+
+You can find examples of window features used together with supervised learning in
+`Train in Data’s github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/02-Time-Series-Forecasting>`_.
+
+For tutorials on how to create window features for forecasting, check the course
+`Feature Engineering for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_.
+
+Check out the additional transformers to create expanding window features
+(:class:`ExpandingWindowFeatures`) or lag features, by lagging past values of the time
+series data (:class:`LagFeatures`).
+
+Other open-source packages for window features
+----------------------------------------------
+
+- `tsfresh <https://tsfresh.readthedocs.io/en/latest/text/forecasting.html>`_
+- `featuretools <https://featuretools.alteryx.com/en/stable/guides/time_series.html>`_

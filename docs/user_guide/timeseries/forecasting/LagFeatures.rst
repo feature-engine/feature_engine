@@ -413,5 +413,5 @@ time series values, like the concentrations of other gases, or the temperature o
 See also
 --------
 
-Check out the additional transformers to create winddow features through the use of
+Check out the additional transformers to create window features through the use of
 rolling windows (:class:`WindowFeatures`) or expanding windows (:class:`ExpandingWindowFeatures`).
