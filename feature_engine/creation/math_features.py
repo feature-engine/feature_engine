@@ -100,6 +100,36 @@ class MathFeatures(BaseCreation):
 
     In insurance, we can sum the damage to various parts of a car to obtain the
     total damage.
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.creation import MathFeatures
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3], x2 = [4,5,6]))
+    >>> mf = MathFeatures(variables = ["x1","x2"], func = "sum")
+    >>> mf.fit(X)
+    >>> mf.transform(X)
+       x1  x2  sum_x1_x2
+    0   1   4          5
+    1   2   5          7
+    2   3   6          9
+
+    >>> mf = MathFeatures(variables = ["x1","x2"], func = "prod")
+    >>> mf.fit(X)
+    >>> mf.transform(X)
+       x1  x2  prod_x1_x2
+    0   1   4           4
+    1   2   5          10
+    2   3   6          18
+
+    >>> mf = MathFeatures(variables = ["x1","x2"], func = "mean")
+    >>> mf.fit(X)
+    >>> mf.transform(X))
+       x1  x2  mean_x1_x2
+    0   1   4         2.5
+    1   2   5         3.5
+    2   3   6         4.5
     """
 
     def __init__(
