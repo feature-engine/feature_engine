@@ -88,6 +88,29 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
 
     .. [2] Dong. "Beating Kaggle the easy way". Master Thesis.
         https://www.ke.tu-darmstadt.de/lehre/arbeiten/studien/2015/Dong_Ying.pdf
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.discretisation import EqualFrequencyDiscretiser
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.randint(1,100, 100)))
+    >>> efd = EqualFrequencyDiscretiser()
+    >>> efd.fit(X)
+    >>> efd.transform(X)["x"].value_counts()
+    8    12
+    6    11
+    3    11
+    1    10
+    5    10
+    2    10
+    0    10
+    4     9
+    7     9
+    9     8
+    Name: x, dtype: int64
     """
 
     def __init__(

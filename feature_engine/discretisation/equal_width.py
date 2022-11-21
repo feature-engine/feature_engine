@@ -97,6 +97,28 @@ class EqualWidthDiscretiser(BaseDiscretiser):
     .. [2] Dong. "Beating Kaggle the easy way". Master Thesis.
         https://www.ke.tu-darmstadt.de/lehre/arbeiten/studien/2015/Dong_Ying.pdf
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.discretisation import EqualWidthDiscretiser
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.randint(1,100, 100)))
+    >>> ewd = EqualWidthDiscretiser()
+    >>> ewd.fit(X)
+    >>> ewd.transform(X)["x"].value_counts()
+    9    15
+    6    15
+    0    13
+    5    11
+    8     9
+    7     8
+    2     8
+    1     7
+    3     7
+    4     7
+    Name: x, dtype: int64
     """
 
     def __init__(

@@ -126,6 +126,32 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     .. [1] Niculescu-Mizil, et al. "Winning the KDD Cup Orange Challenge with Ensemble
         Selection". JMLR: Workshop and Conference Proceedings 7: 23-34. KDD 2009
         http://proceedings.mlr.press/v7/niculescu09/niculescu09.pdf
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.discretisation import DecisionTreeDiscretiser
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x= np.random.randint(1,100, 100)))
+    >>> y_reg = pd.Series(np.random.randn(100))
+    >>> dtd = DecisionTreeDiscretiser(random_state=42)
+    >>> dtd.fit(X, y_reg)
+    >>> dtd.transform(X)["x"].value_counts()
+    -0.090091    90
+    0.479454    10
+    Name: x, dtype: int64
+
+    You can also apply this for classification problems adjusting the scoring metric.
+
+    >>> y_clf = pd.Series(np.random.randint(0,2,100))
+    >>> dtd = DecisionTreeDiscretiser(regression=False, scoring="f1", random_state=42)
+    >>> dtd.fit(X, y_clf)
+    >>> dtd.transform(X)["x"].value_counts()
+    0.480769    52
+    0.687500    48
+    Name: x, dtype: int64
     """
 
     def __init__(
