@@ -152,6 +152,20 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
     --------
     pandas.to_datetime
     pandas.dt
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.datetime import DatetimeFeatures
+    >>> X = pd.DataFrame(dict(date = ["2022-09-18", "2022-10-27", "2022-12-24"]))
+    >>> dtf = DatetimeFeatures(features_to_extract = ["year", "month", "day_of_month"])
+    >>> dtf.fit(X)
+    >>> dtf.transform(X)
+        date_year  date_month  date_day_of_month
+    0       2022           9                 18
+    1       2022          10                 27
+    2       2022          12                 24
     """
 
     def __init__(

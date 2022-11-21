@@ -105,6 +105,22 @@ class RelativeFeatures(BaseCreation):
 
     - Ratio between income and debt to create the debt_to_income_ratio.
     - Subtraction of rent from income to obtain the disposable_income.
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.creation import RelativeFeatures
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3], x2 = [4,5,6], x3 = [3,4,5]))
+    >>> rf = RelativeFeatures(variables = ["x1","x2"],
+    >>>                     reference = ["x3"],
+    >>>                     func = ["div"])
+    >>> rf.fit(X)
+    >>> rf.transform(X)
+       x1  x2  x3  x1_div_x3  x2_div_x3
+    0   1   4   3   0.333333   1.333333
+    1   2   5   4   0.500000   1.250000
+    2   3   6   5   0.600000   1.200000
     """
 
     def __init__(

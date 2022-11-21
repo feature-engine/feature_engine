@@ -100,6 +100,25 @@ class CyclicalFeatures(
     https://towardsdatascience.com/cyclical-features-encoding-its-about-time-ce23581845ca
 
     http://blog.davidkaleko.com/feature-engineering-cyclical-features.html
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.creation import CyclicalFeatures
+    >>> X = pd.DataFrame(dict(x= [1,4,3,3,4,2,1,2]))
+    >>> cf = CyclicalFeatures()
+    >>> cf.fit(X)
+    >>> cf.transform(X)
+       x         x_sin         x_cos
+    0  1  1.000000e+00  6.123234e-17
+    1  4 -2.449294e-16  1.000000e+00
+    2  3 -1.000000e+00 -1.836970e-16
+    3  3 -1.000000e+00 -1.836970e-16
+    4  4 -2.449294e-16  1.000000e+00
+    5  2  1.224647e-16 -1.000000e+00
+    6  1  1.000000e+00  6.123234e-17
+    7  2  1.224647e-16 -1.000000e+00
     """
 
     def __init__(
