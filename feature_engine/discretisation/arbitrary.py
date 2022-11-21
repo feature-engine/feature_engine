@@ -81,6 +81,24 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
     See Also
     --------
     pandas.cut
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.discretisation import ArbitraryDiscretiser
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.randint(1,100, 100)))
+    >>> bins = dict(x =  [0, 25, 50, 75, 100])
+    >>> ad = ArbitraryDiscretiser(binning_dict = bins)
+    >>> ad.fit(X)
+    >>> ad.transform(X)["x"].value_counts()
+    2    31
+    0    27
+    3    25
+    1    17
+    Name: x, dtype: int64
     """
 
     def __init__(
