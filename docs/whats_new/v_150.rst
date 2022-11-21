@@ -26,15 +26,18 @@ New functionality
 Bug fixes
 ~~~~~~~~~
 
-    - type checks errors raised by newer versions (`Gleb Levitski <https://github.com/GLevV>`_)
+    - Type checks errors raised by newer versions (`Gleb Levitski <https://github.com/GLevV>`_)
 
 Documentation
 ~~~~~~~~~~~~~
 
-    - Add code snippets to categorical encoding API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
-    - Add code snippets to imputation API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
-    - Update user guide of forecasting feature transformers (`Soledad Galli <https://github.com/solegalli>`_)
-    - Update user guide of datetime features and creation module (`Soledad Galli <https://github.com/solegalli>`_)
+    - Add example code snippets to the categorical encoding API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Add example code snippets to the imputation module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Add example code snippets to the discretisation module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Add example code snippets to the creation module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Add exaple code snippets to the datetime module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Update the user guide docs for the forecasting feature transformers (`Soledad Galli <https://github.com/solegalli>`_)
+    - Update the user guide docs for datetime features and the creation module (`Soledad Galli <https://github.com/solegalli>`_)
     - Fix badges in README (`Gleb Levitski <https://github.com/GLevV>`_)
 
 
