@@ -5,29 +5,70 @@
 CyclicalFeatures
 ================
 
-The :class:`CyclicalFeatures()` creates 2 new features from numerical variables that better
-capture the cyclical nature of the original variable. :class:`CyclicalFeatures()` return
-2 new features per variable, according to:
+Some features are inherently cyclical. Clear examples are **time features**, i.e., those features
+derived from datetime variables like the *hours of the day*, the *days of the week*, or the
+*months of the year*.
+
+But that’s not the end of it. Many variables related to natural processes are also cyclical,
+like, for example, *tides*, *moon cycles*, or *solar energy generation* (which coincides with
+light periods, which are cyclical).
+
+In cyclical features, higher values of the variable are closer to lower values.
+For example, December (12) is closer to January (1) than to June (6).
+
+How can we convey to machine learning models like linear regression, decision trees, or
+random forests the cyclical nature of the features?
+
+In the article "Advanced machine learning techniques for building performance simulation,"
+the authors engineered cyclical variables by representing them as (x,y) coordinates on a
+circle. The idea was that, after preprocessing the cyclical data, the lowest value of every
+cyclical feature would appear right next to the largest value.
+
+To represent cyclical features in (x, y) coordinates, the authors created two new features,
+deriving the sine and cosine components of the cyclical variable. We can call this procedure
+**"cyclical encoding."**
+
+
+Cyclical encoding
+-----------------
+
+The trigonometric functions sine and cosine are periodic and repeat their values every
+2 pi radians. Thus, to transform cyclical variables into (x, y) coordinates using these
+functions, first we need to normalize them to 2 pi radians.
+
+We achieve this by dividing the variables' values by their maximum value. Thus, the two
+new features are derived as follows:
+
+- var_sin = sin(variable * (2. * pi / max_value))
+- var_cos = cos(variable * (2. * pi / max_value))
+
+In Python, we can encode cyclical features by using the Numpy functions `sin` and `cos`:
+
+.. code:: python
+
+    import numpy as np
+
+    X[f"{variable}_sin"] = np.sin(X["variable"] * (2.0 * np.pi / X["variable"]).max())
+    X[f"{variable}_cos"] = np.cos(X["variable"] * (2.0 * np.pi / X["variable"]).max())
+
+We can also use Feature-Engine to automate this process.
+
+Cyclical encoding with Feature-engine
+-------------------------------------
+
+:class:`CyclicalFeatures()` creates two new features from numerical variables to better
+capture the cyclical nature of the original variable. :class:`CyclicalFeatures()` returns
+two new features per variable, according to:
 
 - var_sin = sin(variable * (2. * pi / max_value))
 - var_cos = cos(variable * (2. * pi / max_value))
 
 where max_value is the maximum value in the variable, and pi is 3.14...
 
-There are some features that are cyclic by nature. For example the
-hours of a day or the months in a year. In these cases, the higher values of
-the variable are closer to the lower values. For example, December (12) is closer
-to January (1) than to June (6). By applying a cyclical transformations, that is, with
-the sine and cosine transformations of the original variables, we can capture
-the cyclic nature and obtain a better representation of the proximity between values.
-
-Examples
---------
-
-In the code example below, we show how to obtain cyclical features from days and months
-in a toy dataframe.
-
-We first create a toy dataframe with the variables "days" and "months":
+Example
+~~~~~~~
+In this example, we obtain cyclical features from the variables *days of the week* and
+*months*. We first create a toy dataframe with the variables "days" and "months":
 
 .. code:: python
 
@@ -39,8 +80,7 @@ We first create a toy dataframe with the variables "days" and "months":
         'months': [3, 7, 9, 12, 4, 6, 12],
         })
 
-Now we set up the transformer to find the maximum value of each variable
-automatically:
+Now we set up the transformer to find the maximum value of each variable automatically:
 
 .. code:: python
 
@@ -76,37 +116,34 @@ We can see that the new variables were added at the right of our dataframe.
     3    3      12  4.338837e-01 -0.900969 -2.449294e-16  1.000000e+00
     4    1       4  7.818315e-01  0.623490  8.660254e-01 -5.000000e-01
 
-We set the paramter `drop_original` to False, which means that we keep the original
-variables. If we want them dropped, we can set the parameter to True.
+We set the parameter `drop_original` to `False`, which means that we keep the original
+variables. If we want them dropped after the feature creation, we can set the parameter
+to `True`.
 
-Finally, we can obtain the names of the variables in the transformed dataset as follows:
+We can now use the new features, which convey the cyclical nature of the data, to train
+machine learning algorithms, like linear or logistic regression, among others.
+
+Finally, we can obtain the names of the variables of the transformed dataset as follows:
 
 .. code:: python
 
     cyclical.get_feature_names_out()
 
-Which will return the name of all the variables in the final output, original and and
-new:
+This returns the name of all the variables in the final output, original and and new:
 
 .. code:: python
 
     ['day', 'months', 'day_sin', 'day_cos', 'months_sin', 'months_cos']
 
 
-Motivation
-----------
+Cyclical feature visualization
+------------------------------
 
-Let's discuss more the logic behind using the sine and cosine to transform cyclical
-or periodic variables like months of the year, or days of the week.
+We now know how to convert cyclical variables into (x, y) coordinates of a circle by using
+the sine and cosine functions. Let’s now carry out some visualizations to better understand
+the effect of this transformation.
 
-We mentioned that with cyclical or periodic features, values that are very different in
-absolute magnitude are actually close. For example, January is close to December, even
-though their absolute magnitude suggests otherwise.
-
-We can use periodic functions like sine and cosine, to transform cyclical features and
-help machine learning models pick up their intrinsic nature.
-
-Let's create a toy dataframe and explain this in more detail:
+Let's create a toy dataframe:
 
 .. code:: python
 
@@ -128,7 +165,7 @@ Our dataframe looks like this:
     3     3
     4     4
 
-Let's now create the sine and cosine features to understand more their nature:
+Let's now compute the sine and cosine features:
 
 .. code:: python
 
@@ -137,6 +174,8 @@ Let's now create the sine and cosine features to understand more their nature:
     df = cyclical.fit_transform(df)
 
     print(df.head())
+
+These are the sine and cosine features that represent the hour:
 
 .. code:: python
 
@@ -163,8 +202,8 @@ lines to flag the hours 0 and 22.
     plt.vlines(x=0, ymin=-1, ymax=0, color='g', linestyles='dashed')
     plt.vlines(x=22, ymin=-1, ymax=-0.25, color='g', linestyles='dashed')
 
-After the transformation, we see that the new values for the hors 0 and 22 are actually
-closer to each other (follow the dashed lines).
+After the transformation using the sine function, we see that the new values for the hours
+0 and 22 are closer to each other (follow the dashed lines), which was the expectation:
 
 .. image:: ../../images/hour_sin.png
 
@@ -191,10 +230,11 @@ sine transformation. So how can we differentiate them?
 
 .. image:: ../../images/hour_sin2.png
 
-We need to use the 2 transformations together, sine and cosine, to fully code the
-information of the hour. Adding the cosine function, which is out-of-phase with the sine
-function, breaks the symmetry and gives each hour a unique codification. Let's explore
-that:
+To fully code the information of the hour, we must use the sine and cosine trigonometric
+transformations together. Adding the cosine function, which is out of phase with the sine
+function, breaks the symmetry and assigns a unique codification to each hour.
+
+Let's explore that:
 
 .. code:: python
 
@@ -212,17 +252,15 @@ that:
     plt.vlines(x=0, ymin=-1, ymax=1, color='g', linestyles='dashed')
     plt.vlines(x=11.5, ymin=-1, ymax=1, color='g', linestyles='dashed')
 
-The hour 0, after the transformation, takes the values of sine 0 and cosine 1, which
-makes it different from the hour 11.5, which takes values of sine 0 and cosine -1. In
-other words, with the 2 functions together, we are able to distinguish all observations
-within our original variable.
+The hour 0, after the transformation, takes the values of sine 0 and cosine 1, which makes
+it different from the hour 11.5, which takes the values of sine 0 and cosine -1. In other
+words, with the two functions together, we are able to distinguish all observations within
+our original variable.
 
 .. image:: ../../images/hour_sin3.png
 
-An intuitive way to show the new representation is to plot the sine vs the cosine
-transformation of the hour. It will show as a 24 hour clock, and now, the distance
-between two points corresponds to the difference in time as we would expect from a
-24-hour cycle.
+Finally, let's vizualise the (x, y) circle coordinates generated by the sine and cosine
+features.
 
 .. code:: python
 
@@ -236,15 +274,33 @@ between two points corresponds to the difference in time as we would expect from
 
 .. image:: ../../images/hour_sin4.png
 
-We hope that cleared things up a bit.
+
+That's it, you now know how to represent cyclical data through the use of trigonometric
+functions and cyclical encoding.
 
 
-More details
-^^^^^^^^^^^^
+Additional resources
+--------------------
 
-You can find more details on to use the :class:`CyclicalFeatures()` in the
-following Jupyter notebooks.
+You can find an example of how to use :class:`CyclicalFeatures()` with a real dataset in
+the following `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/creation/CyclicalFeatures.ipynb>`_.
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/creation/CyclicalFeatures.ipynb>`_
+For tutorials on how to create cyclical features, check out the following courses:
 
-All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_.
+- `Feature Engineering for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_.
+
+For a comparison between one-hot encoding, ordinal encoding, cyclical encoding and spline
+encoding of cyclical features check out the following
+`sklearn demo <https://scikit-learn.org/stable/auto_examples/applications/plot_cyclical_feature_engineering.html>`_.
+
+Check also these Kaggle demo on the use of cyclical encoding with neural networks:
+
+- `Encoding Cyclical Features for Deep Learning <https://www.kaggle.com/code/avanwyk/encoding-cyclical-features-for-deep-learning>`_.
+
+Finally, you can find similar explanations of cyclical encoding in the following blogs:
+
+- `Cyclical features encoding, it’s about time! <https://towardsdatascience.com/cyclical-features-encoding-its-about-time-ce23581845ca>`_
+- `Encoding cyclical continuous features - 24-hour time <https://ianlondon.github.io/blog/encoding-cyclical-features-24hour-time/>`_
+- `Feature Engineering - Handling Cyclical Features <http://blog.davidkaleko.com/feature-engineering-cyclical-features.html>`_
+

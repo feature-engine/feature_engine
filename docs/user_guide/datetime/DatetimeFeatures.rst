@@ -778,12 +778,14 @@ Missing timestamps
 :class:`DatetimeFeatures` has the option to ignore missing timestamps, or raise an error
 when a missing value is encountered in a datetime variable.
 
-More details
-------------
 
-You can find an examples with a real dataset on how to use
-:class:`DatetimeFeatures()` in the following
-`Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/datetime/DatetimeFeatures.ipynb>`_
+Additional resources
+--------------------
 
-For tutorials on how to create and use features from datetime columns, check the course
-`Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_.
+You can find an example of how to use :class:`DatetimeFeatures()` with a real dataset in
+the following `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/datetime/DatetimeFeatures.ipynb>`_
+
+For tutorials on how to create and use features from datetime columns, check the following courses:
+
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_.
+- `Feature Engineering for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_.
