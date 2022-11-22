@@ -95,11 +95,9 @@ class CyclicalFeatures(
 
     References
     ----------
-    https://ianlondon.github.io/blog/encoding-cyclical-features-24hour-time/
-
-    https://towardsdatascience.com/cyclical-features-encoding-its-about-time-ce23581845ca
-
-    http://blog.davidkaleko.com/feature-engineering-cyclical-features.html
+    Debaditya Chakraborty & Hazem Elzarka (2019), Advanced machine learning techniques
+    for building performance simulation: a comparative analysis, Journal of Building
+    Performance Simulation, 12:2, 193-207
 
     Examples
     --------
