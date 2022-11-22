@@ -1,6 +1,46 @@
 Version 1.5.X
 =============
 
+Version 1.5.2
+-------------
+
+Deployed: 21th November 2022
+
+Contributors
+~~~~~~~~~~~~
+
+    - `Gleb Levitski <https://github.com/GLevV>`_
+    - `Alfonso Tobar <https://github.com/datacubeR>`_
+    - `pxn39 <https://github.com/px39n>`_
+    - `Soledad Galli <https://github.com/solegalli>`_
+
+In this release, we expand the functionality of existing classes and the documentation.
+
+
+New functionality
+~~~~~~~~~~~~~~~~~
+
+    - The `StringSimilarityEncoder` can now create similarity variables based on keywords entered by the user (`Gleb Levitski <https://github.com/GLevV>`_)
+    - The `Winsorizer` and `OutlierTrimmer` now automatically adjust the value of the `fold` parameter based on the `capping_method` (`pxn39 <https://github.com/px39n>`_)
+
+Bug fixes
+~~~~~~~~~
+
+    - Type checks errors raised by newer versions (`Gleb Levitski <https://github.com/GLevV>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+    - Add example code snippets to the categorical encoding API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Add example code snippets to the imputation module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Add example code snippets to the discretisation module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Add example code snippets to the creation module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Add exaple code snippets to the datetime module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Update the user guide docs for the forecasting feature transformers (`Soledad Galli <https://github.com/solegalli>`_)
+    - Update the user guide docs for datetime features and cyclical features (`Soledad Galli <https://github.com/solegalli>`_)
+    - Fix badges in README (`Gleb Levitski <https://github.com/GLevV>`_)
+
+
 Version 1.5.0
 -------------
 
