@@ -16,8 +16,8 @@ light periods, which are cyclical).
 In cyclical features, higher values of the variable are closer to lower values.
 For example, December (12) is closer to January (1) than to June (6).
 
-How can we convey to machine learning models like linear regression, decision trees, or
-random forests the cyclical nature of the features?
+How can we convey to machine learning models like linear regression the cyclical nature
+of the features?
 
 In the article "Advanced machine learning techniques for building performance simulation,"
 the authors engineered cyclical variables by representing them as (x,y) coordinates on a
