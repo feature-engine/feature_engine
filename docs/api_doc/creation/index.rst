@@ -7,7 +7,7 @@ Feature-engine's creation transformers create and add new features to the datafr
 by either combining or transforming existing features.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    MathFeatures
    RelativeFeatures
@@ -19,4 +19,5 @@ Transformers in other Libraries
 
 Check also the following transformer from Scikit-learn:
 
-* `PolynomialFeatures <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures>`_
+* `PolynomialFeatures <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html>`_
+* `SplineTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.SplineTransformer.html>`_
