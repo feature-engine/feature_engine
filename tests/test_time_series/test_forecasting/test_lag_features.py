@@ -282,8 +282,7 @@ def test_permitted_param_fill_value_when_using_periods(df_time):
     )
 
     df_tr = transformer.fit_transform(df_time)
-    print(df_tr.head())
-    print(transformer.fill_value)
+
     # check results
     test_df = expected_results_df.head().copy()
     assert df_tr.head().equals(test_df)

@@ -137,7 +137,7 @@ class WindowFeatures(BaseForecastTransformer):
         periods: int = 1,
         freq: str = None,
         sort_index: bool = True,
-        fill_value: Union[None, int, float, str] = None,,
+        fill_value: Union[None, int, float, str] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:

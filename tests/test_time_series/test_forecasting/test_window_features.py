@@ -5,6 +5,7 @@ from pandas.testing import assert_frame_equal
 
 from feature_engine.timeseries.forecasting import WindowFeatures
 
+
 _date_time = [
     pd.Timestamp("2020-05-15 12:00:00"),
     pd.Timestamp("2020-05-15 12:15:00"),
@@ -452,15 +453,17 @@ def test_sort_index(df_time):
     )
 
 
-def test_fill_value_param(df_time):
+def test_fill_value_param_using_periods(df_time):
 
     expected_results = {
         "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5],
         "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01],
         "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49],
         "color": ['blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
-        "module_temp_window_3_median": ['fill', 'fill', 'fill', 49.84, 50.63, 50.63],
-        "irradiation_window_3_median": ['fill', 'fill', 'fill', 0.65, 0.76, 0.65],
+        "module_temp_window_4_median": ['fill', 'fill', 'fill', 'fill', 50.24, 50.24],
+        "module_temp_window_4_min": ['fill', 'fill', 'fill', 'fill', 49.18, 49.61],
+        "irradiation_window_4_median": ['fill', 'fill', 'fill', 'fill', 0.70, 0.70],
+        "irradiation_window_4_min": ['fill', 'fill', 'fill', 'fill',  0.51, 0.42],
     }
 
     expected_results_df = pd.DataFrame(data=expected_results, index=df_time.index[:6])
@@ -468,10 +471,11 @@ def test_fill_value_param(df_time):
     # create transformer
     transformer = WindowFeatures(
         variables=["module_temp", "irradiation"],
-        window=3,
-        functions=["median"],
+        window=4,
+        functions=["min"],
         fill_value="fill"
     )
     df_tr = transformer.fit_transform(df_time)
 
-    assert df_tr.head(6).equals(expected_results_df)
+    print(df_tr.head())
+    assert df_tr.head(6).round(2).equals(expected_results_df)
