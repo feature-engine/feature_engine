@@ -1,7 +1,6 @@
-from typing import Callable, Hashable, List, Union
+from typing import Callable, List, Union
 
 import pandas as pd
-from pandas._libs import lib
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -138,7 +137,7 @@ class WindowFeatures(BaseForecastTransformer):
         periods: int = 1,
         freq: str = None,
         sort_index: bool = True,
-        fill_value: Hashable = lib.no_default,
+        fill_value: Union[None, int, float, str] = None,,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
@@ -194,7 +193,7 @@ class WindowFeatures(BaseForecastTransformer):
                     X[self.variables_]
                     .rolling(window=win)
                     .agg(self.functions)
-                    .shift(periods=self.periods, freq=self.freq, fill_value=self.fill_value)
+                    .shift(periods=self.periods, freq=self.freq)
                 )
                 df_ls.append(tmp)
             tmp = pd.concat(df_ls, axis=1)
@@ -204,12 +203,16 @@ class WindowFeatures(BaseForecastTransformer):
                 X[self.variables_]
                 .rolling(window=self.window)
                 .agg(self.functions)
-                .shift(periods=self.periods, freq=self.freq, fill_value=self.fill_value)
+                .shift(periods=self.periods, freq=self.freq)
             )
 
         tmp.columns = self._get_new_features_name()
 
         X = X.merge(tmp, left_index=True, right_index=True, how="left")
+
+        # if user passes a fill_value, fill NaN
+        if self.fill_value is not None:
+            X.fillna(self.fill_value, inplace=True)
 
         if self.drop_original:
             X = X.drop(self.variables_, axis=1)
