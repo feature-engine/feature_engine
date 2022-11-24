@@ -68,10 +68,16 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        fill_value: Hashable = lib.no_default,
+        fill_value: Union[None, int, float, str] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
+
+        if fill_value is not None and not isinstance(fill_value, (int, float, str)):
+            raise ValueError(
+                "fill_value must be None type, integer, float or string. "
+                f"Got {fill_value} instead."
+            )
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
