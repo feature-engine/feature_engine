@@ -1,10 +1,9 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import Hashable, List, Union
+from typing import List, Union
 
 import pandas as pd
-from pandas._libs import lib
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -105,7 +104,7 @@ class LagFeatures(BaseForecastTransformer):
         periods: Union[int, List[int]] = 1,
         freq: Union[str, List[str]] = None,
         sort_index: bool = True,
-        fill_value: Hashable = lib.no_default,
+        fill_value: Union[None, int, float, str] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
@@ -196,7 +195,7 @@ class LagFeatures(BaseForecastTransformer):
         X = X.merge(tmp, left_index=True, right_index=True, how="left")
 
         # if user passes a fill_value, fill NaN
-        if self.fill_value != lib.no_default:
+        if self.fill_value is not None:
             X.fillna(self.fill_value, inplace=True)
 
         if self.drop_original:
