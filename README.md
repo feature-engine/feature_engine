@@ -1,9 +1,9 @@
 # Feature Engine
 
-[![PythonVersion](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-success)](https://pypi.org/project/feature-engine/)
+[![Python Version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-success)](https://pypi.org/project/feature-engine/)
 [![License](https://img.shields.io/badge/license-BSD-success.svg)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md)
-[![PyPI version](https://badge.fury.io/py/feature-engine.svg)](https://pypi.org/project/feature-engine)
-[![Conda](https://anaconda.org/conda-forge/feature_engine/badges/version.svg)](https://anaconda.org/conda-forge/feature_engine)
+[![PyPI Version](https://badge.fury.io/py/feature-engine.svg)](https://pypi.org/project/feature-engine)
+[![Conda Version](https://anaconda.org/conda-forge/feature_engine/badges/version.svg)](https://anaconda.org/conda-forge/feature_engine)
 [![CircleCI](https://img.shields.io/circleci/build/github/feature-engine/feature_engine/main)](https://app.circleci.com/pipelines/github/feature-engine/feature_engine)
 [![codecov](https://codecov.io/github/feature-engine/feature_engine/branch/main/graph/badge.svg?token=ZBKKSN6ERL)](https://codecov.io/github/feature-engine/feature_engine)
 [![Documentation Status](https://readthedocs.org/projects/feature-engine/badge/?version=latest)](https://feature-engine.readthedocs.io/en/latest/index.html)
@@ -11,13 +11,11 @@
 [![Contributors](https://img.shields.io/github/contributors/feature-engine/feature_engine)](https://github.com/feature-engine/feature_engine/graphs/contributors)
 [![Chat](https://badges.gitter.im/feature_engine/community.svg)](https://gitter.im/feature_engine/community)
 [![PyPI Downloads](https://pepy.tech/badge/feature-engine)](https://pypi.org/project/feature-engine/)
-[![PyPI Downloads/month](https://pepy.tech/badge/feature-engine/month)](https://pypi.org/project/feature-engine/)
-[![Conda Downloads](https://anaconda.org/conda-forge/feature_engine/badges/downloads.svg)](https://anaconda.org/conda-forge/feature_engine)
+[![PyPI Downloads/Month](https://pepy.tech/badge/feature-engine/month)](https://pypi.org/project/feature-engine/)
 [![DOI](https://zenodo.org/badge/163630824.svg)](https://zenodo.org/badge/latestdoi/163630824)
 [![JOSS](https://joss.theoj.org/papers/10.21105/joss.03642/status.svg)](https://doi.org/10.21105/joss.03642)
 [![first-timers-only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat-square)](https://www.firsttimersonly.com/)
 [![Sponsorship](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/)
-
 
 [<img src="https://raw.githubusercontent.com/feature-engine/feature_engine/main/docs/images/logo/FeatureEngine.png" width="248">](http://feature-engine.readthedocs.io)
 
