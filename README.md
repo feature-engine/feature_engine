@@ -17,7 +17,11 @@
 [![first-timers-only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat)](https://www.firsttimersonly.com/)
 [![Sponsorship](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/)
 
-[<img src="https://raw.githubusercontent.com/feature-engine/feature_engine/main/docs/images/logo/FeatureEngine.png" width="248">](http://feature-engine.readthedocs.io)
+<div align="center">
+
+[![feature-engine logo](https://raw.githubusercontent.com/feature-engine/feature_engine/main/docs/images/logo/FeatureEngine.png)](http://feature-engine.readthedocs.io)
+
+</div>
 
 Feature-engine is a Python library with multiple transformers to engineer and select features for use in machine learning models. 
 Feature-engine's transformers follow Scikit-learn's functionality with fit() and transform() methods to learn the 
