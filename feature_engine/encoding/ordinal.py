@@ -12,6 +12,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters import (
     _ignore_format_docstring,
+    _missing_values_docstring,
     _unseen_docstring,
     _variables_categorical_docstring,
 )
@@ -34,6 +35,7 @@ _unseen_docstring = (
 
 
 @Substitution(
+    missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
     unseen=_unseen_docstring,
@@ -75,6 +77,8 @@ class OrdinalEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         **'arbitrary'**: categories are numbered arbitrarily.
 
     {variables}
+
+    {missing_values}
 
     {ignore_format}
 
@@ -157,6 +161,7 @@ class OrdinalEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self,
         encoding_method: str = "ordered",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_values: str = "raise",
         ignore_format: bool = False,
         unseen: str = "ignore",
     ) -> None:
@@ -167,7 +172,7 @@ class OrdinalEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             )
 
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
-        super().__init__(variables, ignore_format)
+        super().__init__(variables, missing_values, ignore_format)
         self.encoding_method = encoding_method
         self.unseen = unseen
 
@@ -204,7 +209,10 @@ class OrdinalEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 t = t.sort_values(ascending=True).index
 
             elif self.encoding_method == "arbitrary":
-                t = X[var].unique()
+                if self.missing_values=="ignore":
+                    t = X[var].dropna().unique()
+                else:
+                    t = X[var].unique()
 
             self.encoder_dict_[var] = {k: i for i, k in enumerate(t, 0)}
 

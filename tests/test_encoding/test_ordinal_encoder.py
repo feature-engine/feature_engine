@@ -50,6 +50,39 @@ def test_arbitrary_encoding_automatically_find_variables(df_enc):
     pd.testing.assert_frame_equal(X, transf_df)
 
 
+def test_encoding_when_nan_in_fit_df(df_enc):
+    df = df_enc.copy()
+    df.loc[len(df)] = [np.nan, np.nan, 0]
+
+    encoder = OrdinalEncoder(encoding_method="arbitrary", missing_values="ignore")
+    encoder.fit(df[["var_A", "var_B"]])
+
+    X = encoder.transform(pd.DataFrame({
+        "var_A": ["A", np.nan],
+        "var_B": ["A", np.nan],
+    }))
+
+    # transform params
+    pd.testing.assert_frame_equal(X, pd.DataFrame({
+        "var_A": [0, np.nan],
+        "var_B": [0, np.nan],
+    }), check_dtype=False)
+
+    encoder = OrdinalEncoder(encoding_method="ordered", missing_values="ignore")
+    encoder.fit(df[["var_A", "var_B"]], df["target"])
+
+    X = encoder.transform(pd.DataFrame({
+        "var_A": ["A", np.nan],
+        "var_B": ["A", np.nan],
+    }))
+
+    # transform params
+    pd.testing.assert_frame_equal(X, pd.DataFrame({
+        "var_A": [1, np.nan],
+        "var_B": [0, np.nan],
+    }), check_dtype=False)
+
+
 def test_error_if_encoding_method_not_allowed():
     with pytest.raises(ValueError):
         OrdinalEncoder(encoding_method="other")
