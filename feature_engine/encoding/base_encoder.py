@@ -68,6 +68,7 @@ class CategoricalInitMixin:
         self.missing_values = missing_values
 
 @Substitution(
+    missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
 )
@@ -81,7 +82,8 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
 
     def _fit(self, X: pd.DataFrame):
         self._check_or_select_variables(X)
-        _check_contains_na(X, self.variables_)
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_, switch_param=True)
 
     def _check_or_select_variables(self, X: pd.DataFrame):
         """

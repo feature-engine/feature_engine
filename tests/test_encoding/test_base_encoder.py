@@ -35,9 +35,26 @@ class MockClass(CategoricalMethodsMixin):
         self.missing_values="raise"
         self.unseen = unseen
         self._unseen = -1
+        self.ignore_format = True
+        self.variables = None
 
     def fit(self):
         return self
+
+
+def test_categorical_methods_mixin_underscore_fit_method():
+    input_df = pd.DataFrame({
+        "words": ["dog", "dig", "cat"],
+        "animals": ["bird", "tiger", np.nan],
+    })
+
+    enc = MockClass()
+    with pytest.raises(ValueError):
+        enc._fit(input_df)
+
+    enc.missing_values="ignore"
+    enc._fit(input_df)
+    assert enc.variables_ == ["words", "animals"]
 
 
 def test_categorical_methods_mixin_transform_no_unseen():
