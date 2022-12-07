@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -34,6 +35,12 @@ def test_defo_params_plus_automatically_find_variables(df_enc_big):
     }
     df = pd.DataFrame(df)
 
+    frequenc_cat = {
+        "var_A": ["B", "D", "A", "G", "C"],
+        "var_B": ["A", "D", "B", "G", "C"],
+        "var_C": ["C", "D", "B", "G", "A"],
+    }
+
     # test init params
     assert encoder.tol == 0.06
     assert encoder.n_categories == 5
@@ -42,8 +49,47 @@ def test_defo_params_plus_automatically_find_variables(df_enc_big):
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B", "var_C"]
     assert encoder.n_features_in_ == 3
+    assert encoder.encoder_dict_ == frequenc_cat
     # test transform output
     pd.testing.assert_frame_equal(X, df)
+
+
+def test_correctly_ignores_nan(df_enc_big):
+    encoder = RareLabelEncoder(
+        tol=0.06,
+        n_categories=5,
+        missing_values="ignore",
+    )
+    X = encoder.fit_transform(df_enc_big)
+
+    # expected:
+    frequenc_cat = {
+        "var_A": ["B", "D", "A", "G", "C"],
+        "var_B": ["A", "D", "B", "G", "C"],
+        "var_C": ["C", "D", "B", "G", "A"],
+    }
+    assert encoder.encoder_dict_ == frequenc_cat
+
+    # input
+    t = pd.DataFrame(
+        {
+            "var_A": ["A", np.nan, "J"],
+            "var_B": ["A", np.nan, "J"],
+            "var_C": ["C", np.nan, "J"],
+        }
+    )
+
+    # expected
+    tt = pd.DataFrame(
+        {
+            "var_A": ["A", np.nan, "Rare"],
+            "var_B": ["A", np.nan, "Rare"],
+            "var_C": ["C", np.nan, "Rare"],
+        }
+    )
+
+    X = encoder.transform(t)
+    pd.testing.assert_frame_equal(X, tt)
 
 
 def test_user_provides_grouping_label_name_and_variable_list(df_enc_big):

@@ -14,6 +14,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters import (
     _ignore_format_docstring,
+    _missing_values_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
@@ -26,6 +27,7 @@ from feature_engine.encoding.base_encoder import (
 
 
 @Substitution(
+    missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
     variables_=_variables_attribute_docstring,
@@ -86,6 +88,8 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     {variables}
 
+    {missing_values}
+
     {ignore_format}
 
     Attributes
@@ -135,6 +139,7 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         max_n_categories: Optional[int] = None,
         replace_with: Union[str, int, float] = "Rare",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_values: str = "raise",
         ignore_format: bool = False,
     ) -> None:
 
@@ -152,7 +157,7 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             ):
                 raise ValueError("max_n_categories takes only positive integer numbers")
 
-        super().__init__(variables, ignore_format)
+        super().__init__(variables, missing_values, ignore_format)
         self.tol = tol
         self.n_categories = n_categories
         self.max_n_categories = max_n_categories
@@ -189,9 +194,9 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 freq_idx = t[t >= self.tol].index
 
                 if self.max_n_categories:
-                    self.encoder_dict_[var] = freq_idx[: self.max_n_categories]
+                    self.encoder_dict_[var] = list(freq_idx[: self.max_n_categories])
                 else:
-                    self.encoder_dict_[var] = freq_idx
+                    self.encoder_dict_[var] = list(freq_idx)
 
             else:
                 # if the total number of categories is smaller than the indicated
@@ -224,14 +229,23 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         X = self._check_transform_input_and_state(X)
 
         # check if dataset contains na
-        _check_contains_na(X, self.variables_)
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_)
 
-        for feature in self.variables_:
-            X[feature] = np.where(
-                X[feature].isin(self.encoder_dict_[feature]),
-                X[feature],
-                self.replace_with,
-            )
+            for feature in self.variables_:
+                X[feature] = np.where(
+                    X[feature].isin(self.encoder_dict_[feature]),
+                    X[feature],
+                    self.replace_with,
+                )
+
+        else:
+            for feature in self.variables_:
+                X[feature] = np.where(
+                    X[feature].isin(self.encoder_dict_[feature] + [np.nan]),
+                    X[feature],
+                    self.replace_with,
+                )
 
         return X
 
