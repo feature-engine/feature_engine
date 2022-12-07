@@ -97,14 +97,7 @@ class MatchCategories(
         missing_values: str = "raise",
     ) -> None:
 
-        if missing_values not in ["raise", "ignore"]:
-            raise ValueError(
-                "missing_values takes only values 'raise' or 'ignore'. "
-                f"Got {missing_values} instead."
-            )
-
-        super().__init__(variables, ignore_format)
-        self.missing_values = missing_values
+        super().__init__(variables, missing_values, ignore_format)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
