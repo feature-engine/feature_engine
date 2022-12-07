@@ -9,8 +9,8 @@ from feature_engine.encoding import (
     OneHotEncoder,
     OrdinalEncoder,
     RareLabelEncoder,
+    StringSimilarityEncoder,
     WoEEncoder,
-    StringSimilarityEncoder
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 

@@ -125,18 +125,17 @@ def test_encoding_when_nan_in_fit_df(df_enc):
     )
     encoder.fit(df_enc)
 
-    X = encoder.transform(pd.DataFrame({
-        "var_A": ["A", np.nan],
-        "var_B": ["A", np.nan],
-        "target": [1, 0]
-    }))
+    X = encoder.transform(
+        pd.DataFrame({"var_A": ["A", np.nan], "var_B": ["A", np.nan], "target": [1, 0]})
+    )
 
     # transform params
-    pd.testing.assert_frame_equal(X, pd.DataFrame({
-        "var_A": [0.3, np.nan],
-        "var_B": [0.5, np.nan],
-        "target":[1,0]
-    }))
+    pd.testing.assert_frame_equal(
+        X,
+        pd.DataFrame(
+            {"var_A": [0.3, np.nan], "var_B": [0.5, np.nan], "target": [1, 0]}
+        ),
+    )
 
 
 @pytest.mark.parametrize("enc_method", ["arbitrary", False, 1])

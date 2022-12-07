@@ -32,7 +32,7 @@ class MockClass(CategoricalMethodsMixin):
         self.n_features_in_ = 1
         self.feature_names_in_ = ["words"]
         self.variables_ = ["words"]
-        self.missing_values="raise"
+        self.missing_values = "raise"
         self.unseen = unseen
         self._unseen = -1
         self.ignore_format = True
@@ -43,16 +43,18 @@ class MockClass(CategoricalMethodsMixin):
 
 
 def test_categorical_methods_mixin_underscore_fit_method():
-    input_df = pd.DataFrame({
-        "words": ["dog", "dig", "cat"],
-        "animals": ["bird", "tiger", np.nan],
-    })
+    input_df = pd.DataFrame(
+        {
+            "words": ["dog", "dig", "cat"],
+            "animals": ["bird", "tiger", np.nan],
+        }
+    )
 
     enc = MockClass()
     with pytest.raises(ValueError):
         enc._fit(input_df)
 
-    enc.missing_values="ignore"
+    enc.missing_values = "ignore"
     enc._fit(input_df)
     assert enc.variables_ == ["words", "animals"]
 
