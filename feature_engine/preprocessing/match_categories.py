@@ -116,7 +116,7 @@ class MatchCategories(
         self._check_or_select_variables(X)
 
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
+            _check_contains_na(X, self.variables_, switch_param=True)
 
         self._get_feature_names_in(X)
 
