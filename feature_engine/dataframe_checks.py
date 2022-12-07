@@ -249,8 +249,13 @@ def _check_contains_na(X: pd.DataFrame, variables: List[Union[str, int]], switch
     Parameters
     ----------
     X : Pandas DataFrame
+
     variables : List
         The selected group of variables in which null values will be examined.
+
+    switch_param: bool
+        Whether the transformer has the parameter missing_values in the init to modify
+        its behaviour towards nan.
 
     Raises
     ------
