@@ -143,7 +143,7 @@ class MatchCategories(
         X = self._check_transform_input_and_state(X)
 
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
+            _check_contains_na(X, self.variables_, switch_param=True)
 
         for feature, levels in self.category_dict_.items():
             X[feature] = pd.Categorical(X[feature], levels)
