@@ -115,6 +115,30 @@ def test_automatically_select_variables_encode_with_frequency(df_enc):
     pd.testing.assert_frame_equal(X, transf_df)
 
 
+def test_encoding_when_nan_in_fit_df(df_enc):
+    df = df_enc.copy()
+    df.loc[len(df)] = [np.nan, np.nan, np.nan]
+
+    encoder = CountFrequencyEncoder(
+        encoding_method="frequency",
+        missing_values="ignore",
+    )
+    encoder.fit(df_enc)
+
+    X = encoder.transform(pd.DataFrame({
+        "var_A": ["A", np.nan],
+        "var_B": ["A", np.nan],
+        "target": [1, 0]
+    }))
+
+    # transform params
+    pd.testing.assert_frame_equal(X, pd.DataFrame({
+        "var_A": [0.3, np.nan],
+        "var_B": [0.5, np.nan],
+        "target":[1,0]
+    }))
+
+
 @pytest.mark.parametrize("enc_method", ["arbitrary", False, 1])
 def test_error_if_encoding_method_not_permitted_value(enc_method):
     with pytest.raises(ValueError):
