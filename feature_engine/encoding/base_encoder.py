@@ -176,7 +176,8 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         X = self._check_transform_input_and_state(X)
 
         # check if dataset contains na
-        _check_contains_na(X, self.variables_)
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_, switch_param=True)
 
         # replace categories by the learned parameters
         for feature in self.encoder_dict_.keys():

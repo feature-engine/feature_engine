@@ -32,6 +32,7 @@ class MockClass(CategoricalMethodsMixin):
         self.n_features_in_ = 1
         self.feature_names_in_ = ["words"]
         self.variables_ = ["words"]
+        self.missing_values="raise"
         self.unseen = unseen
         self._unseen = -1
 
@@ -115,3 +116,18 @@ def test_categorical_methods_mixin_inverse_transform_when_ignore_unseen():
     enc = MockClass(unseen="ignore")
     pd.testing.assert_frame_equal(enc.transform(input_df), output_df)
     pd.testing.assert_frame_equal(enc.inverse_transform(output_df), inverse_df)
+
+
+def test_categorical_methods_mixin_transform_raises_error_when_df_has_nan():
+    input_df = pd.DataFrame({"words": ["dog", "dig", "cat", np.nan]})
+    enc = MockClass()
+    with pytest.raises(ValueError):
+        enc.transform(input_df)
+
+
+def test_categorical_methods_mixin_transform_ignores_nan_in_df_to_transform():
+    input_df = pd.DataFrame({"words": ["dog", "dig", "cat", np.nan]})
+    output_df = pd.DataFrame({"words": [1, 0.66, 0, np.nan]})
+    enc = MockClass()
+    enc.missing_values = "ignore"
+    pd.testing.assert_frame_equal(enc.transform(input_df), output_df)
