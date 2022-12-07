@@ -58,7 +58,6 @@ defeat the purpose of these encoding techniques.
    OrdinalEncoder
    MeanEncoder
    WoEEncoder
-   PRatioEncoder
    DecisionTreeEncoder
    RareLabelEncoder
    StringSimilarityEncoder

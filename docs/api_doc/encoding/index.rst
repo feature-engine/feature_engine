@@ -17,14 +17,13 @@ and make the transformers also accept numerical variables as input.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    OneHotEncoder
    CountFrequencyEncoder
    OrdinalEncoder
    MeanEncoder
    WoEEncoder
-   PRatioEncoder
    DecisionTreeEncoder
    RareLabelEncoder
    StringSimilarityEncoder
