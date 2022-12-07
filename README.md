@@ -1,22 +1,27 @@
 # Feature Engine
 
-![PythonVersion](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-success)
-[![License https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md](https://img.shields.io/badge/license-BSD-success.svg)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md)
-[![PyPI version](https://badge.fury.io/py/feature-engine.svg)](https://badge.fury.io/py/feature-engine)
-[![Conda https://anaconda.org/conda-forge/feature_engine](https://anaconda.org/conda-forge/feature_engine/badges/version.svg)](https://anaconda.org/conda-forge/feature_engine)
-[![CircleCI https://app.circleci.com/pipelines/github/feature-engine/feature_engine](https://img.shields.io/circleci/build/github/feature-engine/feature_engine/main)](https://app.circleci.com/pipelines/github/feature-engine/feature_engine?)
-[![codecov](https://codecov.io/github/feature-engine/feature_engine/branch/main/graph/badge.svg?token=ZBKKSN6ERL)](https://codecov.io/github/feature-engine/feature_engine)
-[![Documentation Status https://feature-engine.readthedocs.io/en/latest/index.html](https://readthedocs.org/projects/feature-engine/badge/?version=latest)](https://feature-engine.readthedocs.io/en/latest/index.html)
-[![Join the chat at https://gitter.im/feature_engine/community](https://badges.gitter.im/feature_engine/community.svg)](https://gitter.im/feature_engine/community)
-[![Downloads](https://pepy.tech/badge/feature-engine)](https://pepy.tech/project/feature-engine)
-[![Downloads](https://pepy.tech/badge/feature-engine/month)](https://pepy.tech/project/feature-engine)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/feature_engine?logo=Python)](https://pypi.org/project/feature-engine/)
+[![GitHub](https://img.shields.io/github/license/feature-engine/feature_engine)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md)
+[![PyPI](https://img.shields.io/pypi/v/feature_engine?logo=PyPI)](https://pypi.org/project/feature-engine)
+[![Conda](https://img.shields.io/conda/v/conda-forge/feature_engine?logo=Anaconda)](https://anaconda.org/conda-forge/feature_engine)
+[![CircleCI](https://img.shields.io/circleci/build/github/feature-engine/feature_engine/main?logo=CircleCI)](https://app.circleci.com/pipelines/github/feature-engine/feature_engine)
+[![Codecov](https://img.shields.io/codecov/c/github/feature-engine/feature_engine?logo=CodeCov&token=ZBKKSN6ERL)](https://codecov.io/github/feature-engine/feature_engine)
+[![Read the Docs](https://img.shields.io/readthedocs/feature_engine?logo=readthedocs)](https://feature-engine.readthedocs.io/en/latest/index.html)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![GitHub contributors](https://img.shields.io/github/contributors/feature-engine/feature_engine?logo=GitHub)](https://github.com/feature-engine/feature_engine/graphs/contributors)
+[![Gitter](https://img.shields.io/gitter/room/feature-engine/feaure_engine?logo=Gitter)](https://gitter.im/feature_engine/community)
+[![Total Downloads](https://pepy.tech/badge/feature-engine)](https://pepy.tech/project/feature-engine)
+[![Monthly Downloads](https://pepy.tech/badge/feature-engine/month)](https://pepy.tech/project/feature-engine)
 [![DOI](https://zenodo.org/badge/163630824.svg)](https://zenodo.org/badge/latestdoi/163630824)
-[![DOI](https://joss.theoj.org/papers/10.21105/joss.03642/status.svg)](https://doi.org/10.21105/joss.03642)
-[![first-timers-only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat-square)](https://www.firsttimersonly.com/)
-[![Sponsorship https://www.trainindata.com/](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/)
+[![JOSS](https://joss.theoj.org/papers/10.21105/joss.03642/status.svg)](https://doi.org/10.21105/joss.03642)
+[![first-timers-only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat)](https://www.firsttimersonly.com/)
+[![Sponsorship](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/)
 
+<div align="center">
 
-[<img src="https://raw.githubusercontent.com/feature-engine/feature_engine/main/docs/images/logo/FeatureEngine.png" width="248">](http://feature-engine.readthedocs.io)
+[![feature-engine logo](https://raw.githubusercontent.com/feature-engine/feature_engine/main/docs/images/logo/FeatureEngine.png)](http://feature-engine.readthedocs.io)
+
+</div>
 
 Feature-engine is a Python library with multiple transformers to engineer and select features for use in machine learning models. 
 Feature-engine's transformers follow Scikit-learn's functionality with fit() and transform() methods to learn the 
