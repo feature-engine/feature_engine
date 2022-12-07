@@ -22,8 +22,8 @@ from feature_engine._docstrings.methods import (
     _transform_encoders_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.dataframe_checks import check_X, check_X_y
+from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
@@ -209,7 +209,7 @@ class OrdinalEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 t = t.sort_values(ascending=True).index
 
             elif self.encoding_method == "arbitrary":
-                if self.missing_values=="ignore":
+                if self.missing_values == "ignore":
                     t = X[var].dropna().unique()
                 else:
                     t = X[var].unique()

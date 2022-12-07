@@ -67,6 +67,7 @@ class CategoricalInitMixin:
         self.ignore_format = ignore_format
         self.missing_values = missing_values
 
+
 @Substitution(
     missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
