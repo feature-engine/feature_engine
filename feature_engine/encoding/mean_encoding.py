@@ -11,6 +11,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters import (
     _ignore_format_docstring,
+    _missing_values_docstring,
     _unseen_docstring,
     _variables_categorical_docstring,
 )
@@ -35,6 +36,7 @@ _unseen_docstring = (
 
 
 @Substitution(
+    missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
     unseen=_unseen_docstring,
@@ -91,6 +93,8 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     Parameters
     ----------
     {variables}
+
+    {missing_values}
 
     {ignore_format}
 
@@ -168,11 +172,12 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_values: str = "raise",
         ignore_format: bool = False,
         unseen: str = "ignore",
         smoothing: Union[int, float, str] = 0.0,
     ) -> None:
-        super().__init__(variables, ignore_format)
+        super().__init__(variables, missing_values, ignore_format)
         if (
             not isinstance(smoothing, (str, float, int))
             or isinstance(smoothing, str)

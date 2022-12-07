@@ -114,6 +114,25 @@ def test_automatically_find_variables(df_enc):
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
 
+def test_encoding_when_nan_in_fit_df(df_enc):
+    df = df_enc.copy()
+    df.loc[len(df)] = [np.nan, np.nan, 0]
+
+    encoder = MeanEncoder(missing_values="ignore")
+    encoder.fit(df[["var_A", "var_B"]], df["target"])
+
+    X = encoder.transform(pd.DataFrame({
+        "var_A": ["A", np.nan],
+        "var_B": ["A", np.nan],
+    }))
+
+    # transform params
+    pd.testing.assert_frame_equal(X, pd.DataFrame({
+        "var_A": [0.3333333333333333, np.nan],
+        "var_B": [0.2, np.nan],
+    }))
+
+
 def test_warning_if_transform_df_contains_categories_not_present_in_fit_df(
     df_enc, df_enc_rare
 ):
