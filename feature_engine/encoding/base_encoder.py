@@ -8,6 +8,7 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._docstrings.init_parameters import (
     _ignore_format_docstring,
+    _missing_values_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
@@ -27,6 +28,7 @@ from feature_engine.tags import _return_tags
 
 
 @Substitution(
+    missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
 )
@@ -37,14 +39,23 @@ class CategoricalInitMixin:
     ----------
     {variables}.
 
+    {missing_values}
+
     {ignore_format}
     """
 
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_values: str = "raise",
         ignore_format: bool = False,
     ) -> None:
+
+        if missing_values not in ["raise", "ignore"]:
+            raise ValueError(
+                "missing_values takes only values 'raise' or 'ignore'. "
+                f"Got {missing_values} instead."
+            )
 
         if not isinstance(ignore_format, bool):
             raise ValueError(
@@ -54,7 +65,7 @@ class CategoricalInitMixin:
 
         self.variables = _check_init_parameter_variables(variables)
         self.ignore_format = ignore_format
-
+        self.missing_values = missing_values
 
 @Substitution(
     ignore_format=_ignore_format_docstring,

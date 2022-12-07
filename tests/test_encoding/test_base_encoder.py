@@ -13,6 +13,18 @@ def test_categorical_init_mixin_raises_error(param):
     with pytest.raises(ValueError):
         CategoricalInitMixin(ignore_format=param)
 
+    with pytest.raises(ValueError):
+        CategoricalInitMixin(missing_values=param)
+
+
+@pytest.mark.parametrize("param", [(True, "ignore"), (False, "raise")])
+def test_categorical_init_mixin_assings_values_correctly(param):
+    format_, na_ = param
+    enc = CategoricalInitMixin(ignore_format=format_, missing_values=na_)
+
+    assert enc.ignore_format == format_
+    assert enc.missing_values == na_
+
 
 class MockClass(CategoricalMethodsMixin):
     def __init__(self, unseen=None):
