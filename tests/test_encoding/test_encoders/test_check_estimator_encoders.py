@@ -63,7 +63,7 @@ def test_check_estimator_from_feature_engine(estimator):
 @pytest.mark.parametrize("estimator", _estimators)
 def test_raises_non_fitted_error_when_error_during_fit(estimator):
     X, y = test_df(categorical=True)
-    X.loc[len(X)-1] = nan
+    X.loc[len(X) - 1] = nan
     transformer = clone(estimator)
 
     with pytest.raises(ValueError):

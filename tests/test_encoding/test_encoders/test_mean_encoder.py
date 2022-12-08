@@ -449,7 +449,7 @@ def test_inverse_transform_raises_non_fitted_error():
     with pytest.raises(NotFittedError):
         enc.inverse_transform(df1)
 
-    df1.loc[len(df1)-1] = nan
+    df1.loc[len(df1) - 1] = nan
 
     with pytest.raises(ValueError):
         enc.fit(df1, y)

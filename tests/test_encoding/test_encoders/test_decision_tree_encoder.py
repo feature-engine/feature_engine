@@ -134,7 +134,10 @@ def test_inverse_transform_raises_not_implemented_error(df_enc):
         encoder.inverse_transform(df_enc[["var_A", "var_B"]])
 
 
-@pytest.mark.parametrize("grid", [None, {"max_depth": [1, 2, 3]}, {"max_depth": [1, 2], "estimators": [10,12]}])
+@pytest.mark.parametrize(
+    "grid",
+    [None, {"max_depth": [1, 2, 3]}, {"max_depth": [1, 2], "estimators": [10, 12]}],
+)
 def test_assigns_param_grid(grid):
     encoder = DecisionTreeEncoder(param_grid=grid)
     if grid is None:
