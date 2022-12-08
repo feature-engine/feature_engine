@@ -3,7 +3,10 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin, TransformerMixin
+from feature_engine._base_transformers.mixins import (
+    GetFeatureNamesOutMixin,
+    TransformerMixin,
+)
 from feature_engine._variable_handling.variable_type_selection import (
     _filter_out_variables_not_in_dataframe,
 )
