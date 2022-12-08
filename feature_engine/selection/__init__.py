@@ -13,6 +13,7 @@ from .single_feature_performance import SelectBySingleFeaturePerformance
 from .smart_correlation_selection import SmartCorrelatedSelection
 from .target_mean_selection import SelectByTargetMeanPerformance
 from .information_value import SelectByInformationValue
+from .probe_feature_selector import ProbeFeatureSelection
 
 __all__ = [
     "DropFeatures",
@@ -27,4 +28,5 @@ __all__ = [
     "RecursiveFeatureElimination",
     "SelectByTargetMeanPerformance",
     "SelectByInformationValue",
+    "ProbeFeatureSelection",
 ]
