@@ -145,6 +145,14 @@ def test_error_if_encoding_method_not_permitted_value(enc_method):
         CountFrequencyEncoder(encoding_method=enc_method)
 
 
+@pytest.mark.parametrize("enc_method", ["arbitrary", False, 1])
+def test_error_if_encoding_method_not_recognized_in_fit(enc_method, df_enc):
+    enc = CountFrequencyEncoder()
+    enc.encoding_method = enc_method
+    with pytest.raises(ValueError):
+        enc.fit(df_enc)
+
+
 def test_warning_when_df_contains_unseen_categories(df_enc, df_enc_rare):
     # dataset to be transformed contains categories not present in
     # training dataset (unseen categories), unseen set to ignore.

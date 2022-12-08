@@ -238,10 +238,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         variables_ = self._check_or_select_variables(X)
 
-        if self.param_grid:
-            param_grid = self.param_grid
-        else:
-            param_grid = {"max_depth": [1, 2, 3, 4]}
+        param_grid = self._assign_param_grid()
 
         # initialize categorical encoder
         cat_encoder = OrdinalEncoder(
@@ -303,6 +300,13 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         raise NotImplementedError(
             "inverse_transform is not implemented for this transformer."
         )
+
+    def _assign_param_grid(self):
+        if self.param_grid:
+            param_grid = self.param_grid
+        else:
+            param_grid = {"max_depth": [1, 2, 3, 4]}
+        return param_grid
 
     def _more_tags(self):
         tags_dict = _return_tags()

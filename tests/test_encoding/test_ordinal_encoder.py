@@ -105,9 +105,18 @@ def test_encoding_when_nan_in_fit_df(df_enc):
     )
 
 
-def test_error_if_encoding_method_not_allowed():
+@pytest.mark.parametrize("enc_method", ["other", False, 1])
+def test_error_if_encoding_method_not_allowed(enc_method):
     with pytest.raises(ValueError):
-        OrdinalEncoder(encoding_method="other")
+        OrdinalEncoder(encoding_method=enc_method)
+
+
+@pytest.mark.parametrize("enc_method", ["other", False, 1])
+def test_error_if_encoding_method_not_recognized_in_fit(enc_method, df_enc):
+    enc = OrdinalEncoder()
+    enc.encoding_method = enc_method
+    with pytest.raises(ValueError):
+        enc.fit(df_enc)
 
 
 def test_error_if_ordinal_encoding_and_no_y_passed(df_enc):
@@ -224,9 +233,10 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     assert X["var_A"].dtypes == int
 
 
-def test_error_if_rare_labels_not_permitted_value():
+@pytest.mark.parametrize("unseen", ["other", False, 1])
+def test_error_if_unseen_not_permitted_value(unseen):
     with pytest.raises(ValueError):
-        OrdinalEncoder(unseen="empanada")
+        OrdinalEncoder(unseen=unseen)
 
 
 def test_inverse_transform_when_no_unseen():

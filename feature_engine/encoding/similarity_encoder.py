@@ -280,6 +280,11 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .head(self.top_categories)
                     .index.tolist()
                 )
+        else:
+            raise ValueError(
+                "Unrecognized value for missing_values. It should be 'raise', 'ignore' "
+                f"or 'impute'. Got {self.missing_values} instead."
+            )
 
         # assign underscore parameters at the end in case code above fails
         self.variables_ = variables_

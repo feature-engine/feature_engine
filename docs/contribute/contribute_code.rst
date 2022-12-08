@@ -304,8 +304,8 @@ those tests.
 Code coverage
 ~~~~~~~~~~~~~
 
-We use coverage to test the extend of coverage of our tests. To evaluate the code
-coverage, you need to run pytest with coverage::
+We use `coverage <https://pypi.org/project/coverage/>`_ to test the extend of coverage of
+our tests. To evaluate the code coverage, you need to run pytest with coverage::
 
     $ coverage run -m pytest
 

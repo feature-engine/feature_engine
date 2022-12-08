@@ -132,3 +132,12 @@ def test_inverse_transform_raises_not_implemented_error(df_enc):
     encoder = DecisionTreeEncoder(regression=True).fit(df_enc[["var_A", "var_B"]], y)
     with pytest.raises(NotImplementedError):
         encoder.inverse_transform(df_enc[["var_A", "var_B"]])
+
+
+@pytest.mark.parametrize("grid", [None, {"max_depth": [1, 2, 3]}, {"max_depth": [1, 2], "estimators": [10,12]}])
+def test_assigns_param_grid(grid):
+    encoder = DecisionTreeEncoder(param_grid=grid)
+    if grid is None:
+        assert encoder._assign_param_grid() == {"max_depth": [1, 2, 3, 4]}
+    else:
+        assert encoder._assign_param_grid() == grid

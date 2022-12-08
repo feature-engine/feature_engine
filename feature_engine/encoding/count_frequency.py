@@ -194,6 +194,11 @@ class CountFrequencyEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
 
             elif self.encoding_method == "frequency":
                 self.encoder_dict_[var] = X[var].value_counts(normalize=True).to_dict()
+            else:
+                raise ValueError(
+                    "Unrecognized value for encoding_method. It should be 'count' or "
+                    f"'frequency'. Got {self.encoding_method} instead."
+                )
 
         # unseen categories are replaced by 0
         if self.unseen == "encode":

@@ -94,6 +94,14 @@ def test_error_if_handle_missing_invalid(handle_missing):
         StringSimilarityEncoder(missing_values=handle_missing)
 
 
+@pytest.mark.parametrize("missing_vals", ["other", False, 1])
+def test_error_if_missing_values_not_recognized_in_fit(missing_vals, df_enc):
+    enc = StringSimilarityEncoder()
+    enc.missing_values = missing_vals
+    with pytest.raises(ValueError):
+        enc.fit(df_enc)
+
+
 def test_nan_behaviour_error_fit(df_enc_big_na):
     encoder = StringSimilarityEncoder(missing_values="raise")
     with pytest.raises(ValueError):

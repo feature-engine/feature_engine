@@ -210,6 +210,11 @@ class OrdinalEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
                     t = X[var].dropna().unique()
                 else:
                     t = X[var].unique()
+            else:
+                raise ValueError(
+                    "Unrecognized value for encoding_method. It should be 'arbitrary' "
+                    f"or 'frequency'. Got {self.encoding_method} instead."
+                )
 
             self.encoder_dict_[var] = {k: i for i, k in enumerate(t, 0)}
 
