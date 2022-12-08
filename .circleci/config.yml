@@ -11,6 +11,7 @@ prepare_tox: &prepare_tox
   run:
     name: Install tox
     command: |
+      pip install --upgrade pip
       pip install --user tox
       pip uninstall virtualenv
 
