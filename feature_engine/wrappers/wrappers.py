@@ -2,6 +2,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, clone
+from sklearn.base import TransformerMixin as TransformerMixin_sklearn
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import TransformerMixin
@@ -153,7 +154,7 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
-        if not issubclass(transformer.__class__, TransformerMixin):
+        if not issubclass(transformer.__class__, TransformerMixin_sklearn):
             raise TypeError(
                 "transformer expected a Scikit-learn transformer. "
                 f"got {transformer} instead. "
