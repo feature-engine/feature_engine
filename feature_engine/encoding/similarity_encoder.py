@@ -238,6 +238,11 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     "There are variables in keywords that are not present "
                     "in the dataset."
                 )
+
+        # if data contains nan, fail before running any logic
+        if self.missing_values == "raise":
+            _check_contains_na(X, variables_, switch_param=True)
+
         self.encoder_dict_ = {}
 
         if self.keywords:
@@ -247,7 +252,6 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             cols_to_iterate = variables_
 
         if self.missing_values == "raise":
-            _check_contains_na(X, variables_, switch_param=True)
             for var in cols_to_iterate:
                 self.encoder_dict_[var] = (
                     X[var]
