@@ -7,6 +7,34 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.encoding import MeanEncoder
 
 
+# test init params
+@pytest.mark.parametrize(
+    "params", [("raise", True, "auto"), ("ignore", False, 1)]
+)
+def test_init_param_assignment(params):
+    MeanEncoder(
+        missing_values=params[0],
+        ignore_format=params[1],
+        unseen=params[0],
+        smoothing=params[2]
+    )
+
+
+@pytest.mark.parametrize(
+    "errors", ["empanada", False, 1, ("raise", "ignore"), ["ignore"]]
+)
+def test_error_if_unseen_gets_not_permitted_value(errors):
+    with pytest.raises(ValueError):
+        MeanEncoder(unseen=errors)
+
+
+@pytest.mark.parametrize("smoothing", ["hello", ["auto"], -1])
+def test_raises_error_when_not_allowed_smoothing_param_in_init(smoothing):
+    with pytest.raises(ValueError):
+        MeanEncoder(smoothing=smoothing)
+
+
+# fit and transform
 def test_user_enters_1_variable(df_enc):
     # test case 1: 1 variable
     encoder = MeanEncoder(variables=["var_A"])
@@ -175,17 +203,29 @@ def test_warning_if_transform_df_contains_categories_not_present_in_fit_df(
 
 def test_fit_raises_error_if_df_contains_na(df_enc_na):
     # test case 4: when dataset contains na, fit method
-    with pytest.raises(ValueError):
-        encoder = MeanEncoder()
+    encoder = MeanEncoder()
+    with pytest.raises(ValueError) as record:
         encoder.fit(df_enc_na[["var_A", "var_B"]], df_enc_na["target"])
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
+    assert str(record.value) == msg
 
 
 def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
     # test case 4: when dataset contains na, transform method
-    with pytest.raises(ValueError):
-        encoder = MeanEncoder()
-        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-        encoder.transform(df_enc_na)
+    encoder = MeanEncoder()
+    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+    with pytest.raises(ValueError) as record:
+        encoder.transform(df_enc_na[["var_A", "var_B"]])
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
+    assert str(record.value) == msg
 
 
 def test_user_enters_1_variable_ignore_format(df_enc_numeric):
@@ -396,11 +436,6 @@ def test_value_smoothing(df_enc):
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
 
-def test_error_if_rare_labels_not_permitted_value():
-    with pytest.raises(ValueError):
-        MeanEncoder(unseen="empanada")
-
-
 def test_encoding_new_categories(df_enc):
     df_unseen = pd.DataFrame({"var_A": ["D"], "var_B": ["D"]})
     encoder = MeanEncoder(unseen="encode")
@@ -436,8 +471,13 @@ def test_inverse_transform_when_encode_unseen():
     enc = MeanEncoder(unseen="encode")
     enc.fit(df1, y)
     dft = enc.transform(df2)
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(NotImplementedError) as record:
         enc.inverse_transform(dft)
+    msg = (
+        "inverse_transform is not implemented for this transformer when "
+        "`unseen='encode'`."
+    )
+    assert str(record.value) == msg
 
 
 def test_inverse_transform_raises_non_fitted_error():
@@ -457,9 +497,3 @@ def test_inverse_transform_raises_non_fitted_error():
     # Test when fit is not called prior to transform.
     with pytest.raises(NotFittedError):
         enc.inverse_transform(df1)
-
-
-@pytest.mark.parametrize("smoothing", ["hello", ["auto"], -1])
-def test_raises_error_when_not_allowed_smoothing_param_in_init(smoothing):
-    with pytest.raises(ValueError):
-        MeanEncoder(smoothing=smoothing)

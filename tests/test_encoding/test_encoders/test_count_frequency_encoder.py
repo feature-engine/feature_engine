@@ -19,7 +19,7 @@ def test_error_if_encoding_method_not_permitted_value(enc_method):
 @pytest.mark.parametrize(
     "errors", ["empanada", False, 1, ("raise", "ignore"), ["ignore"]]
 )
-def test_exception_if_unseen_gets_not_permitted_value(errors):
+def test_error_if_unseen_gets_not_permitted_value(errors):
     with pytest.raises(ValueError):
         CountFrequencyEncoder(unseen=errors)
 

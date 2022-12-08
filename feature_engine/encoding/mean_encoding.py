@@ -251,7 +251,8 @@ class MeanEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
 
         if self.unseen == "encode":
             raise NotImplementedError(
-                "inverse_transform is not implemented for this transformer."
+                "inverse_transform is not implemented for this transformer when "
+                "`unseen='encode'`."
             )
         else:
             return super().inverse_transform(X)
