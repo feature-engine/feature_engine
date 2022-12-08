@@ -14,6 +14,7 @@ prepare_tox: &prepare_tox
       pip install --upgrade pip
       pip uninstall -y virtualenv
       pip install --user tox
+      pip uninstall virtualenv
 
 init_pypirc: &init_pypirc
   run:
