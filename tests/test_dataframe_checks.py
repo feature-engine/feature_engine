@@ -144,7 +144,7 @@ def test_check_X_matches_training_df(df_vartypes):
 
 def test_contains_na(df_na):
     msg = (
-        "Some of the variables to transform contain NaN. Check and "
+        "Some of the variables in the dataset contain NaN. Check and "
         "remove those before using this transformer."
     )
 
@@ -153,7 +153,7 @@ def test_contains_na(df_na):
     assert str(record.value) == msg
 
     msg = (
-        "Some of the variables to transform contain NaN. Check and "
+        "Some of the variables in the dataset contain NaN. Check and "
         "remove those before using this transformer or set the parameter "
         "`missing_values='ignore'` when initialising this transformer."
     )

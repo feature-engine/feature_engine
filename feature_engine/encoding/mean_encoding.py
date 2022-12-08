@@ -24,7 +24,7 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
 from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
+    CategoricalInitMixinNA,
     CategoricalMethodsMixin,
 )
 
@@ -46,7 +46,7 @@ _unseen_docstring = (
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
+class MeanEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
     """
     The MeanEncoder() replaces categories by the mean value of the target for each
     category.
@@ -205,8 +205,7 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
 
         X, y = check_X_y(X, y)
-        self._fit(X)
-        self._get_feature_names_in(X)
+        variables_ = self._fit(X)
 
         self.encoder_dict_ = {}
 
@@ -217,7 +216,7 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         if self.smoothing == "auto":
             y_var = y.var(ddof=0)
-        for var in self.variables_:
+        for var in variables_:
             if self.smoothing == "auto":
                 damping = y.groupby(X[var]).var(ddof=0) / y_var
             else:
@@ -228,6 +227,9 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 _lambda * y.groupby(X[var]).mean() + (1.0 - _lambda) * y_prior
             ).to_dict()
 
+        # assign underscore parameters at the end in case code above fails
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:

@@ -25,7 +25,7 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
+    CategoricalInitMixinNA,
     CategoricalMethodsMixin,
 )
 
@@ -47,7 +47,7 @@ _unseen_docstring = (
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
+class CountFrequencyEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
     """
     The CountFrequencyEncoder() replaces categories by either the count or the
     percentage of observations per category.
@@ -183,13 +183,12 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             y is not needed in this encoder. You can pass y or None.
         """
         X = check_X(X)
-        self._fit(X)
-        self._get_feature_names_in(X)
+        variables_ = self._fit(X)
 
         self.encoder_dict_ = {}
 
         # learn encoding maps
-        for var in self.variables_:
+        for var in variables_:
             if self.encoding_method == "count":
                 self.encoder_dict_[var] = X[var].value_counts().to_dict()
 
@@ -200,4 +199,7 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         if self.unseen == "encode":
             self._unseen = 0
 
+        # assign underscore parameters at the end in case code above fails
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self

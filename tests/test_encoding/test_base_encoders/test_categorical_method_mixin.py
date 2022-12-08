@@ -2,28 +2,31 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
-    CategoricalMethodsMixin,
-)
+from feature_engine.encoding.base_encoder import CategoricalMethodsMixin
 
 
-@pytest.mark.parametrize("param", [1, "hola", [1, 2, 0], (True, False)])
-def test_categorical_init_mixin_raises_error(param):
+class MockClassFit(CategoricalMethodsMixin):
+    def __init__(self, missing_values):
+        self.missing_values = missing_values
+        self.variables = None
+        self.ignore_format = False
+
+
+def test_underscore_fit_method():
+    input_df = pd.DataFrame(
+        {
+            "words": ["dog", "dig", "cat"],
+            "animals": ["bird", "tiger", np.nan],
+        }
+    )
+
+    enc = MockClassFit(missing_values="raise")
     with pytest.raises(ValueError):
-        CategoricalInitMixin(ignore_format=param)
+        enc._fit(input_df)
 
-    with pytest.raises(ValueError):
-        CategoricalInitMixin(missing_values=param)
-
-
-@pytest.mark.parametrize("param", [(True, "ignore"), (False, "raise")])
-def test_categorical_init_mixin_assings_values_correctly(param):
-    format_, na_ = param
-    enc = CategoricalInitMixin(ignore_format=format_, missing_values=na_)
-
-    assert enc.ignore_format == format_
-    assert enc.missing_values == na_
+    enc = MockClassFit(missing_values="ignore")
+    variables_ = enc._fit(input_df)
+    assert variables_ == ["words", "animals"]
 
 
 class MockClass(CategoricalMethodsMixin):
@@ -40,24 +43,6 @@ class MockClass(CategoricalMethodsMixin):
 
     def fit(self):
         return self
-
-
-def test_categorical_methods_mixin_underscore_fit_method():
-    input_df = pd.DataFrame(
-        {
-            "words": ["dog", "dig", "cat"],
-            "animals": ["bird", "tiger", np.nan],
-        }
-    )
-
-    enc = MockClass()
-    with pytest.raises(ValueError):
-        enc._fit(input_df)
-
-    enc.missing_values = "ignore"
-    enc._fit(input_df)
-    assert enc.variables_ == ["words", "animals"]
-
 
 def test_categorical_methods_mixin_transform_no_unseen():
     input_df = pd.DataFrame({"words": ["dog", "dig", "cat"]})

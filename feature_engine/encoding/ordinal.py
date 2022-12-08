@@ -25,7 +25,7 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X, check_X_y
 from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
+    CategoricalInitMixinNA,
     CategoricalMethodsMixin,
 )
 
@@ -46,7 +46,7 @@ _unseen_docstring = (
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class OrdinalEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
+class OrdinalEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
     """
     The OrdinalEncoder() replaces categories by ordinal numbers
     (0, 1, 2, 3, etc). The numbers can be ordered based on the mean of the target
@@ -196,14 +196,11 @@ class OrdinalEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         else:
             X = check_X(X)
 
-        self._fit(X)
-        self._get_feature_names_in(X)
+        variables_ = self._fit(X)
 
-        # find mappings
         self.encoder_dict_ = {}
 
-        for var in self.variables_:
-
+        for var in variables_:
             if self.encoding_method == "ordered":
                 t = y.groupby(X[var]).mean()  # type: ignore
                 t = t.sort_values(ascending=True).index
@@ -219,4 +216,7 @@ class OrdinalEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         if self.unseen == "encode":
             self._unseen = -1
 
+        # assign underscore parameters at the end in case code above fails
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self

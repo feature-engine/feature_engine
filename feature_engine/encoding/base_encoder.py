@@ -28,12 +28,43 @@ from feature_engine.tags import _return_tags
 
 
 @Substitution(
-    missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
 )
 class CategoricalInitMixin:
-    """Shared initialization parameters across transformers.
+    """Shared initialization parameters across transformers. Sets and checks init
+    parameters.
+
+    Parameters
+    ----------
+    {variables}.
+
+    {ignore_format}
+    """
+    def __init__(
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        ignore_format: bool = False,
+    ) -> None:
+
+        if not isinstance(ignore_format, bool):
+            raise ValueError(
+                "ignore_format takes only booleans True and False. "
+                f"Got {ignore_format} instead."
+            )
+
+        self.variables = _check_init_parameter_variables(variables)
+        self.ignore_format = ignore_format
+
+
+@Substitution(
+    missing_values=_missing_values_docstring,
+    ignore_format=_ignore_format_docstring,
+    variables=_variables_categorical_docstring,
+)
+class CategoricalInitMixinNA:
+    """Shared initialization parameters across transformers. Sets and checks init
+    parameters.
 
     Parameters
     ----------
@@ -43,7 +74,6 @@ class CategoricalInitMixin:
 
     {ignore_format}
     """
-
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
@@ -68,11 +98,6 @@ class CategoricalInitMixin:
         self.missing_values = missing_values
 
 
-@Substitution(
-    missing_values=_missing_values_docstring,
-    ignore_format=_ignore_format_docstring,
-    variables=_variables_categorical_docstring,
-)
 class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """Shared methods across categorical transformers.
 
@@ -82,9 +107,10 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
     """
 
     def _fit(self, X: pd.DataFrame):
-        self._check_or_select_variables(X)
+        variables_ = self._check_or_select_variables(X)
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_, switch_param=True)
+            _check_contains_na(X, variables_, switch_param=True)
+        return variables_
 
     def _check_or_select_variables(self, X: pd.DataFrame):
         """
@@ -106,19 +132,20 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         """
         if self.ignore_format is False:
             # find categorical variables or check variables entered by user are object
-            self.variables_: List[
+            variables_: List[
                 Union[str, int]
             ] = _find_or_check_categorical_variables(X, self.variables)
         else:
             # select all variables or check variables entered by the user
-            self.variables_ = _find_all_variables(X, self.variables)
+            variables_ = _find_all_variables(X, self.variables)
+
+        return variables_
 
     def _get_feature_names_in(self, X: pd.DataFrame):
         """
         Returns attributes `featrure_names_in_` and `n_feature_names_in_`, which are
         standard for all transformers in the library.
         """
-
         # save input features
         self.feature_names_in_ = X.columns.tolist()
 

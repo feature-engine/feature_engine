@@ -16,7 +16,7 @@ from feature_engine._docstrings.init_parameters import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
+    CategoricalInitMixinNA,
     CategoricalMethodsMixin,
 )
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
@@ -31,7 +31,7 @@ from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
     n_features_in_=_n_features_in_docstring,
 )
 class MatchCategories(
-    CategoricalInitMixin, CategoricalMethodsMixin, GetFeatureNamesOutMixin
+    CategoricalInitMixinNA, CategoricalMethodsMixin, GetFeatureNamesOutMixin
 ):
     """
     MatchCategories() ensures that categorical variables are encoded as pandas

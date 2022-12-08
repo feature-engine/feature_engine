@@ -268,12 +268,12 @@ def _check_contains_na(
     if X[variables].isnull().any().any():
         if switch_param is False:
             raise ValueError(
-                "Some of the variables to transform contain NaN. Check and "
+                "Some of the variables in the dataset contain NaN. Check and "
                 "remove those before using this transformer."
             )
         else:
             raise ValueError(
-                "Some of the variables to transform contain NaN. Check and "
+                "Some of the variables in the dataset contain NaN. Check and "
                 "remove those before using this transformer or set the parameter "
                 "`missing_values='ignore'` when initialising this transformer."
             )

@@ -21,7 +21,7 @@ from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
+    CategoricalInitMixinNA,
     CategoricalMethodsMixin,
 )
 
@@ -35,7 +35,7 @@ from feature_engine.encoding.base_encoder import (
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
+class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
     """
     The RareLabelEncoder() groups rare or infrequent categories in
     a new category called "Rare", or any other name entered by the user.
@@ -178,12 +178,11 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
 
         X = check_X(X)
-        self._fit(X)
-        self._get_feature_names_in(X)
+        variables_ = self._fit(X)
 
         self.encoder_dict_ = {}
 
-        for var in self.variables_:
+        for var in variables_:
             if len(X[var].unique()) > self.n_categories:
 
                 # if the variable has more than the indicated number of categories
@@ -208,6 +207,8 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 )
                 self.encoder_dict_[var] = X[var].unique()
 
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
