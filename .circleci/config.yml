@@ -12,7 +12,7 @@ prepare_tox: &prepare_tox
     name: Install tox
     command: |
       pip install --upgrade pip
-      pip install venv
+      pip install virtualenv
       pip install --user tox
       
 
