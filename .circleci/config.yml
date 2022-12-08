@@ -12,7 +12,7 @@ prepare_tox: &prepare_tox
     name: Install tox
     command: |
       pip install --upgrade pip
-      sudo apt install python3.9-venv
+      pip install venv
       pip install --user tox
       
 
