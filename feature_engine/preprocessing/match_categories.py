@@ -113,17 +113,17 @@ class MatchCategories(
             y is not needed in this encoder. You can pass y or None.
         """
         X = check_X(X)
-        self._check_or_select_variables(X)
+        variables_ = self._check_or_select_variables(X)
 
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_, switch_param=True)
-
-        self._get_feature_names_in(X)
+            _check_contains_na(X, variables_, switch_param=True)
 
         self.category_dict_ = dict()
-        for var in self.variables_:
+        for var in variables_:
             self.category_dict_[var] = pd.Categorical(X[var]).categories
 
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
