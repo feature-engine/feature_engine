@@ -1,9 +1,10 @@
 import warnings
 
-import numpy as np
 import pandas as pd
 import pytest
 from numpy import nan
+
+from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import CountFrequencyEncoder
 
@@ -117,7 +118,7 @@ def test_automatically_select_variables_encode_with_frequency(df_enc):
 
 def test_encoding_when_nan_in_fit_df(df_enc):
     df = df_enc.copy()
-    df.loc[len(df)] = [np.nan, np.nan, np.nan]
+    df.loc[len(df)] = [nan, nan, nan]
 
     encoder = CountFrequencyEncoder(
         encoding_method="frequency",
@@ -126,14 +127,14 @@ def test_encoding_when_nan_in_fit_df(df_enc):
     encoder.fit(df_enc)
 
     X = encoder.transform(
-        pd.DataFrame({"var_A": ["A", np.nan], "var_B": ["A", np.nan], "target": [1, 0]})
+        pd.DataFrame({"var_A": ["A", nan], "var_B": ["A", nan], "target": [1, 0]})
     )
 
     # transform params
     pd.testing.assert_frame_equal(
         X,
         pd.DataFrame(
-            {"var_A": [0.3, np.nan], "var_B": [0.5, np.nan], "target": [1, 0]}
+            {"var_A": [0.3, nan], "var_B": [0.5, nan], "target": [1, 0]}
         ),
     )
 
@@ -400,7 +401,7 @@ def test_inverse_transform_when_no_unseen():
 def test_inverse_transform_when_ignore_unseen():
     df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
-    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", np.nan]})
+    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", nan]})
     enc = CountFrequencyEncoder(unseen="ignore")
     enc.fit(df1)
     dft = enc.transform(df2)
@@ -410,8 +411,26 @@ def test_inverse_transform_when_ignore_unseen():
 def test_inverse_transform_when_encode_unseen():
     df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
-    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", np.nan]})
+    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", nan]})
     enc = CountFrequencyEncoder(unseen="encode")
     enc.fit(df1)
     dft = enc.transform(df2)
     pd.testing.assert_frame_equal(enc.inverse_transform(dft), df3)
+
+
+def test_inverse_transform_raises_non_fitted_error():
+    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    enc = CountFrequencyEncoder()
+
+    # Test when fit is not called prior to transform.
+    with pytest.raises(NotFittedError):
+        enc.inverse_transform(df1)
+
+    df1.loc[len(df1)-1] = nan
+
+    with pytest.raises(ValueError):
+        enc.fit(df1)
+
+    # Test when fit is not called prior to transform.
+    with pytest.raises(NotFittedError):
+        enc.inverse_transform(df1)

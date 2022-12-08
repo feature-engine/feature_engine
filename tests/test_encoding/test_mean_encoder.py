@@ -1,6 +1,8 @@
-import numpy as np
 import pandas as pd
 import pytest
+
+from numpy import nan
+from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import MeanEncoder
 
@@ -116,7 +118,7 @@ def test_automatically_find_variables(df_enc):
 
 def test_encoding_when_nan_in_fit_df(df_enc):
     df = df_enc.copy()
-    df.loc[len(df)] = [np.nan, np.nan, 0]
+    df.loc[len(df)] = [nan, nan, 0]
 
     encoder = MeanEncoder(missing_values="ignore")
     encoder.fit(df[["var_A", "var_B"]], df["target"])
@@ -124,8 +126,8 @@ def test_encoding_when_nan_in_fit_df(df_enc):
     X = encoder.transform(
         pd.DataFrame(
             {
-                "var_A": ["A", np.nan],
-                "var_B": ["A", np.nan],
+                "var_A": ["A", nan],
+                "var_B": ["A", nan],
             }
         )
     )
@@ -135,8 +137,8 @@ def test_encoding_when_nan_in_fit_df(df_enc):
         X,
         pd.DataFrame(
             {
-                "var_A": [0.3333333333333333, np.nan],
-                "var_B": [0.2, np.nan],
+                "var_A": [0.3333333333333333, nan],
+                "var_B": [0.2, nan],
             }
         ),
     )
@@ -419,7 +421,7 @@ def test_inverse_transform_when_no_unseen():
 def test_inverse_transform_when_ignore_unseen():
     df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
-    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", np.nan]})
+    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", nan]})
     y = [1, 0, 1, 0, 1, 0]
     enc = MeanEncoder(unseen="ignore")
     enc.fit(df1, y)
@@ -436,6 +438,25 @@ def test_inverse_transform_when_encode_unseen():
     dft = enc.transform(df2)
     with pytest.raises(NotImplementedError):
         enc.inverse_transform(dft)
+
+
+def test_inverse_transform_raises_non_fitted_error():
+    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    y = [1, 0, 1, 0, 1, 0]
+    enc = MeanEncoder()
+
+    # Test when fit is not called prior to transform.
+    with pytest.raises(NotFittedError):
+        enc.inverse_transform(df1)
+
+    df1.loc[len(df1)-1] = nan
+
+    with pytest.raises(ValueError):
+        enc.fit(df1, y)
+
+    # Test when fit is not called prior to transform.
+    with pytest.raises(NotFittedError):
+        enc.inverse_transform(df1)
 
 
 @pytest.mark.parametrize("smoothing", ["hello", ["auto"], -1])

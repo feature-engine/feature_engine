@@ -45,12 +45,12 @@ def test_check_estimator_from_sklearn(estimator):
 
 _estimators = [
     CountFrequencyEncoder(),
-    # DecisionTreeEncoder(regression=False),
+    DecisionTreeEncoder(regression=False),
     MeanEncoder(),
-    # OneHotEncoder(),
+    OneHotEncoder(),
     OrdinalEncoder(),
     RareLabelEncoder(),
-    # WoEEncoder(),
+    WoEEncoder(),
     StringSimilarityEncoder(missing_values="raise"),
 ]
 
