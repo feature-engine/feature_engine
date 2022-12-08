@@ -12,8 +12,9 @@ prepare_tox: &prepare_tox
     name: Install tox
     command: |
       pip install --upgrade pip
-      pip install --user tox
       pip uninstall virtualenv
+      pip install --user tox
+      
 
 init_pypirc: &init_pypirc
   run:
