@@ -4,7 +4,7 @@ orbs:
 
 defaults: &defaults
   docker:
-    - image: circleci/python:3.9.0
+    - image: cimg/python:3.9.0
   working_directory: ~/project
 
 prepare_tox: &prepare_tox
@@ -26,7 +26,7 @@ init_pypirc: &init_pypirc
 jobs:
   test_feature_engine_py38:
     docker:
-      - image: circleci/python:3.8.0
+      - image: cimg/python:3.8.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -39,7 +39,7 @@ jobs:
 
   test_feature_engine_py39:
     docker:
-      - image: circleci/python:3.9.0
+      - image: cimg/python:3.9.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -52,7 +52,7 @@ jobs:
 
   test_feature_engine_py310:
     docker:
-      - image: circleci/python:3.10.0
+      - image: cimg/python:3.10.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -65,7 +65,7 @@ jobs:
 
   test_style:
     docker:
-      - image: circleci/python:3.9.0
+      - image: cimg/python:3.9.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -78,7 +78,7 @@ jobs:
 
   test_docs:
     docker:
-      - image: circleci/python:3.9.0
+      - image: cimg/python:3.9.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -91,7 +91,7 @@ jobs:
 
   test_type:
     docker:
-      - image: circleci/python:3.9.0
+      - image: cimg/python:3.9.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -104,7 +104,7 @@ jobs:
 
   upload_codecov:
     docker:
-      - image: circleci/python:3.9.0
+      - image: cimg/python:3.9.0
     working_directory: ~/project
     steps:
       - checkout:
