@@ -52,12 +52,6 @@ def test_regression(df_enc):
     pd.testing.assert_frame_equal(X.round(6), transf_df[["var_A", "var_B"]])
 
 
-def test_non_fitted_error(df_enc):
-    with pytest.raises(NotFittedError):
-        encoder = DecisionTreeEncoder()
-        encoder.transform(df_enc)
-
-
 def test_fit_raises_error_if_df_contains_na(df_enc_na):
     # test case 4: when dataset contains na, fit method
     with pytest.raises(ValueError):

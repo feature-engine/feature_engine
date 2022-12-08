@@ -236,8 +236,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         else:
             check_classification_targets(y)
 
-        self._fit(X)
-        self._get_feature_names_in(X)
+        variables_ = self._check_or_select_variables(X)
 
         if self.param_grid:
             param_grid = self.param_grid
@@ -247,7 +246,8 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         # initialize categorical encoder
         cat_encoder = OrdinalEncoder(
             encoding_method=self.encoding_method,
-            variables=self.variables_,
+            variables=variables_,
+            missing_values="raise",
             ignore_format=self.ignore_format,
             unseen="raise",
         )
@@ -256,22 +256,25 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         tree_discretiser = DecisionTreeDiscretiser(
             cv=self.cv,
             scoring=self.scoring,
-            variables=self.variables_,
+            variables=variables_,
             param_grid=param_grid,
             regression=self.regression,
             random_state=self.random_state,
         )
 
         # pipeline for the encoder
-        self.encoder_ = Pipeline(
+        encoder_ = Pipeline(
             [
                 ("categorical_encoder", cat_encoder),
                 ("tree_discretiser", tree_discretiser),
             ]
         )
 
-        self.encoder_.fit(X, y)
+        encoder_.fit(X, y)
 
+        self.encoder_ = encoder_
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:

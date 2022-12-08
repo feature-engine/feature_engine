@@ -209,6 +209,11 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_, switch_param=True)
 
+        X = self._encode(X)
+
+        return X
+
+    def _encode(self, X: pd.DataFrame) -> pd.DataFrame:
         # replace categories by the learned parameters
         for feature in self.encoder_dict_.keys():
             X[feature] = X[feature].map(self.encoder_dict_[feature])
