@@ -8,7 +8,10 @@ from pandas.api.types import is_numeric_dtype as is_numeric
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin, TransformerMixin
+from feature_engine._base_transformers.mixins import (
+    GetFeatureNamesOutMixin,
+    TransformerMixin,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
