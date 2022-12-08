@@ -11,8 +11,8 @@ prepare_tox: &prepare_tox
   run:
     name: Install tox
     command: |
+      apt-get remove python3-virtualenv
       pip install --upgrade pip
-      pip uninstall virtualenv
       pip install --user tox
       
 
