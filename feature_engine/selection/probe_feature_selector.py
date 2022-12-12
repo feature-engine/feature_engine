@@ -73,8 +73,46 @@ class ProbeFeatureSelection(BaseSelector):
         # check that there are more than 1 variable
         self._check_variable_number()
 
-        # save input efatures
-        pass
+        # save input features
+        self._get_feature_names_in(X)
+
+        # generate 3 random variables
+        self.probe_features_ = self._generate_probe_features(X.shape[0])
+
+        # get random variable names
+        self.random_variables_ = self.probe_features_.columns
+
+        X_new = pd.concat([X, self.probe_features_], axis=1)
+
+        # train model with all variables including the random variables
+        model = cross_validate(
+            self.estimator,
+            X_new,
+            y,
+            cv=self.n_iter,
+            scoring=self.scoring,
+            return_estimator=True,
+        )
+
+        # Initialize a dataframe that will contain the list of the feature/coeff
+        # importance for each cross-validation fold
+        feature_importances_cv = pd.DataFrame()
+
+        # Populate the feature_importances_cv dataframe with columns containing
+        # the feature importance values for each model returned by the cross
+        # validation.
+        # There are as many columns as folds.
+        for i in range(len(model["estimator"])):
+            m = model["estimator"][i]
+            feature_importances_cv[i] = get_feature_importances(m)
+
+        # add the variables as the index to feature_importances_cv
+        feature_importances_cv.index = X_new.columns
+
+        # save feature importances as an attribute
+        self.feature_importances_ = feature_importances_cv
+
+        return self
 
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
