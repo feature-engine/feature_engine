@@ -64,11 +64,11 @@ class ProbeFeatureSelection(BaseSelector):
         # check input dataframe
         X, y = check_X_y(X, y)
 
+        # find numerical and categorical variables
+        self.variables = _find_categorical_and_numerical_variables(X, None)
+
         # if required excluded variables that not in the input dataframe
         self._confirm_variables(X)
-
-        # find numerical and categorical variables
-        self.variables_ = _find_categorical_and_numerical_variables(X, None)
 
         # check that there are more than 1 variable
         self._check_variable_number()
@@ -83,3 +83,20 @@ class ProbeFeatureSelection(BaseSelector):
         each variable was worse than all three random variables.
         """
         pass
+
+    def _generate_probe_features(self, n_obs: int) -> pd.DataFrame:
+        """
+        Returns a dataframe of 3 random variables.
+        """
+        # create 3 random variables
+        binary_var = np.random.randint(0, 2, n_obs)
+        uniform_var = np.random.uniform(0, 1, 1).tolist() * n_obs
+        gaussian_var = np.random.normal(0, 3, n_obs)
+
+        # create dataframe
+        df = pd.DataFrame()
+        df["rndm_binary_var"] = binary_var
+        df["rndm_uniform_var"] = uniform_var
+        df["rndm_gaussian_var"] = gaussian_var
+
+        return df
