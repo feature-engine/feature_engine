@@ -3,6 +3,7 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
+from sklearn.model_selection import cross_validate
 
 from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
@@ -26,7 +27,7 @@ from feature_engine.selection._docstring import (
     _variables_numerical_docstring,
 )
 
-class ProbeFeatureSelection(BaseSelector):
+class ProbeFeaturesSelection(BaseSelector):
     """
 
 
