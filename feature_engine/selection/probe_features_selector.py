@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Dict
 
 import numpy as np
 import pandas as pd
@@ -115,7 +115,6 @@ class ProbeFeaturesSelection(BaseSelector):
 
         return self
 
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Return a tuple comprised of the variables and the number of times
@@ -139,3 +138,26 @@ class ProbeFeaturesSelection(BaseSelector):
         df["rndm_gaussian_var"] = gaussian_var
 
         return df
+
+
+    def _count_variables_importance_less_than_random_variables(self) -> Dict:
+        """
+        Count how many times a variable is less than the maximum value
+        of the random variables.
+        """
+        # create dictionary count frequency of a variable being less informative
+        # than the maximum value of a random variable
+        count_dict = {var: 0 for var in self.variables_}
+
+        for col in range(0, self.n_iter):
+            # get one iteration of the feature importances
+            tmp_importances = self.feature_importances_[col]
+
+            # identify max value of the random variables for this iteration
+            max_val_rndm_vars = tmp_importances[self.random_variables_].max()
+
+            for var in self.variables_:
+                if tmp_importances < max_val_rndm_vars:
+                    count_dict[var] += 1
+
+        return count_dict
