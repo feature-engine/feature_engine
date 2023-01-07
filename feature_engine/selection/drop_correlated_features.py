@@ -112,6 +112,22 @@ class DropCorrelatedFeatures(BaseSelector):
     --------
     pandas.corr
     feature_engine.selection.SmartCorrelationSelection
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import DropCorrelatedFeatures
+    >>> X = pd.DataFrame(dict(x1 = [1,2,1,1],
+    >>>                     x2 = [2,4,3,1],
+    >>>                     x3 = [True, False, False, False]))
+    >>> dcf = DropCorrelatedFeatures(threshold=0.7)
+    >>> dcf.fit_transform(X)
+        x1     x3
+    0   1   True
+    1   2  False
+    2   1  False
+    3   1  False
     """
 
     def __init__(

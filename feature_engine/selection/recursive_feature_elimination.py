@@ -112,6 +112,27 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
 
     {transform}
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from feature_engine.selection import RecursiveFeatureElimination
+    >>> X = pd.DataFrame(dict(x1 = [1000,2000,1000,1000,2000,3000],
+    >>>                     x2 = [2,4,3,1,2,2],
+    >>>                     x3 = [1,1,1,0,0,0],
+    >>>                     x4 = [1,2,1,1,0,1],
+    >>>                     x5 = [1,1,1,1,1,1]))
+    >>> y = pd.Series([1,0,0,1,1,0])
+    >>> rfe = RecursiveFeatureElimination(RandomForestClassifier(), cv=2)
+    >>> rfe.fit_transform(X, y)
+        x2  x3  x5
+    0   2   1   1
+    1   4   1   1
+    2   3   1   1
+    3   1   0   1
+    4   2   0   1
+    5   2   0   1
     """
 
     def fit(self, X: pd.DataFrame, y: pd.Series):

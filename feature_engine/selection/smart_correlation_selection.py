@@ -152,6 +152,35 @@ class SmartCorrelatedSelection(BaseSelector):
     --------
     pandas.corr
     feature_engine.selection.DropCorrelatedFeatures
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import SmartCorrelatedSelection
+    >>> X = pd.DataFrame(dict(x1 = [1,2,1,1],
+    >>>                     x2 = [2,4,3,1],
+    >>>                     x3 = [True, False, False, False]))
+    >>> scs = SmartCorrelatedSelection(threshold=0.7)
+    >>> scs.fit_transform(X)
+        x1     x3
+    0   1   True
+    1   2  False
+    2   1  False
+    3   1  False
+
+    It is also possible alternative selection methods, in this case seleting features with higher variance:
+
+    >>> X = pd.DataFrame(dict(x1 = [1000,2000,1000,1000],
+    >>>                     x2 = [2,4,3,1],
+    >>>                     x3 = [True, False, False, False]))
+    >>> scs = SmartCorrelatedSelection(threshold=0.7, selection_method="variance")
+    >>> scs.fit_transform(X)
+            x1     x3
+    0  1000   True
+    1  2000  False
+    2  1000  False
+    3  1000  False
     """
 
     def __init__(

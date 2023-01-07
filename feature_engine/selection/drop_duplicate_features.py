@@ -91,6 +91,21 @@ class DropDuplicateFeatures(BaseSelector):
     transform:
         Remove duplicated features.
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import DropDuplicateFeatures
+    >>> X = pd.DataFrame(dict(x1 = [1,1,1,1],
+    >>>                     x2 = [1,1,1,1],
+    >>>                     x3 = [True, False, False, False]))
+    >>> ddf = DropDuplicateFeatures()
+    >>> ddf.fit_transform(X)
+        x1     x3
+    0   1   True
+    1   1  False
+    2   1  False
+    3   1  False
     """
 
     def __init__(
