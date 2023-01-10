@@ -217,16 +217,16 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 ]
 
         else:
-            # return k-1 dummies
-            if self.drop_last:
-                for var in variables_:
-                    category_ls = [x for x in X[var].unique()]
+            for var in variables_:
+                category_ls = list(X[var].unique())
+
+                # return k-1 dummies
+                if self.drop_last:
                     self.encoder_dict_[var] = category_ls[:-1]
 
-            # return k dummies
-            else:
-                for var in variables_:
-                    self.encoder_dict_[var] = [x for x in X[var].unique()]
+                # return k dummies
+                else:
+                    self.encoder_dict_[var] = category_ls
 
         self.variables_binary_ = [
             var for var in variables_ if X[var].nunique() == 2
