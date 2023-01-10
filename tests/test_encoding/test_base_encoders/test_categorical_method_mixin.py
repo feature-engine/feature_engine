@@ -12,27 +12,24 @@ class MockClassFit(CategoricalMethodsMixin):
         self.ignore_format = ignore_format
 
 
-def test_underscore_fit_method():
+def test_underscore_check_na_method():
     input_df = pd.DataFrame(
         {
             "words": ["dog", "dig", "cat"],
             "animals": ["bird", "tiger", np.nan],
         }
     )
+    variables = ["words", "animals"]
 
     enc = MockClassFit(missing_values="raise")
     with pytest.raises(ValueError) as record:
-        enc._fit(input_df)
+        enc._check_na(input_df, variables)
     msg = (
         "Some of the variables in the dataset contain NaN. Check and "
         "remove those before using this transformer or set the parameter "
         "`missing_values='ignore'` when initialising this transformer."
     )
     assert str(record.value) == msg
-
-    enc = MockClassFit(missing_values="ignore")
-    variables_ = enc._fit(input_df)
-    assert variables_ == ["words", "animals"]
 
 
 def test_check_or_select_variables():

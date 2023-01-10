@@ -205,7 +205,8 @@ class MeanEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
         """
 
         X, y = check_X_y(X, y)
-        variables_ = self._fit(X)
+        variables_ = self._check_or_select_variables(X)
+        self._check_na(X, variables_)
 
         self.encoder_dict_ = {}
 

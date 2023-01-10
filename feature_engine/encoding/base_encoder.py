@@ -106,11 +106,9 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
     - GetFeatureNamesOutMixin brings method get_feature_names_out().
     """
 
-    def _fit(self, X: pd.DataFrame):
-        variables_ = self._check_or_select_variables(X)
+    def _check_na(self, X: pd.DataFrame, variables):
         if self.missing_values == "raise":
-            _check_contains_na(X, variables_, switch_param=True)
-        return variables_
+            _check_contains_na(X, variables, switch_param=True)
 
     def _check_or_select_variables(self, X: pd.DataFrame):
         """

@@ -196,7 +196,8 @@ class OrdinalEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
         else:
             X = check_X(X)
 
-        variables_ = self._fit(X)
+        variables_ = self._check_or_select_variables(X)
+        self._check_na(X, variables_)
 
         self.encoder_dict_ = {}
 
