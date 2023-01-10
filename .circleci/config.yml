@@ -4,14 +4,15 @@ orbs:
 
 defaults: &defaults
   docker:
-    - image: circleci/python:3.9.0
+    - image: cimg/python:3.9.0
   working_directory: ~/project
 
 prepare_tox: &prepare_tox
   run:
     name: Install tox
     command: |
-      sudo pip install --upgrade pip
+      pip install --upgrade pip
+      pip uninstall -y virtualenv
       pip install --user tox
 
 init_pypirc: &init_pypirc
@@ -22,11 +23,10 @@ init_pypirc: &init_pypirc
       echo -e "repository = $FE_PYPI_URL" >> ~/.pypirc
       echo -e "username = $FE_PYPI_USER" >> ~/.pypirc
       echo -e "password = $FE_PYPI_API_KEY" >> ~/.pypirc
-
 jobs:
   test_feature_engine_py38:
     docker:
-      - image: circleci/python:3.8.0
+      - image: cimg/python:3.8.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -36,10 +36,9 @@ jobs:
           name: Run tests with Python 3.8
           command: |
             tox -e py38
-
   test_feature_engine_py39:
     docker:
-      - image: circleci/python:3.9.0
+      - image: cimg/python:3.9.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -49,10 +48,9 @@ jobs:
           name: Run tests with Python 3.9
           command: |
             tox -e py39
-
   test_feature_engine_py310:
     docker:
-      - image: circleci/python:3.10.0
+      - image: cimg/python:3.10.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -62,10 +60,9 @@ jobs:
           name: Run tests with Python 3.10
           command: |
             tox -e py310
-
   test_style:
     docker:
-      - image: circleci/python:3.9.0
+      - image: cimg/python:3.9.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -75,10 +72,9 @@ jobs:
           name: Run stylechecks
           command: |
             tox -e stylechecks
-
   test_docs:
     docker:
-      - image: circleci/python:3.9.0
+      - image: cimg/python:3.9.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -88,10 +84,9 @@ jobs:
           name: Run doc build
           command: |
             tox -e docs
-
   test_type:
     docker:
-      - image: circleci/python:3.9.0
+      - image: cimg/python:3.9.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -101,10 +96,9 @@ jobs:
           name: Run typechecks
           command: |
             tox -e typechecks
-
   upload_codecov:
     docker:
-      - image: circleci/python:3.9.0
+      - image: cimg/python:3.9.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -135,7 +129,6 @@ jobs:
             python setup.py sdist bdist_wheel --universal
             ls -l dist
             twine upload dist/*
-
 workflows:
   version: 2
   test-all:
