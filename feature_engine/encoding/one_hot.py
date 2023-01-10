@@ -204,9 +204,10 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         self.encoder_dict_ = {}
 
-        # make dummies only for the most popular categories
-        if self.top_categories:
-            for var in variables_:
+        for var in variables_:
+
+            # make dummies only for the most popular categories
+            if self.top_categories:
                 self.encoder_dict_[var] = [
                     x
                     for x in X[var]
@@ -216,8 +217,7 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .index
                 ]
 
-        else:
-            for var in variables_:
+            else:
                 category_ls = list(X[var].unique())
 
                 # return k-1 dummies
