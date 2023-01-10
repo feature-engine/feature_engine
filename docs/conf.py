@@ -120,11 +120,6 @@ html_theme_options = {
             "icon": "fab fa-github-square",
         },
         {
-            "name": "Twitter",
-            "url": "https://twitter.com/Soledad_Galli",
-            "icon": "fab fa-twitter-square",
-        },
-        {
             "name": "Blog",
             "url": "https://www.blog.trainindata.com/",
             "icon": "fab fa-blogger",
