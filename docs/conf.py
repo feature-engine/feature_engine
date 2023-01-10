@@ -185,6 +185,7 @@ htmlhelp_basename = "feature_enginedoc"
 autodoc_default_options = {
     "members": True,
     "inherited-members": True,
+    "exclude-members": "set_output",
 }
 
 # generate autosummary even if no references
