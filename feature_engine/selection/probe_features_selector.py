@@ -11,7 +11,7 @@ from feature_engine.selection.base_selector import BaseSelector, get_feature_imp
 
 from feature_engine._variable_handling.variable_type_selection import (
     _find_all_variables,
-    _find_categorical_and_numerical_variables,
+    _find_or_check_numerical_variables,
 )
 
 from feature_engine.selection._docstring import (
@@ -36,8 +36,8 @@ class ProbeFeaturesSelection(BaseSelector):
         self,
         estimator,
         scoring: str = "roc_auc",
-        n_iter: int = 10,
-        seed: int = 0,
+        cv: int = 10,
+        random_state: int = 0,
         # TODO: Do we need confirm_variable given that this selector will not be used in a pipeline?
         # TODO: Do we need the parameter because it is a param of BaseSelector?
         confirm_variables: bool = False,
@@ -46,8 +46,8 @@ class ProbeFeaturesSelection(BaseSelector):
         super().__init__(confirm_variables)
         self.estimator = estimator
         self.scoring = scoring
-        self.n_iter = n_iter
-        self.seed = seed
+        self.cv = cv
+        self.random_state = random_state
 
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
@@ -65,8 +65,8 @@ class ProbeFeaturesSelection(BaseSelector):
         # check input dataframe
         X, y = check_X_y(X, y)
 
-        # find numerical and categorical variables
-        self.variables = _find_categorical_and_numerical_variables(X, None)
+        # find numerical variables
+        self.variables_ = _find_or_check_numerical_variables(X, None)
 
         # if required excluded variables that not in the input dataframe
         self._confirm_variables(X)
@@ -90,7 +90,7 @@ class ProbeFeaturesSelection(BaseSelector):
             self.estimator,
             X_new,
             y,
-            cv=self.n_iter,
+            cv=self.cv,
             scoring=self.scoring,
             return_estimator=True,
         )
@@ -149,7 +149,7 @@ class ProbeFeaturesSelection(BaseSelector):
         # than the maximum value of a random variable
         count_dict = {var: 0 for var in self.variables_}
 
-        for col in range(0, self.n_iter):
+        for col in range(0, self.cv):
             # get one iteration of the feature importances
             tmp_importances = self.feature_importances_[col]
 
