@@ -35,7 +35,7 @@ Documentation
     - Add example code snippets to the imputation module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
     - Add example code snippets to the discretisation module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
     - Add example code snippets to the creation module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
-    - Add exaple code snippets to the datetime module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Add example code snippets to the datetime module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
     - Update the user guide docs for the forecasting feature transformers (`Soledad Galli <https://github.com/solegalli>`_)
     - Update the user guide docs for datetime features and cyclical features (`Soledad Galli <https://github.com/solegalli>`_)
     - Fix badges in README (`Gleb Levitski <https://github.com/GLevV>`_)
@@ -81,11 +81,11 @@ New functionality
 ~~~~~~~~~~~~~~~~~
 
     - The `MeanEncoder` can now implement smoothing during the encoding to handle high cardinality (`Gleb Levitski <https://github.com/GLevV>`_)
-    - The `MeanlEncoder` can now encode unseen categories (`Gleb Levitski <https://github.com/GLevV>`_)
+    - The `MeanEncoder` can now encode unseen categories (`Gleb Levitski <https://github.com/GLevV>`_)
     - The `OrdinalEncoder` can now encode unseen categories (`Soledad Galli <https://github.com/solegalli>`_)
     - The `CountFrequencyEncoder` can now encode unseen categories (`David Cortes <https://github.com/david-cortes>`_)
     - All outlier transformers can now detect outliers based on the MAD rule (`Gleb Levitski <https://github.com/GLevV>`_)
-    - Add automatic calculation of PSI threshold in `DripHighPSIFeatures` (`Gleb Levitski <https://github.com/GLevV>`_)
+    - Add automatic calculation of PSI threshold in `DropHighPSIFeatures` (`Gleb Levitski <https://github.com/GLevV>`_)
     - All feature selection transformers now have the method `get_support()` (`Soledad Galli <https://github.com/solegalli>`_)
 
 Bug fixes
@@ -116,7 +116,7 @@ Code improvements
     - Adds code coverage test (`Soledad Galli <https://github.com/solegalli>`_)
     - Changes logic of encoding unseen categories to work with inverse_transform  (`Soledad Galli <https://github.com/solegalli>`_)
     - Increases code coverage for encoders  (`Soledad Galli <https://github.com/solegalli>`_)
-    - Remove CategoricalInitExpandedMixin (`Soledad Galli <https://github.com/solegalli>`_)
+    - Removes CategoricalInitExpandedMixin (`Soledad Galli <https://github.com/solegalli>`_)
     - Removes checks for encoding dictionaries in all encoders (`Soledad Galli <https://github.com/solegalli>`_)
     - Refactors creation module (`Soledad Galli <https://github.com/solegalli>`_)
     - Refactors docstring module (`Soledad Galli <https://github.com/solegalli>`_)
