@@ -1,5 +1,8 @@
+import numpy as np
 import pandas as pd
 import pytest
+
+from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import WoEEncoder
 
@@ -207,16 +210,27 @@ def test_error_if_denominator_probability_is_zero():
 def test_error_if_contains_na_in_fit(df_enc_na):
     # test case 9: when dataset contains na, fit method
     encoder = WoEEncoder(variables=None)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as record:
         encoder.fit(df_enc_na[["var_A", "var_B"]], df_enc_na["target"])
+
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
+    assert str(record.value) == msg
 
 
 def test_error_if_df_contains_na_in_transform(df_enc, df_enc_na):
     # test case 10: when dataset contains na, transform method}
     encoder = WoEEncoder(variables=None)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    with pytest.raises(ValueError):
-        encoder.transform(df_enc_na)
+    with pytest.raises(ValueError) as record:
+        encoder.transform(df_enc_na[["var_A", "var_B"]])
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
+    assert str(record.value) == msg
 
 
 def test_on_numerical_variables(df_enc_numeric):
@@ -266,6 +280,27 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     assert X["var_A"].dtypes == float
 
 
-def test_error_if_rare_labels_not_permitted_value():
+@pytest.mark.parametrize(
+    "errors", ["empanada", False, 1, ("raise", "ignore"), ["ignore"]]
+)
+def test_error_if_rare_labels_not_permitted_value(errors):
     with pytest.raises(ValueError):
-        WoEEncoder(unseen="empanada")
+        WoEEncoder(unseen=errors)
+
+
+def test_inverse_transform_raises_non_fitted_error():
+    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    enc = WoEEncoder()
+
+    # Test when fit is not called prior to transform.
+    with pytest.raises(NotFittedError):
+        enc.inverse_transform(df1)
+
+    df1.loc[len(df1) - 1] = np.nan
+
+    with pytest.raises(ValueError):
+        enc.fit(df1, pd.Series([0, 1, 0, 1, 1, 0]))
+
+    # Test when fit is not called prior to transform.
+    with pytest.raises(NotFittedError):
+        enc.inverse_transform(df1)

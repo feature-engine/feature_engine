@@ -156,17 +156,31 @@ def test_error_if_input_df_contains_categories_not_present_in_training_df(
 
 def test_fit_raises_error_if_df_contains_na(df_enc_na):
     # test case 4: when dataset contains na, fit method
-    with pytest.raises(ValueError):
-        encoder = OrdinalEncoder(encoding_method="arbitrary")
+    encoder = OrdinalEncoder(encoding_method="arbitrary")
+    with pytest.raises(ValueError) as record:
         encoder.fit(df_enc_na)
+
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
+    assert str(record.value) == msg
 
 
 def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
     # test case 4: when dataset contains na, transform method
-    with pytest.raises(ValueError):
-        encoder = OrdinalEncoder(encoding_method="arbitrary")
-        encoder.fit(df_enc)
+    encoder = OrdinalEncoder(encoding_method="arbitrary")
+    encoder.fit(df_enc)
+    with pytest.raises(ValueError) as record:
         encoder.transform(df_enc_na)
+
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
+    assert str(record.value) == msg
 
 
 def test_ordered_encoding_1_variable_ignore_format(df_enc_numeric):
@@ -233,7 +247,9 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     assert X["var_A"].dtypes == int
 
 
-@pytest.mark.parametrize("unseen", ["other", False, 1])
+@pytest.mark.parametrize(
+    "unseen", ["empanada", False, 1, ("raise", "ignore"), ["ignore"]]
+)
 def test_error_if_unseen_not_permitted_value(unseen):
     with pytest.raises(ValueError):
         OrdinalEncoder(unseen=unseen)
