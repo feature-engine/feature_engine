@@ -166,14 +166,22 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         ignore_format: bool = False,
     ) -> None:
 
-        if top_categories and not isinstance(top_categories, int):
-            raise ValueError("top_categories takes only integer numbers, 1, 2, 3, etc.")
+        if top_categories and (
+            not isinstance(top_categories, int) or top_categories < 0
+        ):
+            raise ValueError(
+                f"top_categories takes only positive integers. Got {top_categories} instead"
+            )
 
         if not isinstance(drop_last, bool):
-            raise ValueError("drop_last takes only True or False")
+            raise ValueError(
+                f"drop_last takes only True or False. Got {drop_last} instead."
+            )
 
         if not isinstance(drop_last_binary, bool):
-            raise ValueError("drop_last_binary takes only True or False")
+            raise ValueError(
+                f"drop_last_binary takes only True or False. Got {drop_last_binary} instead."
+            )
 
         super().__init__(variables, ignore_format)
         self.top_categories = top_categories
@@ -228,9 +236,7 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 else:
                     self.encoder_dict_[var] = category_ls
 
-        self.variables_binary_ = [
-            var for var in variables_ if X[var].nunique() == 2
-        ]
+        self.variables_binary_ = [var for var in variables_ if X[var].nunique() == 2]
 
         # automatically encode binary variables as 1 dummy
         if self.drop_last_binary:

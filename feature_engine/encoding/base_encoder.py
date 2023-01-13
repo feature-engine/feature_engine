@@ -41,6 +41,7 @@ class CategoricalInitMixin:
 
     {ignore_format}
     """
+
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
@@ -74,6 +75,7 @@ class CategoricalInitMixinNA:
 
     {ignore_format}
     """
+
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
@@ -130,9 +132,9 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         """
         if self.ignore_format is False:
             # find categorical variables or check variables entered by user are object
-            variables_: List[
-                Union[str, int]
-            ] = _find_or_check_categorical_variables(X, self.variables)
+            variables_: List[Union[str, int]] = _find_or_check_categorical_variables(
+                X, self.variables
+            )
         else:
             # select all variables or check variables entered by the user
             variables_ = _find_all_variables(X, self.variables)

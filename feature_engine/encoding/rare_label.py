@@ -147,7 +147,9 @@ class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
             raise ValueError(f"tol takes values between 0 and 1. Got {tol} instead.")
 
         if not isinstance(n_categories, int) or n_categories < 0:
-            raise ValueError(f"n_categories takes only positive integer numbers. Got {n_categories} instead.")
+            raise ValueError(
+                f"n_categories takes only positive integer numbers. Got {n_categories} instead."
+            )
 
         if max_n_categories is not None:
             if (
@@ -155,11 +157,14 @@ class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
                 or isinstance(max_n_categories, int)
                 and max_n_categories < 0
             ):
-                raise ValueError(f"max_n_categories takes only positive integer numbers. Got {max_n_categories} instead.")
+                raise ValueError(
+                    f"max_n_categories takes only positive integer numbers. Got {max_n_categories} instead."
+                )
 
         if not isinstance(replace_with, (str, int, float)):
-            raise ValueError(f"replace_with can should be a string, ingteger or float. Got {replace_with} instead.")
-
+            raise ValueError(
+                f"replace_with can should be a string, ingteger or float. Got {replace_with} instead."
+            )
 
         super().__init__(variables, missing_values, ignore_format)
         self.tol = tol
