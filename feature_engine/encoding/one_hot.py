@@ -170,7 +170,8 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             not isinstance(top_categories, int) or top_categories < 0
         ):
             raise ValueError(
-                f"top_categories takes only positive integers. Got {top_categories} instead"
+                "top_categories takes only positive integers. "
+                f"Got {top_categories} instead"
             )
 
         if not isinstance(drop_last, bool):
@@ -180,7 +181,8 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         if not isinstance(drop_last_binary, bool):
             raise ValueError(
-                f"drop_last_binary takes only True or False. Got {drop_last_binary} instead."
+                "drop_last_binary takes only True or False. "
+                f"Got {drop_last_binary} instead."
             )
 
         super().__init__(variables, ignore_format)
