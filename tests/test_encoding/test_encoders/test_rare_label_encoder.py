@@ -95,7 +95,7 @@ def test_correctly_ignores_nan_in_transform(df_enc_big):
 def test_correctly_ignores_nan_in_fit(df_enc_big):
 
     df = df_enc_big.copy()
-    df.loc[df["var_C"]=="G", "var_C"] = np.nan
+    df.loc[df["var_C"] == "G", "var_C"] = np.nan
 
     encoder = RareLabelEncoder(
         tol=0.06,
@@ -322,9 +322,6 @@ def test_variables_cast_as_category(df_enc_big):
     assert encoder.n_features_in_ == 3
     # test transform output
     pd.testing.assert_frame_equal(X, df)
-
-
-
 
 
 def test_inverse_transform_raises_not_implemented_error(df_enc_big):

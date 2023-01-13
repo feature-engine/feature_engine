@@ -8,15 +8,13 @@ from feature_engine.encoding import MeanEncoder
 
 
 # test init params
-@pytest.mark.parametrize(
-    "params", [("raise", True, "auto"), ("ignore", False, 1)]
-)
+@pytest.mark.parametrize("params", [("raise", True, "auto"), ("ignore", False, 1)])
 def test_init_param_assignment(params):
     MeanEncoder(
         missing_values=params[0],
         ignore_format=params[1],
         unseen=params[0],
-        smoothing=params[2]
+        smoothing=params[2],
     )
 
 
