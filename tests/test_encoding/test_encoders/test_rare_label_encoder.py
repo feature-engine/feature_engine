@@ -177,19 +177,29 @@ def test_user_provides_grouping_label_name_and_variable_list(df_enc_big):
     pd.testing.assert_frame_equal(X, df)
 
 
-def test_error_if_tol_not_between_0_and_1():
+# init params
+@pytest.mark.parametrize("tol", ["hello", [0.5], -1, 1.5])
+def test_error_if_tol_not_between_0_and_1(tol):
     with pytest.raises(ValueError):
-        RareLabelEncoder(tol=5)
+        RareLabelEncoder(tol=tol)
 
 
-def test_error_if_n_categories_not_int():
+@pytest.mark.parametrize("n_cat", ["hello", [0.5], -0.1, 1.5])
+def test_error_if_n_categories_not_int(n_cat):
     with pytest.raises(ValueError):
-        RareLabelEncoder(n_categories=0.5)
+        RareLabelEncoder(n_categories=n_cat)
 
 
-# def test_error_if_replace_with_not_string():
-#     with pytest.raises(ValueError):
-#         RareLabelEncoder(replace_with=0.5)
+@pytest.mark.parametrize("max_n_categories", ["hello", ["auto"], -1, 0.5])
+def test_raises_error_when_max_n_categories_not_allowed(max_n_categories):
+    with pytest.raises(ValueError):
+        RareLabelEncoder(max_n_categories=max_n_categories)
+
+
+@pytest.mark.parametrize("replace_with", [set("hello"), ["auto"]])
+def test_error_if_replace_with_not_string(replace_with):
+    with pytest.raises(ValueError):
+        RareLabelEncoder(replace_with=replace_with)
 
 
 def test_warning_if_variable_cardinality_less_than_n_categories(df_enc_big):
@@ -201,17 +211,29 @@ def test_warning_if_variable_cardinality_less_than_n_categories(df_enc_big):
 
 def test_fit_raises_error_if_df_contains_na(df_enc_big_na):
     # test case 4: when dataset contains na, fit method
-    with pytest.raises(ValueError):
-        encoder = RareLabelEncoder(n_categories=4)
+    encoder = RareLabelEncoder(n_categories=4)
+    with pytest.raises(ValueError) as record:
+        msg = (
+            "Some of the variables in the dataset contain NaN. Check and "
+            "remove those before using this transformer or set the parameter "
+            "`missing_values='ignore'` when initialising this transformer."
+        )
         encoder.fit(df_enc_big_na)
+    assert str(record.value) == msg
 
 
 def test_transform_raises_error_if_df_contains_na(df_enc_big, df_enc_big_na):
     # test case 5: when dataset contains na, transform method
-    with pytest.raises(ValueError):
-        encoder = RareLabelEncoder(n_categories=4)
-        encoder.fit(df_enc_big)
+    encoder = RareLabelEncoder(n_categories=4)
+    encoder.fit(df_enc_big)
+    with pytest.raises(ValueError) as record:
+        msg = (
+            "Some of the variables in the dataset contain NaN. Check and "
+            "remove those before using this transformer or set the parameter "
+            "`missing_values='ignore'` when initialising this transformer."
+        )
         encoder.transform(df_enc_big_na)
+    assert str(record.value) == msg
 
 
 def test_max_n_categories(df_enc_big):
@@ -302,10 +324,7 @@ def test_variables_cast_as_category(df_enc_big):
     pd.testing.assert_frame_equal(X, df)
 
 
-@pytest.mark.parametrize("max_n_categories", ["hello", ["auto"], -1, 0.5])
-def test_raises_error_when_not_allowed_smoothing_param_in_init(max_n_categories):
-    with pytest.raises(ValueError):
-        RareLabelEncoder(max_n_categories=max_n_categories)
+
 
 
 def test_inverse_transform_raises_not_implemented_error(df_enc_big):
