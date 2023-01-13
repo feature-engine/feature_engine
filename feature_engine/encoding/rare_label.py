@@ -188,7 +188,7 @@ class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
 
                 # if the variable has more than the indicated number of categories
                 # the encoder will learn the most frequent categories
-                t = pd.Series(X[var].value_counts() / float(len(X)))
+                t = X[var].value_counts(normalize=True)
 
                 # non-rare labels:
                 freq_idx = t[t >= self.tol].index

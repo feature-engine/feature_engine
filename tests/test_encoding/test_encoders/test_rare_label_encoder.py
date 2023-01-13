@@ -54,7 +54,7 @@ def test_defo_params_plus_automatically_find_variables(df_enc_big):
     pd.testing.assert_frame_equal(X, df)
 
 
-def test_correctly_ignores_nan(df_enc_big):
+def test_correctly_ignores_nan_in_transform(df_enc_big):
     encoder = RareLabelEncoder(
         tol=0.06,
         n_categories=5,
@@ -85,6 +85,48 @@ def test_correctly_ignores_nan(df_enc_big):
             "var_A": ["A", np.nan, "Rare"],
             "var_B": ["A", np.nan, "Rare"],
             "var_C": ["C", np.nan, "Rare"],
+        }
+    )
+
+    X = encoder.transform(t)
+    pd.testing.assert_frame_equal(X, tt)
+
+
+def test_correctly_ignores_nan_in_fit(df_enc_big):
+
+    df = df_enc_big.copy()
+    df.loc[df["var_C"]=="G", "var_C"] = np.nan
+
+    encoder = RareLabelEncoder(
+        tol=0.06,
+        n_categories=3,
+        missing_values="ignore",
+    )
+    X = encoder.fit_transform(df)
+
+    # expected:
+    frequenc_cat = {
+        "var_A": ["B", "D", "A", "G", "C"],
+        "var_B": ["A", "D", "B", "G", "C"],
+        "var_C": ["C", "D", "B", "A"],
+    }
+    assert encoder.encoder_dict_ == frequenc_cat
+
+    # input
+    t = pd.DataFrame(
+        {
+            "var_A": ["A", np.nan, "J", "G"],
+            "var_B": ["A", np.nan, "J", "G"],
+            "var_C": ["C", np.nan, "J", "G"],
+        }
+    )
+
+    # expected
+    tt = pd.DataFrame(
+        {
+            "var_A": ["A", np.nan, "Rare", "G"],
+            "var_B": ["A", np.nan, "Rare", "G"],
+            "var_C": ["C", np.nan, "Rare", "Rare"],
         }
     )
 
