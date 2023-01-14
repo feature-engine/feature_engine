@@ -123,8 +123,7 @@ class IncreasingWidthDiscretiser(BaseDiscretiser):
             min_, max_ = X[var].min(), X[var].max()
             increment = np.power(max_ - min_, 1.0 / self.bins)
             bins = np.r_[min_, min_ + np.power(increment, np.arange(1, self.bins + 1))]
-            # same as pandas precision, done for numerical stability
-            bins = bins.round(3)
+            bins = np.sort(bins)
 
             # Prepend/Append infinities
             bins = list(bins)
