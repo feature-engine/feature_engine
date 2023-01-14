@@ -3,7 +3,7 @@
 .. currentmodule:: feature_engine.discretisation
 
 IncreasingWidthDiscretiser
-=====================
+==========================
 
 The :class:`IncreasingWidthDiscretiser()` divides continuous numerical variables into
 intervals of increasing width with equal increments. Note that the
