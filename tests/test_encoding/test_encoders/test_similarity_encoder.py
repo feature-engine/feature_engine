@@ -94,17 +94,38 @@ def test_error_if_handle_missing_invalid(handle_missing):
         StringSimilarityEncoder(missing_values=handle_missing)
 
 
+@pytest.mark.parametrize("missing_vals", ["other", False, 1])
+def test_error_if_missing_values_not_recognized_in_fit(missing_vals, df_enc):
+    enc = StringSimilarityEncoder()
+    enc.missing_values = missing_vals
+    with pytest.raises(ValueError):
+        enc.fit(df_enc)
+
+
 def test_nan_behaviour_error_fit(df_enc_big_na):
     encoder = StringSimilarityEncoder(missing_values="raise")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as record:
         encoder.fit(df_enc_big_na)
+
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
+    assert str(record.value) == msg
 
 
 def test_nan_behaviour_error_transform(df_enc_big, df_enc_big_na):
     encoder = StringSimilarityEncoder(missing_values="raise")
     encoder.fit(df_enc_big)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as record:
         encoder.transform(df_enc_big_na)
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
+    assert str(record.value) == msg
 
 
 def test_nan_behaviour_impute(df_enc_big_na):

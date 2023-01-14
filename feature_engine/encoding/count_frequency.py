@@ -12,6 +12,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters import (
     _ignore_format_docstring,
+    _missing_values_docstring,
     _unseen_docstring,
     _variables_categorical_docstring,
 )
@@ -24,7 +25,7 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
+    CategoricalInitMixinNA,
     CategoricalMethodsMixin,
 )
 
@@ -36,6 +37,7 @@ _unseen_docstring = (
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
+    missing_values=_missing_values_docstring,
     variables=_variables_categorical_docstring,
     unseen=_unseen_docstring,
     variables_=_variables_attribute_docstring,
@@ -45,7 +47,7 @@ _unseen_docstring = (
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
+class CountFrequencyEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
     """
     The CountFrequencyEncoder() replaces categories by either the count or the
     percentage of observations per category.
@@ -79,6 +81,8 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         **'frequency'**: percentage of observations per category
 
     {variables}
+
+    {missing_values}
 
     {ignore_format}
 
@@ -149,6 +153,7 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self,
         encoding_method: str = "count",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_values: str = "raise",
         ignore_format: bool = False,
         unseen: str = "ignore",
     ) -> None:
@@ -160,7 +165,7 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             )
 
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
-        super().__init__(variables, ignore_format)
+        super().__init__(variables, missing_values, ignore_format)
         self.encoding_method = encoding_method
         self.unseen = unseen
 
@@ -178,21 +183,29 @@ class CountFrequencyEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             y is not needed in this encoder. You can pass y or None.
         """
         X = check_X(X)
-        self._fit(X)
-        self._get_feature_names_in(X)
+        variables_ = self._check_or_select_variables(X)
+        self._check_na(X, variables_)
 
         self.encoder_dict_ = {}
 
         # learn encoding maps
-        for var in self.variables_:
+        for var in variables_:
             if self.encoding_method == "count":
                 self.encoder_dict_[var] = X[var].value_counts().to_dict()
 
             elif self.encoding_method == "frequency":
                 self.encoder_dict_[var] = X[var].value_counts(normalize=True).to_dict()
+            else:
+                raise ValueError(
+                    "Unrecognized value for encoding_method. It should be 'count' or "
+                    f"'frequency'. Got {self.encoding_method} instead."
+                )
 
         # unseen categories are replaced by 0
         if self.unseen == "encode":
             self._unseen = 0
 
+        # assign underscore parameters at the end in case code above fails
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self

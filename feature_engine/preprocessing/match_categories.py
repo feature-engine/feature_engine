@@ -16,7 +16,7 @@ from feature_engine._docstrings.init_parameters import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
+    CategoricalInitMixinNA,
     CategoricalMethodsMixin,
 )
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
@@ -31,7 +31,7 @@ from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
     n_features_in_=_n_features_in_docstring,
 )
 class MatchCategories(
-    CategoricalInitMixin, CategoricalMethodsMixin, GetFeatureNamesOutMixin
+    CategoricalInitMixinNA, CategoricalMethodsMixin, GetFeatureNamesOutMixin
 ):
     """
     MatchCategories() ensures that categorical variables are encoded as pandas
@@ -97,14 +97,7 @@ class MatchCategories(
         missing_values: str = "raise",
     ) -> None:
 
-        if missing_values not in ["raise", "ignore"]:
-            raise ValueError(
-                "missing_values takes only values 'raise' or 'ignore'. "
-                f"Got {missing_values} instead."
-            )
-
-        super().__init__(variables, ignore_format)
-        self.missing_values = missing_values
+        super().__init__(variables, missing_values, ignore_format)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -120,17 +113,17 @@ class MatchCategories(
             y is not needed in this encoder. You can pass y or None.
         """
         X = check_X(X)
-        self._check_or_select_variables(X)
+        variables_ = self._check_or_select_variables(X)
 
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
-
-        self._get_feature_names_in(X)
+            _check_contains_na(X, variables_, switch_param=True)
 
         self.category_dict_ = dict()
-        for var in self.variables_:
+        for var in variables_:
             self.category_dict_[var] = pd.Categorical(X[var]).categories
 
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -150,7 +143,7 @@ class MatchCategories(
         X = self._check_transform_input_and_state(X)
 
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
+            _check_contains_na(X, self.variables_, switch_param=True)
 
         for feature, levels in self.category_dict_.items():
             X[feature] = pd.Categorical(X[feature], levels)

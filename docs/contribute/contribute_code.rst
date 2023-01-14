@@ -301,6 +301,21 @@ Sweet, isn't it?
 With the above procedure you can also "click" on your individual test script and run only
 those tests.
 
+Code coverage
+~~~~~~~~~~~~~
+
+We use `coverage <https://pypi.org/project/coverage/>`_ to test the extend of coverage of
+our tests. To evaluate the code coverage, you need to run pytest with coverage::
+
+    $ coverage run -m pytest
+
+And then, you can visualize the report like this::
+
+    $ coverage report
+
+
+If you see that there is coverage missing in any of the classes you are working with,
+try to add tests to increase coverage. We aim for 97%.
 
 Test Code Style
 ~~~~~~~~~~~~~~~

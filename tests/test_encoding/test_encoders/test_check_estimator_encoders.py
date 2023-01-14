@@ -1,5 +1,9 @@
 import pandas as pd
 import pytest
+
+from numpy import nan
+from sklearn import clone
+from sklearn.exceptions import NotFittedError
 from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.encoding import (
@@ -8,12 +12,14 @@ from feature_engine.encoding import (
     MeanEncoder,
     OneHotEncoder,
     OrdinalEncoder,
-    PRatioEncoder,
     RareLabelEncoder,
+    StringSimilarityEncoder,
     WoEEncoder,
-    StringSimilarityEncoder
 )
-from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
+from tests.estimator_checks.estimator_checks import (
+    check_feature_engine_estimator,
+    test_df,
+)
 
 _estimators = [
     CountFrequencyEncoder(ignore_format=True),
@@ -28,7 +34,6 @@ _estimators = [
         ignore_format=True,
     ),
     WoEEncoder(ignore_format=True),
-    PRatioEncoder(ignore_format=True),
     StringSimilarityEncoder(ignore_format=True),
 ]
 
@@ -46,14 +51,27 @@ _estimators = [
     OrdinalEncoder(),
     RareLabelEncoder(),
     WoEEncoder(),
-    PRatioEncoder(),
-    StringSimilarityEncoder(),
+    StringSimilarityEncoder(missing_values="raise"),
 ]
 
 
 @pytest.mark.parametrize("estimator", _estimators)
 def test_check_estimator_from_feature_engine(estimator):
     return check_feature_engine_estimator(estimator)
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_raises_non_fitted_error_when_error_during_fit(estimator):
+    X, y = test_df(categorical=True)
+    X.loc[len(X) - 1] = nan
+    transformer = clone(estimator)
+
+    with pytest.raises(ValueError):
+        transformer.fit(X, y)
+
+    # Test when fit is not called prior to transform.
+    with pytest.raises(NotFittedError):
+        transformer.transform(X)
 
 
 @pytest.mark.parametrize(
@@ -91,16 +109,6 @@ def test_check_estimator_from_feature_engine(estimator):
                 index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1],
             ),
             pd.DataFrame({"x0": [2, 2, 2, 1, 1, 1, 0, 0, 0]}),
-        ),
-        (
-            PRatioEncoder(),
-            pd.DataFrame(
-                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92],
-            ),
-            pd.DataFrame(
-                {"x0": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
-            ),
         ),
         (
             WoEEncoder(),
@@ -172,16 +180,6 @@ def test_encoders_when_x_numpy_y_pandas(encoder, df_test, df_expected):
             ),
         ),
         (
-            PRatioEncoder(),
-            pd.DataFrame(
-                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92],
-            ),
-            pd.DataFrame(
-                {"x": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]}, index=[101, 105, 42, 76, 88, 92]
-            ),
-        ),
-        (
             WoEEncoder(),
             pd.DataFrame(
                 {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
@@ -235,13 +233,6 @@ def test_encoders_when_x_pandas_y_numpy(encoder, df_test, df_expected):
                     "y": [3, 3, 3, 2, 2, 2, 1, 1, 1],
                 },
                 index=[33, 5412, 66, 99, 334, 1212, 22, 555, 1],
-            ),
-        ),
-        (
-            PRatioEncoder(),
-            pd.DataFrame(
-                {"x": ["a", "a", "b", "b", "c", "c"], "y": [1, 0, 1, 0, 1, 0]},
-                index=[101, 105, 42, 76, 88, 92],
             ),
         ),
         (

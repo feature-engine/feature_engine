@@ -18,7 +18,7 @@ from feature_engine._docstrings.init_parameters import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X_y
+from feature_engine.dataframe_checks import _check_contains_na, check_X_y
 from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
@@ -236,18 +236,16 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         else:
             check_classification_targets(y)
 
-        self._fit(X)
-        self._get_feature_names_in(X)
+        variables_ = self._check_or_select_variables(X)
+        _check_contains_na(X, variables_)
 
-        if self.param_grid:
-            param_grid = self.param_grid
-        else:
-            param_grid = {"max_depth": [1, 2, 3, 4]}
+        param_grid = self._assign_param_grid()
 
         # initialize categorical encoder
         cat_encoder = OrdinalEncoder(
             encoding_method=self.encoding_method,
-            variables=self.variables_,
+            variables=variables_,
+            missing_values="raise",
             ignore_format=self.ignore_format,
             unseen="raise",
         )
@@ -256,22 +254,25 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         tree_discretiser = DecisionTreeDiscretiser(
             cv=self.cv,
             scoring=self.scoring,
-            variables=self.variables_,
+            variables=variables_,
             param_grid=param_grid,
             regression=self.regression,
             random_state=self.random_state,
         )
 
         # pipeline for the encoder
-        self.encoder_ = Pipeline(
+        encoder_ = Pipeline(
             [
                 ("categorical_encoder", cat_encoder),
                 ("tree_discretiser", tree_discretiser),
             ]
         )
 
-        self.encoder_.fit(X, y)
+        encoder_.fit(X, y)
 
+        self.encoder_ = encoder_
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -288,11 +289,9 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         X_new : pandas dataframe of shape = [n_samples, n_features].
             Dataframe with variables encoded with decision tree predictions.
         """
-
         X = self._check_transform_input_and_state(X)
-
+        _check_contains_na(X, self.variables_)
         X = self.encoder_.transform(X)
-
         return X
 
     def inverse_transform(self, X: pd.DataFrame):
@@ -300,6 +299,13 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         raise NotImplementedError(
             "inverse_transform is not implemented for this transformer."
         )
+
+    def _assign_param_grid(self):
+        if self.param_grid:
+            param_grid = self.param_grid
+        else:
+            param_grid = {"max_depth": [1, 2, 3, 4]}
+        return param_grid
 
     def _more_tags(self):
         tags_dict = _return_tags()

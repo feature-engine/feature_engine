@@ -14,18 +14,20 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters import (
     _ignore_format_docstring,
+    _missing_values_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
+    CategoricalInitMixinNA,
     CategoricalMethodsMixin,
 )
 
 
 @Substitution(
+    missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
     variables_=_variables_attribute_docstring,
@@ -33,7 +35,7 @@ from feature_engine.encoding.base_encoder import (
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
+class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
     """
     The RareLabelEncoder() groups rare or infrequent categories in
     a new category called "Rare", or any other name entered by the user.
@@ -86,6 +88,8 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     {variables}
 
+    {missing_values}
+
     {ignore_format}
 
     Attributes
@@ -135,14 +139,18 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         max_n_categories: Optional[int] = None,
         replace_with: Union[str, int, float] = "Rare",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_values: str = "raise",
         ignore_format: bool = False,
     ) -> None:
 
-        if tol < 0 or tol > 1:
-            raise ValueError("tol takes values between 0 and 1")
+        if not isinstance(tol, (int, float)) or tol < 0 or tol > 1:
+            raise ValueError(f"tol takes values between 0 and 1. Got {tol} instead.")
 
-        if n_categories < 0 or not isinstance(n_categories, int):
-            raise ValueError("n_categories takes only positive integer numbers")
+        if not isinstance(n_categories, int) or n_categories < 0:
+            raise ValueError(
+                "n_categories takes only positive integer numbers. "
+                f"Got {n_categories} instead."
+            )
 
         if max_n_categories is not None:
             if (
@@ -150,9 +158,18 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 or isinstance(max_n_categories, int)
                 and max_n_categories < 0
             ):
-                raise ValueError("max_n_categories takes only positive integer numbers")
+                raise ValueError(
+                    "max_n_categories takes only positive integer numbers. "
+                    f"Got {max_n_categories} instead."
+                )
 
-        super().__init__(variables, ignore_format)
+        if not isinstance(replace_with, (str, int, float)):
+            raise ValueError(
+                "replace_with can should be a string, ingteger or float. "
+                f"Got {replace_with} instead."
+            )
+
+        super().__init__(variables, missing_values, ignore_format)
         self.tol = tol
         self.n_categories = n_categories
         self.max_n_categories = max_n_categories
@@ -173,25 +190,25 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
 
         X = check_X(X)
-        self._fit(X)
-        self._get_feature_names_in(X)
+        variables_ = self._check_or_select_variables(X)
+        self._check_na(X, variables_)
 
         self.encoder_dict_ = {}
 
-        for var in self.variables_:
+        for var in variables_:
             if len(X[var].unique()) > self.n_categories:
 
                 # if the variable has more than the indicated number of categories
                 # the encoder will learn the most frequent categories
-                t = pd.Series(X[var].value_counts() / float(len(X)))
+                t = X[var].value_counts(normalize=True)
 
                 # non-rare labels:
                 freq_idx = t[t >= self.tol].index
 
                 if self.max_n_categories:
-                    self.encoder_dict_[var] = freq_idx[: self.max_n_categories]
+                    self.encoder_dict_[var] = list(freq_idx[: self.max_n_categories])
                 else:
-                    self.encoder_dict_[var] = freq_idx
+                    self.encoder_dict_[var] = list(freq_idx)
 
             else:
                 # if the total number of categories is smaller than the indicated
@@ -203,6 +220,8 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 )
                 self.encoder_dict_[var] = X[var].unique()
 
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -224,14 +243,23 @@ class RareLabelEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         X = self._check_transform_input_and_state(X)
 
         # check if dataset contains na
-        _check_contains_na(X, self.variables_)
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_, switch_param=True)
 
-        for feature in self.variables_:
-            X[feature] = np.where(
-                X[feature].isin(self.encoder_dict_[feature]),
-                X[feature],
-                self.replace_with,
-            )
+            for feature in self.variables_:
+                X[feature] = np.where(
+                    X[feature].isin(self.encoder_dict_[feature]),
+                    X[feature],
+                    self.replace_with,
+                )
+
+        else:
+            for feature in self.variables_:
+                X[feature] = np.where(
+                    X[feature].isin(self.encoder_dict_[feature] + [np.nan]),
+                    X[feature],
+                    self.replace_with,
+                )
 
         return X
 

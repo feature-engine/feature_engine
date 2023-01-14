@@ -82,7 +82,6 @@ transforming parameters from the data and then transform it.
 * CountFrequencyEncoder
 * MeanEncoder
 * WoEEncoder
-* PRatioEncoder
 * RareLabelEncoder
 * DecisionTreeEncoder
 * StringSimilarityEncoder

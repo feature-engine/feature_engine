@@ -22,7 +22,7 @@ from feature_engine._docstrings.methods import (
     _transform_encoders_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X_y
+from feature_engine.dataframe_checks import _check_contains_na, check_X_y
 from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
@@ -199,20 +199,39 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
         y: pandas series.
             Target, must be binary.
         """
-
         X, y = self._check_fit_input(X, y)
-
-        self._fit(X)
-        self._get_feature_names_in(X)
+        variables_ = self._check_or_select_variables(X)
+        _check_contains_na(X, variables_)
 
         self.encoder_dict_ = {}
 
-        for var in self.variables_:
+        for var in variables_:
             _, _, woe = self._calculate_woe(X, y, var)
 
             self.encoder_dict_[var] = woe.to_dict()
 
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Replace categories with the learned parameters.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features].
+            The dataset to transform.
+
+        Returns
+        -------
+        X_new: pandas dataframe of shape = [n_samples, n_features].
+            The dataframe containing the categories replaced by numbers.
+        """
+
+        X = self._check_transform_input_and_state(X)
+        _check_contains_na(X, self.variables_)
+        X = self._encode(X)
+        return X
 
     def _more_tags(self):
         tags_dict = _return_tags()

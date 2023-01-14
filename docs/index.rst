@@ -126,7 +126,6 @@ Categorical Encoders: Encoders
 - :doc:`api_doc/encoding/OrdinalEncoder`: replaces categories by numbers arbitrarily or ordered by target
 - :doc:`api_doc/encoding/MeanEncoder`: replaces categories by the target mean
 - :doc:`api_doc/encoding/WoEEncoder`: replaces categories by the weight of evidence
-- :doc:`api_doc/encoding/PRatioEncoder`: replaces categories by a ratio of probabilities
 - :doc:`api_doc/encoding/DecisionTreeEncoder`: replaces categories by predictions of a decision tree
 - :doc:`api_doc/encoding/RareLabelEncoder`: groups infrequent categories
 - :doc:`api_doc/encoding/StringSimilarityEncoder`: encodes categories based on string similarity

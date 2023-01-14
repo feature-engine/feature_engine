@@ -1,5 +1,5 @@
 from difflib import SequenceMatcher
-from typing import Optional, Union, List
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -230,23 +230,28 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
 
         X = check_X(X)
-        self._check_or_select_variables(X)
-        self._get_feature_names_in(X)
+        variables_ = self._check_or_select_variables(X)
+
         if self.keywords:
-            if not all(item in self.variables_ for item in self.keywords.keys()):
+            if not all(item in variables_ for item in self.keywords.keys()):
                 raise ValueError(
                     "There are variables in keywords that are not present "
                     "in the dataset."
                 )
+
+        # if data contains nan, fail before running any logic
+        if self.missing_values == "raise":
+            _check_contains_na(X, variables_, switch_param=True)
+
         self.encoder_dict_ = {}
 
         if self.keywords:
             self.encoder_dict_.update(self.keywords)
-            cols_to_iterate = [x for x in self.variables_ if x not in self.keywords]
+            cols_to_iterate = [x for x in variables_ if x not in self.keywords]
         else:
-            cols_to_iterate = self.variables_
+            cols_to_iterate = variables_
+
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
             for var in cols_to_iterate:
                 self.encoder_dict_[var] = (
                     X[var]
@@ -275,7 +280,15 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .head(self.top_categories)
                     .index.tolist()
                 )
+        else:
+            raise ValueError(
+                "Unrecognized value for missing_values. It should be 'raise', 'ignore' "
+                f"or 'impute'. Got {self.missing_values} instead."
+            )
 
+        # assign underscore parameters at the end in case code above fails
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -298,7 +311,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         check_is_fitted(self)
         X = self._check_transform_input_and_state(X)
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
+            _check_contains_na(X, self.variables_, switch_param=True)
 
         new_values = []
         for var in self.variables_:

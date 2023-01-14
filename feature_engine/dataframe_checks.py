@@ -242,27 +242,41 @@ def _check_X_matches_training_df(X: pd.DataFrame, reference: int) -> None:
     return None
 
 
-def _check_contains_na(X: pd.DataFrame, variables: List[Union[str, int]]) -> None:
+def _check_contains_na(
+    X: pd.DataFrame, variables: List[Union[str, int]], switch_param: bool = False
+) -> None:
     """
     Checks if DataFrame contains null values in the selected columns.
 
     Parameters
     ----------
     X : Pandas DataFrame
+
     variables : List
         The selected group of variables in which null values will be examined.
+
+    switch_param: bool
+        Whether the transformer has the parameter missing_values in the init to modify
+        its behaviour towards nan.
 
     Raises
     ------
     ValueError
-        If the variable(s) contain null values
+        If the variable(s) contain null values.
     """
 
     if X[variables].isnull().any().any():
-        raise ValueError(
-            "Some of the variables to transform contain NaN. Check and "
-            "remove those before using this transformer."
-        )
+        if switch_param is False:
+            raise ValueError(
+                "Some of the variables in the dataset contain NaN. Check and "
+                "remove those before using this transformer."
+            )
+        else:
+            raise ValueError(
+                "Some of the variables in the dataset contain NaN. Check and "
+                "remove those before using this transformer or set the parameter "
+                "`missing_values='ignore'` when initialising this transformer."
+            )
 
 
 def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> None:

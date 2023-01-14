@@ -166,14 +166,24 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         ignore_format: bool = False,
     ) -> None:
 
-        if top_categories and not isinstance(top_categories, int):
-            raise ValueError("top_categories takes only integer numbers, 1, 2, 3, etc.")
+        if top_categories and (
+            not isinstance(top_categories, int) or top_categories < 0
+        ):
+            raise ValueError(
+                "top_categories takes only positive integers. "
+                f"Got {top_categories} instead"
+            )
 
         if not isinstance(drop_last, bool):
-            raise ValueError("drop_last takes only True or False")
+            raise ValueError(
+                f"drop_last takes only True or False. Got {drop_last} instead."
+            )
 
         if not isinstance(drop_last_binary, bool):
-            raise ValueError("drop_last_binary takes only True or False")
+            raise ValueError(
+                "drop_last_binary takes only True or False. "
+                f"Got {drop_last_binary} instead."
+            )
 
         super().__init__(variables, ignore_format)
         self.top_categories = top_categories
@@ -199,14 +209,15 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
 
         X = check_X(X)
-        self._fit(X)
-        self._get_feature_names_in(X)
+        variables_ = self._check_or_select_variables(X)
+        _check_contains_na(X, variables_)
 
         self.encoder_dict_ = {}
 
-        # make dummies only for the most popular categories
-        if self.top_categories:
-            for var in self.variables_:
+        for var in variables_:
+
+            # make dummies only for the most popular categories
+            if self.top_categories:
                 self.encoder_dict_[var] = [
                     x
                     for x in X[var]
@@ -216,21 +227,18 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                     .index
                 ]
 
-        else:
-            # return k-1 dummies
-            if self.drop_last:
-                for var in self.variables_:
-                    category_ls = [x for x in X[var].unique()]
+            else:
+                category_ls = list(X[var].unique())
+
+                # return k-1 dummies
+                if self.drop_last:
                     self.encoder_dict_[var] = category_ls[:-1]
 
-            # return k dummies
-            else:
-                for var in self.variables_:
-                    self.encoder_dict_[var] = [x for x in X[var].unique()]
+                # return k dummies
+                else:
+                    self.encoder_dict_[var] = category_ls
 
-        self.variables_binary_ = [
-            var for var in self.variables_ if X[var].nunique() == 2
-        ]
+        self.variables_binary_ = [var for var in variables_ if X[var].nunique() == 2]
 
         # automatically encode binary variables as 1 dummy
         if self.drop_last_binary:
@@ -238,6 +246,8 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 category = X[var].unique()[0]
                 self.encoder_dict_[var] = [category]
 
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:

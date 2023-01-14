@@ -162,27 +162,44 @@ def test_encode_top_categories():
     assert "var_B_F" not in X.columns
 
 
-def test_error_if_top_categories_not_integer():
+# init params
+@pytest.mark.parametrize("top_cat", ["empanada", [1], 0.5, -1])
+def test_error_if_top_categories_not_integer(top_cat):
     with pytest.raises(ValueError):
-        OneHotEncoder(top_categories=0.5)
+        OneHotEncoder(top_categories=top_cat)
 
 
-def test_error_if_drop_last_not_bool():
+@pytest.mark.parametrize("drop_last", ["empanada", [1], 0.5, -1, 1])
+def test_error_if_drop_last_not_bool(drop_last):
     with pytest.raises(ValueError):
-        OneHotEncoder(drop_last=0.5)
+        OneHotEncoder(drop_last=drop_last)
+
+
+@pytest.mark.parametrize("drop_binary", ["hello", ["auto"], -1, 100, 0.5])
+def test_raises_error_when_not_allowed_smoothing_param_in_init(drop_binary):
+    with pytest.raises(ValueError):
+        OneHotEncoder(drop_last_binary=drop_binary)
 
 
 def test_raises_error_if_df_contains_na(df_enc_big, df_enc_big_na):
     # test case 4: when dataset contains na, fit method
-    with pytest.raises(ValueError):
-        encoder = OneHotEncoder()
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
+
+    encoder = OneHotEncoder()
+    with pytest.raises(ValueError) as record:
         encoder.fit(df_enc_big_na)
 
+    assert str(record.value) == msg
+
     # test case 4: when dataset contains na, transform method
+    encoder = OneHotEncoder()
+    encoder.fit(df_enc_big)
     with pytest.raises(ValueError):
-        encoder = OneHotEncoder()
-        encoder.fit(df_enc_big)
         encoder.transform(df_enc_big_na)
+    assert str(record.value) == msg
 
 
 def test_encode_numerical_variables(df_enc_numeric):
@@ -493,12 +510,6 @@ def test_get_feature_names_out_from_pipeline(df_enc_binary):
 
     assert tr.get_feature_names_out(input_features=None) == feat_out
     assert tr.get_feature_names_out(input_features=input_features) == feat_out
-
-
-@pytest.mark.parametrize("drop_binary", ["hello", ["auto"], -1, 100, 0.5])
-def test_raises_error_when_not_allowed_smoothing_param_in_init(drop_binary):
-    with pytest.raises(ValueError):
-        OneHotEncoder(drop_last_binary=drop_binary)
 
 
 def test_inverse_transform_raises_not_implemented_error(df_enc_binary):

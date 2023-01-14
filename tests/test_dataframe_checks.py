@@ -143,8 +143,24 @@ def test_check_X_matches_training_df(df_vartypes):
 
 
 def test_contains_na(df_na):
-    with pytest.raises(ValueError):
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
+
+    with pytest.raises(ValueError) as record:
         assert _check_contains_na(df_na, ["Name", "City"])
+    assert str(record.value) == msg
+
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
+
+    with pytest.raises(ValueError) as record:
+        assert _check_contains_na(df_na, ["Name", "City"], switch_param=True)
+    assert str(record.value) == msg
 
 
 def test_contains_inf(df_na):

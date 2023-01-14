@@ -11,6 +11,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters import (
     _ignore_format_docstring,
+    _missing_values_docstring,
     _unseen_docstring,
     _variables_categorical_docstring,
 )
@@ -20,13 +21,12 @@ from feature_engine._docstrings.methods import (
     _transform_encoders_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.dataframe_checks import check_X_y
+from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
+    CategoricalInitMixinNA,
     CategoricalMethodsMixin,
 )
-
 
 _unseen_docstring = (
     _unseen_docstring
@@ -35,6 +35,7 @@ _unseen_docstring = (
 
 
 @Substitution(
+    missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
     unseen=_unseen_docstring,
@@ -45,7 +46,7 @@ _unseen_docstring = (
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
+class MeanEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
     """
     The MeanEncoder() replaces categories by the mean value of the target for each
     category.
@@ -91,6 +92,8 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     Parameters
     ----------
     {variables}
+
+    {missing_values}
 
     {ignore_format}
 
@@ -168,11 +171,12 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_values: str = "raise",
         ignore_format: bool = False,
         unseen: str = "ignore",
         smoothing: Union[int, float, str] = 0.0,
     ) -> None:
-        super().__init__(variables, ignore_format)
+        super().__init__(variables, missing_values, ignore_format)
         if (
             not isinstance(smoothing, (str, float, int))
             or isinstance(smoothing, str)
@@ -201,8 +205,8 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
 
         X, y = check_X_y(X, y)
-        self._fit(X)
-        self._get_feature_names_in(X)
+        variables_ = self._check_or_select_variables(X)
+        self._check_na(X, variables_)
 
         self.encoder_dict_ = {}
 
@@ -213,7 +217,7 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         if self.smoothing == "auto":
             y_var = y.var(ddof=0)
-        for var in self.variables_:
+        for var in variables_:
             if self.smoothing == "auto":
                 damping = y.groupby(X[var]).var(ddof=0) / y_var
             else:
@@ -224,6 +228,9 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 _lambda * y.groupby(X[var]).mean() + (1.0 - _lambda) * y_prior
             ).to_dict()
 
+        # assign underscore parameters at the end in case code above fails
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
         return self
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -245,7 +252,8 @@ class MeanEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         if self.unseen == "encode":
             raise NotImplementedError(
-                "inverse_transform is not implemented for this transformer."
+                "inverse_transform is not implemented for this transformer when "
+                "`unseen='encode'`."
             )
         else:
             return super().inverse_transform(X)
