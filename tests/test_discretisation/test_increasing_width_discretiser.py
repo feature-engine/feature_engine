@@ -10,7 +10,7 @@ def test_automatically_find_variables_and_return_as_numeric(df_normal_dist):
     transformer = IncreasingWidthDiscretiser(
         bins=10, variables=None, return_object=False
     )
-    X = transformer.fit_transform(df_normal_dist*10) #  for numerical stability
+    X = transformer.fit_transform(df_normal_dist*10)  # for numerical stability
 
     # fit parameters
     min_, max_ = df_normal_dist["var"].min(), df_normal_dist["var"].max()
