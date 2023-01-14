@@ -13,10 +13,11 @@ def test_automatically_find_variables_and_return_as_numeric(df_normal_dist):
     X = transformer.fit_transform(df_normal_dist*10)  # for numerical stability
 
     # fit parameters
-    min_, max_ = df_normal_dist["var"].min(), df_normal_dist["var"].max()
+    min_, max_ = df_normal_dist["var"].min()*10, df_normal_dist["var"].max()*10
     increment = np.power(max_ - min_, 1.0 / 10)
     bins = np.r_[min_, min_ + np.power(increment, np.arange(1, 10 + 1))]
-    bins = bins.round(3)
+    bins = np.sort(bins)
+    bins = list(bins)
     bins[0] = float("-inf")
     bins[len(bins) - 1] = float("inf")
 
