@@ -73,7 +73,10 @@ class ProbeFeatureSelection(BaseSelector):
         super().__init__(confirm_variables)
         self.estimator = estimator
         self.scoring = scoring
+        self.distribution = distribution
+        self.cut_rate = cut_rate
         self.cv = cv
+        self.n_iter = n_iter
         self.random_state = random_state
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
@@ -92,9 +95,10 @@ class ProbeFeatureSelection(BaseSelector):
         X, y = check_X_y(X, y)
 
         # find numerical variables
-        self.variables_ = _find_or_check_numerical_variables(X, None)
+        self.variables = _find_or_check_numerical_variables(X, None)
 
         # if required exclude variables that are not in the input dataframe
+        # instantiates the 'variables_' attribute
         self._confirm_variables(X)
 
         # check that there is more than 1 variable
@@ -107,10 +111,10 @@ class ProbeFeatureSelection(BaseSelector):
         self.probe_feature_data_ = self._generate_probe_feature(X.shape[0])
 
         # get probe feature name
-        self.probe_feature = self.probe_feature_data_.columns
+        self.probe_feature_ = self.probe_feature_data_.columns
 
         # merge X and probe feature
-        X_new = pd.concat([X, self.probe_features_], axis=1)
+        X_new = pd.concat([X, self.probe_feature_data_], axis=1)
 
         # train model with all variables including the probe feature
         model = cross_validate(
@@ -168,6 +172,9 @@ class ProbeFeatureSelection(BaseSelector):
         # create dataframe
         df = pd.DataFrame()
 
+        # set random state
+        np.random.seed(self.random_state)
+
         if self.distribution == "normal":
             df["rndm_gaussian_var"] = np.random.normal(0, 3, n_obs)
 
@@ -195,7 +202,6 @@ class ProbeFeatureSelection(BaseSelector):
             # Get the probe feature's importance
             probe_feature_importance = tmp_importances[self.probe_feature_].values
 
-            print(probe_feature_importance)
             for var in self.variables_:
 
                 # exclude the probe feature
