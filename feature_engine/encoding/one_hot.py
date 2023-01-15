@@ -191,8 +191,6 @@ class OneHotEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
             )
 
         super().__init__(variables, missing_values, ignore_format)
-        #todo _check_param_missing_values
-        #check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         self.top_categories = top_categories
         self.drop_last = drop_last
         self.drop_last_binary = drop_last_binary
@@ -217,7 +215,10 @@ class OneHotEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
 
         X = check_X(X)
         variables_ = self._check_or_select_variables(X)
-        _check_contains_na(X, variables_)
+        
+        # check if dataset contains na if missing_value is 'raise' or empty
+        if self.missing_values == "raise":
+            _check_contains_na(X, variables_)
 
         self.encoder_dict_ = {}
 
@@ -276,8 +277,9 @@ class OneHotEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
 
         X = self._check_transform_input_and_state(X)
 
-        # check if dataset contains na
-        _check_contains_na(X, self.variables_)
+        # check if dataset contains na if missing_value is 'raise' or empty
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_)
 
         for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
