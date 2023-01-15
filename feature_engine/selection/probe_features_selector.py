@@ -223,6 +223,6 @@ class ProbeFeaturesSelection(BaseSelector):
 
         for var, rate in prcnt_freq_dict:
             if rate < self.cut_rate:
-                vars_pass_thershold.append(var)
+                vars_pass_threshold.append(var)
 
-        return vars_pass_thershold
+        return vars_pass_threshold
