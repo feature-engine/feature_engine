@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from sklearn.model_selection import cross_validate
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine.dataframe_checks import (
     check_X_y,
@@ -140,7 +141,7 @@ class ProbeFeaturesSelection(BaseSelector):
         self.feature_importances_ = feature_importances_cv
 
         # count the frequencies in which the variables are less important than the probe feature
-        self.vars_freq_low_importance_ = self._count_variables_importance_less_than_random_variables()
+        self.vars_freq_low_importance_ = self._count_variables_importance_less_than_probe_feature()
 
         return self
 
@@ -179,25 +180,32 @@ class ProbeFeaturesSelection(BaseSelector):
 
         return df
 
-    def _count_variables_importance_less_than_random_variables(self) -> Dict:
+    def _count_variables_importance_less_than_probe_feature(self) -> Dict:
         """
-        Count how many times a variable is less than the maximum value
-        of the random variables.
+        Count the frequency in which the variables' importances are less than
+        the probe feature's importance.
         """
-        # create dictionary count frequency of a variable being less informative
-        # than the maximum value of a random variable
+        # create dictionary to count frequency of a variable being less informative
+        # than the probe feature
         count_dict = {var: 0 for var in self.variables_}
 
-        for col in range(0, self.cv):
+        for col in range(0, self.n_iter):
             # get one iteration of the feature importances
             tmp_importances = self.feature_importances_[col]
 
-            # identify max value of the random variables for this iteration
-            max_val_rndm_vars = tmp_importances[self.random_variables_].max()
+            # Get the probe feature's importance
+            probe_feature_importance = tmp_importances[self.probe_feature_].values
 
+            print(probe_feature_importance)
             for var in self.variables_:
-                if tmp_importances < max_val_rndm_vars:
-                    count_dict[var] += 1
+
+                # exclude the probe feature
+                if var != self.probe_feature_:
+
+                    # count the frequency in which variables' importances are less
+                    # than the probe feature's importance
+                    if tmp_importances[var] < probe_feature_importance:
+                        count_dict[var] += 1
 
         return count_dict
 
