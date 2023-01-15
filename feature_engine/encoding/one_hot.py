@@ -164,6 +164,7 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         drop_last_binary: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
+        missing_values: str = "raise",
     ) -> None:
 
         if top_categories and (
