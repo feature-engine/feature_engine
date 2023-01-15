@@ -5,7 +5,11 @@ import pandas as pd
 
 from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import check_X_y
+from feature_engine.dataframe_checks import (
+    check_X_y,
+    _check_X_matches_training_df,
+    check_X,
+)
 from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
 
 
@@ -120,6 +124,9 @@ class ProbeFeaturesSelection(BaseSelector):
         # save feature importances as an attribute
         self.feature_importances_ = feature_importances_cv
 
+        # count the frequencies in which the variables are less important than the probe feature
+        self.vars_freq_low_importance_ = self._count_variables_importance_less_than_random_variables()
+
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -127,6 +134,15 @@ class ProbeFeaturesSelection(BaseSelector):
         Return a tuple comprised of the variables and the number of times
         each variable was worse than all three random variables.
         """
+        # check if fit is performed prior to transform
+        check_is_fitted(self)
+
+        # check if input is a dataframe
+        X = check_X(X)
+
+        # check if number of columns in test dataset matches to train dataset
+        _check_X_matches_training_df(X, self.n_features_in_)
+
         pass
 
     def _generate_probe_feature(self, n_obs: int) -> pd.DataFrame:
