@@ -12,9 +12,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
 
-
 from feature_engine._variable_handling.variable_type_selection import (
-    _find_all_variables,
     _find_or_check_numerical_variables,
 )
 
@@ -41,7 +39,9 @@ class ProbeFeaturesSelection(BaseSelector):
         estimator,
         scoring: str = "roc_auc",
         distribution: str = "normal",
-        cv: int = 10,
+        cut_rate: float = 0.2,
+        cv: int = 5,
+        n_iter: int = 5,
         random_state: int = 0,
         # TODO: Do we need confirm_variable given that this selector will not be used in a pipeline?
         # TODO: Do we need the parameter because it is a param of BaseSelector?
@@ -54,6 +54,21 @@ class ProbeFeaturesSelection(BaseSelector):
                 f"Got {distribution} instead."
             )
 
+        if not (0 <= cut_rate <= 1):
+            raise ValueError(
+                "cut_rate must range from 0 to 1, inclusively. "
+                f"Got {cut_rate} instead."
+            )
+
+        if not isinstance(cv, int) or not (cv > 0):
+            raise ValueError(
+                f"cv must be a positive integer. Got {cv} instead."
+            )
+
+        if not isinstance(n_iter, int) or not (n_iter > 0):
+            raise ValueError(
+                f"n_iter must be a positive integer. Got {n_iter} instead."
+            )
         super().__init__(confirm_variables)
         self.estimator = estimator
         self.scoring = scoring
