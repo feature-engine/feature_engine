@@ -3,10 +3,10 @@ import pytest
 
 from sklearn.ensemble import RandomForestClassifier
 
-from feature_engine.selection import ProbeFeaturesSelection
+from feature_engine.selection import ProbeFeatureSelection
 
 
-def test_generate_probe_features(df_test):
+def test_generate_probe_feature(df_test):
 
     X, y = df_test
 
@@ -15,7 +15,7 @@ def test_generate_probe_features(df_test):
     clsfr.fit(X, y)
 
     # instantiate selector
-    sel = ProbeFeaturesSelection(
+    sel = ProbeFeatureSelection(
         estimator=clsfr,
         scoring="roc_auc",
         n_iter=5,

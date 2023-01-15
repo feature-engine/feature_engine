@@ -30,7 +30,7 @@ from feature_engine.selection._docstring import (
     _variables_numerical_docstring,
 )
 
-class ProbeFeaturesSelection(BaseSelector):
+class ProbeFeatureSelection(BaseSelector):
     """
 
 
@@ -163,9 +163,8 @@ class ProbeFeaturesSelection(BaseSelector):
 
     def _generate_probe_feature(self, n_obs: int) -> pd.DataFrame:
         """
-        Returns a dataframe comprised of the probe feature using the user-selected distribution.
+        Returns a dataframe comprised of the probe feature using the selected distribution.
         """
-        # create 3 random variables
         # create dataframe
         df = pd.DataFrame()
 
