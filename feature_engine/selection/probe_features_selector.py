@@ -75,7 +75,6 @@ class ProbeFeaturesSelection(BaseSelector):
         self.cv = cv
         self.random_state = random_state
 
-
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Create three random feature. Find initial model performance.
@@ -94,24 +93,25 @@ class ProbeFeaturesSelection(BaseSelector):
         # find numerical variables
         self.variables_ = _find_or_check_numerical_variables(X, None)
 
-        # if required excluded variables that not in the input dataframe
+        # if required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
 
-        # check that there are more than 1 variable
+        # check that there is more than 1 variable
         self._check_variable_number()
 
         # save input features
         self._get_feature_names_in(X)
 
-        # generate random variable
-        self.probe_feature_ = self._generate_probe_feature(X.shape[0])
+        # create probe feature distribution
+        self.probe_feature_data_ = self._generate_probe_feature(X.shape[0])
 
-        # get random variable names
-        self.random_variables_ = self.probe_features_.columns
+        # get probe feature name
+        self.probe_feature = self.probe_feature_data_.columns
 
+        # merge X and probe feature
         X_new = pd.concat([X, self.probe_features_], axis=1)
 
-        # train model with all variables including the random variables
+        # train model with all variables including the probe feature
         model = cross_validate(
             self.estimator,
             X_new,
