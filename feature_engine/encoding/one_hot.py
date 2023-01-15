@@ -19,20 +19,21 @@ from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
+    CategoricalInitMixinNA,
     CategoricalMethodsMixin,
 )
 
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
+    missing_values=_missing_values_docstring,
     variables=_variables_categorical_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
+class OneHotEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
     """
     The OneHotEncoder() replaces categorical variables by a set of binary variables
     representing each one of the unique categories in the variable.
@@ -97,6 +98,8 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     {variables}
 
     {ignore_format}
+    
+    {missing_values}
 
     Attributes
     ----------
@@ -163,8 +166,8 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         drop_last: bool = False,
         drop_last_binary: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        ignore_format: bool = False,
         missing_values: str = "raise",
+        ignore_format: bool = False,
     ) -> None:
 
         if top_categories and (
@@ -186,7 +189,9 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 f"Got {drop_last_binary} instead."
             )
 
-        super().__init__(variables, ignore_format)
+        super().__init__(variables, missing_values, ignore_format)
+        #todo _check_param_missing_values
+        #check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         self.top_categories = top_categories
         self.drop_last = drop_last
         self.drop_last_binary = drop_last_binary
