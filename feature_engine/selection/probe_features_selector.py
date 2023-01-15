@@ -36,12 +36,19 @@ class ProbeFeaturesSelection(BaseSelector):
         self,
         estimator,
         scoring: str = "roc_auc",
+        distribution: str = "normal",
         cv: int = 10,
         random_state: int = 0,
         # TODO: Do we need confirm_variable given that this selector will not be used in a pipeline?
         # TODO: Do we need the parameter because it is a param of BaseSelector?
         confirm_variables: bool = False,
     ):
+
+        if distribution not in ["normal", "binary", "unfirom"]:
+            raise ValueError(
+                "distribution takes on normal, binary, or uniform as values. "
+                f"Got {distribution} instead."
+            )
 
         super().__init__(confirm_variables)
         self.estimator = estimator
@@ -77,8 +84,8 @@ class ProbeFeaturesSelection(BaseSelector):
         # save input features
         self._get_feature_names_in(X)
 
-        # generate 3 random variables
-        self.probe_features_ = self._generate_probe_features(X.shape[0])
+        # generate random variable
+        self.probe_feature_ = self._generate_probe_feature(X.shape[0])
 
         # get random variable names
         self.random_variables_ = self.probe_features_.columns
@@ -122,23 +129,24 @@ class ProbeFeaturesSelection(BaseSelector):
         """
         pass
 
-    def _generate_probe_features(self, n_obs: int) -> pd.DataFrame:
+    def _generate_probe_feature(self, n_obs: int) -> pd.DataFrame:
         """
-        Returns a dataframe of 3 random variables.
+        Returns a dataframe comprised of the probe feature using the user-selected distribution.
         """
         # create 3 random variables
-        binary_var = np.random.randint(0, 2, n_obs)
-        uniform_var = np.random.uniform(0, 1, 1).tolist() * n_obs
-        gaussian_var = np.random.normal(0, 3, n_obs)
-
         # create dataframe
         df = pd.DataFrame()
-        df["rndm_binary_var"] = binary_var
-        df["rndm_uniform_var"] = uniform_var
-        df["rndm_gaussian_var"] = gaussian_var
+
+        if self.distribution == "normal":
+            df["rndm_gaussian_var"] = np.random.normal(0, 3, n_obs)
+
+        elif self.distribution == "binary":
+            df["rndm_binary_var"] = np.random.randint(0, 2, n_obs)
+
+        else:
+            df["rndm_uniform_var"] = np.random.uniform(0, 1, 1).tolist() * n_obs
 
         return df
-
 
     def _count_variables_importance_less_than_random_variables(self) -> Dict:
         """
