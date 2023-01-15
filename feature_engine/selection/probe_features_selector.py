@@ -169,3 +169,21 @@ class ProbeFeaturesSelection(BaseSelector):
                     count_dict[var] += 1
 
         return count_dict
+
+    def _get_variables_that_pass_cut_rate_threshold(self):
+        """
+        Returns list of variables that meet the cut-rate threshold.
+        These variables have shown to be more informative than the probe feature
+        based on the selected cut rate.
+        """
+        prcnt_freq_dict = {
+            var: cnt / self.cv for var, cnt in self.vars_freq_low_importance_.items()
+        }
+
+        vars_pass_threshold = []
+
+        for var, rate in prcnt_freq_dict:
+            if rate < self.cut_rate:
+                vars_pass_thershold.append(var)
+
+        return vars_pass_thershold
