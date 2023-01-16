@@ -199,6 +199,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
     ) -> None:
+
         super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
         self.cv = cv
