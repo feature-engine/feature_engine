@@ -149,8 +149,7 @@ class ProbeFeatureSelection(BaseSelector):
 
         return self
 
-
-    def _generate_probe_feature(self, n_obs: int) -> pd.DataFrame:
+    def _generate_probe_features(self, n_obs: int) -> pd.DataFrame:
         """
         Returns a dataframe comprised of the probe feature using the selected distribution.
         """
@@ -160,14 +159,25 @@ class ProbeFeatureSelection(BaseSelector):
         # set random state
         np.random.seed(self.random_state)
 
-        if self.distribution == "normal":
-            df["rndm_gaussian_var"] = np.random.normal(0, 3, n_obs)
+        if self.distribution == "all":
+            generation_cnt = self.n_probes // 3
 
-        elif self.distribution == "binary":
-            df["rndm_binary_var"] = np.random.randint(0, 2, n_obs)
+            for i in range(generation_cnt):
+                df[f"gaussian_probe_{i}"] = np.random.normal(0, 3, n_obs)
+                df[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
+                df[f"uniform_probe_{i}"] = np.random.uniform(0, 1, 1).tolist() * n_obs
 
+        # when distribution is normal, binary, or uniform
         else:
-            df["rndm_uniform_var"] = np.random.uniform(0, 1, 1).tolist() * n_obs
+            for i in range(self.n_probes):
+                if self.distribution == "normal":
+                    df[f"gaussian_probe_{i}"] = np.random.normal(0, 3, n_obs)
+
+                elif self.distribution == "binary":
+                    df[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
+
+                elif self.distribution == "uniform":
+                    df[f"uniform_probe_{i}"] = np.random.uniform(0, 1, 1).tolist() * n_obs
 
         return df
 
