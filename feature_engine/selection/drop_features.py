@@ -83,8 +83,7 @@ class DropFeatures(BaseSelector):
         # present in the df.
         X[self.features_to_drop]
 
-        self.features_to_drop_ = _find_all_variables(X, 
-                                                    variables=self.features_to_drop)
+        self.features_to_drop_ = _find_all_variables(X, variables=self.features_to_drop)
 
         # check user is not removing all columns in the dataframe
         if len(self.features_to_drop_) == len(X.columns):
@@ -109,4 +108,3 @@ class DropFeatures(BaseSelector):
             "check_fit2d_1feature"
         ] = "the transformer raises an error when removing the only column, ok to fail"
         return tags_dict
-
