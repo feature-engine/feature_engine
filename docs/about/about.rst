@@ -44,6 +44,11 @@ and maintenance:
 Contributors
 ------------
 
+.. image:: https://img.shields.io/github/contributors/feature-engine/feature_engine?logo=GitHub
+   :target: https://github.com/feature-engine/feature_engine/graphs/contributors
+
+|
+
 A growing international community is beginning to lead Feature-engine's development.
 You can learn more about Feature-engine's Contributors in the
 `GitHub contributors page <https://github.com/feature-engine/feature_engine/graphs/contributors>`_.
