@@ -81,7 +81,7 @@ class DropFeatures(BaseSelector):
         # present in the df.
         X[self.features_to_drop]
 
-        self.features_to_drop_ = _find_all_variables(X,variables=self.features_to_drop)
+        self.features_to_drop_ = _find_all_variables(X, variables=self.features_to_drop)
         # self.features_to_drop_ = self.features_to_drop
 
         # check user is not removing all columns in the dataframe
