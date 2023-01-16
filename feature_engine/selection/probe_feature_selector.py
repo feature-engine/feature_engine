@@ -40,7 +40,7 @@ class ProbeFeatureSelection(BaseSelector):
         estimator,
         scoring: str = "roc_auc",
         distribution: str = "normal",
-        cut_rate: float = 0.2,
+        threshold: float = 0.2,
         cv: int = 5,
         n_iter: int = 5,
         random_state: int = 0,
@@ -49,16 +49,16 @@ class ProbeFeatureSelection(BaseSelector):
         confirm_variables: bool = False,
     ):
 
-        if distribution not in ["normal", "binary", "unfirom"]:
+        if distribution not in ["normal", "binary", "uniform"]:
             raise ValueError(
                 "distribution takes on normal, binary, or uniform as values. "
                 f"Got {distribution} instead."
             )
 
-        if not (0 <= cut_rate <= 1):
+        if not (0 <= threshold <= 1):
             raise ValueError(
-                "cut_rate must range from 0 to 1, inclusively. "
-                f"Got {cut_rate} instead."
+                "threshold must range from 0 to 1, inclusively. "
+                f"Got {threshold} instead."
             )
 
         if not isinstance(cv, int) or not (cv > 0):
@@ -74,7 +74,7 @@ class ProbeFeatureSelection(BaseSelector):
         self.estimator = estimator
         self.scoring = scoring
         self.distribution = distribution
-        self.cut_rate = cut_rate
+        self.threshold = threshold
         self.cv = cv
         self.n_iter = n_iter
         self.random_state = random_state
@@ -149,21 +149,6 @@ class ProbeFeatureSelection(BaseSelector):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """
-        Return a tuple comprised of the variables and the number of times
-        each variable was worse than all three random variables.
-        """
-        # check if fit is performed prior to transform
-        check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = check_X(X)
-
-        # check if number of columns in test dataset matches to train dataset
-        _check_X_matches_training_df(X, self.n_features_in_)
-
-        pass
 
     def _generate_probe_feature(self, n_obs: int) -> pd.DataFrame:
         """
@@ -214,7 +199,7 @@ class ProbeFeatureSelection(BaseSelector):
 
         return count_dict
 
-    def _get_variables_that_pass_cut_rate_threshold(self):
+    def _get_variables_that_pass_threshold_threshold(self):
         """
         Returns list of variables that meet the cut-rate threshold.
         These variables have shown to be more informative than the probe feature
@@ -227,7 +212,7 @@ class ProbeFeatureSelection(BaseSelector):
         vars_pass_threshold = []
 
         for var, rate in prcnt_freq_dict:
-            if rate < self.cut_rate:
+            if rate < self.threshold:
                 vars_pass_threshold.append(var)
 
         return vars_pass_threshold
