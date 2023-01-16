@@ -5,7 +5,10 @@ import pandas as pd
 from feature_engine.dataframe_checks import check_X
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine._variable_handling.variable_type_selection import _find_all_variables
+from feature_engine._variable_handling.variable_type_selection import (
+    _find_all_variables,
+)
+
 
 class DropFeatures(BaseSelector):
     """
@@ -54,7 +57,6 @@ class DropFeatures(BaseSelector):
     """
 
     def __init__(self, features_to_drop: List[Union[str, int]]):
-
         if not isinstance(features_to_drop, (str, list)) or len(features_to_drop) == 0:
             raise ValueError(
                 f"features_to_drop should be a list with the name of the variables "
@@ -81,8 +83,8 @@ class DropFeatures(BaseSelector):
         # present in the df.
         X[self.features_to_drop]
 
-        self.features_to_drop_ = _find_all_variables(X, variables=self.features_to_drop)
-        # self.features_to_drop_ = self.features_to_drop
+        self.features_to_drop_ = _find_all_variables(X, 
+                                                    variables=self.features_to_drop)
 
         # check user is not removing all columns in the dataframe
         if len(self.features_to_drop_) == len(X.columns):
@@ -107,3 +109,4 @@ class DropFeatures(BaseSelector):
             "check_fit2d_1feature"
         ] = "the transformer raises an error when removing the only column, ok to fail"
         return tags_dict
+
