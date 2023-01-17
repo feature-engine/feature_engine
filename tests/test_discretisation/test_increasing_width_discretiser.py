@@ -10,10 +10,10 @@ def test_automatically_find_variables_and_return_as_numeric(df_normal_dist):
     transformer = IncreasingWidthDiscretiser(
         bins=10, variables=None, return_object=False
     )
-    X = transformer.fit_transform(df_normal_dist*10)  # for numerical stability
+    X = transformer.fit_transform(df_normal_dist)  # for numerical stability
 
     # fit parameters
-    min_, max_ = df_normal_dist["var"].min()*10, df_normal_dist["var"].max()*10
+    min_, max_ = df_normal_dist["var"].min(), df_normal_dist["var"].max()
     increment = np.power(max_ - min_, 1.0 / 10)
     bins = np.r_[min_, min_ + np.power(increment, np.arange(1, 10 + 1))]
     bins = np.sort(bins)
@@ -58,20 +58,20 @@ def test_error_if_return_object_not_bool():
 
 def test_error_if_input_df_contains_na_in_fit(df_na):
     # test case 3: when dataset contains na, fit method
+    transformer = IncreasingWidthDiscretiser()
     with pytest.raises(ValueError):
-        transformer = IncreasingWidthDiscretiser()
         transformer.fit(df_na)
 
 
 def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
     # test case 4: when dataset contains na, transform method
+    transformer = IncreasingWidthDiscretiser()
+    transformer.fit(df_vartypes)
     with pytest.raises(ValueError):
-        transformer = IncreasingWidthDiscretiser()
-        transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
 
 def test_non_fitted_error(df_vartypes):
+    transformer = IncreasingWidthDiscretiser()
     with pytest.raises(NotFittedError):
-        transformer = IncreasingWidthDiscretiser()
         transformer.transform(df_vartypes)
