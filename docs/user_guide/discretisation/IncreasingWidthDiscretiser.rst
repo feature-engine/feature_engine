@@ -9,6 +9,11 @@ The :class:`IncreasingWidthDiscretiser()` divides continuous numerical variables
 intervals of increasing width with equal increments. Note that the
 proportion of observations per interval may vary.
 
+Sizes of the intervals will follow geometric progression
+
+    .. math::
+        a = a r^(n+1)
+
 This discretisation technique is great when the distribution of the variable is right skewed.
 
 The :class:`IncreasingWidthDiscretiser()` works only with numerical variables. A list of
@@ -44,7 +49,7 @@ Let's load the house prices dataset and  separate it into train and test sets:
 		    data['SalePrice'], test_size=0.3, random_state=0)
 
 
-Now we want to discretise the 2 variables indicated below into 10 intervals of equal
+Now we want to discretise the 2 variables indicated below into 10 intervals of increasing
 width:
 
 .. code:: python
@@ -101,7 +106,7 @@ to get more symmetrical one.
 
 .. code:: python
 
-	fig, ax = plt.subplots(1, 2)
+    fig, ax = plt.subplots(1, 2)
     X_train['LotArea'].hist(ax=ax[0], bins=10);
     train_t['LotArea'].hist(ax=ax[1], bins=10);
 
