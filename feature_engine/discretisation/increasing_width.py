@@ -35,7 +35,10 @@ class IncreasingWidthDiscretiser(BaseDiscretiser):
     intervals of increasing width with equal increments. Note that the
     proportion of observations per interval may vary.
 
-    The size of the interval will follow geometric progression.
+    Sizes (a) of n intervals will follow geometric progression
+
+    .. math::
+        a_i+1 = a_i r^(n+i)
 
     The IncreasingWidthDiscretiser() works only with numerical variables.
     A list of variables can be passed as argument. Alternatively, the discretiser
@@ -81,6 +84,12 @@ class IncreasingWidthDiscretiser(BaseDiscretiser):
     .. [1]  J. Reiser, "Classification Systems",
         https://www.slideshare.net/johnjreiser/classification-systems
 
+    .. [2] Geometric Interval Classification
+        http://wiki.gis.com/wiki/index.php/Geometric_Interval_Classification
+
+    .. [3] Geometric progression
+        https://en.wikipedia.org/wiki/Geometric_progression
+
     """
 
     def __init__(
@@ -101,7 +110,7 @@ class IncreasingWidthDiscretiser(BaseDiscretiser):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learn the boundaries of the equal width intervals / bins for each
+        Learn the boundaries of the increasing width intervals / bins for each
         variable.
 
         Parameters
@@ -132,3 +141,21 @@ class IncreasingWidthDiscretiser(BaseDiscretiser):
             self.binner_dict_[var] = bins
 
         return self
+    
+    def transform(self, X: pd.DataFrame, precision: int = 7):
+        """Sort the variable values into the geometric intervals.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The data to transform.
+
+        precision: int, default=7
+            The precision at which to store and display the bins labels.
+
+        Returns
+        -------
+        X_new: pandas dataframe of shape = [n_samples, n_features]
+            The transformed data with the discrete variables.
+        """
+        return super().transform(X, precision)
