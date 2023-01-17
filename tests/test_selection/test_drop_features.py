@@ -27,6 +27,32 @@ def test_drop_1_variable(df_vartypes):
     pd.testing.assert_frame_equal(X, df)
 
 
+def test_drop_1_variables_str_input(df_vartypes):
+    """check that the internal variable features_to_drop has been
+     correctly cast from :str: to list of :str: internally"""
+
+    transformer = DropFeatures(features_to_drop="Marks")
+    X = transformer.fit_transform(df_vartypes)
+
+    # expected result
+    df = pd.DataFrame(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, 21, 19, 18],
+            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+        }
+    )
+
+    # init params
+    assert transformer.features_to_drop == "Marks"
+
+    # transform params
+    assert X.shape == (4, 4)
+    assert type(X) == pd.DataFrame
+    pd.testing.assert_frame_equal(X, df)
+
+
 def test_drop_2_variables(df_vartypes):
     transformer = DropFeatures(features_to_drop=["City", "dob"])
     X = transformer.fit_transform(df_vartypes)
