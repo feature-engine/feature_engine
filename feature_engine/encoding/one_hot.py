@@ -218,6 +218,8 @@ class OneHotEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
         # check if dataset contains na if missing_value is 'raise' or empty
         if self.missing_values == "raise":
             _check_contains_na(X, variables_)
+        elif self.missing_values == "encode":
+            X = X.fillna('novalue_temp')
 
         self.encoder_dict_ = {}
 
@@ -279,6 +281,8 @@ class OneHotEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
         # check if dataset contains na if missing_value is 'raise' or empty
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
+        elif self.missing_values == "encode":
+            X = X.fillna('novalue_temp')
 
         for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
