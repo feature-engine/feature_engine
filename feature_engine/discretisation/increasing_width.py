@@ -141,7 +141,7 @@ class IncreasingWidthDiscretiser(BaseDiscretiser):
             self.binner_dict_[var] = bins
 
         return self
-    
+
     def transform(self, X: pd.DataFrame, precision: int = 7):
         """Sort the variable values into the geometric intervals.
 
