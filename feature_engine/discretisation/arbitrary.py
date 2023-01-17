@@ -152,13 +152,15 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame, precision: int = 3) -> pd.DataFrame:
         """Sort the variable values into the intervals.
-
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
-            The dataframe to be transformed.
+            The data to transform.
+
+        precision: int, default=3
+            The precision at which to store and display the bins labels.
 
         Returns
         -------
