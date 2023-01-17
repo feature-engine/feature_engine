@@ -41,6 +41,9 @@ class BaseDiscretiser(BaseNumericalTransformer):
         X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
 
+        precision: int, default=3
+            The precision at which to store and display the bins labels.
+
         Returns
         -------
         X_new: pandas dataframe of shape = [n_samples, n_features]
