@@ -12,7 +12,9 @@ proportion of observations per interval may vary.
 Sizes of the intervals will follow geometric progression
 
     .. math::
-        a = a r^(n+1)
+        a_i+1 = a_i r^(n+i)
+	
+where n is the number of bins and a is the size of the next interval.
 
 This discretisation technique is great when the distribution of the variable is right skewed.
 
