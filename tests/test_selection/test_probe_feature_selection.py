@@ -2,46 +2,67 @@ import pandas as pd
 import pytest
 
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.tree import DecisionTreeRegressor
+
 
 from feature_engine.selection import ProbeFeatureSelection
+
+
+_input_params = [
+    (RandomForestClassifier(), "precision", "all", 3, 6, 4),
+    (Lasso(), "neg_mean_squared_error", "binary", 7, 4, 100),
+    (LogisticRegression(), "roc_auc", "normal", 5, 2, 73),
+    (DecisionTreeRegressor(), "r2", "uniform", 4, 10, 84),
+]
+
+@pytest.mark.parametrize(
+    "_estimator, _scoring, _distribution, _cv, _n_probes, _random_state", _input_params
+)
+def test_input_params_assignment(
+    _estimator, _scoring, _distribution, _cv, _n_probes, _random_state
+):
+
+    sel = ProbeFeatureSelection(
+        estimator=_estimator,
+        scoring=_scoring,
+        distribution=_distribution,
+        cv=_cv,
+        n_probes=_n_probes,
+        random_state=_random_state,
+    )
+
+    assert sel.estimator == _estimator
+    assert sel.scoring == _scoring
+    assert sel.distribution == _distribution
+    assert sel.cv == _cv
+    assert sel.n_probes == _n_probes
+    assert sel.random_state == _random_state
 
 
 def test_generate_probe_feature(df_test):
 
     X, y = df_test
 
-    # instantiate classifier
-    clsfr = RandomForestClassifier()
-    clsfr.fit(X, y)
-
-    # instantiate selector
     sel = ProbeFeatureSelection(
-        estimator=clsfr,
-        scoring="roc_auc",
-        distribution="normal",
-        cut_rate=0.2,
-        cv=5,
-        n_iter=5,
-        random_state=0,
-        confirm_variables=False
+        estimator=RandomForestClassifier(),
+        scoring="recall",
+        distribution="all",
+        cv=3,
+        n_probes=3,
+        random_state=33,
+        confirm_variables=False,
     )
+
     sel.fit(X, y)
-    probe_feature_data = sel.probe_feature_data_
+    res = sel.probe_features_.head().round(3)
 
     # expected results
-    expected_results_head = {
-        "rndm_gaussian_var": [5.292, 1.200, 2.936, 6.723, 5.603],
+    expected_results = {
+        "gaussian_probe_0": [-0.957, -4.809, -4.606, -1.711, -0.65],
+        "binary_probe_0": [0, 1, 0, 0, 0],
+        "uniform_probe_0": [0.287, 0.287, 0.287, 0.287, 0.287],
     }
-    expected_results_head_df = pd.DataFrame(expected_results_head)
+    expected_results_df = pd.DataFrame(expected_results)
 
-    expected_results_tail = {
-        "rndm_gaussian_var": [1.239, -0.595, 0.283, -3.443, -1.074],
-    }
-    expected_results_tail_df = pd.DataFrame(
-        data=expected_results_tail,
-        index=range(995, 1000),
-    )
-
-    assert probe_feature_data.shape == (X.shape[0], 1)
-    assert probe_feature_data.head().round(3).equals(expected_results_head_df)
-    assert probe_feature_data.tail().round(3).equals(expected_results_tail_df)
+    assert res.equals(expected_results_df)
