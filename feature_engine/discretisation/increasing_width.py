@@ -131,13 +131,9 @@ class IncreasingWidthDiscretiser(BaseDiscretiser):
         for var in self.variables_:
             min_, max_ = X[var].min(), X[var].max()
             increment = np.power(max_ - min_, 1.0 / self.bins)
-            bins = np.r_[min_, min_ + np.power(increment, np.arange(1, self.bins + 1))]
+            bins = np.r_[-np.inf, min_ + np.power(increment, np.arange(1, 10)), np.inf]
             bins = np.sort(bins)
-
-            # Prepend/Append infinities
             bins = list(bins)
-            bins[0] = float("-inf")
-            bins[len(bins) - 1] = float("inf")
             self.binner_dict_[var] = bins
 
         return self
