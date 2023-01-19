@@ -105,9 +105,9 @@ class ProbeFeatureSelection(BaseSelector):
         self._get_feature_names_in(X)
 
         # create probe feature distributions
-        self.probe_feature_ = self._generate_probe_feature(X.shape[0])
+        self.probe_features_ = self._generate_probe_features(X.shape[0])
 
-        X_new = pd.concat([X, self.probe_feature_], axis=1)
+        X_new = pd.concat([X, self.probe_features_], axis=1)
 
         # train model with all variables including the probe feature
         model = cross_validate(
@@ -183,18 +183,18 @@ class ProbeFeatureSelection(BaseSelector):
 
         # if more than 1 probe feature, calculate average feature importance
         if self.n_probes > 1:
-            probe_feature_avg_importance = self.feature_importances_[
-                self.probe_feature_.columns
+            probe_features_avg_importance = self.feature_importances_[
+                self.probe_features_.columns
             ].values.mean()
         else:
-            probe_feature_avg_importance = self.feature_importances_[
-                self.probe_feature_.columns
+            probe_features_avg_importance = self.feature_importances_[
+                self.probe_features_.columns
             ].values
 
         features_to_drop = []
 
         for var in self.variables_:
-            if self.feature_importances_[var] < probe_feature_avg_importance:
+            if self.feature_importances_[var] < probe_features_avg_importance:
                 features_to_drop.append(var)
 
         return features_to_drop
