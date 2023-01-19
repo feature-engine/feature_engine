@@ -76,7 +76,7 @@ class ProbeFeatureSelection(BaseSelector):
         self.n_probes = n_probes
         self.random_state = random_state
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> None:
         """
         Create three random feature. Find initial model performance.
         Sort features by importance.
@@ -104,14 +104,10 @@ class ProbeFeatureSelection(BaseSelector):
         # save input features
         self._get_feature_names_in(X)
 
-        # create probe feature distribution
-        self.probe_feature_data_ = self._generate_probe_feature(X.shape[0])
+        # create probe feature distributions
+        self.probe_feature_ = self._generate_probe_feature(X.shape[0])
 
-        # get probe feature name
-        self.probe_feature_ = self.probe_feature_data_.columns
-
-        # merge X and probe feature
-        X_new = pd.concat([X, self.probe_feature_data_], axis=1)
+        X_new = pd.concat([X, self.probe_feature_], axis=1)
 
         # train model with all variables including the probe feature
         model = cross_validate(
@@ -138,11 +134,12 @@ class ProbeFeatureSelection(BaseSelector):
         # add the variables as the index to feature_importances_cv
         feature_importances_cv.index = X_new.columns
 
-        # save feature importances as an attribute
-        self.feature_importances_ = feature_importances_cv
+        # aggregate the feature importance returned in each fold
+        self.feature_importances_ = feature_importances_cv.mean(axis=1)
 
-        # count the frequencies in which the variables are less important than the probe feature
-        self.vars_freq_low_importance_ = self._count_variables_importance_less_than_probe_feature()
+        # get features to drop
+        # attribute used in transform()
+        self.features_to_drop_ = self._get_features_to_drop()
 
         return self
 
