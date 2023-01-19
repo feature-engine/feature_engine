@@ -137,8 +137,8 @@ class ProbeFeatureSelection(BaseSelector):
         # aggregate the feature importance returned in each fold
         self.feature_importances_ = feature_importances_cv.mean(axis=1)
 
-        # get features to drop
-        # attribute used in transform()
+        # get features that have an importance less than the probe features' avg importance
+        # attribute used in transform() which is inherited form parent class
         self.features_to_drop_ = self._get_features_to_drop()
 
         return self
@@ -175,3 +175,26 @@ class ProbeFeatureSelection(BaseSelector):
 
         return df
 
+    def _get_features_to_drop(self):
+        """
+        Identify the variables that have a lower feature importance than the average
+        feature importance of all the probe features.
+        """
+
+        # if more than 1 probe feature, calculate average feature importance
+        if self.n_probes > 1:
+            probe_feature_avg_importance = self.feature_importances_[
+                self.probe_feature_.columns
+            ].values.mean()
+        else:
+            probe_feature_avg_importance = self.feature_importances_[
+                self.probe_feature_.columns
+            ].values
+
+        features_to_drop = []
+
+        for var in self.variables_:
+            if self.feature_importances_[var] < probe_feature_avg_importance:
+                features_to_drop.append(var)
+
+        return features_to_drop
