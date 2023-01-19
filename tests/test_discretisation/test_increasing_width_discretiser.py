@@ -9,7 +9,7 @@ def test_init_and_fit_params(df_normal_dist):
     transformer = IncreasingWidthDiscretiser(
         bins=10, variables=None, return_object=False
     )
-    X = transformer.fit(df_normal_dist)
+    transformer.fit(df_normal_dist)
     # init params
     assert transformer.bins == 10
     assert transformer.variables is None
@@ -34,7 +34,7 @@ def test_fit_and_transform_methods(df_normal_dist):
     # fit params
     assert (transformer.binner_dict_["var"] == bins).all()
     assert (X["var"].unique() == np.arange(0, 10)).all()
-    
+
     # transform params
     assert (X == np.digitize(df_normal_dist, bins)).all()
 
