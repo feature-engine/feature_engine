@@ -5,25 +5,11 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.discretisation import IncreasingWidthDiscretiser
 
 
-def test_automatically_find_variables_and_return_as_numeric(df_normal_dist):
-    # test case 1: automatically select variables, return_object=False
+def test_init_and_fit_params(df_normal_dist):
     transformer = IncreasingWidthDiscretiser(
         bins=10, variables=None, return_object=False
     )
-    X = transformer.fit_transform(df_normal_dist)  # for numerical stability
-
-    # fit parameters
-    min_, max_ = df_normal_dist["var"].min(), df_normal_dist["var"].max()
-    increment = np.power(max_ - min_, 1.0 / 10)
-    bins = np.r_[min_, min_ + np.power(increment, np.arange(1, 10 + 1))]
-    bins = np.sort(bins)
-    bins[0] = float("-inf")
-    bins[len(bins) - 1] = float("inf")
-
-    # transform output
-    X_t = [x for x in range(0, 10)]
-    val_counts = [9, 2, 5, 8, 11, 11, 24, 10, 13, 7]
-
+    X = transformer.fit(df_normal_dist)
     # init params
     assert transformer.bins == 10
     assert transformer.variables is None
@@ -31,11 +17,26 @@ def test_automatically_find_variables_and_return_as_numeric(df_normal_dist):
     # fit params
     assert transformer.variables_ == ["var"]
     assert transformer.n_features_in_ == 1
-    # transform params
+
+
+def test_fit_and_transform_methods(df_normal_dist):
+    transformer = IncreasingWidthDiscretiser(
+        bins=10, variables=None, return_object=False
+    )
+    X = transformer.fit_transform(df_normal_dist)
+
+    # manual calculation
+    min_, max_ = df_normal_dist["var"].min(), df_normal_dist["var"].max()
+    increment = np.power(max_ - min_, 1.0 / 10)
+    bins = np.r_[-np.inf, min_ + np.power(increment, np.arange(1, 10)), np.inf]
+    bins = np.sort(bins)
+
+    # fit params
     assert (transformer.binner_dict_["var"] == bins).all()
-    assert all(x for x in X["var"].unique() if x not in X_t)
-    # in equal width discretisation, intervals get different number of values
-    assert all(x for x in X["var"].value_counts() if x not in val_counts)
+    assert (X["var"].unique() == np.arange(0, 10)).all()
+    
+    # transform params
+    assert (X == np.digitize(df_normal_dist, bins)).all()
 
 
 def test_automatically_find_variables_and_return_as_object(df_normal_dist):
