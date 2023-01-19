@@ -40,25 +40,27 @@ class ProbeFeatureSelection(BaseSelector):
         estimator,
         scoring: str = "roc_auc",
         distribution: str = "normal",
-        threshold: float = 0.2,
         cv: int = 5,
-        n_iter: int = 5,
+        n_probes: int = 1,
         random_state: int = 0,
-        # TODO: Do we need confirm_variable given that this selector will not be used in a pipeline?
-        # TODO: Do we need the parameter because it is a param of BaseSelector?
         confirm_variables: bool = False,
     ):
 
-        if distribution not in ["normal", "binary", "uniform"]:
+        if distribution not in ["normal", "binary", "uniform", "all"]:
             raise ValueError(
-                "distribution takes on normal, binary, or uniform as values. "
+                "distribution takes on normal, binary, uniform, or all as values. "
                 f"Got {distribution} instead."
             )
 
-        if not (0 <= threshold <= 1):
+        if distribution == "all" and n_probes % 3 != 0:
             raise ValueError(
-                "threshold must range from 0 to 1, inclusively. "
-                f"Got {threshold} instead."
+                "If distribution is 'all' the n_probes must be a multiple of 3. "
+                f"Got {n_probes} for n_probes instead."
+            )
+
+        if not isinstance(n_probes, int):
+            raise ValueError(
+                f"n_probes must be an integer. Got {n_probes} instead."
             )
 
         if not isinstance(cv, int) or not (cv > 0):
@@ -66,17 +68,12 @@ class ProbeFeatureSelection(BaseSelector):
                 f"cv must be a positive integer. Got {cv} instead."
             )
 
-        if not isinstance(n_iter, int) or not (n_iter > 0):
-            raise ValueError(
-                f"n_iter must be a positive integer. Got {n_iter} instead."
-            )
         super().__init__(confirm_variables)
         self.estimator = estimator
         self.scoring = scoring
         self.distribution = distribution
-        self.threshold = threshold
         self.cv = cv
-        self.n_iter = n_iter
+        self.n_probes = n_probes
         self.random_state = random_state
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
