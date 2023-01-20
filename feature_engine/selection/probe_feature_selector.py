@@ -39,9 +39,9 @@ class ProbeFeatureSelection(BaseSelector):
         self,
         estimator,
         scoring: str = "roc_auc",
+        n_probes: int = 1,
         distribution: str = "normal",
         cv: int = 5,
-        n_probes: int = 1,
         random_state: int = 0,
         confirm_variables: bool = False,
     ):
@@ -63,11 +63,6 @@ class ProbeFeatureSelection(BaseSelector):
                 f"n_probes must be an integer. Got {n_probes} instead."
             )
 
-        if not isinstance(cv, int) or not (cv > 0):
-            raise ValueError(
-                f"cv must be a positive integer. Got {cv} instead."
-            )
-
         super().__init__(confirm_variables)
         self.estimator = estimator
         self.scoring = scoring
@@ -78,8 +73,7 @@ class ProbeFeatureSelection(BaseSelector):
 
     def fit(self, X: pd.DataFrame, y: pd.Series) -> None:
         """
-        Create three random feature. Find initial model performance.
-        Sort features by importance.
+        Find the important features.
 
         Parameters
         ----------
