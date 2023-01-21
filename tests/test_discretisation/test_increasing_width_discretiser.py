@@ -35,7 +35,7 @@ def test_fit_and_transform_methods(df_normal_dist):
     assert (transformer.binner_dict_["var"] == bins).all()
 
     # transform params
-    assert (X["var"] == np.digitize(df_normal_dist, bins)).all()
+    assert (X["var"] == np.digitize(df_normal_dist["var"], bins)).all()
 
 
 def test_automatically_find_variables_and_return_as_object(df_normal_dist):
