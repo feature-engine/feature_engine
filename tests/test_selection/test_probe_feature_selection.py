@@ -40,29 +40,50 @@ def test_input_params_assignment(
     assert sel.random_state == _random_state
 
 
-def test_generate_probe_feature(df_test):
+def test_fit_attributes(df_test):
 
     X, y = df_test
 
     sel = ProbeFeatureSelection(
         estimator=RandomForestClassifier(),
+        distribution="normal",
+        n_probes=2,
         scoring="recall",
-        distribution="all",
         cv=3,
-        n_probes=3,
-        random_state=33,
+        random_state=3,
         confirm_variables=False,
     )
 
     sel.fit(X, y)
-    res = sel.probe_features_.head().round(3)
 
     # expected results
-    expected_results = {
-        "gaussian_probe_0": [-0.957, -4.809, -4.606, -1.711, -0.65],
-        "binary_probe_0": [0, 1, 0, 0, 0],
-        "uniform_probe_0": [0.287, 0.287, 0.287, 0.287, 0.287],
+    expected_probe_features = {
+        "gaussian_probe_0": [5.366,  1.31,  0.289, -5.59, -0.832],
+        "gaussian_probe_1": [0.104,  3.396, -7.67, -0.807, -5.729],
     }
-    expected_results_df = pd.DataFrame(expected_results)
 
-    assert res.equals(expected_results_df)
+    expected_probe_features_df = pd.DataFrame(expected_probe_features)
+
+    expected_feature_importances = pd.Series(
+        data=[0.03, 0, 0, 0, 0.26, 0, 0.22, 0.33, 0.02, 0.12, 0, 0, 0, 0],
+        index=[
+            'var_0',
+            'var_1',
+            'var_2',
+            'var_3',
+            'var_4',
+            'var_5',
+            'var_6',
+            'var_7',
+            'var_8',
+            'var_9',
+            'var_10',
+            'var_11',
+            'gaussian_probe_0',
+            'gaussian_probe_1',
+        ]
+    )
+
+    assert sel.probe_features_.head().round(3).equals(expected_probe_features_df)
+    assert sel.features_to_drop_ == ['var_2', 'var_10']
+    assert sel.feature_importances_.round(2).equals(expected_feature_importances)
