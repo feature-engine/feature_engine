@@ -2,10 +2,10 @@
 
 .. currentmodule:: feature_engine.discretisation
 
-IncreasingWidthDiscretiser
-==========================
+GeometricWidthDiscretiser
+=========================
 
-The :class:`IncreasingWidthDiscretiser()` divides continuous numerical variables into
+The :class:`GeometricWidthDiscretiser()` divides continuous numerical variables into
 intervals of increasing width with equal increments. Note that the
 proportion of observations per interval may vary.
 
@@ -18,7 +18,7 @@ where n is the number of bins and a is the size of the next interval.
 
 This discretisation technique is great when the distribution of the variable is right skewed.
 
-The :class:`IncreasingWidthDiscretiser()` works only with numerical variables. A list of
+The :class:`GeometricWidthDiscretiser()` works only with numerical variables. A list of
 variables to discretise can be indicated, or the discretiser will automatically select
 all numerical variables in the train set.
 
@@ -128,14 +128,14 @@ Categorical encoders in Feature-engine are designed to work with variables of ty
 object by default. Thus, if you wish to encode the returned bins further, say to try and
 obtain monotonic relationships between the variable and the target, you can do so
 seamlessly by setting `return_object` to True. You can find an example of how to use
-this functionality `here <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/IncreasingWidthDiscretiser_plus_MeanEncoder.ipynb>`_.
+this functionality `here <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/GeometricWidthDiscretiser_plus_MeanEncoder.ipynb>`_.
 
 More details
 ^^^^^^^^^^^^
 
 Check also for more details on how to use this transformer:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/IncreasingWidthDiscretiser.ipynb>`_
-- `Jupyter notebook - Discretiser plus Ordinal encoding <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/IncreasingWidthDiscretiser_plus_MeanEncoder.ipynb>`_
+- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/GeometricWidthDiscretiser.ipynb>`_
+- `Jupyter notebook - Discretiser plus Ordinal encoding <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/GeometricWidthDiscretiser_plus_MeanEncoder.ipynb>`_
 
 All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
