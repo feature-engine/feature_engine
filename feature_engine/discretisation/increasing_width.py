@@ -29,9 +29,9 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class IncreasingWidthDiscretiser(BaseDiscretiser):
+class GeometricWidthDiscretiser(BaseDiscretiser):
     """
-    The IncreasingWidthDiscretiser() divides continuous numerical variables into
+    The GeometricWidthDiscretiser() divides continuous numerical variables into
     intervals of increasing width with equal increments. Note that the
     proportion of observations per interval may vary.
 
@@ -40,11 +40,11 @@ class IncreasingWidthDiscretiser(BaseDiscretiser):
     .. math::
         a_i+1 = a_i r^(n+i)
 
-    The IncreasingWidthDiscretiser() works only with numerical variables.
+    The GeometricWidthDiscretiser() works only with numerical variables.
     A list of variables can be passed as argument. Alternatively, the discretiser
     will automatically select all numerical variables.
 
-    The IncreasingWidthDiscretiser() first finds the boundaries for the intervals for
+    The GeometricWidthDiscretiser() first finds the boundaries for the intervals for
     each variable. Then, it transforms the variables, that is, sorts the values into
     the intervals.
 
