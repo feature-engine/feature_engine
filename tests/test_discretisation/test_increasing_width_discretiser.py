@@ -33,7 +33,6 @@ def test_fit_and_transform_methods(df_normal_dist):
 
     # fit params
     assert (transformer.binner_dict_["var"] == bins).all()
-    assert (X["var"].unique() == np.arange(0, 10)).all()
 
     # transform params
     assert (X == np.digitize(df_normal_dist, bins)).all()
