@@ -22,10 +22,6 @@ The :class:`GeometricWidthDiscretiser()` works only with numerical variables. A 
 variables to discretise can be indicated, or the discretiser will automatically select
 all numerical variables in the train set.
 
-**Note**
-
-This discretiser could be numerically unstable when the values of the variable are small (their order of magnitude is small).
-
 **Example**
 
 Let's look at an example using the House Prices Dataset (more details about the
