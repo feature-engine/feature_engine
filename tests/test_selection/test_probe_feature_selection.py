@@ -40,6 +40,27 @@ def test_input_params_assignment(
     assert sel.random_state == _random_state
 
 
+@pytest.mark.parametrize("_distribution", [3, "poisson", ["normal", "binary"], 2.22])
+def test_when_not_permitted_distribution(_distribution):
+    with pytest.raises(ValueError):
+        ProbeFeatureSelection(distribution=_distribution)
+
+
+@pytest.mark.parametrize("_n_probes", [5, 7, 11])
+def test_when_not_permitted_n_probes_with_all_distribution(_n_probes):
+    with pytest.raises(ValueError):
+        ProbeFeatureSelection(
+            distribution="all",
+            n_probes=_n_probes,
+        )
+
+
+@pytest.mark.parametrize("_n_probes", "tree", [False, 2], 101.1)
+def test_when_not_permitted_n_probes(_n_probes):
+    with pytest.raises(ValueError):
+        ProbeFeatureSelection(n_probes=_n_probes)
+
+
 def test_fit_attributes(df_test):
 
     X, y = df_test
