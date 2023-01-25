@@ -1,23 +1,13 @@
-from typing import List, Union, Dict
+from typing import Dict, List, Union
 
 import numpy as np
 import pandas as pd
-
-from sklearn.model_selection import cross_validate
-from sklearn.utils.validation import check_is_fitted
-
-from feature_engine.dataframe_checks import (
-    check_X_y,
-    _check_X_matches_training_df,
-    check_X,
-)
-from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
-
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.variable_type_selection import (
     _find_or_check_numerical_variables,
 )
-from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection._docstring import (
     _cv_docstring,
     _features_to_drop_docstring,
@@ -29,6 +19,10 @@ from feature_engine.selection._docstring import (
     _variables_numerical_docstring,
 )
 from feature_engine.selection.base_recursive_selector import BaseRecursiveSelector
+from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
+from sklearn.model_selection import cross_validate
+
+
 @Substitution(
     estimator=BaseRecursiveSelector._estimator_docstring,
     scoring=_scoring_docstring,
@@ -42,7 +36,6 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
     transform=_transform_docstring,
     fit_transform=_fit_transform_docstring,
     get_support=_get_support_docstring,
-
 )
 class ProbeFeatureSelection(BaseSelector):
     """
@@ -119,6 +112,7 @@ class ProbeFeatureSelection(BaseSelector):
         feature importance or average feature importances.
 
     """
+
     def __init__(
         self,
         estimator,
@@ -143,9 +137,7 @@ class ProbeFeatureSelection(BaseSelector):
             )
 
         if not isinstance(n_probes, int):
-            raise ValueError(
-                f"n_probes must be an integer. Got {n_probes} instead."
-            )
+            raise ValueError(f"n_probes must be an integer. Got {n_probes} instead.")
 
         super().__init__(confirm_variables)
         self.estimator = estimator
@@ -249,7 +241,9 @@ class ProbeFeatureSelection(BaseSelector):
                     df[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
 
                 elif self.distribution == "uniform":
-                    df[f"uniform_probe_{i}"] = np.random.uniform(0, 1, 1).tolist() * n_obs
+                    df[f"uniform_probe_{i}"] = (
+                        np.random.uniform(0, 1, 1).tolist() * n_obs
+                    )
 
         return df
 
