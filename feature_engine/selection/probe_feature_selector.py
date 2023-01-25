@@ -36,17 +36,30 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
     confirm_variables=BaseSelector._confirm_variables_docstring,
     variables=_variables_numerical_docstring,
     feature_importances_=BaseRecursiveSelector._feature_importances_docstring,
+    feature_names_in_=_feature_names_in_docstring,
     features_to_drop=_features_to_drop_docstring,
     fit=_fit_docstring,
     transform=_transform_docstring,
     fit_transform=_fit_transform_docstring,
-
-
+    get_support=_get_support_docstring,
 
 )
 class ProbeFeatureSelection(BaseSelector):
     """
+    ProbeFeatureSelection() generates one or more probe features based on the user-selected
+    distribution. The distribution options are 'normal', 'binomial', 'uniform', or 'all'.
+    'all' creates at least one distribution for each of the three aforementioned distributions.
 
+    Using cross validation, the class fits a Scikit-learn estimator to the provided dataset's
+    variables and the probe features.
+
+    The class derives the feature importance for each variable and probe feature. In the case
+    of there being more than one probe feature, ProbeFeatureSelection() calculates the average
+    feature importance of all the probe features.
+
+    The transformer ranks the variables based on their feature importances. The variables that
+    have a feature importance less than the feature importance or average feature importance of
+    the probe feature(s) are dropped from the dataset.
 
     Parameters
     ----------
@@ -66,9 +79,9 @@ class ProbeFeatureSelection(BaseSelector):
 
     {cv}
 
-    random_stateint, default=0
-    Controls the shuffling applied to the data before applying the split. Pass an int for reproducible output across multiple function calls.
-
+    random_state: int, default=0
+    Controls the shuffling applied to the data before applying the split. Pass an
+    int for reproducible output across multiple function calls.
 
     {confirm_variables}
 
@@ -98,6 +111,12 @@ class ProbeFeatureSelection(BaseSelector):
 
     {transform}
 
+    _generate_probe_features:
+        Creates 'n_probes' number of probe features using the user-selected distribution.
+
+    _get_features_to_drop:
+        Identifies the variables that have a feature importance less the probe feature's/features'
+        feature importance or average feature importances.
 
     """
     def __init__(
