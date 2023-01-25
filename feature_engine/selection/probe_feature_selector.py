@@ -16,22 +16,87 @@ from feature_engine.selection.base_selector import BaseSelector, get_feature_imp
 from feature_engine._variable_handling.variable_type_selection import (
     _find_or_check_numerical_variables,
 )
-
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.selection._docstring import (
     _cv_docstring,
     _features_to_drop_docstring,
     _fit_docstring,
     _get_support_docstring,
-    _initial_model_performance_docstring,
     _scoring_docstring,
-    _threshold_docstring,
     _transform_docstring,
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
+from feature_engine.selection.base_recursive_selector import BaseRecursiveSelector
+@Substitution(
+    estimator=BaseRecursiveSelector._estimator_docstring,
+    scoring=_scoring_docstring,
+    cv=_cv_docstring,
+    confirm_variables=BaseSelector._confirm_variables_docstring,
+    variables=_variables_numerical_docstring,
+    feature_importances_=BaseRecursiveSelector._feature_importances_docstring,
+    features_to_drop=_features_to_drop_docstring,
+    fit=_fit_docstring,
+    transform=_transform_docstring,
+    fit_transform=_fit_transform_docstring,
 
+
+
+)
 class ProbeFeatureSelection(BaseSelector):
     """
+
+
+    Parameters
+    ----------
+    {estimator}
+
+    {scoring}
+
+    n_probes: int, default=1
+        Number of probe features to be created. If distribution is 'all',
+        n_probes must be a multiple of 3.
+
+    distribution: str, default='normal'
+        The distribution used to create the probe features. The options are
+        normal, binomial, uniform, and all. 'all' creates at least 1 or more
+        probe features comprised of each distribution type, i.e., normal, binomial,
+        and uniform.
+
+    {cv}
+
+    random_stateint, default=0
+    Controls the shuffling applied to the data before applying the split. Pass an int for reproducible output across multiple function calls.
+
+
+    {confirm_variables}
+
+    Attributes
+    ----------
+    probe_features_:
+        A dataframe comprised of the pseudo-randomly generated features based
+        on the selected distribution.
+
+    {feature_importances_}
+
+    {features_to_drop_}
+
+    {variables_}
+
+    {feature_names_in_}
+
+    {n_features_in_}
+
+    Methods
+    -------
+    {fit}
+
+    {fit_transform}
+
+    {get_support}
+
+    {transform}
 
 
     """
