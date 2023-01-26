@@ -29,17 +29,16 @@ Note that the proportion of observations per interval may vary.
 
 This discretisation technique is great when the distribution of the variable is right skewed.
 
-
 The :class:`GeometricWidthDiscretiser()` works only with numerical variables. A list of
 variables to discretise can be indicated, or the discretiser will automatically select
 all numerical variables in the train set.
 
 **Example**
 
-Let's look at an example using the House Prices Dataset (more details about the
+Let's look at an example using the house prices dataset (more details about the
 dataset :ref:`here <datasets>`).
 
-Let's load the house prices dataset and  separate it into train and test sets:
+Let's load the house prices dataset and separate it into train and test sets:
 
 .. code:: python
 
@@ -48,7 +47,7 @@ Let's load the house prices dataset and  separate it into train and test sets:
 	import matplotlib.pyplot as plt
 	from sklearn.model_selection import train_test_split
 
-	from feature_engine.discretisation import IncreasingWidthDiscretiser
+	from feature_engine.discretisation import GeometricWidthDiscretiser
 
 	# Load dataset
 	data = pd.read_csv('houseprice.csv')
@@ -59,13 +58,13 @@ Let's load the house prices dataset and  separate it into train and test sets:
 		    data['SalePrice'], test_size=0.3, random_state=0)
 
 
-Now we want to discretise the 2 variables indicated below into 10 intervals of increasing
+Now, we want to discretise the 2 variables indicated below into 10 intervals of increasing
 width:
 
 .. code:: python
 
 	# set up the discretisation transformer
-	disc = IncreasingWidthDiscretiser(bins=10, variables=['LotArea', 'GrLivArea'])
+	disc = GeometricWidthDiscretiser(bins=10, variables=['LotArea', 'GrLivArea'])
 
 	# fit the transformer
 	disc.fit(X_train)
@@ -110,9 +109,10 @@ The `binner_dict_` stores the interval limits identified for each variable.
         2212.974,
         inf]}
 
-With increasing width discretisation, each bin does not necessarily contain the same number of observations.
-It will also "skew" distribution. It could be useful to apply it to right skewed distribution
-to get more symmetrical one.
+With increasing width discretisation, each bin does not necessarily contain the same number
+of observations. This transformer is suitable for variables with right skewed distributions.
+
+Let's compare the variable distribution before and after the discretization:
 
 .. code:: python
 
@@ -120,7 +120,9 @@ to get more symmetrical one.
     X_train['LotArea'].hist(ax=ax[0], bins=10);
     train_t['LotArea'].hist(ax=ax[1], bins=10);
 
-We can see below that the intervals contain different number of observations.
+We can see below that the intervals contain different number of observations. We can also
+see that the shape from the distribution changed from skewed to a more "bell shaped"
+distribution.
 
 .. image:: ../../images/increasingwidthdisc.png
 
@@ -143,7 +145,7 @@ More details
 
 Check also for more details on how to use this transformer:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/GeometricWidthDiscretiser.ipynb>`_
+- `Jupyter notebook - Geometric Discretiser <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/GeometricWidthDiscretiser.ipynb>`_
 - `Jupyter notebook - Geometric Discretiser plus Mean encoding <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/GeometricWidthDiscretiser_plus_MeanEncoder.ipynb>`_
 
 All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
