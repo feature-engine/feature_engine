@@ -103,11 +103,10 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
         if not isinstance(bins, int):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
-        super().__init__(return_object, return_boundaries)
+        super().__init__(return_object, return_boundaries, 7)
 
         self.bins = bins
         self.variables = _check_init_parameter_variables(variables)
-        self.precision = 7
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
