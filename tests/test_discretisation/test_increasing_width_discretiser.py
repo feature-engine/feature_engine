@@ -55,7 +55,7 @@ def test_error_when_bins_not_number(bins):
         GeometricWidthDiscretiser(bins=bins)
 
 
-@pytest.mark.parametrize("bins", ["other", 0.5, [1]])
+@pytest.mark.parametrize("return_object", ["other", 0.5, [1]])
 def test_error_if_return_object_not_bool(return_object):
     with pytest.raises(ValueError):
         GeometricWidthDiscretiser(return_object=return_object)
