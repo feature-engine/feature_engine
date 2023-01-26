@@ -6,17 +6,29 @@ GeometricWidthDiscretiser
 =========================
 
 The :class:`GeometricWidthDiscretiser()` divides continuous numerical variables into
-intervals of increasing width with equal increments. Note that the
-proportion of observations per interval may vary.
+intervals of increasing width. The width of each succeeding interval is larger than the
+previous interval by a constant amount (cw).
 
-Sizes of the intervals will follow geometric progression
+The constant amount is calculated as:
 
     .. math::
-        a_i+1 = a_i r^(n+i)
-	
-where n is the number of bins and a is the size of the next interval.
+        cw = (Max - Min)^{1/n}
+
+were Max and Min are the variable's maximum and minimum value, and n is the number of
+intervals.
+
+The sizes of the intervals themselves are calculated with a geometric progression:
+
+    .. math::
+        a_{i+1} = a_i cw
+
+Thus, the first interval's width equals cw, the second interval's width equals 2 * cw,
+and so on.
+
+Note that the proportion of observations per interval may vary.
 
 This discretisation technique is great when the distribution of the variable is right skewed.
+
 
 The :class:`GeometricWidthDiscretiser()` works only with numerical variables. A list of
 variables to discretise can be indicated, or the discretiser will automatically select
