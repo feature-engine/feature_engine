@@ -107,6 +107,7 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
 
         self.bins = bins
         self.variables = _check_init_parameter_variables(variables)
+        self.precision = 7
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -137,21 +138,3 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
             self.binner_dict_[var] = bins
 
         return self
-
-    def transform(self, X: pd.DataFrame, precision: int = 7):
-        """Sort the variable values into the geometric intervals.
-
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The data to transform.
-
-        precision: int, default=7
-            The precision at which to store and display the bins labels.
-
-        Returns
-        -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
-            The transformed data with the discrete variables.
-        """
-        return super().transform(X, precision)
