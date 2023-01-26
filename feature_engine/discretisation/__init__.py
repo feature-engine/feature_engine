@@ -7,7 +7,7 @@ from .arbitrary import ArbitraryDiscretiser
 from .decision_tree import DecisionTreeDiscretiser
 from .equal_frequency import EqualFrequencyDiscretiser
 from .equal_width import EqualWidthDiscretiser
-from .increasing_width import GeometricWidthDiscretiser
+from .gemoetric_width import GeometricWidthDiscretiser
 
 __all__ = [
     "DecisionTreeDiscretiser",
