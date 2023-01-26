@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
@@ -49,14 +49,16 @@ def test_automatically_find_variables_and_return_as_object(df_normal_dist):
     assert X["var"].dtypes == "O"
 
 
-def test_error_when_bins_not_number():
+@pytest.mark.parametrize("bins", ["other", 0.5, [1]])
+def test_error_when_bins_not_number(bins):
     with pytest.raises(ValueError):
-        GeometricWidthDiscretiser(bins="other")
+        GeometricWidthDiscretiser(bins=bins)
 
 
-def test_error_if_return_object_not_bool():
+@pytest.mark.parametrize("bins", ["other", 0.5, [1]])
+def test_error_if_return_object_not_bool(return_object):
     with pytest.raises(ValueError):
-        GeometricWidthDiscretiser(return_object="other")
+        GeometricWidthDiscretiser(return_object=return_object)
 
 
 def test_error_if_input_df_contains_na_in_fit(df_na):
