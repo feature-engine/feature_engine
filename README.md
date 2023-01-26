@@ -89,6 +89,7 @@ transforming parameters from the data and then transform it.
 ### Discretisation methods
 * EqualFrequencyDiscretiser
 * EqualWidthDiscretiser
+* GeometricWidthDiscretiser
 * DecisionTreeDiscretiser
 * ArbitraryDiscreriser
 
