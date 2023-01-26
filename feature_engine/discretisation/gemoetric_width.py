@@ -110,7 +110,7 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learn the boundaries of the increasing width intervals / bins for each
+        Learn the boundaries of the geometric width intervals / bins for each
         variable.
 
         Parameters
