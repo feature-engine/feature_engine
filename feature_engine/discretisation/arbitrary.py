@@ -152,7 +152,7 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
 
         return self
 
-    def transform(self, X: pd.DataFrame, precision: int = 3) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Sort the variable values into the intervals.
 
