@@ -142,7 +142,7 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         if not isinstance(bins, int):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
-        super().__init__(return_object, return_boundaries)
+        super().__init__(return_object, return_boundaries, 3)
 
         self.bins = bins
         self.variables = _check_init_parameter_variables(variables)
