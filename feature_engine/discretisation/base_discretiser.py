@@ -33,7 +33,7 @@ class BaseDiscretiser(BaseNumericalTransformer):
 
         self.return_object = return_object
         self.return_boundaries = return_boundaries
-        self._precision = precision
+        self.precision = precision
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Sort the variable values into the intervals.
