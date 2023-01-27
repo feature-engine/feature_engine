@@ -126,7 +126,7 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
                 f"Got {errors} instead."
             )
 
-        super().__init__(return_object, return_boundaries)
+        super().__init__(return_object, return_boundaries, 3)
 
         self.binning_dict = binning_dict
         self.errors = errors
