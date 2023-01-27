@@ -33,7 +33,7 @@ class BaseDiscretiser(BaseNumericalTransformer):
 
         self.return_object = return_object
         self.return_boundaries = return_boundaries
-        self.precision = precision
+        self._precision = precision
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Sort the variable values into the intervals.
@@ -59,7 +59,7 @@ class BaseDiscretiser(BaseNumericalTransformer):
         if self.return_boundaries is True:
             for feature in self.variables_:
                 X[feature] = pd.cut(
-                    X[feature], self.binner_dict_[feature], precision=self.precision
+                    X[feature], self.binner_dict_[feature], precision=self._precision
                 )
             X[self.variables_] = X[self.variables_].astype(str)
 
