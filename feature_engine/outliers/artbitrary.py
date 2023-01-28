@@ -14,7 +14,7 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters import _missing_values_docstring
+from feature_engine._docstrings.init_parameters.all_trasnformers import _missing_values_docstring
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
