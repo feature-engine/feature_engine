@@ -1,3 +1,6 @@
+"""Docstrings for the methods. They are meant to be used in the init docstrings of
+the transformers."""
+
 _fit_not_learn_docstring = """fit:
         This transformer does not learn parameters.
         """.rstrip()
