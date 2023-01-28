@@ -14,7 +14,9 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import _variables_numerical_docstring
+from feature_engine._docstrings.init_parameters.all_trasnformers import (
+    _variables_numerical_docstring,
+)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.init_parameter_checks import (

@@ -13,7 +13,10 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _missing_values_docstring,
     _variables_categorical_docstring,
 )
-from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring, _unseen_docstring
+from feature_engine._docstrings.init_parameters.encoders import (
+    _ignore_format_docstring,
+    _unseen_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _inverse_transform_docstring,
