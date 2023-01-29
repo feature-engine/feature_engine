@@ -19,7 +19,7 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import _check_contains_na, check_X
+from feature_engine.dataframe_checks import _check_optional_contains_na, check_X
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixinNA,
     CategoricalMethodsMixin,
@@ -244,7 +244,7 @@ class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_, switch_param=True)
+            _check_optional_contains_na(X, self.variables_)
 
             for feature in self.variables_:
                 X[feature] = np.where(

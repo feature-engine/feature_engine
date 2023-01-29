@@ -16,7 +16,7 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import _check_contains_na, check_X
+from feature_engine.dataframe_checks import _check_optional_contains_na, check_X
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
@@ -241,7 +241,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         # if data contains nan, fail before running any logic
         if self.missing_values == "raise":
-            _check_contains_na(X, variables_, switch_param=True)
+            _check_optional_contains_na(X, variables_)
 
         self.encoder_dict_ = {}
 
@@ -311,7 +311,7 @@ class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         check_is_fitted(self)
         X = self._check_transform_input_and_state(X)
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_, switch_param=True)
+            _check_optional_contains_na(X, self.variables_)
 
         new_values = []
         for var in self.variables_:
