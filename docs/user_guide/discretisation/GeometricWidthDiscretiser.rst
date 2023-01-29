@@ -29,6 +29,10 @@ Note that the proportion of observations per interval may vary.
 
 This discretisation technique is great when the distribution of the variable is right skewed.
 
+Note: this discretiser needs higher precision, because bins width could be very small.
+With smaller range of the binned values and/or higher number of bins, bigger precision
+values could be needed.
+
 The :class:`GeometricWidthDiscretiser()` works only with numerical variables. A list of
 variables to discretise can be indicated, or the discretiser will automatically select
 all numerical variables in the train set.
