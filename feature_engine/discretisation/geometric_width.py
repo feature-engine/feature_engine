@@ -131,7 +131,9 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
         for var in self.variables_:
             min_, max_ = X[var].min(), X[var].max()
             increment = np.power(max_ - min_, 1.0 / self.bins)
-            bins = np.r_[-np.inf, min_ + np.power(increment, np.arange(1, self.bins)), np.inf]
+            bins = np.r_[
+                -np.inf, min_ + np.power(increment, np.arange(1, self.bins)), np.inf
+            ]
             bins = np.sort(bins)
             bins = list(bins)
             self.binner_dict_[var] = bins
