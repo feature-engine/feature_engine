@@ -17,7 +17,7 @@ class BaseDiscretiser(BaseNumericalTransformer):
         self,
         return_object: bool = False,
         return_boundaries: bool = False,
-        precision: int = 3
+        precision: int = 3,
     ) -> None:
 
         if not isinstance(return_object, bool):
@@ -31,6 +31,11 @@ class BaseDiscretiser(BaseNumericalTransformer):
                 f"Got {return_boundaries} instead."
             )
 
+        if not isinstance(precision, int):
+            raise ValueError(
+                "precision must be an integer. " f"Got {precision} instead."
+            )
+
         self.return_object = return_object
         self.return_boundaries = return_boundaries
         self.precision = precision
@@ -42,9 +47,6 @@ class BaseDiscretiser(BaseNumericalTransformer):
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
-
-        precision: int, default=3
-            The precision at which to store and display the bins labels.
 
         Returns
         -------
