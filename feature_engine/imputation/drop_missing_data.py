@@ -6,17 +6,13 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_all_variables,
-)
+from feature_engine._variable_handling.init_parameter_checks import \
+    _check_init_parameter_variables
+from feature_engine._variable_handling.variable_type_selection import \
+    _find_all_variables
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
