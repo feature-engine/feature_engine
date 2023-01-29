@@ -13,11 +13,12 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _variables_categorical_docstring,
+    _missing_values_docstring,
 )
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import _check_contains_na, check_X
+from feature_engine.dataframe_checks import _check_optional_contains_na, check_X
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixinNA,
     CategoricalMethodsMixin,
@@ -217,9 +218,7 @@ class OneHotEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
         
         # check if dataset contains na if missing_value is 'raise' or empty
         if self.missing_values == "raise":
-            _check_contains_na(X, variables_)
-        elif self.missing_values == "encode":
-            X[variables_] = X[variables_].fillna('missing_value')
+            _check_optional_contains_na(X, variables_)
 
         self.encoder_dict_ = {}
 
@@ -280,9 +279,7 @@ class OneHotEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
 
         # check if dataset contains na if missing_value is 'raise' or empty
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_)
-        elif self.missing_values == "encode":
-            X[self.variables_] = X[self.variables_].fillna('missing_value')
+            _check_optional_contains_na(X, self.variables_)
 
         for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
