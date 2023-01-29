@@ -8,12 +8,20 @@ import pandas as pd
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
-    _variables_attribute_docstring,
+    _variables_attribute_docstring, _binner_dict_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _variables_numerical_docstring,
 )
-from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.init_parameters.discretisers import (
+    _return_object_docstring,
+    _return_boundaries_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+    _fit_discretiser_docstring,
+    _transform_discretiser_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.init_parameter_checks import (
     _check_init_parameter_variables,
@@ -22,11 +30,11 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 
 
 @Substitution(
-    return_object=BaseDiscretiser._return_object_docstring,
-    return_boundaries=BaseDiscretiser._return_boundaries_docstring,
-    binner_dict_=BaseDiscretiser._binner_dict_docstring,
-    fit=BaseDiscretiser._fit_docstring,
-    transform=BaseDiscretiser._transform_docstring,
+    return_object=_return_object_docstring,
+    return_boundaries=_return_boundaries_docstring,
+    binner_dict_=_binner_dict_docstring,
+    fit=_fit_discretiser_docstring,
+    transform=_transform_discretiser_docstring,
     variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,

@@ -11,3 +11,7 @@ _feature_names_in_docstring = """feature_names_in_:
 _n_features_in_docstring = """n_features_in_:
         The number of features in the train set used in fit.
         """.rstrip()
+
+_binner_dict_docstring = """binner_dict_:
+         Dictionary with the interval limits per variable.
+     """.rstrip()
