@@ -20,7 +20,7 @@ from feature_engine._variable_handling.variable_type_selection import (
     _find_or_check_categorical_variables,
 )
 from feature_engine.dataframe_checks import (
-    _check_contains_na,
+    _check_optional_contains_na,
     _check_X_matches_training_df,
     check_X,
 )
@@ -110,7 +110,7 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
 
     def _check_na(self, X: pd.DataFrame, variables):
         if self.missing_values == "raise":
-            _check_contains_na(X, variables, switch_param=True)
+            _check_optional_contains_na(X, variables)
 
     def _check_or_select_variables(self, X: pd.DataFrame):
         """
@@ -207,7 +207,7 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_, switch_param=True)
+            _check_optional_contains_na(X, self.variables_)
 
         X = self._encode(X)
 

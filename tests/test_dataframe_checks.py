@@ -7,6 +7,7 @@ from scipy.sparse import csr_matrix
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
+    _check_optional_contains_na,
     _check_X_matches_training_df,
     check_X,
     check_X_y,
@@ -152,6 +153,8 @@ def test_contains_na(df_na):
         assert _check_contains_na(df_na, ["Name", "City"])
     assert str(record.value) == msg
 
+
+def test_optional_contains_na(df_na):
     msg = (
         "Some of the variables in the dataset contain NaN. Check and "
         "remove those before using this transformer or set the parameter "
@@ -159,7 +162,7 @@ def test_contains_na(df_na):
     )
 
     with pytest.raises(ValueError) as record:
-        assert _check_contains_na(df_na, ["Name", "City"], switch_param=True)
+        assert _check_optional_contains_na(df_na, ["Name", "City"])
     assert str(record.value) == msg
 
 
