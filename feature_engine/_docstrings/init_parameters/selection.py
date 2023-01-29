@@ -6,6 +6,6 @@ _confirm_variables_docstring = """confirm_variables: bool, default=False
 
 _estimator_docstring = """estimator: object
             A Scikit-learn estimator for regression or classification.
-            The estimator must have either a `feature_importances` or a `coef_` attribute
-            after fitting.
+            The estimator must have either a `feature_importances` or a `coef_`
+            attribute after fitting.
     """.rstrip()
