@@ -8,12 +8,19 @@ import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
+    _left_tail_caps_docstring,
     _n_features_in_docstring,
+    _right_tail_caps_docstring,
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _missing_values_docstring,
     _variables_numerical_docstring,
+)
+from feature_engine._docstrings.init_parameters.outliers import (
+    _capping_method_docstring,
+    _fold_docstring,
+    _tail_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
@@ -23,13 +30,13 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
 
 @Substitution(
     intro_docstring=WinsorizerBase._intro_docstring,
-    capping_method=WinsorizerBase._capping_method_docstring,
-    tail=WinsorizerBase._tail_docstring,
-    fold=WinsorizerBase._fold_docstring,
+    capping_method=_capping_method_docstring,
+    tail=_tail_docstring,
+    fold=_fold_docstring,
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
-    right_tail_caps_=WinsorizerBase._right_tail_caps_docstring,
-    left_tail_caps_=WinsorizerBase._left_tail_caps_docstring,
+    right_tail_caps_=_right_tail_caps_docstring,
+    left_tail_caps_=_left_tail_caps_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
