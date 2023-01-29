@@ -97,7 +97,7 @@ The `binner_dict_` stores the interval limits identified for each variable.
         19675.608,
         64000.633,
         inf],
-	 'GrLivArea': [-inf,
+	'GrLivArea': [-inf,
         336.311,
         339.34,
         346.34,
