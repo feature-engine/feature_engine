@@ -77,6 +77,11 @@ def _find_or_check_categorical_variables(
     Checks that variables provided by the user are of type object or categorical.
     If None, finds all the categorical and object type variables in the DataFrame.
 
+    Note that when `variables` is `None`, the transformer will not select variables of
+    type object that can be parsed as datetime. But if the user passes a list with
+    datetime variables cast as object to the `variables` parameter, they will be
+    allowed.
+
     Parameters
     ----------
     X : pandas DataFrame.
@@ -132,8 +137,9 @@ def _find_or_check_datetime_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
-    Checks that variables provided by the user are of type datetime.
-    If None, finds all datetime variables in the DataFrame.
+    Checks that the variables provided by the user are of type datetime.
+    If None, finds all datetime variables in the DataFrame. It will select variables
+    cast as object if they can be cast as datetime as well.
 
     Parameters
     ----------
@@ -190,13 +196,15 @@ def _find_all_variables(
     exclude_datetime: bool = False,
 ) -> List[Union[str, int]]:
     """
-    If variables are None, captures all variables in the dataframe in a list.
-    If user enters variable names in list, it returns the list.
+    If `variables` is None, it captures all variables in the dataframe in a list.
+    If `variables` contains a list with variable names, it will check their presence
+    in the dataframe and return the same list.
 
     Parameters
     ----------
     X :  pandas DataFrame
     variables : List of variables. Defaults to None.
+    exclude_datetime: whether to exclude datetime variables.
 
     Raises
     ------
@@ -217,7 +225,7 @@ def _find_all_variables(
 
     elif isinstance(variables, (str, int)):
         if variables not in X.columns.to_list():
-            raise ValueError("The variable is not in the dataframe.")
+            raise ValueError(f"The variable {variables} is not in the dataframe.")
         variables_ = [variables]
 
     else:
