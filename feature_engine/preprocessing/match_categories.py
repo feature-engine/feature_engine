@@ -14,7 +14,7 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
 )
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import _check_contains_na, check_X
+from feature_engine.dataframe_checks import _check_optional_contains_na, check_X
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixinNA,
     CategoricalMethodsMixin,
@@ -116,7 +116,7 @@ class MatchCategories(
         variables_ = self._check_or_select_variables(X)
 
         if self.missing_values == "raise":
-            _check_contains_na(X, variables_, switch_param=True)
+            _check_optional_contains_na(X, variables_)
 
         self.category_dict_ = dict()
         for var in variables_:
@@ -143,7 +143,7 @@ class MatchCategories(
         X = self._check_transform_input_and_state(X)
 
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_, switch_param=True)
+            _check_optional_contains_na(X, self.variables_)
 
         for feature, levels in self.category_dict_.items():
             X[feature] = pd.Categorical(X[feature], levels)
