@@ -15,7 +15,10 @@ desired type.
 .. currentmodule:: feature_engine.variable_handling.variable_type_selection
 
 .. autosummary::
-   :toctree:
+   :toctree: generated/
 
-   _find_categorical_and_numerical_variables
-   _filter_out_variables_not_in_dataframe
+    find_all_variables
+    find_categorical_and_numerical_variables
+    find_or_check_categorical_variables
+    find_or_check_datetime_variables
+    find_or_check_numerical_variables
