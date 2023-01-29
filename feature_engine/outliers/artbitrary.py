@@ -11,7 +11,9 @@ from feature_engine._check_input_parameters.check_input_dictionary import (
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
+    _left_tail_caps_docstring,
     _n_features_in_docstring,
+    _right_tail_caps_docstring,
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
@@ -36,8 +38,8 @@ from feature_engine.tags import _return_tags
 
 @Substitution(
     missing_values=_missing_values_docstring,
-    right_tail_caps_=BaseOutlier._right_tail_caps_docstring,
-    left_tail_caps_=BaseOutlier._left_tail_caps_docstring,
+    right_tail_caps_=_right_tail_caps_docstring,
+    left_tail_caps_=_left_tail_caps_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,

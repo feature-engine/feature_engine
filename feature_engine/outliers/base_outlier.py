@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._variable_handling.init_parameter_checks import (
     _check_init_parameter_variables,
 )
@@ -16,22 +17,11 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine.tags import _return_tags
 
 
 class BaseOutlier(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """shared set-up checks and methods across outlier transformers"""
-
-    _right_tail_caps_docstring = """right_tail_caps_:
-        Dictionary with the maximum values beyond which a value will be considered an
-        outlier.
-        """.rstrip()
-
-    _left_tail_caps_docstring = """left_tail_caps_:
-        Dictionary with the minimum values beyond which a value will be considered an
-        outlier.
-        """.rstrip()
 
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """Checks that the input is a dataframe and of the same size than the one used
@@ -153,36 +143,6 @@ class WinsorizerBase(BaseOutlier):
     be censored. For example, if fold=0.05, the limits will be the 5th and 95th
     percentiles. If fold=0.1, the limits will be the 10th and 90th percentiles.
     """.rstrip()
-
-    _capping_method_docstring = """capping_method: str, default='gaussian'
-        Desired outlier detection method. Can be 'gaussian', 'iqr', 'mad', 'quantiles'.
-
-        The transformer will find the maximum and / or minimum values beyond which a
-        data point will be considered an outlier using:
-        **'gaussian'**: the Gaussian approximation.
-        **'iqr'**: the IQR proximity rule.
-        **'quantiles'**: the percentiles.
-        **'mad'**: the Gaussian approximation but using robust statistics.
-        """.rstrip()
-
-    _tail_docstring = """tail: str, default='right'
-        Whether to look for outliers on the right, left or both tails of the
-        distribution. Can take 'left', 'right' or 'both'.
-        """.rstrip()
-
-    _fold_docstring = """fold: int or float, default=0.05 if `quantile`, or 3 otherwise.
-        The factor used to multiply the std, MAD or IQR to calculate
-        the maximum or minimum allowed values.
-        Recommended values are 2 or 3 for the gaussian approximation,
-        1.5 or 3 for the IQR proximity rule and 3 or 3.5 for MAD rule.
-
-        If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if
-        `fold=0.05`, the limits will be the 95th and 5th percentiles.
-
-        **Note**: Outliers will be removed up to a maximum of the 20th percentiles on
-        both sides. Thus, when `capping_method='quantile'`, then `'fold'` takes values
-        between 0 and 0.20.
-        """.rstrip()
 
     def __init__(
         self,
