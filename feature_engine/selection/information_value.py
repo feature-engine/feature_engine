@@ -9,6 +9,9 @@ from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
+from feature_engine._docstrings.init_parameters.selection import (
+    _confirm_variables_docstring,
+)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.init_parameter_checks import (
@@ -43,7 +46,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     feature_names_in=_feature_names_in_docstring,
     n_features_in=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
-    confirm_variables=BaseSelector._confirm_variables_docstring,
+    confirm_variables=_confirm_variables_docstring,
     get_support=_get_support_docstring,
 )
 class SelectByInformationValue(BaseSelector, WoE):

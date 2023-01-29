@@ -8,6 +8,9 @@ from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
+from feature_engine._docstrings.init_parameters.selection import (
+    _confirm_variables_docstring,
+)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._prediction.target_mean_classifier import TargetMeanClassifier
@@ -43,7 +46,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     scoring=_scoring_docstring,
     threshold=_threshold_docstring,
     cv=_cv_docstring,
-    confirm_variables=BaseSelector._confirm_variables_docstring,
+    confirm_variables=_confirm_variables_docstring,
     features_to_drop_=_features_to_drop_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
