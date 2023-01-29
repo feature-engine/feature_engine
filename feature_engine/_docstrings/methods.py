@@ -31,3 +31,12 @@ _transform_encoders_docstring = """transform:
 _transform_creation_docstring = """transform:
         Create new features.
     """.rstrip()
+
+# used in discretisers module
+_fit_discretiser_docstring = """fit:
+        Find the interval limits.
+    """.rstrip()
+
+_transform_discretiser_docstring = """transform:
+        Sort continuous variable values into the intervals.
+    """.rstrip()
