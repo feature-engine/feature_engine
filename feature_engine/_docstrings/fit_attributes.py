@@ -32,3 +32,12 @@ _left_tail_caps_docstring = """left_tail_caps_:
         Dictionary with the minimum values beyond which a value will be considered an
         outlier.
     """.rstrip()
+
+# used by selection module
+_feature_importances_docstring = """feature_importances_:
+        Pandas Series with the feature importance (comes from step 2)
+    """.rstrip()
+
+_performance_drifts_docstring = """performance_drifts_:
+        Dictionary with the performance drift per examined feature (comes from step 5).
+    """.rstrip()

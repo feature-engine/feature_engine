@@ -6,6 +6,9 @@ from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
+from feature_engine._docstrings.init_parameters.selection import (
+    _confirm_variables_docstring,
+)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.init_parameter_checks import (
@@ -27,7 +30,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 @Substitution(
-    confirm_variables=BaseSelector._confirm_variables_docstring,
+    confirm_variables=_confirm_variables_docstring,
     variables=_variables_all_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,

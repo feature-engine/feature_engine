@@ -2,8 +2,14 @@ import pandas as pd
 from sklearn.model_selection import cross_validate
 
 from feature_engine._docstrings.fit_attributes import (
+    _feature_importances_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
+    _performance_drifts_docstring,
+)
+from feature_engine._docstrings.init_parameters.selection import (
+    _confirm_variables_docstring,
+    _estimator_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
@@ -23,15 +29,15 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
 
 
 @Substitution(
-    estimator=BaseRecursiveSelector._estimator_docstring,
+    estimator=_estimator_docstring,
     scoring=_scoring_docstring,
     threshold=_threshold_docstring,
     cv=_cv_docstring,
     variables=_variables_numerical_docstring,
-    confirm_variables=BaseRecursiveSelector._confirm_variables_docstring,
+    confirm_variables=_confirm_variables_docstring,
     initial_model_performance_=_initial_model_performance_docstring,
-    feature_importances_=BaseRecursiveSelector._feature_importances_docstring,
-    performance_drifts_=BaseRecursiveSelector._performance_drifts_docstring,
+    feature_importances_=_feature_importances_docstring,
+    performance_drifts_=_performance_drifts_docstring,
     features_to_drop_=_features_to_drop_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
