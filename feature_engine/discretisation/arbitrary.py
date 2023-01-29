@@ -10,10 +10,9 @@ from feature_engine._base_transformers.mixins import FitFromDictMixin
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
-    _variables_attribute_docstring,
+    _variables_attribute_docstring, _binner_dict_docstring,
 )
 from feature_engine._docstrings.init_parameters.discretisers import (
-    _binner_dict_docstring,
     _return_object_docstring,
     _return_boundaries_docstring,
 )
