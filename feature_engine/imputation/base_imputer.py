@@ -2,26 +2,13 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
+from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
 from feature_engine.tags import _return_tags
 
 
 class BaseImputer(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """shared set-up checks and methods across imputers"""
-
-    _variables_numerical_docstring = """variables: list, default=None
-        The list of variables to impute. If None, the imputer will select
-        all numerical variables.
-        """.rstrip()
-
-    _imputer_dict_docstring = """imputer_dict_:
-        Dictionary with the values to replace missing data in each variable.
-        """.rstrip()
-
-    _transform_docstring = """transform:
-        Impute missing data.
-        """.rstrip()
 
     def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """

@@ -10,12 +10,14 @@ from feature_engine._check_input_parameters.check_input_dictionary import (
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
+    _imputer_dict_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
+    _transform_imputers_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.init_parameter_checks import (
@@ -29,12 +31,12 @@ from feature_engine.imputation.base_imputer import BaseImputer
 
 
 @Substitution(
-    imputer_dict_=BaseImputer._imputer_dict_docstring,
+    imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
-    transform=BaseImputer._transform_docstring,
+    transform=_transform_imputers_docstring,
     fit_transform=_fit_transform_docstring,
 )
 class ArbitraryNumberImputer(BaseImputer):

@@ -15,3 +15,7 @@ _n_features_in_docstring = """n_features_in_:
 _binner_dict_docstring = """binner_dict_:
          Dictionary with the interval limits per variable.
      """.rstrip()
+
+_imputer_dict_docstring = """imputer_dict_:
+        Dictionary with the values to replace missing data in each variable.
+    """.rstrip()

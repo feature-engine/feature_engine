@@ -40,3 +40,8 @@ _fit_discretiser_docstring = """fit:
 _transform_discretiser_docstring = """transform:
         Sort continuous variable values into the intervals.
     """.rstrip()
+
+# used in imputation module
+_transform_imputers_docstring = """transform:
+        Impute missing data.
+    """.rstrip()
