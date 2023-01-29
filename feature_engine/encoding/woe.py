@@ -11,10 +11,12 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters import (
+from feature_engine._docstrings.init_parameters.all_trasnformers import (
+    _variables_categorical_docstring,
+)
+from feature_engine._docstrings.init_parameters.encoders import (
     _ignore_format_docstring,
     _unseen_docstring,
-    _variables_categorical_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,

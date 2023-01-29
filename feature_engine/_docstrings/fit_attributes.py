@@ -1,3 +1,5 @@
+"""Docstrings for the attributes that are generated during fit."""
+
 _variables_attribute_docstring = """variables_:
         The group of variables that will be transformed.
         """.rstrip()
