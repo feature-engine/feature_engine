@@ -8,13 +8,15 @@ import pandas as pd
 
 from feature_engine._base_transformers.mixins import FitFromDictMixin
 from feature_engine._docstrings.fit_attributes import (
+    _binner_dict_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
-    _variables_attribute_docstring, _binner_dict_docstring,
+    _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters.discretisers import (
-    _return_object_docstring,
+    _precision_docstring,
     _return_boundaries_docstring,
+    _return_object_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
@@ -29,6 +31,7 @@ from feature_engine.tags import _return_tags
 @Substitution(
     return_object=_return_object_docstring,
     return_boundaries=_return_boundaries_docstring,
+    precision=_precision_docstring,
     binner_dict_=_binner_dict_docstring,
     transform=_transform_discretiser_docstring,
     variables_=_variables_attribute_docstring,
@@ -58,6 +61,8 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
     {return_object}
 
     {return_boundaries}
+
+    {precision}
 
     errors: string, default='ignore'
         Indicates what to do when a value is outside the limits indicated in the
@@ -111,6 +116,7 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
         binning_dict: Dict[Union[str, int], List[Union[str, int]]],
         return_object: bool = False,
         return_boundaries: bool = False,
+        precision: int = 3,
         errors: str = "ignore",
     ) -> None:
 
@@ -126,7 +132,7 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
                 f"Got {errors} instead."
             )
 
-        super().__init__(return_object, return_boundaries, 3)
+        super().__init__(return_object, return_boundaries, precision)
 
         self.binning_dict = binning_dict
         self.errors = errors
@@ -160,9 +166,6 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
-
-        precision: int, default=3
-            The precision at which to store and display the bins labels.
 
         Returns
         -------

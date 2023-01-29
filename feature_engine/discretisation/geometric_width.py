@@ -4,21 +4,22 @@ import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
+    _binner_dict_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
-    _binner_dict_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.init_parameters.discretisers import (
-    _return_object_docstring,
+    _precision_docstring,
     _return_boundaries_docstring,
+    _return_object_docstring,
 )
 from feature_engine._docstrings.methods import (
-    _fit_transform_docstring,
     _fit_discretiser_docstring,
+    _fit_transform_docstring,
     _transform_discretiser_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
@@ -31,6 +32,7 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 @Substitution(
     return_object=_return_object_docstring,
     return_boundaries=_return_boundaries_docstring,
+    precision=_precision_docstring,
     binner_dict_=_binner_dict_docstring,
     fit=_fit_discretiser_docstring,
     transform=_transform_discretiser_docstring,
@@ -72,6 +74,8 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
 
     {return_boundaries}
 
+    {precision}
+
     Attributes
     ----------
     {binner_dict_}
@@ -109,12 +113,13 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
         bins: int = 10,
         return_object: bool = False,
         return_boundaries: bool = False,
+        precision: int = 7,
     ):
 
         if not isinstance(bins, int):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
-        super().__init__(return_object, return_boundaries, 7)
+        super().__init__(return_object, return_boundaries, precision)
 
         self.bins = bins
         self.variables = _check_init_parameter_variables(variables)
