@@ -28,7 +28,7 @@ from feature_engine._docstrings.methods import (
     _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
+from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
 

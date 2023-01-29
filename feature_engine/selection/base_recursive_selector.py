@@ -3,10 +3,10 @@ from typing import List, Union
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine._variable_handling.init_parameter_checks import (
+from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
-from feature_engine._variable_handling.variable_type_selection import (
+from feature_engine.variable_handling.variable_type_selection import (
     _find_or_check_numerical_variables,
 )
 from feature_engine.dataframe_checks import check_X_y

@@ -19,7 +19,7 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
+from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
 from feature_engine.tags import _return_tags

@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from feature_engine._variable_handling.variable_type_selection import (
+from feature_engine.variable_handling.variable_type_selection import (
     _filter_out_variables_not_in_dataframe,
     _find_all_variables,
     _find_categorical_and_numerical_variables,

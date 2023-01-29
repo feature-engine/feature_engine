@@ -9,7 +9,7 @@ from feature_engine._check_input_parameters.check_init_input_params import (
     _check_param_drop_original,
     _check_param_missing_values,
 )
-from feature_engine._variable_handling.variable_type_selection import (
+from feature_engine.variable_handling.variable_type_selection import (
     _find_or_check_numerical_variables,
 )
 from feature_engine.dataframe_checks import (

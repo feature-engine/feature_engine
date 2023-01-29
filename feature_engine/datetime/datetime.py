@@ -18,13 +18,13 @@ from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
+from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
-from feature_engine._variable_handling.variable_type_checks import (
+from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
 )
-from feature_engine._variable_handling.variable_type_selection import (
+from feature_engine.variable_handling.variable_type_selection import (
     _find_or_check_datetime_variables,
 )
 from feature_engine.dataframe_checks import (

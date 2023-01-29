@@ -12,10 +12,10 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
 )
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
+from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
-from feature_engine._variable_handling.variable_type_selection import (
+from feature_engine.variable_handling.variable_type_selection import (
     _find_all_variables,
     _find_or_check_categorical_variables,
 )
