@@ -4,7 +4,7 @@ import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
-from .conftest import load_diabetes_dataset
+from sklearn.utils.validation import column_or_1d
 
 from feature_engine.selection import ProbeFeatureSelection
 
@@ -72,6 +72,7 @@ def test_when_not_permitted_n_probes(_n_probes):
 def test_fit_attributes(df_test):
 
     X, y = df_test
+    y = column_or_1d(y, warn=True)
 
     sel = ProbeFeatureSelection(
         estimator=RandomForestClassifier(),
@@ -121,6 +122,7 @@ def test_fit_attributes(df_test):
 def test_transformer_with_normal_distribution(load_diabetes_dataset):
     X, y = load_diabetes_dataset
     X.columns = [f"var_{col}" for col in X.columns]
+    # y = column_or_1d(y, warn=True)
 
     sel = ProbeFeatureSelection(
         estimator=DecisionTreeRegressor(),
@@ -132,7 +134,7 @@ def test_transformer_with_normal_distribution(load_diabetes_dataset):
         confirm_variables=False,
     )
 
-    sel.fit(X, y)
+    sel.fit(X, y.values.ravel())
     results = sel.transform(X)
 
     # expected results
@@ -148,19 +150,18 @@ def test_transformer_with_normal_distribution(load_diabetes_dataset):
 
 def test_transformer_with_binary_distribution(load_diabetes_dataset):
     X, y = load_diabetes_dataset
-    X.columns = [f"var_{col}" for col in X.columns]
 
     sel = ProbeFeatureSelection(
         estimator=DecisionTreeRegressor(),
-        scoring="neg_mean_squared_error",
-        distribution="normal",
+        scoring="neg_mean_absolute_error",
+        distribution="binary",
         cv=5,
         n_probes=3,
         random_state=84,
         confirm_variables=False,
     )
 
-    sel.fit(X, y)
+    sel.fit(X, y.values.ravel())
     results = sel.transform(X)
 
     # expected results
@@ -172,6 +173,7 @@ def test_transformer_with_binary_distribution(load_diabetes_dataset):
         'var_4': [-0.044, -0.008, -0.046, 0.012, 0.004],
         'var_5': [-0.035, -0.019, -0.034, 0.025, 0.016],
         'var_6': [-0.043, 0.074, -0.032, -0.036, 0.008],
+        'var_7': [-0.003, -0.039, -0.003, 0.034, -0.003],
         'var_8': [0.02, -0.068, 0.003, 0.023, -0.032],
         'var_9': [-0.018, -0.092, -0.026, -0.009, -0.047],
     }
@@ -182,6 +184,7 @@ def test_transformer_with_binary_distribution(load_diabetes_dataset):
 
 def test_transformer_with_uniform_distribution(df_test):
     X, y = df_test
+    # y = column_or_1d(y, warn=True)
 
     sel = ProbeFeatureSelection(
         estimator=LogisticRegression(),
@@ -193,9 +196,9 @@ def test_transformer_with_uniform_distribution(df_test):
         confirm_variables=False,
     )
 
-    sel.fit(X, y)
+    sel.fit(X, y.ravel())
     results = sel.transform(X)
-
+    print(results.columns)
     # expected results
     expected_results = {
         'var_0': [1.471, 1.819, 1.625, 1.939, 1.579],

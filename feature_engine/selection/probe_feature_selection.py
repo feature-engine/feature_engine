@@ -3,6 +3,10 @@ from typing import Dict, List, Union
 import numpy as np
 import pandas as pd
 from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._variable_handling.variable_type_selection import (
     _find_or_check_numerical_variables,
@@ -28,10 +32,11 @@ from sklearn.model_selection import cross_validate
     scoring=_scoring_docstring,
     cv=_cv_docstring,
     confirm_variables=BaseSelector._confirm_variables_docstring,
-    variables=_variables_numerical_docstring,
+    variables_=_variables_numerical_docstring,
     feature_importances_=BaseRecursiveSelector._feature_importances_docstring,
     feature_names_in_=_feature_names_in_docstring,
-    features_to_drop=_features_to_drop_docstring,
+    features_to_drop_=_features_to_drop_docstring,
+    n_features_in_=_n_features_in_docstring,
     fit=_fit_docstring,
     transform=_transform_docstring,
     fit_transform=_fit_transform_docstring,
