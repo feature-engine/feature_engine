@@ -7,17 +7,17 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
-)
+from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling.variable_type_selection import (
+    find_or_check_numerical_variables,
+)
 
 
 class BaseNumericalTransformer(
@@ -58,7 +58,7 @@ class BaseNumericalTransformer(
         X = check_X(X)
 
         # find or check for numerical variables
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = find_or_check_numerical_variables(X, self.variables)
 
         # check if dataset contains na or inf
         _check_contains_na(X, self.variables_)

@@ -1,4 +1,3 @@
-
 def _check_param_missing_values(missing_values):
     if missing_values not in ["raise", "ignore"]:
         raise ValueError(

@@ -16,15 +16,13 @@ from feature_engine._docstrings.methods import (
     _transform_imputers_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import (
-    _find_all_variables,
-)
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import find_all_variables
 
 
 # for RandomSampleImputer
@@ -185,7 +183,7 @@ class RandomSampleImputer(BaseImputer):
         X = check_X(X)
 
         # find variables to impute
-        self.variables_ = _find_all_variables(X, self.variables)
+        self.variables_ = find_all_variables(X, self.variables)
 
         # take a copy of the selected variables
         self.X_ = X[self.variables_].copy()

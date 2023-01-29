@@ -24,9 +24,6 @@ from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
-)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -34,6 +31,9 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling.variable_type_selection import (
+    find_or_check_numerical_variables,
+)
 
 
 @Substitution(
@@ -145,7 +145,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
             _check_contains_inf(X, self.variables_)
 
         # find or check for numerical variables
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
+        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
 
         if self.max_capping_dict is not None:
             self.right_tail_caps_ = self.max_capping_dict

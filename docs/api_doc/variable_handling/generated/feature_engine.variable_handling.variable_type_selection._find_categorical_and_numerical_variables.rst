@@ -1,0 +1,6 @@
+﻿feature\_engine.variable\_handling.variable\_type\_selection.\_find\_categorical\_and\_numerical\_variables
+===========================================================================================================
+
+.. currentmodule:: feature_engine.variable_handling.variable_type_selection
+
+.. autofunction:: _find_categorical_and_numerical_variables

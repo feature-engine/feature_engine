@@ -6,12 +6,6 @@ from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import (
-    _find_categorical_and_numerical_variables,
-)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -25,6 +19,12 @@ from feature_engine.discretisation import (
 )
 from feature_engine.encoding import MeanEncoder
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import (
+    find_categorical_and_numerical_variables,
+)
 
 
 class BaseTargetMeanEstimator(BaseEstimator):
@@ -121,7 +121,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         (
             self.variables_categorical_,
             self.variables_numerical_,
-        ) = _find_categorical_and_numerical_variables(X, self.variables)
+        ) = find_categorical_and_numerical_variables(X, self.variables)
 
         # check for missing values
         _check_contains_na(X, self.variables_numerical_)

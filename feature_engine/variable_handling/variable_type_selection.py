@@ -16,7 +16,7 @@ from feature_engine.variable_handling._variable_type_checks import (
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-def _find_or_check_numerical_variables(
+def find_or_check_numerical_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
@@ -70,7 +70,7 @@ def _find_or_check_numerical_variables(
     return variables
 
 
-def _find_or_check_categorical_variables(
+def find_or_check_categorical_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
@@ -133,7 +133,7 @@ def _find_or_check_categorical_variables(
     return variables
 
 
-def _find_or_check_datetime_variables(
+def find_or_check_datetime_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
@@ -190,7 +190,7 @@ def _find_or_check_datetime_variables(
     return variables
 
 
-def _find_all_variables(
+def find_all_variables(
     X: pd.DataFrame,
     variables: Variables = None,
     exclude_datetime: bool = False,
@@ -281,7 +281,7 @@ def _filter_out_variables_not_in_dataframe(X, variables):
     return filtered_variables
 
 
-def _find_categorical_and_numerical_variables(
+def find_categorical_and_numerical_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> Tuple[List[Union[str, int]], List[Union[str, int]]]:
     """

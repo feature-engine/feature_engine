@@ -13,12 +13,6 @@ from feature_engine._docstrings.init_parameters.selection import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
-)
 from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection._docstring import (
     _cv_docstring,
@@ -35,6 +29,12 @@ from feature_engine.selection._docstring import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import (
+    find_or_check_numerical_variables,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -171,7 +171,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         self._confirm_variables(X)
 
         # find numerical variables or check variables entered by user
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
+        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
 
         if len(self.variables_) == 1 and self.threshold is None:
             raise ValueError(

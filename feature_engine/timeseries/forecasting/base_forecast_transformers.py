@@ -15,12 +15,6 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
 )
 from feature_engine._docstrings.methods import _fit_not_learn_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
-)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -28,6 +22,12 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import (
+    find_or_check_numerical_variables,
+)
 
 
 @Substitution(
@@ -155,7 +155,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         self._check_index(X)
 
         # find or check for numerical variables
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = find_or_check_numerical_variables(X, self.variables)
 
         # check if dataset contains na
         if self.missing_values == "raise":
