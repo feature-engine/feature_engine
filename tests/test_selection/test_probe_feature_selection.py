@@ -3,7 +3,7 @@ import pytest
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Lasso, LogisticRegression
-from sklearn.tree import DecisionTreeRegressor
+from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.utils.validation import column_or_1d
 
 from feature_engine.selection import ProbeFeatureSelection
@@ -198,7 +198,7 @@ def test_transformer_with_uniform_distribution(df_test):
 
     sel.fit(X, y.ravel())
     results = sel.transform(X)
-    print(results.columns)
+
     # expected results
     expected_results = {
         'var_0': [1.471, 1.819, 1.625, 1.939, 1.579],
@@ -218,4 +218,39 @@ def test_transformer_with_uniform_distribution(df_test):
 
     assert results.head().round(3).equals(expected_results_df)
 
+
+def test_transformer_with_all_distribution(df_test):
+    X, y = df_test
+
+    sel = ProbeFeatureSelection(
+        estimator=DecisionTreeClassifier(),
+        scoring="precision",
+        distribution="all",
+        cv=2,
+        n_probes=3,
+        random_state=1,
+        confirm_variables=False,
+    )
+
+    sel.fit(X, y)
+    results = sel.transform(X)
+
+    # expected results
+    expected_results = {
+        'var_0': [1.471, 1.819, 1.625, 1.939, 1.579],
+        'var_1': [-2.376, 1.969, 1.499, 0.075, 0.372],
+        'var_2': [-0.247, -0.127, 0.334, 1.627, 0.338],
+        'var_3': [1.21, 0.035, -2.234, 0.943, 0.952],
+        'var_4': [-3.248, -2.91, -3.399, -4.783, -3.199],
+        'var_5': [0.092, -0.187, -0.314, -0.468, 0.729],
+        'var_6': [3.687, 3.319, 3.862, 5.423, 3.636],
+        'var_7': [-2.23, -1.447, -2.241, -3.535, -2.054],
+        'var_8': [2.07, 2.421, 2.264, 2.792, 2.187],
+        'var_9': [3.528, 3.304, 3.717, 5.132, 3.513],
+        'var_10': [2.071, 1.185, -0.066, 0.714, 0.399],
+        'var_11': [-1.989, -1.31, -0.853, 0.485, -0.187],
+    }
+    expected_results_df = pd.DataFrame(expected_results)
+
+    assert results.head().round(3).equals(expected_results_df)
 
