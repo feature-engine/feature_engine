@@ -43,5 +43,5 @@ _transform_discretiser_docstring = """transform:
 
 # used in imputation module
 _transform_imputers_docstring = """transform:
-    Impute missing data.
+        Impute missing data.
     """.rstrip()
