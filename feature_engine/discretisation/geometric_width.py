@@ -41,17 +41,19 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
+    power="{1/n}",
+    subindex="{i+1}"
 )
 class GeometricWidthDiscretiser(BaseDiscretiser):
     """
-    The :class:`GeometricWidthDiscretiser()` divides continuous numerical variables into
-    intervals of increasing width. The width of each succeeding interval is larger than
-    the previous interval by a constant amount (cw).
+    The `GeometricWidthDiscretiser()` divides continuous numerical variables into
+    intervals of increasing width. The width of each succeeding interval is larger
+    than the previous interval by a constant amount (cw).
 
     The constant amount is calculated as:
 
         .. math::
-            cw = (Max - Min)^{1/n}
+            cw = (Max - Min)^{power}
 
     were Max and Min are the variable's maximum and minimum value, and n is the number
     of intervals.
@@ -59,7 +61,7 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
     The sizes of the intervals themselves are calculated with a geometric progression:
 
         .. math::
-            a_{i+1} = a_i cw
+            a_{subindex} = a_i cw
 
     Thus, the first interval's width equals cw, the second interval's width equals
     2 * cw, and so on.
