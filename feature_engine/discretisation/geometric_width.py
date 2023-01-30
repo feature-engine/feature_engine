@@ -61,9 +61,9 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
     each variable. Then, it transforms the variables, that is, sorts the values into
     the intervals.
 
-    Note: this discretiser needs higher precision, because bins width could be very small.
-    With smaller range of the binned values and/or higher number of bins, bigger precision
-    values could be needed.
+    Note: this discretiser needs higher precision, because bins width could be very
+    small. With smaller range of the binned values and/or higher number of bins,
+    smaller precision values could be needed.
 
     More details in the :ref:`User Guide <increasing_width_discretiser>`.
 
