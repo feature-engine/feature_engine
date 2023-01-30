@@ -22,7 +22,7 @@ def test_raises_error_when_return_boundaries_not_bool(param):
 @pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}, 0, -1])
 def test_raises_error_when_precision_not_int(param):
     with pytest.raises(ValueError):
-        GeometricWidthDiscretiser(precision=param)
+        BaseDiscretiser(precision=param)
 
 
 @pytest.mark.parametrize("params", [(False, 1), (True, 10)])
