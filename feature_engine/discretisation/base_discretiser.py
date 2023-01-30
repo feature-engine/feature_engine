@@ -31,6 +31,11 @@ class BaseDiscretiser(BaseNumericalTransformer):
                 f"Got {return_boundaries} instead."
             )
 
+        if not isinstance(precision, int) or precision < 1:
+            raise ValueError(
+                "precision must be a positive integer. " f"Got {precision} instead."
+            )
+
         self.return_object = return_object
         self.return_boundaries = return_boundaries
         self.precision = precision
