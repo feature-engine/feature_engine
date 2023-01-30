@@ -29,9 +29,11 @@ Note that the proportion of observations per interval may vary.
 
 This discretisation technique is great when the distribution of the variable is right skewed.
 
-Note: this discretiser needs higher precision, because bins width could be very small.
-With smaller range of the binned values and/or higher number of bins, bigger precision
-values could be needed.
+Note: The width of some bins might be very small. Thus, to allow this transformer
+to work properly, it might help to increase the precision value, that is,
+the number of decimal values allowed to define each bin. If the variable has a
+narrow range or you are sorting into several bins, allow greater precision
+(i.e., if precision = 3, then 0.001; if precision = 7, then 0.0001).
 
 The :class:`GeometricWidthDiscretiser()` works only with numerical variables. A list of
 variables to discretise can be indicated, or the discretiser will automatically select
