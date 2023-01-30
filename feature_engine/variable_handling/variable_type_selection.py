@@ -25,6 +25,8 @@ def find_or_check_numerical_variables(
     Checks that variables provided by the user are of type numerical. Alternatively, it
     finds all the numerical variables in the DataFrame.
 
+    More details in the :ref:`User Guide <find_num_vars>`.
+
     Parameters
     ----------
     X : pandas dataframe of shape = [n_samples, n_features]
@@ -84,6 +86,8 @@ def find_or_check_categorical_variables(
     type object that can be parsed as datetime. But if the user passes a list with
     datetime variables cast as object to the `variables` parameter, they will be
     allowed.
+
+    More details in the :ref:`User Guide <find_cat_vars>`.
 
     Parameters
     ----------
@@ -146,6 +150,8 @@ def find_or_check_datetime_variables(
 
     Note that this function will select variables cast as object if they can be cast as
     datetime as well.
+
+    More details in the :ref:`User Guide <find_datetime_vars>`.
 
     Parameters
     ----------
@@ -213,6 +219,8 @@ def find_all_variables(
 
     The function captures all the variables in the dataframe in a list. Alternatively,
     it will check that the variables indicated by the user are indeed in the dataframe.
+
+    More details in the :ref:`User Guide <find_all_vars>`.
 
     Parameters
     ----------
@@ -304,6 +312,8 @@ def find_categorical_and_numerical_variables(
 
     The function finds the variables that are numerical and categorical in a dataframe
     or in a given variable list.
+
+    More details in the :ref:`User Guide <find_cat_and_num_vars>`.
 
     Parameters
     ----------
