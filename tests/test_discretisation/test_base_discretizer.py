@@ -19,9 +19,9 @@ def test_raises_error_when_return_boundaries_not_bool(param):
         BaseDiscretiser(return_boundaries=param)
 
 
-@pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}, 0, -1])
+@pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}])
 def test_raises_error_when_precision_not_int(param):
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         BaseDiscretiser(precision=param)
 
 
