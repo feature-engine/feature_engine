@@ -44,26 +44,37 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 )
 class GeometricWidthDiscretiser(BaseDiscretiser):
     """
-    The GeometricWidthDiscretiser() divides continuous numerical variables into
-    intervals of increasing width with equal increments. Note that the
-    proportion of observations per interval may vary.
+    The :class:`GeometricWidthDiscretiser()` divides continuous numerical variables into
+    intervals of increasing width. The width of each succeeding interval is larger than the
+    previous interval by a constant amount (cw).
 
-    Sizes (a) of n intervals will follow geometric progression
+    The constant amount is calculated as:
 
-    .. math::
-        a_i+1 = a_i r^(n+i)
+        .. math::
+            cw = (Max - Min)^{1/n}
 
-    The GeometricWidthDiscretiser() works only with numerical variables.
-    A list of variables can be passed as argument. Alternatively, the discretiser
-    will automatically select all numerical variables.
+    were Max and Min are the variable's maximum and minimum value, and n is the number of
+    intervals.
 
-    The GeometricWidthDiscretiser() first finds the boundaries for the intervals for
-    each variable. Then, it transforms the variables, that is, sorts the values into
-    the intervals.
+    The sizes of the intervals themselves are calculated with a geometric progression:
 
-    Note: this discretiser needs higher precision, because bins width could be very
-    small. With smaller range of the binned values and/or higher number of bins,
-    smaller precision values could be needed.
+        .. math::
+            a_{i+1} = a_i cw
+
+    Thus, the first interval's width equals cw, the second interval's width equals 2 * cw,
+    and so on.
+
+    Note that the proportion of observations per interval may vary.
+
+    This discretisation technique is great when the distribution of the variable is right skewed.
+
+    Note: this discretiser needs higher precision, because bins width could be very small.
+    With smaller range of the binned values and/or higher number of bins, bigger precision
+    values could be needed.
+
+    The :class:`GeometricWidthDiscretiser()` works only with numerical variables. A list of
+    variables to discretise can be indicated, or the discretiser will automatically select
+    all numerical variables in the train set.
 
     More details in the :ref:`User Guide <increasing_width_discretiser>`.
 
