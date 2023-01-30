@@ -20,24 +20,24 @@ def find_or_check_numerical_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
-    Checks that variables provided by the user are of type numerical. If None, finds
-    all the numerical variables in the DataFrame.
+    Find or check numerical variables.
+
+    Checks that variables provided by the user are of type numerical. Alternatively, it
+    finds all the numerical variables in the DataFrame.
 
     Parameters
     ----------
-    X : Pandas DataFrame.
-    variables : variable or list of variables. Defaults to None.
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
 
-    Raises
-    ------
-    ValueError
-        If there are no numerical variables in the df or the df is empty.
-    TypeError
-        If any of the user provided variables are not numerical.
+    variables : list, default=None
+        If `None`, the function will find all numerical variables in X. Alternatively,
+        the function checks that the variables in the list are of type numerical.
 
     Returns
     -------
-    variables: List of numerical variables.
+    variables: List
+        The names of the numerical variables.
     """
 
     if variables is None:
@@ -74,8 +74,11 @@ def find_or_check_categorical_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
+    Find or check categorical variables.
+
     Checks that variables provided by the user are of type object or categorical.
-    If None, finds all the categorical and object type variables in the DataFrame.
+    Alternatively, it finds all variables of type object or categorical in the
+    DataFrame.
 
     Note that when `variables` is `None`, the transformer will not select variables of
     type object that can be parsed as datetime. But if the user passes a list with
@@ -84,19 +87,18 @@ def find_or_check_categorical_variables(
 
     Parameters
     ----------
-    X : pandas DataFrame.
-    variables : variable or list of variables. Defaults to None.
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
 
-    Raises
-    ------
-    ValueError
-        If there are no categorical variables in df or df is empty.
-    TypeError
-        If any of the user provided variables are not categorical.
+    variables : list, default=None
+        If `None`, the function will find all object or categorical variables in X.
+        Alternatively, the function checks that the variables in the list are of type
+        object or categorical.
 
     Returns
     -------
-    variables : List of categorical variables.
+    variables: List
+        The names of the categorical variables.
     """
 
     if variables is None:
@@ -137,18 +139,29 @@ def find_or_check_datetime_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
+    Find or check datetime variables.
+
     Checks that the variables provided by the user are of type datetime.
-    If None, finds all datetime variables in the DataFrame. It will select variables
-    cast as object if they can be cast as datetime as well.
+    Alternatively, it finds all datetime variables in the DataFrame.
+
+    Note that this function will select variables cast as object if they can be cast as
+    datetime as well.
 
     Parameters
     ----------
-    X : pandas DataFrame
-    variables : variable or list of variables. Defaults to None.
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
+
+    variables : list, default=None
+        If `None`, the function will find all variables in X that can be parsed as
+        datetime. These include those cast as datetime, and also object and categorical
+        if they can be transformed to datetime variables. Alternatively, the function
+        checks that the variables in the list are or can be parsed to datetime.
 
     Returns
     -------
-    variables : List of datetime variables.
+    variables: List
+        The names of the datetime variables.
     """
 
     if variables is None:
@@ -196,25 +209,27 @@ def find_all_variables(
     exclude_datetime: bool = False,
 ) -> List[Union[str, int]]:
     """
-    If `variables` is None, it captures all variables in the dataframe in a list.
-    If `variables` contains a list with variable names, it will check their presence
-    in the dataframe and return the same list.
+    Find or check all variables.
+
+    The function captures all the variables in the dataframe in a list. Alternatively,
+    it will check that the variables indicated by the user are indeed in the dataframe.
 
     Parameters
     ----------
-    X :  pandas DataFrame
-    variables : List of variables. Defaults to None.
-    exclude_datetime: whether to exclude datetime variables.
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
 
-    Raises
-    ------
-    TypeError
-        If the variable list provided by the user contains variables not present in the
-        dataframe.
+    variables : list, default=None
+        If `None`, the function will find all variables in X. Alternatively, the
+        function checks that the variables in the list are present in the dataframe.
+
+    exclude_datetime: bool, default=False
+        Whether to exclude datetime variables.
 
     Returns
     -------
-    variables : List of numerical variables
+    variables: List
+        The names of the variables.
     """
     # find all variables in dataset
     if variables is None:
@@ -287,15 +302,23 @@ def find_categorical_and_numerical_variables(
     """
     Find numerical and categorical variables.
 
+    The function finds the variables that are numerical and categorical in a dataframe
+    or in a given variable list.
+
     Parameters
     ----------
-    X :  pandas DataFrame
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
 
-    variables : List of variables. Defaults to None.
+    variables : list, default=None
+        If `None`, the function will find categorical and numerical variables in X.
+        Alternatively, it will find categorical and numerical variables in the given
+        list.
 
     Returns
     -------
-    variables : Tuple with List of numerical and list of categorical variables.
+    variables: tuple
+        List of numerical and list of categorical variables.
     """
 
     # If the user passes just 1 variable outside a list.
