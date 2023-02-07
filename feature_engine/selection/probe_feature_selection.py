@@ -1,5 +1,3 @@
-from typing import Dict, List, Union
-
 import numpy as np
 import pandas as pd
 from feature_engine._docstrings.methods import _fit_transform_docstring
@@ -19,7 +17,6 @@ from feature_engine.selection._docstring import (
     _get_support_docstring,
     _scoring_docstring,
     _transform_docstring,
-    _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine.selection.base_recursive_selector import BaseRecursiveSelector
@@ -44,20 +41,21 @@ from sklearn.model_selection import cross_validate
 )
 class ProbeFeatureSelection(BaseSelector):
     """
-    ProbeFeatureSelection() generates one or more probe features based on the user-selected
-    distribution. The distribution options are 'normal', 'binomial', 'uniform', or 'all'.
-    'all' creates at least one distribution for each of the three aforementioned distributions.
+    ProbeFeatureSelection() generates one or more probe features based on the
+    user-selected distribution. The distribution options are 'normal', 'binomial',
+    'uniform', or 'all'. 'all' creates at least one distribution for each of the
+    three aforementioned distributions.
 
-    Using cross validation, the class fits a Scikit-learn estimator to the provided dataset's
-    variables and the probe features.
+    Using cross validation, the class fits a Scikit-learn estimator to the
+    provided dataset's variables and the probe features.
 
-    The class derives the feature importance for each variable and probe feature. In the case
-    of there being more than one probe feature, ProbeFeatureSelection() calculates the average
-    feature importance of all the probe features.
+    The class derives the feature importance for each variable and probe feature.
+    In the case of there being more than one probe feature, ProbeFeatureSelection()
+    calculates the average feature importance of all the probe features.
 
-    The transformer ranks the variables based on their feature importances. The variables that
-    have a feature importance less than the feature importance or average feature importance of
-    the probe feature(s) are dropped from the dataset.
+    The transformer ranks the variables based on their feature importances. The
+    variables that have a feature importance less than the feature importance or
+    average feature importance of the probe feature(s) are dropped from the dataset.
 
     Parameters
     ----------
@@ -110,11 +108,12 @@ class ProbeFeatureSelection(BaseSelector):
     {transform}
 
     _generate_probe_features:
-        Creates 'n_probes' number of probe features using the user-selected distribution.
+        Creates 'n_probes' number of probe features using the user-selected
+        distribution.
 
     _get_features_to_drop:
-        Identifies the variables that have a feature importance less the probe feature's/features'
-        feature importance or average feature importances.
+        Identifies the variables that have a feature importance less the probe
+        feature's/features' feature importance or average feature importances.
 
     """
 
@@ -212,15 +211,17 @@ class ProbeFeatureSelection(BaseSelector):
         # aggregate the feature importance returned in each fold
         self.feature_importances_ = feature_importances_cv.mean(axis=1)
 
-        # get features that have an importance less than the probe features' avg importance
-        # attribute used in transform() which is inherited form parent class
+        # get features that have an importance less than the probe features'
+        # avg importance attribute used in transform() which is inherited
+        # from parent class
         self.features_to_drop_ = self._get_features_to_drop()
 
         return self
 
     def _generate_probe_features(self, n_obs: int) -> pd.DataFrame:
         """
-        Returns a dataframe comprised of the probe feature using the selected distribution.
+        Returns a dataframe comprised of the probe feature using the
+        selected distribution.
         """
         # create dataframe
         df = pd.DataFrame()

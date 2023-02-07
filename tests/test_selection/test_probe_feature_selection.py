@@ -8,14 +8,13 @@ from sklearn.utils.validation import column_or_1d
 
 from feature_engine.selection import ProbeFeatureSelection
 
-
-
 _input_params = [
     (RandomForestClassifier(), "precision", "all", 3, 6, 4),
     (Lasso(), "neg_mean_squared_error", "binary", 7, 4, 100),
     (LogisticRegression(), "roc_auc", "normal", 5, 2, 73),
     (DecisionTreeRegressor(), "r2", "uniform", 4, 10, 84),
 ]
+
 
 @pytest.mark.parametrize(
     "_estimator, _scoring, _distribution, _cv, _n_probes, _random_state", _input_params
@@ -253,4 +252,3 @@ def test_transformer_with_all_distribution(df_test):
     expected_results_df = pd.DataFrame(expected_results)
 
     assert results.head().round(3).equals(expected_results_df)
-
