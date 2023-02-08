@@ -17,6 +17,7 @@ class BaseDiscretiser(BaseNumericalTransformer):
         self,
         return_object: bool = False,
         return_boundaries: bool = False,
+        precision: int = 3,
     ) -> None:
 
         if not isinstance(return_object, bool):
@@ -30,8 +31,14 @@ class BaseDiscretiser(BaseNumericalTransformer):
                 f"Got {return_boundaries} instead."
             )
 
+        if not isinstance(precision, int) or precision < 1:
+            raise ValueError(
+                "precision must be a positive integer. " f"Got {precision} instead."
+            )
+
         self.return_object = return_object
         self.return_boundaries = return_boundaries
+        self.precision = precision
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Sort the variable values into the intervals.
@@ -53,7 +60,9 @@ class BaseDiscretiser(BaseNumericalTransformer):
         # transform variables
         if self.return_boundaries is True:
             for feature in self.variables_:
-                X[feature] = pd.cut(X[feature], self.binner_dict_[feature])
+                X[feature] = pd.cut(
+                    X[feature], self.binner_dict_[feature], precision=self.precision
+                )
             X[self.variables_] = X[self.variables_].astype(str)
 
         else:

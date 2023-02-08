@@ -137,6 +137,7 @@ Variable Discretisation: Discretisers
 - :doc:`api_doc/discretisation/EqualFrequencyDiscretiser`: sorts variable into equal frequency intervals
 - :doc:`api_doc/discretisation/EqualWidthDiscretiser`: sorts variable into equal width intervals
 - :doc:`api_doc/discretisation/DecisionTreeDiscretiser`: uses decision trees to create finite variables
+- :doc:`api_doc/discretisation/GeometricWidthDiscretiser`: sorts variable into geometrical intervals
 
 Outlier Capping or Removal
 --------------------------

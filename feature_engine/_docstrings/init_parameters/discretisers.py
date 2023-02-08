@@ -8,3 +8,7 @@ _return_boundaries_docstring = """return_boundaries: bool, default=False
         Whether the output should be the interval boundaries. If True, it returns
         the interval boundaries. If False, it returns integers.
     """.rstrip()
+
+_precision_docstring = """precision: int, default=3
+        The precision at which to store and display the bins labels.
+    """.rstrip()

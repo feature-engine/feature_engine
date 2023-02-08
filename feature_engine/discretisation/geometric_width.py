@@ -1,8 +1,6 @@
-# Authors: Soledad Galli <solegalli@protonmail.com>
-# License: BSD 3 clause
-
 from typing import List, Optional, Union
 
+import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
@@ -43,37 +41,54 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
+    power="{1/n}",
+    subindex="{i+1}"
 )
-class EqualWidthDiscretiser(BaseDiscretiser):
+class GeometricWidthDiscretiser(BaseDiscretiser):
     """
-    The EqualWidthDiscretiser() divides continuous numerical variables into
-    intervals of the same width, that is, equidistant intervals. Note that the
-    proportion of observations per interval may vary.
+    The `GeometricWidthDiscretiser()` divides continuous numerical variables into
+    intervals of increasing width. The width of each succeeding interval is larger
+    than the previous interval by a constant amount (cw).
 
-    The size of the interval is calculated as:
+    The constant amount is calculated as:
 
-    .. math::
+        .. math::
+            cw = (Max - Min)^{power}
 
-        ( max(X) - min(X) ) / bins
+    were Max and Min are the variable's maximum and minimum value, and n is the number
+    of intervals.
 
-    where bins, which is the number of intervals, is determined by the user.
+    The sizes of the intervals themselves are calculated with a geometric progression:
 
-    The EqualWidthDiscretiser() works only with numerical variables.
-    A list of variables can be passed as argument. Alternatively, the discretiser
-    will automatically select all numerical variables.
+        .. math::
+            a_{subindex} = a_i cw
 
-    The EqualWidthDiscretiser() first finds the boundaries for the intervals for
-    each variable. Then, it transforms the variables, that is, sorts the values into
-    the intervals.
+    Thus, the first interval's width equals cw, the second interval's width equals
+    2 * cw, and so on.
 
-    More details in the :ref:`User Guide <equal_width_discretiser>`.
+    Note that the proportion of observations per interval may vary.
+
+    This discretisation technique is great when the distribution of the variable is
+    right skewed.
+
+    Note: The width of some bins might be very small. Thus, to allow this transformer
+    to work properly, it might help to increase the precision value, that is,
+    the number of decimal values allowed to define each bin. If the variable has a
+    narrow range or you are sorting into several bins, allow greater precision
+    (i.e., if precision = 3, then 0.001; if precision = 7, then 0.0001).
+
+    The :class:`GeometricWidthDiscretiser()` works only with numerical variables.
+    A list of variables to discretise can be indicated, or the discretiser will
+    automatically select all numerical variables in the train set.
+
+    More details in the :ref:`User Guide <increasing_width_discretiser>`.
 
     Parameters
     ----------
     {variables}
 
     bins: int, default=10
-        Desired number of equal width intervals / bins.
+        Desired number of intervals / bins.
 
     {return_object}
 
@@ -99,41 +114,17 @@ class EqualWidthDiscretiser(BaseDiscretiser):
 
     {transform}
 
-    See Also
-    --------
-    pandas.cut
-    sklearn.preprocessing.KBinsDiscretizer
-
     References
     ----------
-    .. [1] Kotsiantis and Pintelas, "Data preprocessing for supervised leaning,"
-        International Journal of Computer Science,  vol. 1, pp. 111 117, 2006.
+    .. [1]  J. Reiser, "Classification Systems",
+        https://www.slideshare.net/johnjreiser/classification-systems
 
-    .. [2] Dong. "Beating Kaggle the easy way". Master Thesis.
-        https://www.ke.tu-darmstadt.de/lehre/arbeiten/studien/2015/Dong_Ying.pdf
+    .. [2] Geometric Interval Classification
+        http://wiki.gis.com/wiki/index.php/Geometric_Interval_Classification
 
-    Examples
-    --------
+    .. [3] Geometric progression
+        https://en.wikipedia.org/wiki/Geometric_progression
 
-    >>> import pandas as pd
-    >>> import numpy as np
-    >>> from feature_engine.discretisation import EqualWidthDiscretiser
-    >>> np.random.seed(42)
-    >>> X = pd.DataFrame(dict(x = np.random.randint(1,100, 100)))
-    >>> ewd = EqualWidthDiscretiser()
-    >>> ewd.fit(X)
-    >>> ewd.transform(X)["x"].value_counts()
-    9    15
-    6    15
-    0    13
-    5    11
-    8     9
-    7     8
-    2     8
-    1     7
-    3     7
-    4     7
-    Name: x, dtype: int64
     """
 
     def __init__(
@@ -142,8 +133,8 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         bins: int = 10,
         return_object: bool = False,
         return_boundaries: bool = False,
-        precision: int = 3,
-    ) -> None:
+        precision: int = 7,
+    ):
 
         if not isinstance(bins, int):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
@@ -155,7 +146,7 @@ class EqualWidthDiscretiser(BaseDiscretiser):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        Learn the boundaries of the equal width intervals / bins for each
+        Learn the boundaries of the geometric width intervals / bins for each
         variable.
 
         Parameters
@@ -174,14 +165,13 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         self.binner_dict_ = {}
 
         for var in self.variables_:
-            tmp, bins = pd.cut(
-                x=X[var], bins=self.bins, retbins=True, duplicates="drop"
-            )
-
-            # Prepend/Append infinities
+            min_, max_ = X[var].min(), X[var].max()
+            increment = np.power(max_ - min_, 1.0 / self.bins)
+            bins = np.r_[
+                -np.inf, min_ + np.power(increment, np.arange(1, self.bins)), np.inf
+            ]
+            bins = np.sort(bins)
             bins = list(bins)
-            bins[0] = float("-inf")
-            bins[len(bins) - 1] = float("inf")
             self.binner_dict_[var] = bins
 
         return self

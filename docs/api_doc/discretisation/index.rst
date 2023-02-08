@@ -16,7 +16,8 @@ into continuous intervals.
 :class:`EqualFrequencyDiscretiser()`     Sorts values into intervals with similar number of observations.
 :class:`EqualWidthDiscretiser()`         Sorts values into intervals of equal size.
 :class:`ArbitraryDiscretiser()`          Sorts values into intervals predefined by the user.
-:class:`DecisionTreeDiscretiser()`       Replaces values by predictions of a decision tree, which are discrete
+:class:`DecisionTreeDiscretiser()`       Replaces values by predictions of a decision tree, which are discrete.
+:class:`GeometricWidthDiscretiser()`     Sorts variable into geometrical intervals.
 =====================================  ========================================================================
 
 
@@ -28,6 +29,7 @@ into continuous intervals.
    EqualWidthDiscretiser
    ArbitraryDiscretiser
    DecisionTreeDiscretiser
+   GeometricWidthDiscretiser
 
 Additional transformers for discretisation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
