@@ -219,16 +219,22 @@ class DropHighPSIFeatures(BaseSelector):
 
     >>> import pandas as pd
     >>> from feature_engine.selection import DropHighPSIFeatures
-    >>> X = pd.DataFrame(dict(x1 = [1,1,1,1],
-    >>>                     x2 = [1,2,1,1],
-    >>>                     x3 = [True, False, False, False]))
-    >>> psi = DropDuplicateFeatures()
+    >>> X = pd.DataFrame(dict(x1 = [1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    >>>                 x2 = [32,87,6,32,11,44,8,7,9,0,32,87,6,32,11,44,8,7,9,0]))
+    >>> psi = DropHighPSIFeatures()
     >>> psi.fit_transform(X)
-       x1  x2     x3
-    0   1   1   True
-    1   1   2  False
-    2   1   1  False
-    3   1   1  False
+        x2
+    0   32
+    1   87
+    2    6
+    3   32
+    4   11
+    5   44
+    6    8
+    7    7
+    8    9
+    9    0
+    10  32
     """
 
     def __init__(

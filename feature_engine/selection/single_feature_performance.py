@@ -128,7 +128,9 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     >>>                     x4 = [1,2,1,1,0,1],
     >>>                     x5 = [1,1,1,1,1,1]))
     >>> y = pd.Series([1,0,0,1,1,0])
-    >>> sfp = SelectBySingleFeaturePerformance(RandomForestClassifier(random_state=42), cv=2)
+    >>> sfp = SelectBySingleFeaturePerformance(
+    >>>                     RandomForestClassifier(random_state=42),
+    >>>                     cv=2)
     >>> sfp.fit_transform(X, y)
         x2  x3
     0   2   1

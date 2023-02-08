@@ -149,7 +149,7 @@ class SelectByInformationValue(BaseSelector, WoE):
     >>> from feature_engine.selection import SelectByInformationValue
     >>> X = pd.DataFrame(dict(x1 = [1,1,1,1,1,1],
     >>>                     x2 = [3,2,2,3,3,2],
-    >>>                     x3 = [0,2,3,0,3,2]))
+    >>>                     x3 = ["a","b","c","a","c","b"]))
     >>> y = pd.Series([1,1,1,0,0,0])
     >>> iv = SelectByInformationValue()
     >>> iv.fit_transform(X, y)

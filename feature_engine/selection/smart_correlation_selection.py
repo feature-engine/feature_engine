@@ -159,28 +159,29 @@ class SmartCorrelatedSelection(BaseSelector):
     >>> import pandas as pd
     >>> from feature_engine.selection import SmartCorrelatedSelection
     >>> X = pd.DataFrame(dict(x1 = [1,2,1,1],
-    >>>                     x2 = [2,4,3,1],
-    >>>                     x3 = [True, False, False, False]))
+    >>>                 x2 = [2,4,3,1],
+    >>>                 x3 = [1, 0, 0, 0]))
     >>> scs = SmartCorrelatedSelection(threshold=0.7)
     >>> scs.fit_transform(X)
-        x1     x3
-    0   1   True
-    1   2  False
-    2   1  False
-    3   1  False
+       x1  x3
+    0   1   1
+    1   2   0
+    2   1   0
+    3   1   0
 
-    It is also possible alternative selection methods, in this case seleting features with higher variance:
+    It is also possible alternative selection methods, in this case seleting
+    features with higher variance:
 
-    >>> X = pd.DataFrame(dict(x1 = [1000,2000,1000,1000],
-    >>>                     x2 = [2,4,3,1],
-    >>>                     x3 = [True, False, False, False]))
+    >>> X = pd.DataFrame(dict(x1 = [2,4,3,1],
+    >>>                 x2 = [1000,2000,1500,500],
+    >>>                 x3 = [1, 0, 0, 0]))
     >>> scs = SmartCorrelatedSelection(threshold=0.7, selection_method="variance")
     >>> scs.fit_transform(X)
-            x1     x3
-    0  1000   True
-    1  2000  False
-    2  1000  False
-    3  1000  False
+         x2  x3
+    0  1000   1
+    1  2000   0
+    2  1500   0
+    3   500   0
     """
 
     def __init__(

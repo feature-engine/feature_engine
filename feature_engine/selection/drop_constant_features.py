@@ -120,7 +120,7 @@ class DropConstantFeatures(BaseSelector):
     2  b  False
     3  c   True
 
-    Additionally, you can set the Threshold for Quasi-constant features:
+    Additionally, you can set the Threshold for quasi-constant features:
 
     >>> X = pd.DataFrame(dict(x1 = [1,1,1,1],
     >>>                      x2 = ["a", "a", "b", "c"],

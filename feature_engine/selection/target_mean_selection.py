@@ -189,6 +189,21 @@ class SelectByTargetMeanPerformance(BaseSelector):
     3   0   1   1
     4   0   0   1
     5   0   1   1
+
+    This transformer also works with Categorical examples:
+
+    >>> X = pd.DataFrame(dict(x1 = ["a","b","a","a","b","b"],
+    >>>             x2 = ["a","a","a","b","b","b"]))
+    >>> y = pd.Series([1,0,0,1,1,0])
+    >>> tmp = SelectByTargetMeanPerformance(bins = 3, cv=2,scoring='accuracy')
+    >>> tmp.fit_transform(X, y)
+      x2
+    0  a
+    1  a
+    2  a
+    3  b
+    4  b
+    5  b
     """
 
     def __init__(
