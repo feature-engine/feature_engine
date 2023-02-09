@@ -68,23 +68,13 @@ into a train and a test set:
 
 .. code:: python
 
-	import numpy as np
-	import pandas as pd
-	import matplotlib.pyplot as plt
 	from sklearn.model_selection import train_test_split
+	from feature_engine.datasets import load_titanic
 
 	from feature_engine.encoding import OneHotEncoder
 
-	# Load dataset
-	def load_titanic():
-		data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-		data = data.replace('?', np.nan)
-		data['cabin'] = data['cabin'].astype(str).str[0]
-		data['pclass'] = data['pclass'].astype('O')
-		data['embarked'].fillna('C', inplace=True)
-		return data
-	
-	data = load_titanic()
+	data = load_titanic(handle_missing=True)
+	data['cabin'] = data['cabin'].astype(str).str[0]
 
 	# Separate into train and test sets
 	X_train, X_test, y_train, y_test = train_test_split(
@@ -96,8 +86,7 @@ Now, we set up the encoder to encode only the 2 most frequent categories of each
 
 .. code:: python
 
-	# set up the encoder
-	encoder = OneHotEncoder(top_categories=2, variables=['pclass', 'cabin', 'embarked'])
+	encoder = OneHotEncoder(top_categories=2, variables=['pclass', 'cabin', 'embarked'], ignore_format=True)
 
 	# fit the encoder
 	encoder.fit(X_train)
@@ -111,7 +100,7 @@ are stored in the attribute `encoder_dict_`.
 
 .. code:: python
 
-	{'pclass': [3, 1], 'cabin': ['n', 'C'], 'embarked': ['S', 'C']}
+	{'pclass': [3, 1], 'cabin': ['M', 'C'], 'embarked': ['S', 'C']}
 
 The `encoder_dict_` contains the categories that will derive dummy variables for each
 categorical variable.
