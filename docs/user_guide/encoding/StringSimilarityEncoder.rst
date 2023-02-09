@@ -127,17 +127,13 @@ into a train and a test set:
 .. code:: python
 
     import string
-    import numpy as np
-    import pandas as pd
     from sklearn.model_selection import train_test_split
-
+    from feature_engine.datasets import load_titanic
     from feature_engine.encoding import StringSimilarityEncoder
 
-    # Helper function for loading and preprocessing data
-    def load_titanic() -> pd.DataFrame:
+    def clean_titanic():
         translate_table = str.maketrans('' , '', string.punctuation)
-        data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-        data = data.replace('?', np.nan)
+        data = load_titanic()
         data['home.dest'] = (
         data['home.dest']
         .str.strip()
@@ -161,8 +157,7 @@ into a train and a test set:
         )
         return data
 
-    data = load_titanic()
-
+    data = clean_titanic()
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
         data.drop(['survived', 'sex', 'cabin', 'embarked'], axis=1),
@@ -177,26 +172,26 @@ Below, we see the first rows of the dataset:
 
 .. code:: python
 
-          pclass                             name  age  sibsp  parch  \
-    501        2  mellinger miss madeleine violet   13      0      1
-    588        2                  wells miss joan    4      1      1
-    402        2     duran y more miss florentina   30      1      0
-    1193       3                 scanlan mr james  NaN      0      0
-    686        3       bradley miss bridget delia   22      0      0
+        pclass                             name  age  sibsp  parch  \
+    501        2  mellinger miss madeleine violet   13      0      1   
+    588        2                  wells miss joan    4      1      1   
+    402        2     duran y more miss florentina   30      1      0   
+    1193       3                 scanlan mr james  NaN      0      0   
+    686        3       bradley miss bridget delia   22      0      0   
 
                 ticket     fare boat body  \
-    501         250644     19.5   14  NaN
-    588          29103       23   14  NaN
-    402   scparis 2148  13.8583   12  NaN
-    1193         36209    7.725  NaN  NaN
-    686         334914    7.725   13  NaN
+    501         250644     19.5   14  NaN   
+    588          29103       23   14  NaN   
+    402   scparis 2148  13.8583   12  NaN   
+    1193         36209    7.725  NaN  NaN   
+    686         334914    7.725   13  NaN   
 
-                                                home.dest
-    501                             england bennington vt
-    588                                 cornwall akron oh
-    402                       barcelona spain havana cuba
-    1193                                              NaN
-    686   kingwilliamstown co cork ireland glens falls ny
+                                                home.dest  
+    501                             england bennington vt  
+    588                                 cornwall akron oh  
+    402                       barcelona spain havana cuba  
+    1193                                              NaN  
+    686   kingwilliamstown co cork ireland glens falls ny 
 
 
 Now, we set up the encoder to encode only the 2 most frequent categories of each of the
@@ -204,14 +199,15 @@ Now, we set up the encoder to encode only the 2 most frequent categories of each
 
 .. code:: python
 
-	# set up the encoder
-	encoder = StringSimilarityEncoder(
-            top_categories=2,
-            variables=['name', 'home.dest', 'ticket'],
-            )
+    # set up the encoder
+    encoder = StringSimilarityEncoder(
+        top_categories=2,
+        variables=['name', 'home.dest', 'ticket'],
+        ignore_format=True
+        )
 
-	# fit the encoder
-	encoder.fit(X_train)
+    # fit the encoder
+    encoder.fit(X_train)
 
 With `fit()` the encoder will learn the most popular categories of the variables, which
 are stored in the attribute `encoder_dict_`.
@@ -246,25 +242,25 @@ Below, we see the resulting dataframe:
 
 .. code:: python
 
-          pclass  age  sibsp  parch    fare boat body  \
-    1139       3   38      0      0  7.8958  NaN  NaN
-    533        2   21      0      1      21   12  NaN
-    459        2   42      1      0      27  NaN  NaN
-    1150       3  NaN      0      0    14.5  NaN  NaN
-    393        2   25      0      0    31.5  NaN  NaN
+        pclass  age  sibsp  parch    fare boat body  \
+    1139       3   38      0      0  7.8958  NaN  NaN   
+    533        2   21      0      1      21   12  NaN   
+    459        2   42      1      0      27  NaN  NaN   
+    1150       3  NaN      0      0    14.5  NaN  NaN   
+    393        2   25      0      0    31.5  NaN  NaN   
 
-          name_mellinger miss madeleine violet  name_barbara mrs catherine david  \
-    1139                              0.454545                          0.550000
-    533                               0.615385                          0.524590
-    459                               0.596491                          0.603774
-    1150                              0.641509                          0.693878
-    393                               0.408163                          0.666667
+        name_mellinger miss madeleine violet  name_barbara mrs catherine david  \
+    1139                              0.454545                          0.550000   
+    533                               0.615385                          0.524590   
+    459                               0.596491                          0.603774   
+    1150                              0.641509                          0.693878   
+    393                               0.408163                          0.666667   
 
-          home.dest_nan  home.dest_new york ny  ticket_ca 2343  ticket_ca 2144
-    1139            1.0               0.000000        0.461538        0.461538
-    533             0.0               0.370370        0.307692        0.307692
-    459             0.0               0.352941        0.461538        0.461538
-    1150            1.0               0.000000        0.307692        0.307692
+        home.dest_nan  home.dest_new york ny  ticket_ca 2343  ticket_ca 2144  
+    1139            1.0               0.000000        0.461538        0.461538  
+    533             0.0               0.370370        0.307692        0.307692  
+    459             0.0               0.352941        0.461538        0.461538  
+    1150            1.0               0.000000        0.307692        0.307692  
     393             0.0               0.437500        0.666667        0.666667
 
 

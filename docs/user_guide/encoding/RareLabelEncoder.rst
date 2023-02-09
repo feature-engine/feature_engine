@@ -45,23 +45,12 @@ First, let's load the data and separate it into train and test:
 
 .. code:: python
 
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
-
+    from feature_engine.datasets import load_titanic
     from feature_engine.encoding import RareLabelEncoder
 
-    def load_titanic():
-        data = pd.read_csv(
-            'https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-        data = data.replace('?', np.nan)
-        data['cabin'] = data['cabin'].astype(str).str[0]
-        data['pclass'] = data['pclass'].astype('O')
-        data['embarked'].fillna('C', inplace=True)
-        return data
-
-    data = load_titanic()
+    data = load_titanic(handle_missing=True)
+    data['cabin'] = data['cabin'].astype(str).str[0]
 
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
@@ -76,7 +65,8 @@ categories in the indicated variables if they have more than 2 unique categories
 
     # set up the encoder
     encoder = RareLabelEncoder(tol=0.03, n_categories=2, variables=['cabin', 'pclass', 'embarked'],
-                               replace_with='Rare')
+                            replace_with='Rare',
+                            ignore_format=True)
 
     # fit the encoder
     encoder.fit(X_train)
@@ -94,9 +84,9 @@ Any category that is not in this dictionary, will be grouped.
 
 .. code:: python
 
-	{'cabin': Index(['n', 'C', 'B', 'E', 'D'], dtype='object'),
-	 'pclass': array([2, 3, 1], dtype='int64'),
-	 'embarked': array(['S', 'C', 'Q'], dtype=object)}
+	{'cabin': ['M', 'C', 'B', 'E', 'D'],
+    'pclass': [3, 1, 2],
+    'embarked': ['S', 'C', 'Q']}
 
 Now we can go ahead and transform the variables:
 

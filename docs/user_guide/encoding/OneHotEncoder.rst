@@ -70,7 +70,6 @@ into a train and a test set:
 
 	from sklearn.model_selection import train_test_split
 	from feature_engine.datasets import load_titanic
-
 	from feature_engine.encoding import OneHotEncoder
 
 	data = load_titanic(handle_missing=True)
