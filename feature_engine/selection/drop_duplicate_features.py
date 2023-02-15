@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import List, Union
 
 import pandas as pd
@@ -99,7 +100,6 @@ class DropDuplicateFeatures(BaseSelector):
         missing_values: str = "ignore",
         confirm_variables: bool = False,
     ):
-
         if missing_values not in ["raise", "ignore"]:
             raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
 
@@ -136,42 +136,28 @@ class DropDuplicateFeatures(BaseSelector):
             # check if dataset contains na
             _check_contains_na(X, self.variables_)
 
+        # collect duplicate features
+        _features_hashmap = defaultdict(list)
+
+        # hash the features
+        _X_hash = pd.util.hash_pandas_object(X[self.variables_].T, index=False)
+
+        # group the features by hash
+        for feature, feature_hash in _X_hash.items():
+            _features_hashmap[feature_hash].append(feature)
+
         # create tuples of duplicated feature groups
-        self.duplicated_feature_sets_ = []
+        self.duplicated_feature_sets_ = [
+            set(duplicate) for duplicate in _features_hashmap.values() if len(duplicate) > 1
+        ]
 
         # set to collect features that are duplicated
-        self.features_to_drop_ = set()  # type: ignore
-
-        # create set of examined features
-        _examined_features = set()
-
-        for feature in self.variables_:
-
-            # append so we can remove when we create the combinations
-            _examined_features.add(feature)
-
-            if feature not in self.features_to_drop_:
-
-                _temp_set = set([feature])
-
-                # features that have not been examined, are not currently examined and
-                # were not found duplicates
-                _features_to_compare = [
-                    f
-                    for f in self.variables_
-                    if f not in _examined_features.union(self.features_to_drop_)
-                ]
-
-                # create combinations:
-                for f2 in _features_to_compare:
-
-                    if X[feature].equals(X[f2]):
-                        self.features_to_drop_.add(f2)
-                        _temp_set.add(f2)
-
-                # if there are duplicated features
-                if len(_temp_set) > 1:
-                    self.duplicated_feature_sets_.append(_temp_set)
+        self.features_to_drop_ = {
+            item
+            for duplicates in _features_hashmap.values()
+            for item in duplicates[1:]
+            if duplicates and len(duplicates) > 1
+        }
 
         # save input features
         self._get_feature_names_in(X)
