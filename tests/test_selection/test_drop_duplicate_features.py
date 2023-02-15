@@ -43,6 +43,23 @@ def df_duplicate_features_with_na():
     return df
 
 
+@pytest.fixture(scope="module")
+def df_duplicate_features_with_different_data_types():
+    data = {
+        "A": pd.Series([5.5] * 3).astype("float64"),
+        "B": 1,
+        "C": "foo",
+        "D": pd.Timestamp("20010102"),
+        "E": pd.Series([1.0] * 3).astype("float32"),
+        "F": False,
+        "G": pd.Series([1] * 3, dtype="int8"),
+    }
+
+    df = pd.DataFrame(data)
+
+    return df
+
+
 def test_drop_duplicates_features(df_duplicate_features):
     transformer = DropDuplicateFeatures()
     X = transformer.fit_transform(df_duplicate_features)
@@ -94,3 +111,18 @@ def test_with_df_with_na(df_duplicate_features_with_na):
         {"City", "City2"},
         {"Age", "Age2"},
     ]
+
+
+def test_with_different_data_types(df_duplicate_features_with_different_data_types):
+    transformer = DropDuplicateFeatures()
+    X = transformer.fit_transform(df_duplicate_features_with_different_data_types)
+    df = pd.DataFrame(
+        {
+            "A": pd.Series([5.5] * 3).astype("float64"),
+            "B": 1,
+            "C": "foo",
+            "D": pd.Timestamp("20010102"),
+            "F": False,
+        }
+    )
+    pd.testing.assert_frame_equal(X, df)
