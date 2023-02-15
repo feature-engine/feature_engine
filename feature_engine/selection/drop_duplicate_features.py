@@ -148,7 +148,9 @@ class DropDuplicateFeatures(BaseSelector):
 
         # create tuples of duplicated feature groups
         self.duplicated_feature_sets_ = [
-            set(duplicate) for duplicate in _features_hashmap.values() if len(duplicate) > 1
+            set(duplicate)
+            for duplicate in _features_hashmap.values()
+            if len(duplicate) > 1
         ]
 
         # set to collect features that are duplicated
