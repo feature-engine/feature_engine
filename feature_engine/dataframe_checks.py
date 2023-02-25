@@ -243,7 +243,8 @@ def _check_X_matches_training_df(X: pd.DataFrame, reference: int) -> None:
 
 
 def _check_contains_na(
-    X: pd.DataFrame, variables: List[Union[str, int]],
+    X: pd.DataFrame,
+    variables: List[Union[str, int]],
 ) -> None:
     """
     Checks if DataFrame contains null values in the selected columns.

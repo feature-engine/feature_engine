@@ -20,14 +20,14 @@ from feature_engine._docstrings.methods import (
     _transform_imputers_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
-)
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import (
+    find_or_check_numerical_variables,
+)
 
 
 @Substitution(
@@ -148,12 +148,12 @@ class ArbitraryNumberImputer(BaseImputer):
         # find or check for numerical variables
         # create the imputer dictionary
         if self.imputer_dict:
-            self.variables_ = _find_or_check_numerical_variables(
+            self.variables_ = find_or_check_numerical_variables(
                 X, self.imputer_dict.keys()  # type: ignore
             )
             self.imputer_dict_ = self.imputer_dict
         else:
-            self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+            self.variables_ = find_or_check_numerical_variables(X, self.variables)
             self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables_}
 
         self._get_feature_names_in(X)

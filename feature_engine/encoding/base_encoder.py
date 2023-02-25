@@ -12,19 +12,19 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
 )
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_all_variables,
-    _find_or_check_categorical_variables,
-)
 from feature_engine.dataframe_checks import (
     _check_optional_contains_na,
     _check_X_matches_training_df,
     check_X,
 )
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import (
+    find_all_variables,
+    find_or_check_categorical_variables,
+)
 
 
 @Substitution(
@@ -132,12 +132,12 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         """
         if self.ignore_format is False:
             # find categorical variables or check variables entered by user are object
-            variables_: List[Union[str, int]] = _find_or_check_categorical_variables(
+            variables_: List[Union[str, int]] = find_or_check_categorical_variables(
                 X, self.variables
             )
         else:
             # select all variables or check variables entered by the user
-            variables_ = _find_all_variables(X, self.variables)
+            variables_ = find_all_variables(X, self.variables)
 
         return variables_
 

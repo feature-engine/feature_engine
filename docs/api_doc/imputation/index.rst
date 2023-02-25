@@ -30,7 +30,7 @@ categorical variables by nature are coded as numeric.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
 
    MeanMedianImputer

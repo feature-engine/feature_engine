@@ -1,6 +1,6 @@
 from typing import Any
 
-from feature_engine._variable_handling.variable_type_selection import Variables
+from feature_engine.variable_handling.variable_type_selection import Variables
 
 
 # set return value typehint to Any to avoid issues with the base transformer fit method

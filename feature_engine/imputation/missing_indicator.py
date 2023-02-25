@@ -11,15 +11,13 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_all_variables,
-)
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import find_all_variables
 
 
 @Substitution(
@@ -130,7 +128,7 @@ class AddMissingIndicator(BaseImputer):
         X = check_X(X)
 
         # find variables for which indicator should be added
-        self.variables_ = _find_all_variables(X, self.variables)
+        self.variables_ = find_all_variables(X, self.variables)
 
         if self.missing_only is True:
             self.variables_ = [

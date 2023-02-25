@@ -8,7 +8,7 @@ dataframe by lagging features or calculating statistics over windows of time in 
 past.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    LagFeatures
    WindowFeatures

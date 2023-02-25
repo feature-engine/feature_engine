@@ -7,7 +7,7 @@ Feature-engine's variable transformers transform numerical variables with variou
 mathematical transformations.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    LogTransformer
    LogCpTransformer

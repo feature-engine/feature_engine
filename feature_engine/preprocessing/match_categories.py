@@ -3,6 +3,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
+from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -19,7 +20,6 @@ from feature_engine.encoding.base_encoder import (
     CategoricalInitMixinNA,
     CategoricalMethodsMixin,
 )
-from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 
 
 @Substitution(

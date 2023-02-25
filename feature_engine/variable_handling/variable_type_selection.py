@@ -8,7 +8,7 @@ from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from pandas.api.types import is_numeric_dtype as is_numeric
 from pandas.api.types import is_object_dtype as is_object
 
-from feature_engine._variable_handling.variable_type_checks import (
+from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
     _is_categorical_and_is_not_datetime,
 )
@@ -16,28 +16,42 @@ from feature_engine._variable_handling.variable_type_checks import (
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
-def _find_or_check_numerical_variables(
+def find_or_check_numerical_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
-    Checks that variables provided by the user are of type numerical. If None, finds
-    all the numerical variables in the DataFrame.
+    Returns the names of all the numerical variables in a dataframe. Alternatively, it
+    checks that the variables entered by the user are numerical.
+
+    More details in the :ref:`User Guide <find_num_vars>`.
 
     Parameters
     ----------
-    X : Pandas DataFrame.
-    variables : variable or list of variables. Defaults to None.
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
 
-    Raises
-    ------
-    ValueError
-        If there are no numerical variables in the df or the df is empty.
-    TypeError
-        If any of the user provided variables are not numerical.
+    variables : list, default=None
+        If `None`, the function will return the names of all numerical variables in X.
+        Alternatively, it checks that the variables in the list are of type numerical.
 
     Returns
     -------
-    variables: List of numerical variables.
+    variables: List
+        The names of the numerical variables.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from feature_engine.variable_handling import find_or_check_numerical_variables
+    >>> X = pd.DataFrame({
+    >>>     "var_num": [1, 2, 3],
+    >>>     "var_cat": ["A", "B", "C"],
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>> })
+    >>> var_num = find_or_check_numerical_variables(X)
+    >>> var_num
+
+    ['var_num']
     """
 
     if variables is None:
@@ -70,28 +84,48 @@ def _find_or_check_numerical_variables(
     return variables
 
 
-def _find_or_check_categorical_variables(
+def find_or_check_categorical_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
-    Checks that variables provided by the user are of type object or categorical.
-    If None, finds all the categorical and object type variables in the DataFrame.
+    Returns the names of all the variables of type object or categorical in a dataframe.
+    Alternatively, it checks that the variables entered by the user are of type object
+    or categorical.
+
+    Note that when `variables` is `None`, the transformer will not select variables of
+    type object that can be parsed as datetime. But if the user passes a list with
+    datetime variables cast as object to the `variables` parameter, they will be
+    allowed.
+
+    More details in the :ref:`User Guide <find_cat_vars>`.
 
     Parameters
     ----------
-    X : pandas DataFrame.
-    variables : variable or list of variables. Defaults to None.
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
 
-    Raises
-    ------
-    ValueError
-        If there are no categorical variables in df or df is empty.
-    TypeError
-        If any of the user provided variables are not categorical.
+    variables : list, default=None
+        If `None`, the function returns the names of all object or categorical variables
+        in X. Alternatively, it checks that the variables in the list are of type
+        object or categorical.
 
     Returns
     -------
-    variables : List of categorical variables.
+    variables: List
+        The names of the categorical variables.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from feature_engine.variable_handling import find_or_check_categorical_variables
+    >>> X = pd.DataFrame({
+    >>>     "var_num": [1, 2, 3],
+    >>>     "var_cat": ["A", "B", "C"],
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>> })
+    >>> var_cat = find_or_check_categorical_variables(X)
+    >>> var_cat
+    ['var_cat']
     """
 
     if variables is None:
@@ -128,21 +162,47 @@ def _find_or_check_categorical_variables(
     return variables
 
 
-def _find_or_check_datetime_variables(
+def find_or_check_datetime_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
-    Checks that variables provided by the user are of type datetime.
-    If None, finds all datetime variables in the DataFrame.
+    Returns the names of all the variables that are or can be parsed as datetime.
+    Alternatively, it checks that the variables entered by the user can be parsed as
+    datetime.
+
+    Note that this function will select variables cast as object if they can be cast as
+    datetime as well.
+
+    More details in the :ref:`User Guide <find_datetime_vars>`.
 
     Parameters
     ----------
-    X : pandas DataFrame
-    variables : variable or list of variables. Defaults to None.
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
+
+    variables : list, default=None
+        If `None`, the function returns the names of all variables in X that can be
+        parsed as datetime. These include those cast as datetime, and also object and
+        categorical if they can be transformed to datetime variables. Alternatively, it
+        checks that the variables in the list are or can be parsed to datetime.
 
     Returns
     -------
-    variables : List of datetime variables.
+    variables: List
+        The names of the datetime variables.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from feature_engine.variable_handling import find_or_check_datetime_variables
+    >>> X = pd.DataFrame({
+    >>>     "var_num": [1, 2, 3],
+    >>>     "var_cat": ["A", "B", "C"],
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>> })
+    >>> var_date = find_or_check_datetime_variables(X)
+    >>> var_date
+    ['var_date']
     """
 
     if variables is None:
@@ -184,29 +244,47 @@ def _find_or_check_datetime_variables(
     return variables
 
 
-def _find_all_variables(
+def find_all_variables(
     X: pd.DataFrame,
     variables: Variables = None,
     exclude_datetime: bool = False,
 ) -> List[Union[str, int]]:
     """
-    If variables are None, captures all variables in the dataframe in a list.
-    If user enters variable names in list, it returns the list.
+    Returns the names of all the variables in the dataframe in a list. Alternatively,
+    it will check that the variables indicated by the user are in the dataframe.
+
+    More details in the :ref:`User Guide <find_all_vars>`.
 
     Parameters
     ----------
-    X :  pandas DataFrame
-    variables : List of variables. Defaults to None.
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
 
-    Raises
-    ------
-    TypeError
-        If the variable list provided by the user contains variables not present in the
+    variables : list, default=None
+        If `None`, the function will return the names of all the variables in X.
+        Alternatively, it checks that the variables in the list are present in the
         dataframe.
+
+    exclude_datetime: bool, default=False
+        Whether to exclude datetime variables.
 
     Returns
     -------
-    variables : List of numerical variables
+    variables: List
+        The names of the variables.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from feature_engine.variable_handling import find_all_variables
+    >>> X = pd.DataFrame({
+    >>>     "var_num": [1, 2, 3],
+    >>>     "var_cat": ["A", "B", "C"],
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>> })
+    >>> vars_all = find_all_variables(X)
+    >>> vars_all
+    ['var_num', 'var_cat', 'var_date']
     """
     # find all variables in dataset
     if variables is None:
@@ -217,7 +295,7 @@ def _find_all_variables(
 
     elif isinstance(variables, (str, int)):
         if variables not in X.columns.to_list():
-            raise ValueError("The variable is not in the dataframe.")
+            raise ValueError(f"The variable {variables} is not in the dataframe.")
         variables_ = [variables]
 
     else:
@@ -273,21 +351,47 @@ def _filter_out_variables_not_in_dataframe(X, variables):
     return filtered_variables
 
 
-def _find_categorical_and_numerical_variables(
+def find_categorical_and_numerical_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> Tuple[List[Union[str, int]], List[Union[str, int]]]:
     """
     Find numerical and categorical variables.
 
+    The function returns two lists; the first one with the names of the variables of
+    type object or categorical and the second list with the names of the numerical
+    variables.
+
+    More details in the :ref:`User Guide <find_cat_and_num_vars>`.
+
     Parameters
     ----------
-    X :  pandas DataFrame
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
 
-    variables : List of variables. Defaults to None.
+    variables : list, default=None
+        If `None`, the function will find categorical and numerical variables in X.
+        Alternatively, it will find categorical and numerical variables in the given
+        list.
 
     Returns
     -------
-    variables : Tuple with List of numerical and list of categorical variables.
+    variables: tuple
+        List of numerical and list of categorical variables.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from feature_engine.variable_handling import (
+    >>>   find_categorical_and_numerical_variables
+    >>>)
+    >>> X = pd.DataFrame({
+    >>>     "var_num": [1, 2, 3],
+    >>>     "var_cat": ["A", "B", "C"],
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>> })
+    >>> var_cat, var_num = find_categorical_and_numerical_variables(X)
+    >>> var_cat, var_num
+    (['var_cat'], ['var_num'])
     """
 
     # If the user passes just 1 variable outside a list.

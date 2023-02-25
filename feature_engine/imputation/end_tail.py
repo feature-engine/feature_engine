@@ -19,14 +19,14 @@ from feature_engine._docstrings.methods import (
     _transform_imputers_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
-)
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import (
+    find_or_check_numerical_variables,
+)
 
 
 @Substitution(
@@ -175,7 +175,7 @@ class EndTailImputer(BaseImputer):
         X = check_X(X)
 
         # find or check for numerical variables
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = find_or_check_numerical_variables(X, self.variables)
 
         # estimate imputation values
         if self.imputation_method == "max":

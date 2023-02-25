@@ -203,9 +203,7 @@ class LagFeatures(BaseForecastTransformer):
         # create the names for the lag features
         if isinstance(self.freq, list):
             feature_names = [
-                f"{feature}_lag_{fr}"
-                for fr in self.freq
-                for feature in self.variables_
+                f"{feature}_lag_{fr}" for fr in self.freq for feature in self.variables_
             ]
         elif self.freq is not None:
             feature_names = [

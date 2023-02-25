@@ -2,6 +2,7 @@
 # License: BSD 3 clause
 
 from __future__ import annotations
+
 from typing import List
 
 import pandas as pd

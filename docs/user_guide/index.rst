@@ -53,3 +53,11 @@ Other
 
    preprocessing/index
    wrappers/index
+
+
+Tools
+-----
+.. toctree::
+   :maxdepth: 1
+
+   variable_handling/index

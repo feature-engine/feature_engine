@@ -18,15 +18,6 @@ from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine._variable_handling.variable_type_checks import (
-    _is_categorical_and_is_datetime,
-)
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_or_check_datetime_variables,
-)
 from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
@@ -37,6 +28,15 @@ from feature_engine.datetime._datetime_constants import (
     FEATURES_FUNCTIONS,
     FEATURES_SUFFIXES,
     FEATURES_SUPPORTED,
+)
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling._variable_type_checks import (
+    _is_categorical_and_is_datetime,
+)
+from feature_engine.variable_handling.variable_type_selection import (
+    find_or_check_datetime_variables,
 )
 
 
@@ -255,7 +255,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
 
         else:
             # find or check for datetime variables
-            self.variables_ = _find_or_check_datetime_variables(X, self.variables)
+            self.variables_ = find_or_check_datetime_variables(X, self.variables)
 
             # check if datetime variables contains na
             if self.missing_values == "raise":
