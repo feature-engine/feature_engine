@@ -12,6 +12,8 @@ the desired type.
 You can also pass a dataframe with a list of variables to check if they are all of the
 desired type.
 
+These functions are used under the hood by all Feature-engine transformers to select the
+variables that they will modify or operate with.
 
 .. toctree::
    :maxdepth: 1
