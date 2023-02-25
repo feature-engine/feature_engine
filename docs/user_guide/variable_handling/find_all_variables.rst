@@ -81,6 +81,29 @@ We see the variable names in the list below:
      'date2',
      'date3']
 
+We have the option to return the name of the variables of type categorical, object and
+numerical only, or in other words, to exclude datetime variables. We can do so as
+follows:
+
+.. code:: python
+
+    vars_all = find_all_variables(X, exclude_datetime=True)
+
+    vars_all
+
+In the list below, we can see that variables of type datetime were ignored:
+
+.. code:: python
+
+    ['num_var_1',
+     'num_var_2',
+     'num_var_3',
+     'num_var_4',
+     'cat_var1',
+     'cat_var2',
+     'date3']
+
+
 We can also use :class:`find_all_variables()` with a list of variable names. It will
 corroborate that the variables indicated in the list are in the dataframe.
 
