@@ -163,10 +163,10 @@ class SmartCorrelatedSelection(BaseSelector):
     >>>                 x3 = [1, 0, 0, 0]))
     >>> scs = SmartCorrelatedSelection(threshold=0.7)
     >>> scs.fit_transform(X)
-       x1  x3
-    0   1   1
-    1   2   0
-    2   1   0
+       x2  x3
+    0   2   1
+    1   4   0
+    2   3   0
     3   1   0
 
     It is also possible alternative selection methods, in this case seleting
