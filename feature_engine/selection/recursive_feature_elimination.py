@@ -124,15 +124,15 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
     >>>                     x4 = [1,2,1,1,0,1],
     >>>                     x5 = [1,1,1,1,1,1]))
     >>> y = pd.Series([1,0,0,1,1,0])
-    >>> rfe = RecursiveFeatureElimination(RandomForestClassifier(), cv=2)
+    >>> rfe = RecursiveFeatureElimination(RandomForestClassifier(random_state=2), cv=2)
     >>> rfe.fit_transform(X, y)
-        x2  x3  x5
-    0   2   1   1
-    1   4   1   1
-    2   3   1   1
-    3   1   0   1
-    4   2   0   1
-    5   2   0   1
+       x2
+    0   2
+    1   4
+    2   3
+    3   1
+    4   2
+    5   2
     """
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
