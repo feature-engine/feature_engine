@@ -1,0 +1,70 @@
+Version 1.6.X
+=============
+
+Version 1.6.0
+-------------
+
+Deployed: xxth March 2023
+
+Contributors
+~~~~~~~~~~~~
+
+    - `Gleb Levitski <https://github.com/GLevV>`_
+    - `Morgan Sell <https://github.com/Morgan-Sell>`_
+    - `Alfonso Tobar <https://github.com/datacubeR>`_
+    - `Nodar Okroshiashvili <https://github.com/Okroshiashvili>`_
+    - `Luís Seabra  <https://github.com/luismavs>`_
+    - `Soledad Galli <https://github.com/solegalli>`_
+
+In this release, we make all Feature-engine transformers compatible with the `set_output`
+API from Scikit-learn, which was released in version 1.2.0.
+
+In addition, most of the categorical encoders can now encode variables even if they have
+missing data.
+
+Thanks to `Gleb Levitski <https://github.com/GLevV>`_, we've got a new discretiser
+to sort continuous variables into intervals determined by geometric progression.
+
+`Nodar Okroshiashvili <https://github.com/Okroshiashvili>`_ made a major improvement in the
+performance of the `DropDuplicateFeatures`.
+
+Finally, we'd like to thank all contributors for fixing bugs and expanding the functionality
+and documentation of Feature-engine.
+
+Thank you so much to all contributors and to those of you who created issues flagging bugs or
+requesting new functionality.
+
+New transformers
+~~~~~~~~~~~~~~~~
+
+    - **GeometricWidthDiscretiser**: sorts continuous variables into intervals determined by geometric progression (`Gleb Levitski <https://github.com/GLevV>`_)
+
+New functionality
+~~~~~~~~~~~~~~~~~
+
+    - Allow categorical encoders to encode variables with NaN (`Soledad Galli <https://github.com/solegalli>`_)
+    - Make transformers compatible with new `set_output` functionality from sklearn (`Soledad Galli <https://github.com/solegalli>`_)
+
+Bug fixes
+~~~~~~~~~
+
+    - Fixed bug in DropFeatures (`Luís Seabra  <https://github.com/luismavs>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+    - Add example code snippets to the selection module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+    - Reorganized Readme badges (`Gleb Levitski <https://github.com/GLevV>`_)
+    - New Jupyter notebooks for `GeometricWidthDiscretiser` (`Gleb Levitski <https://github.com/GLevV>`_)
+    - Fixed typos (`Gleb Levitski <https://github.com/GLevV>`_)
+
+Deprecations
+~~~~~~~~~~~~
+
+    - The class `PRatioEncoder` is no longer supported and was removed from the API (`Soledad Galli <https://github.com/solegalli>`_)
+
+Code improvements
+~~~~~~~~~~~~~~~~~
+
+    - Massive improve in the performance (speed) of DropDuplicateFeatures (`Nodar Okroshiashvili <https://github.com/Okroshiashvili>`_)
+    - Moved all docstrings to dedicated docstrings module  (`Soledad Galli <https://github.com/solegalli>`_)
