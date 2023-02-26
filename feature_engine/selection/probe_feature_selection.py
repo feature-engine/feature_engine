@@ -1,15 +1,19 @@
 import numpy as np
 import pandas as pd
-from feature_engine._docstrings.methods import _fit_transform_docstring
+
+from feature_engine.variable_handling import find_or_check_numerical_variables
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine._docstrings.fit_attributes import (
+    _feature_importances_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
-from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
+from feature_engine._docstrings.init_parameters.selection import (
+    _confirm_variables_docstring,
+    _estimator_docstring,
 )
-from feature_engine.dataframe_checks import check_X_y
+from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.substitute import Substitution
 from feature_engine.selection._docstring import (
     _cv_docstring,
     _features_to_drop_docstring,
@@ -19,18 +23,17 @@ from feature_engine.selection._docstring import (
     _transform_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine.selection.base_recursive_selector import BaseRecursiveSelector
 from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
 from sklearn.model_selection import cross_validate
 
 
 @Substitution(
-    estimator=BaseRecursiveSelector._estimator_docstring,
+    estimator=_estimator_docstring,
     scoring=_scoring_docstring,
     cv=_cv_docstring,
-    confirm_variables=BaseSelector._confirm_variables_docstring,
+    confirm_variables=_confirm_variables_docstring,
     variables_=_variables_numerical_docstring,
-    feature_importances_=BaseRecursiveSelector._feature_importances_docstring,
+    feature_importances_=_feature_importances_docstring,
     feature_names_in_=_feature_names_in_docstring,
     features_to_drop_=_features_to_drop_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -69,15 +72,16 @@ class ProbeFeatureSelection(BaseSelector):
 
     distribution: str, default='normal'
         The distribution used to create the probe features. The options are
-        normal, binomial, uniform, and all. 'all' creates at least 1 or more
+        'normal', 'binomial', 'uniform', and 'all'. 'all' creates at least 1 or more
         probe features comprised of each distribution type, i.e., normal, binomial,
-        and uniform.
+        and uniform. The remaining options create `n_probes` features of the selected
+        distribution.
 
     {cv}
 
     random_state: int, default=0
-    Controls the shuffling applied to the data before applying the split. Pass an
-    int for reproducible output across multiple function calls.
+        Controls the shuffling applied to the data before applying the split. Pass an
+        int for reproducible output across multiple function calls.
 
     {confirm_variables}
 
@@ -106,15 +110,6 @@ class ProbeFeatureSelection(BaseSelector):
     {get_support}
 
     {transform}
-
-    _generate_probe_features:
-        Creates 'n_probes' number of probe features using the user-selected
-        distribution.
-
-    _get_features_to_drop:
-        Identifies the variables that have a feature importance less the probe
-        feature's/features' feature importance or average feature importances.
-
     """
 
     def __init__(
@@ -130,14 +125,14 @@ class ProbeFeatureSelection(BaseSelector):
 
         if distribution not in ["normal", "binary", "uniform", "all"]:
             raise ValueError(
-                "distribution takes on normal, binary, uniform, or all as values. "
-                f"Got {distribution} instead."
+                "distribution takes on 'normal', 'binary', 'uniform', or 'all' as "
+                f"values. Got {distribution} instead."
             )
 
         if distribution == "all" and n_probes % 3 != 0:
             raise ValueError(
                 "If distribution is 'all' the n_probes must be a multiple of 3. "
-                f"Got {n_probes} for n_probes instead."
+                f"Got {n_probes} instead."
             )
 
         if not isinstance(n_probes, int):
@@ -158,22 +153,20 @@ class ProbeFeatureSelection(BaseSelector):
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
-           The input dataframe
+           The input dataframe.
+
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
         """
         # check input dataframe
         X, y = check_X_y(X, y)
 
-        # find numerical variables
-        self.variables = _find_or_check_numerical_variables(X, None)
-
         # if required exclude variables that are not in the input dataframe
         # instantiates the 'variables_' attribute
         self._confirm_variables(X)
 
-        # check that there is more than 1 variable
-        self._check_variable_number()
+        # find numerical variables
+        self.variables_ = find_or_check_numerical_variables(X, None)
 
         # save input features
         self._get_feature_names_in(X)
@@ -183,7 +176,7 @@ class ProbeFeatureSelection(BaseSelector):
 
         X_new = pd.concat([X, self.probe_features_], axis=1)
 
-        # train model with all variables including the probe feature
+        # train model with all variables including the probe features
         model = cross_validate(
             self.estimator,
             X_new,
