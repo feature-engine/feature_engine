@@ -66,6 +66,8 @@ class ProbeFeatureSelection(BaseSelector):
     variables that have a feature importance less than the feature importance or
     average feature importance of the probe feature(s) are dropped from the dataset.
 
+    More details in the :ref:`User Guide <probe_features>`.
+
     Parameters
     ----------
     {estimator}
@@ -118,6 +120,20 @@ class ProbeFeatureSelection(BaseSelector):
     {get_support}
 
     {transform}
+
+    References
+    ----------
+    .. [1] add references (they are in the PR)
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import DropHighPSIFeatures
+    >>> X = pd.DataFrame(dict(create a dataframe))
+    >>> sel = ProbeFeatureSelection()
+    >>> sel.fit_transform(X)
+    paste result
     """
 
     def __init__(

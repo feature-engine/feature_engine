@@ -125,6 +125,7 @@ transforming parameters from the data and then transform it.
  * RecursiveFeatureAddition
  * DropHighPSIFeatures
  * SelectByInformationValue
+ * ProbeFeatureSelection
 
 ### Datetime
  * DatetimeFeatures

@@ -59,6 +59,7 @@ Alternative feature selection methods
 ============================================ ======================= ============= ====================================================================================
 :class:`SelectByShuffling()`	                ×	                      ×	            Selects features if shuffling their values causes a drop in model performance
 :class:`SelectByTargetMeanPerformance()`        √                         ×             Using the target mean as performance proxy, selects high performing features
+:class:`ProbeFeatureSelection()`                ×                         ×             Selects features whose importance is greater than those of random variables
 ============================================ ======================= ============= ====================================================================================
 
 
@@ -78,6 +79,7 @@ Alternative feature selection methods
    SelectByInformationValue
    SelectByShuffling
    SelectByTargetMeanPerformance
+   ProbeFeatureSelection
 
 Other Feature Selection Libraries
 ---------------------------------

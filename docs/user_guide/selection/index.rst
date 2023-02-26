@@ -112,12 +112,17 @@ Alternative feature selection methods
 ============================================ ======================= ============= ====================================================================================
 :class:`SelectByShuffling()`	                ×	                      ×	            Selects features if shuffling their values causes a drop in model performance
 :class:`SelectByTargetMeanPerformance()`        √                         ×             Using the target mean as performance proxy, selects high performing features
+:class:`ProbeFeatureSelection()`                ×                         ×             Selects features whose importance is greater than those of random variables
 ============================================ ======================= ============= ====================================================================================
 
 The :class:`SelectByTargetMeanPerformance()` uses the target mean value as proxy for prediction,
 replacing categories or variable intervals by these values and then determining a performance metric.
 Thus, it is suitable for both categorical and numerical variables. In its current implementation,
 it does not support missing data.
+
+The :class:`ProbeFeatureSelection()` introduces random variables to the dataset, then creates a model and derives
+the feature importance. It selects all variables whose importance is grater than the mean importance of the random
+features.
 
 Throughout the rest of user guide, you will find more details about each of the feature selection procedures.
 
@@ -141,6 +146,7 @@ Click below to find more details on how to use each one of the transformers.
    SelectByTargetMeanPerformance
    DropHighPSIFeatures
    SelectByInformationValue
+   ProbeFeatureSelection
 
 
 Additional Resources
