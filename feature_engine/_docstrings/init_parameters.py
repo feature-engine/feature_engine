@@ -36,4 +36,3 @@ _unseen_docstring = """unseen: string, default='ignore'
         error. If 'ignore', then unseen categories will be set as NaN and a warning will
         be raised instead.
     """.rstrip()
-
