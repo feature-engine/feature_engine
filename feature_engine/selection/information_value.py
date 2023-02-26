@@ -141,6 +141,25 @@ class SelectByInformationValue(BaseSelector, WoE):
 
     .. [2] WoE and IV for continuous variables
         https://www.listendata.com/2019/08/WOE-IV-Continuous-Dependent.html
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import SelectByInformationValue
+    >>> X = pd.DataFrame(dict(x1 = [1,1,1,1,1,1],
+    >>>                     x2 = [3,2,2,3,3,2],
+    >>>                     x3 = ["a","b","c","a","c","b"]))
+    >>> y = pd.Series([1,1,1,0,0,0])
+    >>> iv = SelectByInformationValue()
+    >>> iv.fit_transform(X, y)
+        x2
+    0   3
+    1   2
+    2   2
+    3   3
+    4   3
+    5   2
     """
 
     def __init__(

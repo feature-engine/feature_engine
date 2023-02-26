@@ -112,6 +112,27 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
     {transform}
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from feature_engine.selection import RecursiveFeatureAddition
+    >>> X = pd.DataFrame(dict(x1 = [1000,2000,1000,1000,2000,3000],
+    >>>                     x2 = [2,4,3,1,2,2],
+    >>>                     x3 = [1,1,1,0,0,0],
+    >>>                     x4 = [1,2,1,1,0,1],
+    >>>                     x5 = [1,1,1,1,1,1]))
+    >>> y = pd.Series([1,0,0,1,1,0])
+    >>> rfa = RecursiveFeatureAddition(RandomForestClassifier(random_state=42), cv=2)
+    >>> rfa.fit_transform(X, y)
+       x2  x4
+    0   2   1
+    1   4   2
+    2   3   1
+    3   1   1
+    4   2   0
+    5   2   1
     """
 
     def fit(self, X: pd.DataFrame, y: pd.Series):

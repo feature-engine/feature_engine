@@ -167,6 +167,41 @@ class SelectByTargetMeanPerformance(BaseSelector):
     .. [1] Miller, et al. "Predicting customer behaviour: The University of Melbourne’s
         KDD Cup report". JMLR Workshop and Conference Proceeding. KDD 2009
         http://proceedings.mlr.press/v7/miller09/miller09.pdf
+
+    Examples
+    --------
+
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from feature_engine.selection import SelectByTargetMeanPerformance
+    >>> X = pd.DataFrame(dict(x1 = [1000,2000,1000,1000,2000,3000],
+    >>>                     x2 = [1,1,1,0,0,0],
+    >>>                     x3 = [1,2,1,1,0,1],
+    >>>                     x4 = [1,1,1,1,1,1]))
+    >>> y = pd.Series([1,0,0,1,1,0])
+    >>> tmp = SelectByTargetMeanPerformance(bins = 3, cv=2,scoring='accuracy')
+    >>> tmp.fit_transform(X, y)
+        x2  x3  x4
+    0   1   1   1
+    1   1   2   1
+    2   1   1   1
+    3   0   1   1
+    4   0   0   1
+    5   0   1   1
+
+    This transformer also works with Categorical examples:
+
+    >>> X = pd.DataFrame(dict(x1 = ["a","b","a","a","b","b"],
+    >>>             x2 = ["a","a","a","b","b","b"]))
+    >>> y = pd.Series([1,0,0,1,1,0])
+    >>> tmp = SelectByTargetMeanPerformance(bins = 3, cv=2,scoring='accuracy')
+    >>> tmp.fit_transform(X, y)
+      x2
+    0  a
+    1  a
+    2  a
+    3  b
+    4  b
+    5  b
     """
 
     def __init__(

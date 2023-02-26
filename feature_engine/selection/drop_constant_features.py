@@ -101,6 +101,35 @@ class DropConstantFeatures(BaseSelector):
     See Also
     --------
     sklearn.feature_selection.VarianceThreshold
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import DropConstantFeatures
+    >>> X = pd.DataFrame(dict(x1 = [1,1,1,1],
+    >>>                     x2 = ["a", "a", "b", "c"],
+    >>>                     x3 = [True, False, False, True]))
+    >>> dcf = DropConstantFeatures()
+    >>> dcf.fit_transform(X)
+        x2     x3
+    0  a   True
+    1  a  False
+    2  b  False
+    3  c   True
+
+    Additionally, you can set the Threshold for quasi-constant features:
+
+    >>> X = pd.DataFrame(dict(x1 = [1,1,1,1],
+    >>>                      x2 = ["a", "a", "b", "c"],
+    >>>                      x3 = [True, False, False, False]))
+    >>> dcf = DropConstantFeatures(tol = 0.75)
+    >>> dcf.fit_transform(X)
+        x2
+    0  a
+    1  a
+    2  b
+    3  c
     """
 
     def __init__(

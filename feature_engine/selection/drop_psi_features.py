@@ -213,6 +213,28 @@ class DropHighPSIFeatures(BaseSelector):
     .. [1] Yurdakul B. "Statistical properties of population stability index".
        Western Michigan University, 2018.
        https://scholarworks.wmich.edu/dissertations/3208/
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import DropHighPSIFeatures
+    >>> X = pd.DataFrame(dict(x1 = [1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    >>>                 x2 = [32,87,6,32,11,44,8,7,9,0,32,87,6,32,11,44,8,7,9,0]))
+    >>> psi = DropHighPSIFeatures()
+    >>> psi.fit_transform(X)
+        x2
+    0   32
+    1   87
+    2    6
+    3   32
+    4   11
+    5   44
+    6    8
+    7    7
+    8    9
+    9    0
+    10  32
     """
 
     def __init__(

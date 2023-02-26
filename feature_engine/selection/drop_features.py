@@ -52,6 +52,22 @@ class DropFeatures(BaseSelector):
 
     transform:
         Drops indicated features.
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import DropFeatures
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3,4],
+    >>>                         x2 = ["a", "a", "b", "c"],
+    >>>                         x3 = [True, False, False, True]))
+    >>> df = DropFeatures(features_to_drop=["x2"])
+    >>> df.fit_transform(X)
+        x1     x3
+    0   1   True
+    1   2  False
+    2   3  False
+    3   4   True
     """
 
     def __init__(self, features_to_drop: List[Union[str, int]]):
