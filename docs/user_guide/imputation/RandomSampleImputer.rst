@@ -153,4 +153,4 @@ You will also find a lot of information on why the seed matters in this notebook
 And finally, there is also a lot of information about this and other imputation techniques
 in this online course:
 
-- `Feature Engineering for Machine Learning <https://www.udemy.com/feature-engineering-for-machine-learning/>`_
+- `Feature Engineering for Machine Learning course <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_

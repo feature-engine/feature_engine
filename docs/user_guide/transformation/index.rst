@@ -17,7 +17,7 @@ Article
 -------
 
 We added a lot of information about **variance stabilizing transformations** in this
-`article <https://trainindata.medium.com/variance-stabilizing-transformations-in-machine-learning-20e5383862dd>`_.
+`article <https://www.blog.trainindata.com/variance-stabilizing-transformations-in-machine-learning/>`_.
 
 **Note**
 

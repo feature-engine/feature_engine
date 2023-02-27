@@ -15,7 +15,7 @@ Feature engineering
 - `Feature-engine: A new open-source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c/>`_.
 - `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd>`_.
 - `Streamlining Feature Engineering Pipelines with Feature-engine <https://towardsdatascience.com/streamlining-feature-engineering-pipelines-with-feature-engine-e781d551f470?gi=e0fa6e5c0c1a/>`_.
-- `Feature Engineering for Machine Learning: A comprehensive Overview <https://trainindata.medium.com/feature-engineering-for-machine-learning-a-comprehensive-overview-a7ad04c896f8>`_.
+- `Feature Engineering for Machine Learning: A comprehensive Overview <https://www.blog.trainindata.com/feature-engineering-for-machine-learning/>`_.
 - `Variance Stabilizing Transformations <https://www.blog.trainindata.com/variance-stabilizing-transformations-in-machine-learning/>`_.
 
 Feature selection
@@ -24,7 +24,7 @@ Feature selection
 - `Feature selection in machine learning with Python <https://www.blog.trainindata.com/feature-selection-machine-learning-with-python/>`_.
 - `Recursive feature elimination with Python <https://www.blog.trainindata.com/recursive-feature-elimination-with-python/>`_.
 - `Population Stability Index and feature selection in Python <https://www.blog.trainindata.com/population-stability-index-and-feature-selection-python/>`_
-- `Feature Selection for Machine Learning: A comprehensive Overview <https://trainindata.medium.com/feature-selection-for-machine-learning-a-comprehensive-overview-bd571db5dd2d>`_.
+- `Feature Selection for Machine Learning: A comprehensive Overview <https://www.blog.trainindata.com/feature-selection-for-machine-learning/>`_.
 
 
 Videos
@@ -49,7 +49,6 @@ Empezamos una nueva website con blogs en español. Chequeala:
 
 Ademas, te pueden interesar:
 
-- `Ingeniería de variables para machine learning <https://www.udemy.com/course/ingenieria-de-variables-para-machine-learning/?referralCode=CE398C784F17BD87482C>`_, Curso Online.
 - `Ingeniería de variables, MachinLenin <https://www.youtube.com/watch?v=NhCxOOoFXds>`_, charla con video online.
 
 More resources will be added as they appear online. If you know of a good resource, let us know.
