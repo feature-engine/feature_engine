@@ -475,7 +475,7 @@ You can find examples of window features used together with supervised learning 
 `This section of the former github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/02-Time-Series-Forecasting>`_.
 
 For tutorials on how to create window features for forecasting, check the course
-`Feature Engineering for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_.
+`Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_.
 
 Check out the additional transformers to create expanding window features
 (:class:`ExpandingWindowFeatures`) or lag features, by lagging past values of the time
