@@ -9,7 +9,7 @@ Deployed: xxth March 2023
 Contributors
 ~~~~~~~~~~~~
 
-    - `Gleb Levitski <https://github.com/GLevV>`_
+    - `Gleb Levitski <https://github.com/GLevv>`_
     - `Morgan Sell <https://github.com/Morgan-Sell>`_
     - `Alfonso Tobar <https://github.com/datacubeR>`_
     - `Nodar Okroshiashvili <https://github.com/Okroshiashvili>`_
@@ -22,7 +22,7 @@ API from Scikit-learn, which was released in version 1.2.0.
 In addition, most of the categorical encoders can now encode variables even if they have
 missing data.
 
-Thanks to `Gleb Levitski <https://github.com/GLevV>`_, we've got a new discretiser
+Thanks to `Gleb Levitski <https://github.com/GLevv>`_, we've got a new discretiser
 to sort continuous variables into intervals determined by geometric progression.
 
 `Nodar Okroshiashvili <https://github.com/Okroshiashvili>`_ made a major improvement in the
@@ -37,7 +37,7 @@ requesting new functionality.
 New transformers
 ~~~~~~~~~~~~~~~~
 
-    - **GeometricWidthDiscretiser**: sorts continuous variables into intervals determined by geometric progression (`Gleb Levitski <https://github.com/GLevV>`_)
+    - **GeometricWidthDiscretiser**: sorts continuous variables into intervals determined by geometric progression (`Gleb Levitski <https://github.com/GLevv>`_)
 
 New functionality
 ~~~~~~~~~~~~~~~~~
@@ -54,9 +54,9 @@ Documentation
 ~~~~~~~~~~~~~
 
     - Add example code snippets to the selection module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
-    - Reorganized Readme badges (`Gleb Levitski <https://github.com/GLevV>`_)
-    - New Jupyter notebooks for `GeometricWidthDiscretiser` (`Gleb Levitski <https://github.com/GLevV>`_)
-    - Fixed typos (`Gleb Levitski <https://github.com/GLevV>`_)
+    - Reorganized Readme badges (`Gleb Levitski <https://github.com/GLevv>`_)
+    - New Jupyter notebooks for `GeometricWidthDiscretiser` (`Gleb Levitski <https://github.com/GLevv>`_)
+    - Fixed typos (`Gleb Levitski <https://github.com/GLevv>`_)
 
 Deprecations
 ~~~~~~~~~~~~
