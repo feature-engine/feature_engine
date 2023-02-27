@@ -24,7 +24,7 @@ Feature selection
 - `Feature selection in machine learning with Python <https://www.blog.trainindata.com/feature-selection-machine-learning-with-python/>`_.
 - `Recursive feature elimination with Python <https://www.blog.trainindata.com/recursive-feature-elimination-with-python/>`_.
 - `Population Stability Index and feature selection in Python <https://www.blog.trainindata.com/population-stability-index-and-feature-selection-python/>`_
-- `Feature Selection for Machine Learning: A comprehensive Overview <Recursive feature elimination with Python>`_.
+- `Feature Selection for Machine Learning: A comprehensive Overview <https://www.blog.trainindata.com/feature-selection-for-machine-learning/>`_.
 
 
 Videos
