@@ -23,10 +23,10 @@ from feature_engine._docstrings.methods import (
     _transform_discretiser_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
-from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 
 
 @Substitution(
@@ -42,7 +42,7 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
     power="{1/n}",
-    subindex="{i+1}"
+    subindex="{i+1}",
 )
 class GeometricWidthDiscretiser(BaseDiscretiser):
     """

@@ -4,20 +4,25 @@ import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring, _n_features_in_docstring)
-from feature_engine._docstrings.init_parameters.selection import \
-    _confirm_variables_docstring
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.init_parameters.selection import (
+    _confirm_variables_docstring,
+)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import \
-    _check_init_parameter_variables
-from feature_engine._variable_handling.variable_type_selection import \
-    _find_or_check_numerical_variables
-from feature_engine.dataframe_checks import (_check_contains_inf,
-                                             _check_contains_na, check_X)
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na,
+    check_X,
+)
 from feature_engine.selection._docstring import (
-    _get_support_docstring, _missing_values_docstring,
-    _variables_attribute_docstring, _variables_numerical_docstring)
+    _get_support_docstring,
+    _missing_values_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
