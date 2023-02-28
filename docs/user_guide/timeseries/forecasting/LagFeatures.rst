@@ -397,7 +397,7 @@ You can find examples of autocorrelation, partial autocorrelation and cross-corr
 plots in `Train in Data’s github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/07-Lag-Features>`_.
 
 For tutorials on how to create lag features for forecasting, check the course
-`Feature Engineering for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_.
+`Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_.
 
 Lags from the target vs lags from predictor variables
 -----------------------------------------------------

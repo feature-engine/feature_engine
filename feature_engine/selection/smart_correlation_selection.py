@@ -12,12 +12,6 @@ from feature_engine._docstrings.init_parameters.selection import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
-)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -33,6 +27,12 @@ from feature_engine.selection._docstring import (
     _variables_numerical_docstring,
 )
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import (
+    find_or_check_numerical_variables,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -152,6 +152,36 @@ class SmartCorrelatedSelection(BaseSelector):
     --------
     pandas.corr
     feature_engine.selection.DropCorrelatedFeatures
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import SmartCorrelatedSelection
+    >>> X = pd.DataFrame(dict(x1 = [1,2,1,1],
+    >>>                 x2 = [2,4,3,1],
+    >>>                 x3 = [1, 0, 0, 0]))
+    >>> scs = SmartCorrelatedSelection(threshold=0.7)
+    >>> scs.fit_transform(X)
+       x2  x3
+    0   2   1
+    1   4   0
+    2   3   0
+    3   1   0
+
+    It is also possible alternative selection methods, in this case seleting
+    features with higher variance:
+
+    >>> X = pd.DataFrame(dict(x1 = [2,4,3,1],
+    >>>                 x2 = [1000,2000,1500,500],
+    >>>                 x3 = [1, 0, 0, 0]))
+    >>> scs = SmartCorrelatedSelection(threshold=0.7, selection_method="variance")
+    >>> scs.fit_transform(X)
+         x2  x3
+    0  1000   1
+    1  2000   0
+    2  1500   0
+    3   500   0
     """
 
     def __init__(
@@ -229,7 +259,7 @@ class SmartCorrelatedSelection(BaseSelector):
         self._confirm_variables(X)
 
         # find all numerical variables or check those entered are in the dataframe
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
+        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
 
         # check that there are more than 1 variable to select from
         self._check_variable_number()

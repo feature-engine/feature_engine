@@ -9,9 +9,6 @@ from feature_engine._check_input_parameters.check_init_input_params import (
     _check_param_drop_original,
     _check_param_missing_values,
 )
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
-)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -19,6 +16,9 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling.variable_type_selection import (
+    find_or_check_numerical_variables,
+)
 
 
 class BaseCreation(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
@@ -53,12 +53,12 @@ class BaseCreation(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         X = check_X(X)
 
         # check variables are numerical
-        self.variables_: List[Union[str, int]] = _find_or_check_numerical_variables(
+        self.variables_: List[Union[str, int]] = find_or_check_numerical_variables(
             X, self.variables
         )
 
         if hasattr(self, "reference"):
-            _find_or_check_numerical_variables(X, self.reference)
+            find_or_check_numerical_variables(X, self.reference)
 
         # check if dataset contains na
         if self.missing_values == "raise":

@@ -2,12 +2,10 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_all_variables,
-)
 from feature_engine.dataframe_checks import check_X
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling.variable_type_selection import find_all_variables
 
 
 class DropFeatures(BaseSelector):
@@ -54,6 +52,22 @@ class DropFeatures(BaseSelector):
 
     transform:
         Drops indicated features.
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import DropFeatures
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3,4],
+    >>>                         x2 = ["a", "a", "b", "c"],
+    >>>                         x3 = [True, False, False, True]))
+    >>> df = DropFeatures(features_to_drop=["x2"])
+    >>> df.fit_transform(X)
+        x1     x3
+    0   1   True
+    1   2  False
+    2   3  False
+    3   4   True
     """
 
     def __init__(self, features_to_drop: List[Union[str, int]]):
@@ -83,7 +97,7 @@ class DropFeatures(BaseSelector):
         # present in the df.
         X[self.features_to_drop]
 
-        self.features_to_drop_ = _find_all_variables(X, variables=self.features_to_drop)
+        self.features_to_drop_ = find_all_variables(X, variables=self.features_to_drop)
 
         # check user is not removing all columns in the dataframe
         if len(self.features_to_drop_) == len(X.columns):

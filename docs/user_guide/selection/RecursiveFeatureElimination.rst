@@ -145,3 +145,12 @@ If we now print the transformed data, we see that the features above were remove
     2  0.050680 -0.005671 -0.034194  0.044451  0.002864 -0.045599
     3 -0.044642 -0.036656  0.024991 -0.011595  0.022692  0.012191
     4 -0.044642  0.021872  0.015596 -0.036385 -0.031991  0.003935
+
+
+
+More details
+^^^^^^^^^^^^
+
+More details on recursive feature elimination in this article:
+
+- `Recursive feature elimination with Python <https://www.blog.trainindata.com/recursive-feature-elimination-with-python/>`_

@@ -93,9 +93,9 @@ If you’re using Anaconda, you can install the
 Feature-engine features in the following resources
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- `Feature Engineering for Machine Learning <https://courses.trainindata.com/p/feature-engineering-for-machine-learning>`_, Online Course.
-- `Feature Selection for Machine Learning <https://courses.trainindata.com/p/feature-selection-for-machine-learning>`_, Online Course.
-- `Feature Engineering for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_, Online Course.
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, Online Course.
+- `Feature Selection for Machine Learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, Online Course.
+- `Feature Engineering for Time Series Forecasting <https://www.www.trainindata.com/p/feature-engineering-for-forecasting>`_, Online Course.
 - `Python Feature Engineering Cookbook <https://packt.link/0ewSo>`_, book.
 - `Feature Selection in Machine Learning with Python <https://leanpub.com/feature-selection-in-machine-learning>`_, book.
 
@@ -211,8 +211,8 @@ Can't get something to work? Here are places where you can find help.
 
 1. The :ref:`**User Guide** <user_guide>` in the docs.
 2. `Stack Overflow <https://stackoverflow.com/search?q=feature_engine>`_. If you ask a question, please mention "feature_engine" in it.
-3. If you are enrolled in the `Feature Engineering for Machine Learning course <https://courses.trainindata.com/p/feature-engineering-for-machine-learning>`_ , post a question in a relevant section.
-4. If you are enrolled in the `Feature Selection for Machine Learning course <https://courses.trainindata.com/p/feature-selection-for-machine-learning>`_ , post a question in a relevant section.
+3. If you are enrolled in the `Feature Engineering for Machine Learning course <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_ , post a question in a relevant section.
+4. If you are enrolled in the `Feature Selection for Machine Learning course <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_ , post a question in a relevant section.
 5. Join our `gitter community <https://gitter.im/feature_engine/community>`_. You an ask questions here as well.
 6. Ask a question in the repo by filing an `issue <https://github.com/feature-engine/feature_engine/issues/>`_ (check before if there is already a similar issue created :) ).
 

@@ -15,12 +15,6 @@ from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine._prediction.target_mean_classifier import TargetMeanClassifier
 from feature_engine._prediction.target_mean_regressor import TargetMeanRegressor
-from feature_engine._variable_handling.init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_all_variables,
-)
 from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection._docstring import (
     _cv_docstring,
@@ -38,6 +32,10 @@ from feature_engine.selection._selection_constants import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import find_all_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -169,6 +167,41 @@ class SelectByTargetMeanPerformance(BaseSelector):
     .. [1] Miller, et al. "Predicting customer behaviour: The University of Melbourne’s
         KDD Cup report". JMLR Workshop and Conference Proceeding. KDD 2009
         http://proceedings.mlr.press/v7/miller09/miller09.pdf
+
+    Examples
+    --------
+
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from feature_engine.selection import SelectByTargetMeanPerformance
+    >>> X = pd.DataFrame(dict(x1 = [1000,2000,1000,1000,2000,3000],
+    >>>                     x2 = [1,1,1,0,0,0],
+    >>>                     x3 = [1,2,1,1,0,1],
+    >>>                     x4 = [1,1,1,1,1,1]))
+    >>> y = pd.Series([1,0,0,1,1,0])
+    >>> tmp = SelectByTargetMeanPerformance(bins = 3, cv=2,scoring='accuracy')
+    >>> tmp.fit_transform(X, y)
+        x2  x3  x4
+    0   1   1   1
+    1   1   2   1
+    2   1   1   1
+    3   0   1   1
+    4   0   0   1
+    5   0   1   1
+
+    This transformer also works with Categorical examples:
+
+    >>> X = pd.DataFrame(dict(x1 = ["a","b","a","a","b","b"],
+    >>>             x2 = ["a","a","a","b","b","b"]))
+    >>> y = pd.Series([1,0,0,1,1,0])
+    >>> tmp = SelectByTargetMeanPerformance(bins = 3, cv=2,scoring='accuracy')
+    >>> tmp.fit_transform(X, y)
+      x2
+    0  a
+    1  a
+    2  a
+    3  b
+    4  b
+    5  b
     """
 
     def __init__(
@@ -239,7 +272,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         self._confirm_variables(X)
 
         # find all variables or check those entered are present in the dataframe
-        self.variables_ = _find_all_variables(X, self.variables_, exclude_datetime=True)
+        self.variables_ = find_all_variables(X, self.variables_, exclude_datetime=True)
 
         if len(self.variables_) == 1 and self.threshold is None:
             raise ValueError(

@@ -12,12 +12,6 @@ from feature_engine._docstrings.init_parameters.selection import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_all_variables,
-)
 from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.selection._docstring import (
     _get_support_docstring,
@@ -27,6 +21,10 @@ from feature_engine.selection._docstring import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import find_all_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -92,6 +90,21 @@ class DropDuplicateFeatures(BaseSelector):
     transform:
         Remove duplicated features.
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import DropDuplicateFeatures
+    >>> X = pd.DataFrame(dict(x1 = [1,1,1,1],
+    >>>                     x2 = [1,1,1,1],
+    >>>                     x3 = [True, False, False, False]))
+    >>> ddf = DropDuplicateFeatures()
+    >>> ddf.fit_transform(X)
+        x1     x3
+    0   1   True
+    1   1  False
+    2   1  False
+    3   1  False
     """
 
     def __init__(
@@ -127,7 +140,7 @@ class DropDuplicateFeatures(BaseSelector):
         self._confirm_variables(X)
 
         # find all variables or check those entered are in the dataframe
-        self.variables_ = _find_all_variables(X, self.variables_)
+        self.variables_ = find_all_variables(X, self.variables_)
 
         # check that there are more than 1 variable to select from
         self._check_variable_number()

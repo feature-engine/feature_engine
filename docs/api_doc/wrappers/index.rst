@@ -9,7 +9,7 @@ Feature-engine's Scikit-learn wrappers wrap Scikit-learn transformers allowing t
 implementation only on a selected subset of features.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    Wrapper
 

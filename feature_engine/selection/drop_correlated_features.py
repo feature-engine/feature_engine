@@ -19,6 +19,12 @@ from feature_engine.selection._docstring import (
     _get_support_docstring, _missing_values_docstring,
     _variables_attribute_docstring, _variables_numerical_docstring)
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import (
+    find_or_check_numerical_variables,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -102,6 +108,20 @@ class DropCorrelatedFeatures(BaseSelector):
     --------
     pandas.corr
     feature_engine.selection.SmartCorrelationSelection
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import DropCorrelatedFeatures
+    >>> X = pd.DataFrame(dict(x1 = [1,2,1,1], x2 = [2,4,3,1], x3 = [1, 0, 0, 1]))
+    >>> dcf = DropCorrelatedFeatures(threshold=0.7)
+    >>> dcf.fit_transform(X)
+        x1  x3
+    0   1   1
+    1   2   0
+    2   1   0
+    3   1   1
     """
 
     def __init__(
@@ -149,7 +169,7 @@ class DropCorrelatedFeatures(BaseSelector):
         self._confirm_variables(X)
 
         # find all numerical variables or check those entered are in the dataframe
-        self.variables_ = _find_or_check_numerical_variables(X, self.variables_)
+        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
 
         # check that there are more than 1 variable to select from
         self._check_variable_number()

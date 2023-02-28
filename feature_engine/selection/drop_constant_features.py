@@ -11,12 +11,6 @@ from feature_engine._docstrings.init_parameters.selection import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_all_variables,
-)
 from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.selection._docstring import (
     _get_support_docstring,
@@ -25,6 +19,10 @@ from feature_engine.selection._docstring import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import find_all_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -103,6 +101,35 @@ class DropConstantFeatures(BaseSelector):
     See Also
     --------
     sklearn.feature_selection.VarianceThreshold
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.selection import DropConstantFeatures
+    >>> X = pd.DataFrame(dict(x1 = [1,1,1,1],
+    >>>                     x2 = ["a", "a", "b", "c"],
+    >>>                     x3 = [True, False, False, True]))
+    >>> dcf = DropConstantFeatures()
+    >>> dcf.fit_transform(X)
+        x2     x3
+    0  a   True
+    1  a  False
+    2  b  False
+    3  c   True
+
+    Additionally, you can set the Threshold for quasi-constant features:
+
+    >>> X = pd.DataFrame(dict(x1 = [1,1,1,1],
+    >>>                      x2 = ["a", "a", "b", "c"],
+    >>>                      x3 = [True, False, False, False]))
+    >>> dcf = DropConstantFeatures(tol = 0.75)
+    >>> dcf.fit_transform(X)
+        x2
+    0  a
+    1  a
+    2  b
+    3  c
     """
 
     def __init__(
@@ -151,7 +178,7 @@ class DropConstantFeatures(BaseSelector):
         self._confirm_variables(X)
 
         # find all variables or check those entered are present in the dataframe
-        self.variables_ = _find_all_variables(X, self.variables_)
+        self.variables_ = find_all_variables(X, self.variables_)
 
         if self.missing_values == "raise":
             # check if dataset contains na
