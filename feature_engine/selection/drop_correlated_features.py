@@ -1,34 +1,23 @@
 from typing import List, Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
-from feature_engine._docstrings.init_parameters.selection import (
-    _confirm_variables_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring)
+from feature_engine._docstrings.init_parameters.selection import \
+    _confirm_variables_docstring
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_or_check_numerical_variables,
-)
-from feature_engine.dataframe_checks import (
-    _check_contains_inf,
-    _check_contains_na,
-    check_X,
-)
+from feature_engine._variable_handling.init_parameter_checks import \
+    _check_init_parameter_variables
+from feature_engine._variable_handling.variable_type_selection import \
+    _find_or_check_numerical_variables
+from feature_engine.dataframe_checks import (_check_contains_inf,
+                                             _check_contains_na, check_X)
 from feature_engine.selection._docstring import (
-    _get_support_docstring,
-    _missing_values_docstring,
-    _variables_attribute_docstring,
-    _variables_numerical_docstring,
-)
+    _get_support_docstring, _missing_values_docstring,
+    _variables_attribute_docstring, _variables_numerical_docstring)
 from feature_engine.selection.base_selector import BaseSelector
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -137,7 +126,6 @@ class DropCorrelatedFeatures(BaseSelector):
         self.threshold = threshold
         self.missing_values = missing_values
 
-    
     def fit(self, X: pd.DataFrame, y: pd.Series = None, ordered_features: List = None):
         """
         Find the correlated features.
@@ -151,7 +139,7 @@ class DropCorrelatedFeatures(BaseSelector):
             y is not needed in this transformer. You can pass y or None.
 
         ordered_features: list containing all numerical variables of X. Default = None
-            The order in which features are kept (provided no features previously marked as kept are collinear).
+            The order in which features are kept.
         """
 
         # check input dataframe
@@ -175,34 +163,40 @@ class DropCorrelatedFeatures(BaseSelector):
         self.features_to_drop_ = set()
 
         # check whether ordered_features matches numerical features in X
-        if ordered_features is not None: 
+        if ordered_features is not None:
             if set(ordered_features) != set(self.variables_):
-                msg = "The 'ordered_features' variables do not match the variables of the dataframe."
+                msg = "The 'ordered_features' variables do not match \
+                        the variables of the dataframe."
                 raise ValueError(msg)
         # if ordered_features is not given, use variance to determmine ordering
         # highest variance feature has highest priority to be kept
-        else: 
-            ordering = X[self.variables_].std().sort_values(ascending = False)
+        else:
+            ordering = X[self.variables_].std().sort_values(ascending=False)
             ordered_features = ordering.index.to_list()
 
         # the correlation matrix
         _correlation_matrix = X[ordered_features].corr(method=self.method).to_numpy()
 
         # boolean matrix with feature-pairs crossing the threshold
-        _too_collinear_matrix = (
-            (abs(_correlation_matrix) > self.threshold) - np.eye(len(ordered_features))
-            )
+        _too_collinear_matrix = (abs(_correlation_matrix) > self.threshold) - np.eye(
+            len(ordered_features)
+        )
 
-        # create a collinearity dictionary: keys are the features, 
-        # values are the sets of all features that cross the correlation threshold with the key
+        # create a collinearity dictionary: keys are the features, values are
+        # the sets of all features that cross the correlation threshold with the key
         collinearity_dict = {
-            f_i : set(f_j for j, f_j in enumerate(ordered_features) if _too_collinear_matrix[i, j] == 1) 
-                             for i, f_i in enumerate(ordered_features)
-                             }
+            f_i: set(
+                f_j
+                for j, f_j in enumerate(ordered_features)
+                if _too_collinear_matrix[i, j] == 1
+            )
+            for i, f_i in enumerate(ordered_features)
+        }
         self.correlated_feature_sets_ = {
-            feature: collinear_features for feature, collinear_features in collinearity_dict.items()
+            feature: collinear_features
+            for feature, collinear_features in collinearity_dict.items()
             if len(collinear_features) > 0
-                                         }
+        }
 
         # add features one by one, in order of ordering
         keep = set()

@@ -51,9 +51,9 @@ def test_default_params(df_correlated_single):
     )
     X = transformer.fit_transform(df_correlated_single)
 
-    # X is such that 
+    # X is such that
     # |corr(var_1, var_2)| > 0.8 and |corr(var_2, var_4)| > 0.8,
-    # with 
+    # with
     # std(var_2) > std(var_1) > std(var_4)
     # expected result:
     df = df_correlated_single.drop(["var_1", "var_4"], axis=1)
@@ -65,8 +65,10 @@ def test_default_params(df_correlated_single):
     # test fit attrs
     assert transformer.features_to_drop_ == {"var_1", "var_4"}
     assert transformer.correlated_feature_sets_ == {
-        "var_1": {"var_2"}, "var_2": {"var_1", "var_4"}, "var_4": {"var_2"}
-        }
+        "var_1": {"var_2"},
+        "var_2": {"var_1", "var_4"},
+        "var_4": {"var_2"},
+    }
     # test transform output
     pd.testing.assert_frame_equal(X, df)
 
@@ -77,9 +79,10 @@ def test_lower_threshold(df_correlated_single):
     )
     X = transformer.fit_transform(df_correlated_single)
 
-    # X is such that 
-    # |corr(var_1, var_2)| > 0.6 and |corr(var_1, var_4)| > 0.6 and |corr(var_2, var_4)| > 0.6
-    # with 
+    # X is such that
+    # |corr(var_1, var_2)| > 0.6 and |corr(var_1, var_4)| > 0.6 and
+    # |corr(var_2, var_4)| > 0.6
+    # with
     # std(var_2) > std(var_1) > std(var_4)
     # expected result
     df = df_correlated_single.drop(["var_1", "var_4"], axis=1)
@@ -91,9 +94,11 @@ def test_lower_threshold(df_correlated_single):
     # test fit attrs
     assert transformer.features_to_drop_ == {"var_1", "var_4"}
     assert transformer.correlated_feature_sets_ == {
-        "var_1": {"var_2", "var_4"}, "var_2": {"var_1", "var_4"}, "var_4": {"var_1", "var_2"}
-        }
-    
+        "var_1": {"var_2", "var_4"},
+        "var_2": {"var_1", "var_4"},
+        "var_4": {"var_1", "var_2"},
+    }
+
     # test transform output
     pd.testing.assert_frame_equal(X, df)
 
@@ -103,23 +108,23 @@ def test_more_than_1_correlated_group(df_correlated_double):
         variables=None, method="pearson", threshold=0.6
     )
     X = transformer.fit_transform(df_correlated_double)
-    
-    # X is such that 
+
+    # X is such that
     # 0 ~ 8, 4 ~ 6, 4 ~ 7, 4 ~ 9, 6 ~ 7, 6 ~ 9, 7 ~ 9
-    # ordering by std: [7, 6, 4, 9, 5, 10, 1, 3, 11, 2, 8, 0]   
+    # ordering by std: [7, 6, 4, 9, 5, 10, 1, 3, 11, 2, 8, 0]
     # expected result
     df = df_correlated_double.drop(["var_0", "var_4", "var_6", "var_9"], axis=1)
 
     # test fit attrs
     assert transformer.features_to_drop_ == {"var_0", "var_4", "var_6", "var_9"}
     assert transformer.correlated_feature_sets_ == {
-        "var_0": {"var_8"}, 
+        "var_0": {"var_8"},
         "var_4": {"var_6", "var_7", "var_9"},
         "var_6": {"var_4", "var_7", "var_9"},
         "var_7": {"var_4", "var_6", "var_9"},
         "var_8": {"var_0"},
         "var_9": {"var_4", "var_6", "var_7"},
-        }
+    }
     # test transform output
     pd.testing.assert_frame_equal(X, df)
 
