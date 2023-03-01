@@ -1,3 +1,5 @@
+from typing import List, Union
+
 import numpy as np
 import pandas as pd
 
@@ -23,18 +25,25 @@ from feature_engine.selection._docstring import (
     _get_support_docstring,
     _scoring_docstring,
     _transform_docstring,
+    _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
+
+from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
+from sklearn.model_selection import cross_validate
+
+Variables = Union[None, int, str, List[Union[str, int]]]
 
 @Substitution(
     estimator=_estimator_docstring,
     scoring=_scoring_docstring,
     cv=_cv_docstring,
     confirm_variables=_confirm_variables_docstring,
-    variables_=_variables_numerical_docstring,
+    variables=_variables_numerical_docstring,
     feature_importances_=_feature_importances_docstring,
     feature_names_in_=_feature_names_in_docstring,
     features_to_drop_=_features_to_drop_docstring,
+    variables_=_variables_attribute_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_docstring,
     transform=_transform_docstring,
@@ -62,6 +71,8 @@ class ProbeFeatureSelection(BaseSelector):
     Parameters
     ----------
     {estimator}
+
+    {variables}
 
     {scoring}
 
@@ -108,6 +119,7 @@ class ProbeFeatureSelection(BaseSelector):
     def __init__(
         self,
         estimator,
+        variables: Variables = None,
         scoring: str = "roc_auc",
         n_probes: int = 1,
         distribution: str = "normal",
@@ -132,6 +144,7 @@ class ProbeFeatureSelection(BaseSelector):
 
         super().__init__(confirm_variables)
         self.estimator = estimator
+        self.variables = variables
         self.scoring = scoring
         self.distribution = distribution
         self.cv = cv
@@ -157,7 +170,7 @@ class ProbeFeatureSelection(BaseSelector):
         self._confirm_variables(X)
 
         # find numerical variables
-        self.variables_ = find_or_check_numerical_variables(X, None)
+        self.variables_ = find_or_check_numerical_variables(X, self.variables)
 
         # save input features
         self._get_feature_names_in(X)
