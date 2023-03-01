@@ -7,6 +7,7 @@ from .drop_duplicate_features import DropDuplicateFeatures
 from .drop_features import DropFeatures
 from .drop_psi_features import DropHighPSIFeatures
 from .information_value import SelectByInformationValue
+from .probe_feature_selection import ProbeFeatureSelection
 from .recursive_feature_addition import RecursiveFeatureAddition
 from .recursive_feature_elimination import RecursiveFeatureElimination
 from .shuffle_features import SelectByShuffling
@@ -20,11 +21,13 @@ __all__ = [
     "DropDuplicateFeatures",
     "DropCorrelatedFeatures",
     "DropHighPSIFeatures",
-    "SmartCorrelatedSelection",
-    "SelectByShuffling",
-    "SelectBySingleFeaturePerformance",
+    "ProbeFeatureSelection",
     "RecursiveFeatureAddition",
     "RecursiveFeatureElimination",
-    "SelectByTargetMeanPerformance",
     "SelectByInformationValue",
+    "SelectByShuffling",
+    "SelectBySingleFeaturePerformance",
+    "SelectByTargetMeanPerformance",
+    "SmartCorrelatedSelection",
+
 ]
