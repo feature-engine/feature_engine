@@ -30,5 +30,24 @@ i.e., normal, binomial, and uniform.
 
 Example
 -------
+Let's see how to use this transformer to select variables from UC Irvine's Breast Cancer
+Wisconsin (Diagnostic) dataset, which can be round `here`_. We will use Scikit-learn to load
+the dataset. This dataset concerns breast cancer diagnoses. The target variable is binary, i.e.,
+malignant or benign.
+
+The data is soley comprised of numerical data.
+
+.. _here: https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)
+
+Let's import the required libraries and classes:
+
+.. code:: python
+
+    import pandas as pd
+    import numpy as np
+    from sklearn.model_selection import train_test_split
+    from feature_engine.selection import SelectByInformationValue
+
+Let's now load and prepare the credit approval data:
 
 .. code:: python
