@@ -178,6 +178,9 @@ class ProbeFeatureSelection(BaseSelector):
         # create probe feature distributions
         self.probe_features_ = self._generate_probe_features(X.shape[0])
 
+        # required for a (train/test) split dataset
+        X.reset_index(drop=True, inplace=True)
+        
         X_new = pd.concat([X, self.probe_features_], axis=1)
 
         # train model with all variables including the probe features
