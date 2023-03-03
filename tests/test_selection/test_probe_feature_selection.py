@@ -138,7 +138,7 @@ def test_transformer_with_normal_distribution(load_diabetes_dataset):
 
     assert results.head().round(3).equals(expected_results_df)
 
-ef test_transformer_with_binary_distribution(load_diabetes_dataset):
+# def test_transformer_with_binary_distribution(load_diabetes_dataset):
 #     X, y = load_diabetes_dataset
 #
 #     sel = ProbeFeatureSelection(
