@@ -123,8 +123,64 @@ With :code:`fit()`, the transformer:
     - creates `n_probes` number of probe features using provided distribution(s)
     - uses cross-validation to fit the provided estimator
     - calculates the feature importance for each variable
-    - identifies features to be dropped because their importances are less than the probe feature's
+    - if there are multiple probe features, calculate the average importance
+    - identifies features to drop because their importances are less than that of the probe feature
 
+
+In the attribute :code:`probe_features`, we find the pseudo-randomly generated variable(s):
+
+.. code:: python
+
+    sel.probe_features_.head()
+
+           gaussian_probe_0
+    0         -0.694150
+    1          1.171840
+    2          1.074892
+    3          1.698733
+    4          0.498702
+
+
+The attribute :code:`feature_importances_` shows each variable's feature importance:
+
+.. code:: python
+
+    sel.feature_importances.head()
+
+    mean radius        0.058463
+    mean texture       0.011953
+    mean perimeter     0.069516
+    mean area          0.050947
+    mean smoothness    0.004974
+
+In the attribute :code:`features_to_drop_`, we find the variables that were not selected:
+
+.. code:: python
+
+    sel.features_to_drop_
+
+    ['mean symmetry',
+     'mean fractal dimension',
+     'texture error',
+     'smoothness error',
+     'concave points error',
+     'fractal dimension error']
+
+We see that the :code:`features_to_drop` have feature importance scores that are less
+than the probe feature's score:
+
+.. code:: python
+
+    vars_to_drop = sel.features_to_drop_
+    vars_to_display = vars_to_drop + ["gaussian_probe_0"]
+
+    mean symmetry              0.003698
+    mean fractal dimension     0.003455
+    texture error              0.003595
+    smoothness error           0.003333
+    concave points error       0.003548
+    fractal dimension error    0.003576
+    gaussian_probe_0           0.003783
 
 
 
