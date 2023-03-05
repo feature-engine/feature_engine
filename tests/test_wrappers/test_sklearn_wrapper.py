@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn import __version__ as skl_version
 from sklearn.base import clone
 from sklearn.datasets import fetch_california_housing
 from sklearn.decomposition import PCA
@@ -50,11 +51,22 @@ _selectors = [
 ]
 
 
+def _OneHotEncoder(sparse, drop=None, dtype=np.float64) -> OneHotEncoder:
+    """OneHotEncoder kwarg sparse has been renamed as sparse_output in scikitlearn >=1.2"""
+
+    if skl_version.split('.')[0] == '1' and int(skl_version.split('.')[1]) >= 2:
+        return OneHotEncoder(sparse_output=sparse, drop=drop, dtype=dtype)
+    else:
+        return OneHotEncoder(sparse=sparse, drop=drop, dtype=dtype)
+
+
+
+
 @pytest.mark.parametrize(
     "transformer",
     [
         SimpleImputer(),
-        OneHotEncoder(sparse=False),
+        _OneHotEncoder(sparse=False),
         StandardScaler(),
         SelectKBest(),
     ],
@@ -319,7 +331,7 @@ def test_sklearn_ohe_object_one_feature(df_vartypes):
     variables_to_encode = ["Name"]
 
     transformer = SklearnTransformerWrapper(
-        transformer=OneHotEncoder(sparse=False, dtype=np.int64),
+        transformer=_OneHotEncoder(sparse=False, dtype=np.int64),
         variables=variables_to_encode,
     )
 
@@ -341,7 +353,7 @@ def test_sklearn_ohe_object_many_features(df_vartypes):
     variables_to_encode = ["Name", "City"]
 
     transformer = SklearnTransformerWrapper(
-        transformer=OneHotEncoder(sparse=False, dtype=np.int64),
+        transformer=_OneHotEncoder(sparse=False, dtype=np.int64),
         variables=variables_to_encode,
     )
 
@@ -367,7 +379,7 @@ def test_sklearn_ohe_numeric(df_vartypes):
     variables_to_encode = ["Age"]
 
     transformer = SklearnTransformerWrapper(
-        transformer=OneHotEncoder(sparse=False, dtype=np.int64),
+        transformer=_OneHotEncoder(sparse=False, dtype=np.int64),
         variables=variables_to_encode,
     )
 
@@ -387,7 +399,7 @@ def test_sklearn_ohe_numeric(df_vartypes):
 
 def test_sklearn_ohe_all_features(df_vartypes):
     transformer = SklearnTransformerWrapper(
-        transformer=OneHotEncoder(sparse=False, dtype=np.int64)
+        transformer=_OneHotEncoder(sparse=False, dtype=np.int64)
     )
 
     ref = pd.DataFrame(
@@ -443,7 +455,7 @@ def test_sklearn_ohe_with_crossvalidation():
             (
                 "encode_cat",
                 SklearnTransformerWrapper(
-                    transformer=OneHotEncoder(drop="first", sparse=False),
+                    transformer=_OneHotEncoder(drop="first", sparse=False),
                     variables=["AveBedrms_cat"],
                 ),
             ),
@@ -459,7 +471,7 @@ def test_sklearn_ohe_with_crossvalidation():
 
 
 def test_wrap_one_hot_encoder_get_features_name_out(df_vartypes):
-    ohe_wrap = SklearnTransformerWrapper(transformer=OneHotEncoder(sparse=False))
+    ohe_wrap = SklearnTransformerWrapper(transformer=_OneHotEncoder(sparse=False))
     ohe_wrap.fit(df_vartypes)
 
     expected_features_all = [
@@ -602,7 +614,7 @@ def test_get_feature_names_out_polynomialfeatures(varlist):
 def test_get_feature_names_out_ohe(varlist, df_vartypes):
 
     transformer = SklearnTransformerWrapper(
-        transformer=OneHotEncoder(sparse=False, dtype=np.int64),
+        transformer=_OneHotEncoder(sparse=False, dtype=np.int64),
         variables=varlist,
     )
 
