@@ -1,0 +1,166 @@
+==================== solved =====================
+
+tests/test_encoding/test_encoders/test_similarity_encoder.py::test_nan_behaviour_ignore
+  /Users/luis/code/feature_engine/tests/test_encoding/test_encoders/test_similarity_encoder.py:145: FutureWarning: In a future version of pandas all arguments of DataFrame.any and Series.any will be keyword-only.
+    assert (X.isna().any(1) == df_enc_big_na.isna().any(1)).all()
+
+
+tests/test_imputation/test_categorical_imputer.py::test_variables_cast_as_category_missing
+  /Users/luis/code/feature_engine/feature_engine/imputation/categorical.py:235: FutureWarning: The `inplace` parameter in pandas.Categorical.add_categories is deprecated and will be removed in a future version. Removing unused categories will always return a new Categorical object.
+    X[variable].cat.add_categories(
+
+tests/test_imputation/test_categorical_imputer.py::test_variables_cast_as_category_missing
+  /Users/luis/code/feature_engine/feature_engine/imputation/categorical.py:239: DeprecationWarning: In a future version, `df.iloc[:, i] = newvals` will attempt to set the values inplace instead of always setting a new array. To retain the old behavior, use either `df[df.columns[i]] = newvals` or, if columns are non-unique, `df.isetitem(i, newvals)`
+    X.fillna(self.imputer_dict_, inplace=True)
+
+tests/test_imputation/test_categorical_imputer.py::test_variables_cast_as_category_missing
+  /Users/luis/code/feature_engine/tests/test_imputation/test_categorical_imputer.py:248: FutureWarning: The `inplace` parameter in pandas.Categorical.add_categories is deprecated and will be removed in a future version. Removing unused categories will always return a new Categorical object.
+    X_reference["City"].cat.add_categories("Missing", inplace=True)
+
+tests/test_imputation/test_categorical_imputer.py::test_variables_cast_as_category_frequent
+  /Users/luis/code/feature_engine/feature_engine/imputation/base_imputer.py:63: DeprecationWarning: In a future version, `df.iloc[:, i] = newvals` will attempt to set the values inplace instead of always setting a new array. To retain the old behavior, use either `df[df.columns[i]] = newvals` or, if columns are non-unique, `df.isetitem(i, newvals)`
+    X.fillna(value=self.imputer_dict_, inplace=True)
+
+
+
+tests/test_selection/test_drop_high_psi_features.py::test_error_if_na_in_split_col
+  /Users/luis/code/feature_engine/tests/test_selection/test_drop_high_psi_features.py:269: SettingWithCopyWarning: 
+  A value is trying to be set on a copy of a slice from a DataFrame
+  
+  See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    data["var_3"].iloc[15] = np.nan
+
+tests/test_selection/test_drop_high_psi_features.py::test_raise_error_if_na_in_df
+  /Users/luis/code/feature_engine/tests/test_selection/test_drop_high_psi_features.py:280: SettingWithCopyWarning: 
+  A value is trying to be set on a copy of a slice from a DataFrame
+  
+  See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    data["var_3"].iloc[15] = np.nan
+
+tests/test_selection/test_drop_high_psi_features.py::test_missing_value_ignored
+  /Users/luis/code/feature_engine/tests/test_selection/test_drop_high_psi_features.py:291: SettingWithCopyWarning: 
+  A value is trying to be set on a copy of a slice from a DataFrame
+  
+  See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    data["var_3"].iloc[15] = np.nan
+
+tests/test_selection/test_drop_high_psi_features.py::test_raise_error_if_inf_in_df
+  /Users/luis/code/feature_engine/tests/test_selection/test_drop_high_psi_features.py:304: SettingWithCopyWarning: 
+  A value is trying to be set on a copy of a slice from a DataFrame
+  
+  See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    data["var_3"].iloc[15] = np.inf
+
+
+  ### harmless, we want to use the new behaviour-------------------------
+tests/test_transformation/test_power_transformer.py::test_inverse_transform_exp_no_default[4]
+  /Users/luis/code/feature_engine/feature_engine/transformation/power.py:152: DeprecationWarning: In a future version, `df.iloc[:, i] = newvals` will attempt to set the values inplace instead of always setting a new array. To retain the old behavior, use either `df[df.columns[i]] = newvals` or, if columns are non-unique, `df.isetitem(i, newvals)`
+    X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], 1 / self.exp)
+
+tests/test_transformation/test_reciprocal_transformer.py::test_automatically_find_variables
+  /Users/luis/code/feature_engine/feature_engine/transformation/reciprocal.py:137: DeprecationWarning: In a future version, `df.iloc[:, i] = newvals` will attempt to set the values inplace instead of always setting a new array. To retain the old behavior, use either `df[df.columns[i]] = newvals` or, if columns are non-unique, `df.isetitem(i, newvals)`
+    X.loc[:, self.variables_] = X.loc[:, self.variables_].astype("float")
+
+
+
+tests/test_wrappers/test_sklearn_wrapper.py: 10 warnings
+  /Users/luis/miniforge3/envs/py310/lib/python3.10/site-packages/sklearn/preprocessing/_encoders.py:828: FutureWarning: `sparse` was renamed to `sparse_output` in version 1.2 and will be removed in 1.4. `sparse_output` is ignored unless you leave `sparse` to its default value.
+    warnings.warn(
+
+
+====================unsolved ===================
+
+tests/test_encoding/test_encoders/test_ordinal_encoder.py::test_inverse_transform_when_ignore_unseen
+  /Users/luis/code/feature_engine/feature_engine/encoding/base_encoder.py:257: UserWarning: During the encoding, NaN values were introduced in the feature(s) words.
+    warnings.warn(
+
+tests/test_encoding/test_encoders/test_check_estimator_encoders.py::test_df
+  /Users/luis/miniforge3/envs/py310/lib/python3.10/site-packages/_pytest/python.py:199: PytestReturnNotNoneWarning: Expected None, but tests/test_encoding/test_encoders/test_check_estimator_encoders.py::test_df returned (        var_0     var_1     var_2  ...     var_9    var_10    var_11
+  0    1.471061 -2.376400 -0.247208  ...  3.528094  2.070526 -1.989335
+  1    1.819196  1.969326 -0.126894  ...  3.304213  1.184820 -1.309524
+  2    1.625024  1.499174  0.334123  ...  3.717297 -0.066448 -0.852703
+  3    1.939212  0.075341  1.627132  ...  5.131589  0.713558  0.484649
+  4    1.579307  0.372213  0.338141  ...  3.512742  0.398790 -0.186530
+  ..        ...       ...       ...  ...       ...       ...       ...
+  995  1.803380 -1.363868 -0.048464  ...  0.213561 -0.144619  0.555170
+  996  2.073749  0.263967  1.269868  ...  0.564732 -0.182916  1.193456
+  997  2.442529  0.528868  0.230641  ...  0.787021  0.021500 -2.710394
+  998  1.451356 -0.871014 -0.117844  ...  2.985371  0.340473  0.149377
+  999  1.721321 -0.534328 -0.331306  ...  4.000561 -0.416476 -0.111816
+  
+  [1000 rows x 12 columns], 0      1
+  1      1
+  2      1
+  3      1
+  4      1
+        ..
+  995    0
+  996    0
+  997    0
+  998    1
+  999    1
+  Length: 1000, dtype: int64), which will be an error in a future version of pytest.  Did you mean to use `assert` instead of `return`?
+    warnings.warn(
+
+
+tests/test_prediction/test_check_estimator_prediction.py::test_df
+  /Users/luis/miniforge3/envs/py310/lib/python3.10/site-packages/_pytest/python.py:199: PytestReturnNotNoneWarning: Expected None, but tests/test_prediction/test_check_estimator_prediction.py::test_df returned (        var_0     var_1     var_2  ...     var_9    var_10    var_11
+  0    1.471061 -2.376400 -0.247208  ...  3.528094  2.070526 -1.989335
+  1    1.819196  1.969326 -0.126894  ...  3.304213  1.184820 -1.309524
+  2    1.625024  1.499174  0.334123  ...  3.717297 -0.066448 -0.852703
+  3    1.939212  0.075341  1.627132  ...  5.131589  0.713558  0.484649
+  4    1.579307  0.372213  0.338141  ...  3.512742  0.398790 -0.186530
+  ..        ...       ...       ...  ...       ...       ...       ...
+  995  1.803380 -1.363868 -0.048464  ...  0.213561 -0.144619  0.555170
+  996  2.073749  0.263967  1.269868  ...  0.564732 -0.182916  1.193456
+  997  2.442529  0.528868  0.230641  ...  0.787021  0.021500 -2.710394
+  998  1.451356 -0.871014 -0.117844  ...  2.985371  0.340473  0.149377
+  999  1.721321 -0.534328 -0.331306  ...  4.000561 -0.416476 -0.111816
+  
+  [1000 rows x 12 columns], 0      1
+  1      1
+  2      1
+  3      1
+  4      1
+        ..
+  995    0
+  996    0
+  997    0
+  998    1
+  999    1
+  Length: 1000, dtype: int64), which will be an error in a future version of pytest.  Did you mean to use `assert` instead of `return`?
+    warnings.warn(
+
+
+tests/test_preprocessing/test_check_estimator_preprocessing.py::test_df
+  /Users/luis/miniforge3/envs/py310/lib/python3.10/site-packages/_pytest/python.py:199: PytestReturnNotNoneWarning: Expected None, but tests/test_preprocessing/test_check_estimator_preprocessing.py::test_df returned (        var_0     var_1     var_2  ...     var_9    var_10    var_11
+  0    1.471061 -2.376400 -0.247208  ...  3.528094  2.070526 -1.989335
+  1    1.819196  1.969326 -0.126894  ...  3.304213  1.184820 -1.309524
+  2    1.625024  1.499174  0.334123  ...  3.717297 -0.066448 -0.852703
+  3    1.939212  0.075341  1.627132  ...  5.131589  0.713558  0.484649
+  4    1.579307  0.372213  0.338141  ...  3.512742  0.398790 -0.186530
+  ..        ...       ...       ...  ...       ...       ...       ...
+  995  1.803380 -1.363868 -0.048464  ...  0.213561 -0.144619  0.555170
+  996  2.073749  0.263967  1.269868  ...  0.564732 -0.182916  1.193456
+  997  2.442529  0.528868  0.230641  ...  0.787021  0.021500 -2.710394
+  998  1.451356 -0.871014 -0.117844  ...  2.985371  0.340473  0.149377
+  999  1.721321 -0.534328 -0.331306  ...  4.000561 -0.416476 -0.111816
+  
+  [1000 rows x 12 columns], 0      1
+  1      1
+  2      1
+  3      1
+  4      1
+        ..
+  995    0
+  996    0
+  997    0
+  998    1
+  999    1
+  Length: 1000, dtype: int64), which will be an error in a future version of pytest.  Did you mean to use `assert` instead of `return`?
+    warnings.warn(
+
+
+tests/test_wrappers/test_sklearn_wrapper.py::test_get_feature_names_out_transformers[transformer6-None]
+  /Users/luis/miniforge3/envs/py310/lib/python3.10/site-packages/sklearn/preprocessing/_function_transformer.py:307: RuntimeWarning: invalid value encountered in log
+    return func(X, **(kw_args if kw_args else {}))

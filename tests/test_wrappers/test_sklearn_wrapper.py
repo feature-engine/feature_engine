@@ -52,14 +52,13 @@ _selectors = [
 
 
 def _OneHotEncoder(sparse, drop=None, dtype=np.float64) -> OneHotEncoder:
-    """OneHotEncoder kwarg sparse has been renamed as sparse_output in scikitlearn >=1.2"""
+    """OneHotEncoder sparse argument has been renamed as sparse_output
+    in scikitlearn >=1.2"""
 
-    if skl_version.split('.')[0] == '1' and int(skl_version.split('.')[1]) >= 2:
+    if skl_version.split(".")[0] == "1" and int(skl_version.split(".")[1]) >= 2:
         return OneHotEncoder(sparse_output=sparse, drop=drop, dtype=dtype)
     else:
         return OneHotEncoder(sparse=sparse, drop=drop, dtype=dtype)
-
-
 
 
 @pytest.mark.parametrize(
@@ -553,7 +552,6 @@ def test_error_when_inverse_transform_not_implemented(transformer):
 )
 @pytest.mark.parametrize("transformer", _transformers)
 def test_get_feature_names_out_transformers(varlist, transformer):
-
     X = fetch_california_housing(as_frame=True).frame
     tr_wrap = SklearnTransformerWrapper(transformer=transformer, variables=varlist)
     Xw = tr_wrap.fit_transform(X)
@@ -612,7 +610,6 @@ def test_get_feature_names_out_polynomialfeatures(varlist):
 
 @pytest.mark.parametrize("varlist", [["Name", "City"], None])
 def test_get_feature_names_out_ohe(varlist, df_vartypes):
-
     transformer = SklearnTransformerWrapper(
         transformer=_OneHotEncoder(sparse=False, dtype=np.int64),
         variables=varlist,
