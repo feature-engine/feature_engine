@@ -245,8 +245,7 @@ def test_variables_cast_as_category_missing(df_na):
     X_reference["Name"] = X_reference["Name"].fillna("Missing")
     X_reference["Studies"] = X_reference["Studies"].fillna("Missing")
 
-    X_reference["City"].cat.add_categories("Missing", inplace=True)
-    X_reference["City"] = X_reference["City"].fillna("Missing")
+    X_reference["City"] = X_reference["City"].cat.add_categories("Missing").fillna("Missing")
 
     # test fit attributes
     assert imputer.variables_ == ["Name", "City", "Studies"]

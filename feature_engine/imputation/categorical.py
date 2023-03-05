@@ -230,13 +230,12 @@ class CategoricalImputer(BaseImputer):
 
             # if variable is of type category, we need to add the new
             # category, before filling in the nan
+            add_cats = {}
             for variable in self.variables_:
                 if pd.api.types.is_categorical_dtype(X[variable]):
-                    X[variable].cat.add_categories(
-                        self.imputer_dict_[variable], inplace=True
-                    )
+                    add_cats.update({variable: X[variable].cat.add_categories(self.imputer_dict_[variable])})
 
-            X.fillna(self.imputer_dict_, inplace=True)
+            X = X.assign(**add_cats).fillna(self.imputer_dict_)
 
         # add additional step to return variables cast as object
         if self.return_object:
