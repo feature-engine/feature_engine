@@ -6,14 +6,14 @@ ProbeFeatureSelection
 =====================
 
 ProbeFeatureSelection() generates one or more probe features based on the
-user-selected distribution.
+user-selected parameters.
 
-The class derives the feature importance for each variable and probe feature.
-In the case of there being more than one probe feature, ProbeFeatureSelection()
-calculates the average feature importance of all the probe features.
+The class derives the feature importance score for each variable and probe feature.
+In the case of there being more than one probe feature, the average feature importance
+score of all the probe features is used.
 
 The class ranks the features based on their importance and eliminates the features
-that have a lower importance than the probe features.
+that have a lower feature importance score than the probe feature(s).
 
 This selection method was published in the Journal of Machine Learning Research in 2003.
 
@@ -22,8 +22,8 @@ randomly generated variable, i.e., probe feature, inherently possesses a high le
 noise. Consequently, any variable that demonstrates less importance than a probe feature
 is assumed to be noise and can be discarded from the dataset.
 
-When initiated the ProbeFeatureSelection() class, the user has the option of selecting
-which distribution is to be assumed when create the probe feature(s) and the number of
+When initiating the ProbeFeatureSelection() class, the user has the option of selecting
+which distribution is to be assumed to create the probe feature(s) and the number of
 probe features to be created. The possible distributions are 'normal', 'binary', 'uniform',
 or 'all'. 'all' creates 1 or more probe features comprised of each distribution type,
 i.e., normal, binomial, and uniform.
@@ -31,11 +31,11 @@ i.e., normal, binomial, and uniform.
 Example
 -------
 Let's see how to use this transformer to select variables from UC Irvine's Breast Cancer
-Wisconsin (Diagnostic) dataset, which can be round `here`_. We will use Scikit-learn to load
+Wisconsin (Diagnostic) dataset, which can be found `here`_. We will use Scikit-learn to load
 the dataset. This dataset concerns breast cancer diagnoses. The target variable is binary, i.e.,
 malignant or benign.
 
-The data is soley comprised of numerical data.
+The data is solely comprised of numerical data.
 
 .. _here: https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)
 
@@ -45,6 +45,7 @@ Let's import the required libraries and classes:
 
     import pandas as pd
     import numpy as np
+    from sklearn.ensemble import RandomForestClassifier
     from sklearn.model_selection import train_test_split
     from feature_engine.selection import SelectByInformationValue
 
@@ -61,7 +62,7 @@ Let's check the shape of `cancer_X`:
     print(cancer_X.shape)
 
 
-We see that the dataset comprised of 569 observations and 30 features:
+We see that the dataset is comprised of 569 observations and 30 features:
 
 .. code:: python
 
@@ -90,17 +91,12 @@ training and test sets.
 
     ((455, 30), (114, 30))
 
-Now, we set up :class:`SelectByInformationValue()`. We will pass six categorical
-variables to the parameter :code:`variables`. We will set the parameter :code:`threshold`
-to `0.2`. We see from the above mentioned table that an IV score of 0.2 signifies medium
-predictive power.
 
-
-Now, we set up :class:`ProbeFeatureSelection()`. We will pass the `RandomForestClassifier()`
-as the estimator :code:`estimator`. We will use `precision` as the :code:`scoring` parameter
-and `5` as :code:`cv` parameter, both to be be used in the cross validation. We will assume
-`1` for the :code:`n_probes` parameter and `normal` as the :code:`distribution`, both
-parameters to be used when creating the probe feature.
+Now, we set up :class:`ProbeFeatureSelection()`. We will pass  `RandomForestClassifier()`
+as the :code:`estimator`. We will use `precision` as the :code:`scoring` parameter
+and `5` as :code:`cv` parameter, both parameters to be be used in the cross validation.
+We will assume `1` for the :code:`n_probes` parameter and `normal` as the :code:`distribution`,
+both parameters to be used when creating the probe feature.
 
 
 .. code:: python
@@ -122,9 +118,9 @@ With :code:`fit()`, the transformer:
 
     - creates `n_probes` number of probe features using provided distribution(s)
     - uses cross-validation to fit the provided estimator
-    - calculates the feature importance for each variable
-    - if there are multiple probe features, calculate the average importance
-    - identifies features to drop because their importances are less than that of the probe feature
+    - calculates the feature importance score for each variable, including probe features
+    - if there are multiple probe features, calculate the average importance score
+    - identifies features to drop because their importance scores are less than that of the probe feature(s)
 
 
 In the attribute :code:`probe_features`, we find the pseudo-randomly generated variable(s):
@@ -182,6 +178,47 @@ than the probe feature's score:
     fractal dimension error    0.003576
     gaussian_probe_0           0.003783
 
+With :code:`transform()`, we can go ahead and drop the six features with feature importance score
+less than `gaussian_probe_0` variable:
 
+.. code:: python
+
+    Xtr = sel.transform(X_test)
+
+    Xtr.shape
+
+    (114, 24)
+
+
+And, finally, we can also obtain the names of the features in the final transformed dataset:
+
+.. code:: python
+
+    sel.get_feature_names_out()
+
+    ['mean radius',
+     'mean texture',
+     'mean perimeter',
+     'mean area',
+     'mean smoothness',
+     'mean compactness',
+     'mean concavity',
+     'mean concave points',
+     'radius error',
+     'perimeter error',
+     'area error',
+     'compactness error',
+     'concavity error',
+     'symmetry error',
+     'worst radius',
+     'worst texture',
+     'worst perimeter',
+     'worst area',
+     'worst smoothness',
+     'worst compactness',
+     'worst concavity',
+     'worst concave points',
+     'worst symmetry',
+     'worst fractal dimension']
 
 
