@@ -114,30 +114,29 @@ def test_fit_attributes(df_test):
 def test_generate_probe_features(load_diabetes_dataset):
     X, y = load_diabetes_dataset
     X.columns = [f"var_{col}" for col in X.columns]
+    n_probes = 6
 
     sel = ProbeFeatureSelection(
         estimator=DecisionTreeRegressor(),
         variables=None,
         scoring="neg_mean_squared_error",
-        n_probes=6,
+        n_probes=n_probes,
         distribution="all",
         cv=3,
         random_state=1,
         confirm_variables=False
     )
 
-
-    sel.fit(X, y.values.ravel())
-    probe_features = sel.probe_features_
+    probe_features = sel._generate_probe_features(n_probes)
 
     # expected results
     expected_results = {
         "gaussian_probe_0": [4.873, -1.835, -1.585, -3.219, 2.596],
-        "binary_probe_0": [1, 1, 1, 1, 0],
-        "uniform_probe_0": [0.855, 0.855, 0.855, 0.855, 0.855],
-        "gaussian_probe_1": [2.657, 0.57, 2.394, -0.306, 2.23],
-        "binary_probe_1": [0, 0, 1, 0, 0],
-        "uniform_probe_1": [0.868, 0.868, 0.868, 0.868, 0.868],
+        "binary_probe_0": [0, 1, 0, 0, 1],
+        "uniform_probe_0": [0.878, 0.878, 0.878, 0.878, 0.878],
+        "gaussian_probe_1": [4.386, -6.180, -0.967, -1.152, 3.401],
+        "binary_probe_1": [1, 0, 0, 1, 0],
+        "uniform_probe_1": [0.039, 0.039, 0.039, 0.039, 0.039],
     }
     expected_results_df = pd.DataFrame(expected_results)
 

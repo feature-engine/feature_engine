@@ -85,7 +85,7 @@ class ProbeFeatureSelection(BaseSelector):
         'normal', 'binomial', 'uniform', and 'all'. 'all' creates at least 1 or more
         probe features comprised of each distribution type, i.e., normal, binomial,
         and uniform. The remaining options create `n_probes` features of the selected
-        distribution
+        distribution.
 
     {cv}
 
@@ -160,8 +160,8 @@ class ProbeFeatureSelection(BaseSelector):
         X: pandas dataframe of shape = [n_samples, n_features]
 
         y: array-like of shape (n_samples)
-                   Target variable. Required to train the estimator.
-                """
+            Target variable. Required to train the estimator.
+        """
         # check input dataframe
         X, y = check_X_y(X, y)
 
