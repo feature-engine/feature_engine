@@ -61,14 +61,20 @@ class BaseDiscretiser(BaseNumericalTransformer):
         if self.return_boundaries is True:
             for feature in self.variables_:
                 X[feature] = pd.cut(
-                    X[feature], self.binner_dict_[feature], precision=self.precision
+                    X[feature],
+                    self.binner_dict_[feature],
+                    precision=self.precision,
+                    include_lowest=True,
                 )
             X[self.variables_] = X[self.variables_].astype(str)
 
         else:
             for feature in self.variables_:
                 X[feature] = pd.cut(
-                    X[feature], self.binner_dict_[feature], labels=False
+                    X[feature],
+                    self.binner_dict_[feature],
+                    labels=False,
+                    include_lowest=True,
                 )
 
             # return object
