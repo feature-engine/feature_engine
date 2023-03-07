@@ -175,7 +175,11 @@ class EqualWidthDiscretiser(BaseDiscretiser):
 
         for var in self.variables_:
             tmp, bins = pd.cut(
-                x=X[var], bins=self.bins, retbins=True, duplicates="drop"
+                x=X[var],
+                bins=self.bins,
+                retbins=True,
+                duplicates="drop",
+                include_lowest=True,
             )
 
             # Prepend/Append infinities
