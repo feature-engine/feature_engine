@@ -130,7 +130,7 @@ html_theme_options = {
             "icon": "fas fa-hand-holding-heart",
         },
     ],
-    "favicons": [
+    "sphinx-favicon": [
         {
             "rel": "icon",
             "sizes": "16x16",
