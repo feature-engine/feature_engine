@@ -5,7 +5,7 @@
 ProbeFeatureSelection
 =====================
 
-ProbeFeatureSelection() generates one or more probe features based on the
+:class:`ProbeFeatureSelection()` generates one or more random variables based on the
 user-selected parameters.
 
 The class derives the feature importance score for each variable and probe feature.
