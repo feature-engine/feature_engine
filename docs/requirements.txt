@@ -10,6 +10,6 @@ docutils==0.16
 Sphinx>=4.3.2
 pydata_sphinx_theme>=0.7.2
 sphinx_autodoc_typehints>=1.11.1,<=1.21.3
-sphinx-favicon>=1.0.1
+sphinx-favicon==1.0.1
 numpydoc>=0.9.2
 

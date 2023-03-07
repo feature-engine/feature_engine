@@ -40,7 +40,6 @@ extensions = [
     "sphinx_autodoc_typehints",  # Automatically document param types (less noise in class signature)
     "numpydoc",
     "sphinx.ext.linkcode",
-    "sphinx_favicon",
     # "sphinx.ext.doctest",
 ]
 
@@ -158,7 +157,7 @@ html_logo = "images/logo/Logo_name.png"
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-favicons = ["favicon.png"]
+html_favicon = "images/logo/favicon.png"
 
 # Custom style
 html_style = "css/feature-engine.css"
