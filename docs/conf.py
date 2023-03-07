@@ -130,13 +130,6 @@ html_theme_options = {
             "icon": "fas fa-hand-holding-heart",
         },
     ],
-    "favicons": [
-        {
-            "rel": "icon",
-            "sizes": "16x16",
-            "href": "images/logo/favicon.png",
-        },
-    ],
     "navigation_depth": 2,
     "show_toc_level": 2,
 }
