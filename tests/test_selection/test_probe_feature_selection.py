@@ -143,6 +143,27 @@ def test_generate_probe_features(load_diabetes_dataset):
     assert probe_features.head().round(3).equals(expected_results_df)
 
 
+def test_get_features_to_drop(df_test):
+    X, y = df_test
+
+    sel = ProbeFeatureSelection(
+        estimator=LogisticRegression(),
+        variables=None,
+        scoring="roc_auc",
+        distribution="binary",
+        cv=5,
+        n_probes=2,
+        random_state=100,
+        confirm_variables=False,
+    )
+
+    sel.fit(X, y)
+    features_to_drop = sel._get_features_to_drop()
+
+    expected_results = ["var_2", "var_3", "var_5", "var_9"]
+
+    assert features_to_drop == expected_results
+
 def test_transformer_with_normal_distribution(load_diabetes_dataset):
     X, y = load_diabetes_dataset
 
@@ -207,7 +228,7 @@ def test_transformer_with_binary_distribution(load_diabetes_dataset):
 
 def test_transformer_with_uniform_distribution(df_test):
     X, y = df_test
-    # y = column_or_1d(y, warn=True)
+
     sel = ProbeFeatureSelection(
         estimator=LogisticRegression(),
         scoring="roc_auc",
