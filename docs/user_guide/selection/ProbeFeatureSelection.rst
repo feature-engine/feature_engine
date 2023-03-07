@@ -47,7 +47,7 @@ Let's import the required libraries and classes:
     import numpy as np
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.model_selection import train_test_split
-    from feature_engine.selection import SelectByInformationValue
+    from feature_engine.selection import ProbeFeatureSelection
 
 Let's now load the cancer diagnostic data:
 
@@ -119,7 +119,7 @@ With :code:`fit()`, the transformer:
     - creates `n_probes` number of probe features using provided distribution(s)
     - uses cross-validation to fit the provided estimator
     - calculates the feature importance score for each variable, including probe features
-    - if there are multiple probe features, calculate the average importance score
+    - if there are multiple probe features, the transformer calculates the average importance score
     - identifies features to drop because their importance scores are less than that of the probe feature(s)
 
 
@@ -162,7 +162,7 @@ In the attribute :code:`features_to_drop_`, we find the variables that were not 
      'concave points error',
      'fractal dimension error']
 
-We see that the :code:`features_to_drop` have feature importance scores that are less
+We see that the :code:`features_to_drop_` have feature importance scores that are less
 than the probe feature's score:
 
 .. code:: python
