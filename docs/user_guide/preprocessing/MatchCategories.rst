@@ -24,29 +24,18 @@ a train and a test sets:
 
 .. code:: python
 
-    import numpy as np
-    import pandas as pd
-
     from feature_engine.preprocessing import MatchCategories
-
+    from feature_engine.datasets import load_titanic
 
     # Load dataset
-    def load_titanic():
-        data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-        data = data.replace('?', np.nan)
-        data['cabin'] = data['cabin'].astype(str).str[0]
-        data['pclass'] = data['pclass'].astype('O')
-        data['age'] = data['age'].astype('float')
-        data['fare'] = data['fare'].astype('float')
-        data['embarked'].fillna('C', inplace=True)
-        data.drop(
-            labels=['name', 'ticket', 'boat', 'body', 'home.dest'],
-            axis=1, inplace=True,
-        )
-        return data
-
-    # load data as pandas dataframe
     data = load_titanic()
+    data['cabin'] = data['cabin'].astype(str).str[0]
+    data['pclass'] = data['pclass'].astype('O')
+    data['embarked'].fillna('C', inplace=True)
+    data.drop(
+        labels=['name', 'ticket', 'boat', 'body', 'home.dest'],
+        axis=1, inplace=True,
+    )
 
     # Split test and train
     train = data.iloc[0:1000, :]

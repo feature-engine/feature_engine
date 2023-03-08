@@ -18,29 +18,18 @@ a train and a test set:
 
 .. code:: python
 
-    import numpy as np
-    import pandas as pd
-
     from feature_engine.preprocessing import MatchVariables
-
+    from feature_engine.datasets import load_titanic
 
     # Load dataset
-    def load_titanic():
-        data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-        data = data.replace('?', np.nan)
-        data['cabin'] = data['cabin'].astype(str).str[0]
-        data['pclass'] = data['pclass'].astype('O')
-        data['age'] = data['age'].astype('float')
-        data['fare'] = data['fare'].astype('float')
-        data['embarked'].fillna('C', inplace=True)
-        data.drop(
-            labels=['name', 'ticket', 'boat', 'body', 'home.dest'],
-            axis=1, inplace=True,
-        )
-        return data
-
-    # load data as pandas dataframe
     data = load_titanic()
+    data['cabin'] = data['cabin'].astype(str).str[0]
+    data['pclass'] = data['pclass'].astype('O')
+    data['embarked'].fillna('C', inplace=True)
+    data.drop(
+        labels=['name', 'ticket', 'boat', 'body', 'home.dest'],
+        axis=1, inplace=True,
+    )
 
     # Split test and train
     train = data.iloc[0:1000, :]
@@ -61,7 +50,7 @@ Now, we set up :class:`MatchVariables()` and fit it to the train set.
 .. code:: python
 
     # the transformer stores the input variables
-    match_cols.input_features_
+    match_cols.feature_names_in_
 
 .. code:: python
 
@@ -106,8 +95,7 @@ are now back in the data, with np.nan values as default.
 
 .. code:: python
 
-    The following variables are added to the DataFrame: ['sex', 'age']
-
+    The following variables are added to the DataFrame: ['age', 'sex']
          pclass  survived  sex  age  sibsp  parch     fare cabin embarked
     1000      3         1  NaN  NaN      0      0   7.7500     n        Q
     1001      3         1  NaN  NaN      2      0  23.2500     n        Q
@@ -139,7 +127,6 @@ test that, let's add some extra columns to the test set:
     1003      3         1      2      0  23.2500     n        Q      0      0
     1004      3         1      0      0   7.7875     n        Q      0      0
 
-
 And now, we transform the data with :class:`MatchVariables()`:
 
 .. code:: python
@@ -152,8 +139,7 @@ And now, we transform the data with :class:`MatchVariables()`:
 
     The following variables are added to the DataFrame: ['age', 'sex']
     The following variables are dropped from the DataFrame: ['var_a', 'var_b']
-
-         pclass  survived  sex  age  sibsp  parch     fare cabin embarked
+        pclass  survived  sex  age  sibsp  parch     fare cabin embarked
     1000      3         1  NaN  NaN      0      0   7.7500     n        Q
     1001      3         1  NaN  NaN      2      0  23.2500     n        Q
     1002      3         1  NaN  NaN      2      0  23.2500     n        Q
