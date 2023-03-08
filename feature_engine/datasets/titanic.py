@@ -28,6 +28,8 @@ def load_titanic(return_X_y_frame=False, predictors_only=False, handle_missing=F
     """
     df = pd.read_csv("https://www.openml.org/data/get_csv/16826755/phpMYEkMl")
     df = df.replace("?", np.nan)
+    df["age"] = df["age"].astype("float64")
+    df["fare"] = df["fare"].astype("float64")
 
     if predictors_only:
         df.drop(

@@ -9,6 +9,16 @@ def test_load_titanic():
 
 
 @pytest.mark.parametrize(
+    "handle_missing",
+    [True, False],
+)
+def test_titanic_datatypes(handle_missing):
+    data = load_titanic(handle_missing=handle_missing)
+    num_columns = ["pclass", "survived", "age", "sibsp", "parch", "fare"]
+    assert data[num_columns].dtypes.astype(str).isin(["int64", "float64"]).all()
+
+
+@pytest.mark.parametrize(
     "predictors_only,expected_X,expected_y",
     [(True, (1309, 7), (1309,)), (False, (1309, 13), (1309,))],
 )
