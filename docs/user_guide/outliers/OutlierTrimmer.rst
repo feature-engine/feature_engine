@@ -40,32 +40,19 @@ it into train and test:
 
 .. code:: python
 
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
-
+    from feature_engine.datasets import load_titanic
     from feature_engine.outliers import OutlierTrimmer
 
     # Load dataset
-    def load_titanic():
-        data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-        data = data.replace('?', np.nan)
-        data['cabin'] = data['cabin'].astype(str).str[0]
-        data['pclass'] = data['pclass'].astype('O')
-        data['embarked'].fillna('C', inplace=True)
-        data['fare'] = data['fare'].astype('float')
-        data['fare'].fillna(data['fare'].median(), inplace=True)
-        data['age'] = data['age'].astype('float')
-        data['age'].fillna(data['age'].median(), inplace=True)
-        return data
-
-    data = load_titanic()
+    data = load_titanic(handle_missing=True)
+    data['cabin'] = data['cabin'].astype(str).str[0]
+    data['pclass'] = data['pclass'].astype('O')
 
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-		data.drop(['survived', 'name', 'ticket'], axis=1),
-		data['survived'], test_size=0.3, random_state=0)
+                data.drop(['survived', 'name', 'ticket'], axis=1),
+                data['survived'], test_size=0.3, random_state=0)
 
 Now, we will set the :class:`OutlierTrimmer()` to remove outliers at the right side of the
 distribution only (param `tail`). We want the maximum values to be determined using the
@@ -76,7 +63,10 @@ list.
 .. code:: python
 
     # set up the capper
-    capper = OutlierTrimmer(capping_method='iqr', tail='right', fold=1.5, variables=['age', 'fare'])
+    capper = OutlierTrimmer(capping_method='iqr', 
+                            tail='right', 
+                            fold=1.5, 
+                            variables=['age', 'fare'])
 
     # fit the capper
     capper.fit(X_train)
