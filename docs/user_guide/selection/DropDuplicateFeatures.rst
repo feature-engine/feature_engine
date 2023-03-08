@@ -20,26 +20,19 @@ These dataset does not have duplicated features, so we will add a few manually:
 
 .. code:: python
 
-    import numpy as np
     import pandas as pd
-    import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
 
     from feature_engine.selection import DropDuplicateFeatures
+    from feature_engine.datasets import load_titanic
 
-    def load_titanic():
-            data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-            data = data.replace('?', np.nan)
-            data['cabin'] = data['cabin'].astype(str).str[0]
-            data = data[['pclass', 'survived', 'sex', 'age', 'sibsp', 'parch', 'cabin', 'embarked']]
-            data = pd.concat([data, data[['sex', 'age', 'sibsp']]], axis=1)
-            data.columns = ['pclass', 'survived', 'sex', 'age', 'sibsp', 'parch', 'cabin', 'embarked',
-                            'sex_dup', 'age_dup', 'sibsp_dup']
-            return data
+    data = load_titanic(handle_missing=True)
 
-    # load data as pandas dataframe
-    data = load_titanic()
-    data.head()
+    data['cabin'] = data['cabin'].astype(str).str[0]
+    data = data[['pclass', 'survived', 'sex', 'age', 'sibsp', 'parch', 'cabin', 'embarked']]
+    data = pd.concat([data, data[['sex', 'age', 'sibsp']]], axis=1)
+    data.columns = ['pclass', 'survived', 'sex', 'age', 'sibsp', 'parch', 'cabin', 'embarked',
+                    'sex_dup', 'age_dup', 'sibsp_dup']
 
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(

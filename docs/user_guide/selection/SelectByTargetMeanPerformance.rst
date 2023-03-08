@@ -113,29 +113,23 @@ Let's import the required libraries and classes
     import pandas as pd
     import numpy as np
     from sklearn.model_selection import train_test_split
-    from feature_engine.selection import SelectByTargetMeanPerformance:
+    from feature_engine.selection import SelectByTargetMeanPerformance
+    from feature_engine.datasets import load_titanic
 
 Let's now load and prepare the Titanic dataset:
 
 .. code:: python
-
-    # load data
-    data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
+    
+    data = load_titanic(handle_missing=True)
     data.drop(labels = ['name','boat', 'ticket','body', 'home.dest'], axis=1, inplace=True)
-    data = data.replace('?', np.nan)
-
     data.dropna(subset=['embarked', 'fare'], inplace=True)
-    data['fare'] = data['fare'].astype('float')
-
-    data['age'] = data['age'].astype('float')
-    data['age'] = data['age'].fillna(data['age'].mean())
 
     def get_first_cabin(row):
         try:
             return row.split()[0]
         except:
             return 'N'
-
+        
     data['cabin'] = data['cabin'].apply(get_first_cabin)
 
     # extract cabin letter
@@ -182,7 +176,7 @@ We see the sizes of the datasets below:
 
 .. code:: python
 
-    ((1175, 8), (131, 8))
+    ((1178, 8), (131, 8))
 
 Now, we set up :class:`SelectByTargetMeanPerformance()`. We will examine the roc-auc
 using 3 fold cross-validation. We will separate numerical variables into equal-frequency
@@ -234,14 +228,14 @@ that this is the average ROC-AUC in each cross-validation fold:
 
     sel.feature_performance_
 
-    {'pclass': 0.6692917241015676,
-     'sex': 0.7624307804352095,
-     'age': 0.5406671434172395,
-     'sibsp': 0.5669758659668949,
-     'parch': 0.5741629417199435,
-     'fare': 0.6555307060922498,
-     'cabin': 0.6323342342595275,
-     'embarked': 0.57348024722553}
+    {'pclass': 0.668151138112005,
+    'sex': 0.764831274819234,
+    'age': 0.535490029737471,
+    'sibsp': 0.5815934176199077,
+    'parch': 0.5721327969642238,
+    'fare': 0.6545985745474006,
+    'cabin': 0.630092526712033,
+    'embarked': 0.5765961846034091}
 
 The mean ROC-AUC of all features is 0.62, we can calculate it as follows:
 
@@ -249,7 +243,7 @@ The mean ROC-AUC of all features is 0.62, we can calculate it as follows:
 
     pd.Series(sel.feature_performance_).mean()
 
-    0.6218592054022702
+    0.6229357428894605
 
 So we can see that the transformer correclty selected the features with ROC-AUC above
 that value.
@@ -264,12 +258,12 @@ With `transform()` we can go ahead and drop the features:
 
 .. code:: python
 
-             pclass     sex     fare cabin
-    611       3    male   9.3500     N
-    414       2    male  21.0000     N
-    530       2    male  10.5000     N
-    1149      3  female   7.7208     N
-    944       3    male   7.8958     N
+         pclass     sex     fare cabin
+    1139      3    male   7.8958     M
+    533       2  female  21.0000     M
+    459       2    male  27.0000     M
+    1150      3    male  14.5000     M
+    393       2    male  31.5000     M
 
 And finally, we can also obtain the names of the features in the final transformed
 data:
