@@ -106,40 +106,23 @@ Let's see how to use this method to select variables in the Titanic dataset. Thi
 has a mix of numerical and categorical variables, then it is a good option to showcase
 this selector.
 
-Let's import the required libraries and classes
+Let's import the required libraries and classes, and prepare the titanic dataset:
 
 .. code:: python
 
-    import pandas as pd
     import numpy as np
+    import pandas as pd
     from sklearn.model_selection import train_test_split
-    from feature_engine.selection import SelectByTargetMeanPerformance:
 
-Let's now load and prepare the Titanic dataset:
+    from feature_engine.datasets import load_titanic
+    from feature_engine.encoding import RareLabelEncoder
+    from feature_engine.selection import SelectByTargetMeanPerformance
 
-.. code:: python
-
-    # load data
-    data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-    data.drop(labels = ['name','boat', 'ticket','body', 'home.dest'], axis=1, inplace=True)
-    data = data.replace('?', np.nan)
-
-    data.dropna(subset=['embarked', 'fare'], inplace=True)
-    data['fare'] = data['fare'].astype('float')
-
-    data['age'] = data['age'].astype('float')
-    data['age'] = data['age'].fillna(data['age'].mean())
-
-    def get_first_cabin(row):
-        try:
-            return row.split()[0]
-        except:
-            return 'N'
-
-    data['cabin'] = data['cabin'].apply(get_first_cabin)
-
-    # extract cabin letter
-    data['cabin'] = data['cabin'].str[0]
+    data = load_titanic(
+        handle_missing=True,
+        predictors_only=True,
+        cabin="letter_only",
+    )
 
     # replace infrequent cabins by N
     data['cabin'] = np.where(data['cabin'].isin(['T', 'G']), 'N', data['cabin'])
@@ -151,7 +134,7 @@ Let's now load and prepare the Titanic dataset:
     # cast variables as object to treat as categorical
     data[['pclass','sibsp','parch']] = data[['pclass','sibsp','parch']].astype('O')
 
-    data.head()
+    print(data.head())
 
 We can see the first 5 rows of data below:
 
@@ -163,7 +146,6 @@ We can see the first 5 rows of data below:
     2      1         0  female   2.0000     1     2  151.5500     C        S
     3      1         0    male  30.0000     1     2  151.5500     C        S
     4      1         0  female  25.0000     1     2  151.5500     C        S
-
 
 Let's now go ahead and split the data into train and test sets:
 
@@ -182,7 +164,7 @@ We see the sizes of the datasets below:
 
 .. code:: python
 
-    ((1175, 8), (131, 8))
+    ((1178, 8), (131, 8))
 
 Now, we set up :class:`SelectByTargetMeanPerformance()`. We will examine the roc-auc
 using 3 fold cross-validation. We will separate numerical variables into equal-frequency
@@ -217,6 +199,8 @@ In the attribute `variables_` we find the variables that were evaluated:
 
     sel.variables_
 
+.. code:: python
+
     ['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'cabin', 'embarked']
 
 In the attribute `features_to_drop_` we find the variables that were not selected:
@@ -224,6 +208,8 @@ In the attribute `features_to_drop_` we find the variables that were not selecte
 .. code:: python
 
     sel.features_to_drop_
+
+.. code:: python
 
     ['age', 'sibsp', 'parch', 'embarked']
 
@@ -234,14 +220,16 @@ that this is the average ROC-AUC in each cross-validation fold:
 
     sel.feature_performance_
 
-    {'pclass': 0.6692917241015676,
-     'sex': 0.7624307804352095,
-     'age': 0.5406671434172395,
-     'sibsp': 0.5669758659668949,
-     'parch': 0.5741629417199435,
-     'fare': 0.6555307060922498,
-     'cabin': 0.6323342342595275,
-     'embarked': 0.57348024722553}
+.. code:: python
+
+    {'pclass': 0.668151138112005,
+    'sex': 0.764831274819234,
+    'age': 0.535490029737471,
+    'sibsp': 0.5815934176199077,
+    'parch': 0.5721327969642238,
+    'fare': 0.6545985745474006,
+    'cabin': 0.630092526712033,
+    'embarked': 0.5765961846034091}
 
 The mean ROC-AUC of all features is 0.62, we can calculate it as follows:
 
@@ -249,7 +237,7 @@ The mean ROC-AUC of all features is 0.62, we can calculate it as follows:
 
     pd.Series(sel.feature_performance_).mean()
 
-    0.6218592054022702
+    0.6229357428894605
 
 So we can see that the transformer correclty selected the features with ROC-AUC above
 that value.
@@ -264,12 +252,12 @@ With `transform()` we can go ahead and drop the features:
 
 .. code:: python
 
-             pclass     sex     fare cabin
-    611       3    male   9.3500     N
-    414       2    male  21.0000     N
-    530       2    male  10.5000     N
-    1149      3  female   7.7208     N
-    944       3    male   7.8958     N
+         pclass     sex     fare cabin
+    1139      3    male   7.8958     M
+    533       2  female  21.0000     M
+    459       2    male  27.0000     M
+    1150      3    male  14.5000     M
+    393       2    male  31.5000     M
 
 And finally, we can also obtain the names of the features in the final transformed
 data:
@@ -277,6 +265,8 @@ data:
 .. code:: python
 
     sel.get_feature_names_out()
+
+.. code:: python
 
     ['pclass', 'sex', 'fare', 'cabin']
 

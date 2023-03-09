@@ -20,49 +20,78 @@ These dataset does not have duplicated features, so we will add a few manually:
 
 .. code:: python
 
-    import numpy as np
     import pandas as pd
-    import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
-
+    from feature_engine.datasets import load_titanic
     from feature_engine.selection import DropDuplicateFeatures
 
-    def load_titanic():
-            data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-            data = data.replace('?', np.nan)
-            data['cabin'] = data['cabin'].astype(str).str[0]
-            data = data[['pclass', 'survived', 'sex', 'age', 'sibsp', 'parch', 'cabin', 'embarked']]
-            data = pd.concat([data, data[['sex', 'age', 'sibsp']]], axis=1)
-            data.columns = ['pclass', 'survived', 'sex', 'age', 'sibsp', 'parch', 'cabin', 'embarked',
-                            'sex_dup', 'age_dup', 'sibsp_dup']
-            return data
+    data = load_titanic(
+        handle_missing=True,
+        predictors_only=True,
+    )
 
-    # load data as pandas dataframe
-    data = load_titanic()
-    data.head()
+    # Lets duplicate some columns
+    data = pd.concat([data, data[['sex', 'age', 'sibsp']]], axis=1)
+    data.columns = ['pclass', 'survived', 'sex', 'age',
+                    'sibsp', 'parch', 'fare','cabin', 'embarked',
+                    'sex_dup', 'age_dup', 'sibsp_dup']
 
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-                data.drop(['survived'], axis=1),
-                data['survived'], test_size=0.3, random_state=0)
+        data.drop(['survived'], axis=1),
+        data['survived'],
+        test_size=0.3,
+        random_state=0,
+    )
+
+    print(X_train.head())
+
+Below we see the resulting data:
+
+.. code:: python
+
+          pclass     sex        age  sibsp  parch     fare    cabin embarked  \
+    501        2  female  13.000000      0      1  19.5000  Missing        S
+    588        2  female   4.000000      1      1  23.0000  Missing        S
+    402        2  female  30.000000      1      0  13.8583  Missing        C
+    1193       3    male  29.881135      0      0   7.7250  Missing        Q
+    686        3  female  22.000000      0      0   7.7250  Missing        Q
+
+         sex_dup    age_dup  sibsp_dup
+    501   female  13.000000          0
+    588   female   4.000000          1
+    402   female  30.000000          1
+    1193    male  29.881135          0
+    686   female  22.000000          0
 
 Now, we set up :class:`DropDuplicateFeatures()` to find the duplications:
 
 .. code:: python
 
-    # set up the transformer
     transformer = DropDuplicateFeatures()
 
-With `fit()` the transformer finds the duplicated features, With `transform()` it removes
-them:
+With `fit()` the transformer finds the duplicated features:
 
 .. code:: python
 
-    # fit the transformer
     transformer.fit(X_train)
 
-    # transform the data
+The features that are duplicated and will be removed are stored by the transformer:
+
+..  code:: python
+
+    transformer.features_to_drop_
+
+.. code:: python
+
+    {'age_dup', 'sex_dup', 'sibsp_dup'}
+
+With `transform()` we remove the duplicated variables:
+
+.. code:: python
+
     train_t = transformer.transform(X_train)
+    test_t = transformer.transform(X_test)
 
 If we examine the variable names of the transformed dataset, we see that the duplicated
 features are not present:
@@ -73,17 +102,7 @@ features are not present:
 
 .. code:: python
 
-    Index(['pclass', 'sex', 'age', 'sibsp', 'parch', 'cabin', 'embarked'], dtype='object')
-
-The features that are removed are stored in the transformer's attribute:
-
-..  code:: python
-
-    transformer.features_to_drop_
-
-.. code:: python
-
-    {'age_dup', 'sex_dup', 'sibsp_dup'}
+    Index(['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'cabin', 'embarked'], dtype='object')
 
 And the transformer also stores the groups of duplicated features, which could be useful
 if we have groups where more than 2 features are identical.
