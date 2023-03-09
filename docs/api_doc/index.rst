@@ -42,7 +42,6 @@ Time series
 
    timeseries/index
 
-
 Other
 -----
 .. toctree::
@@ -51,6 +50,12 @@ Other
    preprocessing/index
    wrappers/index
 
+Datasets
+--------
+.. toctree::
+   :maxdepth: 1
+
+   datasets/index
 
 Tools
 -----
