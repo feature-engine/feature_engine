@@ -72,8 +72,8 @@ def load_titanic(
     if cabin is not None:
         if not isinstance(cabin, str) or cabin not in ["letter_only", "drop"]:
             raise ValueError(
-                "the parameter 'cabin' takes only values None, 'letter_only' and 'drop'. "
-                f"Got {cabin} instead."
+                "the parameter 'cabin' takes only values None, 'letter_only' and "
+                f"'drop'. Got {cabin} instead."
             )
 
     # load and prepare data
