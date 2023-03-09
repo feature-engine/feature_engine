@@ -1,14 +1,16 @@
-# Authors: Kyle Gilde <kylegilde@gmail.com>
-
 from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
-from sklearn.utils.validation import check_is_fitted
-from sklearn.base import BaseEstimator, TransformerMixin
+from pandas.api.types import is_datetime64_any_dtype as is_datetime
 
-from feature_engine.tags import _return_tags
+from sklearn.utils.validation import check_is_fitted
+
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
 from feature_engine.creation.base_creation import BaseCreation
+from feature_engine.tags import _return_tags
 from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
@@ -17,20 +19,19 @@ from feature_engine.dataframe_checks import (
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
+    _transform_creation_docstring,
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
-from feature_engine._docstrings.init_parameters import (
+from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _drop_original_docstring,
     _missing_values_docstring,
 )
 
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._variable_handling.variable_type_selection import (
-    _find_or_check_datetime_variables,
-)
+from feature_engine.variable_handling import find_or_check_datetime_variables
 
 
 @Substitution(
@@ -39,20 +40,14 @@ from feature_engine._variable_handling.variable_type_selection import (
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
-    transform=BaseCreation._transform_docstring,
+    transform=_transform_creation_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class DatetimeSubtraction(BaseEstimator, TransformerMixin):
+class DatetimeSubtraction(BaseCreation):
     """
-    DatetimeSubtraction() applies datetime subtraction between a group
-    of variables and one or more reference features. It adds one or more additional
-    features to the dataframe with the result of the operations.
-
-    In other words, DatetimeSubtraction() subtracts a group of features from a group of
-    reference variables, and returns the result as new variables in the dataframe.
-
-    The transformed dataframe will contain the additional features indicated in the
-    new_variables_name list plus the original set of variables.
+    DatetimeSubtraction() applies datetime subtraction between a group of datetime
+    variables and one or more datetime features, adding the resulting variables to the
+    dataframe.
 
     More details in the :ref:`User Guide <datetime_subtraction>`.
 
@@ -60,15 +55,15 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
     ----------
     variables: list
         The list of datetime variables that the reference variables will be subtracted
-        from.
+        from (left side of the subtraction operation).
 
     reference: list
-        The list of datetime reference variables that will be subtracted from the
-        `variables`.
+        The list of datetime reference variables that will be subtracted from
+        `variables` (right side of the subtraction operation).
 
     output_unit: string, default='D'
         The string representation of the output unit of the datetime differences.
-        The default is `D` for day. This parameter is passed to numpy.timedelta64.
+        The default is `D` for day. This parameter is passed to `numpy.timedelta64`.
         Other possible values are  `Y` for year, `M` for month,  `W` for week,
         `h` for hour, `m` for minute, `s` for second, `ms` for millisecond,
         `us` or `μs` for microsecond, `ns` for nanosecond, `ps` for picosecond,
@@ -77,6 +72,23 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
     {missing_values}
 
     {drop_original}
+
+    dayfirst: bool, default="False"
+        Specify a date parse order if arg is str or is list-like. If True, parses
+        dates with the day first, e.g. 10/11/12 is parsed as 2012-11-10. Same as in
+        `pandas.to_datetime`.
+
+    yearfirst: bool, default="False"
+        Specify a date parse order if arg is str or is list-like.
+        Same as in `pandas.to_datetime`.
+
+        - If True parses dates with the year first, e.g. 10/11/12 is parsed as
+          2010-11-12.
+        - If both dayfirst and yearfirst are True, yearfirst is preceded.
+
+    utc: bool, default=None
+        Return UTC DatetimeIndex if True (converting any tz-aware datetime.datetime
+        objects as well). Same as in `pandas.to_datetime`.
 
     Attributes
     ----------
@@ -92,64 +104,36 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
 
     {transform}
 
-    """
+    Examples
+    --------
 
+    >>> import pandas as pd
+    >>> from feature_engine.datetime import DatetimeSubtraction
+    >>> X = pd.DataFrame({
+    >>>     "date1" : ["2022-09-18", "2022-10-27", "2022-12-24"],
+    >>>     "date2" : ["2022-08-18", "2022-08-27", "2022-06-24"]})
+    >>> dtf = DatetimeSubtraction(variables=["date1"], reference=["date2"])
+    >>> dtf.fit(X)
+    >>> dtf.transform(X)
+            date1       date2  date1_sub_date2
+    0  2022-09-18  2022-08-18             31.0
+    1  2022-10-27  2022-08-27             61.0
+    2  2022-12-24  2022-06-24            183.0
+    """
     def __init__(
         self,
-        variables: List[Union[str, int]],
-        reference: List[Union[str, int]],
+        variables: Union[None, int, str, List[Union[str, int]]],
+        reference: Union[None, int, str, List[Union[str, int]]],
+        output_unit: str = "D",
         missing_values: str = "ignore",
         drop_original: bool = False,
-        output_unit: str = "D",
+        dayfirst: bool = False,
+        yearfirst: bool = False,
+        utc: Union[None, bool] = None,
     ) -> None:
 
-        if (
-            not isinstance(variables, list)
-            or not all(isinstance(var, (int, str)) for var in variables)
-            or len(set(variables)) != len(variables)
-        ):
-            raise ValueError(
-                "variables must be a list of strings or integers. "
-                f"Got {variables} instead."
-            )
-
-        if (
-            not isinstance(reference, list)
-            or not all(isinstance(var, (int, str)) for var in reference)
-            or len(set(reference)) != len(reference)
-        ):
-            raise ValueError(
-                "reference must be a list of strings or integers. "
-                f"Got {reference} instead."
-            )
-
-        if not isinstance(drop_original, bool):
-            raise ValueError(
-                "drop_original takes only booleans True or False. "
-                f"Got {drop_original} instead."
-            )
-
-        if missing_values not in ["raise", "ignore"]:
-            raise ValueError(
-                "missing_values takes only values 'raise' or 'ignore'. "
-                f"Got {missing_values} instead."
-            )
-
         valid_output_units = {
-            "D",
-            "Y",
-            "M",
-            "W",
-            "h",
-            "m",
-            "s",
-            "ms",
-            "us",
-            "μs",
-            "ns",
-            "ps",
-            "fs",
-            "as",
+            "D", "Y", "M", "W", "h", "m", "s", "ms", "us", "μs", "ns", "ps", "fs", "as",
         }
 
         if output_unit not in valid_output_units:
@@ -158,11 +142,13 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
                 f"{valid_output_units}. Got {output_unit} instead."
             )
 
-        self.variables = variables
-        self.reference = reference
-        self.drop_original = drop_original
-        self.missing_values = missing_values
+        super().__init__(missing_values, drop_original)
+        self.variables = _check_init_parameter_variables(variables)
+        self.reference = _check_init_parameter_variables(reference)
         self.output_unit = output_unit
+        self.dayfirst = dayfirst
+        self.yearfirst = yearfirst
+        self.utc = utc
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -181,12 +167,12 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         X = check_X(X)
 
         # check variables are datetime
-        self.reference = _find_or_check_datetime_variables(X, self.reference)
-        self.variables = _find_or_check_datetime_variables(X, self.variables)
+        self.reference_ = find_or_check_datetime_variables(X, self.reference)
+        self.variables_ = find_or_check_datetime_variables(X, self.variables)
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables + self.reference)
+            _check_contains_na(X, self.variables_ + self.reference_)
 
         # save input features
         self.feature_names_in_ = X.columns.tolist()
@@ -221,87 +207,70 @@ class DatetimeSubtraction(BaseEstimator, TransformerMixin):
         _check_X_matches_training_df(X, self.n_features_in_)
 
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables + self.reference)
+            _check_contains_na(X, self.variables_ + self.reference_)
 
         # reorder variables to match train set
         X = X[self.feature_names_in_]
 
-        self._sub(X)
+        X_dt = self._to_datetime(X)
+
+        new_features = self._sub(X_dt)
+
+        X = pd.concat([X, new_features], axis=1)
 
         if self.drop_original:
-            X.drop(
-                columns=set(self.variables + self.reference),
-                inplace=True,
+            X = X.drop(
+                columns=set(self.variables_ + self.reference_),
             )
 
         return X
 
-    def _sub(self, X):
+    def _to_datetime(self, X: pd.DataFrame):
+        """covert variables to datetime."""
+        # convert datetime variables
+        datetime_df = pd.concat(
+            [
+                pd.to_datetime(
+                    X[variable],
+                    dayfirst=self.dayfirst,
+                    yearfirst=self.yearfirst,
+                    utc=self.utc,
+                )
+                for variable in set(self.variables_+self.reference_)
+            ],
+            axis=1,
+        )
 
-        for reference in self.reference:
-            new_varnames = [f"{var}_sub_{reference}" for var in self.variables]
-            X[new_varnames] = (
-                X[self.variables]
-                .sub(X[reference], axis=0)
+        non_dt_columns = datetime_df.columns[
+            ~datetime_df.apply(is_datetime)
+        ].tolist()
+
+        if non_dt_columns:
+            raise ValueError(
+                "ValueError: variable(s) "
+                + (len(non_dt_columns) * "{} ").format(*non_dt_columns)
+                + "could not be converted to datetime. Try setting utc=True"
+            )
+        return datetime_df
+
+    def _sub(self, dt_df: pd.DataFrame):
+        """make datetime subtraction"""
+        new_df = pd.DataFrame()
+        for reference in self.reference_:
+            new_varnames = [f"{var}_sub_{reference}" for var in self.variables_]
+            new_df[new_varnames] = (
+                dt_df[self.variables_]
+                .sub(dt_df[reference], axis=0)
                 .apply(lambda s: s / np.timedelta64(1, self.output_unit))
             )
 
-        return X
+        return new_df
 
-    def get_feature_names_out(self, input_features: Optional[bool] = None) -> List:
-        """Get output feature names for transformation.
-
-        Parameters
-        ----------
-        input_features: bool, default=None
-            If `input_features` is `None`, then the names of all the variables in the
-            transformed dataset (original + new variables) is returned. Alternatively,
-            if `input_features` is True, only the names for the new features will be
-            returned.
-
-        Returns
-        -------
-        feature_names_out: list
-            The feature names.
-        """
-        check_is_fitted(self)
-
-        if input_features is not None and not isinstance(input_features, bool):
-            raise ValueError(
-                "input_features takes None or a boolean, True or False. "
-                f"Got {input_features} instead."
-            )
-
-        # Names of new features
-        feature_names = []
-        for reference in self.reference:
-            varname = [f"{var}_sub_{reference}" for var in self.variables]
-            feature_names.extend(varname)
-
-        if input_features is None or input_features is False:
-            if self.drop_original is True:
-                # Remove names of variables to drop.
-                original = [
-                    f
-                    for f in self.feature_names_in_
-                    if f not in self.variables + self.reference
-                ]
-                feature_names = original + feature_names
-            else:
-                feature_names = self.feature_names_in_ + feature_names
-
+    def _get_new_features_name(self) -> List:
+        """Return names of the created features."""
+        feature_names = [
+            f"{var}_sub_{reference}"
+            for reference in self.reference_
+            for var in self.variables_
+        ]
         return feature_names
-
-    def _more_tags(self):
-        tags_dict = _return_tags()
-        tags_dict["allow_nan"] = True
-        tags_dict["variables"] = "skip"
-        # Tests that are OK to fail:
-        tags_dict["_xfail_checks"][
-            "check_parameters_default_constructible"
-        ] = "transformer has 1 mandatory parameter"
-        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = (
-            "this transformer works with datasets that contain at least 2 variables. "
-            "Otherwise, there is nothing to combine"
-        )
-        return tags_dict
