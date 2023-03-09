@@ -36,6 +36,19 @@ def load_titanic(
         If `None`, it returns the variable cabin as in the original data. If 'drop', it
         removes the variable from the data. If 'letter_only' it returns just the first
         letter of the cabin, without the number.
+
+    Examples
+    --------
+
+    >>> from feature_engine.datasets import load_titanic
+    >>> data = load_titanic(predictors_only=True, cabin="drop")
+    >>> print(data.head())
+       pclass  survived     sex      age  sibsp  parch      fare embarked
+    0       1         1  female  29.0000      0      0  211.3375        S
+    1       1         1    male   0.9167      1      2  151.5500        S
+    2       1         0  female   2.0000      1      2  151.5500        S
+    3       1         0    male  30.0000      1      2  151.5500        S
+    4       1         0  female  25.0000      1      2  151.5500        S
     """
     # param checks
     if not isinstance(return_X_y_frame, bool):
