@@ -33,29 +33,29 @@ first load the data and separate it into train and test:
     from feature_engine.datasets import load_titanic
     from feature_engine.selection import DropFeatures
 
-    # Load dataset
-    data = load_titanic(handle_missing=True)
-    data['cabin'] = data['cabin'].astype(str).str[0]
-    data['pclass'] = data['pclass'].astype('O')
-    data['embarked'].fillna('C', inplace=True)
+    X, y = load_titanic(
+        return_X_y_frame=True,
+        handle_missing=True,
+    )
 
-    # Separate into train and test sets
+
     X_train, X_test, y_train, y_test = train_test_split(
-                data.drop(['survived', 'name'], axis=1),
-                data['survived'], test_size=0.3, random_state=0)
+        X, y, test_size=0.3, random_state=0,
+    )
+
+    print(X_train.head())
 
 Now, we go ahead and print the dataset column names:
 
 .. code:: python
 
-    # original columns
     X_train.columns
 
 .. code:: python
 
-    Index(['pclass', 'sex', 'age', 'sibsp', 'parch', 'ticket', 'fare', 'cabin',
-       'embarked', 'boat', 'body', 'home.dest'],
-      dtype='object')
+    Index(['pclass', 'name', 'sex', 'age', 'sibsp', 'parch', 'ticket', 'fare',
+           'cabin', 'embarked', 'boat', 'body', 'home.dest'],
+          dtype='object')
 
 Now, with :class:`DropFeatures()` we can very easily drop a group of variables. Below
 we set up the transformer to drop a list of 6 variables:
@@ -75,8 +75,9 @@ the variables as follows:
 
 .. code:: python
 
-    # transform the data
     train_t = transformer.transform(X_train)
+    test_t = transformer.transform(X_test)
+
 
 And now, if we print the variable names of the transformed dataset, we see that it has
 been reduced:
@@ -87,7 +88,7 @@ been reduced:
 
 .. code:: python
 
-    Index(['pclass', 'sex', 'age', 'cabin', 'embarked', 'boat'], dtype='object')
+    Index(['pclass', 'name', 'sex', 'age', 'cabin', 'embarked', 'boat'], dtype='object')
 
 
 More details

@@ -69,13 +69,12 @@ def load_titanic(
             f"Got {handle_missing} instead."
         )
 
-    if cabin is not None or (
-        not isinstance(cabin, str) and cabin in ["letter_only", "drop"]
-    ):
-        raise ValueError(
-            "the parameter 'cabin' takes only values None, 'letter' and 'drop'. "
-            f"Got {cabin} instead."
-        )
+    if cabin is not None:
+        if not isinstance(cabin, str) or cabin not in ["letter_only", "drop"]:
+            raise ValueError(
+                "the parameter 'cabin' takes only values None, 'letter_only' and 'drop'. "
+                f"Got {cabin} instead."
+            )
 
     # load and prepare data
     df = pd.read_csv("https://www.openml.org/data/get_csv/16826755/phpMYEkMl")

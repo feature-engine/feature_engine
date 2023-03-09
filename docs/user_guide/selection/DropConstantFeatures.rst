@@ -25,16 +25,15 @@ first load the data and separate it into train and test:
     from feature_engine.datasets import load_titanic
     from feature_engine.selection import DropConstantFeatures
 
-    # Load dataset
-    data = load_titanic(handle_missing=True)
-    data['cabin'] = data['cabin'].astype(str).str[0]
-    data['pclass'] = data['pclass'].astype('O')
-    data['embarked'].fillna('C', inplace=True)
+    X, y = load_titanic(
+        return_X_y_frame=True,
+        handle_missing=True,
+    )
 
-    # Separate into train and test sets
+
     X_train, X_test, y_train, y_test = train_test_split(
-                data.drop(['survived', 'name', 'ticket'], axis=1),
-                data['survived'], test_size=0.3, random_state=0)
+        X, y, test_size=0.3, random_state=0,
+    )
 
 Now, we set up the :class:`DropConstantFeatures()` to remove features that show the same
 value in more than 70% of the observations:
@@ -104,23 +103,36 @@ With `transform()`, we can go ahead and drop the variables from the data:
 
 .. code:: python
 
-    # transform the data
     train_t = transformer.transform(X_train)
-    train_t.head()
+    test_t = transformer.transform(X_test)
 
-         pclass     sex        age  sibsp     fare     boat  \
-    501       2  female  13.000000      0  19.5000       14   
-    588       2  female   4.000000      1  23.0000       14   
-    402       2  female  30.000000      1  13.8583       12   
-    1193      3    male  29.881135      0   7.7250  Missing   
-    686       3  female  22.000000      0   7.7250       13   
+    print(train_t.head())
 
-                                                home.dest  
-    501                            England / Bennington, VT  
-    588                                Cornwall / Akron, OH  
-    402                     Barcelona, Spain / Havana, Cuba  
-    1193                                            Missing  
-    686   Kingwilliamstown, Co Cork, Ireland Glens Falls... 
+We see the resulting dataframe below:
+
+.. code:: python
+
+          pclass                               name     sex        age  sibsp  \
+    501        2  Mellinger, Miss. Madeleine Violet  female  13.000000      0
+    588        2                  Wells, Miss. Joan  female   4.000000      1
+    402        2     Duran y More, Miss. Florentina  female  30.000000      1
+    1193       3                 Scanlan, Mr. James    male  29.881135      0
+    686        3       Bradley, Miss. Bridget Delia  female  22.000000      0
+
+                 ticket     fare     boat  \
+    501          250644  19.5000       14
+    588           29103  23.0000       14
+    402   SC/PARIS 2148  13.8583       12
+    1193          36209   7.7250  Missing
+    686          334914   7.7250       13
+
+                                                  home.dest
+    501                            England / Bennington, VT
+    588                                Cornwall / Akron, OH
+    402                     Barcelona, Spain / Havana, Cuba
+    1193                                            Missing
+    686   Kingwilliamstown, Co Cork, Ireland Glens Falls...
+
 
 More details
 ^^^^^^^^^^^^

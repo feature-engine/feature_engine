@@ -28,14 +28,13 @@ a train and a test sets:
     from feature_engine.datasets import load_titanic
 
     # Load dataset
-    data = load_titanic()
-    data['cabin'] = data['cabin'].astype(str).str[0]
-    data['pclass'] = data['pclass'].astype('O')
-    data['embarked'].fillna('C', inplace=True)
-    data.drop(
-        labels=['name', 'ticket', 'boat', 'body', 'home.dest'],
-        axis=1, inplace=True,
+    data = load_titanic(
+        predictors_only=True,
+        handle_missing=True,
+        cabin="letter_only",
     )
+
+    data['pclass'] = data['pclass'].astype('O')
 
     # Split test and train
     train = data.iloc[0:1000, :]
@@ -62,9 +61,8 @@ Now, we set up :class:`MatchCategories()` and fit it to the train set.
 
     {'pclass': Int64Index([1, 2, 3], dtype='int64'),
      'sex': Index(['female', 'male'], dtype='object'),
-     'cabin': Index(['A', 'B', 'C', 'D', 'E', 'F', 'T', 'n'], dtype='object'),
-     'embarked': Index(['C', 'Q', 'S'], dtype='object')}
-
+     'cabin': Index(['A', 'B', 'C', 'D', 'E', 'F', 'M', 'T'], dtype='object'),
+     'embarked': Index(['C', 'Missing', 'Q', 'S'], dtype='object')}
 
 If we transform the test dataframe using the same `match_categories` object,
 categorical variables will be converted to a 'category' dtype with the same
@@ -78,7 +76,7 @@ dataset:
 
 .. code:: python
 
-    array(['S', 'C', 'Q'], dtype=object)
+    array(['S', 'C', 'Missing', 'Q'], dtype=object)
 
 .. code:: python
     
@@ -96,7 +94,7 @@ dataset:
 
 .. code:: python
 
-    Index(['C', 'Q', 'S'], dtype='object')
+    Index(['C', 'Missing', 'Q', 'S'], dtype='object')
 
 .. code:: python
 
@@ -105,8 +103,7 @@ dataset:
 
 .. code:: python
 
-    Index(['C', 'Q', 'S'], dtype='object')
-
+    Index(['C', 'Missing', 'Q', 'S'], dtype='object')
 
 If some category was not present in the training data, it will not mapped
 to any integer and will thus not get encoded. This behavior can be modified through the
@@ -119,7 +116,7 @@ parameter `errors`:
 
 .. code:: python
 
-    array(['B', 'C', 'E', 'D', 'A', 'n', 'T', 'F'], dtype=object)
+    array(['B', 'C', 'E', 'D', 'A', 'M', 'T', 'F'], dtype=object)
 
 .. code:: python
     
@@ -128,7 +125,7 @@ parameter `errors`:
 
 .. code:: python
 
-    array(['n', 'F', 'E', 'G'], dtype=object)
+    array(['M', 'F', 'E', 'G'], dtype=object)
 
 .. code:: python
 
@@ -136,8 +133,8 @@ parameter `errors`:
 
 .. code:: python
 
-    ['B', 'C', 'E', 'D', 'A', 'n', 'T', 'F']
-    Categories (8, object): ['A', 'B', 'C', 'D', 'E', 'F', 'T', 'n']
+    ['B', 'C', 'E', 'D', 'A', 'M', 'T', 'F']
+    Categories (8, object): ['A', 'B', 'C', 'D', 'E', 'F', 'M', 'T']
 
 .. code:: python
     
@@ -146,8 +143,8 @@ parameter `errors`:
 
 .. code:: python
 
-    ['n', 'F', 'E', NaN]
-    Categories (8, object): ['A', 'B', 'C', 'D', 'E', 'F', 'T', 'n']
+    ['M', 'F', 'E', NaN]
+    Categories (8, object): ['A', 'B', 'C', 'D', 'E', 'F', 'M', 'T']
 
 
 When to use the transformer

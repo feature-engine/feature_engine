@@ -22,14 +22,12 @@ a train and a test set:
     from feature_engine.datasets import load_titanic
 
     # Load dataset
-    data = load_titanic()
-    data['cabin'] = data['cabin'].astype(str).str[0]
-    data['pclass'] = data['pclass'].astype('O')
-    data['embarked'].fillna('C', inplace=True)
-    data.drop(
-        labels=['name', 'ticket', 'boat', 'body', 'home.dest'],
-        axis=1, inplace=True,
+    data = load_titanic(
+        predictors_only=True,
+        cabin="letter_only",
     )
+
+    data['pclass'] = data['pclass'].astype('O')
 
     # Split test and train
     train = data.iloc[0:1000, :]
@@ -103,8 +101,6 @@ are now back in the data, with np.nan values as default.
     1003      3         1  NaN  NaN      2      0  23.2500     n        Q
     1004      3         1  NaN  NaN      0      0   7.7875     n        Q
 
-
-
 Note how the missing columns were added back to the transformed test set, with
 missing values, in the position (i.e., order) in which they were in the train set.
 
@@ -138,14 +134,13 @@ And now, we transform the data with :class:`MatchVariables()`:
 .. code:: python
 
     The following variables are added to the DataFrame: ['age', 'sex']
-    The following variables are dropped from the DataFrame: ['var_a', 'var_b']
-        pclass  survived  sex  age  sibsp  parch     fare cabin embarked
+    The following variables are dropped from the DataFrame: ['var_b', 'var_a']
+         pclass  survived  sex  age  sibsp  parch     fare cabin embarked
     1000      3         1  NaN  NaN      0      0   7.7500     n        Q
     1001      3         1  NaN  NaN      2      0  23.2500     n        Q
     1002      3         1  NaN  NaN      2      0  23.2500     n        Q
     1003      3         1  NaN  NaN      2      0  23.2500     n        Q
     1004      3         1  NaN  NaN      0      0   7.7875     n        Q
-
 
 Now, the transformer simultaneously added the missing columns with NA as values and
 removed the additional columns from the resulting dataset.
