@@ -25,7 +25,7 @@ MAD limits:
     - right tail: median + 3* MAD
     - left tail:  median - 3* MAD
 
-where MAD is the median absoulte deviation from the median.
+where MAD is the median absolute deviation from the median.
 
 percentiles or quantiles:
 
@@ -43,15 +43,29 @@ it into train and test:
     from feature_engine.datasets import load_titanic
     from feature_engine.outliers import Winsorizer
 
-    # Load dataset
-    data = load_titanic(handle_missing=True)
-    data['cabin'] = data['cabin'].astype(str).str[0]
-    data['pclass'] = data['pclass'].astype('O')
+    X, y = load_titanic(
+        return_X_y_frame=True,
+        predictors_only=True,
+        handle_missing=True,
+    )
 
-    # Separate into train and test sets
+
     X_train, X_test, y_train, y_test = train_test_split(
-                data.drop(['survived', 'name', 'ticket'], axis=1),
-                data['survived'], test_size=0.3, random_state=0)
+        X, y, test_size=0.3, random_state=0,
+    )
+
+    print(X_train.head())
+
+We see the resulting data below:
+
+.. code:: python
+
+          pclass     sex        age  sibsp  parch     fare    cabin embarked
+    501        2  female  13.000000      0      1  19.5000  Missing        S
+    588        2  female   4.000000      1      1  23.0000  Missing        S
+    402        2  female  30.000000      1      0  13.8583  Missing        C
+    1193       3    male  29.881135      0      0   7.7250  Missing        Q
+    686        3  female  22.000000      0      0   7.7250  Missing        Q
 
 Now, we will set the :class:`Winsorizer()` to cap outliers at the right side of the
 distribution only (param `tail`). We want the maximum values to be determined using the
@@ -61,13 +75,11 @@ list.
 
 .. code:: python
 
-    # set up the capper
-    capper = Winsorizer(capping_method='gaussian', 
+    capper = Winsorizer(capping_method='gaussian',
                         tail='right', 
                         fold=3, 
                         variables=['age', 'fare'])
 
-    # fit the capper
     capper.fit(X_train)
 
 With `fit()`, the :class:`Winsorizer()` finds the values at which it should cap the variables.
@@ -86,8 +98,8 @@ We can now go ahead and censor the outliers:
 .. code:: python
 
     # transform the data
-    train_t= capper.transform(X_train)
-    test_t= capper.transform(X_test)
+    train_t = capper.transform(X_train)
+    test_t = capper.transform(X_test)
     
 If we evaluate now the maximum of the variables in the transformed datasets, they should
 coincide with the values observed in the attribute `right_tail_caps_`:
