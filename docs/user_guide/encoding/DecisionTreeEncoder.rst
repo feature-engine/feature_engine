@@ -32,15 +32,18 @@ First, let's load the data and separate it into train and test:
     from feature_engine.datasets import load_titanic
     from feature_engine.encoding import DecisionTreeEncoder
 
-    data = load_titanic(handle_missing=True)  
-    data['cabin'] = data['cabin'].astype(str).str[0]
+    X, y = load_titanic(
+        return_X_y_frame=True,
+        handle_missing=True,
+        predictors_only=True,
+        cabin="letter_only",
+    )
 
-    # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-                    data.drop(['survived', 'name', 'ticket'], axis=1),
-                    data['survived'], test_size=0.3, random_state=0)
+        X, y, test_size=0.3, random_state=0,
+    )
 
-    X_train[['cabin', 'pclass', 'embarked']].head(10)
+    print(X_train[['cabin', 'pclass', 'embarked']].head(10))
 
 We will encode the following categorical variables:
 
@@ -65,7 +68,6 @@ tree using the roc-auc metric.
 
 .. code:: python
 
-    # set up the encoder
     encoder = DecisionTreeEncoder(
         variables=['cabin', 'pclass', 'embarked'],
         regression=False,
@@ -74,7 +76,6 @@ tree using the roc-auc metric.
         random_state=0,
         ignore_format=True)
 
-    # fit the encoder
     encoder.fit(X_train, y_train)
 
 With `fit()` the :class:`DecisionTreeEncoder()` fits 1 decision tree per variable. Now we can go ahead and
@@ -82,7 +83,6 @@ transform the categorical variables into numbers, using the predictions of these
 
 .. code:: python
 
-    # transform the data
     train_t = encoder.transform(X_train)
     test_t = encoder.transform(X_test)
 
