@@ -21,28 +21,19 @@ first load the data and separate it into train and test:
 
 .. code:: python
 
-    import numpy as np
-    import pandas as pd
     from sklearn.model_selection import train_test_split
-
+    from feature_engine.datasets import load_titanic
     from feature_engine.selection import DropConstantFeatures
 
-    # Load dataset
-    def load_titanic():
-            data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-            data = data.replace('?', np.nan)
-            data['cabin'] = data['cabin'].astype(str).str[0]
-            data['pclass'] = data['pclass'].astype('O')
-            data['embarked'].fillna('C', inplace=True)
-            return data
+    X, y = load_titanic(
+        return_X_y_frame=True,
+        handle_missing=True,
+    )
 
-    # load data as pandas dataframe
-    data = load_titanic()
 
-    # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-                data.drop(['survived', 'name', 'ticket'], axis=1),
-                data['survived'], test_size=0.3, random_state=0)
+        X, y, test_size=0.3, random_state=0,
+    )
 
 Now, we set up the :class:`DropConstantFeatures()` to remove features that show the same
 value in more than 70% of the observations:
@@ -50,7 +41,7 @@ value in more than 70% of the observations:
 .. code:: python
 
     # set up the transformer
-    transformer = DropConstantFeatures(tol=0.7, missing_values='ignore')
+    transformer = DropConstantFeatures(tol=0.7)
 
 
 With `fit()` the transformer finds the variables to drop:
@@ -68,7 +59,7 @@ The variables to drop are stored in the attribute `features_to_drop_`:
 
 .. code:: python
 
-    ['parch', 'cabin', 'embarked']
+    ['parch', 'cabin', 'embarked', 'body']
 
 
 We see in the following code snippets that for the variables parch and embarked, more
@@ -76,13 +67,14 @@ than 70% of the observations displayed the same value:
 
 .. code:: python
 
-    X_train['embarked'].value_counts() / len(X_train)
+    X_train['embarked'].value_counts(normalize = True)
 
 .. code:: python
 
-    S    0.711790
-    C    0.197598
-    Q    0.090611
+    S          0.711790
+    C          0.195415
+    Q          0.090611
+    Missing    0.002183
     Name: embarked, dtype: float64
 
 
@@ -90,7 +82,7 @@ than 70% of the observations displayed the same value:
 
 .. code:: python
 
-    X_train['parch'].value_counts() / len(X_train)
+    X_train['parch'].value_counts(normalize = True)
 
 .. code:: python
 
@@ -111,8 +103,36 @@ With `transform()`, we can go ahead and drop the variables from the data:
 
 .. code:: python
 
-    # transform the data
     train_t = transformer.transform(X_train)
+    test_t = transformer.transform(X_test)
+
+    print(train_t.head())
+
+We see the resulting dataframe below:
+
+.. code:: python
+
+          pclass                               name     sex        age  sibsp  \
+    501        2  Mellinger, Miss. Madeleine Violet  female  13.000000      0
+    588        2                  Wells, Miss. Joan  female   4.000000      1
+    402        2     Duran y More, Miss. Florentina  female  30.000000      1
+    1193       3                 Scanlan, Mr. James    male  29.881135      0
+    686        3       Bradley, Miss. Bridget Delia  female  22.000000      0
+
+                 ticket     fare     boat  \
+    501          250644  19.5000       14
+    588           29103  23.0000       14
+    402   SC/PARIS 2148  13.8583       12
+    1193          36209   7.7250  Missing
+    686          334914   7.7250       13
+
+                                                  home.dest
+    501                            England / Bennington, VT
+    588                                Cornwall / Akron, OH
+    402                     Barcelona, Spain / Havana, Cuba
+    1193                                            Missing
+    686   Kingwilliamstown, Co Cork, Ireland Glens Falls...
+
 
 More details
 ^^^^^^^^^^^^

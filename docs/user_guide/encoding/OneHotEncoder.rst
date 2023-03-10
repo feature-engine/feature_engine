@@ -68,39 +68,47 @@ into a train and a test set:
 
 .. code:: python
 
-	import numpy as np
-	import pandas as pd
-	import matplotlib.pyplot as plt
-	from sklearn.model_selection import train_test_split
+    from sklearn.model_selection import train_test_split
+    from feature_engine.datasets import load_titanic
+    from feature_engine.encoding import OneHotEncoder
 
-	from feature_engine.encoding import OneHotEncoder
+    X, y = load_titanic(
+        return_X_y_frame=True,
+        handle_missing=True,
+        predictors_only=True,
+        cabin="letter_only",
+    )
 
-	# Load dataset
-	def load_titanic():
-		data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-		data = data.replace('?', np.nan)
-		data['cabin'] = data['cabin'].astype(str).str[0]
-		data['pclass'] = data['pclass'].astype('O')
-		data['embarked'].fillna('C', inplace=True)
-		return data
-	
-	data = load_titanic()
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=0,
+    )
 
-	# Separate into train and test sets
-	X_train, X_test, y_train, y_test = train_test_split(
-				data.drop(['survived', 'name', 'ticket'], axis=1),
-				data['survived'], test_size=0.3, random_state=0)
+    print(X_train.head())
 
-Now, we set up the encoder to encode only the 2 most frequent categories of each of the
-3 indicated categorical variables:
+We see the resulting data below:
 
 .. code:: python
 
-	# set up the encoder
-	encoder = OneHotEncoder(top_categories=2, variables=['pclass', 'cabin', 'embarked'])
+          pclass     sex        age  sibsp  parch     fare cabin embarked
+    501        2  female  13.000000      0      1  19.5000     M        S
+    588        2  female   4.000000      1      1  23.0000     M        S
+    402        2  female  30.000000      1      0  13.8583     M        C
+    1193       3    male  29.881135      0      0   7.7250     M        Q
+    686        3  female  22.000000      0      0   7.7250     M        Q
 
-	# fit the encoder
-	encoder.fit(X_train)
+Now, we set up the encoder to encode only the 2 most frequent categories of 3
+categorical variables:
+
+.. code:: python
+
+    encoder = OneHotEncoder(
+        top_categories=2,
+        variables=['pclass', 'cabin', 'embarked'],
+        ignore_format=True,
+        )
+
+    # fit the encoder
+    encoder.fit(X_train)
 
 With `fit()` the encoder will learn the most popular categories of the variables, which
 are stored in the attribute `encoder_dict_`.
@@ -111,7 +119,7 @@ are stored in the attribute `encoder_dict_`.
 
 .. code:: python
 
-	{'pclass': [3, 1], 'cabin': ['n', 'C'], 'embarked': ['S', 'C']}
+	{'pclass': [3, 1], 'cabin': ['M', 'C'], 'embarked': ['S', 'C']}
 
 The `encoder_dict_` contains the categories that will derive dummy variables for each
 categorical variable.
@@ -121,12 +129,32 @@ With transform, we go ahead and encode the variables. Note that by default, the
 
 .. code:: python
 
-	# transform the data
-	train_t= encoder.transform(X_train)
-	test_t= encoder.transform(X_test)
+    train_t = encoder.transform(X_train)
+    test_t = encoder.transform(X_test)
+
+    print(train_t.head())
+
+Below we see the one hot dummy variables added to the dataset, and the original
+variables were removed:
+
+.. code:: python
+
+             sex        age  sibsp  parch     fare  pclass_3  pclass_1  cabin_M  \
+    501   female  13.000000      0      1  19.5000         0         0        1
+    588   female   4.000000      1      1  23.0000         0         0        1
+    402   female  30.000000      1      0  13.8583         0         0        1
+    1193    male  29.881135      0      0   7.7250         1         0        1
+    686   female  22.000000      0      0   7.7250         1         0        1
+
+          cabin_C  embarked_S  embarked_C
+    501         0           1           0
+    588         0           1           0
+    402         0           0           1
+    1193        0           0           0
+    686         0           0           0
 
 If you do not want to drop the original variables, consider using the OneHotEncoder
-from Scikit-learn and wrap it with the :ref:`SklearnTransformerWrapper <sklearn_wrapper>`.
+from Scikit-learn.
 
 **Feature space and duplication**
 

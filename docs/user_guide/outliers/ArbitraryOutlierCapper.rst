@@ -14,32 +14,33 @@ into a train and a test set:
 
 .. code:: python
 
-	import numpy as np
-	import pandas as pd
-	import matplotlib.pyplot as plt
-	from sklearn.model_selection import train_test_split
+    from sklearn.model_selection import train_test_split
+    from feature_engine.datasets import load_titanic
+    from feature_engine.outliers import ArbitraryOutlierCapper
 
-	from feature_engine.outliers import ArbitraryOutlierCapper
+    X, y = load_titanic(
+        return_X_y_frame=True,
+        predictors_only=True,
+        handle_missing=True,
+    )
 
-	# Load dataset
-	def load_titanic():
-		data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-		data = data.replace('?', np.nan)
-		data['cabin'] = data['cabin'].astype(str).str[0]
-		data['pclass'] = data['pclass'].astype('O')
-		data['embarked'].fillna('C', inplace=True)
-		data['fare'] = data['fare'].astype('float')
-		data['fare'].fillna(data['fare'].median(), inplace=True)
-		data['age'] = data['age'].astype('float')
-		data['age'].fillna(data['age'].median(), inplace=True)
-		return data
-	
-	data = load_titanic()
 
-	# Separate into train and test sets
-	X_train, X_test, y_train, y_test = train_test_split(
-			data.drop(['survived', 'name', 'ticket'], axis=1),
-			data['survived'], test_size=0.3, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=0,
+    )
+
+    print(X_train.head())
+
+We see the resulting data below:
+
+.. code:: python
+
+          pclass     sex        age  sibsp  parch     fare    cabin embarked
+    501        2  female  13.000000      0      1  19.5000  Missing        S
+    588        2  female   4.000000      1      1  23.0000  Missing        S
+    402        2  female  30.000000      1      0  13.8583  Missing        C
+    1193       3    male  29.881135      0      0   7.7250  Missing        Q
+    686        3  female  22.000000      0      0   7.7250  Missing        Q
 
 Now, we set up the :class:`ArbitraryOutlierCapper()` indicating that we want to cap the
 variable 'age' at 50 and the variable 'Fare' at 200. We do not want to cap these variables
@@ -47,11 +48,12 @@ on the left side of their distribution.
 
 .. code:: python
 
-	# set up the capper
-	capper = ArbitraryOutlierCapper(max_capping_dict={'age': 50, 'fare': 200}, min_capping_dict=None)
+    capper = ArbitraryOutlierCapper(
+        max_capping_dict={'age': 50, 'fare': 200},
+        min_capping_dict=None,
+    )
 
-	# fit the capper
-	capper.fit(X_train)
+    capper.fit(X_train)
 
 With `fit()` the transformer does not learn any parameter. It just reassigns the entered
 dictionary to the attribute that will be used in the transformation:
@@ -68,9 +70,8 @@ Now, we can go ahead and cap the variables:
 
 .. code:: python
 
-	# transform the data
-	train_t= capper.transform(X_train)
-	test_t= capper.transform(X_test)
+	train_t = capper.transform(X_train)
+	test_t = capper.transform(X_test)
 
 If we now check the maximum values in the transformed data, they should be those entered
 in the dictionary:
@@ -81,8 +82,8 @@ in the dictionary:
 
 .. code:: python
 
-    fare    200
-    age      50
+    fare    200.0
+    age      50.0
     dtype: float64
 
 

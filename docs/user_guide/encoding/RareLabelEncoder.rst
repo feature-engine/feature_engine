@@ -45,28 +45,33 @@ First, let's load the data and separate it into train and test:
 
 .. code:: python
 
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
-
+    from feature_engine.datasets import load_titanic
     from feature_engine.encoding import RareLabelEncoder
 
-    def load_titanic():
-        data = pd.read_csv(
-            'https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-        data = data.replace('?', np.nan)
-        data['cabin'] = data['cabin'].astype(str).str[0]
-        data['pclass'] = data['pclass'].astype('O')
-        data['embarked'].fillna('C', inplace=True)
-        return data
+    X, y = load_titanic(
+        return_X_y_frame=True,
+        handle_missing=True,
+        predictors_only=True,
+        cabin="letter_only",
+    )
 
-    data = load_titanic()
-
-    # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-        data.drop(['survived', 'name', 'ticket'], axis=1),
-        data['survived'], test_size=0.3, random_state=0)
+        X, y, test_size=0.3, random_state=0,
+    )
+
+    print(X_train.head())
+
+We see the resulting data below:
+
+.. code:: python
+
+          pclass     sex        age  sibsp  parch     fare cabin embarked
+    501        2  female  13.000000      0      1  19.5000     M        S
+    588        2  female   4.000000      1      1  23.0000     M        S
+    402        2  female  30.000000      1      0  13.8583     M        C
+    1193       3    male  29.881135      0      0   7.7250     M        Q
+    686        3  female  22.000000      0      0   7.7250     M        Q
 
 Now, we set up the :class:`RareLabelEncoder()` to group categories shown by less than 3%
 of the observations into a new group or category called 'Rare'. We will group the
@@ -75,8 +80,13 @@ categories in the indicated variables if they have more than 2 unique categories
 .. code:: python
 
     # set up the encoder
-    encoder = RareLabelEncoder(tol=0.03, n_categories=2, variables=['cabin', 'pclass', 'embarked'],
-                               replace_with='Rare')
+    encoder = RareLabelEncoder(
+        tol=0.03,
+        n_categories=2,
+        variables=['cabin', 'pclass', 'embarked'],
+        replace_with='Rare',
+        ignore_format=True,
+    )
 
     # fit the encoder
     encoder.fit(X_train)
@@ -94,9 +104,9 @@ Any category that is not in this dictionary, will be grouped.
 
 .. code:: python
 
-	{'cabin': Index(['n', 'C', 'B', 'E', 'D'], dtype='object'),
-	 'pclass': array([2, 3, 1], dtype='int64'),
-	 'embarked': array(['S', 'C', 'Q'], dtype=object)}
+    {'cabin': ['M', 'C', 'B', 'E', 'D'],
+    'pclass': [3, 1, 2],
+    'embarked': ['S', 'C', 'Q']}
 
 Now we can go ahead and transform the variables:
 

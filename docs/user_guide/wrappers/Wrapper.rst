@@ -189,16 +189,19 @@ Scikit-Learn's PolynomialFeatures.
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import PolynomialFeatures
     from sklearn.pipeline import Pipeline
+    from feature_engine.datasets import load_titanic
     from feature_engine.imputation import CategoricalImputer, MeanMedianImputer
     from feature_engine.encoding import OrdinalEncoder
     from feature_engine.wrappers import SklearnTransformerWrapper
 
-    df = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-    X = df[['pclass','sex','age','fare','embarked']].replace('?',np.nan)
-    X[['age', 'fare']] = X[['age', 'fare']].astype('float64')
-    y = df.survived
+    X, y = load_titanic(
+        return_X_y_frame=True,
+        predictors_only=True,
+        cabin="letter_only",
+    )
 
     X_train, X_test, y_train, y_test= train_test_split(X, y, test_size=0.2, random_state=42)
+
     pipeline = Pipeline(steps = [
         ('ci', CategoricalImputer(imputation_method='frequent')),
         ('mmi', MeanMedianImputer(imputation_method='mean')),
@@ -207,25 +210,29 @@ Scikit-Learn's PolynomialFeatures.
             PolynomialFeatures(interaction_only = True, include_bias=False),
             variables=['pclass','sex']))
     ])
+
     pipeline.fit(X_train)
     X_train_transformed = pipeline.transform(X_train)
     X_test_transformed = pipeline.transform(X_test)
 
     print(X_train_transformed.head())
-            age        fare      embarked  pclass  sex  pclass sex
-    772  17.000000    7.8958         0     3.0     0.0      0.0
-    543  36.000000   10.5000         0     2.0     0.0      0.0
-    289  18.000000   79.6500         0     1.0     1.0      1.0
-    10   47.000000  227.5250         1     1.0     0.0      0.0
-    147  29.532738   42.4000         0     1.0     0.0      0.0
 
-    print(X_test_transformed.head())
-            age        fare      embarked  pclass  sex  pclass sex
-    1148  35.000000   7.1250         0     3.0     0.0      0.0
-    1049  20.000000  15.7417         1     3.0     0.0      0.0
-    982   29.532738   7.8958         0     3.0     0.0      0.0
-    808   29.532738   8.0500         0     3.0     0.0      0.0
-    1195  29.532738   7.7500         2     3.0     0.0      0.0
+.. code:: python
+
+               age  sibsp  parch      fare  cabin  embarked  pclass  sex  \
+    772  17.000000      0      0    7.8958      0         0     3.0  0.0
+    543  36.000000      0      0   10.5000      0         0     2.0  0.0
+    289  18.000000      0      2   79.6500      1         0     1.0  1.0
+    10   47.000000      1      0  227.5250      2         1     1.0  0.0
+    147  29.532738      0      0   42.4000      0         0     1.0  0.0
+
+         pclass sex
+    772         0.0
+    543         0.0
+    289         1.0
+    10          0.0
+    147         0.0
+
 
 More details
 ^^^^^^^^^^^^

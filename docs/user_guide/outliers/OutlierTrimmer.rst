@@ -40,32 +40,33 @@ it into train and test:
 
 .. code:: python
 
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
-
+    from feature_engine.datasets import load_titanic
     from feature_engine.outliers import OutlierTrimmer
 
-    # Load dataset
-    def load_titanic():
-        data = pd.read_csv('https://www.openml.org/data/get_csv/16826755/phpMYEkMl')
-        data = data.replace('?', np.nan)
-        data['cabin'] = data['cabin'].astype(str).str[0]
-        data['pclass'] = data['pclass'].astype('O')
-        data['embarked'].fillna('C', inplace=True)
-        data['fare'] = data['fare'].astype('float')
-        data['fare'].fillna(data['fare'].median(), inplace=True)
-        data['age'] = data['age'].astype('float')
-        data['age'].fillna(data['age'].median(), inplace=True)
-        return data
+    X, y = load_titanic(
+        return_X_y_frame=True,
+        predictors_only=True,
+        handle_missing=True,
+    )
 
-    data = load_titanic()
 
-    # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-		data.drop(['survived', 'name', 'ticket'], axis=1),
-		data['survived'], test_size=0.3, random_state=0)
+        X, y, test_size=0.3, random_state=0,
+    )
+
+    print(X_train.head())
+
+We see the resulting data below:
+
+.. code:: python
+
+          pclass     sex        age  sibsp  parch     fare    cabin embarked
+    501        2  female  13.000000      0      1  19.5000  Missing        S
+    588        2  female   4.000000      1      1  23.0000  Missing        S
+    402        2  female  30.000000      1      0  13.8583  Missing        C
+    1193       3    male  29.881135      0      0   7.7250  Missing        Q
+    686        3  female  22.000000      0      0   7.7250  Missing        Q
 
 Now, we will set the :class:`OutlierTrimmer()` to remove outliers at the right side of the
 distribution only (param `tail`). We want the maximum values to be determined using the
@@ -75,10 +76,11 @@ list.
 
 .. code:: python
 
-    # set up the capper
-    capper = OutlierTrimmer(capping_method='iqr', tail='right', fold=1.5, variables=['age', 'fare'])
+    capper = OutlierTrimmer(capping_method='iqr',
+                            tail='right', 
+                            fold=1.5, 
+                            variables=['age', 'fare'])
 
-    # fit the capper
     capper.fit(X_train)
 
 With `fit()`, the :class:`OutlierTrimmer()` finds the values at which it should cap the variables.
@@ -96,9 +98,8 @@ We can now go ahead and remove the outliers:
 
 .. code:: python
 
-    # transform the data
-    train_t= capper.transform(X_train)
-    test_t= capper.transform(X_test)
+    train_t = capper.transform(X_train)
+    test_t = capper.transform(X_test)
 
 If we evaluate now the maximum of the variables in the transformed datasets, they should
 be <= the values observed in the attribute `right_tail_caps_`:
