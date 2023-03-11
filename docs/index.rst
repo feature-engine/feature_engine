@@ -184,6 +184,7 @@ Datetime:
 ---------
 
 - :doc:`api_doc/datetime/DatetimeFeatures`: extract features from datetime variables
+- :doc:`api_doc/datetime/DatetimeSubtraction`: computes subtractions between datetime variables
 
 Forecasting:
 ------------
