@@ -8,6 +8,7 @@ from feature_engine.selection import (
     DropDuplicateFeatures,
     DropFeatures,
     DropHighPSIFeatures,
+    ProbeFeatureSelection,
     RecursiveFeatureAddition,
     RecursiveFeatureElimination,
     SelectByShuffling,
@@ -37,6 +38,7 @@ _estimators = [
     RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy", threshold=-100),
     SelectByInformationValue(bins=2),
+    ProbeFeatureSelection(estimator=_logreg, scoring="accuracy")
 ]
 
 _multivariate_estimators = [
@@ -64,6 +66,7 @@ _model_based_estimators = [
     SelectBySingleFeaturePerformance(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy", threshold=-100),
+    ProbeFeatureSelection(estimator=_logreg, scoring="accuracy"),
 ]
 
 
