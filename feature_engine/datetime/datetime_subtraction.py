@@ -3,24 +3,8 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
-
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.creation.base_creation import BaseCreation
-from feature_engine.tags import _return_tags
-from feature_engine.dataframe_checks import (
-    _check_contains_na,
-    _check_X_matches_training_df,
-    check_X,
-)
-from feature_engine._docstrings.methods import (
-    _fit_not_learn_docstring,
-    _fit_transform_docstring,
-    _transform_creation_docstring,
-)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -29,9 +13,28 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _drop_original_docstring,
     _missing_values_docstring,
 )
-
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _transform_creation_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.creation.base_creation import BaseCreation
+from feature_engine.dataframe_checks import (
+    _check_contains_na,
+    _check_X_matches_training_df,
+    check_X,
+)
 from feature_engine.variable_handling import find_or_check_datetime_variables
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+
+_demo_df = """
+    >>> X = pd.DataFrame({
+    >>>     "date1": ["2022-09-18", "2022-10-27", "2022-12-24"],
+    >>>     "date2": ["2022-08-18", "2022-08-27", "2022-06-24"]})
+        """.rstrip()
 
 
 @Substitution(
@@ -42,12 +45,17 @@ from feature_engine.variable_handling import find_or_check_datetime_variables
     fit=_fit_not_learn_docstring,
     transform=_transform_creation_docstring,
     fit_transform=_fit_transform_docstring,
+    demo_df=_demo_df,
 )
 class DatetimeSubtraction(BaseCreation):
     """
     DatetimeSubtraction() applies datetime subtraction between a group of datetime
     variables and one or more datetime features, adding the resulting variables to the
     dataframe.
+
+    DatetimeSubtraction() works with variables cast as datetime or object. It subtracts
+    the variables listed in the parameter `reference` from those listed in the
+    parameter `variables`.
 
     More details in the :ref:`User Guide <datetime_subtraction>`.
 
@@ -109,9 +117,7 @@ class DatetimeSubtraction(BaseCreation):
 
     >>> import pandas as pd
     >>> from feature_engine.datetime import DatetimeSubtraction
-    >>> X = pd.DataFrame({
-    >>>     "date1" : ["2022-09-18", "2022-10-27", "2022-12-24"],
-    >>>     "date2" : ["2022-08-18", "2022-08-27", "2022-06-24"]})
+    {demo_df}
     >>> dtf = DatetimeSubtraction(variables=["date1"], reference=["date2"])
     >>> dtf.fit(X)
     >>> dtf.transform(X)
@@ -120,6 +126,7 @@ class DatetimeSubtraction(BaseCreation):
     1  2022-10-27  2022-08-27             61.0
     2  2022-12-24  2022-06-24            183.0
     """
+
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]],
@@ -133,10 +140,23 @@ class DatetimeSubtraction(BaseCreation):
     ) -> None:
 
         valid_output_units = {
-            "D", "Y", "M", "W", "h", "m", "s", "ms", "us", "μs", "ns", "ps", "fs", "as",
+            "D",
+            "Y",
+            "M",
+            "W",
+            "h",
+            "m",
+            "s",
+            "ms",
+            "us",
+            "μs",
+            "ns",
+            "ps",
+            "fs",
+            "as",
         }
 
-        if output_unit not in valid_output_units:
+        if not isinstance(output_unit, str) or output_unit not in valid_output_units:
             raise ValueError(
                 f"output_unit accepts the following values: "
                 f"{valid_output_units}. Got {output_unit} instead."
@@ -236,14 +256,12 @@ class DatetimeSubtraction(BaseCreation):
                     yearfirst=self.yearfirst,
                     utc=self.utc,
                 )
-                for variable in set(self.variables_+self.reference_)
+                for variable in set(self.variables_ + self.reference_)
             ],
             axis=1,
         )
 
-        non_dt_columns = datetime_df.columns[
-            ~datetime_df.apply(is_datetime)
-        ].tolist()
+        non_dt_columns = datetime_df.columns[~datetime_df.apply(is_datetime)].tolist()
 
         if non_dt_columns:
             raise ValueError(
