@@ -1,10 +1,10 @@
 import pandas as pd
 import pytest
-
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Lasso, LogisticRegression
-from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils.validation import column_or_1d
+
 from feature_engine.selection import ProbeFeatureSelection
 
 _input_params = [
@@ -13,6 +13,7 @@ _input_params = [
     (LogisticRegression(), "roc_auc", "normal", 5, 2, 73),
     (DecisionTreeRegressor(), "r2", "uniform", 4, 10, 84),
 ]
+
 
 @pytest.mark.parametrize(
     "_estimator, _scoring, _distribution, _cv, _n_probes, _random_state", _input_params
@@ -124,7 +125,7 @@ def test_generate_probe_features(load_diabetes_dataset):
         distribution="all",
         cv=3,
         random_state=1,
-        confirm_variables=False
+        confirm_variables=False,
     )
 
     probe_features = sel._generate_probe_features(n_probes)
@@ -163,6 +164,7 @@ def test_get_features_to_drop(df_test):
     expected_results = ["var_2", "var_3", "var_5", "var_9"]
 
     assert features_to_drop == expected_results
+
 
 def test_transformer_with_normal_distribution(load_diabetes_dataset):
     X, y = load_diabetes_dataset

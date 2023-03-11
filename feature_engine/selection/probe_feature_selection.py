@@ -2,22 +2,20 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import cross_validate
 
-from feature_engine.variable_handling import find_or_check_numerical_variables
-from feature_engine.dataframe_checks import check_X_y
 from feature_engine._docstrings.fit_attributes import (
     _feature_importances_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
-
 from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
     _estimator_docstring,
 )
-
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection._docstring import (
     _cv_docstring,
     _features_to_drop_docstring,
@@ -28,11 +26,11 @@ from feature_engine.selection._docstring import (
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
-
 from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
-from sklearn.model_selection import cross_validate
+from feature_engine.variable_handling import find_or_check_numerical_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
+
 
 @Substitution(
     estimator=_estimator_docstring,
@@ -180,7 +178,7 @@ class ProbeFeatureSelection(BaseSelector):
 
         # required for a (train/test) split dataset
         X.reset_index(drop=True, inplace=True)
-        
+
         X_new = pd.concat([X, self.probe_features_], axis=1)
 
         # train model with all variables including the probe features
@@ -246,7 +244,7 @@ class ProbeFeatureSelection(BaseSelector):
 
                 elif self.distribution == "uniform":
                     df[f"uniform_probe_{i}"] = (
-                            np.random.uniform(0, 1, 1).tolist() * n_obs
+                        np.random.uniform(0, 1, 1).tolist() * n_obs
                     )
 
         return df

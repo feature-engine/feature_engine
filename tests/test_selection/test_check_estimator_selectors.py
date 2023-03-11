@@ -11,11 +11,11 @@ from feature_engine.selection import (
     ProbeFeatureSelection,
     RecursiveFeatureAddition,
     RecursiveFeatureElimination,
+    SelectByInformationValue,
     SelectByShuffling,
     SelectBySingleFeaturePerformance,
     SelectByTargetMeanPerformance,
     SmartCorrelatedSelection,
-    SelectByInformationValue,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 from tests.estimator_checks.init_params_triggered_functionality_checks import (
@@ -38,7 +38,7 @@ _estimators = [
     RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy", threshold=-100),
     SelectByInformationValue(bins=2),
-    ProbeFeatureSelection(estimator=_logreg, scoring="accuracy")
+    ProbeFeatureSelection(estimator=_logreg, scoring="accuracy"),
 ]
 
 _multivariate_estimators = [
@@ -56,7 +56,9 @@ _univariate_estimators = [
     DropHighPSIFeatures(bins=5),
     SelectByTargetMeanPerformance(bins=3, regression=False, threshold=0),
     SelectBySingleFeaturePerformance(
-        estimator=_logreg, scoring="accuracy", threshold=0,
+        estimator=_logreg,
+        scoring="accuracy",
+        threshold=0,
     ),
     SelectByInformationValue(bins=2),
 ]
