@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-
 from sklearn.pipeline import Pipeline
 
 from feature_engine.datetime import DatetimeSubtraction
@@ -38,19 +37,39 @@ def test_mandatory_init_parameters(_input_vars):
         DatetimeSubtraction(variables=["var1"])
 
 
-@pytest.mark.parametrize("output", [ "D", "Y", "M", "W", "h", "m", "s", "ms", "us", "μs", "ns", "ps", "fs", "as",])
+@pytest.mark.parametrize(
+    "output",
+    [
+        "D",
+        "Y",
+        "M",
+        "W",
+        "h",
+        "m",
+        "s",
+        "ms",
+        "us",
+        "μs",
+        "ns",
+        "ps",
+        "fs",
+        "as",
+    ],
+)
 def test_valid_output_unit_param(output):
-    transformer = DatetimeSubtraction(variables=["var1"], reference=["var1"], output_unit=output)
+    transformer = DatetimeSubtraction(
+        variables=["var1"], reference=["var1"], output_unit=output
+    )
     assert transformer.output_unit == output
 
 
-@pytest.mark.parametrize("output", [ ["D"], "J", True, 1, 1.5])
+@pytest.mark.parametrize("output", [["D"], "J", True, 1, 1.5])
 def test_output_unit_raises_error_when_not_valid(output):
     with pytest.raises(ValueError):
         DatetimeSubtraction(variables=["var1"], reference=["var1"], output_unit=output)
 
 
-@pytest.mark.parametrize("output", [ ["D"], "J", True, 1, 1.5])
+@pytest.mark.parametrize("output", [["D"], "J", True, 1, 1.5])
 def test_output_unit_raises_error_when_not_valid(output):
     with pytest.raises(ValueError):
         DatetimeSubtraction(variables=["var1"], reference=["var1"], output_unit=output)
@@ -64,45 +83,149 @@ def test_raises_error_when_variables_not_datetime(df_datetime):
 
 
 def test_sets_variables_if_datetime(df_datetime):
-    tr = DatetimeSubtraction(variables="date_obj1", reference="date_obj1").fit(df_datetime)
+    tr = DatetimeSubtraction(variables="date_obj1", reference="date_obj1").fit(
+        df_datetime
+    )
     assert tr.variables_ == ["date_obj1"]
     assert tr.reference_ == ["date_obj1"]
 
 
 def test_raises_error_when_nan_in_fit():
-    df = pd.DataFrame({
-        "dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan],
-        "dates_full":["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
-    })
+    df = pd.DataFrame(
+        {
+            "dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan],
+            "dates_full": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+        }
+    )
 
-    tr = DatetimeSubtraction(variables="dates_na", reference="dates_full", missing_values="raise")
+    tr = DatetimeSubtraction(
+        variables="dates_na", reference="dates_full", missing_values="raise"
+    )
     with pytest.raises(ValueError):
         tr.fit(df)
 
-    tr = DatetimeSubtraction(variables="dates_full", reference="dates_na", missing_values="raise")
+    tr = DatetimeSubtraction(
+        variables="dates_full", reference="dates_na", missing_values="raise"
+    )
     with pytest.raises(ValueError):
         tr.fit(df)
 
 
 def test_raises_error_when_nan_in_transform():
-    df_fit = pd.DataFrame({
-        "dates_na": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
-        "dates_full":["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
-    })
-    df_transform = pd.DataFrame({
-        "dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan],
-        "dates_full":["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
-    })
+    df_fit = pd.DataFrame(
+        {
+            "dates_na": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+            "dates_full": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+        }
+    )
+    df_transform = pd.DataFrame(
+        {
+            "dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan],
+            "dates_full": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+        }
+    )
 
-    tr = DatetimeSubtraction(variables="dates_na", reference="dates_full", missing_values="raise")
+    tr = DatetimeSubtraction(
+        variables="dates_na", reference="dates_full", missing_values="raise"
+    )
     tr.fit(df_fit)
     with pytest.raises(ValueError):
         tr.fit(df_transform)
 
-    tr = DatetimeSubtraction(variables="dates_full", reference="dates_na", missing_values="raise")
+    tr = DatetimeSubtraction(
+        variables="dates_full", reference="dates_na", missing_values="raise"
+    )
     tr.fit(df_fit)
     with pytest.raises(ValueError):
         tr.fit(df_transform)
 
 
+def test_get_feature_names_out():
+    df = pd.DataFrame(
+        {
+            "d1": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+            "d2": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+            "d3": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+            "d4": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+        }
+    )
+    input_vars = df.columns.to_list()
 
+    tr = DatetimeSubtraction(variables="d1", reference="d2")
+    tr.fit(df)
+    assert tr.get_feature_names_out() == input_vars + ["d1_sub_d2"]
+
+    tr = DatetimeSubtraction(variables=["d1", "d2"], reference="d3")
+    tr.fit(df)
+    assert tr.get_feature_names_out() == input_vars + ["d1_sub_d3", "d2_sub_d3"]
+
+    tr = DatetimeSubtraction(variables="d3", reference=["d1", "d2"])
+    tr.fit(df)
+    assert tr.get_feature_names_out() == input_vars + ["d3_sub_d1", "d3_sub_d2"]
+
+    tr = DatetimeSubtraction(variables=["d1", "d2"], reference=["d3", "d4"])
+    tr.fit(df)
+    assert tr.get_feature_names_out() == input_vars + [
+        "d1_sub_d3",
+        "d2_sub_d3",
+        "d1_sub_d4",
+        "d2_sub_d4",
+    ]
+
+
+@pytest.mark.parametrize(
+    "unit, expected",
+    [
+        ("D", [31, 61, 183]),
+        ("M", [1.018501, 2.004148, 6.012444]),
+        ("h", [744.0, 1464.0, 4392.0]),
+    ],
+)
+def test_subtraction_units(unit, expected):
+    df_input = pd.DataFrame(
+        {
+            "date1": ["2022-09-18", "2022-10-27", "2022-12-24"],
+            "date2": ["2022-08-18", "2022-08-27", "2022-06-24"],
+        }
+    )
+    df_expected = pd.DataFrame(
+        {
+            "date1": ["2022-09-18", "2022-10-27", "2022-12-24"],
+            "date2": ["2022-08-18", "2022-08-27", "2022-06-24"],
+            "date1_sub_date2": expected,
+        }
+    )
+
+    dtf = DatetimeSubtraction(
+        variables=["date1"], reference=["date2"], output_unit=unit
+    )
+    df_output = dtf.fit_transform(df_input)
+    pd.testing.assert_frame_equal(df_output, df_expected, check_dtype=False)
+
+
+def test_multiple_subtractions():
+    df_input = pd.DataFrame(
+        {
+            "date1": ["2022-09-01", "2022-10-01", "2022-12-01"],
+            "date2": ["2022-09-15", "2022-10-15", "2022-12-15"],
+            "date3": ["2022-08-01", "2022-09-01", "2022-11-01"],
+            "date4": ["2022-08-15", "2022-09-15", "2022-11-15"],
+        }
+    )
+    df_expected = pd.DataFrame(
+        {
+            "date1": ["2022-09-01", "2022-10-01", "2022-12-01"],
+            "date2": ["2022-09-15", "2022-10-15", "2022-12-15"],
+            "date3": ["2022-08-01", "2022-09-01", "2022-11-01"],
+            "date4": ["2022-08-15", "2022-09-15", "2022-11-15"],
+            "date1_sub_date3": [31, 30, 30],
+            "date2_sub_date3": [45, 44, 44],
+            "date1_sub_date4": [17, 16, 16],
+            "date2_sub_date4": [31, 30, 30],
+        }
+    )
+    dtf = DatetimeSubtraction(
+        variables=["date1", "date2"], reference=["date3", "date4"]
+    )
+    df_output = dtf.fit_transform(df_input)
+    pd.testing.assert_frame_equal(df_output, df_expected, check_dtype=False)
