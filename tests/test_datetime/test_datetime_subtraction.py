@@ -1,9 +1,18 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.pipeline import Pipeline
 
 from feature_engine.datetime import DatetimeSubtraction
+from tests.estimator_checks.estimator_checks import (
+    check_raises_error_when_input_not_a_df,
+)
+from tests.estimator_checks.fit_functionality_checks import check_feature_names_in
+from tests.estimator_checks.init_params_triggered_functionality_checks import (
+    check_drop_original_variables,
+)
+from tests.estimator_checks.non_fitted_error_checks import check_raises_non_fitted_error
+
+# ========= init functionality tests
 
 
 @pytest.mark.parametrize(
@@ -15,7 +24,7 @@ from feature_engine.datetime import DatetimeSubtraction
         [0, 1, 1, 2],
     ],
 )
-def test_init_parameters_variables_and_reference_raises_errors(_input_vars):
+def test_init_parameters_variables_and_reference_raise_error(_input_vars):
     with pytest.raises(ValueError):
         assert DatetimeSubtraction(variables=_input_vars, reference=["var1"])
     with pytest.raises(ValueError):
@@ -23,14 +32,14 @@ def test_init_parameters_variables_and_reference_raises_errors(_input_vars):
 
 
 @pytest.mark.parametrize("_input_vars", ["var1", ["var1"], ["var1", "var2"]])
-def test_init_parameters_variables_and_reference(_input_vars):
+def test_init_parameters_variables_and_reference_correct_assignment(_input_vars):
     transformer = DatetimeSubtraction(variables=_input_vars, reference=_input_vars)
     assert transformer.variables == _input_vars
     assert transformer.reference == _input_vars
 
 
 @pytest.mark.parametrize("_input_vars", ["var1", ["var1"], ["var1", "var2"]])
-def test_mandatory_init_parameters(_input_vars):
+def test_init_parameters_variables_and_reference_are_mandatory(_input_vars):
     with pytest.raises(TypeError):
         DatetimeSubtraction(reference=["var1"])
     with pytest.raises(TypeError):
@@ -69,12 +78,37 @@ def test_output_unit_raises_error_when_not_valid(output):
         DatetimeSubtraction(variables=["var1"], reference=["var1"], output_unit=output)
 
 
-@pytest.mark.parametrize("output", [["D"], "J", True, 1, 1.5])
-def test_output_unit_raises_error_when_not_valid(output):
+@pytest.mark.parametrize("param", [True, False])
+def test_drop_original_correct_assignment(param):
+    transformer = DatetimeSubtraction(
+        variables=["var1"], reference=["var1"], drop_original=param
+    )
+    assert transformer.drop_original is param
+
+
+@pytest.mark.parametrize("param", [["D"], "J", 10, 1.5])
+def test_drop_original_raises_error_when_not_valid(param):
     with pytest.raises(ValueError):
-        DatetimeSubtraction(variables=["var1"], reference=["var1"], output_unit=output)
+        DatetimeSubtraction(variables=["var1"], reference=["var1"], drop_original=param)
 
 
+@pytest.mark.parametrize("param", ["ignore", "raise"])
+def test_missing_values_correct_assignment(param):
+    transformer = DatetimeSubtraction(
+        variables=["var1"], reference=["var1"], missing_values=param
+    )
+    assert transformer.missing_values is param
+
+
+@pytest.mark.parametrize("param", [["D"], "J", 10, 1.5])
+def test_missing_values_raises_error_when_not_valid(param):
+    with pytest.raises(ValueError):
+        DatetimeSubtraction(
+            variables=["var1"], reference=["var1"], missing_values=param
+        )
+
+
+# ==== fit functionality
 def test_raises_error_when_variables_not_datetime(df_datetime):
     with pytest.raises(TypeError):
         DatetimeSubtraction(variables="Age", reference="date_obj1").fit(df_datetime)
@@ -111,6 +145,7 @@ def test_raises_error_when_nan_in_fit():
         tr.fit(df)
 
 
+# transform tests
 def test_raises_error_when_nan_in_transform():
     df_fit = pd.DataFrame(
         {
@@ -138,39 +173,6 @@ def test_raises_error_when_nan_in_transform():
     tr.fit(df_fit)
     with pytest.raises(ValueError):
         tr.fit(df_transform)
-
-
-def test_get_feature_names_out():
-    df = pd.DataFrame(
-        {
-            "d1": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
-            "d2": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
-            "d3": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
-            "d4": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
-        }
-    )
-    input_vars = df.columns.to_list()
-
-    tr = DatetimeSubtraction(variables="d1", reference="d2")
-    tr.fit(df)
-    assert tr.get_feature_names_out() == input_vars + ["d1_sub_d2"]
-
-    tr = DatetimeSubtraction(variables=["d1", "d2"], reference="d3")
-    tr.fit(df)
-    assert tr.get_feature_names_out() == input_vars + ["d1_sub_d3", "d2_sub_d3"]
-
-    tr = DatetimeSubtraction(variables="d3", reference=["d1", "d2"])
-    tr.fit(df)
-    assert tr.get_feature_names_out() == input_vars + ["d3_sub_d1", "d3_sub_d2"]
-
-    tr = DatetimeSubtraction(variables=["d1", "d2"], reference=["d3", "d4"])
-    tr.fit(df)
-    assert tr.get_feature_names_out() == input_vars + [
-        "d1_sub_d3",
-        "d2_sub_d3",
-        "d1_sub_d4",
-        "d2_sub_d4",
-    ]
 
 
 @pytest.mark.parametrize(
@@ -229,3 +231,51 @@ def test_multiple_subtractions():
     )
     df_output = dtf.fit_transform(df_input)
     pd.testing.assert_frame_equal(df_output, df_expected, check_dtype=False)
+
+
+# additional methods
+
+
+def test_get_feature_names_out():
+    df = pd.DataFrame(
+        {
+            "d1": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+            "d2": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+            "d3": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+            "d4": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+        }
+    )
+    input_vars = df.columns.to_list()
+
+    tr = DatetimeSubtraction(variables="d1", reference="d2")
+    tr.fit(df)
+    assert tr.get_feature_names_out() == input_vars + ["d1_sub_d2"]
+
+    tr = DatetimeSubtraction(variables=["d1", "d2"], reference="d3")
+    tr.fit(df)
+    assert tr.get_feature_names_out() == input_vars + ["d1_sub_d3", "d2_sub_d3"]
+
+    tr = DatetimeSubtraction(variables="d3", reference=["d1", "d2"])
+    tr.fit(df)
+    assert tr.get_feature_names_out() == input_vars + ["d3_sub_d1", "d3_sub_d2"]
+
+    tr = DatetimeSubtraction(variables=["d1", "d2"], reference=["d3", "d4"])
+    tr.fit(df)
+    assert tr.get_feature_names_out() == input_vars + [
+        "d1_sub_d3",
+        "d2_sub_d3",
+        "d1_sub_d4",
+        "d2_sub_d4",
+    ]
+
+
+# common tests
+estimator = [DatetimeSubtraction(variables=["date1"], reference=["date2"])]
+
+
+@pytest.mark.parametrize("estimator", estimator)
+def test_common_tests(estimator):
+    check_raises_non_fitted_error(estimator)
+    check_raises_error_when_input_not_a_df(estimator)
+    check_feature_names_in(estimator)
+    check_drop_original_variables(estimator)

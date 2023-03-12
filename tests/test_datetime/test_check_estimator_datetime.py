@@ -1,9 +1,9 @@
 import pytest
 
-from feature_engine.datetime import DatetimeFeatures, DatetimeSubtraction
+from feature_engine.datetime import DatetimeFeatures
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
-_estimators = [DatetimeFeatures()]#, DatetimeSubtraction(variables=["var_1", "var_2"], reference=["var_3"])]
+_estimators = [DatetimeFeatures()]
 
 
 @pytest.mark.parametrize("estimator", _estimators)
