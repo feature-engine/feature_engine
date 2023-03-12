@@ -161,7 +161,7 @@ class DropCorrelatedFeatures(BaseSelector):
             raise ValueError(
                 "order_by takes only values 'nan', 'unique', 'alphabetical', None."
             )
-            
+
         if missing_values == "raise" and order_by == "nan":
             raise ValueError(
                 "missing_values can't be set to 'raise' "
