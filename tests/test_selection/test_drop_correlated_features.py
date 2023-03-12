@@ -123,26 +123,43 @@ def test_callable_method(df_correlated_double, random_uniform_method):
     assert transformer.n_features_in_ == len(X.columns)
 
 
-def test_error_method_supplied(df_correlated_double):
-
-    X = df_correlated_double
-    method = "hola"
-
-    transformer = DropCorrelatedFeatures(variables=None, method=method, threshold=0.8)
-
-    with pytest.raises(ValueError) as errmsg:
-        _ = transformer.fit_transform(X)
-
-    exceptionmsg = errmsg.value.args[0]
-
-    assert (
-        exceptionmsg
-        == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
-        + f" '{method}' was supplied"
-    )
-
-
 @pytest.mark.parametrize("order_by", ["nulls", "uniqu", "cvv", 1, [0]])
 def test_invalid_sorting_options(order_by):
     with pytest.raises(ValueError):
         DropCorrelatedFeatures(order_by=order_by)
+
+
+@pytest.mark.parametrize("threshold", [-1, 0, 2])
+def test_invalid_thresholds(threshold):
+    with pytest.raises(ValueError):
+        DropCorrelatedFeatures(threshold=threshold)
+
+
+@pytest.mark.parametrize("method", ["hola", 1, pass])
+def test_invalid_method(method):
+    with pytest.raises(ValueError):
+        DropCorrelatedFeatures(method=method)
+
+
+@pytest.mark.parametrize("order_by", [None, "cv", "nan", "unqiue"])
+def test_consistency_params(df_correlated_single, order_by):
+    transformer = DropCorrelatedFeatures(
+        variables=None,
+        method="pearson",
+        threshold=0.8,
+        order_by=order_by
+    )
+    X = transformer.fit_transform(df_correlated_single)
+
+    # expected result
+    df = df_correlated_single.drop("var_2", axis=1)
+
+    # test init params
+    assert transformer.method == "pearson"
+    assert transformer.threshold == 0.8
+
+    # test fit attrs
+    assert transformer.features_to_drop_ == {"var_2"}
+    assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
+    # test transform output
+    pd.testing.assert_frame_equal(X, df)
