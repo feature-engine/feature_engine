@@ -129,13 +129,13 @@ def test_invalid_sorting_options(order_by):
         DropCorrelatedFeatures(order_by=order_by)
 
 
-@pytest.mark.parametrize("threshold", [-1, 0, 2])
+@pytest.mark.parametrize("threshold", [-1, 0, 2, [0.5]])
 def test_invalid_thresholds(threshold):
     with pytest.raises(ValueError):
         DropCorrelatedFeatures(threshold=threshold)
 
 
-@pytest.mark.parametrize("method", ["hola", 1, pass])
+@pytest.mark.parametrize("method", ["hola", 1, ["pearson"]])
 def test_invalid_method(method):
     with pytest.raises(ValueError):
         DropCorrelatedFeatures(method=method)
