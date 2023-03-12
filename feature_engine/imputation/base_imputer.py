@@ -60,9 +60,7 @@ class BaseImputer(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         X = self._transform(X)
 
         # Replace missing data with learned parameters
-        X.fillna(value=self.imputer_dict_, inplace=True)
-
-        return X
+        return X.fillna(value=self.imputer_dict_)
 
     def _get_feature_names_in(self, X):
         """Get the names and number of features in the train set (the dataframe

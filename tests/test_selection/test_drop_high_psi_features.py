@@ -266,7 +266,7 @@ def test_split_col_not_included_in_variables(df):
 def test_error_if_na_in_split_col(df):
     """Test an error is raised if the split column contains missing values."""
     data = df.copy()
-    data["var_3"].iloc[15] = np.nan
+    data.iloc[15, data.columns.get_loc("var_3")] = np.nan
 
     transformer = DropHighPSIFeatures(split_col="var_3")
 
@@ -277,7 +277,7 @@ def test_error_if_na_in_split_col(df):
 def test_raise_error_if_na_in_df(df):
     """Test an error is raised when missing values is set to raise."""
     data = df.copy()
-    data["var_3"].iloc[15] = np.nan
+    data.iloc[15, data.columns.get_loc("var_3")] = np.nan
 
     transformer = DropHighPSIFeatures(missing_values="raise")
 
@@ -288,7 +288,7 @@ def test_raise_error_if_na_in_df(df):
 def test_missing_value_ignored(df):
     """Test if PSI are computed when missing values are present in the dataframe."""
     data = df.copy()
-    data["var_3"].iloc[15] = np.nan
+    data.iloc[15, data.columns.get_loc("var_3")] = np.nan
 
     var_col = [col for col in data if "var" in col]
 
@@ -301,7 +301,7 @@ def test_missing_value_ignored(df):
 def test_raise_error_if_inf_in_df(df):
     """Test an error is raised for inf when missing values is set to raise."""
     data = df.copy()
-    data["var_3"].iloc[15] = np.inf
+    data.iloc[15, data.columns.get_loc("var_3")] = np.nan
 
     transformer = DropHighPSIFeatures(missing_values="raise")
 

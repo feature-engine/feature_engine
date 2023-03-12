@@ -134,7 +134,6 @@ class CategoricalImputer(BaseImputer):
         return_object: bool = False,
         ignore_format: bool = False,
     ) -> None:
-
         if imputation_method not in ["missing", "frequent"]:
             raise ValueError(
                 "imputation_method takes only values 'missing' or 'frequent'"
@@ -180,7 +179,6 @@ class CategoricalImputer(BaseImputer):
             self.imputer_dict_ = {var: self.fill_value for var in self.variables_}
 
         elif self.imputation_method == "frequent":
-
             # if imputing only 1 variable:
             if len(self.variables_) == 1:
                 var = self.variables_[0]
@@ -219,7 +217,6 @@ class CategoricalImputer(BaseImputer):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-
         # Frequent category imputation
         if self.imputation_method == "frequent":
             X = super().transform(X)
@@ -230,13 +227,18 @@ class CategoricalImputer(BaseImputer):
 
             # if variable is of type category, we need to add the new
             # category, before filling in the nan
+            add_cats = {}
             for variable in self.variables_:
                 if pd.api.types.is_categorical_dtype(X[variable]):
-                    X[variable].cat.add_categories(
-                        self.imputer_dict_[variable], inplace=True
+                    add_cats.update(
+                        {
+                            variable: X[variable].cat.add_categories(
+                                self.imputer_dict_[variable]
+                            )
+                        }
                     )
 
-            X.fillna(self.imputer_dict_, inplace=True)
+            X = X.assign(**add_cats).fillna(self.imputer_dict_)
 
         # add additional step to return variables cast as object
         if self.return_object:
