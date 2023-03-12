@@ -309,13 +309,72 @@ We see the resulting dataframe with the time difference in microseconds:
     2  11:59:21-8  11:59:21-8-2       21600000.0
     3   08:44:23Z    08:44:23+3       10800000.0
 
+Adding arbitrary names to the new variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Often, we want to compute just a few time differences. In this case, we may want as well
+to assign the new variables specific names. In this code example, we do so:
+
+.. code:: python
+
+    import pandas as pd
+    from feature_engine.datetime import DatetimeSubtraction
+
+    data = pd.DataFrame({
+        "date1": pd.date_range("2019-03-05", periods=5, freq="D"),
+        "date2": pd.date_range("2018-03-05", periods=5, freq="W")})
+
+    dtf = DatetimeSubtraction(
+        variables="date1",
+        reference="date2",
+        new_variables_names=["my_new_var"]
+        )
+
+    data = dtf.fit_transform(data)
+
+    print(data)
+
+In the resulting dataframe, we see that the time difference was captured in a variable
+called `my_new_var`:
+
+.. code:: python
+
+           date1      date2  my_new_var
+    0 2019-03-05 2018-03-11       359.0
+    1 2019-03-06 2018-03-18       353.0
+    2 2019-03-07 2018-03-25       347.0
+    3 2019-03-08 2018-04-01       341.0
+    4 2019-03-09 2018-04-08       335.0
+
+We should be mindful to pass a list of variales containing as many names as new variables.
+The number of variables that will be created is obtained by multiplying the number of variables
+in the parameter `variables` by the number of variables in the parameter `reference`.
+
+get_feature_names_out()
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Finally, we can extract the names of the transformed dataframe for compatibility with the
 Scikit-learn pipeline:
 
 .. code:: python
 
+    import pandas as pd
+    from feature_engine.datetime import DatetimeSubtraction
+
+    data = pd.DataFrame({
+        "date1" : ["2022-09-01", "2022-10-01", "2022-12-01"],
+        "date2" : ["2022-09-15", "2022-10-15", "2022-12-15"],
+        "date3" : ["2022-08-01", "2022-09-01", "2022-11-01"],
+        "date4" : ["2022-08-15", "2022-09-15", "2022-11-15"],
+    })
+
+    dtf = DatetimeSubtraction(variables=["date1", "date2"], reference=["date3", "date4"])
+    dtf.fit(data)
+
     dtf.get_feature_names_out()
+
+Below the name of the variables that will appear in any dataframe resulting from applying
+the `transform()` method:
 
 .. code:: python
 
@@ -328,6 +387,9 @@ Scikit-learn pipeline:
      'date1_sub_date4',
      'date2_sub_date4']
 
+
+Combining extraction and subtraction of datetime features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can also combine the creation of numerical variables from datetime features with the
 creation of new features by subtraction of datetime variables:
@@ -360,6 +422,9 @@ creation of new features by subtraction of datetime variables:
 
     print(data)
 
+In the following output we see the new dataframe contaning the features that were extracted
+from the different datetime variables followed by those created by capturing the time
+difference:
 
 .. code:: python
 
@@ -383,7 +448,14 @@ creation of new features by subtraction of datetime variables:
     1             30.0             44.0             16.0             30.0
     2             30.0             44.0             16.0             30.0
 
+More details
+------------
+
 For tutorials on how to create and use features from datetime columns, check the following courses:
 
 - `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_.
 - `Feature Engineering for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_.
+
+And the following book:
+
+- `Python Feature Engineering Cookbook <https://www.amazon.com/Python-Feature-Engineering-Cookbook-transforming-dp-1804611301/dp/1804611301>`_.
