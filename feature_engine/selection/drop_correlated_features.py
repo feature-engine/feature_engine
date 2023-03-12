@@ -83,7 +83,7 @@ class DropCorrelatedFeatures(BaseSelector):
 
         - None - preserve original order of the dataframe
         - 'nan' - sort columns by number of missing values (ascending)
-        - 'unqiue' - sort columns by number of unique values (descending)
+        - 'unique' - sort columns by number of unique values (descending)
         - 'cv' - sort columns by coefficient of variation (descending).
 
     {missing_values}
@@ -208,11 +208,11 @@ class DropCorrelatedFeatures(BaseSelector):
 
         # sort columns for consistency
         if self.order_by == "nan":
-            X = X[X.isna().sum(1).index]
+            X = X[X.isna().sum(0).index]
         elif self.order_by == "unique":
-            X = X[X.nunique().sum(1).index]
+            X = X[X.nunique().sum(0).index]
         elif self.order_by == "cv":
-            X = X[(X.std(axis=1, ddof=0) / X.mean(1)).sort_values().index]
+            X = X[(X.std(axis=0, ddof=0) / X.mean(0)).sort_values().index]
 
         # the correlation matrix
         _correlated_matrix = X[self.variables_].corr(method=self.method)
