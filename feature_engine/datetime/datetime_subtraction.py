@@ -76,6 +76,11 @@ class DatetimeSubtraction(BaseCreation):
         The list of datetime reference variables that will be subtracted from
         `variables` (right side of the subtraction operation).
 
+    new_variables_names: list, default=None
+        Names of the new variables. You have the option to pass a list with the names
+        you'd like to assing to the new variables. If `None`, the transformer will
+        assign arbitrary names.
+
     output_unit: string, default='D'
         The string representation of the output unit of the datetime differences.
         The default is `D` for day. This parameter is passed to `numpy.timedelta64`.
@@ -141,6 +146,7 @@ class DatetimeSubtraction(BaseCreation):
         self,
         variables: Union[None, int, str, List[Union[str, int]]],
         reference: Union[None, int, str, List[Union[str, int]]],
+        new_variables_names: Union[None, List[str], str] = None,
         output_unit: str = "D",
         missing_values: str = "ignore",
         drop_original: bool = False,
@@ -172,9 +178,21 @@ class DatetimeSubtraction(BaseCreation):
                 f"{valid_output_units}. Got {output_unit} instead."
             )
 
+        if new_variables_names is not None:
+            if (
+                not isinstance(new_variables_names, list)
+                or not all(isinstance(var, str) for var in new_variables_names)
+                or len(set(new_variables_names)) != len(new_variables_names)
+            ):
+                raise ValueError(
+                    "new_variable_names should be None or a list of unique strings. "
+                    f"Got {new_variables_names} instead."
+                )
+
         super().__init__(missing_values, drop_original)
         self.variables = _check_init_parameter_variables(variables)
         self.reference = _check_init_parameter_variables(reference)
+        self.new_variables_names = new_variables_names
         self.output_unit = output_unit
         self.dayfirst = dayfirst
         self.yearfirst = yearfirst
@@ -199,6 +217,17 @@ class DatetimeSubtraction(BaseCreation):
         # check variables are datetime
         self.reference_ = find_or_check_datetime_variables(X, self.reference)
         self.variables_ = find_or_check_datetime_variables(X, self.variables)
+
+        if self.new_variables_names is not None:
+            if len(self.new_variables_names) != len(self.variables_) * len(
+                self.reference_
+            ):
+                raise ValueError(
+                    f"{len(self.variables_) * len(self.reference_)} new variables will "
+                    f"be created but only {len(self.new_variables_names)} new variable "
+                    f"names were provided. Please check the variables list and try "
+                    f"again."
+                )
 
         # check if dataset contains na
         if self.missing_values == "raise":
@@ -292,13 +321,19 @@ class DatetimeSubtraction(BaseCreation):
                 .apply(lambda s: s / np.timedelta64(1, self.output_unit))
             )
 
+        if self.new_variables_names is not None:
+            new_df.columns = self.new_variables_names
+
         return new_df
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""
-        feature_names = [
-            f"{var}_sub_{reference}"
-            for reference in self.reference_
-            for var in self.variables_
-        ]
+        if self.new_variables_names is not None:
+            feature_names = self.new_variables_names
+        else:
+            feature_names = [
+                f"{var}_sub_{reference}"
+                for reference in self.reference_
+                for var in self.variables_
+            ]
         return feature_names

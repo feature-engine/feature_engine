@@ -47,6 +47,34 @@ def test_init_parameters_variables_and_reference_are_mandatory(_input_vars):
 
 
 @pytest.mark.parametrize(
+    "_input_vars",
+    [
+        ("var1", "var2"),
+        {"var1": 1, "var2": 2},
+        "var1",
+    ],
+)
+def test_new_variable_names_raise_errors(_input_vars):
+    with pytest.raises(ValueError):
+        assert DatetimeSubtraction(
+            variables="var1", reference="var2", new_variables_names=_input_vars
+        )
+
+
+def test_new_variable_names_correct_assignment():
+    tr = DatetimeSubtraction(variables="var1", reference="var2")
+    assert tr.new_variables_names is None
+    tr = DatetimeSubtraction(
+        variables="var1", reference="var2", new_variables_names=["var1"]
+    )
+    assert tr.new_variables_names == ["var1"]
+    tr = DatetimeSubtraction(
+        variables="var1", reference="var2", new_variables_names=["var1", "var2"]
+    )
+    assert tr.new_variables_names == ["var1", "var2"]
+
+
+@pytest.mark.parametrize(
     "output",
     [
         "D",
@@ -122,6 +150,15 @@ def test_sets_variables_if_datetime(df_datetime):
     )
     assert tr.variables_ == ["date_obj1"]
     assert tr.reference_ == ["date_obj1"]
+
+
+@pytest.mark.parametrize("new", [["new1", "new2"], ["new1", "new2", "new3"]])
+def test_new_variables_raise_error_if_not_adequate_number(df_datetime, new):
+    tr = DatetimeSubtraction(
+        variables="date_obj1", reference="date_obj1", new_variables_names=new
+    )
+    with pytest.raises(ValueError):
+        tr.fit(df_datetime)
 
 
 def test_raises_error_when_nan_in_fit():
@@ -233,6 +270,36 @@ def test_multiple_subtractions():
     pd.testing.assert_frame_equal(df_output, df_expected, check_dtype=False)
 
 
+def test_assigns_new_variable_names():
+    df_input = pd.DataFrame(
+        {
+            "date1": ["2022-09-01", "2022-10-01", "2022-12-01"],
+            "date2": ["2022-09-15", "2022-10-15", "2022-12-15"],
+            "date3": ["2022-08-01", "2022-09-01", "2022-11-01"],
+            "date4": ["2022-08-15", "2022-09-15", "2022-11-15"],
+        }
+    )
+    df_expected = pd.DataFrame(
+        {
+            "date1": ["2022-09-01", "2022-10-01", "2022-12-01"],
+            "date2": ["2022-09-15", "2022-10-15", "2022-12-15"],
+            "date3": ["2022-08-01", "2022-09-01", "2022-11-01"],
+            "date4": ["2022-08-15", "2022-09-15", "2022-11-15"],
+            "new1": [31, 30, 30],
+            "new2": [45, 44, 44],
+            "new3": [17, 16, 16],
+            "new4": [31, 30, 30],
+        }
+    )
+    dtf = DatetimeSubtraction(
+        variables=["date1", "date2"],
+        reference=["date3", "date4"],
+        new_variables_names=["new1", "new2", "new3", "new4"],
+    )
+    df_output = dtf.fit_transform(df_input)
+    pd.testing.assert_frame_equal(df_output, df_expected, check_dtype=False)
+
+
 # additional methods
 
 
@@ -267,6 +334,13 @@ def test_get_feature_names_out():
         "d1_sub_d4",
         "d2_sub_d4",
     ]
+
+    new = ["new1", "new2", "new3", "new4"]
+    tr = DatetimeSubtraction(
+        variables=["d1", "d2"], reference=["d3", "d4"], new_variables_names=new
+    )
+    tr.fit(df)
+    assert tr.get_feature_names_out() == input_vars + new
 
 
 # common tests

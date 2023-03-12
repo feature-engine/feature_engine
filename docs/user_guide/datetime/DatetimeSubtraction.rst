@@ -5,23 +5,33 @@
 DatetimeSubtraction
 ===================
 
-Very often we have datetime variables in our datasets and we want to determine the
-time elapsed between them. For example, if we work with financial data, we may have the
-variable `date_of_loan_application` with the date and time when the customer applied
-for a loan, and also the variable `date_of_birth`, with the customers' date of birth.
-With those 2 variables, we want to infer the **age** of the customer at the time of application.
-In order to do this, we can compute the difference in years between `date_of_loan_application`
-and `date_of_birth` and capture it in a new variable.
+Very often, we have datetime variables in our datasets, and we want to determine the time
+difference between them. For example, if we work with financial data, we may have the
+variable **date of loan application**, with the date and time when the customer applied for
+a loan, and also the variable **date of birth**, with the customer's date of birth. With those
+two variables, we want to infer the **age of the customer** at the time of application. In order
+to do this, we can compute the difference in years between `date_of_loan_application` and
+`date_of_birth` and capture it in a new variable.
 
 In a different example, if we are trying to predict the price of the house and we have
 information about the year in which the house was built, we can infer the age of the house
-at the point of sale. Generally, older houses cost less.
+at the point of sale. Generally, older houses cost less. To calculate the age of the house,
+we’d simply compute the difference in years between the sale date and the date at which
+it was built.
+
+The Python program offers many options for making operations between datetime objects, like,
+for example, the datetime module. Since most likely you will be working with Pandas dataframes,
+we will focus this guide on pandas and then how we can automate the procedure with Feature-engine.
 
 Subtracting datetime features with pandas
 -----------------------------------------
 
-In Python, we can subtract datetime variables with pandas. Let's create a toy dataframe
-with 2 datetime variables first:
+In Python, we can subtract datetime objects with pandas. To work with datetime variables
+in pandas, we need to make sure that the timestamp, which can be represented in various
+formats, like strings (str), objects (`"O"`), or datetime, is cast as a datetime. If not, we
+can convert strings to datetime objects by executing `pd.to_datetime(df[variable_of_interest])`.
+
+Let’s create a toy dataframe with 2 datetime variables for a short demo:
 
 .. code:: python
 
@@ -34,7 +44,7 @@ with 2 datetime variables first:
 
     print(data)
 
-This is the data that we created:
+This is the data that we created, containing two datetime variables:
 
 .. code:: python
 
@@ -45,7 +55,8 @@ This is the data that we created:
     3 2019-03-08 2018-04-01
     4 2019-03-09 2018-04-08
 
-Now, let's subtract `date2` from `date1` and capture the difference in a new variable:
+Now, we can subtract `date2` from `date1` and capture the difference in a new variable by
+utilizing the pandas subtraction operator:
 
 .. code:: python
 
@@ -53,7 +64,8 @@ Now, let's subtract `date2` from `date1` and capture the difference in a new var
 
     print(data)
 
-We see the new variable at the right of the dataframe:
+The new variable, which expresses the difference in number of days, is at the right of the
+dataframe:
 
 .. code:: python
 
@@ -64,14 +76,15 @@ We see the new variable at the right of the dataframe:
     3 2019-03-08 2018-04-01 341 days
     4 2019-03-09 2018-04-08 335 days
 
-If we want the units in something different than days, we can use `numpy`'s timedelta:
+If we want the units in something other than days, we can use numpy’s timedelta. The following
+example shows how to use this syntax:
 
 .. code:: python
 
-data["diff"] = data["date1"].sub(data["date2"], axis=0).apply(
-    lambda x: x / np.timedelta64(1, "Y"))
+    data["diff"] = data["date1"].sub(data["date2"], axis=0).apply(
+        lambda x: x / np.timedelta64(1, "Y"))
 
-print(data)
+    print(data)
 
 We see the new variable now expressing the difference in years, at the right of the dataframe:
 
@@ -84,20 +97,23 @@ We see the new variable now expressing the difference in years, at the right of 
     3 2019-03-08 2018-04-01  0.933626
     4 2019-03-09 2018-04-08  0.917199
 
-We can automate this procedure with ::class:`DatetimeSubstraction()`.
+If you wanted to subtract various datetime variables, you would have to write lines of code
+for every subtraction. Fortunately, we can automate this procedure with :class:`DatetimeSubstraction()`.
 
 Datetime subtraction with Feature-engine
 ----------------------------------------
 
-:class:`DatetimeFeatures()` automatically subtracts several date and time features from
+:class:`DatetimeSubstraction()` automatically subtracts several date and time features from
 each other. You just need to indicate the features at the right of the subtraction operation
-in the `variables` parameters, and those on the left in the `reference` parameter. You can
-also change the output unit through the `output_unit` parameter.
+in the `variables` parameters and those on the left in the `reference parameter`. You can also
+change the output unit through the `output_unit` parameter.
 
-It works with variables whose dtype is datetime, as well as with object-like and categorical
-variables, provided that they can be parsed into datetime format.
+:class:`DatetimeSubstraction()` works with variables whose `dtype` is datetime, as well as
+with object-like and categorical variables, provided that they can be parsed into datetime
+format. This will be done under the hood by the transformer.
 
-Following up with the former example:
+Following up with the former example, here is how we obtain the difference in number of
+days using :class:`DatetimeSubstraction()`:
 
 .. code:: python
 
@@ -117,7 +133,8 @@ Following up with the former example:
 
     print(data)
 
-We see the new variable expressing the difference in years at the right of the dataframe:
+With `transform()`, :class:`DatetimeSubstraction()` returns a new dataframe containing the
+original variables and also the new variables with the time difference:
 
 .. code:: python
 
@@ -129,7 +146,10 @@ We see the new variable expressing the difference in years at the right of the d
     4 2019-03-09 2018-04-08         0.917199
 
 
-We can also drop the original datetime variables after the computation:
+Drop original variables after computation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We have the option to drop the original datetime variables after the computation:
 
 .. code:: python
 
@@ -151,6 +171,9 @@ We can also drop the original datetime variables after the computation:
 
     print(data)
 
+In this case, the resulting dataframe contains only the time difference between the two
+original variables:
+
 .. code:: python
 
        date1_sub_date2
@@ -160,8 +183,13 @@ We can also drop the original datetime variables after the computation:
     3        11.203515
     4        11.006386
 
+Subtract multiple variables simultaneously
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can perform multiple subtractions at the same time:
+We can perform multiple subtractions at the same time. In this example, we will add new
+datetime variables to the toy dataframe as strings. The idea is to show that
+:class:`DatetimeSubstraction()` will convert those strings to datetime under the hood to
+carry out the subtraction operation.
 
 .. code:: python
 
@@ -181,6 +209,9 @@ We can perform multiple subtractions at the same time:
 
     print(data)
 
+The resulting dataframe contains the original variables plus the  new variables expressing
+the time difference between the date objects.
+
 .. code:: python
 
             date1       date2       date3       date4  date1_sub_date3  \
@@ -194,7 +225,13 @@ We can perform multiple subtractions at the same time:
     2             44.0             16.0             30.0
 
 
-We can work with variables with nan:
+Working with missing values
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, :class:`DatetimeSubstraction()`  will raise an error if the dataframe passed
+to the `fit()` or `transform()` methods contains NA in the variables to subtract. We can
+override this behaviour and allow computations between variables with nan by setting the
+parameter `missing_values` to `"ignore"`. Here is a code example:
 
 .. code:: python
 
@@ -217,7 +254,8 @@ We can work with variables with nan:
 
     print(data)
 
-
+When any of the variables contains NAN, the new features with the time difference will also
+display NANs:
 
 .. code:: python
 
@@ -230,6 +268,46 @@ We can work with variables with nan:
     0             45.0             17.0             31.0
     1              NaN             16.0              NaN
     2             44.0              NaN              NaN
+
+
+Working with different timezones
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If we have timestamps in different timezones or variables in different timezones, we can
+still perform subtraction operations with :class:`DatetimeSubstraction()` by first setting
+all timestamps to the universal central time zone. Here is a code example, were we return
+the time difference in microseconds:
+
+.. code:: python
+
+    import pandas as pd
+    from feature_engine.datetime import DatetimeSubtraction
+
+    data = pd.DataFrame({
+        "date1": ['12:34:45+3', '23:01:02-6', '11:59:21-8', '08:44:23Z'],
+        "date2": ['09:34:45+1', '23:01:02-6+1', '11:59:21-8-2', '08:44:23+3']
+    })
+
+    dfts = DatetimeSubtraction(
+        variables="date1",
+        reference="date2",
+        utc=True,
+        output_unit="ms",
+    )
+
+    new = dfts.fit_transform(data)
+
+    print(new)
+
+We see the resulting dataframe with the time difference in microseconds:
+
+.. code:: python
+
+            date1         date2  date1_sub_date2
+    0  12:34:45+3    09:34:45+1        3600000.0
+    1  23:01:02-6  23:01:02-6+1       25200000.0
+    2  11:59:21-8  11:59:21-8-2       21600000.0
+    3   08:44:23Z    08:44:23+3       10800000.0
 
 
 Finally, we can extract the names of the transformed dataframe for compatibility with the
