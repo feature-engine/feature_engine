@@ -53,7 +53,8 @@ class DropCorrelatedFeatures(BaseSelector):
     will need to be encoded to numerical or will be excluded from the analysis.
 
     Note: ordering of the coulmns matters! Different order of the columns could lead to
-    different results. To make estimator more consistent, please use 'order_by' parameter.
+    different results.
+    To make estimator more consistent and transparent, please use 'order_by' parameter.
 
     More details in the :ref:`User Guide <drop_correlated>`.
 
