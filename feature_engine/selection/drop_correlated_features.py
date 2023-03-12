@@ -208,11 +208,11 @@ class DropCorrelatedFeatures(BaseSelector):
 
         # sort columns for consistency
         if self.order_by == "nan":
-            X = X[X.isna().sum(0).index]
+            X = X[X.isna().sum(0).sort_values().index]
         elif self.order_by == "unique":
-            X = X[X.nunique().sum(0).index]
+            X = X[X.nunique(0).sort_values(ascending=False).index]
         elif self.order_by == "cv":
-            X = X[(X.std(axis=0, ddof=0) / X.mean(0)).sort_values().index]
+            X = X[(X.std(0) / X.mean(0)).sort_values(ascending=False).index]
 
         # the correlation matrix
         _correlated_matrix = X[self.variables_].corr(method=self.method)
