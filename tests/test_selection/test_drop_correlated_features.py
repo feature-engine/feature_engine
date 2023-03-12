@@ -140,3 +140,9 @@ def test_error_method_supplied(df_correlated_double):
         == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
         + f" '{method}' was supplied"
     )
+
+
+@pytest.mark.parametrize("order_by", ["nulls", "uniqu", "cvv", 1, [0]])
+def test_invalid_sorting_options(order_by):
+    with pytest.raises(ValueError) as errmsg:
+        DropCorrelatedFeatures(order_by=order_by)
