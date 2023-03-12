@@ -10,7 +10,6 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _drop_original_docstring,
     _missing_values_docstring,
 )
 from feature_engine._docstrings.methods import (
@@ -30,22 +29,30 @@ from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
 
-_demo_df = """
+_example = """
+    >>> import pandas as pd
+    >>> from feature_engine.datetime import DatetimeSubtraction
     >>> X = pd.DataFrame({
     >>>     "date1": ["2022-09-18", "2022-10-27", "2022-12-24"],
     >>>     "date2": ["2022-08-18", "2022-08-27", "2022-06-24"]})
+    >>> dtf = DatetimeSubtraction(variables=["date1"], reference=["date2"])
+    >>> dtf.fit(X)
+    >>> dtf.transform(X)
+            date1       date2  date1_sub_date2
+    0  2022-09-18  2022-08-18             31.0
+    1  2022-10-27  2022-08-27             61.0
+    2  2022-12-24  2022-06-24            183.0
         """.rstrip()
 
 
 @Substitution(
     missing_values=_missing_values_docstring,
-    drop_original=_drop_original_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     transform=_transform_creation_docstring,
     fit_transform=_fit_transform_docstring,
-    demo_df=_demo_df,
+    example=_example,
 )
 class DatetimeSubtraction(BaseCreation):
     """
@@ -79,7 +86,9 @@ class DatetimeSubtraction(BaseCreation):
 
     {missing_values}
 
-    {drop_original}
+    drop_original: bool, default="False"
+        If `True`, the variables listed in `variables` and `reference` will be dropped
+        from the dataframe after the computation of the new features.
 
     dayfirst: bool, default="False"
         Specify a date parse order if arg is str or is list-like. If True, parses
@@ -100,6 +109,16 @@ class DatetimeSubtraction(BaseCreation):
 
     Attributes
     ----------
+    variables_:
+        The list with datetime variables from which the variables in `reference` will
+        be substracted. It is created after the transformer corroborates that the
+        variables in `variables` are, or can be parsed to datetime.
+
+    reference_:
+        The list with the datetime variables that will be subtracted from `variables_`.
+        It is created after the transformer corroborates that the variables in
+        `reference` are, or can be parsed to datetime.
+
     {feature_names_in_}
 
     {n_features_in_}
@@ -115,16 +134,7 @@ class DatetimeSubtraction(BaseCreation):
     Examples
     --------
 
-    >>> import pandas as pd
-    >>> from feature_engine.datetime import DatetimeSubtraction
-    {demo_df}
-    >>> dtf = DatetimeSubtraction(variables=["date1"], reference=["date2"])
-    >>> dtf.fit(X)
-    >>> dtf.transform(X)
-            date1       date2  date1_sub_date2
-    0  2022-09-18  2022-08-18             31.0
-    1  2022-10-27  2022-08-27             61.0
-    2  2022-12-24  2022-06-24            183.0
+    {example}
     """
 
     def __init__(
