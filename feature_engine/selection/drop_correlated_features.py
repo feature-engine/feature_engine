@@ -84,7 +84,7 @@ class DropCorrelatedFeatures(BaseSelector):
         - None - preserve original order of the dataframe
         - 'nan' - sort columns by number of missing values (ascending)
         - 'unique' - sort columns by number of unique values (descending)
-        - 'cv' - sort columns by coefficient of variation (descending).
+        - 'alphabetical' - sort columns alphabetically.
 
     {missing_values}
 
@@ -157,9 +157,15 @@ class DropCorrelatedFeatures(BaseSelector):
         if missing_values not in ("raise", "ignore"):
             raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
 
-        if (order_by is not None) and (order_by not in ("nan", "unique", "cv")):
+        if (order_by is not None) and (order_by not in ("nan", "unique", "alphabetical")):
             raise ValueError(
-                "order_by takes only values 'nan', 'unique', 'cv' or None."
+                "order_by takes only values 'nan', 'unique', 'alphabetical' or None."
+            )
+            
+        if missing_values == "raise" and order_by == "nan":
+            raise ValueError(
+                "missing_values can't be set to 'raise' "
+                "while order_by is set to 'nan'."
             )
 
         super().__init__(confirm_variables)
@@ -211,8 +217,8 @@ class DropCorrelatedFeatures(BaseSelector):
             X = X[X.isna().sum(0).sort_values().index]
         elif self.order_by == "unique":
             X = X[X.nunique(0).sort_values(ascending=False).index]
-        elif self.order_by == "cv":
-            X = X[(X.std(0) / X.mean(0)).sort_values(ascending=False).index]
+        elif self.order_by == "alphabetic":
+            X = X.sort_index(1)
 
         # the correlation matrix
         _correlated_matrix = X[self.variables_].corr(method=self.method)
