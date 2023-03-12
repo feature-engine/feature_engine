@@ -146,7 +146,7 @@ def test_invalid_combination():
         DropCorrelatedFeatures(order_by="nan", missing_values="raise")
 
 
-@pytest.mark.parametrize("order_by", [None, "alphabetical", "nan", "unique"])
+@pytest.mark.parametrize("order_by", [None, "alphabetic", "nan", "unique"])
 def test_consistency_params(df_correlated_single, order_by):
     transformer = DropCorrelatedFeatures(
         variables=None,
