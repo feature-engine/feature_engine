@@ -141,7 +141,7 @@ def test_invalid_method(method):
         DropCorrelatedFeatures(method=method)
 
 
-@pytest.mark.parametrize("order_by", [None, "cv", "nan", "unqiue"])
+@pytest.mark.parametrize("order_by", [None, "cv", "nan", "unique"])
 def test_consistency_params(df_correlated_single, order_by):
     transformer = DropCorrelatedFeatures(
         variables=None,
