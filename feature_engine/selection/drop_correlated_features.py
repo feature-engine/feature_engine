@@ -218,7 +218,7 @@ class DropCorrelatedFeatures(BaseSelector):
         elif self.order_by == "unique":
             X = X[X.nunique(0).sort_values(ascending=False).index]
         elif self.order_by == "alphabetic":
-            X = X.sort_index(1)
+            X = X.sort_index(axis=1)
 
         # the correlation matrix
         _correlated_matrix = X[self.variables_].corr(method=self.method)
