@@ -144,5 +144,5 @@ def test_error_method_supplied(df_correlated_double):
 
 @pytest.mark.parametrize("order_by", ["nulls", "uniqu", "cvv", 1, [0]])
 def test_invalid_sorting_options(order_by):
-    with pytest.raises(ValueError) as errmsg:
+    with pytest.raises(ValueError):
         DropCorrelatedFeatures(order_by=order_by)
