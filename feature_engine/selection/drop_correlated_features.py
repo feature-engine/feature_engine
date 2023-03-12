@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 
 import pandas as pd
 
@@ -52,6 +52,9 @@ class DropCorrelatedFeatures(BaseSelector):
     DropCorrelatedFeatures() works only with numerical variables. Categorical variables
     will need to be encoded to numerical or will be excluded from the analysis.
 
+    Note: ordering of the coulmns matters! Different order of the columns could lead to
+    different results. To make estimator more consistent, please use 'order_by' parameter.
+
     More details in the :ref:`User Guide <drop_correlated>`.
 
     Parameters
@@ -62,7 +65,7 @@ class DropCorrelatedFeatures(BaseSelector):
         Can take 'pearson', 'spearman', 'kendall' or callable. It refers to the
         correlation method to be used to identify the correlated features.
 
-        - 'pearson': standard correlation coefficient
+        - 'pearson': Pearson correlation coefficient
         - 'kendall': Kendall Tau correlation coefficient
         - 'spearman': Spearman rank correlation
         - callable: callable with input two 1d ndarrays and returning a float.
@@ -72,6 +75,15 @@ class DropCorrelatedFeatures(BaseSelector):
     threshold: float, default=0.8
         The correlation threshold above which a feature will be deemed correlated with
         another one and removed from the dataset.
+
+    order_by: str, default=None
+        Type of sorting to use before feature selection. This option could help with
+        the consistency of the selection.
+
+        - None - preserve original order of the dataframe
+        - 'nan' - sort columns by number of missing values (ascending)
+        - 'unqiue' - sort columns by number of unique values (descending)
+        - 'cv' - sort columns by coefficient of variation (descending).
 
     {missing_values}
 
@@ -133,6 +145,7 @@ class DropCorrelatedFeatures(BaseSelector):
         variables: Variables = None,
         method: str = "pearson",
         threshold: float = 0.8,
+        order_by: Optional[str] = None,
         missing_values: str = "ignore",
         confirm_variables: bool = False,
     ):
@@ -140,8 +153,13 @@ class DropCorrelatedFeatures(BaseSelector):
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError("threshold must be a float between 0 and 1")
 
-        if missing_values not in ["raise", "ignore"]:
+        if missing_values not in ("raise", "ignore"):
             raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
+
+        if (order_by is not None) or (order_by not in ("nan", "unique", "cv")):
+            raise ValueError(
+                    "order_by takes only values 'nan', 'unique', 'cv' or None."
+                )
 
         super().__init__(confirm_variables)
 
@@ -149,6 +167,7 @@ class DropCorrelatedFeatures(BaseSelector):
         self.method = method
         self.threshold = threshold
         self.missing_values = missing_values
+        self.order_by = order_by
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -185,6 +204,14 @@ class DropCorrelatedFeatures(BaseSelector):
 
         # create tuples of correlated feature groups
         self.correlated_feature_sets_ = []
+
+        # sort columns for consistency
+        if self.order_by == "nan":
+            X = X[X.isna().sum(1).index]
+        elif self.order_by == "unique":
+            X = X[X.nunique().sum(1).index]
+        elif self.order_by == "cv":
+            X = X[(X.std(axis=1, ddof=0) / X.mean(1)).sort_values().index]
 
         # the correlation matrix
         _correlated_matrix = X[self.variables_].corr(method=self.method)
