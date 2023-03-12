@@ -18,6 +18,9 @@ The transformer will examine all numerical variables automatically. Note that yo
 dataframe with categorical and datetime variables, and these will be ignored automatically.
 Alternatively, you can pass a list with the variables you wish to evaluate.
 
+Note: ordering of the coulmns matters! Different order of the columns could lead to
+different results. To make estimator more consistent, please use 'order_by' parameter.
+
 **Example**
 
 Let's create a toy dataframe where 4 of the features are correlated:
