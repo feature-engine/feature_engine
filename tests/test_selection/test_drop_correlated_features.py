@@ -123,7 +123,7 @@ def test_callable_method(df_correlated_double, random_uniform_method):
     assert transformer.n_features_in_ == len(X.columns)
 
 
-@pytest.mark.parametrize("order_by", ["nulls", "uniqu", "cvv", 1, [0]])
+@pytest.mark.parametrize("order_by", ["nulls", "uniqu", "alpha", 1, [0]])
 def test_invalid_sorting_options(order_by):
     with pytest.raises(ValueError):
         DropCorrelatedFeatures(order_by=order_by)
@@ -141,7 +141,12 @@ def test_invalid_method(method, df_correlated_single):
         DropCorrelatedFeatures(method=method).fit(df_correlated_single)
 
 
-@pytest.mark.parametrize("order_by", [None, "cv", "nan", "unique"])
+def test_invalid_combination():
+    with pytest.raises(ValueError):
+        DropCorrelatedFeatures(order_by="nan", missing_values="raise")
+
+
+@pytest.mark.parametrize("order_by", [None, "alphabetical", "nan", "unique"])
 def test_consistency_params(df_correlated_single, order_by):
     transformer = DropCorrelatedFeatures(
         variables=None,
