@@ -157,10 +157,10 @@ class DropCorrelatedFeatures(BaseSelector):
         if missing_values not in ("raise", "ignore"):
             raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
 
-        if (order_by is not None) or (order_by not in ("nan", "unique", "cv")):
+        if (order_by is not None) and (order_by not in ("nan", "unique", "cv")):
             raise ValueError(
-                    "order_by takes only values 'nan', 'unique', 'cv' or None."
-                )
+                "order_by takes only values 'nan', 'unique', 'cv' or None."
+            )
 
         super().__init__(confirm_variables)
 
