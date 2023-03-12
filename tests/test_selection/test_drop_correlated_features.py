@@ -136,9 +136,9 @@ def test_invalid_thresholds(threshold):
 
 
 @pytest.mark.parametrize("method", ["hola", 1, ["pearson"]])
-def test_invalid_method(method):
+def test_invalid_method(method, df_correlated_single):
     with pytest.raises(ValueError):
-        DropCorrelatedFeatures(method=method)
+        DropCorrelatedFeatures(method=method).fit(df_correlated_single)
 
 
 @pytest.mark.parametrize("order_by", [None, "cv", "nan", "unique"])
