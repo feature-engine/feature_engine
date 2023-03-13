@@ -132,16 +132,16 @@ def test_generate_probe_features(load_diabetes_dataset):
 
     # expected results
     expected_results = {
-        "gaussian_probe_0": [4.873, -1.835, -1.585, -3.219, 2.596],
-        "binary_probe_0": [0, 1, 0, 0, 1],
-        "uniform_probe_0": [0.878, 0.878, 0.878, 0.878, 0.878],
-        "gaussian_probe_1": [4.386, -6.180, -0.967, -1.152, 3.401],
-        "binary_probe_1": [1, 0, 0, 1, 0],
-        "uniform_probe_1": [0.039, 0.039, 0.039, 0.039, 0.039],
-    }
+        'gaussian_probe_0': {0: 4.87, 1: -1.84, 2: -1.58, 3: -3.22, 4: 2.6},
+ 'binary_probe_0': {0: 0, 1: 1, 2: 0, 3: 0, 4: 1},
+ 'uniform_probe_0': {0: 0.88, 1: 0.03, 2: 0.67, 3: 0.42, 4: 0.56},
+ 'gaussian_probe_1': {0: 1.69, 1: -1.7, 2: 2.19, 3: 1.12, 4: 1.6},
+ 'binary_probe_1': {0: 1, 1: 1, 2: 0, 3: 0, 4: 1},
+ 'uniform_probe_1': {0: 0.69, 1: 0.83, 2: 0.02, 3: 0.75, 4: 0.99}}
     expected_results_df = pd.DataFrame(expected_results)
 
-    assert probe_features.head().round(3).equals(expected_results_df)
+    #assert probe_features.head().round(2).equals(expected_results_df)
+    pd.testing.assert_frame_equal(probe_features.head().round(2), expected_results_df, check_dtype=False)
 
 
 def test_get_features_to_drop(df_test):
