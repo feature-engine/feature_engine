@@ -30,11 +30,11 @@ transforming parameters from the data and then transform it.
 
 ## Feature-engine features in the following resources
 
-* [Feature Engineering for Machine Learning, Online Course](https://www.trainindata.com/p/feature-engineering-for-machine-learning)
+* [Feature Engineering for Machine Learning, Online Course](https://courses.trainindata.com/p/feature-engineering-for-machine-learning)
 
-* [Feature Selection for Machine Learning, Online Course](https://www.trainindata.com/p/feature-selection-for-machine-learning)
+* [Feature Selection for Machine Learning, Online Course](https://courses.trainindata.com/p/feature-selection-for-machine-learning)
 
-* [Feature Engineering for Time Series Forecasting, Online Course](https://www.trainindata.com/p/feature-engineering-for-forecasting)
+* [Feature Engineering for Time Series Forecasting, Online Course](https://www.courses.trainindata.com/p/feature-engineering-for-forecasting)
 
 * [Python Feature Engineering Cookbook](https://packt.link/0ewSo)
 
@@ -50,7 +50,7 @@ transforming parameters from the data and then transform it.
 
 ## Documentation
 
-* [Documentation](https://feature-engine.trainindata.com)
+* [Documentation](http://feature-engine.readthedocs.io)
 
 
 ## Current Feature-engine's transformers include functionality for:
@@ -125,6 +125,7 @@ transforming parameters from the data and then transform it.
  * RecursiveFeatureAddition
  * DropHighPSIFeatures
  * SelectByInformationValue
+ * ProbeFeatureSelection
 
 ### Datetime
  * DatetimeFeatures
@@ -196,11 +197,11 @@ Name: var_A, dtype: int64
 ```
 
 Find more examples in our [Jupyter Notebook Gallery](https://nbviewer.org/github/feature-engine/feature-engine-examples/tree/main/) 
-or in the [documentation](https://feature-engine.trainindata.com).
+or in the [documentation](http://feature-engine.readthedocs.io).
 
 ## Contribute
 
-Details about how to contribute can be found in the [Contribute Page](https://feature-engine.trainindata.com/en/latest/contribute/index.html)
+Details about how to contribute can be found in the [Contribute Page](https://feature-engine.readthedocs.io/en/latest/contribute/index.html)
 
 Briefly:
 
