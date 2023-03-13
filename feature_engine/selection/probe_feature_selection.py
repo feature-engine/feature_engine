@@ -5,7 +5,6 @@ import pandas as pd
 from sklearn.model_selection import cross_validate
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_importances_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
@@ -38,7 +37,6 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     cv=_cv_docstring,
     confirm_variables=_confirm_variables_docstring,
     variables=_variables_numerical_docstring,
-    feature_importances_=_feature_importances_docstring,
     feature_names_in_=_feature_names_in_docstring,
     features_to_drop_=_features_to_drop_docstring,
     variables_=_variables_attribute_docstring,
@@ -62,8 +60,7 @@ class ProbeFeatureSelection(BaseSelector):
     In the case of there being more than one probe feature, ProbeFeatureSelection()
     calculates the average feature importance of all the probe features.
 
-    The transformer ranks the variables based on their feature importances. The
-    variables that have a feature importance less than the feature importance or
+    The variables that have a feature importance less than the feature importance or
     average feature importance of the probe feature(s) are dropped from the dataset.
 
     Parameters
@@ -93,7 +90,8 @@ class ProbeFeatureSelection(BaseSelector):
         A dataframe comprised of the pseudo-randomly generated features based
         on the selected distribution.
 
-    {feature_importances_}
+    feature_importances_:
+        Pandas Series with the feature importance.
 
     {features_to_drop_}
 
