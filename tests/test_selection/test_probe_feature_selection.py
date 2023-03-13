@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from sklearn.datasets import load_diabetes
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
@@ -107,79 +108,124 @@ def test_fit_attributes(df_test):
             "gaussian_probe_1",
         ],
     )
-    assert sel.probe_features_.head().round(3).equals(expected_probe_features_df)
+    pd.testing.assert_frame_equal(sel.probe_features_.head().round(3), expected_probe_features_df, check_dtype=False)
     assert sel.features_to_drop_ == ["var_2", "var_10"]
     assert sel.feature_importances_.round(2).equals(expected_feature_importances)
 
 
-def test_generate_probe_features(load_diabetes_dataset):
-    X, y = load_diabetes_dataset
-    X.columns = [f"var_{col}" for col in X.columns]
-    n_probes = 6
-
+def test_generate_probe_features_all():
     sel = ProbeFeatureSelection(
-        estimator=DecisionTreeRegressor(),
-        variables=None,
-        scoring="neg_mean_squared_error",
-        n_probes=n_probes,
+        estimator=DecisionTreeClassifier(),
+        n_probes=6,
         distribution="all",
-        cv=3,
         random_state=1,
-        confirm_variables=False,
     )
 
-    probe_features = sel._generate_probe_features(n_probes)
+    n_obs=5
+    probe_features = sel._generate_probe_features(n_obs).round(3)
 
     # expected results
     expected_results = {
-        'gaussian_probe_0': {0: 4.87, 1: -1.84, 2: -1.58, 3: -3.22, 4: 2.6},
- 'binary_probe_0': {0: 0, 1: 1, 2: 0, 3: 0, 4: 1},
- 'uniform_probe_0': {0: 0.88, 1: 0.03, 2: 0.67, 3: 0.42, 4: 0.56},
- 'gaussian_probe_1': {0: 1.69, 1: -1.7, 2: 2.19, 3: 1.12, 4: 1.6},
- 'binary_probe_1': {0: 1, 1: 1, 2: 0, 3: 0, 4: 1},
- 'uniform_probe_1': {0: 0.69, 1: 0.83, 2: 0.02, 3: 0.75, 4: 0.99}}
+         'gaussian_probe_0': [4.873, -1.835, -1.585, -3.219, 2.596],
+         'binary_probe_0': [0, 1, 0, 0, 1],
+         'uniform_probe_0': [0.443, 0.23, 0.534, 0.914, 0.457],
+         'gaussian_probe_1': [-6.905, 2.032, -0.321, 2.176, 2.805],
+         'binary_probe_1': [1, 1, 1, 0, 1],
+         'uniform_probe_1': [0.876, 0.895, 0.085, 0.039, 0.17],
+         }
     expected_results_df = pd.DataFrame(expected_results)
 
-    #assert probe_features.head().round(2).equals(expected_results_df)
-    pd.testing.assert_frame_equal(probe_features.head().round(2), expected_results_df, check_dtype=False)
+    pd.testing.assert_frame_equal(probe_features, expected_results_df, check_dtype=False)
 
 
-def test_get_features_to_drop(df_test):
-    X, y = df_test
-
+def test_generate_probe_features_normal():
     sel = ProbeFeatureSelection(
-        estimator=LogisticRegression(),
-        variables=None,
-        scoring="roc_auc",
-        distribution="binary",
-        cv=5,
+        estimator=DecisionTreeClassifier(),
         n_probes=2,
-        random_state=100,
-        confirm_variables=False,
+        distribution="normal",
+        random_state=1,
     )
 
-    sel.fit(X, y)
-    features_to_drop = sel._get_features_to_drop()
+    n_obs=3
+    probe_features = sel._generate_probe_features(n_obs).round(3)
 
-    expected_results = ["var_2", "var_3", "var_5", "var_9"]
+    # expected results
+    expected_results = {
+        'gaussian_probe_0': [4.873, -1.835, -1.585],
+        'gaussian_probe_1': [-3.219, 2.596, -6.905],
+         }
+    expected_results_df = pd.DataFrame(expected_results)
+    pd.testing.assert_frame_equal(probe_features, expected_results_df, check_dtype=False)
 
-    assert features_to_drop == expected_results
+
+def test_generate_probe_features_binary():
+    sel = ProbeFeatureSelection(
+        estimator=DecisionTreeClassifier(),
+        n_probes=3,
+        distribution="binary",
+        random_state=1,
+    )
+
+    n_obs=2
+    probe_features = sel._generate_probe_features(n_obs)
+
+    # expected results
+    expected_results = {
+        'binary_probe_0': [1, 1],
+        'binary_probe_1': [0,0],
+        'binary_probe_2': [1, 1],
+         }
+    expected_results_df = pd.DataFrame(expected_results)
+    pd.testing.assert_frame_equal(probe_features, expected_results_df, check_dtype=False)
 
 
-def test_transformer_with_normal_distribution(load_diabetes_dataset):
-    X, y = load_diabetes_dataset
+def test_generate_probe_features_uniform():
+    sel = ProbeFeatureSelection(
+        estimator=DecisionTreeClassifier(),
+        n_probes=1,
+        distribution="uniform",
+        random_state=1,
+    )
+
+    n_obs=3
+    probe_features = sel._generate_probe_features(n_obs).round(3)
+
+    # expected results
+    expected_results = {
+        'uniform_probe_0': [0.417, 0.72, 0.0]
+         }
+    expected_results_df = pd.DataFrame(expected_results)
+    pd.testing.assert_frame_equal(probe_features, expected_results_df, check_dtype=False)
+
+
+def test_get_features_to_drop():
+    # 1 probe
+    sel = ProbeFeatureSelection(estimator=LogisticRegression())
+    sel.self.feature_importances_ = pd.Series([11, 12, 9, 10], index=["var1", "var2", "var3", "probe"])
+    sel.self.probe_features_ = pd.DataFrame({"probe": [1,1,1,1,1]})
+    assert sel.__get_features_to_drop() == ["var3"]
+
+    # 2 probes
+    sel = ProbeFeatureSelection(estimator=LogisticRegression())
+    sel.self.feature_importances_ = pd.Series([11, 12, 10, 8.7, 10, 8], index=["var1", "var2", "var3", "var4","probe1", "probe2"])
+    sel.self.probe_features_ = pd.DataFrame({"probe": [1,1,1,1,1]})
+    assert sel.__get_features_to_drop() == ["var4"]
+
+
+def test_transformer_with_normal_distribution():
+    X, y = load_diabetes(return_X_y=True, as_frame=True)
 
     sel = ProbeFeatureSelection(
         estimator=DecisionTreeRegressor(),
         variables=None,
-        scoring="neg_mean_squared_error",
+        scoring="neg_mean_absolute_error",
         distribution="normal",
-        cv=5,
+        cv=3,
         n_probes=3,
         random_state=84,
         confirm_variables=False,
     )
-    sel.fit(X, y.values.ravel())
+    sel.fit(X, y)
     results = sel.transform(X)
 
     # expected results

@@ -241,9 +241,7 @@ class ProbeFeatureSelection(BaseSelector):
                     df[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
 
                 elif self.distribution == "uniform":
-                    df[f"uniform_probe_{i}"] = (
-                        np.random.uniform(0, 1, 1).tolist() * n_obs
-                    )
+                    df[f"uniform_probe_{i}"] = np.random.uniform(0, 1,  n_obs)
 
         return df
 
