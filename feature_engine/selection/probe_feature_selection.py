@@ -231,7 +231,7 @@ class ProbeFeatureSelection(BaseSelector):
             for i in range(generation_cnt):
                 df[f"gaussian_probe_{i}"] = np.random.normal(0, 3, n_obs)
                 df[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
-                df[f"uniform_probe_{i}"] = np.random.uniform(0, 1, 1).tolist() * n_obs
+                df[f"uniform_probe_{i}"] = np.random.uniform(0, 1,  n_obs)
 
         # when distribution is normal, binary, or uniform
         else:

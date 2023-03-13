@@ -6,23 +6,27 @@ ProbeFeatureSelection
 =====================
 
 :class:`ProbeFeatureSelection()` generates one or more random variables based on the
-user-selected parameters.
+user-selected parameters. Next, the transformer derives the feature importance for each variable
+and probe feature. Finally, it eliminates the features that have a lower feature importance
+score than the probe feature(s).
 
-The class derives the feature importance score for each variable and probe feature.
-In the case of there being more than one probe feature, the average feature importance
-score of all the probe features is used.
+In the case of there being more than one probe feature, the average feature importance score
+of all the probe features is used.
 
-The class ranks the features based on their importance and eliminates the features
-that have a lower feature importance score than the probe feature(s).
+In summary, this is how :class:`ProbeFeatureSelection()` selects features:
 
-This selection method was published in the Journal of Machine Learning Research in 2003.
+1. Create 1 or more random features
+2. Train a machine learning model with all features including the random ones
+3. Derive feature importance for all features
+4. Take the average importance of the random features (only if more than 1 random feature were used)
+5. Select features whose importance is greater than the importance of the random variables (step 4)
 
 One of the primary goals of feature selection is to remove noise from the dataset. A
 randomly generated variable, i.e., probe feature, inherently possesses a high level of
 noise. Consequently, any variable that demonstrates less importance than a probe feature
 is assumed to be noise and can be discarded from the dataset.
 
-When initiating the ProbeFeatureSelection() class, the user has the option of selecting
+When initiating the :class:`ProbeFeatureSelection()` class, the user has the option of selecting
 which distribution is to be assumed to create the probe feature(s) and the number of
 probe features to be created. The possible distributions are 'normal', 'binary', 'uniform',
 or 'all'. 'all' creates 1 or more probe features comprised of each distribution type,
@@ -44,7 +48,7 @@ Let's import the required libraries and classes:
 .. code:: python
 
     import pandas as pd
-    import numpy as np
+    from sklearn.datasets import load_breast_cancer
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.model_selection import train_test_split
     from feature_engine.selection import ProbeFeatureSelection
@@ -92,12 +96,14 @@ training and test sets.
     ((455, 30), (114, 30))
 
 
-Now, we set up :class:`ProbeFeatureSelection()`. We will pass  `RandomForestClassifier()`
-as the :code:`estimator`. We will use `precision` as the :code:`scoring` parameter
-and `5` as :code:`cv` parameter, both parameters to be be used in the cross validation.
-We will assume `1` for the :code:`n_probes` parameter and `normal` as the :code:`distribution`,
-both parameters to be used when creating the probe feature.
+Now, we set up :class:`ProbeFeatureSelection()`.
 
+We will pass  `RandomForestClassifier()` as the :code:`estimator`. We will use `precision`
+as the :code:`scoring` parameter and `5` as :code:`cv` parameter, both parameters to be
+used in the cross validation.
+
+In this example, we will introduce just 1 random feature with a normal distribution. Thus,
+we pass `1` for the :code:`n_probes` parameter and `normal` as the :code:`distribution`.
 
 .. code:: python
 
@@ -116,18 +122,19 @@ both parameters to be used when creating the probe feature.
 
 With :code:`fit()`, the transformer:
 
-    - creates `n_probes` number of probe features using provided distribution(s)
-    - uses cross-validation to fit the provided estimator
-    - calculates the feature importance score for each variable, including probe features
-    - if there are multiple probe features, the transformer calculates the average importance score
-    - identifies features to drop because their importance scores are less than that of the probe feature(s)
-
+- creates `n_probes` number of probe features using provided distribution(s)
+- uses cross-validation to fit the provided estimator
+- calculates the feature importance score for each variable, including probe features
+- if there are multiple probe features, the transformer calculates the average importance score
+- identifies features to drop because their importance scores are less than that of the probe feature(s)
 
 In the attribute :code:`probe_features`, we find the pseudo-randomly generated variable(s):
 
 .. code:: python
 
     sel.probe_features_.head()
+
+.. code:: python
 
            gaussian_probe_0
     0         -0.694150
@@ -136,12 +143,26 @@ In the attribute :code:`probe_features`, we find the pseudo-randomly generated v
     3          1.698733
     4          0.498702
 
+We can go ahead and display a histogram of the probe feature:
+
+.. code:: python
+
+    sel.probe_features_.hist(bins=30)
+
+As we can see, it shows a normal distribution:
+
+.. figure::  ../../images/probe_feature_normal.png
+   :align:   center
 
 The attribute :code:`feature_importances_` shows each variable's feature importance:
 
 .. code:: python
 
-    sel.feature_importances.head()
+    sel.feature_importances_.head()
+
+These are the first 5 features:
+
+.. code:: python
 
     mean radius        0.058463
     mean texture       0.011953
@@ -149,11 +170,32 @@ The attribute :code:`feature_importances_` shows each variable's feature importa
     mean area          0.050947
     mean smoothness    0.004974
 
+At the end of the series, we see the importance of the probe feature:
+
+.. code:: python
+
+    sel.feature_importances_.tail()
+
+These are the importance of the last 5 features including the probe:
+
+.. code:: python
+
+    worst concavity            0.037844
+    worst concave points       0.102769
+    worst symmetry             0.011587
+    worst fractal dimension    0.007456
+    gaussian_probe_0           0.003783
+    dtype: float64
+
 In the attribute :code:`features_to_drop_`, we find the variables that were not selected:
 
 .. code:: python
 
     sel.features_to_drop_
+
+These are the variables that will be removed from the dataframe:
+
+.. code:: python
 
     ['mean symmetry',
      'mean fractal dimension',
@@ -167,8 +209,11 @@ than the probe feature's score:
 
 .. code:: python
 
-    vars_to_drop = sel.features_to_drop_
-    vars_to_display = vars_to_drop + ["gaussian_probe_0"]
+    sel.feature_importances_.loc[sel.features_to_drop_+["gaussian_probe_0"]]
+
+The previous command returns the following output:
+
+.. code:: python
 
     mean symmetry              0.003698
     mean fractal dimension     0.003455
@@ -187,8 +232,11 @@ less than `gaussian_probe_0` variable:
 
     Xtr.shape
 
-    (114, 24)
+The final shape of the data after removing the features:
 
+.. code:: python
+
+    (114, 24)
 
 And, finally, we can also obtain the names of the features in the final transformed dataset:
 
@@ -221,4 +269,100 @@ And, finally, we can also obtain the names of the features in the final transfor
      'worst symmetry',
      'worst fractal dimension']
 
+For compatibility with Scikit-learn selection transformers, :class:`ProbeFeatureSelection()`
+also supports the method `get_support()`:
 
+.. code:: python
+
+    sel.get_support()
+
+which returns the following output:
+
+.. code:: python
+
+    [True, True, True, True, True, True, True, True, False, False, True, False, True,
+     True, False, True, True, False, True, False, True, True, True, True, True, True,
+     True, True, True, True]
+
+Using several probe features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Let's now repeat the selection process, but using more than 1 probe feature.
+
+.. code:: python
+
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(),
+        variables=None,
+        scoring="precision",
+        n_probes=3,
+        distribution="all",
+        cv=5,
+        random_state=150,
+        confirm_variables=False
+    )
+
+    sel.fit(X_train, y_train)
+
+Let's display the random features that the transformer created:
+
+.. code:: python
+
+    sel.probe_features_.head()
+
+Here we find some example values of the probe features:
+
+.. code:: python
+
+       gaussian_probe_0  binary_probe_0  uniform_probe_0
+    0         -0.694150               1         0.983610
+    1          1.171840               1         0.765628
+    2          1.074892               1         0.991439
+    3          1.698733               0         0.668574
+    4          0.498702               0         0.192840
+
+Let's go ahead and plot histograms:
+
+.. code:: python
+
+    sel.probe_features_.hist(bins=30)
+
+In the histograms we recognise the 3 well defined distributions:
+
+.. figure::  ../../images/probe_features.png
+   :align:   center
+
+Let's display the importance of the random features
+
+.. code:: python
+
+    sel.feature_importances_.tail()
+
+.. code:: python
+
+    worst symmetry             0.009176
+    worst fractal dimension    0.007825
+    gaussian_probe_0           0.003765
+    binary_probe_0             0.000354
+    uniform_probe_0            0.002377
+    dtype: float64
+
+
+We see that the binary feature has an extremely low importance, hence, when we take the
+average, the value is so small, that no feature will be dropped:
+
+.. code:: python
+
+    sel.features_to_drop_
+
+
+The previous command returns and empty list:
+
+.. code:: python
+
+    []
+
+It is important to select a suitable probe feature distribution when trying to remove variables.
+If most variables are continuous, introduce features with normal and uniform distributions.
+If you have one hot encoded features or sparse matrices, binary features might be a better
+option.
