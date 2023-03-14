@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.linear_model import Lasso, LogisticRegression, LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 
 from feature_engine.selection import RecursiveFeatureElimination
@@ -186,3 +186,25 @@ def test_regression(
 
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_stops_when_only_one_feature_remains():
+    linear_model = LinearRegression()
+
+    # Feature x shows 100% correlation with target variable
+    # Feature x shows 0% correlation with target variable
+    # Target variable: y
+
+    df = pd.DataFrame(
+        {
+            "x": [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+            "z": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            "y": [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+        }
+    )
+
+    transformer = RecursiveFeatureElimination(
+        estimator=linear_model, scoring="r2", cv=3
+    )
+    output = transformer.fit_transform(df[["x", "z"]], df["y"])
+    pd.testing.assert_frame_equal(output, df["x"].to_frame())
