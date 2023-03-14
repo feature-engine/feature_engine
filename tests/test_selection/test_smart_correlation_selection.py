@@ -273,15 +273,15 @@ def test_ordering_variables(df_test):
     transformer = SmartCorrelatedSelection(order_by="alphabetic")
     transformer.fit(X)
     Xt = transformer._sort_variables(X)
-    assert (X.columns == ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]).all()
+    assert (Xt.columns == ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]).all()
     # test nan
     transformer = SmartCorrelatedSelection(order_by="nan")
     df_test.loc[0, "var_0"] = None
     df_test.loc[[1, 2], "var_1"] = None
     Xt = transformer._sort_variables(X)
-    assert (X.columns == ['var_2', 'var_3', 'var_4', 'var_5', 'var_0', 'var_1']).all()
+    assert (Xt.columns == ['var_2', 'var_3', 'var_4', 'var_5', 'var_0', 'var_1']).all()
     # test unique
     transformer = SmartCorrelatedSelection(order_by="unique")
     df_test.loc[[1, 2, 3], "var_3"] = 1
     Xt = transformer._sort_variables(X)
-    assert (X.columns == ['var_2', 'var_4', 'var_5', 'var_0', 'var_1', 'var_3']).all()
+    assert (Xt.columns == ['var_2', 'var_4', 'var_5', 'var_0', 'var_1', 'var_3']).all()
