@@ -229,10 +229,3 @@ def test_get_features_to_drop():
     )
     sel.variables_ = ["var1", "var2", "var3", "var4"]
     assert sel._get_features_to_drop() == ["var4"]
-
-
-def test_get_feature_names_out():
-    pass
-
-
-# common tests
