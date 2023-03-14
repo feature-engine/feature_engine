@@ -169,6 +169,12 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
         # remember that feature_importances_ is ordered already
         for feature in list(self.feature_importances_.index):
 
+            # if there is only 1 feature left
+            if X_tmp.shape[1] == 1:
+                self.performance_drifts_[feature] = 0
+                _selected_features.append(feature)
+                break
+
             # remove feature and train new model
             model_tmp = cross_validate(
                 self.estimator,
@@ -195,11 +201,6 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
             else:
                 # remove feature and adjust initial performance
                 X_tmp = X_tmp.drop(columns=feature)
-
-                if X_tmp.empty is True:
-                    raise ValueError(
-                        "All features have been removed. Try reducing the threshold."
-                    )
 
                 baseline_model = cross_validate(
                     self.estimator,
