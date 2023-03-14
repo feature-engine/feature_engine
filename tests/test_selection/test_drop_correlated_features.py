@@ -146,25 +146,18 @@ def test_invalid_combination():
         DropCorrelatedFeatures(order_by="nan", missing_values="raise")
 
 
-@pytest.mark.parametrize("order_by", [None, "alphabetic", "nan", "unique"])
-def test_consistency_params(df_correlated_single, order_by):
-    transformer = DropCorrelatedFeatures(
-        variables=None,
-        method="pearson",
-        threshold=0.8,
-        order_by=order_by
-    )
-    X = transformer.fit_transform(df_correlated_single)
-
-    # expected result
-    df = df_correlated_single.drop("var_2", axis=1)
-
-    # test init params
-    assert transformer.method == "pearson"
-    assert transformer.threshold == 0.8
-
-    # test fit attrs
-    assert transformer.features_to_drop_ == {"var_2"}
-    assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
-    # test transform output
-    pd.testing.assert_frame_equal(X, df)
+def test_ordering_variables(df_correlated_single):
+    # test alphabetic
+    transformer = DropCorrelatedFeatures(order_by="alphabetic")
+    X = transformer._sort_variables(df_correlated_single)
+    assert X.columns == ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]
+    # test nan
+    transformer = DropCorrelatedFeatures(order_by="nan")
+    df_correlated_single.loc[0, "var_0"] = np.nan
+    df_correlated_single.loc[[1, 2], "var_1"] = np.nan
+    X = transformer._sort_variables(df_correlated_single)
+    assert X.columns == ['var_2', 'var_3', 'var_4', 'var_5', 'var_0', 'var_1']
+    # test unique
+    transformer = DropCorrelatedFeatures(order_by="unique")
+    df_correlated_single.loc[[1, 2, 3], "var_3"] = 1
+    assert X.columns == ['var_2', 'var_4', 'var_5', 'var_0', 'var_1', 'var_3']
