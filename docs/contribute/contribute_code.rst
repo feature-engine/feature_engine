@@ -90,11 +90,11 @@ It is optional but highly advisable that you create a virtual environment. A vir
 is a "separate space", where you can install Feature-engine's dependencies. To create a virtual
 environment, use any virtual environment tool of your choice. Some examples include:
 
-    1. `venv <https://docs.python.org/3/library/venv.html>`_
-    2. `conda environments <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`_
+1. `venv <https://docs.python.org/3/library/venv.html>`_
+2. `conda environments <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`_
 
-In the previous links, you find details on how to create the environments as well. We also
-provide some guidelines below.
+In the previous links, you find details on how to create the environments. We provide
+some guidelines below.
 
 venv
 ~~~~
@@ -201,7 +201,7 @@ To commit changes do the following::
     $ git commit -m "my commit message"
 
 and make sure to include an informative but succinct commit message in the present tense,
-for example "fixes style in imputation error message".
+for example "fix style in imputation error message".
 
 The previous commands will commit all files that have changes. If you want to commit just 1
 or 2 files, you can do so as follows::
@@ -259,9 +259,9 @@ We have tests for:
 2. Code style, using flake8
 3. Typehints, using mypy
 4. Documentation, using sphinx.
+5. Coverage using coverage
 
-In the following paragraphs, we will take you through how to test each of the above individually,
-and then altogether.
+In the following paragraphs, we will take you through how to test each of the above.
 
 Test functionality
 ~~~~~~~~~~~~~~~~~~
@@ -277,13 +277,16 @@ feature-engine folder. Then run::
 
     $ pytest
 
-These command will run all the test scripts within the test folder.
+These command will run all the test scripts within the test folder. It will take a few
+minutes.
 
 Alternatively, you can run a specific script as follows::
 
-    $ pytest tests/test_encoding/test_categorical_encoder.py
+    $ pytest tests/test_encoding/test_onehot_encoder.py
 
-So if you just want to run the code you created, you would do::
+The previous command will just run the tests for the one hot encoder.
+
+It will be faster if you just test the code you created, in which case you would do::
 
     $ pytest tests/test_my_new_feature_folder/test_my_new_feature.py
 
@@ -292,9 +295,16 @@ test_my_new_feature_folder.
 
 If you are using Pycharm, this is even easier:
 
-1. In your project directory (where you have all the files and scripts), click with the mouse right button on the folder "tests".
+1. In your project directory (where you have all the files and scripts), right click with the mouse on the folder "tests".
 2. Select "Run pytest in tests".
-3. Done!!
+
+This will run all tests.
+
+To run your specific tests:
+
+1. Locate your test file
+2. Right click with the mouse on the test file.
+3. Select "Run pytest in tests".
 
 Sweet, isn't it?
 
@@ -345,7 +355,7 @@ You can fix code style by running::
 Black and isort may make changes to your file. Don't forget to commit those changes::
 
     $ git add my_new_script.py
-    $ git commit -m "fixes code styling"
+    $ git commit -m "fix code style"
     $ git push origin my_feature_branch
 
 Now, you can go ahead and test that your scripts pass the code styling tests. To do so,
