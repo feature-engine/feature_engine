@@ -251,9 +251,9 @@ def test_invalid_thresholds(threshold):
 
 
 @pytest.mark.parametrize("method", ["hola", 1, ["pearson"]])
-def test_invalid_method(method, df_test):
+def test_invalid_method(method, df_single):
     with pytest.raises(ValueError):
-        SmartCorrelatedSelection(method=method).fit(df_test[0])
+        SmartCorrelatedSelection(method=method).fit(df_single[0])
 
 
 def test_invalid_combination():
@@ -267,8 +267,8 @@ def test_invalid_combination():
         )
 
 
-def test_ordering_variables(df_test):
-    X, _ = df_test
+def test_ordering_variables(df_single):
+    X, _ = df_single
     # test alphabetic
     transformer = SmartCorrelatedSelection(order_by="alphabetic")
     transformer.fit(X)
