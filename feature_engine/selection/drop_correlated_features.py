@@ -276,3 +276,5 @@ class DropCorrelatedFeatures(BaseSelector):
             return X[X.nunique(0).sort_values(ascending=False).index]
         elif self.order_by == "alphabetic":
             return X.sort_index(axis=1)
+        else:
+            return X
