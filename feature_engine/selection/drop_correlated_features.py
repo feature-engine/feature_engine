@@ -152,14 +152,21 @@ class DropCorrelatedFeatures(BaseSelector):
     ):
 
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
-            raise ValueError("threshold must be a float between 0 and 1")
+            raise ValueError(
+                f"threshold must be a float between 0 and 1."
+                f "Got {threshold} instead."
+            )
 
         if missing_values not in ("raise", "ignore"):
-            raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
+            raise ValueError(
+                f"missing_values takes only values 'raise' or 'ignore'."
+                f" Got {missing_values} instead."
+            )
 
         if order_by is not None and order_by not in ("nan", "unique", "alphabetic"):
             raise ValueError(
-                "order_by takes only values 'nan', 'unique', 'alphabetic', None."
+                f"order_by takes only values 'nan', 'unique', 'alphabetic', None."
+                f" Got {order_by} instead."
             )
 
         if missing_values == "raise" and order_by == "nan":
@@ -213,12 +220,7 @@ class DropCorrelatedFeatures(BaseSelector):
         self.correlated_feature_sets_ = []
 
         # sort columns for consistency
-        if self.order_by == "nan":
-            X = X[X.isna().sum(0).sort_values().index]
-        elif self.order_by == "unique":
-            X = X[X.nunique(0).sort_values(ascending=False).index]
-        elif self.order_by == "alphabetic":
-            X = X.sort_index(axis=1)
+        X = self._sort_variables(X)
 
         # the correlation matrix
         _correlated_matrix = X[self.variables_].corr(method=self.method)
@@ -265,3 +267,12 @@ class DropCorrelatedFeatures(BaseSelector):
         self._get_feature_names_in(X)
 
         return self
+
+    def _sort_variables(self, X: pd.DataFrame):
+        """Helper function for sorting columns."""
+        if self.order_by == "nan":
+            return X[X.isna().sum(0).sort_values().index]
+        elif self.order_by == "unique":
+            return X[X.nunique(0).sort_values(ascending=False).index]
+        elif self.order_by == "alphabetic":
+            return X.sort_index(axis=1)
