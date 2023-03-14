@@ -254,20 +254,42 @@ def test_raises_param_errors():
         )
 
 
-def test_error_method_supplied(df_test):
+@pytest.mark.parametrize("order_by", ["nulls", "uniqu", "alpha", 1, [0]])
+def test_invalid_sorting_options(order_by):
+    with pytest.raises(ValueError):
+        SmartCorrelatedSelection(order_by=order_by)
 
-    X, _ = df_test
-    method = "hola"
 
-    transformer = SmartCorrelatedSelection(method=method)
+@pytest.mark.parametrize("threshold", [-1, 0, 2, [0.5]])
+def test_invalid_thresholds(threshold):
+    with pytest.raises(ValueError):
+        SmartCorrelatedSelection(threshold=threshold)
 
-    with pytest.raises(ValueError) as errmsg:
-        _ = transformer.fit_transform(X)
 
-    exceptionmsg = errmsg.value.args[0]
+@pytest.mark.parametrize("method", ["hola", 1, ["pearson"]])
+def test_invalid_method(method, df_test):
+    with pytest.raises(ValueError):
+        SmartCorrelatedSelection(method=method).fit(df_test)
 
-    assert (
-        exceptionmsg
-        == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
-        + f" '{method}' was supplied"
-    )
+
+def test_invalid_combination():
+    with pytest.raises(ValueError):
+        SmartCorrelatedSelection(order_by="nan", missing_values="raise")
+
+
+def test_ordering_variables(df_test):
+    # test alphabetic
+    transformer = SmartCorrelatedSelection(order_by="alphabetic")
+    X = transformer._sort_variables(df_test)
+    assert (X.columns == ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]).all()
+    # test nan
+    transformer = SmartCorrelatedSelection(order_by="nan")
+    df_test.loc[0, "var_0"] = None
+    df_test.loc[[1, 2], "var_1"] = None
+    X = transformer._sort_variables(df_test)
+    assert (X.columns == ['var_2', 'var_3', 'var_4', 'var_5', 'var_0', 'var_1']).all()
+    # test unique
+    transformer = SmartCorrelatedSelection(order_by="unique")
+    df_test.loc[[1, 2, 3], "var_3"] = 1
+    X = transformer._sort_variables(df_test)
+    assert (X.columns == ['var_2', 'var_4', 'var_5', 'var_0', 'var_1', 'var_3']).all()
