@@ -4,31 +4,34 @@ Version 1.6.X
 Version 1.6.0
 -------------
 
-Deployed: xxth March 2023
+Deployed: 16th March 2023
 
 Contributors
 ~~~~~~~~~~~~
 
-    - `Gleb Levitski <https://github.com/GLevv>`_
-    - `Morgan Sell <https://github.com/Morgan-Sell>`_
-    - `Alfonso Tobar <https://github.com/datacubeR>`_
-    - `Nodar Okroshiashvili <https://github.com/Okroshiashvili>`_
-    - `Luís Seabra  <https://github.com/luismavs>`_
-    - `Soledad Galli <https://github.com/solegalli>`_
+- `Gleb Levitski <https://github.com/GLevv>`_
+- `Morgan Sell <https://github.com/Morgan-Sell>`_
+- `Alfonso Tobar <https://github.com/datacubeR>`_
+- `Nodar Okroshiashvili <https://github.com/Okroshiashvili>`_
+- `Luís Seabra  <https://github.com/luismavs>`_
+- `Kyle Gilde <https://github.com/kylegilde>`_
+- `Soledad Galli <https://github.com/solegalli>`_
 
-In this release, we make all Feature-engine transformers compatible with the `set_output`
-API from Scikit-learn, which was released in version 1.2.0.
+In this release, we make Feature-engine transformers compatible with the `set_output`
+API from Scikit-learn, which was released in version 1.2.0. We also make Feature-engine
+compatible with the newest direction of pandas, in removing the `inplace` functionality
+that our transformers use under the hood.
 
-In addition, most of the categorical encoders can now encode variables even if they have
-missing data.
+We introduce a major change: most of the **categorical encoders can now encode variables
+even if they have missing data**.
 
-Thanks to `Gleb Levitski <https://github.com/GLevv>`_, we've got a new discretiser
-to sort continuous variables into intervals determined by geometric progression.
+We are also releasing **3 brand new transformers**: One for discretization, one for feature
+selection and one for operations between datetime variables.
 
-`Nodar Okroshiashvili <https://github.com/Okroshiashvili>`_ made a major improvement in the
-performance of the `DropDuplicateFeatures`.
+We also made a major improvement in the performance of the `DropDuplicateFeatures` and some
+smaller bug fixes here and there.
 
-Finally, we'd like to thank all contributors for fixing bugs and expanding the functionality
+We'd like to thank all contributors for fixing bugs and expanding the functionality
 and documentation of Feature-engine.
 
 Thank you so much to all contributors and to those of you who created issues flagging bugs or
@@ -37,34 +40,50 @@ requesting new functionality.
 New transformers
 ~~~~~~~~~~~~~~~~
 
-    - **GeometricWidthDiscretiser**: sorts continuous variables into intervals determined by geometric progression (`Gleb Levitski <https://github.com/GLevv>`_)
+- **ProbeFeatureSelection**: introduces random features and selects variables whose importance is greater than the random ones (`Morgan Sell <https://github.com/Morgan-Sell>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+- **DatetimeSubtraction**: creates new features by subtracting datetime variables (`Kyle Gilde <https://github.com/kylegilde>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+- **GeometricWidthDiscretiser**: sorts continuous variables into intervals determined by geometric progression (`Gleb Levitski <https://github.com/GLevv>`_)
 
 New functionality
 ~~~~~~~~~~~~~~~~~
 
-    - Allow categorical encoders to encode variables with NaN (`Soledad Galli <https://github.com/solegalli>`_)
-    - Make transformers compatible with new `set_output` functionality from sklearn (`Soledad Galli <https://github.com/solegalli>`_)
+- Allow categorical encoders to encode variables with NaN (`Soledad Galli <https://github.com/solegalli>`_)
+- Make transformers compatible with new `set_output` functionality from sklearn (`Soledad Galli <https://github.com/solegalli>`_)
+- The `ArbitraryDiscretiser()` now includes the lowest limits in the intervals (`Soledad Galli <https://github.com/solegalli>`_)
+
+New modules
+~~~~~~~~~~~
+
+- New **Datasets** module with functions to load specific datasets (`Alfonso Tobar <https://github.com/datacubeR>`_)
+- New **variable_handling** module with functions to auomatically select numerical, categorical, or datetime variables (`Soledad Galli <https://github.com/solegalli>`_)
 
 Bug fixes
 ~~~~~~~~~
 
-    - Fixed bug in DropFeatures (`Luís Seabra  <https://github.com/luismavs>`_)
+- Fixed bug in `DropFeatures()` (`Luís Seabra  <https://github.com/luismavs>`_)
+- Fixed bug in `RecusriveFeatureElimination()` caused when only 1 feature remained in data (`Soledad Galli <https://github.com/solegalli>`_)
 
 Documentation
 ~~~~~~~~~~~~~
 
-    - Add example code snippets to the selection module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
-    - Reorganized Readme badges (`Gleb Levitski <https://github.com/GLevv>`_)
-    - New Jupyter notebooks for `GeometricWidthDiscretiser` (`Gleb Levitski <https://github.com/GLevv>`_)
-    - Fixed typos (`Gleb Levitski <https://github.com/GLevv>`_)
+- Add example code snippets to the selection module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+- Updated documentation using new Dataset module (`Alfonso Tobar <https://github.com/datacubeR>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+- Reorganized Readme badges (`Gleb Levitski <https://github.com/GLevv>`_)
+- New Jupyter notebooks for `GeometricWidthDiscretiser` (`Gleb Levitski <https://github.com/GLevv>`_)
+- Fixed typos (`Gleb Levitski <https://github.com/GLevv>`_)
+- Remove examples using the boston house dataset (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix sponsor page, expand contribute page (`Soledad Galli <https://github.com/solegalli>`_)
+
 
 Deprecations
 ~~~~~~~~~~~~
 
-    - The class `PRatioEncoder` is no longer supported and was removed from the API (`Soledad Galli <https://github.com/solegalli>`_)
+- The class `PRatioEncoder` is no longer supported and was removed from the API (`Soledad Galli <https://github.com/solegalli>`_)
 
 Code improvements
 ~~~~~~~~~~~~~~~~~
 
-    - Massive improve in the performance (speed) of DropDuplicateFeatures (`Nodar Okroshiashvili <https://github.com/Okroshiashvili>`_)
-    - Moved all docstrings to dedicated docstrings module  (`Soledad Galli <https://github.com/solegalli>`_)
+- Massive improve in the performance (speed) of DropDuplicateFeatures (`Nodar Okroshiashvili <https://github.com/Okroshiashvili>`_)
+- Remove `inplace` and other items related to pandas new direction (`Luís Seabra  <https://github.com/luismavs>`_)
+- Moved all docstrings to dedicated docstrings module  (`Soledad Galli <https://github.com/solegalli>`_)
+- Unnest tests for encoders (`Soledad Galli <https://github.com/solegalli>`_)
