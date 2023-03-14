@@ -164,6 +164,12 @@ Feature Creation:
 -  :doc:`api_doc/creation/RelativeFeatures`: combines variables with reference features
 -  :doc:`api_doc/creation/CyclicalFeatures`: creates variables using sine and cosine, suitable for cyclical features
 
+Datetime:
+---------
+
+- :doc:`api_doc/datetime/DatetimeFeatures`: extract features from datetime variables
+- :doc:`api_doc/datetime/DatetimeSubtraction`: computes subtractions between datetime variables
+
 Feature Selection:
 ------------------
 
@@ -180,11 +186,6 @@ Feature Selection:
 - :doc:`api_doc/selection/RecursiveFeatureElimination`: selects features recursively, by evaluating model performance
 - :doc:`api_doc/selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
 - :doc:`api_doc/selection/ProbeFeatureSelection`: selects features whose importance is greater than those of random variables
-
-Datetime:
----------
-
-- :doc:`api_doc/datetime/DatetimeFeatures`: extract features from datetime variables
 
 Forecasting:
 ------------

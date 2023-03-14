@@ -129,6 +129,7 @@ transforming parameters from the data and then transform it.
 
 ### Datetime
  * DatetimeFeatures
+ * DatetimeSubtraction
  
 ### Time Series
  * LagFeatures
