@@ -47,6 +47,9 @@ determine these attributes for each feature in the group and retain that one wit
 If the criteria is based on missing data, :class:`SmartCorrelatedSelection` will determine the
 number of NA in each feature from the correlated group and keep the one with less NA.
 
+Note: ordering of the coulmns matters! Different order of the columns could lead to
+different results. To make estimator more consistent, please use 'order_by' parameter.
+
 **Example**
 
 Let's see how to use :class:`SmartCorrelatedSelection` in a toy example. Let's create a
