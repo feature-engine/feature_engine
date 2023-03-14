@@ -64,6 +64,8 @@ class ProbeFeatureSelection(BaseSelector):
     The variables that have a feature importance less than the feature importance or
     average feature importance of the probe feature(s) are dropped from the dataset.
 
+    More details in the :ref:`User Guide <probe_features>`.
+
     Parameters
     ----------
     {estimator}
@@ -111,6 +113,30 @@ class ProbeFeatureSelection(BaseSelector):
     {get_support}
 
     {transform}
+
+    References
+    ----------
+    .. [1] Stoppiglia, et al. "Ranking a Random Feature for Variable and Feature
+        Selection". JMLR: 1399-1414, 2003
+        https://jmlr.org/papers/volume3/stoppiglia03a/stoppiglia03a.pdf
+
+    Examples
+    --------
+
+    >>> from sklearn.datasets import load_breast_cancer
+    >>> from sklearn.linear_model import LogisticRegression
+    >>> from feature_engine.selection import ProbeFeatureSelection
+    >>> X, y = load_breast_cancer(return_X_y=True, as_frame=True)
+    >>> sel = ProbeFeatureSelection(
+    >>>     estimator=LogisticRegression(),
+    >>>     scoring="roc_auc",
+    >>>     n_probes=3,
+    >>>     distribution="normal",
+    >>>     cv=3,
+    >>>     random_state=150,
+    >>> )
+    >>> X_tr = sel.fit_transform(X, y)
+    print(X.shape, X_tr.shape)
     """
 
     def __init__(

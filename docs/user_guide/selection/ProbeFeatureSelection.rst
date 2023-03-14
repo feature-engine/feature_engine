@@ -366,3 +366,11 @@ It is important to select a suitable probe feature distribution when trying to r
 If most variables are continuous, introduce features with normal and uniform distributions.
 If you have one hot encoded features or sparse matrices, binary features might be a better
 option.
+
+More details
+------------
+
+More info about this method can be found in these resources:
+
+- `Kaggle Tips for Feature Engineering and Selection <https://www.youtube.com/watch?v=RtqtM1UJfZc&t=3150s>`_, by Gilberto Titericz.
+- `Feature Selection: Beyond feature importance? <https://www.kdnuggets.com/2019/10/feature-selection-beyond-feature-importance.html>`_, KDDNuggets.
