@@ -108,6 +108,50 @@ have been removed.
     3  0.484649
     4 -0.186530
 
+Now let's reduce number of unique values and use order_by = 'unique' option.
+
+.. code:: python
+
+    tr = DropCorrelatedFeatures(variables=None, method='pearson', threshold=0.8)
+    Xt = tr.fit_transform(X.round(3))
+    tr.correlated_feature_sets_
+
+We will get the same result
+
+..  code:: python
+
+    [{'var_0', 'var_8'}, {'var_4', 'var_6', 'var_7', 'var_9'}]
+
+..  code:: python
+
+    tr.features_to_drop_
+
+..  code:: python
+
+    {'var_6', 'var_7', 'var_8', 'var_9'}
+
+And with order_by = 'unique'
+
+.. code:: python
+
+    tr = DropCorrelatedFeatures(variables=None, method='pearson', threshold=0.8, order_by='unique')
+    Xt = tr.fit_transform(X.round(3))
+    tr.correlated_feature_sets_
+    
+Now the output is different
+
+..  code:: python
+    
+    [{'var_4', 'var_6', 'var_7', 'var_9'}, {'var_0', 'var_8'}]
+
+..  code:: python
+
+    tr.features_to_drop_
+
+..  code:: python
+
+    {'var_0', 'var_4', 'var_6', 'var_9'}
+    
 
 More details
 ^^^^^^^^^^^^
