@@ -283,7 +283,7 @@ def test_ordering_variables(df_single):
     # test alphabetic
     transformer = SmartCorrelatedSelection(order_by="alphabetic")
     transformer.fit(X)
-    Xt = transformer._sort_variables(X[f"var_{i}" for i in reversed(range(6))])
+    Xt = transformer._sort_variables(X[[f"var_{i}" for i in reversed(range(6))]])
     assert (Xt.columns == ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]).all()
     # test nan
     transformer = SmartCorrelatedSelection(order_by="nan")
