@@ -8,13 +8,14 @@ from feature_engine.selection import (
     DropDuplicateFeatures,
     DropFeatures,
     DropHighPSIFeatures,
+    ProbeFeatureSelection,
     RecursiveFeatureAddition,
     RecursiveFeatureElimination,
+    SelectByInformationValue,
     SelectByShuffling,
     SelectBySingleFeaturePerformance,
     SelectByTargetMeanPerformance,
     SmartCorrelatedSelection,
-    SelectByInformationValue,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 from tests.estimator_checks.init_params_triggered_functionality_checks import (
@@ -37,6 +38,7 @@ _estimators = [
     RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy", threshold=-100),
     SelectByInformationValue(bins=2),
+    ProbeFeatureSelection(estimator=_logreg, scoring="accuracy"),
 ]
 
 _multivariate_estimators = [
@@ -54,9 +56,12 @@ _univariate_estimators = [
     DropHighPSIFeatures(bins=5),
     SelectByTargetMeanPerformance(bins=3, regression=False, threshold=0),
     SelectBySingleFeaturePerformance(
-        estimator=_logreg, scoring="accuracy", threshold=0,
+        estimator=_logreg,
+        scoring="accuracy",
+        threshold=0,
     ),
     SelectByInformationValue(bins=2),
+    ProbeFeatureSelection(estimator=_logreg, scoring="accuracy"),
 ]
 
 _model_based_estimators = [
@@ -64,6 +69,7 @@ _model_based_estimators = [
     SelectBySingleFeaturePerformance(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy", threshold=-100),
+    ProbeFeatureSelection(estimator=_logreg, scoring="accuracy"),
 ]
 
 
@@ -95,7 +101,7 @@ def test_raises_error_if_only_1_variable(estimator):
 
 @pytest.mark.parametrize("estimator", _model_based_estimators)
 def test_raises_error_when_no_estimator_passed(estimator):
-    # this selectors need an estimator as an input param
+    # these selectors need an estimator as an input param
     # test error otherwise.
     with pytest.raises(TypeError):
         estimator()
