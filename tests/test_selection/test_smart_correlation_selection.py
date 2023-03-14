@@ -239,7 +239,7 @@ def test_callable_method(df_test, random_uniform_method):
 
 
 @pytest.mark.parametrize("selection_method", ["miss_vals", "var", 1, [0]])
-def test_invalid_sorting_options(selection_method):
+def test_invalid_selection_methods(selection_method):
     with pytest.raises(ValueError):
         SmartCorrelatedSelection(selection_method=selection_method)
 
