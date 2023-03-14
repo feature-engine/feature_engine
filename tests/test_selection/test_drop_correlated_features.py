@@ -149,6 +149,7 @@ def test_invalid_combination():
 def test_ordering_variables(df_correlated_single):
     # test alphabetic
     transformer = DropCorrelatedFeatures(order_by="alphabetic")
+    transformer.fit(X)
     X = transformer._sort_variables(df_correlated_single)
     assert (X.columns == ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]).all()
     # test nan
