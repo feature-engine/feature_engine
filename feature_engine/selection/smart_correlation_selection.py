@@ -415,7 +415,7 @@ class SmartCorrelatedSelection(BaseSelector):
         """Helper function for sorting columns."""
         if self.order_by is None:
             return X
-        eif self.order_by == "nan":
+        elif self.order_by == "nan":
             order = X.isna().sum(0).sort_values().index
         elif self.order_by == "unique":
             order = X.nunique(0).sort_values(ascending=False).index
