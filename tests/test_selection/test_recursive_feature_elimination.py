@@ -203,6 +203,8 @@ def test_stops_when_only_one_feature_remains():
         }
     )
 
-    transformer = RecursiveFeatureElimination(estimator=linear_model, scoring="r2", cv=3)
-    output = transformer.fit_transform(df[['x', 'z']], df['y'])
+    transformer = RecursiveFeatureElimination(
+        estimator=linear_model, scoring="r2", cv=3
+    )
+    output = transformer.fit_transform(df[["x", "z"]], df["y"])
     pd.testing.assert_frame_equal(output, df["x"].to_frame())
