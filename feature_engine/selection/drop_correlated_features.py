@@ -270,7 +270,7 @@ class DropCorrelatedFeatures(BaseSelector):
 
     def _sort_variables(self, X: pd.DataFrame):
         """Helper function for sorting columns."""
-        elif self.order_by == "nan":
+        if self.order_by == "nan":
             order = X.isna().sum(0).sort_values().index
         elif self.order_by == "unique":
             order = X.nunique(0).sort_values(ascending=False).index
@@ -278,5 +278,5 @@ class DropCorrelatedFeatures(BaseSelector):
             order = X.sort_index(axis=1).columns
         else:
             return X
-        ordered_cols = [col for col in order if col in self.variables_]
-        return X[ordered_cols]
+        self.variables_ = [col for col in order if col in self.variables_]
+        return X[self.variables_]
