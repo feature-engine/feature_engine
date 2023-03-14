@@ -238,6 +238,12 @@ def test_callable_method(df_test, random_uniform_method):
     assert transformer.n_features_in_ == len(X.columns)
 
 
+@pytest.mark.parametrize("selection_method", ["miss_vals", "var", 1, [0]])
+def test_invalid_sorting_options(selection_method):
+    with pytest.raises(ValueError):
+        SmartCorrelatedSelection(selection_method=selection_method)
+
+
 @pytest.mark.parametrize("order_by", ["nulls", "uniqu", "alpha", 1, [0]])
 def test_invalid_sorting_options(order_by):
     with pytest.raises(ValueError):
@@ -264,6 +270,11 @@ def test_invalid_combination():
     with pytest.raises(ValueError):
         SmartCorrelatedSelection(
             selection_method="missing_values", missing_values="raise"
+        )
+
+    with pytest.raises(ValueError):
+        SmartCorrelatedSelection(
+            selection_method="model_performance", estimator=None
         )
 
 
