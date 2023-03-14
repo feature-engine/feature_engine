@@ -153,8 +153,8 @@ def test_ordering_variables(df_correlated_single):
     assert X.columns == ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]
     # test nan
     transformer = DropCorrelatedFeatures(order_by="nan")
-    df_correlated_single.loc[0, "var_0"] = np.nan
-    df_correlated_single.loc[[1, 2], "var_1"] = np.nan
+    df_correlated_single.loc[0, "var_0"] = None
+    df_correlated_single.loc[[1, 2], "var_1"] = None
     X = transformer._sort_variables(df_correlated_single)
     assert X.columns == ['var_2', 'var_3', 'var_4', 'var_5', 'var_0', 'var_1']
     # test unique
