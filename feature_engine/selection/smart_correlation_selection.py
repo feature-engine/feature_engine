@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 
 import pandas as pd
 from sklearn.model_selection import cross_validate
