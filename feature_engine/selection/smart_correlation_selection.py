@@ -229,15 +229,16 @@ class SmartCorrelatedSelection(BaseSelector):
                 "while order_by is set to 'nan'."
             )
 
-        if selection_method not in [
+        if selection_method not in (
             "missing_values",
             "cardinality",
             "variance",
             "model_performance",
-        ]:
+        ):
             raise ValueError(
-                "selection_method takes only values 'missing_values', 'cardinality', "
-                "'variance' or 'model_performance'."
+                f"selection_method takes only values 'missing_values', 'cardinality', "
+                f"'variance' or 'model_performance'. "
+                f"Got {selection_method} instead."
             )
 
         if selection_method == "model_performance" and estimator is None:
