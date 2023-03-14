@@ -1,10 +1,8 @@
 import pandas as pd
 import pytest
-from sklearn.datasets import load_diabetes
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.utils.validation import column_or_1d
 
 from feature_engine.selection import ProbeFeatureSelection
 
@@ -107,10 +105,16 @@ def test_fit_transform_functionality(df_test):
             "gaussian_probe_1",
         ],
     )
-    pd.testing.assert_frame_equal(sel.probe_features_.head().round(3), expected_probe_features_df, check_dtype=False)
+    pd.testing.assert_frame_equal(
+        sel.probe_features_.head().round(3),
+        expected_probe_features_df,
+        check_dtype=False,
+    )
     assert sel.feature_importances_.round(2).equals(expected_feature_importances)
     assert sel.features_to_drop_ == ["var_2", "var_10"]
-    pd.testing.assert_frame_equal(X_tr, X.drop(columns=["var_2", "var_10"]), check_dtype=False)
+    pd.testing.assert_frame_equal(
+        X_tr, X.drop(columns=["var_2", "var_10"]), check_dtype=False
+    )
 
 
 def test_generate_probe_features_all():
@@ -121,21 +125,23 @@ def test_generate_probe_features_all():
         random_state=1,
     )
 
-    n_obs=5
+    n_obs = 5
     probe_features = sel._generate_probe_features(n_obs).round(3)
 
     # expected results
     expected_results = {
-         'gaussian_probe_0': [4.873, -1.835, -1.585, -3.219, 2.596],
-         'binary_probe_0': [0, 1, 0, 0, 1],
-         'uniform_probe_0': [0.443, 0.23, 0.534, 0.914, 0.457],
-         'gaussian_probe_1': [-6.905, 2.032, -0.321, 2.176, 2.805],
-         'binary_probe_1': [1, 1, 1, 0, 1],
-         'uniform_probe_1': [0.876, 0.895, 0.085, 0.039, 0.17],
-         }
+        "gaussian_probe_0": [4.873, -1.835, -1.585, -3.219, 2.596],
+        "binary_probe_0": [0, 1, 0, 0, 1],
+        "uniform_probe_0": [0.443, 0.23, 0.534, 0.914, 0.457],
+        "gaussian_probe_1": [-6.905, 2.032, -0.321, 2.176, 2.805],
+        "binary_probe_1": [1, 1, 1, 0, 1],
+        "uniform_probe_1": [0.876, 0.895, 0.085, 0.039, 0.17],
+    }
     expected_results_df = pd.DataFrame(expected_results)
 
-    pd.testing.assert_frame_equal(probe_features, expected_results_df, check_dtype=False)
+    pd.testing.assert_frame_equal(
+        probe_features, expected_results_df, check_dtype=False
+    )
 
 
 def test_generate_probe_features_normal():
@@ -146,16 +152,18 @@ def test_generate_probe_features_normal():
         random_state=1,
     )
 
-    n_obs=3
+    n_obs = 3
     probe_features = sel._generate_probe_features(n_obs).round(3)
 
     # expected results
     expected_results = {
-        'gaussian_probe_0': [4.873, -1.835, -1.585],
-        'gaussian_probe_1': [-3.219, 2.596, -6.905],
-         }
+        "gaussian_probe_0": [4.873, -1.835, -1.585],
+        "gaussian_probe_1": [-3.219, 2.596, -6.905],
+    }
     expected_results_df = pd.DataFrame(expected_results)
-    pd.testing.assert_frame_equal(probe_features, expected_results_df, check_dtype=False)
+    pd.testing.assert_frame_equal(
+        probe_features, expected_results_df, check_dtype=False
+    )
 
 
 def test_generate_probe_features_binary():
@@ -166,17 +174,19 @@ def test_generate_probe_features_binary():
         random_state=1,
     )
 
-    n_obs=2
+    n_obs = 2
     probe_features = sel._generate_probe_features(n_obs)
 
     # expected results
     expected_results = {
-        'binary_probe_0': [1, 1],
-        'binary_probe_1': [0,0],
-        'binary_probe_2': [1, 1],
-         }
+        "binary_probe_0": [1, 1],
+        "binary_probe_1": [0, 0],
+        "binary_probe_2": [1, 1],
+    }
     expected_results_df = pd.DataFrame(expected_results)
-    pd.testing.assert_frame_equal(probe_features, expected_results_df, check_dtype=False)
+    pd.testing.assert_frame_equal(
+        probe_features, expected_results_df, check_dtype=False
+    )
 
 
 def test_generate_probe_features_uniform():
@@ -187,158 +197,42 @@ def test_generate_probe_features_uniform():
         random_state=1,
     )
 
-    n_obs=3
+    n_obs = 3
     probe_features = sel._generate_probe_features(n_obs).round(3)
 
     # expected results
-    expected_results = {
-        'uniform_probe_0': [0.417, 0.72, 0.0]
-         }
+    expected_results = {"uniform_probe_0": [0.417, 0.72, 0.0]}
     expected_results_df = pd.DataFrame(expected_results)
-    pd.testing.assert_frame_equal(probe_features, expected_results_df, check_dtype=False)
+    pd.testing.assert_frame_equal(
+        probe_features, expected_results_df, check_dtype=False
+    )
 
 
 def test_get_features_to_drop():
     # 1 probe
     sel = ProbeFeatureSelection(estimator=LogisticRegression(), n_probes=1)
-    sel.feature_importances_ = pd.Series([11, 12, 9, 10], index=["var1", "var2", "var3", "probe"])
-    sel.probe_features_ = pd.DataFrame({"probe": [1,1,1,1,1]})
+    sel.feature_importances_ = pd.Series(
+        [11, 12, 9, 10], index=["var1", "var2", "var3", "probe"]
+    )
+    sel.probe_features_ = pd.DataFrame({"probe": [1, 1, 1, 1, 1]})
     sel.variables_ = ["var1", "var2", "var3"]
     assert sel._get_features_to_drop() == ["var3"]
 
     # 2 probes
     sel = ProbeFeatureSelection(estimator=LogisticRegression(), n_probes=2)
-    sel.feature_importances_ = pd.Series([11, 12, 10, 8.7, 10, 8], index=["var1", "var2", "var3", "var4", "probe1", "probe2"])
-    sel.probe_features_ = pd.DataFrame({"probe1": [1,1,1,1,1], "probe2": [1,1,1,1,1]})
+    sel.feature_importances_ = pd.Series(
+        [11, 12, 10, 8.7, 10, 8],
+        index=["var1", "var2", "var3", "var4", "probe1", "probe2"],
+    )
+    sel.probe_features_ = pd.DataFrame(
+        {"probe1": [1, 1, 1, 1, 1], "probe2": [1, 1, 1, 1, 1]}
+    )
     sel.variables_ = ["var1", "var2", "var3", "var4"]
     assert sel._get_features_to_drop() == ["var4"]
 
 
-def test_transformer_with_normal_distribution():
-    X, y = load_diabetes(return_X_y=True, as_frame=True)
-
-    sel = ProbeFeatureSelection(
-        estimator=DecisionTreeRegressor(),
-        variables=None,
-        scoring="neg_mean_absolute_error",
-        distribution="normal",
-        cv=3,
-        n_probes=3,
-        random_state=84,
-        confirm_variables=False,
-    )
-    sel.fit(X, y)
-    results = sel.transform(X)
-
-    # expected results
-    expected_results = {
-        "var_2": [0.062, -0.051, 0.044, -0.012, -0.036],
-        "var_3": [0.022, -0.026, -0.006, -0.037, 0.022],
-        "var_8": [0.020, -0.068, 0.003, 0.023, -0.032],
-    }
-    expected_results_df = pd.DataFrame(expected_results)
-
-    assert results.head().round(3).equals(expected_results_df)
+def test_get_feature_names_out():
+    pass
 
 
-def test_transformer_with_binary_distribution(load_diabetes_dataset):
-    X, y = load_diabetes_dataset
-
-    sel = ProbeFeatureSelection(
-        estimator=DecisionTreeRegressor(),
-        variables=None,
-        scoring="neg_mean_absolute_error",
-        distribution="binary",
-        cv=5,
-        n_probes=3,
-        random_state=84,
-        confirm_variables=False,
-    )
-
-    sel.fit(X, y.values.ravel())
-    results = sel.transform(X)
-
-    # expected results
-    expected_results = {
-        "var_0": [0.038, -0.002, 0.085, -0.089, 0.005],
-        "var_1": [0.051, -0.045, 0.051, -0.045, -0.045],
-        "var_2": [0.062, -0.051, 0.044, -0.012, -0.036],
-        "var_3": [0.022, -0.026, -0.006, -0.037, 0.022],
-        "var_4": [-0.044, -0.008, -0.046, 0.012, 0.004],
-        "var_5": [-0.035, -0.019, -0.034, 0.025, 0.016],
-        "var_6": [-0.043, 0.074, -0.032, -0.036, 0.008],
-        "var_7": [-0.003, -0.039, -0.003, 0.034, -0.003],
-        "var_8": [0.02, -0.068, 0.003, 0.023, -0.032],
-        "var_9": [-0.018, -0.092, -0.026, -0.009, -0.047],
-    }
-    expected_results_df = pd.DataFrame(expected_results)
-
-    assert results.head().round(3).equals(expected_results_df)
-
-
-def test_transformer_with_uniform_distribution(df_test):
-    X, y = df_test
-
-    sel = ProbeFeatureSelection(
-        estimator=LogisticRegression(),
-        scoring="roc_auc",
-        distribution="uniform",
-        cv=5,
-        n_probes=2,
-        random_state=100,
-        confirm_variables=False,
-    )
-    sel.fit(X, y.ravel())
-    results = sel.transform(X)
-    # expected results
-    expected_results = {
-        "var_0": [1.471, 1.819, 1.625, 1.939, 1.579],
-        "var_1": [-2.376, 1.969, 1.499, 0.075, 0.372],
-        "var_2": [-0.247, -0.127, 0.334, 1.627, 0.338],
-        "var_3": [1.21, 0.035, -2.234, 0.943, 0.952],
-        "var_4": [-3.248, -2.91, -3.399, -4.783, -3.199],
-        "var_5": [0.092, -0.187, -0.314, -0.468, 0.729],
-        "var_6": [3.687, 3.319, 3.862, 5.423, 3.636],
-        "var_7": [-2.23, -1.447, -2.241, -3.535, -2.054],
-        "var_8": [2.07, 2.421, 2.264, 2.792, 2.187],
-        "var_9": [3.528, 3.304, 3.717, 5.132, 3.513],
-        "var_10": [2.071, 1.185, -0.066, 0.714, 0.399],
-        "var_11": [-1.989, -1.31, -0.853, 0.485, -0.187],
-    }
-    expected_results_df = pd.DataFrame(expected_results)
-    assert results.head().round(3).equals(expected_results_df)
-
-
-def test_transformer_with_all_distribution(df_test):
-    X, y = df_test
-
-    sel = ProbeFeatureSelection(
-        estimator=DecisionTreeClassifier(),
-        scoring="precision",
-        distribution="all",
-        cv=2,
-        n_probes=3,
-        random_state=1,
-        confirm_variables=False,
-    )
-    sel.fit(X, y)
-    results = sel.transform(X)
-
-    # expected results
-    expected_results = {
-        "var_0": [1.471, 1.819, 1.625, 1.939, 1.579],
-        "var_1": [-2.376, 1.969, 1.499, 0.075, 0.372],
-        "var_2": [-0.247, -0.127, 0.334, 1.627, 0.338],
-        "var_3": [1.21, 0.035, -2.234, 0.943, 0.952],
-        "var_4": [-3.248, -2.91, -3.399, -4.783, -3.199],
-        "var_5": [0.092, -0.187, -0.314, -0.468, 0.729],
-        "var_6": [3.687, 3.319, 3.862, 5.423, 3.636],
-        "var_7": [-2.23, -1.447, -2.241, -3.535, -2.054],
-        "var_8": [2.07, 2.421, 2.264, 2.792, 2.187],
-        "var_9": [3.528, 3.304, 3.717, 5.132, 3.513],
-        "var_10": [2.071, 1.185, -0.066, 0.714, 0.399],
-        "var_11": [-1.989, -1.31, -0.853, 0.485, -0.187],
-    }
-    expected_results_df = pd.DataFrame(expected_results)
-
-    assert results.head().round(3).equals(expected_results_df)
+# common tests

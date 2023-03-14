@@ -26,6 +26,7 @@ from feature_engine.selection._docstring import (
     _variables_numerical_docstring,
 )
 from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
+from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import find_or_check_numerical_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -166,7 +167,7 @@ class ProbeFeatureSelection(BaseSelector):
         self._confirm_variables(X)
 
         # find numerical variables
-        self.variables_ = find_or_check_numerical_variables(X, self.variables)
+        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
 
         # save input features
         self._get_feature_names_in(X)
@@ -177,7 +178,7 @@ class ProbeFeatureSelection(BaseSelector):
         # required for a (train/test) split dataset
         X.reset_index(drop=True, inplace=True)
 
-        X_new = pd.concat([X, self.probe_features_], axis=1)
+        X_new = pd.concat([X[self.variables_], self.probe_features_], axis=1)
 
         # train model with all variables including the probe features
         model = cross_validate(
@@ -229,7 +230,7 @@ class ProbeFeatureSelection(BaseSelector):
             for i in range(generation_cnt):
                 df[f"gaussian_probe_{i}"] = np.random.normal(0, 3, n_obs)
                 df[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
-                df[f"uniform_probe_{i}"] = np.random.uniform(0, 1,  n_obs)
+                df[f"uniform_probe_{i}"] = np.random.uniform(0, 1, n_obs)
 
         # when distribution is normal, binary, or uniform
         else:
@@ -241,7 +242,7 @@ class ProbeFeatureSelection(BaseSelector):
                     df[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
 
                 elif self.distribution == "uniform":
-                    df[f"uniform_probe_{i}"] = np.random.uniform(0, 1,  n_obs)
+                    df[f"uniform_probe_{i}"] = np.random.uniform(0, 1, n_obs)
 
         return df
 
@@ -269,3 +270,18 @@ class ProbeFeatureSelection(BaseSelector):
                 features_to_drop.append(var)
 
         return features_to_drop
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
+        tags_dict["requires_y"] = True
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
+
+        # msg = "transformers need more than 1 feature to work"
+        # tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+
+        return tags_dict

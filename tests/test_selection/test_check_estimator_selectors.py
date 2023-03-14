@@ -61,6 +61,7 @@ _univariate_estimators = [
         threshold=0,
     ),
     SelectByInformationValue(bins=2),
+    ProbeFeatureSelection(estimator=_logreg, scoring="accuracy"),
 ]
 
 _model_based_estimators = [
@@ -100,7 +101,7 @@ def test_raises_error_if_only_1_variable(estimator):
 
 @pytest.mark.parametrize("estimator", _model_based_estimators)
 def test_raises_error_when_no_estimator_passed(estimator):
-    # this selectors need an estimator as an input param
+    # these selectors need an estimator as an input param
     # test error otherwise.
     with pytest.raises(TypeError):
         estimator()
