@@ -154,12 +154,14 @@ def test_ordering_variables(df_correlated_single):
     assert (X.columns == ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]).all()
     # test nan
     transformer = DropCorrelatedFeatures(order_by="nan")
+    transformer.fit(df_correlated_single)
     df_correlated_single.loc[0, "var_0"] = None
     df_correlated_single.loc[[1, 2], "var_1"] = None
     X = transformer._sort_variables(df_correlated_single)
     assert (X.columns == ['var_2', 'var_3', 'var_4', 'var_5', 'var_0', 'var_1']).all()
     # test unique
     transformer = DropCorrelatedFeatures(order_by="unique")
+    transformer.fit(df_correlated_single)
     df_correlated_single.loc[[1, 2, 3], "var_3"] = 1
     X = transformer._sort_variables(df_correlated_single)
     assert (X.columns == ['var_2', 'var_4', 'var_5', 'var_0', 'var_1', 'var_3']).all()
