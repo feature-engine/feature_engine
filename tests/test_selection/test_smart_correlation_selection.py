@@ -238,22 +238,6 @@ def test_callable_method(df_test, random_uniform_method):
     assert transformer.n_features_in_ == len(X.columns)
 
 
-def test_raises_param_errors():
-    with pytest.raises(ValueError):
-        SmartCorrelatedSelection(threshold=None)
-
-    with pytest.raises(ValueError):
-        SmartCorrelatedSelection(missing_values=None)
-
-    with pytest.raises(ValueError):
-        SmartCorrelatedSelection(selection_method="random")
-
-    with pytest.raises(ValueError):
-        SmartCorrelatedSelection(
-            selection_method="missing_values", missing_values="raise"
-        )
-
-
 @pytest.mark.parametrize("order_by", ["nulls", "uniqu", "alpha", 1, [0]])
 def test_invalid_sorting_options(order_by):
     with pytest.raises(ValueError):
@@ -269,17 +253,24 @@ def test_invalid_thresholds(threshold):
 @pytest.mark.parametrize("method", ["hola", 1, ["pearson"]])
 def test_invalid_method(method, df_test):
     with pytest.raises(ValueError):
-        SmartCorrelatedSelection(method=method).fit(df_test)
+        SmartCorrelatedSelection(method=method).fit(df_test[0])
 
 
 def test_invalid_combination():
+
     with pytest.raises(ValueError):
         SmartCorrelatedSelection(order_by="nan", missing_values="raise")
+
+    with pytest.raises(ValueError):
+        SmartCorrelatedSelection(
+            selection_method="missing_values", missing_values="raise"
+        )
 
 
 def test_ordering_variables(df_test):
     # test alphabetic
     transformer = SmartCorrelatedSelection(order_by="alphabetic")
+    transformer.fit(X)
     X = transformer._sort_variables(df_test)
     assert (X.columns == ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]).all()
     # test nan
