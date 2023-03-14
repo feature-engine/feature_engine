@@ -160,4 +160,5 @@ def test_ordering_variables(df_correlated_single):
     # test unique
     transformer = DropCorrelatedFeatures(order_by="unique")
     df_correlated_single.loc[[1, 2, 3], "var_3"] = 1
+    X = transformer._sort_variables(df_correlated_single)
     assert (X.columns == ['var_2', 'var_4', 'var_5', 'var_0', 'var_1', 'var_3']).all()
