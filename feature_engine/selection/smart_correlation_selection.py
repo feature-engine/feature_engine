@@ -414,13 +414,13 @@ class SmartCorrelatedSelection(BaseSelector):
 
     def _sort_variables(self, X: pd.DataFrame):
         """Helper function for sorting columns."""
-        if self.order_by is None:
-            return X
         elif self.order_by == "nan":
             order = X.isna().sum(0).sort_values().index
         elif self.order_by == "unique":
             order = X.nunique(0).sort_values(ascending=False).index
         elif self.order_by == "alphabetic":
             order = X.sort_index(axis=1).columns
+        else:
+            return X
         ordered_cols = [col for col in order if col in self.variables_]
         return X[ordered_cols]
