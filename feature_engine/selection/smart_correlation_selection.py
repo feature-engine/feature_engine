@@ -80,7 +80,7 @@ class SmartCorrelatedSelection(BaseSelector):
         Can take 'pearson', 'spearman', 'kendall' or callable. It refers to the
         correlation method to be used to identify the correlated features.
 
-        - 'pearson': standard correlation coefficient
+        - 'pearson': Pearson correlation coefficient
         - 'kendall': Kendall Tau correlation coefficient
         - 'spearman': Spearman rank correlation
         - callable: callable with input two 1d ndarrays and returning a float.
@@ -108,6 +108,14 @@ class SmartCorrelatedSelection(BaseSelector):
 
         **"model_performance"**: trains a machine learning model using the correlated
         feature group and retains the feature with the highest importance.
+
+    order_by: str, default=None
+        Type of sorting to use before feature selection. This option could help with
+        the consistency of the selection.
+        - None - preserve original order of the dataframe
+        - 'nan' - sort columns by number of missing values (ascending)
+        - 'unique' - sort columns by number of unique values (descending)
+        - 'alphabetic' - sort columns alphabetically.
 
     {estimator}
 
@@ -189,6 +197,7 @@ class SmartCorrelatedSelection(BaseSelector):
         variables: Variables = None,
         method: str = "pearson",
         threshold: float = 0.8,
+        order_by: Optional[str] = None,
         missing_values: str = "ignore",
         selection_method: str = "missing_values",
         estimator=None,
@@ -197,10 +206,28 @@ class SmartCorrelatedSelection(BaseSelector):
         confirm_variables: bool = False,
     ):
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
-            raise ValueError("threshold must be a float between 0 and 1")
+            raise ValueError(
+                f"threshold must be a float between 0 and 1."
+                f" Got {threshold} instead."
+            )
 
-        if missing_values not in ["raise", "ignore"]:
-            raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
+        if missing_values not in ("raise", "ignore"):
+            raise ValueError(
+                f"missing_values takes only values 'raise' or 'ignore'."
+                f" Got {missing_values} instead."
+            )
+
+        if order_by is not None and order_by not in ("nan", "unique", "alphabetic"):
+            raise ValueError(
+                f"order_by takes only values 'nan', 'unique', 'alphabetic', None."
+                f" Got {order_by} instead."
+            )
+
+        if missing_values == "raise" and order_by == "nan":
+            raise ValueError(
+                "missing_values can't be set to 'raise' "
+                "while order_by is set to 'nan'."
+            )
 
         if selection_method not in [
             "missing_values",
@@ -237,6 +264,7 @@ class SmartCorrelatedSelection(BaseSelector):
         self.estimator = estimator
         self.scoring = scoring
         self.cv = cv
+        self.order_by = order_by
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -276,6 +304,9 @@ class SmartCorrelatedSelection(BaseSelector):
         # ========================
         # create tuples of correlated feature groups
         self.correlated_feature_sets_ = []
+
+        # sort columns for consistency
+        X = self._sort_variables(X)
 
         # the correlation matrix
         _correlated_matrix = X[self.variables_].corr(method=self.method)
@@ -379,3 +410,15 @@ class SmartCorrelatedSelection(BaseSelector):
         self._get_feature_names_in(X)
 
         return self
+
+    def _sort_variables(self, X: pd.DataFrame):
+        """Helper function for sorting columns."""
+        order = X.columns
+        if self.order_by == "nan":
+            order = X.isna().sum(0).sort_values().index
+        elif self.order_by == "unique":
+            order = X.nunique(0).sort_values(ascending=False).index
+        elif self.order_by == "alphabetic":
+            order = X.sort_index(axis=1).columns
+        ordered_cols = [x for x in order if x in self.variables_]
+        return X[ordered_cols]
