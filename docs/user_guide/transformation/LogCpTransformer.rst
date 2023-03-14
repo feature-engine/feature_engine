@@ -11,26 +11,27 @@ positive constant.
 You can enter the positive quantity to add to the variable. Alternatively, the transformer
 will find the necessary quantity to make all values of the variable positive.
 
-**Example**
+Example
+-------
 
-Let's load the boston house prices dataset that comes baked into Scikit-learn and
-separate it into train and test sets.
+Let's load the California housing dataset that comes with Scikit-learn and separate it
+into train and test sets.
 
 .. code:: python
 
     import pandas as pd
     import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
-    from sklearn.datasets import load_boston
+    from sklearn.datasets import fetch_california_housing
 
     from feature_engine import transformation as vt
 
     # Load dataset
-    X, y = load_boston(return_X_y=True)
-    X = pd.DataFrame(X)
+    X, y = fetch_california_housing( return_X_y=True, as_frame=True)
 
     # Separate into train and test sets
-    X_train, X_test, y_train, y_test =  train_test_split(X, y, test_size=0.3, random_state=0)
+    X_train, X_test, y_train, y_test =  train_test_split(
+        X, y, test_size=0.3, random_state=0)
 
 
 Now we want to apply the logarithm to 2 of the variables in the dataset using the
@@ -40,7 +41,7 @@ quantity "C" that needs to be added to the variable:
 .. code:: python
 
     # set up the variable transformer
-    tf = vt.LogCpTransformer(variables = [7, 12], C="auto")
+    tf = vt.LogCpTransformer(variables = ["MedInc", "HouseAge"], C="auto")
 
     # fit the transformer
     tf.fit(X_train)
@@ -55,7 +56,13 @@ an attribute. We can visualise the learned parameters as follows:
 
 .. code:: python
 
-    {7: 2.1742, 12: 2.73}
+    {'MedInc': 1.4999, 'HouseAge': 2.0}
+
+Applying the log of a variable plus a constant in this dataset does not make much sense
+because all variables are positive, that is why the constant values C for the former
+variables are possible.
+
+We will carry on with the demo anyways.
 
 We can now go ahead and transform the variables:
 
@@ -70,7 +77,9 @@ Then we can plot the original variable distribution:
 .. code:: python
 
     # un-transformed variable
-    X_train[12].hist()
+    X_train["MedInc"].hist(bins=20)
+    plt.title("MedInc - original distribution")
+    plt.ylabel("Number of observations")
 
 .. image:: ../../images/logcpraw.png
 
@@ -79,12 +88,14 @@ And the distribution of the transformed variable:
 .. code:: python
 
     # transformed variable
-    train_t[12].hist()
+    train_t["MedInc"].hist(bins=20)
+    plt.title("MedInc - transformed distribution")
+    plt.ylabel("Number of observations")
 
 .. image:: ../../images/logcptransform.png
 
 More details
-^^^^^^^^^^^^
+------------
 
 You can find more details about the :class:`LogCpTransformer()` here:
 
