@@ -40,7 +40,7 @@ def test_input_params_assignment(
 
 
 @pytest.mark.parametrize("_distribution", [3, "poisson", ["normal", "binary"], 2.22])
-def test_when_not_permitted_distribution(_distribution):
+def test_raises_error_when_not_permitted_distribution(_distribution):
     with pytest.raises(ValueError):
         ProbeFeatureSelection(
             estimator=DecisionTreeRegressor(),
@@ -49,7 +49,7 @@ def test_when_not_permitted_distribution(_distribution):
 
 
 @pytest.mark.parametrize("_n_probes", [5, 7, 11])
-def test_when_not_permitted_n_probes_with_all_distribution(_n_probes):
+def test_raises_error_when_not_permitted_n_probes_with_all_distribution(_n_probes):
     with pytest.raises(ValueError):
         ProbeFeatureSelection(
             estimator=RandomForestClassifier(),
@@ -59,7 +59,7 @@ def test_when_not_permitted_n_probes_with_all_distribution(_n_probes):
 
 
 @pytest.mark.parametrize("_n_probes", ["tree", [False, 2], 101.1])
-def test_when_not_permitted_n_probes(_n_probes):
+def test_raises_error_when_not_permitted_n_probes(_n_probes):
     with pytest.raises(ValueError):
         ProbeFeatureSelection(
             estimator=DecisionTreeRegressor(),
@@ -67,9 +67,8 @@ def test_when_not_permitted_n_probes(_n_probes):
         )
 
 
-def test_fit_attributes(df_test):
+def test_fit_transform_functionality(df_test):
     X, y = df_test
-    y = column_or_1d(y, warn=True)
 
     sel = ProbeFeatureSelection(
         estimator=RandomForestClassifier(),
@@ -80,7 +79,7 @@ def test_fit_attributes(df_test):
         random_state=3,
         confirm_variables=False,
     )
-    sel.fit(X, y)
+    X_tr = sel.fit_transform(X, y)
 
     # expected results
     expected_probe_features = {
@@ -109,8 +108,9 @@ def test_fit_attributes(df_test):
         ],
     )
     pd.testing.assert_frame_equal(sel.probe_features_.head().round(3), expected_probe_features_df, check_dtype=False)
-    assert sel.features_to_drop_ == ["var_2", "var_10"]
     assert sel.feature_importances_.round(2).equals(expected_feature_importances)
+    assert sel.features_to_drop_ == ["var_2", "var_10"]
+    pd.testing.assert_frame_equal(X_tr, X.drop(columns=["var_2", "var_10"]), check_dtype=False)
 
 
 def test_generate_probe_features_all():
@@ -200,16 +200,18 @@ def test_generate_probe_features_uniform():
 
 def test_get_features_to_drop():
     # 1 probe
-    sel = ProbeFeatureSelection(estimator=LogisticRegression())
-    sel.self.feature_importances_ = pd.Series([11, 12, 9, 10], index=["var1", "var2", "var3", "probe"])
-    sel.self.probe_features_ = pd.DataFrame({"probe": [1,1,1,1,1]})
-    assert sel.__get_features_to_drop() == ["var3"]
+    sel = ProbeFeatureSelection(estimator=LogisticRegression(), n_probes=1)
+    sel.feature_importances_ = pd.Series([11, 12, 9, 10], index=["var1", "var2", "var3", "probe"])
+    sel.probe_features_ = pd.DataFrame({"probe": [1,1,1,1,1]})
+    sel.variables_ = ["var1", "var2", "var3"]
+    assert sel._get_features_to_drop() == ["var3"]
 
     # 2 probes
-    sel = ProbeFeatureSelection(estimator=LogisticRegression())
-    sel.self.feature_importances_ = pd.Series([11, 12, 10, 8.7, 10, 8], index=["var1", "var2", "var3", "var4","probe1", "probe2"])
-    sel.self.probe_features_ = pd.DataFrame({"probe": [1,1,1,1,1]})
-    assert sel.__get_features_to_drop() == ["var4"]
+    sel = ProbeFeatureSelection(estimator=LogisticRegression(), n_probes=2)
+    sel.feature_importances_ = pd.Series([11, 12, 10, 8.7, 10, 8], index=["var1", "var2", "var3", "var4", "probe1", "probe2"])
+    sel.probe_features_ = pd.DataFrame({"probe1": [1,1,1,1,1], "probe2": [1,1,1,1,1]})
+    sel.variables_ = ["var1", "var2", "var3", "var4"]
+    assert sel._get_features_to_drop() == ["var4"]
 
 
 def test_transformer_with_normal_distribution():
