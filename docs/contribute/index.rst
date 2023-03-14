@@ -5,12 +5,13 @@ Contribute
 ==========
 
 Feature-engine is an open source project, originally designed to support the online
-course `Feature Engineering for Machine Learning <https://courses.trainindata.com/p/feature-engineering-for-machine-learning>`_,
+course `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_,
 but has now gained popularity and supports transformations beyond those taught in the
 course.
 
-Feature-engine is currently supported by a small community and we will be delighted to
+Feature-engine is currently supported by a growing community and we will be delighted to
 accept contributions, large or small, that you wish to make to the project.
+
 Contributing to open-source is a great way to learn and improve coding skills, and also
 a fun thing to do. If you've never contributed to an open source project, we hope to
 make it easy for you with the following guidelines.
@@ -25,12 +26,12 @@ There are many ways to contribute to Feature-engine:
 - Create a new transformer
 - Enhance functionality of current transformers
 - Fix a bug
-- If you find a bug, let us know by creating an `issues <https://github.com/feature-engine/feature_engine/issues/>`_ on Github.
+- If you find a bug, let us know by creating an `issue <https://github.com/feature-engine/feature_engine/issues/>`_ on Github.
 - If you would like additional functionality or a new feature, create an `issue <https://github.com/feature-engine/feature_engine/issues/>`_ on Github.
-- Add a Jupyter notebook to our `Jupyter notebooks example gallery <https://github.com/feature-engine/feature_engine/tree/master/examples>`_.
+- Add a Jupyter notebook to our `Jupyter notebooks example gallery <https://github.com/feature-engine/feature-engine-examples>`_.
 - Improve our documentation, i.e., fix typos, improve grammar, or add more code examples.
 - Write a blog, tweet, or share our project with others.
-- Use Feature-engine in your lectures if you teach
+- Use Feature-engine in your lectures if you teach.
 - `Sponsor us <https://github.com/sponsors/feature-engine>`_.
 
 With plenty of ways to get involved, we would be happy for you to support the project.
