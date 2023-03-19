@@ -97,6 +97,34 @@ class Winsorizer(WinsorizerBase):
     transform:
         Cap the variables.
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.outliers import Winsorizer
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.exponential(size = 100)))
+    >>> wz = Winsorizer(capping_method='gaussian', tail='right', fold=3)
+    >>> print("Max value previous Winsorizer:")
+    >>> X.max()
+    Max value previous Winsorizer:
+    x    4.334146
+    dtype: float64
+    >>> wz.fit(X)
+    >>> print("Max value after Gaussian Winsorizer: ")
+    >>> wz.transform(X).max()
+    Max value after Gaussian Winsorizer:
+    x    3.660273
+    dtype: float64
+
+    >>> wz = Winsorizer(capping_method='mad', tail='right', fold=3)
+    >>> wz.fit(X)
+    >>> print("Max value after MAD Winsorizer: ")
+    >>> wz.transform(X).max()
+    Max value after MAD Winsorizer:
+    x    2.701921
+    dtype: float64
     """
 
     def __init__(

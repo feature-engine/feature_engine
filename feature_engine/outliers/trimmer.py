@@ -89,6 +89,31 @@ class OutlierTrimmer(WinsorizerBase):
     transform:
         Remove outliers.
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.outliers import OutlierTrimmer
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.exponential(size = 100)))
+    >>> ot = OutlierTrimmer(capping_method='gaussian', tail='right', fold=3)
+    >>> print("Dimensions prior Trimmer:")
+    >>> X.shape
+    Dimensions prior Trimmer:
+    (100, 1)
+    >>> ot.fit(X)
+    >>> print("Dimensions after Gaussian Trimmer:")
+    >>> ot.transform(X).shape
+    Dimensions after Gaussian Trimmer:
+    (99, 1)
+
+    >>> ot = OutlierTrimmer(capping_method='mad', tail='right', fold=3)
+    >>> ot.fit(X)
+    >>> print("Dimensions after MAD Trimmer:")
+    >>> ot.transform(X).shape
+    Dimensions after MAD Trimmer:
+    (93, 1)
     """
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
