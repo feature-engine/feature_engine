@@ -100,6 +100,52 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
 
     transform:
         Add or delete variables to match those observed in the train set.
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.preprocessing import MatchVariables
+    >>> X_train = pd.DataFrame(dict(x1 = ["a","b","c"], x2 = [4,5,6]))
+    >>> X_test = pd.DataFrame(dict(x1 = ["c","b","a","d"],
+    >>>                             x2 = [5,6,4,7],
+    >>>                             x3 = [1,1,1,1]))
+    >>> mv = MatchVariables(missing_values="ignore")
+    >>> mv.fit(X_train)
+    >>> mv.transform(X_train)
+    x1  x2
+    0  a   4
+    1  b   5
+    2  c   6
+    >>> mv.transform(X_test)
+    The following variables are dropped from the DataFrame: ['x3']
+      x1  x2
+    0  c   5
+    1  b   6
+    2  a   4
+    3  d   7
+
+    >>> import pandas as pd
+    >>> from feature_engine.preprocessing import MatchVariables
+
+    >>> X_train = pd.DataFrame(dict(x1 = ["a","b","c"],
+    >>>                             x2 = [4,5,6], x3 = [1,1,1]))
+    >>> X_test = pd.DataFrame(dict(x1 = ["c","b","a","d"], x2 = [5,6,4,7]))
+
+    >>> mv = MatchVariables(missing_values="ignore")
+    >>> mv.fit(X_train)
+    >>> mv.transform(X_train)
+      x1  x2  x3
+    0  a   4   1
+    1  b   5   1
+    2  c   6   1
+    >>> mv.transform(X_test)
+    The following variables are added to the DataFrame: ['x3']
+      x1  x2  x3
+    0  c   5 NaN
+    1  b   6 NaN
+    2  a   4 NaN
+    3  d   7 NaN
     """
 
     def __init__(

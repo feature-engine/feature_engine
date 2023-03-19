@@ -144,6 +144,45 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     See Also
     --------
     sklearn.compose.ColumnTransformer
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.wrappers import SklearnTransformerWrapper
+    >>> from sklearn.preprocessing import StandardScaler
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3], x2 = [4,5,6]))
+    >>> skw = SklearnTransformerWrapper(StandardScaler())
+    >>> skw.fit(X)
+    >>> skw.transform(X)
+             x1        x2
+    0 -1.224745 -1.224745
+    1  0.000000  0.000000
+    2  1.224745  1.224745
+
+    >>> import pandas as pd
+    >>> from feature_engine.wrappers import SklearnTransformerWrapper
+    >>> from sklearn.preprocessing import OneHotEncoder
+    >>> X = pd.DataFrame(dict(x1 = ["a","b","c"], x2 = [4,5,6]))
+    >>> skw = SklearnTransformerWrapper(OneHotEncoder(sparse = False),
+    >>>                                 variables = "x1")
+    >>> skw.fit(X)
+    >>> skw.transform(X)
+       x2  x1_a  x1_b  x1_c
+    0   4   1.0   0.0   0.0
+    1   5   0.0   1.0   0.0
+    2   6   0.0   0.0   1.0
+
+    >>> import pandas as pd
+    >>> from feature_engine.wrappers import SklearnTransformerWrapper
+    >>> from sklearn.preprocessing import PolynomialFeatures
+    >>> skw = SklearnTransformerWrapper(PolynomialFeatures(include_bias = False))
+    >>> skw.fit(X)
+    >>> skw.transform(X)
+      x1   x2  x2^2
+    0  a  4.0  16.0
+    1  b  5.0  25.0
+    2  c  6.0  36.0
     """
 
     def __init__(
