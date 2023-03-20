@@ -74,11 +74,49 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
     References
     ----------
     .. [1] Yeo, In-Kwon and Johnson, Richard (2000).
-       A new family of power transformations to improve normality or symmetry.
-       Biometrika, 87, 954-959.
+        A new family of power transformations to improve normality or symmetry.
+        Biometrika, 87, 954-959.
 
     .. [2] Weisberg S. "Yeo-Johnson Power Transformations".
         https://www.stat.umn.edu/arc/yjpower.pdf
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from sklearn.pipeline import Pipeline
+    >>> from sklearn.preprocessing import StandardScaler
+    >>> from feature_engine.transformation import YeoJohnsonTransformer
+    >>> from feature_engine.wrappers import SklearnTransformerWrapper
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100) - 10))
+    >>> X.describe()
+                    x
+    count  100.000000
+    mean    -8.678849
+    std      1.237477
+    min     -9.927179
+    25%     -9.451685
+    50%     -9.119172
+    75%     -8.497166
+    max     -3.625675
+    >>> scaler = SklearnTransformerWrapper(StandardScaler())
+    >>> pipe = Pipeline(steps = [
+    >>>     ("sc", scaler),
+    >>>     ("yjt", YeoJohnsonTransformer())
+    >>> ])
+    >>> pipe.fit(X)
+    >>> pipe.transform(X).describe()
+                    x
+    count  100.000000
+    mean    -0.355230
+    std      0.771182
+    min     -1.762314
+    25%     -0.905677
+    50%     -0.445733
+    75%      0.132580
+    max      1.262449
     """
 
     def __init__(

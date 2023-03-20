@@ -74,6 +74,36 @@ class PowerTransformer(BaseNumericalTransformer):
     transform:
         Apply the power transformation to the variables.
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.transformation import PowerTransformer
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100)))
+    >>> X.describe()
+                    x
+    count  100.000000
+    mean     1.321151
+    std      1.237477
+    min      0.072821
+    25%      0.548315
+    50%      0.880828
+    75%      1.502834
+    max      6.374325
+    >>> pt = PowerTransformer()
+    >>> pt.fit(X)
+    >>> pt.transform(X).describe()
+                    x
+    count  100.000000
+    mean     1.048314
+    std      0.473742
+    min      0.269854
+    25%      0.740483
+    50%      0.938510
+    75%      1.225468
+    max      2.524743
     """
 
     def __init__(

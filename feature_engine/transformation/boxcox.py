@@ -93,6 +93,37 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     .. [1] Box and Cox. "An Analysis of Transformations". Read at a RESEARCH MEETING,
         1964.
         https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.2517-6161.1964.tb00553.x
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.transformation import BoxCoxTransformer
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100)))
+    >>> X.describe()
+                    x
+    count  100.000000
+    mean     1.321151
+    std      1.237477
+    min      0.072821
+    25%      0.548315
+    50%      0.880828
+    75%      1.502834
+    max      6.374325
+    >>> bct = BoxCoxTransformer()
+    >>> bct.fit(X)
+    >>> bct.transform(X).describe()
+                    x
+    count  100.000000
+    mean    -0.075067
+    std      0.899069
+    min     -2.392747
+    25%     -0.588395
+    50%     -0.126387
+    75%      0.411897
+    max      1.978232
     """
 
     def __init__(

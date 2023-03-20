@@ -80,6 +80,36 @@ class ArcsinTransformer(BaseNumericalTransformer):
     transform:
         Apply the arcsin transformation.
 
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from feature_engine.transformation import ArcsinTransformer
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.beta(1, 1, size = 100)))
+    >>> X.describe()
+                    x
+    count  100.000000
+    mean     0.487909
+    std      0.302213
+    min      0.006726
+    25%      0.210322
+    50%      0.504719
+    75%      0.756094
+    max      0.985061
+    >>> ast = ArcsinTransformer()
+    >>> ast.fit(X)
+    >>> ast.transform(X).describe()
+                    x
+    count  100.000000
+    mean     0.764151
+    std      0.355522
+    min      0.082106
+    25%      0.476410
+    50%      0.790118
+    75%      1.054264
+    max      1.448263
     """
 
     def __init__(
