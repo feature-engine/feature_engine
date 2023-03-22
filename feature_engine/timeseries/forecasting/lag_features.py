@@ -102,20 +102,21 @@ class LagFeatures(BaseForecastTransformer):
     >>> import pandas as pd
     >>> from feature_engine.timeseries.forecasting import LagFeatures
     >>> X = pd.DataFrame(dict(date = ["2022-09-18",
-    >>>                             "2022-10-27",
-    >>>                             "2022-12-24",
-    >>>                             "2023-01-09",
-    >>>                             "2023-02-12"],
-    >>>                     x1 = [1,2,3,4,5],
-    >>>                     x2 = [6,7,8,9,10]
+    >>>                               "2022-09-19",
+    >>>                               "2022-09-20",
+    >>>                               "2022-09-21",
+    >>>                               "2022-09-22"],
+    >>>                       x1 = [1,2,3,4,5],
+    >>>                       x2 = [6,7,8,9,10]
     >>>                     ))
     >>> lf = LagFeatures(periods=[1,2])
     >>> lf.fit_transform(X)
-            date  x1  x2  x1_lag_1  x2_lag_1  x1_lag_2  x2_lag_2
-    0  2022-09-18   1   4       NaN       NaN       NaN       NaN
-    1  2022-10-27   2   5       1.0       4.0       NaN       NaN
-    2  2022-12-24   3   6       2.0       5.0       1.0       4.0
-    3  2023-01-09   4   7       3.0       6.0       2.0       5.0
+                date  x1  x2  x1_lag_1  x2_lag_1  x1_lag_2  x2_lag_2
+    0  2022-09-18   1   6       NaN       NaN       NaN       NaN
+    1  2022-09-19   2   7       1.0       6.0       NaN       NaN
+    2  2022-09-20   3   8       2.0       7.0       1.0       6.0
+    3  2022-09-21   4   9       3.0       8.0       2.0       7.0
+    4  2022-09-22   5  10       4.0       9.0       3.0       8.0
     """
 
     def __init__(

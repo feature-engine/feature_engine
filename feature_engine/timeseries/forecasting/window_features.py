@@ -128,21 +128,21 @@ class WindowFeatures(BaseForecastTransformer):
     >>> import pandas as pd
     >>> from feature_engine.timeseries.forecasting import WindowFeatures
     >>> X = pd.DataFrame(dict(date = ["2022-09-18",
-    >>>                             "2022-10-27",
-    >>>                             "2022-12-24",
-    >>>                             "2023-01-09",
-    >>>                             "2023-02-12"],
-    >>>                     x1 = [1,2,3,4,5],
-    >>>                     x2 = [6,7,8,9,10]
+    >>>                               "2022-09-19",
+    >>>                               "2022-09-20",
+    >>>                               "2022-09-21",
+    >>>                               "2022-09-22"],
+    >>>                       x1 = [1,2,3,4,5],
+    >>>                       x2 = [6,7,8,9,10]
     >>>                     ))
     >>> wf = WindowFeatures(window = 2)
-    >>> lf.fit_transform(X)
-              date  x1  x2  x1_lag_1  x2_lag_1  x1_lag_2  x2_lag_2
-    0  2022-09-18   1   6       NaN       NaN       NaN       NaN
-    1  2022-10-27   2   7       1.0       6.0       NaN       NaN
-    2  2022-12-24   3   8       2.0       7.0       1.0       6.0
-    3  2023-01-09   4   9       3.0       8.0       2.0       7.0
-    4  2023-02-12   5  10       4.0       9.0       3.0       8.0
+    >>> wf.fit_transform(X)
+             date  x1  x2  x1_window_2_mean  x2_window_2_mean
+    0  2022-09-18   1   6               NaN               NaN
+    1  2022-09-19   2   7               NaN               NaN
+    2  2022-09-20   3   8               1.5               6.5
+    3  2022-09-21   4   9               2.5               7.5
+    4  2022-09-22   5  10               3.5               8.5
     """
 
     def __init__(

@@ -124,21 +124,21 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
     >>> import pandas as pd
     >>> from feature_engine.timeseries.forecasting import ExpandingWindowFeatures
     >>> X = pd.DataFrame(dict(date = ["2022-09-18",
-    >>>                             "2022-10-27",
-    >>>                             "2022-12-24",
-    >>>                             "2023-01-09",
-    >>>                             "2023-02-12"],
-    >>>                     x1 = [1,2,3,4,5],
-    >>>                     x2 = [6,7,8,9,10]
+    >>>                               "2022-09-19",
+    >>>                               "2022-09-20",
+    >>>                               "2022-09-21",
+    >>>                               "2022-09-22"],
+    >>>                       x1 = [1,2,3,4,5],
+    >>>                       x2 = [6,7,8,9,10]
     >>>                     ))
     >>> ewf = ExpandingWindowFeatures()
     >>> ewf.fit_transform(X)
-            date  x1  x2  x1_expanding_mean  x2_expanding_mean
+             date  x1  x2  x1_expanding_mean  x2_expanding_mean
     0  2022-09-18   1   6                NaN                NaN
-    1  2022-10-27   2   7                1.0                6.0
-    2  2022-12-24   3   8                1.5                6.5
-    3  2023-01-09   4   9                2.0                7.0
-    4  2023-02-12   5  10                2.5                7.5
+    1  2022-09-19   2   7                1.0                6.0
+    2  2022-09-20   3   8                1.5                6.5
+    3  2022-09-21   4   9                2.0                7.0
+    4  2022-09-22   5  10                2.5                7.5
     """
 
     def __init__(
