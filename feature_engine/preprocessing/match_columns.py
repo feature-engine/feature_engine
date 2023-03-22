@@ -127,11 +127,9 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
 
     >>> import pandas as pd
     >>> from feature_engine.preprocessing import MatchVariables
-
     >>> X_train = pd.DataFrame(dict(x1 = ["a","b","c"],
     >>>                             x2 = [4,5,6], x3 = [1,1,1]))
     >>> X_test = pd.DataFrame(dict(x1 = ["c","b","a","d"], x2 = [5,6,4,7]))
-
     >>> mv = MatchVariables(missing_values="ignore")
     >>> mv.fit(X_train)
     >>> mv.transform(X_train)

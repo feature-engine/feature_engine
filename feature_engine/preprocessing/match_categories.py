@@ -109,8 +109,6 @@ class MatchCategories(
     1    b   6
     2    a   4
     3  NaN   7
-
-
     """
 
     def __init__(
