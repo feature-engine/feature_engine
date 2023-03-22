@@ -76,33 +76,21 @@ class ReciprocalTransformer(BaseNumericalTransformer):
     Examples
     --------
 
-    >>> import pandas as pd
     >>> import numpy as np
+    >>> import pandas as pd
     >>> from feature_engine.transformation import ReciprocalTransformer
     >>> np.random.seed(42)
     >>> X = pd.DataFrame(dict(x = 10 - np.random.exponential(size = 100)))
-    >>> X.describe()
-                    x
-    count  100.000000
-    mean     9.085252
-    std      0.919786
-    min      5.665854
-    25%      8.689907
-    50%      9.376000
-    75%      9.785302
-    max      9.994463
     >>> rt = ReciprocalTransformer()
     >>> rt.fit(X)
-    >>> rt.transform(X).describe()
-                    x
-    count  100.000000
-    mean     0.111434
-    std      0.013807
-    min      0.100055
-    25%      0.102194
-    50%      0.106656
-    75%      0.115076
-    max      0.176496
+    >>> X = rt.transform(X)
+    >>> X.head()
+            x
+    0  0.104924
+    1  0.143064
+    2  0.115164
+    3  0.110047
+    4  0.101726
     """
 
     def __init__(

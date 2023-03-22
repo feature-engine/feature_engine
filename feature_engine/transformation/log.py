@@ -80,33 +80,21 @@ class LogTransformer(BaseNumericalTransformer):
     Examples
     --------
 
-    >>> import pandas as pd
     >>> import numpy as np
+    >>> import pandas as pd
     >>> from feature_engine.transformation import LogTransformer
     >>> np.random.seed(42)
     >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100)))
-    >>> X.describe()
-                    x
-    count  100.000000
-    mean     1.321151
-    std      1.237477
-    min      0.072821
-    25%      0.548315
-    50%      0.880828
-    75%      1.502834
-    max      6.374325
     >>> lt = LogTransformer()
     >>> lt.fit(X)
-    >>> lt.transform(X).describe()
-                    x
-    count  100.000000
-    mean    -0.103847
-    std      0.908168
-    min     -2.619745
-    25%     -0.600906
-    50%     -0.126956
-    75%      0.405952
-    max      1.852278
+    >>> X = lt.transform(X)
+    >>> X.head()
+            x
+    0  0.496714
+    1 -0.138264
+    2  0.647689
+    3  1.523030
+    4 -0.234153
     """
 
     def __init__(
@@ -296,33 +284,21 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
     Examples
     --------
 
-    >>> import pandas as pd
     >>> import numpy as np
+    >>> import pandas as pd
     >>> from feature_engine.transformation import LogCpTransformer
     >>> np.random.seed(42)
-    >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100)-10))
-    >>> X.describe()
-                    x
-    count  100.000000
-    mean    -8.678849
-    std      1.237477
-    min     -9.927179
-    25%     -9.451685
-    50%     -9.119172
-    75%     -8.497166
-    max     -3.625675
+    >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100)))
     >>> lct = LogCpTransformer()
     >>> lct.fit(X)
-    >>> lct.transform(X).describe()
-                    x
-    count  100.000000
-    mean     0.697360
-    std      0.451099
-    min      0.000000
-    25%      0.388992
-    50%      0.592210
-    75%      0.887353
-    max      1.988080
+    >>> X = lct.transform(X)
+    >>> X.head()
+              x
+    0  0.944097
+    1  0.586701
+    2  1.043204
+    3  1.707159
+    4  0.541405
     """
 
     def __init__(

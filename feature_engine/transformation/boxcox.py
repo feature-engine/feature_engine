@@ -97,33 +97,21 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     Examples
     --------
 
-    >>> import pandas as pd
     >>> import numpy as np
+    >>> import pandas as pd
     >>> from feature_engine.transformation import BoxCoxTransformer
     >>> np.random.seed(42)
     >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100)))
-    >>> X.describe()
-                    x
-    count  100.000000
-    mean     1.321151
-    std      1.237477
-    min      0.072821
-    25%      0.548315
-    50%      0.880828
-    75%      1.502834
-    max      6.374325
     >>> bct = BoxCoxTransformer()
     >>> bct.fit(X)
-    >>> bct.transform(X).describe()
-                    x
-    count  100.000000
-    mean    -0.075067
-    std      0.899069
-    min     -2.392747
-    25%     -0.588395
-    50%     -0.126387
-    75%      0.411897
-    max      1.978232
+    >>> X = bct.transform(X)
+    >>> X.head()
+              x
+    0  0.505485
+    1 -0.137595
+    2  0.662654
+    3  1.607518
+    4 -0.232237
     """
 
     def __init__(
