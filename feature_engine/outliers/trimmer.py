@@ -93,27 +93,57 @@ class OutlierTrimmer(WinsorizerBase):
     --------
 
     >>> import pandas as pd
-    >>> import numpy as np
     >>> from feature_engine.outliers import OutlierTrimmer
-    >>> np.random.seed(42)
-    >>> X = pd.DataFrame(dict(x = np.random.exponential(size = 100)))
-    >>> ot = OutlierTrimmer(capping_method='gaussian', tail='right', fold=3)
-    >>> print("Dimensions prior Trimmer:")
-    >>> X.shape
-    Dimensions prior Trimmer:
-    (100, 1)
+    >>> X = pd.DataFrame(dict(x = [0.49671,
+    >>>                         -0.1382,
+    >>>                          0.64768,
+    >>>                          1.52302,
+    >>>                         -0.2341,
+    >>>                         -17.2341,
+    >>>                          1.57921,
+    >>>                          0.76743,
+    >>>                         -0.4694,
+    >>>                          0.54256]))
+    >>> ot = OutlierTrimmer(capping_method='gaussian', tail='left', fold=3)
     >>> ot.fit(X)
-    >>> print("Dimensions after Gaussian Trimmer:")
-    >>> ot.transform(X).shape
-    Dimensions after Gaussian Trimmer:
-    (99, 1)
+    >>> ot.transform(X)
+              x
+    0   0.49671
+    1  -0.13820
+    2   0.64768
+    3   1.52302
+    4  -0.23410
+    5 -17.23410
+    6   1.57921
+    7   0.76743
+    8  -0.46940
+    9   0.54256
 
-    >>> ot = OutlierTrimmer(capping_method='mad', tail='right', fold=3)
+    >>> import pandas as pd
+    >>> from feature_engine.outliers import OutlierTrimmer
+    >>> X = pd.DataFrame(dict(x = [0.49671,
+    >>>                         -0.1382,
+    >>>                          0.64768,
+    >>>                          1.52302,
+    >>>                         -0.2341,
+    >>>                         -17.2341,
+    >>>                          1.57921,
+    >>>                          0.76743,
+    >>>                         -0.4694,
+    >>>                          0.54256]))
+    >>> ot = OutlierTrimmer(capping_method='mad', tail='left', fold=3)
     >>> ot.fit(X)
-    >>> print("Dimensions after MAD Trimmer:")
-    >>> ot.transform(X).shape
-    Dimensions after MAD Trimmer:
-    (93, 1)
+    >>> ot.transform(X)
+             x
+    0  0.49671
+    1 -0.13820
+    2  0.64768
+    3  1.52302
+    4 -0.23410
+    6  1.57921
+    7  0.76743
+    8 -0.46940
+    9  0.54256
     """
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:

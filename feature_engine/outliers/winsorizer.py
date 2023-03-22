@@ -100,31 +100,45 @@ class Winsorizer(WinsorizerBase):
     Examples
     --------
 
-    >>> import pandas as pd
     >>> import numpy as np
+    >>> import pandas as pd
     >>> from feature_engine.outliers import Winsorizer
     >>> np.random.seed(42)
-    >>> X = pd.DataFrame(dict(x = np.random.exponential(size = 100)))
-    >>> wz = Winsorizer(capping_method='gaussian', tail='right', fold=3)
-    >>> print("Max value previous Winsorizer:")
-    >>> X.max()
-    Max value previous Winsorizer:
-    x    4.334146
-    dtype: float64
+    >>> X = pd.DataFrame(dict(x = np.random.normal(size = 10)))
+    >>> wz = Winsorizer(capping_method='mad', tail='both', fold=3)
     >>> wz.fit(X)
-    >>> print("Max value after Gaussian Winsorizer: ")
-    >>> wz.transform(X).max()
-    Max value after Gaussian Winsorizer:
-    x    3.660273
-    dtype: float64
+    >>> wz.transform(X)
+              x
+    0  0.496714
+    1 -0.138264
+    2  0.647689
+    3  1.523030
+    4 -0.234153
+    5 -0.234137
+    6  1.579213
+    7  0.767435
+    8 -0.469474
+    9  0.542560
 
-    >>> wz = Winsorizer(capping_method='mad', tail='right', fold=3)
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from feature_engine.outliers import Winsorizer
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.normal(size = 10)))
+    >>> wz = Winsorizer(capping_method='mad', tail='both', fold=3)
     >>> wz.fit(X)
-    >>> print("Max value after MAD Winsorizer: ")
-    >>> wz.transform(X).max()
-    Max value after MAD Winsorizer:
-    x    2.701921
-    dtype: float64
+    >>> wz.transform(X)
+              x
+    0  0.496714
+    1 -0.138264
+    2  0.647689
+    3  1.523030
+    4 -0.234153
+    5 -0.234137
+    6  1.579213
+    7  0.767435
+    8 -0.469474
+    9  0.542560
     """
 
     def __init__(

@@ -95,32 +95,12 @@ class ArbitraryOutlierCapper(BaseOutlier):
     --------
 
     >>> import pandas as pd
-    >>> import numpy as np
     >>> from feature_engine.outliers import ArbitraryOutlierCapper
-    >>> np.random.seed(42)
-    >>> X = pd.DataFrame(dict(x1 = np.random.exponential(size = 100),
-    >>>                     x2 = np.random.randn(100)))
-    >>> aoc = ArbitraryOutlierCapper(max_capping_dict={'x1': 3, 'x2': 1},
-    >>>                             min_capping_dict={'x2': 0.2})
-    >>> print("Max value prior Arbitrary Capper:")
-    >>> X.max()
-    Max value prior Arbitrary Capper:
-    x1    4.334146
-    x2    2.463242
-    dtype: float64
+    >>> X = pd.DataFrame(dict(x1 = [1,2,3,4,5,6,7,8,9,10]))
+    >>> aoc = ArbitraryOutlierCapper(max_capping_dict=dict(x1 =  8),
+    >>>                              min_capping_dict=dict(x1 = 2))
     >>> aoc.fit(X)
-    >>> print("Max value after Arbitrary Capper:")
-    >>> aoc.transform(X).max()
-    Max value after Arbitrary Capper:
-    x1    3.0
-    x2    1.0
-    dtype: float64
-    >>> print("Min value after Arbitrary Capper:")
-    >>> aoc.transform(X).min()
-    Min value after Arbitrary Capper:
-    x1    0.005537
-    x2    0.200000
-    dtype: float64
+    >>> aoc.transform(X)
     """
 
     def __init__(
