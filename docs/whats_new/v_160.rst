@@ -67,6 +67,11 @@ Documentation
 ~~~~~~~~~~~~~
 
 - Add example code snippets to the selection module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+- Add example code snippets to the outlier module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+- Add example code snippets to the transformation module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+- Add example code snippets to the time series module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+- Add example code snippets to the preprocessing module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
+- Add example code snippets to the wrapper module API docs (`Alfonso Tobar <https://github.com/datacubeR>`_)
 - Updated documentation using new Dataset module (`Alfonso Tobar <https://github.com/datacubeR>`_ and `Soledad Galli <https://github.com/solegalli>`_)
 - Reorganized Readme badges (`Gleb Levitski <https://github.com/GLevv>`_)
 - New Jupyter notebooks for `GeometricWidthDiscretiser` (`Gleb Levitski <https://github.com/GLevv>`_)
