@@ -7,21 +7,23 @@ DropCorrelatedFeatures
 
 The :class:`DropCorrelatedFeatures()` finds and removes correlated variables from a dataframe.
 Correlation is calculated with `pandas.corr()`. All correlation methods supported by `pandas.corr()`
-can be used in the selection, including Spearman, Kendall, or Spearman. You can also pass a
+can be used in the selection, including Pearson's, Kendall, or Spearman. You can also pass a
 bespoke correlation function, provided it returns a value between -1 and 1.
 
 Features are removed on first found first removed basis, without any further insight. That is,
-the first feature will be retained an all subsequent features that are correlated with this, will
+the first feature will be retained an all subsequent features that are correlated with it, will
 be removed.
 
 The transformer will examine all numerical variables automatically. Note that you could pass a
 dataframe with categorical and datetime variables, and these will be ignored automatically.
 Alternatively, you can pass a list with the variables you wish to evaluate.
 
-Note: ordering of the coulmns matters! Different order of the columns could lead to
-different results. To make estimator more consistent, please use 'order_by' parameter.
+Note: the order of the variables in the dataset matters! A different variable order can
+lead to different results. To make the transformer consistent, use the `'order_by'`
+parameter.
 
-**Example**
+Example
+-------
 
 Let's create a toy dataframe where 4 of the features are correlated:
 
@@ -75,7 +77,7 @@ The correlated feature groups are stored in the transformer's attributes:
     [{'var_0', 'var_8'}, {'var_4', 'var_6', 'var_7', 'var_9'}]
 
 
-As well as the features that will be removed from the dataset:
+The features that will be removed from the dataset are also stored in an attribute:
 
 ..  code:: python
 
@@ -108,19 +110,30 @@ have been removed.
     3  0.484649
     4 -0.186530
 
-Now let's reduce number of unique values and use order_by = 'unique' option.
+The variable order matters
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Let's now compare how the order of the variables in the training dataset may affect the
+result, that is, the selected features.
+
+We'll start by reducing the number of unique values in our dataframe and repeat the
+feature selection procedure, without altering the order of the variables in the training
+set.
 
 .. code:: python
 
+    X = X.round(3)
     tr = DropCorrelatedFeatures(variables=None, method='pearson', threshold=0.8)
-    Xt = tr.fit_transform(X.round(3))
+    Xt = tr.fit_transform(X)
     tr.correlated_feature_sets_
 
-We will get the same result
+We see in the following output that we obtain the same feature sets as previously:
 
 ..  code:: python
 
     [{'var_0', 'var_8'}, {'var_4', 'var_6', 'var_7', 'var_9'}]
+
+And the transformer will remove the same variables as before:
 
 ..  code:: python
 
@@ -130,19 +143,23 @@ We will get the same result
 
     {'var_6', 'var_7', 'var_8', 'var_9'}
 
-And with order_by = 'unique'
+Now, let's order the variables by the number of unique values before the feature selection
+process:
 
 .. code:: python
 
-    tr = DropCorrelatedFeatures(variables=None, method='pearson', threshold=0.8, order_by='unique')
+    tr = DropCorrelatedFeatures(
+        variables=None, method='pearson', threshold=0.8, order_by='unique')
     Xt = tr.fit_transform(X.round(3))
     tr.correlated_feature_sets_
     
-Now the output is different
+Now, the transformer finds different correlation subsets:
 
 ..  code:: python
     
     [{'var_4', 'var_6', 'var_7', 'var_9'}, {'var_0', 'var_8'}]
+
+The different order in the subsets will lead to a different feature selection subset:
 
 ..  code:: python
 
