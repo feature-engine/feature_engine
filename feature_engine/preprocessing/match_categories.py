@@ -88,6 +88,27 @@ class MatchCategories(
 
     transform:
         Enforce the type of categorical variables as dtype `categorical`.
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.preprocessing import MatchCategories
+    >>> X_train = pd.DataFrame(dict(x1 = ["a","b","c"], x2 = [4,5,6]))
+    >>> X_test = pd.DataFrame(dict(x1 = ["c","b","a","d"], x2 = [5,6,4,7]))
+    >>> mc = MatchCategories(missing_values="ignore")
+    >>> mc.fit(X_train)
+    >>> mc.transform(X_train)
+      x1  x2
+    0  a   4
+    1  b   5
+    2  c   6
+    >>> mc.transform(X_test)
+        x1  x2
+    0    c   5
+    1    b   6
+    2    a   4
+    3  NaN   7
     """
 
     def __init__(
