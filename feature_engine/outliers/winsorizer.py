@@ -97,6 +97,48 @@ class Winsorizer(WinsorizerBase):
     transform:
         Cap the variables.
 
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from feature_engine.outliers import Winsorizer
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.normal(size = 10)))
+    >>> wz = Winsorizer(capping_method='mad', tail='both', fold=3)
+    >>> wz.fit(X)
+    >>> wz.transform(X)
+              x
+    0  0.496714
+    1 -0.138264
+    2  0.647689
+    3  1.523030
+    4 -0.234153
+    5 -0.234137
+    6  1.579213
+    7  0.767435
+    8 -0.469474
+    9  0.542560
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from feature_engine.outliers import Winsorizer
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.normal(size = 10)))
+    >>> wz = Winsorizer(capping_method='mad', tail='both', fold=3)
+    >>> wz.fit(X)
+    >>> wz.transform(X)
+              x
+    0  0.496714
+    1 -0.138264
+    2  0.647689
+    3  1.523030
+    4 -0.234153
+    5 -0.234137
+    6  1.579213
+    7  0.767435
+    8 -0.469474
+    9  0.542560
     """
 
     def __init__(
