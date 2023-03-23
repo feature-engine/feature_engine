@@ -164,7 +164,8 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
     >>> from feature_engine.wrappers import SklearnTransformerWrapper
     >>> from sklearn.preprocessing import OneHotEncoder
     >>> X = pd.DataFrame(dict(x1 = ["a","b","c"], x2 = [1,2,3], x3 = [4,5,6]))
-    >>> skw = SklearnTransformerWrapper(OneHotEncoder(sparse = False), variables = "x1")
+    >>> skw = SklearnTransformerWrapper(
+    >>>     OneHotEncoder(sparse_output = False), variables = "x1")
     >>> skw.fit(X)
     >>> skw.transform(X)
        x2  x3  x1_a  x1_b  x1_c
