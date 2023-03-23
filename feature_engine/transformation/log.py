@@ -77,6 +77,24 @@ class LogTransformer(BaseNumericalTransformer):
     transform:
         Transform the variables using the logarithm.
 
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from feature_engine.transformation import LogTransformer
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100)))
+    >>> lt = LogTransformer()
+    >>> lt.fit(X)
+    >>> X = lt.transform(X)
+    >>> X.head()
+            x
+    0  0.496714
+    1 -0.138264
+    2  0.647689
+    3  1.523030
+    4 -0.234153
     """
 
     def __init__(
@@ -263,6 +281,24 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
     transform:
         Transform the variables with the logarithm of x plus C.
 
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from feature_engine.transformation import LogCpTransformer
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100)))
+    >>> lct = LogCpTransformer()
+    >>> lct.fit(X)
+    >>> X = lct.transform(X)
+    >>> X.head()
+              x
+    0  0.944097
+    1  0.586701
+    2  1.043204
+    3  1.707159
+    4  0.541405
     """
 
     def __init__(

@@ -73,6 +73,24 @@ class ReciprocalTransformer(BaseNumericalTransformer):
     transform:
         Apply the reciprocal 1 / x transformation.
 
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from feature_engine.transformation import ReciprocalTransformer
+    >>> np.random.seed(42)
+    >>> X = pd.DataFrame(dict(x = 10 - np.random.exponential(size = 100)))
+    >>> rt = ReciprocalTransformer()
+    >>> rt.fit(X)
+    >>> X = rt.transform(X)
+    >>> X.head()
+            x
+    0  0.104924
+    1  0.143064
+    2  0.115164
+    3  0.110047
+    4  0.101726
     """
 
     def __init__(
