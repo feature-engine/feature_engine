@@ -101,6 +101,17 @@ class ArbitraryOutlierCapper(BaseOutlier):
     >>>                              min_capping_dict=dict(x1 = 2))
     >>> aoc.fit(X)
     >>> aoc.transform(X)
+       x1
+    0   2
+    1   2
+    2   3
+    3   4
+    4   5
+    5   6
+    6   7
+    7   8
+    8   8
+    9   8
     """
 
     def __init__(
