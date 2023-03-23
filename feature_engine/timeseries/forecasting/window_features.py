@@ -121,6 +121,28 @@ class WindowFeatures(BaseForecastTransformer):
     pandas.rolling
     pandas.aggregate
     pandas.shift
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine.timeseries.forecasting import WindowFeatures
+    >>> X = pd.DataFrame(dict(date = ["2022-09-18",
+    >>>                               "2022-09-19",
+    >>>                               "2022-09-20",
+    >>>                               "2022-09-21",
+    >>>                               "2022-09-22"],
+    >>>                       x1 = [1,2,3,4,5],
+    >>>                       x2 = [6,7,8,9,10]
+    >>>                     ))
+    >>> wf = WindowFeatures(window = 2)
+    >>> wf.fit_transform(X)
+             date  x1  x2  x1_window_2_mean  x2_window_2_mean
+    0  2022-09-18   1   6               NaN               NaN
+    1  2022-09-19   2   7               NaN               NaN
+    2  2022-09-20   3   8               1.5               6.5
+    3  2022-09-21   4   9               2.5               7.5
+    4  2022-09-22   5  10               3.5               8.5
     """
 
     def __init__(
