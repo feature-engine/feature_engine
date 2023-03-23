@@ -1,4 +1,4 @@
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.model_selection import cross_validate
@@ -9,6 +9,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
+    _order_by_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
@@ -26,6 +27,7 @@ from feature_engine._docstrings.selection._docstring import (
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
+from feature_engine.selection._helper_functions import _sort_variables
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
@@ -44,6 +46,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     confirm_variables=_confirm_variables_docstring,
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
+    order_by=_order_by_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -69,6 +72,10 @@ class SmartCorrelatedSelection(BaseSelector):
     SmartCorrelatedSelection() works only with numerical variables. Categorical
     variables will need to be encoded to numerical or will be excluded from the
     analysis.
+
+    Note: ordering of the coulmns matters! A different order of the columns could lead
+    to different results. To make the transformer consistent, use the `"order_by'`
+    parameter.
 
     More details in the :ref:`User Guide <smart_correlation>`.
 
@@ -109,13 +116,7 @@ class SmartCorrelatedSelection(BaseSelector):
         **"model_performance"**: trains a machine learning model using the correlated
         feature group and retains the feature with the highest importance.
 
-    order_by: str, default=None
-        Type of sorting to use before feature selection. This option could help with
-        the consistency of the selection.
-        - None - preserve original order of the dataframe
-        - 'nan' - sort columns by number of missing values (ascending)
-        - 'unique' - sort columns by number of unique values (descending)
-        - 'alphabetic' - sort columns alphabetically.
+    {order_by}
 
     {estimator}
 
@@ -307,10 +308,10 @@ class SmartCorrelatedSelection(BaseSelector):
         self.correlated_feature_sets_ = []
 
         # sort columns for consistency
-        X = self._sort_variables(X)
+        ordered_vars = _sort_variables(X, self.variables_, self.order_by)
 
         # the correlation matrix
-        _correlated_matrix = X[self.variables_].corr(method=self.method)
+        _correlated_matrix = X[ordered_vars].corr(method=self.method)
 
         # create set of examined features, helps to determine feature combinations
         # to evaluate below
@@ -411,16 +412,3 @@ class SmartCorrelatedSelection(BaseSelector):
         self._get_feature_names_in(X)
 
         return self
-
-    def _sort_variables(self, X: pd.DataFrame):
-        """Helper function for sorting columns."""
-        if self.order_by == "nan":
-            order = X.isna().sum(0).sort_values().index
-        elif self.order_by == "unique":
-            order = X.nunique(0).sort_values(ascending=False).index
-        elif self.order_by == "alphabetic":
-            order = X.sort_index(axis=1).columns
-        else:
-            return X
-        self.variables_ = [col for col in order if col in self.variables_]
-        return X[self.variables_]
