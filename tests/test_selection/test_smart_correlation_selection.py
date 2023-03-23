@@ -273,9 +273,7 @@ def test_invalid_combination():
         )
 
     with pytest.raises(ValueError):
-        SmartCorrelatedSelection(
-            selection_method="model_performance", estimator=None
-        )
+        SmartCorrelatedSelection(selection_method="model_performance", estimator=None)
 
 
 # def test_ordering_variables(df_single):
@@ -284,17 +282,20 @@ def test_invalid_combination():
 #     transformer = SmartCorrelatedSelection(order_by="alphabetic")
 #     transformer.fit(X)
 #     Xt = transformer._sort_variables(X[[f"var_{i}" for i in reversed(range(6))]])
-#     assert (Xt.columns == ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]).all()
+#     assert (Xt.columns == [
+#     "var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]).all()
 #     # test nan
 #     transformer = SmartCorrelatedSelection(order_by="nan")
 #     transformer.fit(X)
 #     X.loc[0, "var_0"] = None
 #     X.loc[[1, 2], "var_1"] = None
 #     Xt = transformer._sort_variables(X)
-#     assert (Xt.columns == ['var_2', 'var_3', 'var_4', 'var_5', 'var_0', 'var_1']).all()
+#     assert (Xt.columns == [
+#     'var_2', 'var_3', 'var_4', 'var_5', 'var_0', 'var_1']).all()
 #     # test unique
 #     transformer = SmartCorrelatedSelection(order_by="unique")
 #     transformer.fit(X)
 #     X.loc[[1, 2, 3], "var_3"] = 1
 #     Xt = transformer._sort_variables(X)
-#     assert (Xt.columns == ['var_2', 'var_4', 'var_5', 'var_0', 'var_1', 'var_3']).all()
+#     assert (Xt.columns == [
+#     'var_2', 'var_4', 'var_5', 'var_0', 'var_1', 'var_3']).all()
