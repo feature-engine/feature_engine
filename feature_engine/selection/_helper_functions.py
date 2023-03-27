@@ -2,7 +2,7 @@ from typing import List
 import pandas as pd
 
 
-def _sort_variables(X: pd.DataFrame, variables: List, order_by: str):
+def _sort_variables(X: pd.DataFrame, variables: List, order_by: str = None):
     """Helper function for sorting columns."""
     if order_by == "nan":
         ordered_vars = list(X[variables].isna().sum(0).sort_values().index)
