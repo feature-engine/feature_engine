@@ -55,13 +55,13 @@ New modules
 ~~~~~~~~~~~
 
 - New **Datasets** module with functions to load specific datasets (`Alfonso Tobar <https://github.com/datacubeR>`_)
-- New **variable_handling** module with functions to auomatically select numerical, categorical, or datetime variables (`Soledad Galli <https://github.com/solegalli>`_)
+- New **variable_handling** module with functions to automatically select numerical, categorical, or datetime variables (`Soledad Galli <https://github.com/solegalli>`_)
 
 Bug fixes
 ~~~~~~~~~
 
 - Fixed bug in `DropFeatures()` (`Luís Seabra  <https://github.com/luismavs>`_)
-- Fixed bug in `RecusriveFeatureElimination()` caused when only 1 feature remained in data (`Soledad Galli <https://github.com/solegalli>`_)
+- Fixed bug in `RecursiveFeatureElimination()` caused when only 1 feature remained in data (`Soledad Galli <https://github.com/solegalli>`_)
 
 Documentation
 ~~~~~~~~~~~~~
@@ -77,7 +77,7 @@ Documentation
 - New Jupyter notebooks for `GeometricWidthDiscretiser` (`Gleb Levitski <https://github.com/GLevv>`_)
 - Fixed typos (`Gleb Levitski <https://github.com/GLevv>`_)
 - Remove examples using the boston house dataset (`Soledad Galli <https://github.com/solegalli>`_)
-- Fix sponsor page, expand contribute page (`Soledad Galli <https://github.com/solegalli>`_)
+- Update sponsor page and contribute page (`Soledad Galli <https://github.com/solegalli>`_)
 
 
 Deprecations
@@ -88,7 +88,7 @@ Deprecations
 Code improvements
 ~~~~~~~~~~~~~~~~~
 
-- Massive improve in the performance (speed) of DropDuplicateFeatures (`Nodar Okroshiashvili <https://github.com/Okroshiashvili>`_)
-- Remove `inplace` and other items related to pandas new direction (`Luís Seabra  <https://github.com/luismavs>`_)
-- Moved all docstrings to dedicated docstrings module  (`Soledad Galli <https://github.com/solegalli>`_)
+- Massive improvement in the performance (speed) of `DropDuplicateFeatures()` (`Nodar Okroshiashvili <https://github.com/Okroshiashvili>`_)
+- Remove `inplace` and other issues related to pandas new direction (`Luís Seabra  <https://github.com/luismavs>`_)
+- Move most docstrings to dedicated docstrings module  (`Soledad Galli <https://github.com/solegalli>`_)
 - Unnest tests for encoders (`Soledad Galli <https://github.com/solegalli>`_)
