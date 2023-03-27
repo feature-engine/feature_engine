@@ -104,6 +104,30 @@ def test_more_than_1_correlated_group(df_correlated_double):
     pd.testing.assert_frame_equal(X, df)
 
 
+# def test_sorts_columns_alphabetically(df_correlated_double):
+#     df = df_correlated_double.copy()
+#     colnames = df.columns.to_list()
+#     colnames.reverse()
+#     df.columns = colnames
+#
+#     transformer = DropCorrelatedFeatures(
+#         variables=None, method="pearson", threshold=0.6, order_by="alphabetic",
+#     )
+#     X = transformer.fit_transform(df)
+#
+#     # expected result
+#     df = df_correlated_double.drop(["var_6", "var_7", "var_8", "var_9"], axis=1)
+#
+#     # test fit attrs
+#     assert transformer.features_to_drop_ == {"var_6", "var_7", "var_8", "var_9"}
+#     assert transformer.correlated_feature_sets_ == [
+#         {"var_11", "var_3"},
+#         {"var_7", "var_4", "var_2", "var_5"},
+#     ]
+#     # test transform output
+#     pd.testing.assert_frame_equal(X, df)
+
+
 def test_callable_method(df_correlated_double, random_uniform_method):
     X = df_correlated_double
 
