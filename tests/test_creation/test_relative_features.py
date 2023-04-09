@@ -53,6 +53,17 @@ def test_error_if_func_not_supported(_func):
         )
 
 
+@pytest.mark.parametrize("_fill_value", [(2, 3.3), ["test"]])
+def test_error_if_fill_value_not_permitted(_fill_value):
+    with pytest.raises(ValueError):
+        RelativeFeatures(
+            variables=["Age"],
+            reference=["Marks"],
+            func=["sub", "div", "add", "mul"],
+            fill_value=_fill_value,
+        )
+
+
 def test_error_when_drop_original_not_bool():
     for drop_original in ["True", [True]]:
         with pytest.raises(ValueError):
