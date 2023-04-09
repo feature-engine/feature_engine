@@ -221,4 +221,12 @@ And, finally, we can also obtain the names of the features in the final transfor
      'worst symmetry',
      'worst fractal dimension']
 
+Note
+----
+Below is a visualization of the three possible distributions - normal, binomial, and uniform.
+We instantiate :class:`ProbeFeatureSelection()` and use :code:`_generate_probe_features()` to
+see examples of the three distributions.
+
+.. code:: python
+
 
