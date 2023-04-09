@@ -164,7 +164,10 @@ class RelativeFeatures(BaseCreation):
                 "Supported functions are {}. ".format(", ".join(_PERMITTED_FUNCTIONS))
             )
 
-        if not isinstance(fill_value, (float, int, str)):
+        if (
+            not isinstance(fill_value, (float, int, str))
+            and fill_value is not None
+        ):
             raise ValueError(
                 "fill_value must be a float, integer, or string. "
                 f"Got {fill_value} instead."
