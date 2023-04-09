@@ -128,6 +128,7 @@ class RelativeFeatures(BaseCreation):
         variables: List[Union[str, int]],
         reference: List[Union[str, int]],
         func: List[str],
+        fill_value: Union[int, float, str] = None,
         missing_values: str = "ignore",
         drop_original: bool = False,
     ) -> None:
@@ -163,10 +164,16 @@ class RelativeFeatures(BaseCreation):
                 "Supported functions are {}. ".format(", ".join(_PERMITTED_FUNCTIONS))
             )
 
+        if not isinstance(fill_value, (float, int, str)):
+            raise ValueError(
+                "fill_value must be a float, integer, or string. "
+                f"Got {fill_value} instead."
+            )
         super().__init__(missing_values, drop_original)
         self.variables = variables
         self.reference = reference
         self.func = func
+        self.fill_value = fill_value
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
