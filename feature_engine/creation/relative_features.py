@@ -225,7 +225,7 @@ class RelativeFeatures(BaseCreation):
 
     def _div(self, X):
         for reference in self.reference:
-            if (X[reference] == 0).any():
+            if self.fill_value is None and (X[reference] == 0).any():
                 raise ValueError(
                     "Some of the reference variables contain 0 as values. Check and "
                     "remove those before using this transformer."
