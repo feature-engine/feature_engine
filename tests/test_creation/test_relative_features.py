@@ -425,9 +425,9 @@ def test_get_feature_names_out_raises_error_when_wrong_param(
         transformer.get_feature_names_out(input_features=_input_features)
 
 
-def test_transformer_incl_fill_values_when_dividing_by_zero(df_vartypes):
+def test_transformer_fill_values_when_division_by_zero(df_vartypes):
     df_zero = df_vartypes.copy()
-    df_zero.loc[2, "Marks"] = 0
+    df_zero.loc[2, "Marks"] = 0.0
 
     transformer = RelativeFeatures(
         variables=["Age"],
@@ -443,10 +443,11 @@ def test_transformer_incl_fill_values_when_dividing_by_zero(df_vartypes):
             "Name": ["tom", "nick", "krish", "jack"],
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
-            "Marks": [0.9, 0.8, 0, 0.6],
+            "Marks": [0.9, 0.8, 0.0, 0.6],
             "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
             "Age_div_Marks": [22.2222, 26.25, "test_fill", 30.0],
         }
     )
+    ref["Marks"] = ref["Marks"].astype("object")
 
     pd.testing.assert_frame_equal(X, ref)

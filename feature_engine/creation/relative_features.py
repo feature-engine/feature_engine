@@ -1,5 +1,5 @@
 from typing import List, Union
-
+import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
@@ -232,6 +232,7 @@ class RelativeFeatures(BaseCreation):
                 )
             varname = [f"{var}_div_{reference}" for var in self.variables]
             X[varname] = X[self.variables].div(X[reference], axis=0)
+            X.replace([-np.inf, np.inf], self.fill_value, inplace=True)
         return X
 
     def _add(self, X):
