@@ -74,8 +74,8 @@ class RelativeFeatures(BaseCreation):
 
     fill_value: int, float, string, None
         When dividing by zero, this value is used in place of infinity. If the value
-        remainding the default, which is None, then an error will be raised when dividing
-        by zero.
+        remainding the default, which is None, then an error will be raised when
+        dividing by zero.
 
     {missing_values}
 
