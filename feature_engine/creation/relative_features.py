@@ -1,22 +1,17 @@
 from typing import List, Union
+
 import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-    _variables_attribute_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring,
+    _variables_attribute_docstring)
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _drop_original_docstring,
-    _missing_values_docstring,
-    _variables_numerical_docstring,
-)
-from feature_engine._docstrings.methods import (
-    _fit_not_learn_docstring,
-    _fit_transform_docstring,
-    _transform_creation_docstring,
-)
+    _drop_original_docstring, _missing_values_docstring,
+    _variables_numerical_docstring)
+from feature_engine._docstrings.methods import (_fit_not_learn_docstring,
+                                                _fit_transform_docstring,
+                                                _transform_creation_docstring)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.creation.base_creation import BaseCreation
 
@@ -77,6 +72,11 @@ class RelativeFeatures(BaseCreation):
         one or more of the following strings: 'add', 'mul','sub', 'div', truediv,
         'floordiv', 'mod', 'pow'.
 
+    fill_value: int, float, string, None
+        When dividing by zero, this value is used in place of infinity. If the value
+        remainding the default, which is None, then an error will be raised when dividing
+        by zero.
+
     {missing_values}
 
     {drop_original}
@@ -128,7 +128,7 @@ class RelativeFeatures(BaseCreation):
         variables: List[Union[str, int]],
         reference: List[Union[str, int]],
         func: List[str],
-        fill_value: Union[int, float, str] = None,
+        fill_value: Union[int, float, str, None] = None,
         missing_values: str = "ignore",
         drop_original: bool = False,
     ) -> None:
