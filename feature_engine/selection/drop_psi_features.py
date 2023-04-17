@@ -34,7 +34,7 @@ from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
 from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+    find_categorical_and_numerical_variables
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -251,6 +251,7 @@ class DropHighPSIFeatures(BaseSelector):
         missing_values: str = "raise",
         variables: Variables = None,
         confirm_variables: bool = False,
+        p_value: float = 0.001,
     ):
 
         if not isinstance(split_col, (str, int, type(None))):
@@ -335,6 +336,7 @@ class DropHighPSIFeatures(BaseSelector):
         self.strategy = strategy
         self.min_pct_empty_bins = min_pct_empty_bins
         self.missing_values = missing_values
+        self.p_value = p_value
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -354,8 +356,12 @@ class DropHighPSIFeatures(BaseSelector):
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
 
-        # find numerical variables or check those entered are present in the dataframe
-        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
+        # # find variables or check those entered are present in the dataframe
+        self.cat_variables_,  self.num_variables_ = find_categorical_and_numerical_variables(X, self.variables_)
+        self.variables_ = self.num_variables_ + self.cat_variables_
+        print("NUM VARIABLES ARE: ", self.num_variables_)
+        print("CAT VARIABLES ARE: ", self.cat_variables_)
+        print("VARIABLES ARE: ", self.variables_)
 
         # Remove the split_col from the variables list. It might be added if the
         # variables are not defined at initialization.
@@ -365,7 +371,7 @@ class DropHighPSIFeatures(BaseSelector):
         if self.missing_values == "raise":
             # check if dataset contains na or inf
             _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.variables_)
+            _check_contains_inf(X, self.num_variables_)
 
         # Split the dataframe into basis and test.
         basis_df, test_df = self._split_dataframe(X)
@@ -387,28 +393,29 @@ class DropHighPSIFeatures(BaseSelector):
         if self.switch:
             test_df, basis_df = basis_df, test_df
 
-        if self.threshold == "auto":
-            threshold = self._calculate_auto_threshold(
-                basis_df.shape[0], test_df.shape[0]
-            )
-        else:
-            threshold = self.threshold
 
-        # set up the discretizer
-        if self.strategy == "equal_width":
-            bucketer = EqualWidthDiscretiser(bins=self.bins)
-        else:
-            bucketer = EqualFrequencyDiscretiser(q=self.bins)
+
+        # set up the discretizer for numerical variables
+        if len(self.num_variables_) > 0: 
+            if self.strategy == "equal_width":
+                bucketer = EqualWidthDiscretiser(bins=self.bins)
+            else:
+                bucketer = EqualFrequencyDiscretiser(q=self.bins)
 
         # Compute the PSI by looping over the features
         self.psi_values_ = {}
         self.features_to_drop_ = []
 
         for feature in self.variables_:
-            # Discretize the features.
-
-            basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
-            test_discrete = bucketer.transform(test_df[[feature]].dropna())
+            # Bin the features if it is numerical and determine number of bins
+            if feature in self.num_variables_:
+                basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
+                test_discrete = bucketer.transform(test_df[[feature]].dropna())
+                n_bins = self.bins
+            elif feature in self.cat_variables_: 
+                basis_discrete = basis_df[[feature]]
+                test_discrete = test_df[[feature]]
+                n_bins = X[[feature]].nunique()[0]
 
             # Determine percentage of observations per bin
             basis_distrib, test_distrib = self._observation_frequency_per_bin(
@@ -419,6 +426,14 @@ class DropHighPSIFeatures(BaseSelector):
             self.psi_values_[feature] = np.sum(
                 (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
             )
+
+            # Determine the appropriate threshold
+            if self.threshold == "auto":
+                threshold = self._calculate_auto_threshold(
+                    basis_df.shape[0], test_df.shape[0], n_bins,
+                )
+            else:
+                threshold = self.threshold
             # Assess if feature should be dropped
             if self.psi_values_[feature] > threshold:
                 self.features_to_drop_.append(feature)
@@ -577,10 +592,16 @@ class DropHighPSIFeatures(BaseSelector):
 
         return cut_off
 
-    def _calculate_auto_threshold(self, N, M, q=0.999):
-        # threshold = χ2(q,B−1) × (1/N + 1/M)
-        # where q - quantile (or 1 - p-value) B - number of bins,
-        # N - size of basis dataset, M - size of test dataset
-        # see formula (5.2) from reference
-        # taking q = 0.999 to get higher threshold
-        return stats.chi2.ppf(q, self.bins - 1) * (1.0 / N + 1.0 / M)
+    def _calculate_auto_threshold(self, N, M, bins):
+        """ Threshold computation for chi-square test.
+
+        The threshold is given by 
+            threshold = χ2(q,B−1) × (1/N + 1/M)
+        where 
+        q = quantile of the distribution (or 1 - p-value), 
+        B = number of bins/categories, 
+        N = size of basis dataset, 
+        M = size of test dataset. 
+        See formula (5.2) from reference.
+        """
+        return stats.chi2.ppf(1 - self.p_value, bins - 1) * (1.0 / N + 1.0 / M)
