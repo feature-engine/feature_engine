@@ -7,35 +7,23 @@ import scipy.stats as stats
 from pandas.api.types import is_numeric_dtype
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
-from feature_engine._docstrings.init_parameters.selection import (
-    _confirm_variables_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring)
+from feature_engine._docstrings.init_parameters.selection import \
+    _confirm_variables_docstring
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import (
-    _check_contains_inf,
-    _check_contains_na,
-    check_X,
-)
-from feature_engine.discretisation import (
-    EqualFrequencyDiscretiser,
-    EqualWidthDiscretiser,
-)
+from feature_engine.dataframe_checks import (_check_contains_inf,
+                                             _check_contains_na, check_X)
+from feature_engine.discretisation import (EqualFrequencyDiscretiser,
+                                           EqualWidthDiscretiser)
 from feature_engine.selection._docstring import (
-    _get_support_docstring,
-    _variables_attribute_docstring,
-    _variables_numerical_docstring,
-)
+    _get_support_docstring, _variables_attribute_docstring,
+    _variables_numerical_docstring)
 from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import (
+from feature_engine.variable_handling._init_parameter_checks import \
+    _check_init_parameter_variables
+from feature_engine.variable_handling.variable_type_selection import \
     find_categorical_and_numerical_variables
-)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -357,7 +345,10 @@ class DropHighPSIFeatures(BaseSelector):
         self._confirm_variables(X)
 
         # # find variables or check those entered are present in the dataframe
-        self.cat_variables_,  self.num_variables_ = find_categorical_and_numerical_variables(X, self.variables_)
+        (
+            self.cat_variables_,
+            self.num_variables_,
+        ) = find_categorical_and_numerical_variables(X, self.variables_)
         self.variables_ = self.num_variables_ + self.cat_variables_
         print("NUM VARIABLES ARE: ", self.num_variables_)
         print("CAT VARIABLES ARE: ", self.cat_variables_)
@@ -393,10 +384,8 @@ class DropHighPSIFeatures(BaseSelector):
         if self.switch:
             test_df, basis_df = basis_df, test_df
 
-
-
         # set up the discretizer for numerical variables
-        if len(self.num_variables_) > 0: 
+        if len(self.num_variables_) > 0:
             if self.strategy == "equal_width":
                 bucketer = EqualWidthDiscretiser(bins=self.bins)
             else:
@@ -412,7 +401,7 @@ class DropHighPSIFeatures(BaseSelector):
                 basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
                 test_discrete = bucketer.transform(test_df[[feature]].dropna())
                 n_bins = self.bins
-            elif feature in self.cat_variables_: 
+            elif feature in self.cat_variables_:
                 basis_discrete = basis_df[[feature]]
                 test_discrete = test_df[[feature]]
                 n_bins = X[[feature]].nunique()[0]
@@ -430,7 +419,9 @@ class DropHighPSIFeatures(BaseSelector):
             # Determine the appropriate threshold
             if self.threshold == "auto":
                 threshold = self._calculate_auto_threshold(
-                    basis_df.shape[0], test_df.shape[0], n_bins,
+                    basis_df.shape[0],
+                    test_df.shape[0],
+                    n_bins,
                 )
             else:
                 threshold = self.threshold
@@ -593,15 +584,15 @@ class DropHighPSIFeatures(BaseSelector):
         return cut_off
 
     def _calculate_auto_threshold(self, N, M, bins):
-        """ Threshold computation for chi-square test.
+        """Threshold computation for chi-square test.
 
-        The threshold is given by 
+        The threshold is given by
             threshold = χ2(q,B−1) × (1/N + 1/M)
-        where 
-        q = quantile of the distribution (or 1 - p-value), 
-        B = number of bins/categories, 
-        N = size of basis dataset, 
-        M = size of test dataset. 
+        where
+        q = quantile of the distribution (or 1 - p-value),
+        B = number of bins/categories,
+        N = size of basis dataset,
+        M = size of test dataset.
         See formula (5.2) from reference.
         """
         return stats.chi2.ppf(1 - self.p_value, bins - 1) * (1.0 / N + 1.0 / M)
