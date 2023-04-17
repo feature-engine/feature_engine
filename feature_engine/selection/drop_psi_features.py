@@ -7,23 +7,35 @@ import scipy.stats as stats
 from pandas.api.types import is_numeric_dtype
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring, _n_features_in_docstring)
-from feature_engine._docstrings.init_parameters.selection import \
-    _confirm_variables_docstring
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.init_parameters.selection import (
+    _confirm_variables_docstring,
+)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import (_check_contains_inf,
-                                             _check_contains_na, check_X)
-from feature_engine.discretisation import (EqualFrequencyDiscretiser,
-                                           EqualWidthDiscretiser)
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na,
+    check_X,
+)
+from feature_engine.discretisation import (
+    EqualFrequencyDiscretiser,
+    EqualWidthDiscretiser,
+)
 from feature_engine.selection._docstring import (
-    _get_support_docstring, _variables_attribute_docstring,
-    _variables_numerical_docstring)
+    _get_support_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
 from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.variable_handling._init_parameter_checks import \
-    _check_init_parameter_variables
-from feature_engine.variable_handling.variable_type_selection import \
-    find_categorical_and_numerical_variables
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import (
+    find_categorical_and_numerical_variables,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -350,9 +362,6 @@ class DropHighPSIFeatures(BaseSelector):
             self.num_variables_,
         ) = find_categorical_and_numerical_variables(X, self.variables_)
         self.variables_ = self.num_variables_ + self.cat_variables_
-        print("NUM VARIABLES ARE: ", self.num_variables_)
-        print("CAT VARIABLES ARE: ", self.cat_variables_)
-        print("VARIABLES ARE: ", self.variables_)
 
         # Remove the split_col from the variables list. It might be added if the
         # variables are not defined at initialization.
