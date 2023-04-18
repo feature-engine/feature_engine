@@ -7,42 +7,31 @@ import scipy.stats as stats
 from pandas.api.types import is_numeric_dtype
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
-from feature_engine._docstrings.init_parameters.selection import (
-    _confirm_variables_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring)
+from feature_engine._docstrings.init_parameters.selection import \
+    _confirm_variables_docstring
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import (
-    _check_contains_inf,
-    _check_contains_na,
-    check_X,
-)
-from feature_engine.discretisation import (
-    EqualFrequencyDiscretiser,
-    EqualWidthDiscretiser,
-)
+from feature_engine.dataframe_checks import (_check_contains_inf,
+                                             _check_contains_na, check_X)
+from feature_engine.discretisation import (EqualFrequencyDiscretiser,
+                                           EqualWidthDiscretiser)
 from feature_engine.selection._docstring import (
-    _get_support_docstring,
-    _variables_attribute_docstring,
-    _variables_numerical_docstring,
-)
+    _get_support_docstring, _variables_all_docstring,
+    _variables_attribute_docstring)
 from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import (
-    find_categorical_and_numerical_variables,
-)
+from feature_engine.tags import _return_tags
+from feature_engine.variable_handling._init_parameter_checks import \
+    _check_init_parameter_variables
+from feature_engine.variable_handling.variable_type_selection import \
+    find_categorical_and_numerical_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 @Substitution(
     confirm_variables=_confirm_variables_docstring,
-    variables=_variables_numerical_docstring,
+    variables=_variables_all_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -605,3 +594,11 @@ class DropHighPSIFeatures(BaseSelector):
         See formula (5.2) from reference.
         """
         return stats.chi2.ppf(1 - self.p_value, bins - 1) * (1.0 / N + 1.0 / M)
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "all"
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+
+        return tags_dict
