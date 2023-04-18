@@ -5,8 +5,8 @@ from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
 from pandas.core.dtypes.common import is_object_dtype as is_object
 import warnings
 
-def _is_categorical_and_is_not_datetime(column: pd.Series) -> bool:
 
+def _is_categorical_and_is_not_datetime(column: pd.Series) -> bool:
     # check for datetime only if object cannot be cast as numeric because
     # if it could pd.to_datetime would convert it to datetime regardless
     if is_object(column):
@@ -35,7 +35,6 @@ def _is_convertible_to_num(column: pd.Series) -> bool:
 
 
 def _is_categorical_and_is_datetime(column: pd.Series) -> bool:
-
     # check for datetime only if object cannot be cast as numeric because
     # if it could pd.to_datetime would convert it to datetime regardless
     if is_object(column):

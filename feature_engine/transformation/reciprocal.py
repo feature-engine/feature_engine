@@ -96,7 +96,6 @@ class ReciprocalTransformer(BaseNumericalTransformer):
     def __init__(
         self, variables: Union[None, int, str, List[Union[str, int]]] = None
     ) -> None:
-
         self.variables = _check_init_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -152,7 +151,9 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         # transform
         # for some reason reciprocal does not work with integers
-        X.loc[:, self.variables_] = np.reciprocal(X.loc[:, self.variables_].astype("float"))
+        X.loc[:, self.variables_] = np.reciprocal(
+            X.loc[:, self.variables_].astype("float")
+        )
 
         return X
 
