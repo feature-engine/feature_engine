@@ -26,10 +26,11 @@ from feature_engine.discretisation import (
 )
 from feature_engine.selection._docstring import (
     _get_support_docstring,
+    _variables_all_docstring,
     _variables_attribute_docstring,
-    _variables_numerical_docstring,
 )
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.tags import _return_tags
 from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
@@ -40,7 +41,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 @Substitution(
     confirm_variables=_confirm_variables_docstring,
-    variables=_variables_numerical_docstring,
+    variables=_variables_all_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -353,6 +354,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         # find numerical variables or check those entered are present in the dataframe
         self.variables_ = find_all_variables(X, self.variables_, exclude_datetime=True)
+        numerical_variables = X[self.variables_].select_dtypes(include="number").columns
 
         # Remove the split_col from the variables list. It might be added if the
         # variables are not defined at initialization.
@@ -362,9 +364,7 @@ class DropHighPSIFeatures(BaseSelector):
         if self.missing_values == "raise":
             # check if dataset contains na or inf
             _check_contains_na(X, self.variables_)
-            _check_contains_inf(
-                X, X[self.variables_].select_dtypes(include="number").columns
-            )
+            _check_contains_inf(X, numerical_variables)
 
         # Split the dataframe into basis and test.
         basis_df, test_df = self._split_dataframe(X)
@@ -393,14 +393,33 @@ class DropHighPSIFeatures(BaseSelector):
         else:
             threshold = self.threshold
 
+        # set up the discretizer
+        if self.strategy == "equal_width":
+            bucketer = EqualWidthDiscretiser(bins=self.bins)
+        else:
+            bucketer = EqualFrequencyDiscretiser(q=self.bins)
+
         # Compute the PSI by looping over the features
         self.psi_values_ = {}
         self.features_to_drop_ = []
 
         for feature in self.variables_:
+            basis_column = basis_df[[feature]].dropna()
+            test_column = test_df[[feature]].dropna()
+
+            if feature in numerical_variables:
+                # Discretize the features.
+                basis_discrete = bucketer.fit_transform(basis_column)
+                test_discrete = bucketer.transform(test_column)
+
+            else:
+                # Use feature as is
+                basis_discrete = basis_column
+                test_discrete = test_column
+
             # Determine percentage of observations per bin
             basis_distrib, test_distrib = self._observation_frequency_per_bin(
-                basis_df[[feature]].dropna(), test_df[[feature]].dropna()
+                basis_discrete, test_discrete
             )
 
             # Calculate the PSI value
@@ -419,40 +438,22 @@ class DropHighPSIFeatures(BaseSelector):
     def _observation_frequency_per_bin(self, basis, test):
         """
         Obtain the fraction of observations per interval.
-
         Parameters
         ----------
         basis : pd.DataFrame.
             The basis Pandas DataFrame with discretised (i.e., binned) values.
-
         test: pd.DataFrame.
             The test Pandas DataFrame with discretised (i.e., binned) values.
-
         Returns
         -------
         distribution.basis: pd.Series.
             Basis Pandas Series with percentage of observations per bin.
-
         distribution.meas: pd.Series.
             Test Pandas Series with percentage of observations per bin.
         """
-        if is_numeric_dtype(basis.dtypes[0]):
-            # set up the discretizer
-            if self.strategy == "equal_width":
-                bucketer = EqualWidthDiscretiser(bins=self.bins)
-            else:
-                bucketer = EqualFrequencyDiscretiser(q=self.bins)
-
-            # Discretize the features.
-            basis_discrete = bucketer.fit_transform(basis.dropna())
-            test_discrete = bucketer.transform(test.dropna())
-        else:
-            basis_discrete = basis
-            test_discrete = test
-
         # Compute the feature distribution for basis and test
-        basis_distrib = basis_discrete.value_counts(normalize=True)
-        test_distrib = test_discrete.value_counts(normalize=True)
+        basis_distrib = basis.value_counts(normalize=True)
+        test_distrib = test.value_counts(normalize=True)
 
         # Align the two distributions by merging the buckets (bins). This ensures
         # the number of bins is the same for the two distributions (in case of
@@ -586,3 +587,11 @@ class DropHighPSIFeatures(BaseSelector):
         # see formula (5.2) from reference
         # taking q = 0.999 to get higher threshold
         return stats.chi2.ppf(q, self.bins - 1) * (1.0 / N + 1.0 / M)
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "all"
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+
+        return tags_dict
