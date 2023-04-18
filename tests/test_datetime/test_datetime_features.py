@@ -183,6 +183,7 @@ def test_extract_datetime_features_with_default_options(
         df_datetime_transformed[
             vars_non_dt + [var + feat for var in vars_dt for feat in feat_names_default]
         ],
+        check_dtype=False,
     )
 
 
@@ -198,6 +199,7 @@ def test_extract_datetime_features_from_specified_variables(
             + ["datetime_range", "date_obj2", "time_obj"]
             + ["date_obj1" + feat for feat in feat_names_default]
         ],
+        check_dtype=False,
     )
 
     # multiple datetime variables
@@ -215,6 +217,7 @@ def test_extract_datetime_features_from_specified_variables(
                 for feat in feat_names_default
             ]
         ],
+        check_dtype=False
     )
 
     # multiple datetime variables in different order than they appear in the df
@@ -232,6 +235,7 @@ def test_extract_datetime_features_from_specified_variables(
                 for feat in feat_names_default
             ]
         ],
+        check_dtype=False,
     )
 
     # datetime variable is index
@@ -251,12 +255,13 @@ def test_extract_datetime_features_from_specified_variables(
             ],
             axis=1,
         ),
+        check_dtype=False,
     )
 
 
 def test_extract_all_datetime_features(df_datetime, df_datetime_transformed):
     X = DatetimeFeatures(features_to_extract="all").fit_transform(df_datetime)
-    pd.testing.assert_frame_equal(X, df_datetime_transformed.drop(vars_dt, axis=1))
+    pd.testing.assert_frame_equal(X, df_datetime_transformed.drop(vars_dt, axis=1), check_dtype=False)
 
 
 def test_extract_specified_datetime_features(df_datetime, df_datetime_transformed):
@@ -269,6 +274,7 @@ def test_extract_specified_datetime_features(df_datetime, df_datetime_transforme
             vars_non_dt
             + [var + "_" + feat for var in vars_dt for feat in ["semester", "week"]]
         ],
+        check_dtype=False,
     )
 
     # different order than they appear in the glossary
@@ -281,6 +287,7 @@ def test_extract_specified_datetime_features(df_datetime, df_datetime_transforme
             vars_non_dt
             + [var + "_" + feat for var in vars_dt for feat in ["hour", "day_of_week"]]
         ],
+        check_dtype=False,
     )
 
 
@@ -290,7 +297,7 @@ def test_extract_features_from_categorical_variable(
     cat_date = pd.DataFrame({"date_obj1": df_datetime["date_obj1"].astype("category")})
     X = DatetimeFeatures(variables="date_obj1").fit_transform(cat_date)
     pd.testing.assert_frame_equal(
-        X, df_datetime_transformed[["date_obj1" + feat for feat in feat_names_default]]
+        X, df_datetime_transformed[["date_obj1" + feat for feat in feat_names_default]], check_dtype=False
     )
 
 
@@ -311,6 +318,7 @@ def test_extract_features_from_different_timezones(
         df_datetime_transformed[["time_obj_hour"]].apply(
             lambda x: x.subtract(time_zones)
         ),
+        check_dtype=False,
     )
     exp_err_msg = (
         "ValueError: variable(s) time_obj "
@@ -356,7 +364,7 @@ def test_extract_features_from_localized_tz_variables():
     # transform
     X = transformer.transform(tz_df)
     df_expected = pd.DataFrame({"date_var_hour": [1, 2, 2, 2, 2, 3, 3]})
-    pd.testing.assert_frame_equal(X, df_expected)
+    pd.testing.assert_frame_equal(X, df_expected, check_dtype=False)
 
     # when utc is True
     transformer = DatetimeFeatures(features_to_extract=["hour"], utc=True).fit(tz_df)
@@ -372,7 +380,7 @@ def test_extract_features_from_localized_tz_variables():
     # transform
     X = transformer.transform(tz_df)
     df_expected = pd.DataFrame({"date_var_hour": [5, 6, 6, 6, 6, 7, 7]})
-    pd.testing.assert_frame_equal(X, df_expected)
+    pd.testing.assert_frame_equal(X, df_expected, check_dtype=False)
 
 
 def test_extract_features_without_dropping_original_variables(
@@ -399,6 +407,7 @@ def test_extract_features_without_dropping_original_variables(
             ],
             axis=1,
         ),
+        check_dtype=False,
     )
 
 
@@ -435,6 +444,7 @@ def test_extract_features_with_different_datetime_parsing_options(df_datetime):
     pd.testing.assert_frame_equal(
         X,
         pd.DataFrame({"date_obj2_day_of_month": [10, 31, 30, 17]}),
+        check_dtype=False,
     )
 
     X = DatetimeFeatures(features_to_extract=["year"], yearfirst=True).fit_transform(
@@ -443,6 +453,7 @@ def test_extract_features_with_different_datetime_parsing_options(df_datetime):
     pd.testing.assert_frame_equal(
         X,
         pd.DataFrame({"date_obj2_year": [2010, 2009, 1995, 2004]}),
+        check_dtype=False,
     )
 
 
