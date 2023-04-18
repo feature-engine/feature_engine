@@ -217,7 +217,7 @@ def test_extract_datetime_features_from_specified_variables(
                 for feat in feat_names_default
             ]
         ],
-        check_dtype=False
+        check_dtype=False,
     )
 
     # multiple datetime variables in different order than they appear in the df
@@ -261,7 +261,9 @@ def test_extract_datetime_features_from_specified_variables(
 
 def test_extract_all_datetime_features(df_datetime, df_datetime_transformed):
     X = DatetimeFeatures(features_to_extract="all").fit_transform(df_datetime)
-    pd.testing.assert_frame_equal(X, df_datetime_transformed.drop(vars_dt, axis=1), check_dtype=False)
+    pd.testing.assert_frame_equal(
+        X, df_datetime_transformed.drop(vars_dt, axis=1), check_dtype=False
+    )
 
 
 def test_extract_specified_datetime_features(df_datetime, df_datetime_transformed):
@@ -297,7 +299,9 @@ def test_extract_features_from_categorical_variable(
     cat_date = pd.DataFrame({"date_obj1": df_datetime["date_obj1"].astype("category")})
     X = DatetimeFeatures(variables="date_obj1").fit_transform(cat_date)
     pd.testing.assert_frame_equal(
-        X, df_datetime_transformed[["date_obj1" + feat for feat in feat_names_default]], check_dtype=False
+        X,
+        df_datetime_transformed[["date_obj1" + feat for feat in feat_names_default]],
+        check_dtype=False,
     )
 
 
@@ -468,8 +472,7 @@ def test_get_feature_names_out(df_datetime, df_datetime_transformed):
         transformer.get_feature_names_out(input_features=vars_dt)
 
     with pytest.raises(ValueError):
-        transformer.get_feature_names_out(input_features=["date_obj1"])\
-
+        transformer.get_feature_names_out(input_features=["date_obj1"])
     # default features from 1 variable
     transformer = DatetimeFeatures(variables="date_obj1")
     X = transformer.fit_transform(df_datetime)
