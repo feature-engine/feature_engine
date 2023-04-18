@@ -152,8 +152,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         # transform
         # for some reason reciprocal does not work with integers
-        X.loc[:, self.variables_] = X.loc[:, self.variables_].astype("float")
-        X.loc[:, self.variables_] = np.reciprocal(X.loc[:, self.variables_])
+        X.loc[:, self.variables_] = np.reciprocal(X.loc[:, self.variables_].astype("float"))
 
         return X
 
