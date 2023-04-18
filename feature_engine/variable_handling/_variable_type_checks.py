@@ -1,9 +1,10 @@
+import warnings
+
 import pandas as pd
 from pandas.core.dtypes.common import is_categorical_dtype as is_categorical
 from pandas.core.dtypes.common import is_datetime64_any_dtype as is_datetime
 from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
 from pandas.core.dtypes.common import is_object_dtype as is_object
-import warnings
 
 
 def _is_categorical_and_is_not_datetime(column: pd.Series) -> bool:
