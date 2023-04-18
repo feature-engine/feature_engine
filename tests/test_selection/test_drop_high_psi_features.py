@@ -94,30 +94,33 @@ def test_fit_attributes(df):
 def test_auto_threshold_calculation():
     """Check the results of 'auto' threshold calculation
     """
-    transformer = DropHighPSIFeatures(threshold='auto', bins=10)
+    transformer = DropHighPSIFeatures(threshold='auto', p_value = 0.001, bins=10)
     assert math.isclose(
         transformer._calculate_auto_threshold(
             N=500,
             M=500,
-            q=0.999
+            bins=10
+            # q=0.999
         ),
         0.11150865948502628
     )
-    transformer = DropHighPSIFeatures(threshold='auto', bins=32)
+    transformer = DropHighPSIFeatures(threshold='auto', p_value = 0.05, bins=32)
     assert math.isclose(
         transformer._calculate_auto_threshold(
             N=1000,
             M=1500,
-            q=0.95
+            bins=32
+            # q=0.95
         ),
         0.07497557213394188
     )
-    transformer = DropHighPSIFeatures(threshold='auto', bins=42)
+    transformer = DropHighPSIFeatures(threshold='auto', p_value=0.01, bins=42)
     assert math.isclose(
         transformer._calculate_auto_threshold(
             N=777,
             M=666,
-            q=0.99
+            bins=42
+            # q=0.99
         ),
         0.18111345503169146
     )
@@ -413,7 +416,8 @@ def test_calculation_df_split_with_different_variable_types(df_mixed_types):
     results = {}
     cut_offs = {}
     for split_col in df_mixed_types.columns:
-        test = DropHighPSIFeatures(split_frac=0.5, split_col=split_col)
+        variables = [x for x in ['A', 'B'] if x != split_col ]
+        test = DropHighPSIFeatures(split_frac=0.5, split_col=split_col, variables = variables)
         test.fit_transform(df_mixed_types)
         results[split_col] = test.psi_values_
         cut_offs[split_col] = test.cut_off_
@@ -428,7 +432,7 @@ def test_calculation_df_split_with_different_variable_types(df_mixed_types):
     assert cut_offs == expected_cut_offs
 
     # Test when no data frame with mixed data types when no split_col is provided.
-    test = DropHighPSIFeatures(split_frac=0.5)
+    test = DropHighPSIFeatures(split_frac=0.5, variables=['A', 'B'])
     test.fit_transform(df_mixed_types)
     assert test.psi_values_ == pytest.approx({"A": 8.283089355027482, "B": 0.0}, 12)
 
