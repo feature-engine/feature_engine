@@ -408,8 +408,6 @@ class DropHighPSIFeatures(BaseSelector):
             basis_distrib, test_distrib = self._observation_frequency_per_bin(
                 basis_discrete, test_discrete
             )
-            print("BASIS DIST:", basis_distrib)
-            print("TEST DISTRIB:", test_distrib)
 
             # Calculate the PSI value
             self.psi_values_[feature] = np.sum(
