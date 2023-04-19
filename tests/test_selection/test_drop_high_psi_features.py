@@ -1,5 +1,5 @@
 import math
-from datetime import date
+from datetime import date, datetime
 
 import numpy as np
 import pandas as pd
@@ -26,9 +26,16 @@ def df():
     colnames = ["var_" + str(i) for i in range(6)]
     X = pd.DataFrame(X, columns=colnames)
 
+    # Add a categorical column that does not drift
+    X["cat_1"] = ["A", "B"] * int(X.shape[0] / 2)
+
     # Add drifted features that will be dropped during transformation.
     X["drift_1"] = [number for number in range(X.shape[0])]
     X["drift_2"] = [number / 2 for number in range(X.shape[0])]
+    X["drift_cat_1"] = ["A" for _ in range(int(X.shape[0] / 2))] + [
+        "B" for _ in range(int(X.shape[0] / 2))
+    ]
+    X["drift_cat_1"] = X["drift_cat_1"].astype("category")
 
     return X
 
@@ -40,7 +47,7 @@ def df_mixed_types():
             "A": [it for it in range(0, 20)],
             "B": [1, 2, 2, 1] * 5,
             "C": ["A", "B", "D", "D"] * 5,
-            "time": [date(2019, 1, it + 1) for it in range(20)],
+            "time": [datetime(2019, 1, it + 1) for it in range(20)],
         }
     )
 
@@ -50,7 +57,6 @@ def df_mixed_types():
 # ====  test  main functionality of the class ====
 def test_fit_attributes(df):
     """Check the value of the fit attributes.
-
     The expected PSI values used in the assertion were determined using
     the Probatus package.
     ```
@@ -75,6 +81,8 @@ def test_fit_attributes(df):
         "var_5": 0.014717735595712466,
         "drift_1": 8.283089355027482,
         "drift_2": 8.283089355027482,
+        "cat_1": 0.0,
+        "drift_cat_1": 18.41883867587797,
     }
 
     assert transformer.variables_ == [
@@ -86,9 +94,11 @@ def test_fit_attributes(df):
         "var_5",
         "drift_1",
         "drift_2",
+        "cat_1",
+        "drift_cat_1",
     ]
     assert transformer.psi_values_ == pytest.approx(expected_psi, 12)
-    assert transformer.features_to_drop_ == ["drift_1", "drift_2"]
+    assert transformer.features_to_drop_ == ["drift_1", "drift_2", "drift_cat_1"]
 
 
 def test_auto_threshold_calculation():
@@ -136,7 +146,10 @@ def test_fit_attributes_auto(df):
         "var_5": 0.014717735595712466,
         "drift_1": 8.283089355027482,
         "drift_2": 8.283089355027482,
+        "cat_1": 0.0,
+        "drift_cat_1": 18.41883867587797,
     }
+
     assert transformer.variables_ == [
         "var_0",
         "var_1",
@@ -146,9 +159,11 @@ def test_fit_attributes_auto(df):
         "var_5",
         "drift_1",
         "drift_2",
+        "cat_1",
+        "drift_cat_1",
     ]
     assert transformer.psi_values_ == pytest.approx(expected_psi, 12)
-    assert transformer.features_to_drop_ == ["drift_1", "drift_2"]
+    assert transformer.features_to_drop_ == ["drift_1", "drift_2", "drift_cat_1"]
 
 
 # ================ test init parameters =================
@@ -277,7 +292,7 @@ def test_missing_value_ignored(df):
     data = df.copy()
     data.iloc[15, data.columns.get_loc("var_3")] = np.nan
 
-    var_col = [col for col in data if "var" in col]
+    var_col = [col for col in data if "var" in col] + ["cat_1"]
 
     transformer = DropHighPSIFeatures(missing_values="ignore")
     transformed = transformer.fit_transform(data)
@@ -400,27 +415,35 @@ def test_calculation_df_split_with_different_variable_types(df_mixed_types):
     results = {}
     cut_offs = {}
     for split_col in df_mixed_types.columns:
-        variables = [x for x in ["A", "B"] if x != split_col]
-        test = DropHighPSIFeatures(
-            split_frac=0.5, split_col=split_col, variables=variables
-        )
+        test = DropHighPSIFeatures(split_frac=0.5, split_col=split_col)
         test.fit_transform(df_mixed_types)
         results[split_col] = test.psi_values_
         cut_offs[split_col] = test.cut_off_
 
-    assert results["A"] == pytest.approx({"B": 0.0}, 12)
-    assert results["B"] == pytest.approx({"A": 3.0375978817052403}, 12)
+    assert results["A"] == pytest.approx({"B": 0.0, "C": 0.1621860432432657}, 12)
+    assert results["B"] == pytest.approx(
+        {"A": 3.0375978817052403, "C": 8.515489752777954}, 12
+    )
     assert results["C"] == pytest.approx({"A": 2.27819841127893, "B": 0.0}, 12)
-    assert results["time"] == pytest.approx({"A": 8.283089355027482, "B": 0.0}, 12)
+    assert results["time"] == pytest.approx(
+        {"A": 8.283089355027482, "B": 0.0, "C": 0.1621860432432657}, 12
+    )
 
-    expected_cut_offs = {"A": 9.5, "B": 1.5, "C": "B", "time": date(2019, 1, 10)}
+    expected_cut_offs = {
+        "A": 9.5,
+        "B": 1.5,
+        "C": "B",
+        "time": np.datetime64(datetime(2019, 1, 10)),
+    }
 
     assert cut_offs == expected_cut_offs
 
     # Test when no data frame with mixed data types when no split_col is provided.
-    test = DropHighPSIFeatures(split_frac=0.5, variables=["A", "B"])
+    test = DropHighPSIFeatures(split_frac=0.5)
     test.fit_transform(df_mixed_types)
-    assert test.psi_values_ == pytest.approx({"A": 8.283089355027482, "B": 0.0}, 12)
+    assert test.psi_values_ == pytest.approx(
+        {"A": 8.283089355027482, "B": 0.0, "C": 0.1621860432432657}, 12
+    )
 
 
 # =========== tests for user entered cut_off values ===========
@@ -431,7 +454,7 @@ type_test = [
     ("B", 1, [0, 3, 4, 7, 8, 11, 12, 15, 16, 19]),
     ("C", ["B"], [1, 5, 9, 13, 17]),
     ("C", "B", [0, 1, 4, 5, 8, 9, 12, 13, 16, 17]),
-    ("time", date(2019, 1, 4), [0, 1, 2, 3]),
+    ("time", datetime(2019, 1, 4), [0, 1, 2, 3]),
 ]
 
 
@@ -484,7 +507,6 @@ split_distinct_test = [
 @pytest.mark.parametrize("col, expected_index", split_distinct_test)
 def test_split_distinct(col, expected_index):
     """Test the cut off for different data types.
-
     For columns B, C and time we have 6 distinct values, 5 appearing 20 times and
     1 appearing 100 times. A 50% split based on the number of values will result
     in 2 groups of 3. One has 60 appearances (in total) and the other has 140.
@@ -632,28 +654,30 @@ def test_observation_frequency_per_bin():
 
 def test_param_variable_definition(df):
     """Test defining the subset of features through the variable argument.
-
     Due to the small split_frac value, all variables will fail the PSI test, that is,
     the variables in the list will show a high PSI value and this will be removed.
-
     The aim of the test is to show that only those variables defined in the variable
     argument are examined.
     """
     #
-    select = DropHighPSIFeatures(variables=["var_1", "var_3", "var_5"], split_frac=0.01)
+    select = DropHighPSIFeatures(
+        variables=["var_1", "var_3", "var_5", "cat_1"], split_frac=0.01
+    )
     transformed_df = select.fit_transform(df)
 
-    assert select.variables == ["var_1", "var_3", "var_5"]
-    assert select.variables_ == ["var_1", "var_3", "var_5"]
-    assert list(select.psi_values_.keys()) == ["var_1", "var_3", "var_5"]
+    assert select.variables == ["var_1", "var_3", "var_5", "cat_1"]
+    assert select.variables_ == ["var_1", "var_3", "var_5", "cat_1"]
+    assert list(select.psi_values_.keys()) == ["var_1", "var_3", "var_5", "cat_1"]
     assert select.features_to_drop_ == ["var_1", "var_3", "var_5"]
 
     assert transformed_df.columns.to_list() == [
         "var_0",
         "var_2",
         "var_4",
+        "cat_1",
         "drift_1",
         "drift_2",
+        "drift_cat_1",
     ]
 
 
@@ -664,7 +688,7 @@ def test_transform_standard(df):
     transformed = test.transform(df)
 
     # Check the features to drop
-    assert test.features_to_drop_ == ["drift_1", "drift_2"]
+    assert test.features_to_drop_ == ["drift_1", "drift_2", "drift_cat_1"]
 
     # Check the transformed dataframe
     pd.testing.assert_frame_equal(
