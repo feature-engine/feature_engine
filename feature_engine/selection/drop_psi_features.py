@@ -7,24 +7,36 @@ import scipy.stats as stats
 from pandas.api.types import is_numeric_dtype
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring, _n_features_in_docstring)
-from feature_engine._docstrings.init_parameters.selection import \
-    _confirm_variables_docstring
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
+from feature_engine._docstrings.init_parameters.selection import (
+    _confirm_variables_docstring,
+)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import (_check_contains_inf,
-                                             _check_contains_na, check_X)
-from feature_engine.discretisation import (EqualFrequencyDiscretiser,
-                                           EqualWidthDiscretiser)
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na,
+    check_X,
+)
+from feature_engine.discretisation import (
+    EqualFrequencyDiscretiser,
+    EqualWidthDiscretiser,
+)
 from feature_engine.selection._docstring import (
-    _get_support_docstring, _variables_all_docstring,
-    _variables_attribute_docstring)
+    _get_support_docstring,
+    _variables_all_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import \
-    _check_init_parameter_variables
-from feature_engine.variable_handling.variable_type_selection import \
-    find_categorical_and_numerical_variables
+from feature_engine.variable_handling._init_parameter_checks import (
+    _check_init_parameter_variables,
+)
+from feature_engine.variable_handling.variable_type_selection import (
+    find_categorical_and_numerical_variables,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -157,6 +169,12 @@ class DropHighPSIFeatures(BaseSelector):
         Takes values 'raise' or 'ignore'. If 'ignore', missing values will be dropped
         when determining the PSI for that particular feature. If 'raise' the transformer
         will raise an error and features will not be selected.
+
+    p_value: float
+        This variable determines the p-value to test the null hypothesis that there is
+        no feature drift: in that case, the PSI-value approximates a random variable
+        that follows a chi-square distribution. See [1] for details. The variable is
+        used only if threshold is set to 'auto'.
 
     {variables}
 
@@ -309,6 +327,9 @@ class DropHighPSIFeatures(BaseSelector):
                     f"or choose another splitting criteria."
                 )
 
+        if not isinstance(p_value, float):
+            raise ValueError(f"p_value must be a float. Got {p_value} instead.")
+
         super().__init__(confirm_variables)
 
         # Check the variables before assignment.
@@ -345,12 +366,12 @@ class DropHighPSIFeatures(BaseSelector):
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
 
-        # # find variables or check those entered are present in the dataframe
+        # find variables or check those entered are present in the dataframe
         (
-            self.cat_variables_,
-            self.num_variables_,
+            cat_variables_,
+            num_variables_,
         ) = find_categorical_and_numerical_variables(X, self.variables_)
-        self.variables_ = self.num_variables_ + self.cat_variables_
+        self.variables_ = num_variables_ + cat_variables_
 
         # Remove the split_col from the variables list. It might be added if the
         # variables are not defined at initialization.
@@ -402,7 +423,7 @@ class DropHighPSIFeatures(BaseSelector):
             elif feature in self.cat_variables_:
                 basis_discrete = basis_df[[feature]]
                 test_discrete = test_df[[feature]]
-                n_bins = X[[feature]].nunique()[0]
+                n_bins = X[feature].nunique()
 
             # Determine percentage of observations per bin
             basis_distrib, test_distrib = self._observation_frequency_per_bin(
@@ -552,7 +573,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         Parameters
         ----------
-        split_column : pd.Series.
+        split_column: pd.Series.
             Series for which the nth quantile will be computed.
 
         Returns
@@ -592,7 +613,17 @@ class DropHighPSIFeatures(BaseSelector):
         B = number of bins/categories,
         N = size of basis dataset,
         M = size of test dataset.
-        See formula (5.2) from reference.
+        See formula (5.2) from reference [1] in the class doc string.
+
+        Parameters
+        ----------
+        N: float or int
+        M: float or int
+        bins: int
+
+        Returns
+        -------
+        float
         """
         return stats.chi2.ppf(1 - self.p_value, bins - 1) * (1.0 / N + 1.0 / M)
 
