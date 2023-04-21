@@ -145,7 +145,15 @@ class DropHighPSIFeatures(BaseSelector):
         feature will be dropped. The most common threshold values are 0.25 (large shift)
         and 0.10 (medium shift).
         If 'auto', the threshold will be calculated based on the size of the base and
-        target dataset and the number of bins.
+        target dataset and the number of bins as
+                threshold = χ2(q, B−1) × (1/N + 1/M)
+        where
+        q = quantile of the distribution (or 1 - p-value),
+        B = number of bins/categories,
+        N = size of basis dataset,
+        M = size of test dataset.
+        See formula (5.2) from reference [1] in the class doc string.
+
 
     bins: int, default = 10
         Number of bins or intervals. For continuous features with good value spread, 10
@@ -170,7 +178,7 @@ class DropHighPSIFeatures(BaseSelector):
         when determining the PSI for that particular feature. If 'raise' the transformer
         will raise an error and features will not be selected.
 
-    p_value: float
+    p_value: float, default = 0.001
         This variable determines the p-value to test the null hypothesis that there is
         no feature drift: in that case, the PSI-value approximates a random variable
         that follows a chi-square distribution. See [1] for details. The variable is
@@ -381,7 +389,7 @@ class DropHighPSIFeatures(BaseSelector):
         if self.missing_values == "raise":
             # check if dataset contains na or inf
             _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.num_variables_)
+            _check_contains_inf(X, num_variables_)
 
         # Split the dataframe into basis and test.
         basis_df, test_df = self._split_dataframe(X)
@@ -404,7 +412,7 @@ class DropHighPSIFeatures(BaseSelector):
             test_df, basis_df = basis_df, test_df
 
         # set up the discretizer for numerical variables
-        if len(self.num_variables_) > 0:
+        if len(num_variables_) > 0:
             if self.strategy == "equal_width":
                 bucketer = EqualWidthDiscretiser(bins=self.bins)
             else:
@@ -416,11 +424,11 @@ class DropHighPSIFeatures(BaseSelector):
 
         for feature in self.variables_:
             # Bin the features if it is numerical and determine number of bins
-            if feature in self.num_variables_:
+            if feature in num_variables_:
                 basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
                 test_discrete = bucketer.transform(test_df[[feature]].dropna())
                 n_bins = self.bins
-            elif feature in self.cat_variables_:
+            elif feature in cat_variables_:
                 basis_discrete = basis_df[[feature]]
                 test_discrete = test_df[[feature]]
                 n_bins = X[feature].nunique()
