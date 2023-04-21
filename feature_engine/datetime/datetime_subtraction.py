@@ -318,7 +318,7 @@ class DatetimeSubtraction(BaseCreation):
             new_df[new_varnames] = (
                 dt_df[self.variables_]
                 .sub(dt_df[reference], axis=0)
-                .apply(lambda s: s / np.timedelta64(1, self.output_unit))
+                .div(np.timedelta64(1, self.output_unit).astype("timedelta64[ns]"))
             )
 
         if self.new_variables_names is not None:
