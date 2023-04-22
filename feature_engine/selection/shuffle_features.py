@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.base import is_classifier
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import check_cv, cross_validate
-from sklearn.utils.validation import check_random_state
+from sklearn.utils.validation import check_random_state, _check_sample_weight
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -185,7 +185,12 @@ class SelectByShuffling(BaseSelector):
         self.cv = cv
         self.random_state = random_state
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series,
+        sample_weight: Union[np.array, pd.Series, List] = None,
+    ):
         """
         Find the important features.
 
@@ -193,8 +198,12 @@ class SelectByShuffling(BaseSelector):
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
            The input dataframe.
+
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights. If None, then samples are equally weighted.
         """
 
         X, y = check_X_y(X, y)
@@ -202,6 +211,9 @@ class SelectByShuffling(BaseSelector):
         # reset the index
         X = X.reset_index(drop=True)
         y = y.reset_index(drop=True)
+
+        if sample_weight is not None:
+            sample_weight = _check_sample_weight(sample_weight, X)
 
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
@@ -220,6 +232,7 @@ class SelectByShuffling(BaseSelector):
             cv=self.cv,
             return_estimator=True,
             scoring=self.scoring,
+            fit_params={"sample_weight": sample_weight},
         )
 
         # store initial model performance
