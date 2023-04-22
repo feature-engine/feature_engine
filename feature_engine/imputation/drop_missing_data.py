@@ -205,7 +205,7 @@ class DropMissingData(BaseImputer):
             idx = pd.isnull(X[self.variables_]).mean(axis=1) >= self.threshold
             idx = idx[idx]
         else:
-            idx = pd.isnull(X[self.variables_]).any(1)
+            idx = pd.isnull(X[self.variables_]).any(axis=1)
             idx = idx[idx]
 
         return X.loc[idx.index, :]

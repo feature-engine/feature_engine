@@ -380,8 +380,10 @@ def test_multiple_windows(df_time):
     X = df_time.copy()
     num_vars = ["ambient_temp", "module_temp", "irradiation"]
     tmp = X[num_vars].rolling(2).agg(["sum", "mean"]).shift(periods=15, freq="min")
+    tmp.columns = tmp.columns.droplevel()
     X_tr = X.merge(tmp, left_index=True, right_index=True, how="left")
     tmp = X[num_vars].rolling(3).agg(["sum", "mean"]).shift(periods=15, freq="min")
+    tmp.columns = tmp.columns.droplevel()
     X_tr = X_tr.merge(tmp, left_index=True, right_index=True, how="left")
     X_tr.columns = transformer.get_feature_names_out()
 
@@ -404,6 +406,7 @@ def test_multiple_windows(df_time):
         .agg(["sum", "mean"])
         .shift(freq="30min")
     )
+    tmp.columns = tmp.columns.droplevel()
     X_tr = X.merge(tmp, left_index=True, right_index=True, how="left")
     tmp = (
         X[["ambient_temp", "irradiation"]]
@@ -411,6 +414,7 @@ def test_multiple_windows(df_time):
         .agg(["sum", "mean"])
         .shift(freq="30min")
     )
+    tmp.columns = tmp.columns.droplevel()
     X_tr = X_tr.merge(tmp, left_index=True, right_index=True, how="left")
     X_tr.columns = transformer.get_feature_names_out()
 
