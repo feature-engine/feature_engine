@@ -117,7 +117,6 @@ def test_classic_binary_operation(df_vartypes):
         variables=["Age"],
         reference=["Marks"],
         func=["sub", "div", "add", "mul"],
-        fill_value=None,
     )
 
     X = transformer.fit_transform(df_vartypes)
@@ -166,7 +165,6 @@ def test_operations_with_multiple_variables(df_vartypes):
         variables=["Age", "Marks"],
         reference=["Age", "Marks"],
         func=["sub"],
-        fill_value=None,
     )
 
     X = transformer.fit_transform(df_vartypes)
@@ -193,7 +191,6 @@ def test_multiple_operations_with_multiple_variables(df_vartypes):
         variables=["Age", "Marks"],
         reference=["Age", "Marks"],
         func=["sub", "add"],
-        fill_value=None,
     )
 
     X = transformer.fit_transform(df_vartypes)
@@ -222,7 +219,6 @@ def test_multiple_operations_with_multiple_variables(df_vartypes):
         variables=["Age", "Marks"],
         reference=["Age", "Marks"],
         func=["add", "sub"],
-        fill_value=None,
     )
 
     X = transformer.fit_transform(df_vartypes)
@@ -257,7 +253,6 @@ def test_when_missing_values_is_ignore(df_vartypes):
         variables=["Age", "Marks"],
         reference=["Age", "Marks"],
         func=["sub"],
-        fill_value=None,
         missing_values="ignore",
     )
 
@@ -289,7 +284,6 @@ def test_error_when_null_values_in_variable(df_vartypes):
         variables=["Age", "Marks"],
         reference=["Age", "Marks"],
         func=["add", "mul"],
-        fill_value=None,
         missing_values="raise",
     )
 
@@ -308,7 +302,6 @@ def test_when_df_cols_are_integers(df_vartypes):
     transformer = RelativeFeatures(
         variables=[2, 3],
         reference=[2, 3],
-        fill_value=None,
         func=["sub", "add"],
     )
 
@@ -344,7 +337,6 @@ def test_error_when_division_by_zero(_func, df_vartypes):
     transformer = RelativeFeatures(
         variables=["Age"],
         reference=["Marks"],
-        fill_value=None,
         func=_func,
     )
     transformer.fit(df_vartypes)
@@ -358,7 +350,6 @@ def test_get_feature_names_out(_drop, df_vartypes):
         variables=["Age", "Marks"],
         reference=["Age", "Marks"],
         func=["add", "sub"],
-        fill_value=None,
         drop_original=_drop,
     )
     varnames = [
