@@ -415,15 +415,17 @@ def test_get_feature_names_out_raises_error_when_wrong_param(
     with pytest.raises(ValueError):
         transformer.get_feature_names_out(input_features=_input_features)
 
-
-def test_transformer_fill_values_when_division_by_zero(df_vartypes):
+@pytest.mark.parametrize("_fill_value", [111.111, 999])
+def test_transformer_fill_values_when_division_by_zero(
+        _fill_value, df_vartypes
+):
     df_zero = df_vartypes.copy()
     df_zero.loc[2, "Marks"] = 0
 
     transformer = RelativeFeatures(
         variables=["Age"],
         reference=["Marks"],
-        fill_value=111.111,
+        fill_value=_fill_value,
         func=["div"],
     )
 
@@ -436,7 +438,7 @@ def test_transformer_fill_values_when_division_by_zero(df_vartypes):
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0, 0.6],
             "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
-            "Age_div_Marks": [22.2222, 26.25, 111.111, 30.0],
+            "Age_div_Marks": [22.2222, 26.25, _fill_value, 30.0],
         }
     )
 
