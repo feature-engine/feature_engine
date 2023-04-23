@@ -4,10 +4,12 @@ import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring, _n_features_in_docstring,
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
     _variables_attribute_docstring)
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _drop_original_docstring, _missing_values_docstring,
+    _drop_original_docstring,
+    _missing_values_docstring,
     _variables_numerical_docstring)
 from feature_engine._docstrings.methods import (_fit_not_learn_docstring,
                                                 _fit_transform_docstring,
@@ -73,9 +75,8 @@ class RelativeFeatures(BaseCreation):
         'floordiv', 'mod', 'pow'.
 
     fill_value: int, float, string, None
-        When dividing by zero, this value is used in place of infinity. If the value
-        remainding the default, which is None, then an error will be raised when
-        dividing by zero.
+        When dividing by zero, this value is used in place of infinity. If non, then an error
+        will be raised when dividing by zero.
 
     {missing_values}
 
@@ -128,7 +129,7 @@ class RelativeFeatures(BaseCreation):
         variables: List[Union[str, int]],
         reference: List[Union[str, int]],
         func: List[str],
-        fill_value: Union[int, float, str, None] = None,
+        fill_value: Union[int, float, None] = None,
         missing_values: str = "ignore",
         drop_original: bool = False,
     ) -> None:
@@ -165,11 +166,11 @@ class RelativeFeatures(BaseCreation):
             )
 
         if (
-            not isinstance(fill_value, (float, int, str))
+            not isinstance(fill_value, (float, int))
             and fill_value is not None
         ):
             raise ValueError(
-                "fill_value must be a float, integer, or string. "
+                "fill_value must be a float, integer or None. "
                 f"Got {fill_value} instead."
             )
         super().__init__(missing_values, drop_original)

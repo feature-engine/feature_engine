@@ -53,7 +53,7 @@ def test_error_if_func_not_supported(_func):
         )
 
 
-@pytest.mark.parametrize("_fill_value", [(2, 3.3), ["test"]])
+@pytest.mark.parametrize("_fill_value", [(2, 3.3), ["test"], "python"])
 def test_error_if_fill_value_not_permitted(_fill_value):
     with pytest.raises(ValueError):
         RelativeFeatures(
@@ -432,7 +432,7 @@ def test_transformer_fill_values_when_division_by_zero(df_vartypes):
     transformer = RelativeFeatures(
         variables=["Age"],
         reference=["Marks"],
-        fill_value="test_fill",
+        fill_value=111.111,
         func=["div"],
     )
 
@@ -445,9 +445,8 @@ def test_transformer_fill_values_when_division_by_zero(df_vartypes):
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0, 0.6],
             "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
-            "Age_div_Marks": [22.2222, 26.25, "test_fill", 30.0],
+            "Age_div_Marks": [22.2222, 26.25, 111.111, 30.0],
         }
     )
-    ref["Marks"] = ref["Marks"].astype("object")
 
     pd.testing.assert_frame_equal(X, ref)
