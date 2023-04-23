@@ -329,7 +329,7 @@ def test_when_df_cols_are_integers(df_vartypes):
 
 
 @pytest.mark.parametrize("_func", [["div"], ["truediv"], ["floordiv"], ["mod"]])
-def test_error_when_division_by_zero(_func, df_vartypes):
+def test_error_when_division_by_zero_and_fill_value_is_none(_func, df_vartypes):
 
     df_zero = df_vartypes.copy()
     df_zero.loc[1, "Marks"] = 0
@@ -414,6 +414,7 @@ def test_get_feature_names_out_raises_error_when_wrong_param(
 
     with pytest.raises(ValueError):
         transformer.get_feature_names_out(input_features=_input_features)
+
 
 @pytest.mark.parametrize("_fill_value", [111.111, 999])
 def test_transformer_fill_values_when_division_by_zero(

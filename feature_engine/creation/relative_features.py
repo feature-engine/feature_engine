@@ -75,8 +75,8 @@ class RelativeFeatures(BaseCreation):
         'floordiv', 'mod', 'pow'.
 
     fill_value: int, float, string, None
-        When dividing by zero, this value is used in place of infinity. If None, then an error
-        will be raised when dividing by zero.
+        When dividing by zero, this value is used in place of infinity. If None,
+        then an error will be raised when dividing by zero.
 
     {missing_values}
 
