@@ -379,12 +379,15 @@ class DropHighPSIFeatures(BaseSelector):
             cat_variables_,
             num_variables_,
         ) = find_categorical_and_numerical_variables(X, self.variables_)
-        self.variables_ = num_variables_ + cat_variables_
 
         # Remove the split_col from the variables list. It might be added if the
         # variables are not defined at initialization.
-        if self.split_col in self.variables_:
-            self.variables_.remove(self.split_col)
+        if self.split_col in cat_variables_:
+            cat_variables_.remove(self.split_col)
+        if self.split_col in num_variables_:
+            num_variables_.remove(self.split_col)
+
+        self.variables_ = num_variables_ + cat_variables_
 
         if self.missing_values == "raise":
             # check if dataset contains na or inf
@@ -411,21 +414,15 @@ class DropHighPSIFeatures(BaseSelector):
         if self.switch:
             test_df, basis_df = basis_df, test_df
 
-<<<<<<< HEAD
         # Set up parameters for numerical features
         if len(num_variables_) > 0:
             n_bins_num = self.bins
 
             # Set up the discretizer for numerical features
-=======
-        # set up the discretizer for numerical variables
-        if len(num_variables_) > 0:
->>>>>>> b0f68780dbe682204b5365ab2725134455a04fed
             if self.strategy == "equal_width":
                 bucketer = EqualWidthDiscretiser(bins=self.bins)
             else:
                 bucketer = EqualFrequencyDiscretiser(q=self.bins)
-<<<<<<< HEAD
 
             # Set up the threshold for numerical features
             if self.threshold == "auto":
@@ -439,33 +436,18 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Set up the generic threshold for categorical features if used
         if len(cat_variables_) > 0:
-            if self.threshold == "auto":
+            if self.threshold != "auto":
                 threshold_cat = self.threshold
-=======
->>>>>>> b0f68780dbe682204b5365ab2725134455a04fed
 
         # Compute the PSI by looping over the features
         self.psi_values_ = {}
         self.features_to_drop_ = []
 
-<<<<<<< HEAD
         # Compute PSI for numerical features
         for feature in num_variables_:
             # Bin the features if it is numerical and determine number of bins
             basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
             test_discrete = bucketer.transform(test_df[[feature]].dropna())
-=======
-        for feature in self.variables_:
-            # Bin the features if it is numerical and determine number of bins
-            if feature in num_variables_:
-                basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
-                test_discrete = bucketer.transform(test_df[[feature]].dropna())
-                n_bins = self.bins
-            elif feature in cat_variables_:
-                basis_discrete = basis_df[[feature]]
-                test_discrete = test_df[[feature]]
-                n_bins = X[feature].nunique()
->>>>>>> b0f68780dbe682204b5365ab2725134455a04fed
 
             # Determine percentage of observations per bin
             basis_distrib, test_distrib = self._observation_frequency_per_bin(
@@ -477,18 +459,6 @@ class DropHighPSIFeatures(BaseSelector):
                 (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
             )
 
-<<<<<<< HEAD
-=======
-            # Determine the appropriate threshold
-            if self.threshold == "auto":
-                threshold = self._calculate_auto_threshold(
-                    basis_df.shape[0],
-                    test_df.shape[0],
-                    n_bins,
-                )
-            else:
-                threshold = self.threshold
->>>>>>> b0f68780dbe682204b5365ab2725134455a04fed
             # Assess if feature should be dropped
             if self.psi_values_[feature] > threshold_num:
                 self.features_to_drop_.append(feature)
