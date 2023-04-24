@@ -411,27 +411,40 @@ class DropHighPSIFeatures(BaseSelector):
         if self.switch:
             test_df, basis_df = basis_df, test_df
 
-        # set up the discretizer for numerical variables
+        # Set up parameters for numerical features
         if len(num_variables_) > 0:
+            n_bins_num = self.bins
+
+            # Set up the discretizer for numerical features
             if self.strategy == "equal_width":
                 bucketer = EqualWidthDiscretiser(bins=self.bins)
             else:
                 bucketer = EqualFrequencyDiscretiser(q=self.bins)
 
+            # Set up the threshold for numerical features
+            if self.threshold == "auto":
+                threshold_num = self._calculate_auto_threshold(
+                    basis_df.shape[0],
+                    test_df.shape[0],
+                    n_bins_num,
+                )
+            else:
+                threshold_num = self.threshold
+
+        # Set up the generic threshold for categorical features if used
+        if len(cat_variables_) > 0:
+            if self.threshold == "auto":
+                threshold_cat = self.threshold
+
         # Compute the PSI by looping over the features
         self.psi_values_ = {}
         self.features_to_drop_ = []
 
-        for feature in self.variables_:
+        # Compute PSI for numerical features
+        for feature in num_variables_:
             # Bin the features if it is numerical and determine number of bins
-            if feature in num_variables_:
-                basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
-                test_discrete = bucketer.transform(test_df[[feature]].dropna())
-                n_bins = self.bins
-            elif feature in cat_variables_:
-                basis_discrete = basis_df[[feature]]
-                test_discrete = test_df[[feature]]
-                n_bins = X[feature].nunique()
+            basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
+            test_discrete = bucketer.transform(test_df[[feature]].dropna())
 
             # Determine percentage of observations per bin
             basis_distrib, test_distrib = self._observation_frequency_per_bin(
@@ -443,17 +456,36 @@ class DropHighPSIFeatures(BaseSelector):
                 (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
             )
 
-            # Determine the appropriate threshold
+            # Assess if feature should be dropped
+            if self.psi_values_[feature] > threshold_num:
+                self.features_to_drop_.append(feature)
+
+        # Compute the PSI for categorical features
+        for feature in cat_variables_:
+            basis_discrete = basis_df[[feature]]
+            test_discrete = test_df[[feature]]
+
+            # Determine percentage of observations per bin
+            basis_distrib, test_distrib = self._observation_frequency_per_bin(
+                basis_discrete, test_discrete
+            )
+
+            # Calculate the PSI value
+            self.psi_values_[feature] = np.sum(
+                (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
+            )
+
+            # Determine the appropriate threshold for the categorical feature
             if self.threshold == "auto":
-                threshold = self._calculate_auto_threshold(
+                n_bins_cat = X[feature].nunique()
+                threshold_cat = self._calculate_auto_threshold(
                     basis_df.shape[0],
                     test_df.shape[0],
-                    n_bins,
+                    n_bins_cat,
                 )
-            else:
-                threshold = self.threshold
+
             # Assess if feature should be dropped
-            if self.psi_values_[feature] > threshold:
+            if self.psi_values_[feature] > threshold_cat:
                 self.features_to_drop_.append(feature)
 
         # save input features
