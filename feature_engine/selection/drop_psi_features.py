@@ -156,9 +156,9 @@ class DropHighPSIFeatures(BaseSelector):
                 [1, 1, 1, 1] and [2, 2, 3, 4]. This involves that 2 dataframes with 4
                 observations each are used for the PSI calculations.
             - `split_distinct=True` computes the vector of unique values in `split_col`
-                ([1, 2, 3, 4]) and splits that vector in two equal parts: [1, 2] and [3, 4].
-                The number of observations in the two dataframes used for the PSI calculations
-                is respectively 6 ([1, 1, 1, 1, 2, 2]) and 2 ([3, 4]).
+                ([1, 2, 3, 4]) and splits that vector in two equal parts: [1, 2] and
+                [3, 4]. The number of observations in the two dataframes used for the
+                PSI calculations is respectively 6 ([1, 1, 1, 1, 2, 2]) and 2 ([3, 4]).
 
     cut_off: int, float, date or list, default=None
         Threshold to split the dataset based on the `split_col` variable. If int, float
