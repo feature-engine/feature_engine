@@ -1,6 +1,5 @@
 from typing import List, Union
 
-import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
@@ -225,20 +224,6 @@ class RelativeFeatures(BaseCreation):
             X[varname] = X[self.variables].sub(X[reference], axis=0)
         return X
 
-    def _div(self, X):
-        for reference in self.reference:
-            contains_zero = (X[reference] == 0).any()
-            if self.fill_value is None and contains_zero:
-                raise ValueError(
-                    "Some of the reference variables contain 0 as values. Check and "
-                    "remove those before using this transformer."
-                )
-            varname = [f"{var}_div_{reference}" for var in self.variables]
-            X[varname] = X[self.variables].div(X[reference], axis=0)
-            if contains_zero:
-                X.replace([-np.inf, np.inf], self.fill_value, inplace=True)
-        return X
-
     def _add(self, X):
         for reference in self.reference:
             varname = [f"{var}_add_{reference}" for var in self.variables]
@@ -251,47 +236,60 @@ class RelativeFeatures(BaseCreation):
             X[varname] = X[self.variables].mul(X[reference], axis=0)
         return X
 
-    def _truediv(self, X):
-
+    def _div(self, X):
         for reference in self.reference:
-            contains_zero = (X[reference] == 0).any()
+            zeros_ix, contains_zero = self._find_zeroes_in_reference(X, reference)
+
             if self.fill_value is None and contains_zero:
-                raise ValueError(
-                    "Some of the reference variables contain 0 as values. Check and "
-                    "remove those before using this transformer."
-                )
+                self._raise_error_when_zero_in_denominator()
+
+            varname = [f"{var}_div_{reference}" for var in self.variables]
+            X[varname] = X[self.variables].div(X[reference], axis=0)
+
+            if contains_zero:
+                X.loc[zeros_ix, varname] = self.fill_value
+        return X
+
+    def _truediv(self, X):
+        for reference in self.reference:
+            zeros_ix, contains_zero = self._find_zeroes_in_reference(X, reference)
+
+            if self.fill_value is None and contains_zero:
+                self._raise_error_when_zero_in_denominator()
+
             varname = [f"{var}_truediv_{reference}" for var in self.variables]
             X[varname] = X[self.variables].truediv(X[reference], axis=0)
+
             if contains_zero:
-                X.replace([-np.inf, np.inf], self.fill_value, inplace=True)
+                X.loc[zeros_ix, varname] = self.fill_value
         return X
 
     def _floordiv(self, X):
         for reference in self.reference:
-            contains_zero = (X[reference] == 0).any()
+            zeros_ix, contains_zero = self._find_zeroes_in_reference(X, reference)
+
             if self.fill_value is None and contains_zero:
-                raise ValueError(
-                    "Some of the reference variables contain 0 as values. Check and "
-                    "remove those before using this transformer."
-                )
+                self._raise_error_when_zero_in_denominator()
+
             varname = [f"{var}_floordiv_{reference}" for var in self.variables]
             X[varname] = X[self.variables].floordiv(X[reference], axis=0)
+
             if contains_zero:
-                X.replace([-np.inf, np.inf], self.fill_value, inplace=True)
+                X.loc[zeros_ix, varname] = self.fill_value
         return X
 
     def _mod(self, X):
         for reference in self.reference:
-            contains_zero = (X[reference] == 0).any()
+            zeros_ix, contains_zero = self._find_zeroes_in_reference(X, reference)
+
             if self.fill_value is None and contains_zero:
-                raise ValueError(
-                    "Some of the reference variables contain 0 as values. Check and "
-                    "remove those before using this transformer."
-                )
+                self._raise_error_when_zero_in_denominator()
+
             varname = [f"{var}_mod_{reference}" for var in self.variables]
             X[varname] = X[self.variables].mod(X[reference], axis=0)
+
             if contains_zero:
-                X.replace([np.nan], self.fill_value, inplace=True)
+                X.loc[zeros_ix, varname] = self.fill_value
         return X
 
     def _pow(self, X):
@@ -299,6 +297,18 @@ class RelativeFeatures(BaseCreation):
             varname = [f"{var}_pow_{reference}" for var in self.variables]
             X[varname] = X[self.variables].pow(X[reference], axis=0)
         return X
+
+    def _raise_error_when_zero_in_denominator(self):
+        raise ValueError(
+            "Some of the reference variables contain zeroes. Division by zero "
+            "does not exist. Replace zeros before using this transformer for division "
+            "or set `fill_value` to a number."
+        )
+
+    def _find_zeroes_in_reference(self, X, var):
+        zero_ix = X[var] == 0
+        zero_bool = (zero_ix).any()
+        return zero_ix, zero_bool
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""

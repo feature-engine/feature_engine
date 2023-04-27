@@ -359,12 +359,15 @@ def test_fill_values_when_division_by_zero(
 ):
     df_zero = df_vartypes.copy()
     df_zero.loc[2, "Marks"] = 0
+    df_zero.loc[1, "Age"] = np.nan
+    df_zero.loc[3, "Age"] = np.inf
 
     transformer = RelativeFeatures(
         variables=["Age"],
         reference=["Marks"],
         fill_value=_fill_value,
         func=_func,
+        missing_values="ignore",
     )
 
     X = transformer.fit_transform(df_zero)
@@ -372,6 +375,8 @@ def test_fill_values_when_division_by_zero(
     new_var = f"Age_{_func[0]}_Marks"
 
     assert X.loc[2, new_var] == _fill_value
+    np.testing.assert_equal(X.loc[1, "Age"], np.nan)
+    np.testing.assert_equal(X.loc[3, "Age"], np.inf)
 
 
 @pytest.mark.parametrize("_drop", [True, False])
