@@ -218,7 +218,7 @@ class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
                     "indicated in n_categories. Thus, all categories will be "
                     "considered frequent".format(var)
                 )
-                self.encoder_dict_[var] = X[var].unique()
+                self.encoder_dict_[var] = list(X[var].unique())
 
         self.variables_ = variables_
         self._get_feature_names_in(X)
