@@ -134,3 +134,21 @@ def test_automatic_variable_selection(df_test):
     ]
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_sample_weights():
+    X = pd.DataFrame(
+        dict(
+            x1=[1000, 2000, 1000, 1000, 2000, 3000],
+            x2=[1000, 2000, 1000, 1000, 2000, 3000],
+        )
+    )
+    y = pd.Series([1, 0, 0, 1, 1, 0])
+
+    sbs = SelectByShuffling(
+        RandomForestClassifier(random_state=42), cv=2, random_state=42
+    )
+
+    sample_weight = [1000, 2000, 1000, 1000, 2000, 3000]
+    sbs.fit_transform(X, y, sample_weight=sample_weight)
+    assert sbs.initial_model_performance_ == 0.125

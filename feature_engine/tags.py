@@ -14,6 +14,7 @@ def _return_tags():
             # The test aims to check that the check_X_y function from sklearn is
             # working, but we do not use that check, because we work with dfs.
             "check_transformer_data_not_an_array": "Ok to fail",
+            "check_sample_weights_not_an_array": "Ok to fail",
             # TODO: we probably need the test below!!
             "check_methods_sample_order_invariance": "Test does not work on dataframes",
             # TODO: we probably need the test below!!
