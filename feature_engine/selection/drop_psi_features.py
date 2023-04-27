@@ -375,8 +375,10 @@ class DropHighPSIFeatures(BaseSelector):
                     f"or choose another splitting criteria."
                 )
 
-        if not isinstance(p_value, float):
-            raise ValueError(f"p_value must be a float. Got {p_value} instead.")
+        if not isinstance(p_value, float) or p_value < 0 or p_value > 1:
+            raise ValueError(
+                f"p_value must be a float between 0 and 1. Got {p_value} instead."
+            )
 
         super().__init__(confirm_variables)
 

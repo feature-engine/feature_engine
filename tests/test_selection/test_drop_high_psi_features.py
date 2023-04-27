@@ -182,6 +182,7 @@ default_dict = {
     "min_pct_empty_bins": 0.0001,
     "missing_values": "raise",
     "variables": None,
+    "p_value": 0.001,
 }
 
 args_dict = {
@@ -196,6 +197,7 @@ args_dict = {
     "min_pct_empty_bins": 0.1,
     "missing_values": "ignore",
     "variables": ["chau", "adios"],
+    "p_value": 0.2,
 }
 
 init_dict = [(None, default_dict), (args_dict, args_dict)]
@@ -249,6 +251,12 @@ def test_init_value_error_is_raised():
 
     with pytest.raises(ValueError):
         DropHighPSIFeatures(min_pct_empty_bins=-1)
+
+
+@pytest.mark.parametrize("p_value", ["hola", -1, 10])
+def test_p_value_not_allowed(p_value):
+    with pytest.raises(ValueError):
+        DropHighPSIFeatures(p_value=p_value)
 
 
 # ================= test fit() functionality ==================
