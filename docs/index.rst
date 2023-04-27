@@ -267,4 +267,5 @@ Table of Contents
    contribute/index
    about/index
    whats_new/index
+   versions/index
    donate
