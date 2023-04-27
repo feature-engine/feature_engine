@@ -40,6 +40,8 @@ from feature_engine.variable_handling.variable_type_selection import (
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
+PSI = """PSI = sum ( (test_i - basis_i) x ln(test_i/basis_i) )""".rstrip()
+
 
 @Substitution(
     confirm_variables=_confirm_variables_docstring,
@@ -49,15 +51,41 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
     get_support=_get_support_docstring,
+    psi=PSI,
 )
 class DropHighPSIFeatures(BaseSelector):
     r"""
-    DropHighPSIFeatures drops features which Population Stability Index (PSI) value is
-    above a given threshold. The PSI of a numerical feature is an indication of the
-    shift in its distribution; a feature with high PSI could therefore be considered
+    DropHighPSIFeatures() drops features which Population Stability Index (PSI) is
+    above a given threshold.
+
+    The PSI is used to compare distributions. Higher PSI values mean greater changes in
+    a feature's distribution. Therefore, a feature with high PSI can be considered
     unstable.
 
-    A bigger PSI value indicates a bigger shift in the feature distribution.
+    To compute the PSI, DropHighPSIFeatures() splits the dataset in two: a basis and
+    a test set. Then, it compares the distribution of each feature between those sets.
+
+    To determine the PSI, continuous features are sorted into discrete intervals, and
+    then, the number of observations per interval are compared between the 2
+    distributions.
+
+    The PSI is calculated as:
+
+    {psi}
+
+    where `basis` and `test` are the 2 datasets, `i` refers to each interval, and then,
+    `test_i` and `basis_i` are the number of observations in interval i in each data
+    set.
+
+    The PSI has traditionally been used to assess changes in distributions of
+    continuous variables.
+
+    In version 1.7, we extended the functionality of DropHighPSIFeatures() to
+    calculate the PSI for categorical features as well. In this case, `i` is each
+    unique category, and `test_i` and `basis_i` are the number of observations in
+    category i.
+
+    **Threshold**
 
     Different thresholds can be used to assess the magnitude of the distribution shift
     according to the PSI value. The most commonly used thresholds are:
@@ -66,16 +94,22 @@ class DropHighPSIFeatures(BaseSelector):
     - Above 25%, the variable has experienced a major shift.
     - Between those two values, the shift is intermediate.
 
-    To compute the PSI the DropHighPSIFeatures splits the dataset in two:
+    **Data split**
 
-    First and foremost, the user should enter one variable which will be used to guide
-    the data split. This variable can be of any data type. If the user does not enter a
-    variable name, DropHighPSIFeatures will use the dataframe index.
+    To compute the PSI, DropHighPSIFeatures() splits the dataset in two: a basis and
+    a test set. Then, it compares the distribution of each feature between those sets.
 
-    Second, the user has the option to specify a proportion of observations to put in
-    each data set, or alternatively, provide a cut-off value.
+    There are various options to split a dataset:
 
-    If the user specifies a proportion through the `split_frac` parameter, the data will
+    First, you can indicate which variable should be used to guide the data split. This
+    variable can be of any data type. If you do not enter a variable name,
+    DropHighPSIFeatures() will use the dataframe index.
+
+    Next, you need to specify how that variable (or the index) should be used to split
+    the data. You can specify a proportion of observations to be put in each data set,
+    or alternatively, provide a cut-off value.
+
+    If you specify a proportion through the `split_frac` parameter, the data will
     be sorted to accommodate that proportion. If `split_frac` is 0.5, 50% of the
     observations will go to either basis or test sets. If `split_frac` is 0.6, 60% of
     the samples will go to the basis data set and the remaining 40% to the test set.
@@ -83,14 +117,13 @@ class DropHighPSIFeatures(BaseSelector):
     If `split_distinct` is True, the data will be sorted considering unique values in
     the selected variables. Check the parameter below for more details.
 
-    If the user defines a numeric cut-off value or a specific date using the `cut_off`
+    If you define a numeric cut-off value or a specific date using the `cut_off`
     parameter, the observations with value <= cut-off will go to the basis data set and
-    the remaining ones to the test set. For categorical values this means they are
-    sorted alphabetically and cut accordingly.
+    the remaining ones to the test set. If the variable used to guide the split is
+    categorical, its values are sorted alphabetically and cut accordingly.
 
-    If the user passes a list of values in the `cut-off`, the observations with the
-    values in the list, will go to the basis set, and the remaining ones to the test
-    set.
+    If you pass a list of values in the `cut-off`, the observations with the values in
+    the list, will go to the basis set, and the remaining ones to the test set.
 
     More details in the :ref:`User Guide <psi_selection>`.
 
@@ -118,13 +151,14 @@ class DropHighPSIFeatures(BaseSelector):
         instead of being applied to the whole vector of values. For example, if the
         values in `split_col` are [1, 1, 1, 1, 2, 2, 3, 4] and `split_frac` is
         0.5, we have the following:
-        - `split_distinct=False` splits the vector in two equally sized parts:
-        [1, 1, 1, 1] and [2, 2, 3, 4]. This involves that 2 dataframes with 4
-        observations each are used for the PSI calculations.
-        - `split_distinct=True` computes the vector of unique values in `split_col`
-        ([1, 2, 3, 4]) and splits that vector in two equal parts: [1, 2] and [3, 4].
-        The number of observations in the two dataframes used for the PSI calculations
-        is respectively 6 ([1, 1, 1, 1, 2, 2]) and 2 ([3, 4]).
+
+            - `split_distinct=False` splits the vector in two equally sized parts:
+                [1, 1, 1, 1] and [2, 2, 3, 4]. This involves that 2 dataframes with 4
+                observations each are used for the PSI calculations.
+            - `split_distinct=True` computes the vector of unique values in `split_col`
+                ([1, 2, 3, 4]) and splits that vector in two equal parts: [1, 2] and [3, 4].
+                The number of observations in the two dataframes used for the PSI calculations
+                is respectively 6 ([1, 1, 1, 1, 2, 2]) and 2 ([3, 4]).
 
     cut_off: int, float, date or list, default=None
         Threshold to split the dataset based on the `split_col` variable. If int, float
@@ -144,15 +178,19 @@ class DropHighPSIFeatures(BaseSelector):
         The threshold to drop a feature. If the PSI for a feature is >= threshold, the
         feature will be dropped. The most common threshold values are 0.25 (large shift)
         and 0.10 (medium shift).
-        If 'auto', the threshold will be calculated based on the size of the base and
-        target dataset and the number of bins as
+        If 'auto', the threshold will be calculated based on the size of the basis and
+        test dataset and the number of bins as:
+
                 threshold = χ2(q, B−1) × (1/N + 1/M)
-        where
-        q = quantile of the distribution (or 1 - p-value),
-        B = number of bins/categories,
-        N = size of basis dataset,
-        M = size of test dataset.
-        See formula (5.2) from reference [1] in the class doc string.
+
+        where:
+
+            - q = quantile of the distribution (or 1 - p-value),
+            - B = number of bins/categories,
+            - N = size of basis dataset,
+            - M = size of test dataset.
+
+        See formula (5.2) from reference [1].
 
 
     bins: int, default = 10
@@ -179,10 +217,10 @@ class DropHighPSIFeatures(BaseSelector):
         will raise an error and features will not be selected.
 
     p_value: float, default = 0.001
-        This variable determines the p-value to test the null hypothesis that there is
-        no feature drift: in that case, the PSI-value approximates a random variable
-        that follows a chi-square distribution. See [1] for details. The variable is
-        used only if threshold is set to 'auto'.
+        The p-value to test the null hypothesis that there is no feature drift. In that
+        case, the PSI-value approximates a random variable that follows a chi-square
+        distribution. See [1] for details. This parameter is used only if `threshold`
+        is set to 'auto'.
 
     {variables}
 
@@ -234,8 +272,10 @@ class DropHighPSIFeatures(BaseSelector):
 
     >>> import pandas as pd
     >>> from feature_engine.selection import DropHighPSIFeatures
-    >>> X = pd.DataFrame(dict(x1 = [1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    >>>                 x2 = [32,87,6,32,11,44,8,7,9,0,32,87,6,32,11,44,8,7,9,0]))
+    >>> X = pd.DataFrame(dict(
+    >>>         x1 = [1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    >>>         x2 = [32,87,6,32,11,44,8,7,9,0,32,87,6,32,11,44,8,7,9,0],
+    >>>         ))
     >>> psi = DropHighPSIFeatures()
     >>> psi.fit_transform(X)
         x2
@@ -253,20 +293,20 @@ class DropHighPSIFeatures(BaseSelector):
     """
 
     def __init__(
-        self,
-        split_col: Union[str, None] = None,
-        split_frac: float = 0.5,
-        split_distinct: bool = False,
-        cut_off: Union[None, int, float, datetime.date, List] = None,
-        switch: bool = False,
-        threshold: Union[float, int, str] = 0.25,
-        bins: int = 10,
-        strategy: str = "equal_frequency",
-        min_pct_empty_bins: float = 0.0001,
-        missing_values: str = "raise",
-        variables: Variables = None,
-        confirm_variables: bool = False,
-        p_value: float = 0.001,
+            self,
+            split_col: Union[str, None] = None,
+            split_frac: float = 0.5,
+            split_distinct: bool = False,
+            cut_off: Union[None, int, float, datetime.date, List] = None,
+            switch: bool = False,
+            threshold: Union[float, int, str] = 0.25,
+            bins: int = 10,
+            strategy: str = "equal_frequency",
+            min_pct_empty_bins: float = 0.0001,
+            missing_values: str = "raise",
+            variables: Variables = None,
+            confirm_variables: bool = False,
+            p_value: float = 0.001,
     ):
 
         if not isinstance(split_col, (str, int, type(None))):
@@ -300,7 +340,7 @@ class DropHighPSIFeatures(BaseSelector):
             raise ValueError(f"switch must be a boolean. Got {switch} instead.")
 
         if (isinstance(threshold, str) and (threshold != "auto")) or (
-            isinstance(threshold, (float, int)) and threshold < 0
+                isinstance(threshold, (float, int)) and threshold < 0
         ):
             raise ValueError(
                 f"threshold must be greater than 0 or 'auto'. Got {threshold} instead."
