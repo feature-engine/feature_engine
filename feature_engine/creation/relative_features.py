@@ -78,7 +78,7 @@ class RelativeFeatures(BaseCreation):
         one or more of the following strings: 'add', 'mul','sub', 'div', truediv,
         'floordiv', 'mod', 'pow'.
 
-    fill_value: int, float, string, None
+    fill_value: int, float, default=None
         When dividing by zero, this value is used in place of infinity. If None,
         then an error will be raised when dividing by zero.
 
@@ -169,7 +169,7 @@ class RelativeFeatures(BaseCreation):
                 "Supported functions are {}. ".format(", ".join(_PERMITTED_FUNCTIONS))
             )
 
-        if not isinstance(fill_value, (float, int)) and fill_value is not None:
+        if fill_value is not None and not isinstance(fill_value, (float, int)):
             raise ValueError(
                 "fill_value must be a float, integer or None. "
                 f"Got {fill_value} instead."
@@ -227,14 +227,16 @@ class RelativeFeatures(BaseCreation):
 
     def _div(self, X):
         for reference in self.reference:
-            if self.fill_value is None and (X[reference] == 0).any():
+            contains_zero = (X[reference] == 0).any()
+            if self.fill_value is None and contains_zero:
                 raise ValueError(
                     "Some of the reference variables contain 0 as values. Check and "
                     "remove those before using this transformer."
                 )
             varname = [f"{var}_div_{reference}" for var in self.variables]
             X[varname] = X[self.variables].div(X[reference], axis=0)
-            X.replace([-np.inf, np.inf], self.fill_value, inplace=True)
+            if contains_zero:
+                X.replace([-np.inf, np.inf], self.fill_value, inplace=True)
         return X
 
     def _add(self, X):
@@ -252,24 +254,30 @@ class RelativeFeatures(BaseCreation):
     def _truediv(self, X):
 
         for reference in self.reference:
-            if (X[reference] == 0).any():
+            contains_zero = (X[reference] == 0).any()
+            if self.fill_value is None and contains_zero:
                 raise ValueError(
                     "Some of the reference variables contain 0 as values. Check and "
                     "remove those before using this transformer."
                 )
             varname = [f"{var}_truediv_{reference}" for var in self.variables]
             X[varname] = X[self.variables].truediv(X[reference], axis=0)
+            if contains_zero:
+                X.replace([-np.inf, np.inf], self.fill_value, inplace=True)
         return X
 
     def _floordiv(self, X):
         for reference in self.reference:
-            if (X[reference] == 0).any():
+            contains_zero = (X[reference] == 0).any()
+            if self.fill_value is None and contains_zero:
                 raise ValueError(
                     "Some of the reference variables contain 0 as values. Check and "
                     "remove those before using this transformer."
                 )
             varname = [f"{var}_floordiv_{reference}" for var in self.variables]
             X[varname] = X[self.variables].floordiv(X[reference], axis=0)
+            if contains_zero:
+                X.replace([-np.inf, np.inf], self.fill_value, inplace=True)
         return X
 
     def _mod(self, X):
