@@ -26,15 +26,16 @@ from feature_engine.discretisation import (
 )
 from feature_engine.selection._docstring import (
     _get_support_docstring,
+    _variables_all_docstring,
     _variables_attribute_docstring,
-    _variables_numerical_docstring,
 )
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.tags import _return_tags
 from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
 from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+    find_categorical_and_numerical_variables,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -42,7 +43,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 
 @Substitution(
     confirm_variables=_confirm_variables_docstring,
-    variables=_variables_numerical_docstring,
+    variables=_variables_all_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -144,7 +145,15 @@ class DropHighPSIFeatures(BaseSelector):
         feature will be dropped. The most common threshold values are 0.25 (large shift)
         and 0.10 (medium shift).
         If 'auto', the threshold will be calculated based on the size of the base and
-        target dataset and the number of bins.
+        target dataset and the number of bins as
+                threshold = χ2(q, B−1) × (1/N + 1/M)
+        where
+        q = quantile of the distribution (or 1 - p-value),
+        B = number of bins/categories,
+        N = size of basis dataset,
+        M = size of test dataset.
+        See formula (5.2) from reference [1] in the class doc string.
+
 
     bins: int, default = 10
         Number of bins or intervals. For continuous features with good value spread, 10
@@ -168,6 +177,12 @@ class DropHighPSIFeatures(BaseSelector):
         Takes values 'raise' or 'ignore'. If 'ignore', missing values will be dropped
         when determining the PSI for that particular feature. If 'raise' the transformer
         will raise an error and features will not be selected.
+
+    p_value: float, default = 0.001
+        This variable determines the p-value to test the null hypothesis that there is
+        no feature drift: in that case, the PSI-value approximates a random variable
+        that follows a chi-square distribution. See [1] for details. The variable is
+        used only if threshold is set to 'auto'.
 
     {variables}
 
@@ -251,6 +266,7 @@ class DropHighPSIFeatures(BaseSelector):
         missing_values: str = "raise",
         variables: Variables = None,
         confirm_variables: bool = False,
+        p_value: float = 0.001,
     ):
 
         if not isinstance(split_col, (str, int, type(None))):
@@ -319,6 +335,9 @@ class DropHighPSIFeatures(BaseSelector):
                     f"or choose another splitting criteria."
                 )
 
+        if not isinstance(p_value, float):
+            raise ValueError(f"p_value must be a float. Got {p_value} instead.")
+
         super().__init__(confirm_variables)
 
         # Check the variables before assignment.
@@ -335,6 +354,7 @@ class DropHighPSIFeatures(BaseSelector):
         self.strategy = strategy
         self.min_pct_empty_bins = min_pct_empty_bins
         self.missing_values = missing_values
+        self.p_value = p_value
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -354,18 +374,25 @@ class DropHighPSIFeatures(BaseSelector):
         # If required exclude variables that are not in the input dataframe
         self._confirm_variables(X)
 
-        # find numerical variables or check those entered are present in the dataframe
-        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
+        # find variables or check those entered are present in the dataframe
+        (
+            cat_variables_,
+            num_variables_,
+        ) = find_categorical_and_numerical_variables(X, self.variables_)
 
         # Remove the split_col from the variables list. It might be added if the
         # variables are not defined at initialization.
-        if self.split_col in self.variables_:
-            self.variables_.remove(self.split_col)
+        if self.split_col in cat_variables_:
+            cat_variables_.remove(self.split_col)
+        if self.split_col in num_variables_:
+            num_variables_.remove(self.split_col)
+
+        self.variables_ = num_variables_ + cat_variables_
 
         if self.missing_values == "raise":
             # check if dataset contains na or inf
             _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.variables_)
+            _check_contains_inf(X, num_variables_)
 
         # Split the dataframe into basis and test.
         basis_df, test_df = self._split_dataframe(X)
@@ -387,26 +414,38 @@ class DropHighPSIFeatures(BaseSelector):
         if self.switch:
             test_df, basis_df = basis_df, test_df
 
-        if self.threshold == "auto":
-            threshold = self._calculate_auto_threshold(
-                basis_df.shape[0], test_df.shape[0]
-            )
-        else:
-            threshold = self.threshold
+        # Set up parameters for numerical features
+        if len(num_variables_) > 0:
+            n_bins_num = self.bins
 
-        # set up the discretizer
-        if self.strategy == "equal_width":
-            bucketer = EqualWidthDiscretiser(bins=self.bins)
-        else:
-            bucketer = EqualFrequencyDiscretiser(q=self.bins)
+            # Set up the discretizer for numerical features
+            if self.strategy == "equal_width":
+                bucketer = EqualWidthDiscretiser(bins=self.bins)
+            else:
+                bucketer = EqualFrequencyDiscretiser(q=self.bins)
+
+            # Set up the threshold for numerical features
+            if self.threshold == "auto":
+                threshold_num = self._calculate_auto_threshold(
+                    basis_df.shape[0],
+                    test_df.shape[0],
+                    n_bins_num,
+                )
+            else:
+                threshold_num = self.threshold
+
+        # Set up the generic threshold for categorical features if used
+        if len(cat_variables_) > 0:
+            if self.threshold != "auto":
+                threshold_cat = self.threshold
 
         # Compute the PSI by looping over the features
         self.psi_values_ = {}
         self.features_to_drop_ = []
 
-        for feature in self.variables_:
-            # Discretize the features.
-
+        # Compute PSI for numerical features
+        for feature in num_variables_:
+            # Bin the features if it is numerical and determine number of bins
             basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
             test_discrete = bucketer.transform(test_df[[feature]].dropna())
 
@@ -419,8 +458,37 @@ class DropHighPSIFeatures(BaseSelector):
             self.psi_values_[feature] = np.sum(
                 (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
             )
+
             # Assess if feature should be dropped
-            if self.psi_values_[feature] > threshold:
+            if self.psi_values_[feature] > threshold_num:
+                self.features_to_drop_.append(feature)
+
+        # Compute the PSI for categorical features
+        for feature in cat_variables_:
+            basis_discrete = basis_df[[feature]]
+            test_discrete = test_df[[feature]]
+
+            # Determine percentage of observations per bin
+            basis_distrib, test_distrib = self._observation_frequency_per_bin(
+                basis_discrete, test_discrete
+            )
+
+            # Calculate the PSI value
+            self.psi_values_[feature] = np.sum(
+                (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
+            )
+
+            # Determine the appropriate threshold for the categorical feature
+            if self.threshold == "auto":
+                n_bins_cat = X[feature].nunique()
+                threshold_cat = self._calculate_auto_threshold(
+                    basis_df.shape[0],
+                    test_df.shape[0],
+                    n_bins_cat,
+                )
+
+            # Assess if feature should be dropped
+            if self.psi_values_[feature] > threshold_cat:
                 self.features_to_drop_.append(feature)
 
         # save input features
@@ -464,6 +532,7 @@ class DropHighPSIFeatures(BaseSelector):
                 how="outer",
             )
             .fillna(self.min_pct_empty_bins)
+            .replace(to_replace=0, value=self.min_pct_empty_bins)
         )
         distributions.columns = ["basis", "test"]
 
@@ -547,7 +616,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         Parameters
         ----------
-        split_column : pd.Series.
+        split_column: pd.Series.
             Series for which the nth quantile will be computed.
 
         Returns
@@ -577,10 +646,34 @@ class DropHighPSIFeatures(BaseSelector):
 
         return cut_off
 
-    def _calculate_auto_threshold(self, N, M, q=0.999):
-        # threshold = χ2(q,B−1) × (1/N + 1/M)
-        # where q - quantile (or 1 - p-value) B - number of bins,
-        # N - size of basis dataset, M - size of test dataset
-        # see formula (5.2) from reference
-        # taking q = 0.999 to get higher threshold
-        return stats.chi2.ppf(q, self.bins - 1) * (1.0 / N + 1.0 / M)
+    def _calculate_auto_threshold(self, N, M, bins):
+        """Threshold computation for chi-square test.
+
+        The threshold is given by
+            threshold = χ2(q,B−1) × (1/N + 1/M)
+        where
+        q = quantile of the distribution (or 1 - p-value),
+        B = number of bins/categories,
+        N = size of basis dataset,
+        M = size of test dataset.
+        See formula (5.2) from reference [1] in the class doc string.
+
+        Parameters
+        ----------
+        N: float or int
+        M: float or int
+        bins: int
+
+        Returns
+        -------
+        float
+        """
+        return stats.chi2.ppf(1 - self.p_value, bins - 1) * (1.0 / N + 1.0 / M)
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "all"
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+
+        return tags_dict
