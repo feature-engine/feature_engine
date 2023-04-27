@@ -486,7 +486,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Compute PSI for numerical features
         for feature in num_variables_:
-            # Bin the features if it is numerical and determine number of bins
+            # Discretize feature
             basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
             test_discrete = bucketer.transform(test_df[[feature]].dropna())
 
