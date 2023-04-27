@@ -293,20 +293,20 @@ class DropHighPSIFeatures(BaseSelector):
     """
 
     def __init__(
-            self,
-            split_col: Union[str, None] = None,
-            split_frac: float = 0.5,
-            split_distinct: bool = False,
-            cut_off: Union[None, int, float, datetime.date, List] = None,
-            switch: bool = False,
-            threshold: Union[float, int, str] = 0.25,
-            bins: int = 10,
-            strategy: str = "equal_frequency",
-            min_pct_empty_bins: float = 0.0001,
-            missing_values: str = "raise",
-            variables: Variables = None,
-            confirm_variables: bool = False,
-            p_value: float = 0.001,
+        self,
+        split_col: Union[str, None] = None,
+        split_frac: float = 0.5,
+        split_distinct: bool = False,
+        cut_off: Union[None, int, float, datetime.date, List] = None,
+        switch: bool = False,
+        threshold: Union[float, int, str] = 0.25,
+        bins: int = 10,
+        strategy: str = "equal_frequency",
+        min_pct_empty_bins: float = 0.0001,
+        missing_values: str = "raise",
+        variables: Variables = None,
+        confirm_variables: bool = False,
+        p_value: float = 0.001,
     ):
 
         if not isinstance(split_col, (str, int, type(None))):
@@ -340,7 +340,7 @@ class DropHighPSIFeatures(BaseSelector):
             raise ValueError(f"switch must be a boolean. Got {switch} instead.")
 
         if (isinstance(threshold, str) and (threshold != "auto")) or (
-                isinstance(threshold, (float, int)) and threshold < 0
+            isinstance(threshold, (float, int)) and threshold < 0
         ):
             raise ValueError(
                 f"threshold must be greater than 0 or 'auto'. Got {threshold} instead."
