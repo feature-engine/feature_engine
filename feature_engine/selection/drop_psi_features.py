@@ -426,7 +426,7 @@ class DropHighPSIFeatures(BaseSelector):
         # variables are not defined at initialization.
         if self.split_col in cat_variables_:
             cat_variables_.remove(self.split_col)
-        if self.split_col in num_variables_:
+        elif self.split_col in num_variables_:
             num_variables_.remove(self.split_col)
 
         self.variables_ = num_variables_ + cat_variables_
