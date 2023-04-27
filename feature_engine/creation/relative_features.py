@@ -282,13 +282,16 @@ class RelativeFeatures(BaseCreation):
 
     def _mod(self, X):
         for reference in self.reference:
-            if (X[reference] == 0).any():
+            contains_zero = (X[reference] == 0).any()
+            if self.fill_value is None and contains_zero:
                 raise ValueError(
                     "Some of the reference variables contain 0 as values. Check and "
                     "remove those before using this transformer."
                 )
             varname = [f"{var}_mod_{reference}" for var in self.variables]
             X[varname] = X[self.variables].mod(X[reference], axis=0)
+            if contains_zero:
+                X.replace([np.nan], self.fill_value, inplace=True)
         return X
 
     def _pow(self, X):
