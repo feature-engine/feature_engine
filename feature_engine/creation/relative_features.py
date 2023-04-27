@@ -6,14 +6,18 @@ import pandas as pd
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
-    _variables_attribute_docstring)
+    _variables_attribute_docstring,
+)
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _drop_original_docstring,
     _missing_values_docstring,
-    _variables_numerical_docstring)
-from feature_engine._docstrings.methods import (_fit_not_learn_docstring,
-                                                _fit_transform_docstring,
-                                                _transform_creation_docstring)
+    _variables_numerical_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _transform_creation_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.creation.base_creation import BaseCreation
 
@@ -165,10 +169,7 @@ class RelativeFeatures(BaseCreation):
                 "Supported functions are {}. ".format(", ".join(_PERMITTED_FUNCTIONS))
             )
 
-        if (
-            not isinstance(fill_value, (float, int))
-            and fill_value is not None
-        ):
+        if not isinstance(fill_value, (float, int)) and fill_value is not None:
             raise ValueError(
                 "fill_value must be a float, integer or None. "
                 f"Got {fill_value} instead."
