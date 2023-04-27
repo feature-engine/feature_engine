@@ -700,7 +700,7 @@ class DropHighPSIFeatures(BaseSelector):
         B = number of bins/categories,
         N = size of basis dataset,
         M = size of test dataset.
-        See formula (5.2) from reference [1] in the class doc string.
+        See formula (5.2) from reference [1] in the class docstring.
 
         Parameters
         ----------
