@@ -690,9 +690,12 @@ class DropHighPSIFeatures(BaseSelector):
     def _calculate_auto_threshold(self, N, M, bins):
         """Threshold computation for chi-square test.
 
-        The threshold is given by
+        The threshold is given by:
+
             threshold = χ2(q,B−1) × (1/N + 1/M)
-        where
+
+        where:
+
         q = quantile of the distribution (or 1 - p-value),
         B = number of bins/categories,
         N = size of basis dataset,
