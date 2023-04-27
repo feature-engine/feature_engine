@@ -247,19 +247,19 @@ class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
             _check_optional_contains_na(X, self.variables_)
 
             for feature in self.variables_:
-                X[feature] = np.where(
-                    X[feature].isin(self.encoder_dict_[feature]),
-                    X[feature],
-                    self.replace_with,
-                )
+                if X[feature].dtype == "category":
+                    X[feature] = X[feature].cat.add_categories(self.replace_with)
+                X.loc[
+                    ~X[feature].isin(self.encoder_dict_[feature]), feature
+                ] = self.replace_with
 
         else:
             for feature in self.variables_:
-                X[feature] = np.where(
-                    X[feature].isin(self.encoder_dict_[feature] + [np.nan]),
-                    X[feature],
-                    self.replace_with,
-                )
+                if X[feature].dtype == "category":
+                    X[feature] = X[feature].cat.add_categories(self.replace_with)
+                X.loc[
+                    ~X[feature].isin(self.encoder_dict_[feature] + [np.nan]), feature
+                ] = self.replace_with
 
         return X
 
