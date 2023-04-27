@@ -458,7 +458,6 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Set up parameters for numerical features
         if len(num_variables_) > 0:
-            n_bins_num = self.bins
 
             # Set up the discretizer for numerical features
             if self.strategy == "equal_width":
@@ -471,7 +470,7 @@ class DropHighPSIFeatures(BaseSelector):
                 threshold_num = self._calculate_auto_threshold(
                     basis_df.shape[0],
                     test_df.shape[0],
-                    n_bins_num,
+                    self.bins,
                 )
             else:
                 threshold_num = self.threshold
