@@ -340,8 +340,17 @@ def test_error_when_division_by_zero_and_fill_value_is_none(_func, df_vartypes):
         func=_func,
     )
     transformer.fit(df_vartypes)
-    with pytest.raises(ValueError):
+
+    with pytest.raises(ValueError) as record:
         transformer.transform(df_zero)
+
+    msg = (
+            "Some of the reference variables contain zeroes. Division by zero "
+            "does not exist. Replace zeros before using this transformer for division "
+            "or set `fill_value` to a number."
+        )
+    # check that the error message matches
+    assert str(record.value) == msg
 
 
 @pytest.mark.parametrize("_fill_value, _func", [
