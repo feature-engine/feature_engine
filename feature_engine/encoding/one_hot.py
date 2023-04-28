@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 
 import numpy as np
 import pandas as pd
@@ -160,6 +160,7 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     def __init__(
         self,
         top_categories: Optional[int] = None,
+        custom_categories: Optional[Dict] = None,
         drop_last: bool = False,
         drop_last_binary: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
@@ -173,7 +174,13 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 "top_categories takes only positive integers. "
                 f"Got {top_categories} instead"
             )
-
+        if top_categories is not None and custom_categories is not None:
+            raise ValueError(
+                "Both top_cagetories and custom_categories have values. "
+                "Only one of the two parameters may be used at a time. "
+                f"Got {top_categories} for top_categories. "
+                f"Got {custom_categories} for custom_categoriers."
+            )
         if not isinstance(drop_last, bool):
             raise ValueError(
                 f"drop_last takes only True or False. Got {drop_last} instead."
