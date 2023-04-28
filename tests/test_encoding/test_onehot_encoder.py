@@ -202,6 +202,36 @@ def test_raises_error_if_df_contains_na(df_enc_big, df_enc_big_na):
     assert str(record.value) == msg
 
 
+def test_raises_error_using_top_and_custom_categories(df_enc):
+    with pytest.raises(ValueError):
+        OneHotEncoder(
+            top_categories=1,
+            custom_categories={"var_A": ["C"]},
+        )
+
+
+@pytest.mark.parametrize("_custom_cat",
+                         [3, "hamberguesa", True, [3, 5, 7]]
+                         )
+def test_raises_error_not_permitted_custom_categories(_custom_cat):
+    with pytest.raises(ValueError):
+        OneHotEncoder(
+            custom_categories=_custom_cat,
+        )
+
+
+@pytest.mark.parametrize("_custom_cat", [
+                         {"var_A": ["ZZ", "YY"], "var_B": 3},
+                         {"var_M": "test", "var_S": ["T", "U"]},
+                        ]
+                         )
+def test_raises_error_non_permitted_custom_category_pair_values(_custom_cat):
+    with pytest.raises(ValueError):
+        OneHotEncoder(
+            custom_categories=_custom_cat
+        )
+
+
 def test_encode_numerical_variables(df_enc_numeric):
     encoder = OneHotEncoder(
         top_categories=None,

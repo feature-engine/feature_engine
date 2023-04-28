@@ -174,13 +174,33 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 "top_categories takes only positive integers. "
                 f"Got {top_categories} instead"
             )
+
         if top_categories is not None and custom_categories is not None:
             raise ValueError(
                 "Both top_cagetories and custom_categories have values. "
                 "Only one of the two parameters may be used at a time. "
                 f"Got {top_categories} for top_categories. "
-                f"Got {custom_categories} for custom_categoriers."
+                f"Got {custom_categories} for custom_categories."
             )
+
+        if custom_categories and not isinstance(custom_categories, dict):
+            raise ValueError(
+                "custom_categories must be a dictionary. "
+                f"Got {custom_categories} instead."
+            )
+
+        # check that all values of custom_categories key-value pairs are lists
+        if custom_categories:
+            non_lists_custom_categories = [
+                val for val in custom_categories.values()
+                if not isinstance(val, list)
+            ]
+            if len(non_lists_custom_categories) > 0:
+                raise ValueError(
+                    "custom_categories must be a dictionary that has lists as "
+                    f"its values. Got {custom_categories} instead."
+                )
+
         if not isinstance(drop_last, bool):
             raise ValueError(
                 f"drop_last takes only True or False. Got {drop_last} instead."
