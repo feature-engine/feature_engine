@@ -228,7 +228,8 @@ def test_raises_error_not_permitted_custom_categories(_custom_cat):
 def test_raises_error_non_permitted_custom_category_pair_values(_custom_cat):
     with pytest.raises(ValueError):
         OneHotEncoder(
-            custom_categories=_custom_cat
+            custom_categories=_custom_cat,
+            variables=list(_custom_cat.keys()),
         )
 
 
@@ -546,3 +547,20 @@ def test_inverse_transform_raises_not_implemented_error(df_enc_binary):
     enc = OneHotEncoder().fit(df_enc_binary)
     with pytest.raises(NotImplementedError):
         enc.inverse_transform(df_enc_binary)
+
+
+def test_error_when_custom_categories_values_do_not_exist(df_enc):
+    encoder = OneHotEncoder(
+        top_categories=None,
+        custom_categories={"var_A": ["A", "C"], "var_B": ["B", "X"]},
+        variables=["var_A", "var_B"],
+    )
+
+
+def test_error_when_custom_categories_does_not_match_variables():
+    with pytest.raises(ValueError):
+        OneHotEncoder(
+            top_categories=None,
+            custom_categories={"var_Q": ["A"], "var_Y": ["G", "H"]},
+            variables=["var_Y", "var_B"],
+        )

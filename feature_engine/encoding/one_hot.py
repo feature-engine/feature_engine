@@ -189,8 +189,9 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 f"Got {custom_categories} instead."
             )
 
-        # check that all values of custom_categories key-value pairs are lists
+
         if custom_categories:
+            # check that all values of custom_categories key-value pairs are lists
             non_lists_custom_categories = [
                 val for val in custom_categories.values()
                 if not isinstance(val, list)
@@ -199,6 +200,15 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 raise ValueError(
                     "custom_categories must be a dictionary that has lists as "
                     f"its values. Got {custom_categories} instead."
+                )
+
+            # check that custom_categories variable match variables
+            cust_cat_vars = sorted(list(custom_categories.keys()))
+            if cust_cat_vars != sorted(variables):
+                raise ValueError(
+                    "Variables listed in custom_categories must match features "
+                    f"listed in the variables param. Got {cust_cat_vars} for "
+                    f"custom_categories and {sorted(variables)} for variables."
                 )
 
         if not isinstance(drop_last, bool):
@@ -214,6 +224,7 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         super().__init__(variables, ignore_format)
         self.top_categories = top_categories
+        self.custom_categories = custom_categories
         self.drop_last = drop_last
         self.drop_last_binary = drop_last_binary
 
@@ -241,29 +252,35 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         self.encoder_dict_ = {}
 
-        for var in variables_:
+        # make dummies only for the selected variables and categories
+        if self.custom_categories:
+            for var in  self.custom_categories.keys():
+                unique_values = set(X[var].unique())
 
-            # make dummies only for the most popular categories
-            if self.top_categories:
-                self.encoder_dict_[var] = [
-                    x
-                    for x in X[var]
-                    .value_counts()
-                    .sort_values(ascending=False)
-                    .head(self.top_categories)
-                    .index
-                ]
+        else:
+            for var in variables_:
 
-            else:
-                category_ls = list(X[var].unique())
+                # make dummies only for the most popular categories
+                if self.top_categories:
+                    self.encoder_dict_[var] = [
+                        x
+                        for x in X[var]
+                        .value_counts()
+                        .sort_values(ascending=False)
+                        .head(self.top_categories)
+                        .index
+                    ]
 
-                # return k-1 dummies
-                if self.drop_last:
-                    self.encoder_dict_[var] = category_ls[:-1]
-
-                # return k dummies
                 else:
-                    self.encoder_dict_[var] = category_ls
+                    category_ls = list(X[var].unique())
+
+                    # return k-1 dummies
+                    if self.drop_last:
+                        self.encoder_dict_[var] = category_ls[:-1]
+
+                    # return k dummies
+                    else:
+                        self.encoder_dict_[var] = category_ls
 
         self.variables_binary_ = [var for var in variables_ if X[var].nunique() == 2]
 
@@ -329,3 +346,17 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         feature_names = [f for f in feature_names if f not in self.variables_]
 
         return feature_names
+
+    def _check_custom_categories_in_dataset(self, X: pd.DataFrame):
+        """
+        Raise an error if user entered categories in custom_categories that do
+        not exist within dataset.
+
+        """
+        for var, categories in self.custom_categories.items():
+            unique_values = set(X[var].unique())
+            if not set(categories).issubset(unique_values):
+                raise ValueError(
+                    f"All categorical values provided in {var} of custom_categories "
+                    "do not exist within the dataset."
+                )
