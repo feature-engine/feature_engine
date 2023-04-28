@@ -270,7 +270,7 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             # assign custom_categories to encoder_dict_
             elif self.custom_categories:
                 self.encoder_dict_ = self.custom_categories
-                
+
             else:
                 category_ls = list(X[var].unique())
 

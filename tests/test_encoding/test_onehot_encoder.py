@@ -566,3 +566,44 @@ def test_error_when_custom_categories_does_not_match_variables():
             variables=["var_Y", "var_B"],
         )
 
+
+def test_encode_custom_categories(df_enc_big):
+    encoder = OneHotEncoder(
+        custom_categories={
+            "var_A": ["A", "F", "G"],
+            "var_C": ["B", "F", "E"],
+            },
+        variables=["var_A", "var_C"],
+    )
+    X = encoder.fit_transform(df_enc_big).reset_index()
+    X = X.drop("index", axis=1)
+
+
+    expected_results_head = {
+        "var_B": ["A", "A", "A", "A", "A", "A", "A", "A", "A", "A"],
+        "var_A_A": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+        "var_A_F": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_A_G": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_C_B": [0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+        "var_C_F": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_C_E": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    }
+    expected_results_head_df = pd.DataFrame(expected_results_head)
+
+    expected_results_tail = {
+        "var_B": ["E", "E", "F", "F", "G", "G", "G", "G", "G", "G"],
+        "var_A_A": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_A_F": [0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+        "var_A_G": [0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+        "var_C_B": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_C_F": [0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+        "var_C_E": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    }
+    expected_results_tail_df = pd.DataFrame(
+        data=expected_results_tail,
+        index=range(30, 40),
+    )
+
+    # test transform outputs
+    pd.testing.assert_frame_equal(X.head(10), expected_results_head_df)
+    pd.testing.assert_frame_equal(X.tail(10), expected_results_tail_df)
