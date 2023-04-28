@@ -250,37 +250,37 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         variables_ = self._check_or_select_variables(X)
         _check_contains_na(X, variables_)
 
+        if self.custom_categories:
+            self._check_custom_categories_in_dataset(X)
+
         self.encoder_dict_ = {}
 
-        # make dummies only for the selected variables and categories
-        if self.custom_categories:
-            for var in  self.custom_categories.keys():
-                unique_values = set(X[var].unique())
+        for var in variables_:
 
-        else:
-            for var in variables_:
+            # make dummies only for the most popular categories
+            if self.top_categories:
+                self.encoder_dict_[var] = [
+                    x
+                    for x in X[var]
+                    .value_counts()
+                    .sort_values(ascending=False)
+                    .head(self.top_categories)
+                    .index
+                ]
+            # assign custom_categories to encoder_dict_
+            elif self.custom_categories:
+                self.encoder_dict_ = self.custom_categories
+                
+            else:
+                category_ls = list(X[var].unique())
 
-                # make dummies only for the most popular categories
-                if self.top_categories:
-                    self.encoder_dict_[var] = [
-                        x
-                        for x in X[var]
-                        .value_counts()
-                        .sort_values(ascending=False)
-                        .head(self.top_categories)
-                        .index
-                    ]
+                # return k-1 dummies
+                if self.drop_last:
+                    self.encoder_dict_[var] = category_ls[:-1]
 
+                # return k dummies
                 else:
-                    category_ls = list(X[var].unique())
-
-                    # return k-1 dummies
-                    if self.drop_last:
-                        self.encoder_dict_[var] = category_ls[:-1]
-
-                    # return k dummies
-                    else:
-                        self.encoder_dict_[var] = category_ls
+                    self.encoder_dict_[var] = category_ls
 
         self.variables_binary_ = [var for var in variables_ if X[var].nunique() == 2]
 

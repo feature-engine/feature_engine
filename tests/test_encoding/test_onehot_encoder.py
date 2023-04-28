@@ -555,12 +555,14 @@ def test_error_when_custom_categories_values_do_not_exist(df_enc):
         custom_categories={"var_A": ["A", "C"], "var_B": ["B", "X"]},
         variables=["var_A", "var_B"],
     )
+    with pytest.raises(ValueError):
+        encoder._check_custom_categories_in_dataset(df_enc)
 
 
 def test_error_when_custom_categories_does_not_match_variables():
     with pytest.raises(ValueError):
         OneHotEncoder(
-            top_categories=None,
             custom_categories={"var_Q": ["A"], "var_Y": ["G", "H"]},
             variables=["var_Y", "var_B"],
         )
+
