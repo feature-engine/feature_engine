@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Dict, List, Optional, Union
+from typing import Dict, Iterable, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -178,7 +178,9 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         custom_categories: Optional[Dict] = None,
         drop_last: bool = False,
         drop_last_binary: bool = False,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        variables: Union[
+            None, int, str, List[Union[str, int]], Iterable[Union[str, int]]
+        ] = None,
         ignore_format: bool = False,
     ) -> None:
 
@@ -360,7 +362,7 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         return feature_names
 
-    def _check_custom_categories_in_dataset(self, X: pd.DataFrame):
+    def _check_custom_categories_in_dataset(self, X: pd.DataFrame) -> None:
         """
         Raise an error if user entered categories in custom_categories that do
         not exist within dataset.
