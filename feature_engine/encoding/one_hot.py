@@ -45,6 +45,10 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     majority of the observations in the dataset. This behaviour can be specified with
     the parameter `top_categories`.
 
+    The encoder also has the functionality to one-hot encode user-defined categories
+    for a subset or all variables. This behavior can be specified with the parameter
+    `custom_categories`.
+
     The encoder will encode only categorical variables by default (type 'object' or
     'categorical'). You can pass a list of variables to encode. Alternatively, the
     encoder will find and encode all categorical variables (type 'object' or
@@ -81,6 +85,17 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         those popular categories and the rest will be ignored, i.e., they will show the
         value 0 in all the binary variables. Note that if `top_categories` is not None,
         the parameter `drop_last` is ignored.
+
+        If `top_categories` is being used, `custom_categories` must equal None.
+
+    custom_categories: dict, default=None
+        Accepts a dictionary in which the keys are the variables that the use would like
+        to transform. The keys must match the values of `variables` param.
+
+        The dicitonary values are lists of the categories for each selected variable
+        that are to be one-hot encoded.
+
+        If `custom_categories` is being used, `top_categories` must equal None.
 
     drop_last: boolean, default=False
         Only used if `top_categories = None`. It indicates whether to create dummy
