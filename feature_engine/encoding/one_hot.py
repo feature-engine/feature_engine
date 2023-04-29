@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union, Dict
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -189,12 +189,10 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 f"Got {custom_categories} instead."
             )
 
-
         if custom_categories:
             # check that all values of custom_categories key-value pairs are lists
             non_lists_custom_categories = [
-                val for val in custom_categories.values()
-                if not isinstance(val, list)
+                val for val in custom_categories.values() if not isinstance(val, list)
             ]
             if len(non_lists_custom_categories) > 0:
                 raise ValueError(

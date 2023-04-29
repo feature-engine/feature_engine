@@ -210,9 +210,7 @@ def test_raises_error_using_top_and_custom_categories(df_enc):
         )
 
 
-@pytest.mark.parametrize("_custom_cat",
-                         [3, "hamberguesa", True, [3, 5, 7]]
-                         )
+@pytest.mark.parametrize("_custom_cat", [3, "hamberguesa", True, [3, 5, 7]])
 def test_raises_error_not_permitted_custom_categories(_custom_cat):
     with pytest.raises(ValueError):
         OneHotEncoder(
@@ -220,11 +218,13 @@ def test_raises_error_not_permitted_custom_categories(_custom_cat):
         )
 
 
-@pytest.mark.parametrize("_custom_cat", [
-                         {"var_A": ["ZZ", "YY"], "var_B": 3},
-                         {"var_M": "test", "var_S": ["T", "U"]},
-                        ]
-                         )
+@pytest.mark.parametrize(
+    "_custom_cat",
+    [
+        {"var_A": ["ZZ", "YY"], "var_B": 3},
+        {"var_M": "test", "var_S": ["T", "U"]},
+    ],
+)
 def test_raises_error_non_permitted_custom_category_pair_values(_custom_cat):
     with pytest.raises(ValueError):
         OneHotEncoder(
@@ -572,12 +572,11 @@ def test_encode_custom_categories(df_enc_big):
         custom_categories={
             "var_A": ["A", "F", "G"],
             "var_C": ["B", "F", "E"],
-            },
+        },
         variables=["var_A", "var_C"],
     )
     X = encoder.fit_transform(df_enc_big).reset_index()
     X = X.drop("index", axis=1)
-
 
     expected_results_head = {
         "var_B": ["A", "A", "A", "A", "A", "A", "A", "A", "A", "A"],
