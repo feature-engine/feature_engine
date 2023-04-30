@@ -53,6 +53,17 @@ def test_error_if_func_not_supported(_func):
         )
 
 
+@pytest.mark.parametrize("_fill_value", [(2, 3.3), ["test"], "python"])
+def test_error_if_fill_value_not_permitted(_fill_value):
+    with pytest.raises(ValueError):
+        RelativeFeatures(
+            variables=["Age"],
+            reference=["Marks"],
+            func=["sub", "div", "add", "mul"],
+            fill_value=_fill_value,
+        )
+
+
 def test_error_when_drop_original_not_bool():
     for drop_original in ["True", [True]]:
         with pytest.raises(ValueError):
@@ -318,7 +329,7 @@ def test_when_df_cols_are_integers(df_vartypes):
 
 
 @pytest.mark.parametrize("_func", [["div"], ["truediv"], ["floordiv"], ["mod"]])
-def test_error_when_division_by_zero(_func, df_vartypes):
+def test_error_when_division_by_zero_and_fill_value_is_none(_func, df_vartypes):
 
     df_zero = df_vartypes.copy()
     df_zero.loc[1, "Marks"] = 0
@@ -329,8 +340,52 @@ def test_error_when_division_by_zero(_func, df_vartypes):
         func=_func,
     )
     transformer.fit(df_vartypes)
-    with pytest.raises(ValueError):
+
+    with pytest.raises(ValueError) as record:
         transformer.transform(df_zero)
+
+    msg = (
+            "Some of the reference variables contain zeroes. Division by zero "
+            "does not exist. Replace zeros before using this transformer for division "
+            "or set `fill_value` to a number."
+        )
+    # check that the error message matches
+    assert str(record.value) == msg
+
+
+@pytest.mark.parametrize("_fill_value, _func", [
+    (111.111, ["div"]),
+    (999, ["div"]),
+    (111.111, ["truediv"]),
+    (999, ["truediv"]),
+    (111.111, ["floordiv"]),
+    (999, ["floordiv"]),
+    (111.111, ["mod"]),
+    (999, ["mod"]),
+])
+def test_fill_values_when_division_by_zero(
+        _fill_value, _func, df_vartypes
+):
+    df_zero = df_vartypes.copy()
+    df_zero.loc[2, "Marks"] = 0
+    df_zero.loc[1, "Age"] = np.nan
+    df_zero.loc[3, "Age"] = np.inf
+
+    transformer = RelativeFeatures(
+        variables=["Age"],
+        reference=["Marks"],
+        fill_value=_fill_value,
+        func=_func,
+        missing_values="ignore",
+    )
+
+    X = transformer.fit_transform(df_zero)
+
+    new_var = f"Age_{_func[0]}_Marks"
+
+    assert X.loc[2, new_var] == _fill_value
+    np.testing.assert_equal(X.loc[1, "Age"], np.nan)
+    np.testing.assert_equal(X.loc[3, "Age"], np.inf)
 
 
 @pytest.mark.parametrize("_drop", [True, False])
