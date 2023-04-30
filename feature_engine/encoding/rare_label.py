@@ -218,7 +218,7 @@ class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
                     "indicated in n_categories. Thus, all categories will be "
                     "considered frequent".format(var)
                 )
-                self.encoder_dict_[var] = X[var].unique()
+                self.encoder_dict_[var] = list(X[var].unique())
 
         self.variables_ = variables_
         self._get_feature_names_in(X)
@@ -247,19 +247,19 @@ class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
             _check_optional_contains_na(X, self.variables_)
 
             for feature in self.variables_:
-                X[feature] = np.where(
-                    X[feature].isin(self.encoder_dict_[feature]),
-                    X[feature],
-                    self.replace_with,
-                )
+                if X[feature].dtype == "category":
+                    X[feature] = X[feature].cat.add_categories(self.replace_with)
+                X.loc[
+                    ~X[feature].isin(self.encoder_dict_[feature]), feature
+                ] = self.replace_with
 
         else:
             for feature in self.variables_:
-                X[feature] = np.where(
-                    X[feature].isin(self.encoder_dict_[feature] + [np.nan]),
-                    X[feature],
-                    self.replace_with,
-                )
+                if X[feature].dtype == "category":
+                    X[feature] = X[feature].cat.add_categories(self.replace_with)
+                X.loc[
+                    ~X[feature].isin(self.encoder_dict_[feature] + [np.nan]), feature
+                ] = self.replace_with
 
         return X
 
