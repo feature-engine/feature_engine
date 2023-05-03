@@ -531,7 +531,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         return self
 
-    def _select_variables(self, X):
+    def _select_variables(self, X: pd.DataFrame):
         """Based on the user input to the `variables` attribute in init, find or check
         the variables for which the PSI should be calculated.
 
@@ -547,7 +547,7 @@ class DropHighPSIFeatures(BaseSelector):
                     "No numerical variables found in this dataframe. Please check "
                     "variable format with pandas dtypes."
                 )
-            cat_variables = []
+            cat_variables: List[Union[str, int]] = []
 
         elif self.variables == "all":
             (
@@ -577,7 +577,12 @@ class DropHighPSIFeatures(BaseSelector):
 
         return cat_variables, num_variables
 
-    def _check_split_column(self, X, cat_variables, num_variables):
+    def _check_split_column(
+        self,
+        X: pd.DataFrame,
+        cat_variables: List[Union[str, int]],
+        num_variables: List[Union[str, int]],
+    ):
         """Check that split_col is in the dataframe and remove from numerical and
         categorical variable lists if necessary.
 
@@ -640,7 +645,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         return distributions.basis, distributions.test
 
-    def _split_dataframe(self, X):
+    def _split_dataframe(self, X: pd.DataFrame):
         """
         Split dataframe according to a cut-off value and return two dataframes: the
         basis dataframe contains all observations <= cut_off and the test dataframe the
