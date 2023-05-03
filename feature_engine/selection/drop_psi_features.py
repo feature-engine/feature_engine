@@ -35,7 +35,6 @@ from feature_engine.variable_handling._init_parameter_checks import (
 )
 from feature_engine.variable_handling.variable_type_selection import (
     find_categorical_and_numerical_variables,
-    find_or_check_numerical_variables,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -419,7 +418,7 @@ class DropHighPSIFeatures(BaseSelector):
         # select variables to evaluate
         cat_variables_, num_variables_ = self._select_variables(X)
 
-        # check that split column is in the dataframe and remove from numerical or categorical lists
+        # check that split column is in the dataframe and remove from variable lists
         cat_variables_, num_variables_ = self._check_split_column(
             X, cat_variables_, num_variables_
         )
