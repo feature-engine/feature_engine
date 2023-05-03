@@ -26,7 +26,6 @@ from feature_engine.discretisation import (
 )
 from feature_engine.selection._docstring import (
     _get_support_docstring,
-    _variables_all_docstring,
     _variables_attribute_docstring,
 )
 from feature_engine.selection.base_selector import BaseSelector
@@ -36,6 +35,7 @@ from feature_engine.variable_handling._init_parameter_checks import (
 )
 from feature_engine.variable_handling.variable_type_selection import (
     find_categorical_and_numerical_variables,
+    find_or_check_numerical_variables,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -45,7 +45,6 @@ PSI = """PSI = sum ( (test_i - basis_i) x ln(test_i/basis_i) )""".rstrip()
 
 @Substitution(
     confirm_variables=_confirm_variables_docstring,
-    variables=_variables_all_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -222,7 +221,11 @@ class DropHighPSIFeatures(BaseSelector):
         distribution. See [1] for details. This parameter is used only if `threshold`
         is set to 'auto'.
 
-    {variables}
+    variables: int, str, list, default = None
+        The list of variables to evaluate. If `None`, the transformer will evaluate all
+        numerical variables in the dataset. If `"all"` the transformer will evaluate all
+        categorical and numerical variables in the dataset. Alternatively, the
+        transformer will evaluate the variables indicated in the list or string.
 
     {confirm_variables}
 
@@ -413,27 +416,17 @@ class DropHighPSIFeatures(BaseSelector):
         # check input dataframe
         X = check_X(X)
 
-        # If required exclude variables that are not in the input dataframe
-        self._confirm_variables(X)
+        # select variables to evaluate
+        cat_variables_, num_variables_ = self._select_variables(X)
 
-        # find variables or check those entered are present in the dataframe
-        (
-            cat_variables_,
-            num_variables_,
-        ) = find_categorical_and_numerical_variables(X, self.variables_)
-
-        # Remove the split_col from the variables list. It might be added if the
-        # variables are not defined at initialization.
-        if self.split_col in cat_variables_:
-            cat_variables_.remove(self.split_col)
-        elif self.split_col in num_variables_:
-            num_variables_.remove(self.split_col)
-
-        self.variables_ = num_variables_ + cat_variables_
+        # check that split column is in the dataframe and remove from numerical or categorical lists
+        cat_variables_, num_variables_ = self._check_split_column(
+            X, cat_variables_, num_variables_
+        )
 
         if self.missing_values == "raise":
             # check if dataset contains na or inf
-            _check_contains_na(X, self.variables_)
+            _check_contains_na(X, num_variables_ + cat_variables_)
             _check_contains_inf(X, num_variables_)
 
         # Split the dataframe into basis and test.
@@ -532,10 +525,79 @@ class DropHighPSIFeatures(BaseSelector):
             if self.psi_values_[feature] > threshold_cat:
                 self.features_to_drop_.append(feature)
 
+        # store analyzed variables
+        self.variables_ = num_variables_ + cat_variables_
         # save input features
         self._get_feature_names_in(X)
 
         return self
+
+    def _select_variables(self, X):
+        """Based on the user input to the `variables` attribute in init, find or check
+        the variables for which the PSI should be calculated.
+
+        If `None`, select all numerical variables.
+        If `"all", select all numerical and categorical variables.
+        If string or list, check that the variables are numerical or categorical.
+        """
+
+        if self.variables is None:
+            num_variables = list(X.select_dtypes(include="number").columns)
+            if len(num_variables) == 0:
+                raise ValueError(
+                    "No numerical variables found in this dataframe. Please check "
+                    "variable format with pandas dtypes."
+                )
+            cat_variables = []
+
+        elif self.variables == "all":
+            (
+                cat_variables,
+                num_variables,
+            ) = find_categorical_and_numerical_variables(X, None)
+
+        else:
+            if not isinstance(self.variables, list):
+                variables = [self.variables]
+            else:
+                variables = self.variables
+
+            if self.confirm_variables is True:
+                variables = [var for var in variables if var in X.columns]
+                # Raise an error if no column is left to work with.
+                if len(variables) == 0:
+                    raise ValueError(
+                        "After confirming variables, no variable remains. At least 1 "
+                        "variable is required for the selection."
+                    )
+
+            (
+                cat_variables,
+                num_variables,
+            ) = find_categorical_and_numerical_variables(X, variables)
+
+        return cat_variables, num_variables
+
+    def _check_split_column(self, X, cat_variables, num_variables):
+        """Check that split_col is in the dataframe and remove from numerical and
+        categorical variable lists if necessary.
+
+        It will get added if the variables are selected automatically.
+        """
+        if self.split_col is not None:
+            # check that split_col is in the dataframe.
+            if self.split_col not in X.columns:
+                raise ValueError(f"{self.split_col} is not in the dataframe.")
+
+            # Remove the split_col from variables lists. Happens when variables are
+            # selected by transformer.
+            if self.variables is None or self.variables == "all":
+                if self.split_col in cat_variables:
+                    cat_variables.remove(self.split_col)
+                elif self.split_col in num_variables:
+                    num_variables.remove(self.split_col)
+
+        return cat_variables, num_variables
 
     def _observation_frequency_per_bin(self, basis, test):
         """
@@ -605,13 +667,13 @@ class DropHighPSIFeatures(BaseSelector):
         """
 
         # Identify the values according to which the split must be done.
-        if not self.split_col:
+        if self.split_col is None:
             reference = pd.Series(X.index)
         else:
             reference = X[self.split_col]
 
         # Raise an error if there are missing values in the reference column.
-        if reference.isna().sum() != 0:
+        if reference.isna().any():
             raise ValueError(
                 f"There are {reference.isna().sum()} missing values in the reference"
                 "variable. Missing data are not allowed in the variable used to "
