@@ -27,36 +27,63 @@ from feature_engine.discretisation import (
 from feature_engine.selection._docstring import (
     _get_support_docstring,
     _variables_attribute_docstring,
-    _variables_numerical_docstring,
 )
 from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.tags import _return_tags
 from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
 from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+    find_categorical_and_numerical_variables,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
+PSI = """PSI = sum ( (test_i - basis_i) x ln(test_i/basis_i) )""".rstrip()
+
 
 @Substitution(
     confirm_variables=_confirm_variables_docstring,
-    variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
     get_support=_get_support_docstring,
+    psi=PSI,
 )
 class DropHighPSIFeatures(BaseSelector):
     r"""
-    DropHighPSIFeatures drops features which Population Stability Index (PSI) value is
-    above a given threshold. The PSI of a numerical feature is an indication of the
-    shift in its distribution; a feature with high PSI could therefore be considered
+    DropHighPSIFeatures() drops features which Population Stability Index (PSI) is
+    above a given threshold.
+
+    The PSI is used to compare distributions. Higher PSI values mean greater changes in
+    a feature's distribution. Therefore, a feature with high PSI can be considered
     unstable.
 
-    A bigger PSI value indicates a bigger shift in the feature distribution.
+    To compute the PSI, DropHighPSIFeatures() splits the dataset in two: a basis and
+    a test set. Then, it compares the distribution of each feature between those sets.
+
+    To determine the PSI, continuous features are sorted into discrete intervals, and
+    then, the number of observations per interval are compared between the 2
+    distributions.
+
+    The PSI is calculated as:
+
+    {psi}
+
+    where `basis` and `test` are the 2 datasets, `i` refers to each interval, and then,
+    `test_i` and `basis_i` are the number of observations in interval i in each data
+    set.
+
+    The PSI has traditionally been used to assess changes in distributions of
+    continuous variables.
+
+    In version 1.7, we extended the functionality of DropHighPSIFeatures() to
+    calculate the PSI for categorical features as well. In this case, `i` is each
+    unique category, and `test_i` and `basis_i` are the number of observations in
+    category i.
+
+    **Threshold**
 
     Different thresholds can be used to assess the magnitude of the distribution shift
     according to the PSI value. The most commonly used thresholds are:
@@ -65,16 +92,22 @@ class DropHighPSIFeatures(BaseSelector):
     - Above 25%, the variable has experienced a major shift.
     - Between those two values, the shift is intermediate.
 
-    To compute the PSI the DropHighPSIFeatures splits the dataset in two:
+    **Data split**
 
-    First and foremost, the user should enter one variable which will be used to guide
-    the data split. This variable can be of any data type. If the user does not enter a
-    variable name, DropHighPSIFeatures will use the dataframe index.
+    To compute the PSI, DropHighPSIFeatures() splits the dataset in two: a basis and
+    a test set. Then, it compares the distribution of each feature between those sets.
 
-    Second, the user has the option to specify a proportion of observations to put in
-    each data set, or alternatively, provide a cut-off value.
+    There are various options to split a dataset:
 
-    If the user specifies a proportion through the `split_frac` parameter, the data will
+    First, you can indicate which variable should be used to guide the data split. This
+    variable can be of any data type. If you do not enter a variable name,
+    DropHighPSIFeatures() will use the dataframe index.
+
+    Next, you need to specify how that variable (or the index) should be used to split
+    the data. You can specify a proportion of observations to be put in each data set,
+    or alternatively, provide a cut-off value.
+
+    If you specify a proportion through the `split_frac` parameter, the data will
     be sorted to accommodate that proportion. If `split_frac` is 0.5, 50% of the
     observations will go to either basis or test sets. If `split_frac` is 0.6, 60% of
     the samples will go to the basis data set and the remaining 40% to the test set.
@@ -82,14 +115,13 @@ class DropHighPSIFeatures(BaseSelector):
     If `split_distinct` is True, the data will be sorted considering unique values in
     the selected variables. Check the parameter below for more details.
 
-    If the user defines a numeric cut-off value or a specific date using the `cut_off`
+    If you define a numeric cut-off value or a specific date using the `cut_off`
     parameter, the observations with value <= cut-off will go to the basis data set and
-    the remaining ones to the test set. For categorical values this means they are
-    sorted alphabetically and cut accordingly.
+    the remaining ones to the test set. If the variable used to guide the split is
+    categorical, its values are sorted alphabetically and cut accordingly.
 
-    If the user passes a list of values in the `cut-off`, the observations with the
-    values in the list, will go to the basis set, and the remaining ones to the test
-    set.
+    If you pass a list of values in the `cut-off`, the observations with the values in
+    the list, will go to the basis set, and the remaining ones to the test set.
 
     More details in the :ref:`User Guide <psi_selection>`.
 
@@ -117,13 +149,14 @@ class DropHighPSIFeatures(BaseSelector):
         instead of being applied to the whole vector of values. For example, if the
         values in `split_col` are [1, 1, 1, 1, 2, 2, 3, 4] and `split_frac` is
         0.5, we have the following:
-        - `split_distinct=False` splits the vector in two equally sized parts:
-        [1, 1, 1, 1] and [2, 2, 3, 4]. This involves that 2 dataframes with 4
-        observations each are used for the PSI calculations.
-        - `split_distinct=True` computes the vector of unique values in `split_col`
-        ([1, 2, 3, 4]) and splits that vector in two equal parts: [1, 2] and [3, 4].
-        The number of observations in the two dataframes used for the PSI calculations
-        is respectively 6 ([1, 1, 1, 1, 2, 2]) and 2 ([3, 4]).
+
+            - `split_distinct=False` splits the vector in two equally sized parts:
+                [1, 1, 1, 1] and [2, 2, 3, 4]. This involves that 2 dataframes with 4
+                observations each are used for the PSI calculations.
+            - `split_distinct=True` computes the vector of unique values in `split_col`
+                ([1, 2, 3, 4]) and splits that vector in two equal parts: [1, 2] and
+                [3, 4]. The number of observations in the two dataframes used for the
+                PSI calculations is respectively 6 ([1, 1, 1, 1, 2, 2]) and 2 ([3, 4]).
 
     cut_off: int, float, date or list, default=None
         Threshold to split the dataset based on the `split_col` variable. If int, float
@@ -143,8 +176,20 @@ class DropHighPSIFeatures(BaseSelector):
         The threshold to drop a feature. If the PSI for a feature is >= threshold, the
         feature will be dropped. The most common threshold values are 0.25 (large shift)
         and 0.10 (medium shift).
-        If 'auto', the threshold will be calculated based on the size of the base and
-        target dataset and the number of bins.
+        If 'auto', the threshold will be calculated based on the size of the basis and
+        test dataset and the number of bins as:
+
+                threshold = χ2(q, B−1) × (1/N + 1/M)
+
+        where:
+
+            - q = quantile of the distribution (or 1 - p-value),
+            - B = number of bins/categories,
+            - N = size of basis dataset,
+            - M = size of test dataset.
+
+        See formula (5.2) from reference [1].
+
 
     bins: int, default = 10
         Number of bins or intervals. For continuous features with good value spread, 10
@@ -169,7 +214,17 @@ class DropHighPSIFeatures(BaseSelector):
         when determining the PSI for that particular feature. If 'raise' the transformer
         will raise an error and features will not be selected.
 
-    {variables}
+    p_value: float, default = 0.001
+        The p-value to test the null hypothesis that there is no feature drift. In that
+        case, the PSI-value approximates a random variable that follows a chi-square
+        distribution. See [1] for details. This parameter is used only if `threshold`
+        is set to 'auto'.
+
+    variables: int, str, list, default = None
+        The list of variables to evaluate. If `None`, the transformer will evaluate all
+        numerical variables in the dataset. If `"all"` the transformer will evaluate all
+        categorical and numerical variables in the dataset. Alternatively, the
+        transformer will evaluate the variables indicated in the list or string.
 
     {confirm_variables}
 
@@ -219,8 +274,10 @@ class DropHighPSIFeatures(BaseSelector):
 
     >>> import pandas as pd
     >>> from feature_engine.selection import DropHighPSIFeatures
-    >>> X = pd.DataFrame(dict(x1 = [1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    >>>                 x2 = [32,87,6,32,11,44,8,7,9,0,32,87,6,32,11,44,8,7,9,0]))
+    >>> X = pd.DataFrame(dict(
+    >>>         x1 = [1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    >>>         x2 = [32,87,6,32,11,44,8,7,9,0,32,87,6,32,11,44,8,7,9,0],
+    >>>         ))
     >>> psi = DropHighPSIFeatures()
     >>> psi.fit_transform(X)
         x2
@@ -251,6 +308,7 @@ class DropHighPSIFeatures(BaseSelector):
         missing_values: str = "raise",
         variables: Variables = None,
         confirm_variables: bool = False,
+        p_value: float = 0.001,
     ):
 
         if not isinstance(split_col, (str, int, type(None))):
@@ -319,6 +377,11 @@ class DropHighPSIFeatures(BaseSelector):
                     f"or choose another splitting criteria."
                 )
 
+        if not isinstance(p_value, float) or p_value < 0 or p_value > 1:
+            raise ValueError(
+                f"p_value must be a float between 0 and 1. Got {p_value} instead."
+            )
+
         super().__init__(confirm_variables)
 
         # Check the variables before assignment.
@@ -335,6 +398,7 @@ class DropHighPSIFeatures(BaseSelector):
         self.strategy = strategy
         self.min_pct_empty_bins = min_pct_empty_bins
         self.missing_values = missing_values
+        self.p_value = p_value
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -351,21 +415,18 @@ class DropHighPSIFeatures(BaseSelector):
         # check input dataframe
         X = check_X(X)
 
-        # If required exclude variables that are not in the input dataframe
-        self._confirm_variables(X)
+        # select variables to evaluate
+        cat_variables_, num_variables_ = self._select_variables(X)
 
-        # find numerical variables or check those entered are present in the dataframe
-        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
-
-        # Remove the split_col from the variables list. It might be added if the
-        # variables are not defined at initialization.
-        if self.split_col in self.variables_:
-            self.variables_.remove(self.split_col)
+        # check that split column is in the dataframe and remove from variable lists
+        cat_variables_, num_variables_ = self._check_split_column(
+            X, cat_variables_, num_variables_
+        )
 
         if self.missing_values == "raise":
             # check if dataset contains na or inf
-            _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.variables_)
+            _check_contains_na(X, num_variables_ + cat_variables_)
+            _check_contains_inf(X, num_variables_)
 
         # Split the dataframe into basis and test.
         basis_df, test_df = self._split_dataframe(X)
@@ -387,26 +448,37 @@ class DropHighPSIFeatures(BaseSelector):
         if self.switch:
             test_df, basis_df = basis_df, test_df
 
-        if self.threshold == "auto":
-            threshold = self._calculate_auto_threshold(
-                basis_df.shape[0], test_df.shape[0]
-            )
-        else:
-            threshold = self.threshold
+        # Set up parameters for numerical features
+        if len(num_variables_) > 0:
 
-        # set up the discretizer
-        if self.strategy == "equal_width":
-            bucketer = EqualWidthDiscretiser(bins=self.bins)
-        else:
-            bucketer = EqualFrequencyDiscretiser(q=self.bins)
+            # Set up the discretizer for numerical features
+            if self.strategy == "equal_width":
+                bucketer = EqualWidthDiscretiser(bins=self.bins)
+            else:
+                bucketer = EqualFrequencyDiscretiser(q=self.bins)
+
+            # Set up the threshold for numerical features
+            if self.threshold == "auto":
+                threshold_num = self._calculate_auto_threshold(
+                    basis_df.shape[0],
+                    test_df.shape[0],
+                    self.bins,
+                )
+            else:
+                threshold_num = self.threshold
+
+        # Set up the generic threshold for categorical features if used
+        if len(cat_variables_) > 0:
+            if self.threshold != "auto":
+                threshold_cat = self.threshold
 
         # Compute the PSI by looping over the features
         self.psi_values_ = {}
         self.features_to_drop_ = []
 
-        for feature in self.variables_:
-            # Discretize the features.
-
+        # Compute PSI for numerical features
+        for feature in num_variables_:
+            # Discretize feature
             basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
             test_discrete = bucketer.transform(test_df[[feature]].dropna())
 
@@ -419,14 +491,117 @@ class DropHighPSIFeatures(BaseSelector):
             self.psi_values_[feature] = np.sum(
                 (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
             )
+
             # Assess if feature should be dropped
-            if self.psi_values_[feature] > threshold:
+            if self.psi_values_[feature] > threshold_num:
                 self.features_to_drop_.append(feature)
 
+        # Compute the PSI for categorical features
+        for feature in cat_variables_:
+            basis_discrete = basis_df[[feature]]
+            test_discrete = test_df[[feature]]
+
+            # Determine percentage of observations per bin
+            basis_distrib, test_distrib = self._observation_frequency_per_bin(
+                basis_discrete, test_discrete
+            )
+
+            # Calculate the PSI value
+            self.psi_values_[feature] = np.sum(
+                (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
+            )
+
+            # Determine the appropriate threshold for the categorical feature
+            if self.threshold == "auto":
+                n_bins_cat = X[feature].nunique()
+                threshold_cat = self._calculate_auto_threshold(
+                    basis_df.shape[0],
+                    test_df.shape[0],
+                    n_bins_cat,
+                )
+
+            # Assess if feature should be dropped
+            if self.psi_values_[feature] > threshold_cat:
+                self.features_to_drop_.append(feature)
+
+        # store analyzed variables
+        self.variables_ = num_variables_ + cat_variables_
         # save input features
         self._get_feature_names_in(X)
 
         return self
+
+    def _select_variables(self, X: pd.DataFrame):
+        """Based on the user input to the `variables` attribute in init, find or check
+        the variables for which the PSI should be calculated.
+
+        If `None`, select all numerical variables.
+        If `"all", select all numerical and categorical variables.
+        If string or list, check that the variables are numerical or categorical.
+        """
+
+        if self.variables is None:
+            num_variables = list(X.select_dtypes(include="number").columns)
+            if len(num_variables) == 0:
+                raise ValueError(
+                    "No numerical variables found in this dataframe. Please check "
+                    "variable format with pandas dtypes."
+                )
+            cat_variables: List[Union[str, int]] = []
+
+        elif self.variables == "all":
+            (
+                cat_variables,
+                num_variables,
+            ) = find_categorical_and_numerical_variables(X, None)
+
+        else:
+            if not isinstance(self.variables, list):
+                variables = [self.variables]
+            else:
+                variables = self.variables
+
+            if self.confirm_variables is True:
+                variables = [var for var in variables if var in X.columns]
+                # Raise an error if no column is left to work with.
+                if len(variables) == 0:
+                    raise ValueError(
+                        "After confirming variables, no variable remains. At least 1 "
+                        "variable is required for the selection."
+                    )
+
+            (
+                cat_variables,
+                num_variables,
+            ) = find_categorical_and_numerical_variables(X, variables)
+
+        return cat_variables, num_variables
+
+    def _check_split_column(
+        self,
+        X: pd.DataFrame,
+        cat_variables: List[Union[str, int]],
+        num_variables: List[Union[str, int]],
+    ):
+        """Check that split_col is in the dataframe and remove from numerical and
+        categorical variable lists if necessary.
+
+        It will get added if the variables are selected automatically.
+        """
+        if self.split_col is not None:
+            # check that split_col is in the dataframe.
+            if self.split_col not in X.columns:
+                raise ValueError(f"{self.split_col} is not in the dataframe.")
+
+            # Remove the split_col from variables lists. Happens when variables are
+            # selected by transformer.
+            if self.variables is None or self.variables == "all":
+                if self.split_col in num_variables:
+                    num_variables.remove(self.split_col)
+                elif self.split_col in cat_variables:
+                    cat_variables.remove(self.split_col)
+
+        return cat_variables, num_variables
 
     def _observation_frequency_per_bin(self, basis, test):
         """
@@ -464,12 +639,13 @@ class DropHighPSIFeatures(BaseSelector):
                 how="outer",
             )
             .fillna(self.min_pct_empty_bins)
+            .replace(to_replace=0, value=self.min_pct_empty_bins)
         )
         distributions.columns = ["basis", "test"]
 
         return distributions.basis, distributions.test
 
-    def _split_dataframe(self, X):
+    def _split_dataframe(self, X: pd.DataFrame):
         """
         Split dataframe according to a cut-off value and return two dataframes: the
         basis dataframe contains all observations <= cut_off and the test dataframe the
@@ -495,13 +671,13 @@ class DropHighPSIFeatures(BaseSelector):
         """
 
         # Identify the values according to which the split must be done.
-        if not self.split_col:
+        if self.split_col is None:
             reference = pd.Series(X.index)
         else:
             reference = X[self.split_col]
 
         # Raise an error if there are missing values in the reference column.
-        if reference.isna().sum() != 0:
+        if reference.isna().any():
             raise ValueError(
                 f"There are {reference.isna().sum()} missing values in the reference"
                 "variable. Missing data are not allowed in the variable used to "
@@ -547,7 +723,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         Parameters
         ----------
-        split_column : pd.Series.
+        split_column: pd.Series.
             Series for which the nth quantile will be computed.
 
         Returns
@@ -577,10 +753,37 @@ class DropHighPSIFeatures(BaseSelector):
 
         return cut_off
 
-    def _calculate_auto_threshold(self, N, M, q=0.999):
-        # threshold = χ2(q,B−1) × (1/N + 1/M)
-        # where q - quantile (or 1 - p-value) B - number of bins,
-        # N - size of basis dataset, M - size of test dataset
-        # see formula (5.2) from reference
-        # taking q = 0.999 to get higher threshold
-        return stats.chi2.ppf(q, self.bins - 1) * (1.0 / N + 1.0 / M)
+    def _calculate_auto_threshold(self, N, M, bins):
+        """Threshold computation for chi-square test.
+
+        The threshold is given by:
+
+            threshold = χ2(q,B−1) × (1/N + 1/M)
+
+        where:
+
+        q = quantile of the distribution (or 1 - p-value),
+        B = number of bins/categories,
+        N = size of basis dataset,
+        M = size of test dataset.
+        See formula (5.2) from reference [1] in the class docstring.
+
+        Parameters
+        ----------
+        N: float or int
+        M: float or int
+        bins: int
+
+        Returns
+        -------
+        float
+        """
+        return stats.chi2.ppf(1 - self.p_value, bins - 1) * (1.0 / N + 1.0 / M)
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "pass"
+        # add additional test that fails
+        tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+
+        return tags_dict

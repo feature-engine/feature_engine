@@ -84,6 +84,8 @@ def check_feature_engine_estimator(estimator, needs_group: bool = False):
             check_all_types_variables_assignment(estimator, needs_group=needs_group)
         elif tags["variables"] == "datetime":
             check_datetime_variables_assignment(estimator)
+        else:
+            pass
 
     # Tests based on transformer's init parameters
     if hasattr(estimator, "cv"):
