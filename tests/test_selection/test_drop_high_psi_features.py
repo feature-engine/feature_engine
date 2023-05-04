@@ -96,12 +96,15 @@ EXPECTED_PSI_CAT_FEW = {
     "drift_cat_1": 18.41883867587797,
 }
 
+EXPECTED_PSI_STRING = {"var_0": 0.043828484052281}
+
 _input_output = [
     (None, EXPECTED_PSI_NUM),
     ("all", EXPECTED_PSI_ALL),
     (["var_2", "var_3", "drift_1", "drift_2"], EXPECTED_PSI_NUM_FEW),
     (["cat_1", "drift_cat_1"], EXPECTED_PSI_CAT_FEW),
     (["var_0", "drift_1", "drift_cat_1"], EXPECTED_PSI_MIXED),
+    ("var_0", EXPECTED_PSI_STRING),
 ]
 
 
@@ -172,6 +175,27 @@ def test_fit_attributes_with_autothreshold(variables, expected_psi, df):
     assert transformer.psi_values_ == pytest.approx(expected_psi, 12)
     assert transformer.features_to_drop_ == [
         var for var in expected_psi.keys() if "drift" in var
+    ]
+
+
+def test_calculation_when_strategy_equal_width(df):
+    transformer = DropHighPSIFeatures(strategy="equal_width")
+    transformer.fit(df)
+
+    expected = {
+        "var_0": 0.014858665472468786,
+        "var_1": 0.04514737836588022,
+        "var_2": 0.03431479397506742,
+        "var_3": 0.04298209189840294,
+        "var_4": 0.02385796430263416,
+        "var_5": 0.046809664317794444,
+        "drift_1": 8.283089355027482,
+        "drift_2": 8.283089355027482,
+    }
+
+    assert transformer.psi_values_ == pytest.approx(expected, 12)
+    assert transformer.features_to_drop_ == [
+        var for var in expected.keys() if "drift" in var
     ]
 
 
@@ -290,6 +314,16 @@ def test_split_col_not_included_in_variables(df):
     assert "cat_1" not in transformer.psi_values_.keys()
 
 
+def test_error_split_col_not_in_df(df):
+    transformer = DropHighPSIFeatures(variables=None, split_col="var_0")
+    data = df.copy()
+    data = data.drop(["var_0"], axis=1)
+    msg = "var_0 is not in the dataframe."
+    with pytest.raises(ValueError) as record:
+        transformer.fit(data)
+    assert str(record.value) == msg
+
+
 _input_output = [
     (["var_2", "var_3", "drift_1", "drift_2"], ["drift_1"], EXPECTED_PSI_NUM_FEW),
     (["var_0", "drift_1", "drift_cat_1"], ["drift_cat_1"], EXPECTED_PSI_MIXED),
@@ -310,6 +344,34 @@ def test_confirm_variables(variables, variable, expected_psi, df):
     assert transformer.features_to_drop_ == [
         var for var in expected_psi.keys() if "drift" in var
     ]
+
+
+def test_error_if_variables_is_none_and_no_numerical_in_df(df):
+    transformer = DropHighPSIFeatures(variables=None)
+    msg = (
+        "No numerical variables found in this dataframe. Please check "
+        "variable format with pandas dtypes."
+    )
+    with pytest.raises(ValueError) as record:
+        transformer.fit(df[["cat_1", "drift_cat_1"]])
+
+    assert str(record.value) == msg
+
+
+def test_error_if_confirm_variables_returns_empty_list(df):
+    transformer = DropHighPSIFeatures(
+        variables=["cat_1", "drift_cat_1"], confirm_variables=True
+    )
+    data = df.copy()
+    data = data.drop(["cat_1", "drift_cat_1"], axis=1)
+    msg = (
+        "After confirming variables, no variable remains. At least 1 "
+        "variable is required for the selection."
+    )
+    with pytest.raises(ValueError) as record:
+        transformer.fit(data)
+
+    assert str(record.value) == msg
 
 
 def test_error_if_na_in_split_col(df):

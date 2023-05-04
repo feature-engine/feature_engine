@@ -596,10 +596,10 @@ class DropHighPSIFeatures(BaseSelector):
             # Remove the split_col from variables lists. Happens when variables are
             # selected by transformer.
             if self.variables is None or self.variables == "all":
-                if self.split_col in cat_variables:
-                    cat_variables.remove(self.split_col)
-                elif self.split_col in num_variables:
+                if self.split_col in num_variables:
                     num_variables.remove(self.split_col)
+                elif self.split_col in cat_variables:
+                    cat_variables.remove(self.split_col)
 
         return cat_variables, num_variables
 
