@@ -45,9 +45,8 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     majority of the observations in the dataset. This behaviour can be specified with
     the parameter `top_categories`.
 
-    The encoder also has the functionality to one-hot encode user-defined categories
-    for a subset or all variables. This behavior can be specified with the parameter
-    `custom_categories`.
+    OneHotEncoder can also encode a user defined subset of categories for each variable.
+    See parameter `custom_categories`.
 
     The encoder will encode only categorical variables by default (type 'object' or
     'categorical'). You can pass a list of variables to encode. Alternatively, the
