@@ -199,7 +199,7 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 f"Got {custom_categories} for custom_categories."
             )
 
-        if custom_categories and not isinstance(custom_categories, dict):
+        if custom_categories is not None and not isinstance(custom_categories, dict):
             raise ValueError(
                 "custom_categories must be a dictionary. "
                 f"Got {custom_categories} instead."
