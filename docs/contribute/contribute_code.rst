@@ -452,20 +452,25 @@ will tell you everything ;)
 Code Profiling
 --------------
 
-If you want to profile your code, you can use the **profiling** module in root directory. There you will find two files,
-`profiling.py` and `profiling.sh`. Both file does the same thing but in different ways. The profiling.py file is a python script
-containing a function that must be used as a decorator for the class/method we want to profile.
-The profiling.sh file is a bash/zsh script that you can run from the command line to profile whole .py script file.
-Let us see how to use them. First, start with profiling.py file.
+If you want to profile your code, you can use the **profiling** module located in the root directory.
+There you will find two files: `profiling.py` and `profiling.sh`. Both files do the same thing, but in
+different ways.
 
-I doubt that `DropDuplicateFeatures` class should take more time than other classes as it iterates over the columns and
-checks if they are duplicated or not. So, I will profile the `DropDuplicateFeatures` class.
+`profiling.py` contains a function that must be used as a decorator of the class or method you want to profile.
+`profiling.sh` is a bash or zsh file that you can run from the command line to profile an entire `.py` file.
 
-First, I will find where this class resides and on top of the imports I will add the following line::
+Let's see how to use them.
+
+We'll begin with `profiling.py`.
+
+Say, I suspect that `DropDuplicateFeatures` is running slower than I expected. And I think the problem
+might be in the fit functionality. Then, I profile `DropDuplicateFeatures`'s fit method to find out.
+
+First, I find the script for this class and I add the following line to the imports::
 
     from profiling.profiling import profile_function
 
-Now, I will decorate the `DropDuplicateFeatures.fit` method with the `profile_function` function::
+Next, I decorate the `DropDuplicateFeatures.fit` method with the `profile_function` function::
     
         @profile_function(output_file="profile.html")
         def fit(self, X: pd.DataFrame, y: pd.Series = None):
@@ -473,7 +478,7 @@ Now, I will decorate the `DropDuplicateFeatures.fit` method with the `profile_fu
 
 The next step is to create a temporary .py file that will contain the code that we want to profile.
 
-For example, I will create a file named `temp.py` and copy the following code::
+For example, I create a file named `temp.py` **at the root** of feature-engine and copy the following code::
 
     import pandas as pd
     import numpy as np
@@ -493,17 +498,21 @@ For example, I will create a file named `temp.py` and copy the following code::
         train_t = transformer.transform(df)
 
 
-Now, I will run the `temp.py` file from the command line::
+Now, I run the `temp.py` file from the command line::
     
         $ python temp.py
 
-This will create a file named `profile.html` in the root directory of the project. This file contains the profiling
-results. You can open it with your favorite browser and inspect the results.
+This will create a file named `profile.html` in the root directory of the project. This file contains
+the profiling results. You can open it with your favorite browser and inspect the results.
 
-If you don't like adding additional imports and decorator, then you can use the `profiling.sh` file. This file is a bash/zsh
-script that you can run from the command line. Let us see how to use it.
+If you don't like adding additional imports and decorator, then you can use the `profiling.sh` file.
+This is a bash or zsh file that you can run from the command line.
 
-Again, I will profile the `DropDuplicateFeatures` class. I need to create a temporary .py file and put the same code as above.
+Let's see how to use it.
+
+Again, I will profile the `DropDuplicateFeatures` class. I need to create a temporary .py file and
+add the same code as previously.
+
 After that, open the terminal in root directory and run the following command::
 
     $ ./profiling/profiling.sh temp.py
