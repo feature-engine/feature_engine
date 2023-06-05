@@ -36,7 +36,7 @@ Bug fixes
 Code improvements
 ~~~~~~~~~~~~~~~~~
 
-- Made code source compatible with pandas 2.0` (`Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_)
+- Made code base compatible with pandas 2.0 (`Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_)
 
 
 Version 1.6.0
