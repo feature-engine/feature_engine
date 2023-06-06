@@ -194,7 +194,7 @@ class RelativeFeatures(BaseCreation):
             The input dataframe plus the new variables.
         """
 
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
         methods_dict = {
             "add": self._add,

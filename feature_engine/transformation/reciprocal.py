@@ -140,7 +140,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe and if class was fitted
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
         # check if the variables contain the value 0
         if (X[self.variables_] == 0).any().any():

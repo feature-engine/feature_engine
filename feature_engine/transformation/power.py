@@ -141,7 +141,7 @@ class PowerTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe and if class was fitted
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
         # transform
         X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], self.exp)
@@ -164,7 +164,7 @@ class PowerTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe and if class was fitted
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
         # inverse_transform
         X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], 1 / self.exp)

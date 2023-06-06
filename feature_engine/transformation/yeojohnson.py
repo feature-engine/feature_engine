@@ -147,7 +147,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
         # check input dataframe and if class was fitted
 
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
         for feature in self.variables_:
             X[feature] = stats.yeojohnson(X[feature], lmbda=self.lambda_dict_[feature])
 
