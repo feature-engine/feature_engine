@@ -16,7 +16,7 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine._prediction.target_mean_classifier import TargetMeanClassifier
 from feature_engine._prediction.target_mean_regressor import TargetMeanRegressor
 from feature_engine.dataframe_checks import check_X_y
-from feature_engine.selection._docstring import (
+from feature_engine._docstrings.selection._docstring import (
     _cv_docstring,
     _features_to_drop_docstring,
     _fit_docstring,

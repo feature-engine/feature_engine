@@ -15,7 +15,7 @@ from feature_engine._docstrings.init_parameters.selection import (
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
-from feature_engine.selection._docstring import (
+from feature_engine._docstrings.selection._docstring import (
     _cv_docstring,
     _features_to_drop_docstring,
     _fit_docstring,

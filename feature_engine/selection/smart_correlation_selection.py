@@ -17,7 +17,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     check_X,
 )
-from feature_engine.selection._docstring import (
+from feature_engine._docstrings.selection._docstring import (
     _cv_docstring,
     _estimator_docstring,
     _get_support_docstring,

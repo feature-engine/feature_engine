@@ -20,7 +20,7 @@ from feature_engine.discretisation import (
     EqualWidthDiscretiser,
 )
 from feature_engine.encoding.woe import WoE
-from feature_engine.selection._docstring import (
+from feature_engine._docstrings.selection._docstring import (
     _features_to_drop_docstring,
     _get_support_docstring,
     _threshold_docstring,
