@@ -206,6 +206,10 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
 
         super().__init__(variables, ignore_format)
         check_parameter_unseen(unseen, ["ignore", "raise"])
+        if fill_value is not None and not isinstance(fill_value, (int, float)):
+            raise ValueError(
+                f"fill_value takes None, integer or float. Got {fill_value} instead."
+            )
         self.unseen = unseen
         self.fill_value = fill_value
 

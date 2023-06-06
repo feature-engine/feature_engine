@@ -301,6 +301,18 @@ def test_fill_value():
     assert encoder.encoder_dict_ == woe_exp
 
 
+@pytest.mark.parametrize("fill_value", ["hola", [10]])
+def test_error_if_fill_value_not_allowed(fill_value):
+    with pytest.raises(ValueError):
+        WoEEncoder(fill_value=fill_value)
+
+
+@pytest.mark.parametrize("fill_value", [0, 1, 10, 0.5, 0.002])
+def test_assigns_fill_value_at_init(fill_value):
+    encoder = WoEEncoder(fill_value=fill_value)
+    assert encoder.fill_value == fill_value
+
+
 def test_error_if_contains_na_in_fit(df_enc_na):
     # test case 9: when dataset contains na, fit method
     encoder = WoEEncoder(variables=None)
