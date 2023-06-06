@@ -233,23 +233,36 @@ def test_error_if_denominator_probability_is_zero_2_vars():
     )
     assert str(record.value) == msg
 
-    # # # test case 6: when the numerator probability is zero, woe
-    # # with pytest.raises(ValueError):
-    # #     df = {'var_A': ['A'] * 6 + ['B'] * 10 + ['C'] * 4,
-    # #           'var_B': ['A'] * 10 + ['B'] * 6 + ['C'] * 4,
-    # #           'target': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1,
-    # 1, 0, 0]}
-    # #     df = pd.DataFrame(df)
-    # #     encoder.fit(df[['var_A', 'var_B']], df['target'])
-    #
-    # # # test case 7: when the denominator probability is zero, woe
-    # # with pytest.raises(ValueError):
-    # #     df = {'var_A': ['A'] * 6 + ['B'] * 10 + ['C'] * 4,
-    # #           'var_B': ['A'] * 10 + ['B'] * 6 + ['C'] * 4,
-    # #           'target': [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1,
-    # 0, 0]}
-    # #     df = pd.DataFrame(df)
-    # #     encoder.fit(df[['var_A', 'var_B']], df['target'])
+
+def test_error_if_numerator_probability_is_zero():
+    df = {
+        "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
+        "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
+        "var_C": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
+        "target": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+    }
+    df = pd.DataFrame(df)
+    encoder = WoEEncoder(variables=None)
+
+    with pytest.raises(ValueError) as record:
+        encoder.fit(df, df["target"])
+
+    msg = (
+        "During the WoE calculation, some of the categories in the "
+        "following features contained 0 in the denominator or numerator, "
+        "and hence the WoE can't be calculated: var_A, var_C."
+    )
+    assert str(record.value) == msg
+
+    with pytest.raises(ValueError) as record:
+        encoder.fit(df[["var_A", "var_B"]], df["target"])
+
+    msg = (
+        "During the WoE calculation, some of the categories in the "
+        "following features contained 0 in the denominator or numerator, "
+        "and hence the WoE can't be calculated: var_A."
+    )
+    assert str(record.value) == msg
 
 
 def test_error_if_contains_na_in_fit(df_enc_na):
