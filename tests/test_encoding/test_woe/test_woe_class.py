@@ -14,7 +14,7 @@ def test_woe_calculation(df_enc):
 
     pd.testing.assert_series_equal(pos, pos_exp, check_names=False)
     pd.testing.assert_series_equal(neg, neg_exp, check_names=False)
-    pd.testing.assert_series_equal(np.log(pos / neg), woe, check_names=False)
+    pd.testing.assert_series_equal(np.log(pos_exp / neg_exp), woe, check_names=False)
 
 
 def test_woe_error():
@@ -63,4 +63,4 @@ def test_fill_value(fill_value):
 
     pd.testing.assert_series_equal(pos, pos_exp, check_names=False)
     pd.testing.assert_series_equal(neg, neg_exp, check_names=False)
-    pd.testing.assert_series_equal(np.log(pos / neg), woe, check_names=False)
+    pd.testing.assert_series_equal(np.log(pos_exp / neg_exp), woe, check_names=False)

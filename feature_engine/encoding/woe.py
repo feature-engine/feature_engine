@@ -111,7 +111,8 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
 
     The log(0) is not defined and the division by 0 is not defined. Thus, if any of the
     terms in the WoE equation are 0 for a given category, the encoder will return an
-    error. If this happens, try grouping less frequent categories.
+    error. If this happens, try grouping less frequent categories. Alternatively,
+    you can now add a fill_value (see parameter below).
 
     More details in the :ref:`User Guide <woe_encoder>`.
 
@@ -122,6 +123,12 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
     {ignore_format}
 
     {unseen}
+
+    fill_value: int, float, default=None
+        When the numerator or denominator of the WoE calculation are zero, the WoE
+        calculation is not possible. If `fill_value` is None (recommended), an error
+        will be raised in those cases. Alternatively, fill_value will be used in place
+        of denominators or numerators that equal zero.
 
     Attributes
     ----------
@@ -186,11 +193,13 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
         unseen: str = "ignore",
+        fill_value: Union[int, float] = None,
     ) -> None:
 
         super().__init__(variables, ignore_format)
         check_parameter_unseen(unseen, ["ignore", "raise"])
         self.unseen = unseen
+        self.fill_value = fill_value
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -214,7 +223,7 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
 
         for var in variables_:
             try:
-                _, _, woe = self._calculate_woe(X, y, var)
+                _, _, woe = self._calculate_woe(X, y, var, self.fill_value)
                 encoder_dict_[var] = woe.to_dict()
             except ValueError:
                 vars_that_fail.append(var)

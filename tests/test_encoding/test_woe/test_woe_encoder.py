@@ -265,6 +265,42 @@ def test_error_if_numerator_probability_is_zero():
     assert str(record.value) == msg
 
 
+def test_fill_value():
+    df = {
+        "var_A": ["A"] * 9 + ["B"] * 6 + ["C"] * 3 + ["D"] * 2,
+        "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
+        "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0],
+    }
+    df = pd.DataFrame(df)
+    encoder = WoEEncoder(variables=None, fill_value=1)
+    encoder.fit(df, df["target"])
+    woe_exp_a = {
+        "A": -0.6337237600891445,
+        "B": -0.07410797215372196,
+        "C": -0.8472978603872037,
+        "D": 1.8718021769015913,
+    }
+    woe_exp_b = {
+        "A": -0.7672551527136673,
+        "B": 0.6190392084062234,
+        "C": 0.6190392084062234,
+    }
+
+    woe_exp = {"var_A": woe_exp_a, "var_B": woe_exp_b}
+    assert encoder.encoder_dict_ == woe_exp
+
+    encoder = WoEEncoder(variables=None, fill_value=10)
+    encoder.fit(df, df["target"])
+    woe_exp_a = {
+        "A": -0.6337237600891445,
+        "B": -0.07410797215372196,
+        "C": -3.1498829533812494,
+        "D": 4.174387269895637,
+    }
+    woe_exp = {"var_A": woe_exp_a, "var_B": woe_exp_b}
+    assert encoder.encoder_dict_ == woe_exp
+
+
 def test_error_if_contains_na_in_fit(df_enc_na):
     # test case 9: when dataset contains na, fit method
     encoder = WoEEncoder(variables=None)
