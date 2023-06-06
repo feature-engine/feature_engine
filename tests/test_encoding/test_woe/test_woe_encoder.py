@@ -313,7 +313,7 @@ def test_error_if_fill_value_not_allowed(fill_value):
         WoEEncoder(fill_value=fill_value)
 
 
-@pytest.mark.parametrize("fill_value", [0, 1, 10, 0.5, 0.002])
+@pytest.mark.parametrize("fill_value", [0, 1, 10, 0.5, 0.002, None])
 def test_assigns_fill_value_at_init(fill_value):
     encoder = WoEEncoder(fill_value=fill_value)
     assert encoder.fill_value == fill_value
