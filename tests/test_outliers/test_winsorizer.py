@@ -1,4 +1,5 @@
 import math
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -20,10 +21,7 @@ def test_gaussian_capping_right_tail_with_fold_1(df_normal_dist):
     assert transformer.tail == "right"
     assert transformer.fold == 1
     # test fit attr
-    assert math.isclose(
-        transformer.right_tail_caps_["var"],
-        0.1067690260251065
-    )
+    assert math.isclose(transformer.right_tail_caps_["var"], 0.1067690260251065)
     assert transformer.left_tail_caps_ == {}
     assert transformer.n_features_in_ == 1
     # test transform outputs
@@ -39,19 +37,11 @@ def test_gaussian_capping_both_tails_with_fold_2(df_normal_dist):
 
     # expected output
     df_transf = df_normal_dist.copy()
-    df_transf["var"] = df_transf["var"].clip(
-        -0.1955956473898675, 0.2075572504967645
-    )
+    df_transf["var"] = df_transf["var"].clip(-0.1955956473898675, 0.2075572504967645)
 
     # test fit params
-    assert math.isclose(
-        transformer.right_tail_caps_["var"],
-        0.2075572504967645
-    )
-    assert math.isclose(
-        transformer.left_tail_caps_["var"],
-        -0.1955956473898675
-    )
+    assert math.isclose(transformer.right_tail_caps_["var"], 0.2075572504967645)
+    assert math.isclose(transformer.left_tail_caps_["var"], -0.1955956473898675)
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
     assert math.isclose(X["var"].max(), 0.2075572504967645)
@@ -67,19 +57,11 @@ def test_iqr_capping_both_tails_with_fold_1(df_normal_dist):
 
     # expected output
     df_transf = df_normal_dist.copy()
-    df_transf["var"] = df_transf["var"].clip(
-        -0.20247907173293223, 0.21180113880445128
-    )
+    df_transf["var"] = df_transf["var"].clip(-0.20247907173293223, 0.21180113880445128)
 
     # test fit params
-    assert math.isclose(
-        transformer.right_tail_caps_["var"],
-        0.21180113880445128
-    )
-    assert math.isclose(
-        transformer.left_tail_caps_["var"],
-        -0.20247907173293223
-    )
+    assert math.isclose(transformer.right_tail_caps_["var"], 0.21180113880445128)
+    assert math.isclose(transformer.left_tail_caps_["var"], -0.20247907173293223)
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
     assert math.isclose(X["var"].max(), 0.21180113880445128)
@@ -99,10 +81,7 @@ def test_iqr_capping_left_tail_with_fold_2(df_normal_dist):
 
     # test fit params
     assert transformer.right_tail_caps_ == {}
-    assert math.isclose(
-        transformer.left_tail_caps_["var"],
-        -0.17486039103044
-    )
+    assert math.isclose(transformer.left_tail_caps_["var"], -0.17486039103044)
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
     assert math.isclose(X["var"].min(), -0.17486039103044)
@@ -119,14 +98,8 @@ def test_quantile_capping_both_tails_with_fold_10_percent(df_normal_dist):
     df_transf["var"] = df_transf["var"].clip(-0.12366227743232801, 0.14712481122898166)
 
     # test fit params
-    assert math.isclose(
-        transformer.right_tail_caps_["var"],
-        0.14712481122898166
-    )
-    assert math.isclose(
-        transformer.left_tail_caps_["var"],
-        -0.12366227743232801
-    )
+    assert math.isclose(transformer.right_tail_caps_["var"], 0.14712481122898166)
+    assert math.isclose(transformer.left_tail_caps_["var"], -0.12366227743232801)
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
     assert math.isclose(X["var"].max(), 0.14712481122898166)
@@ -145,10 +118,7 @@ def test_quantile_capping_right_tail_with_fold_15_percent(df_normal_dist):
     df_transf["var"] = df_transf["var"].clip(upper=0.11823196128033647)
 
     # test fit params
-    assert math.isclose(
-        transformer.right_tail_caps_["var"],
-        0.11823196128033647
-    )
+    assert math.isclose(transformer.right_tail_caps_["var"], 0.11823196128033647)
     assert transformer.left_tail_caps_ == {}
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
@@ -162,9 +132,7 @@ def test_quantile_fold_default_value():
     assert transformer.fold == 0.05
 
 
-@pytest.mark.parametrize(
-     "strings", ["gaussian", "iqr", "mad"]
- )
+@pytest.mark.parametrize("strings", ["gaussian", "iqr", "mad"])
 def test_other_fold_default_value(strings):
     # test case 2: Test gaussian, iqr, mad, with fold default = 3
     transformer = Winsorizer(capping_method=strings)
@@ -185,10 +153,7 @@ def test_mad_capping_right_tail_with_fold_1(df_normal_dist):
     assert transformer.tail == "right"
     assert transformer.fold == 1
     # test fit attr
-    assert math.isclose(
-        transformer.right_tail_caps_["var"],
-        0.10995521088494983
-    )
+    assert math.isclose(transformer.right_tail_caps_["var"], 0.10995521088494983)
     assert transformer.left_tail_caps_ == {}
     assert transformer.n_features_in_ == 1
     # test transform outputs
@@ -207,14 +172,8 @@ def test_mad_capping_both_tails_with_fold_2(df_normal_dist):
     df_transf["var"] = df_transf["var"].clip(-0.1916815859385002, 0.21050080982609987)
 
     # test fit params
-    assert math.isclose(
-        transformer.right_tail_caps_["var"],
-        0.21050080982609987
-    )
-    assert math.isclose(
-        transformer.left_tail_caps_["var"],
-        -0.1916815859385002
-    )
+    assert math.isclose(transformer.right_tail_caps_["var"], 0.21050080982609987)
+    assert math.isclose(transformer.left_tail_caps_["var"], -0.1916815859385002)
     # test transform output
     pd.testing.assert_frame_equal(X, df_transf)
     assert math.isclose(X["var"].max(), 0.21050080982609987)
@@ -319,14 +278,8 @@ def test_transformer_ignores_na_in_df(df_na):
     df_transf["Marks"] = df_transf["Marks"].clip(upper=0.8784116651786605)
 
     # test fit params
-    assert math.isclose(
-        transformer.right_tail_caps_["Age"],
-        38.04494616731882
-    )
-    assert math.isclose(
-        transformer.right_tail_caps_["Marks"],
-        0.8784116651786605
-    )
+    assert math.isclose(transformer.right_tail_caps_["Age"], 38.04494616731882)
+    assert math.isclose(transformer.right_tail_caps_["Marks"], 0.8784116651786605)
     assert transformer.left_tail_caps_ == {}
     assert transformer.n_features_in_ == 6
     # test transform output

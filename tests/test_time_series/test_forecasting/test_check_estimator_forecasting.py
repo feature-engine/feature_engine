@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.base import clone
+from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.timeseries.forecasting import (
@@ -64,3 +65,15 @@ def test_error_when_nan_in_index(df_time, estimator):
     transformer.fit(X)
     with pytest.raises(NotImplementedError):
         transformer.transform(Xd)
+
+
+@pytest.mark.parametrize("transformer", _estimators)
+def test_transformers_in_pipeline_with_set_output_pandas(df_time, transformer):
+    X = df_time.copy()
+
+    pipe = Pipeline([("trs", transformer)]).set_output(transform="pandas")
+
+    Xtt = transformer.fit_transform(X)
+    Xtp = pipe.fit_transform(X)
+
+    pd.testing.assert_frame_equal(Xtt, Xtp)

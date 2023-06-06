@@ -345,27 +345,28 @@ def test_error_when_division_by_zero_and_fill_value_is_none(_func, df_vartypes):
         transformer.transform(df_zero)
 
     msg = (
-            "Some of the reference variables contain zeroes. Division by zero "
-            "does not exist. Replace zeros before using this transformer for division "
-            "or set `fill_value` to a number."
-        )
+        "Some of the reference variables contain zeroes. Division by zero "
+        "does not exist. Replace zeros before using this transformer for division "
+        "or set `fill_value` to a number."
+    )
     # check that the error message matches
     assert str(record.value) == msg
 
 
-@pytest.mark.parametrize("_fill_value, _func", [
-    (111.111, ["div"]),
-    (999, ["div"]),
-    (111.111, ["truediv"]),
-    (999, ["truediv"]),
-    (111.111, ["floordiv"]),
-    (999, ["floordiv"]),
-    (111.111, ["mod"]),
-    (999, ["mod"]),
-])
-def test_fill_values_when_division_by_zero(
-        _fill_value, _func, df_vartypes
-):
+@pytest.mark.parametrize(
+    "_fill_value, _func",
+    [
+        (111.111, ["div"]),
+        (999, ["div"]),
+        (111.111, ["truediv"]),
+        (999, ["truediv"]),
+        (111.111, ["floordiv"]),
+        (999, ["floordiv"]),
+        (111.111, ["mod"]),
+        (999, ["mod"]),
+    ],
+)
+def test_fill_values_when_division_by_zero(_fill_value, _func, df_vartypes):
     df_zero = df_vartypes.copy()
     df_zero.loc[2, "Marks"] = 0
     df_zero.loc[1, "Age"] = np.nan

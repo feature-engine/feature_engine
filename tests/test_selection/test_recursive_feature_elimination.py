@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import Lasso, LogisticRegression, LinearRegression
+from sklearn.linear_model import Lasso, LinearRegression, LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
 
 from feature_engine.selection import RecursiveFeatureElimination

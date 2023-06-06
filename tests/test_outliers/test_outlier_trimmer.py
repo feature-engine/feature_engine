@@ -88,9 +88,7 @@ def test_quantile_fold_default_value():
     assert transformer.fold == 0.05
 
 
-@pytest.mark.parametrize(
-     "strings", ["gaussian", "iqr", "mad"]
- )
+@pytest.mark.parametrize("strings", ["gaussian", "iqr", "mad"])
 def test_other_fold_default_value(strings):
     # test case 2: Test gaussian, iqr, mad, with fold default = 3
     transformer = OutlierTrimmer(capping_method=strings)
