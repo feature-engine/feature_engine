@@ -205,13 +205,30 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
         variables_ = self._check_or_select_variables(X)
         _check_contains_na(X, variables_)
 
-        self.encoder_dict_ = {}
+        encoder_dict_ = {}
+        vars_that_fail = []
 
         for var in variables_:
-            _, _, woe = self._calculate_woe(X, y, var)
+            try:
+                _, _, woe = self._calculate_woe(X, y, var)
+                encoder_dict_[var] = woe.to_dict()
+            except ValueError:
+                vars_that_fail.append(var)
 
-            self.encoder_dict_[var] = woe.to_dict()
+        if len(vars_that_fail) > 0:
+            vars_that_fail_str = (
+                ", ".join(vars_that_fail)
+                if len(vars_that_fail) > 1
+                else vars_that_fail[0]
+            )
 
+            raise ValueError(
+                "During the WoE calculation, some of the categories in the "
+                "following features contained 0 in the denominator or numerator, "
+                f"and hence the WoE can't be calculated: {vars_that_fail_str}."
+            )
+
+        self.encoder_dict_ = encoder_dict_
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
