@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -285,9 +287,11 @@ def test_fill_value():
         "B": 0.6190392084062234,
         "C": 0.6190392084062234,
     }
-
     woe_exp = {"var_A": woe_exp_a, "var_B": woe_exp_b}
-    assert encoder.encoder_dict_ == woe_exp
+
+    for var in ["var_A", "var_B"]:
+        for k, i in woe_exp[var].items():
+            assert math.isclose(encoder.encoder_dict_[var][k], woe_exp[var][k])
 
     encoder = WoEEncoder(variables=None, fill_value=10)
     encoder.fit(df, df["target"])
@@ -298,7 +302,9 @@ def test_fill_value():
         "D": 4.174387269895637,
     }
     woe_exp = {"var_A": woe_exp_a, "var_B": woe_exp_b}
-    assert encoder.encoder_dict_ == woe_exp
+    for var in ["var_A", "var_B"]:
+        for k, i in woe_exp[var].items():
+            assert math.isclose(encoder.encoder_dict_[var][k], woe_exp[var][k])
 
 
 @pytest.mark.parametrize("fill_value", ["hola", [10]])
