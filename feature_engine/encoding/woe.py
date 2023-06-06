@@ -201,7 +201,7 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
         unseen: str = "ignore",
-        fill_value: Union[int, float] = None,
+        fill_value: Union[int, float, None] = None,
     ) -> None:
 
         super().__init__(variables, ignore_format)
