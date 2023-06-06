@@ -53,7 +53,13 @@ class WoE:
             y = pd.Series(np.where(y == y.min(), 0, 1))
         return X, y
 
-    def _calculate_woe(self, X: pd.DataFrame, y: pd.Series, variable: Union[str, int], fill_value: Union[float, None] = None):
+    def _calculate_woe(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series,
+        variable: Union[str, int],
+        fill_value: Union[float, None] = None,
+    ):
         total_pos = y.sum()
         inverse_y = y.ne(1).copy()
         total_neg = inverse_y.sum()
@@ -65,11 +71,13 @@ class WoE:
             if fill_value is None:
                 raise ValueError(
                     "The proportion of one of the classes for a category in "
-                    "variable {} is zero, and log of zero is not defined".format(variable)
+                    "variable {} is zero, and log of zero is not defined".format(
+                        variable
+                    )
                 )
             else:
-                pos[pos[:]==0] = fill_value
-                neg[neg[:]==0] = fill_value
+                pos[pos[:] == 0] = fill_value
+                neg[neg[:] == 0] = fill_value
 
         woe = np.log(pos / neg)
         return pos, neg, woe
