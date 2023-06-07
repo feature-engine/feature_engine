@@ -24,7 +24,7 @@ from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
 )
-from feature_engine.selection._docstring import (
+from feature_engine._docstrings.selection._docstring import (
     _get_support_docstring,
     _variables_attribute_docstring,
 )
