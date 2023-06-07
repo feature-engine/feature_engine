@@ -39,3 +39,13 @@ def test_transformers_in_pipeline_with_set_output_pandas(transformer):
     Xtp = pipe.fit_transform(X, y)
 
     pd.testing.assert_frame_equal(Xtt, Xtp)
+
+    if transformer.__class__.__name__ == "Winsorizer":
+        transformer.set_params(add_indicators=True)
+
+        pipe = Pipeline([("trs", transformer)]).set_output(transform="pandas")
+
+        Xtt = transformer.fit_transform(X)
+        Xtp = pipe.fit_transform(X, y)
+
+        pd.testing.assert_frame_equal(Xtt, Xtp)

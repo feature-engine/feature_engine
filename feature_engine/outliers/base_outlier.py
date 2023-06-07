@@ -63,7 +63,7 @@ class BaseOutlier(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
 
         return X
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Cap the variable values.
 
