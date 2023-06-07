@@ -169,7 +169,7 @@ class CyclicalFeatures(
         X_new: Pandas dataframe.
             The original dataframe plus the additional features.
         """
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
         for variable in self.variables_:
             max_value = self.max_values_[variable]

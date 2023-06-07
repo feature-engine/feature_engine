@@ -3,7 +3,6 @@ import warnings
 import pandas as pd
 import pytest
 from numpy import nan
-
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import CountFrequencyEncoder

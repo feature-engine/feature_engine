@@ -165,7 +165,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Common checks performed before the feature transformation.
 

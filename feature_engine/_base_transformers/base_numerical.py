@@ -72,7 +72,7 @@ class BaseNumericalTransformer(
 
         return X
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Checks that the input is a dataframe and of the same size than the one used
         in the fit() method. Checks absence of NA and Inf.

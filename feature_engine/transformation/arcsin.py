@@ -148,7 +148,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe and if class was fitted
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
         # check if the variables are in the correct range
         if ((X[self.variables_] < 0) | (X[self.variables_] > 1)).any().any():

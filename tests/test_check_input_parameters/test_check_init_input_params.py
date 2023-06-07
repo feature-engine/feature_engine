@@ -1,7 +1,8 @@
 import pytest
+
 from feature_engine._check_input_parameters.check_init_input_params import (
-    _check_param_missing_values,
     _check_param_drop_original,
+    _check_param_missing_values,
 )
 
 

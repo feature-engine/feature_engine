@@ -183,6 +183,22 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
         return self
 
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Cap the variable values.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The data to be transformed.
+
+        Returns
+        -------
+        X_new: pandas dataframe of shape = [n_samples, n_features]
+            The dataframe with the capped variables.
+        """
+        return super()._transform(X)
+
     def _more_tags(self):
         tags_dict = _return_tags()
         # add additional test that fails

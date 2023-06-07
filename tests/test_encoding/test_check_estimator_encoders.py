@@ -1,9 +1,9 @@
 import pandas as pd
 import pytest
-
 from numpy import nan
 from sklearn import clone
 from sklearn.exceptions import NotFittedError
+from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.encoding import (
@@ -50,8 +50,8 @@ _estimators = [
     OneHotEncoder(),
     OrdinalEncoder(),
     RareLabelEncoder(),
-    WoEEncoder(),
     StringSimilarityEncoder(missing_values="raise"),
+    WoEEncoder(),
 ]
 
 
@@ -72,6 +72,21 @@ def test_raises_non_fitted_error_when_error_during_fit(estimator):
     # Test when fit is not called prior to transform.
     with pytest.raises(NotFittedError):
         transformer.transform(X)
+
+
+@pytest.mark.parametrize("transformer", _estimators)
+def test_transformers_in_pipeline_with_set_output_pandas(transformer):
+    X = pd.DataFrame(
+        {"feature_1": ["A", "A", "B", "B", "B"], "feature_2": ["A", "A", "B", "B", "B"]}
+    )
+    y = pd.Series([0, 1, 0, 1, 0])
+
+    pipe = Pipeline([("trs", transformer)]).set_output(transform="pandas")
+
+    Xtt = transformer.fit_transform(X, y)
+    Xtp = pipe.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(Xtt, Xtp)
 
 
 @pytest.mark.parametrize(

@@ -202,7 +202,7 @@ class MathFeatures(BaseCreation):
         X_new: Pandas dataframe, shape = [n_samples, n_features + n_operations]
             The input dataframe plus the new variables.
         """
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
         new_variable_names = self._get_new_features_name()
 

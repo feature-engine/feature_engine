@@ -1,4 +1,5 @@
 import math
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -142,11 +143,13 @@ def test_transformer_with_numerical_and_categorical_variables(df_enc):
 
 
 def test_transformer_with_equal_frequency_discretization(df_enc):
-    df = pd.DataFrame({
-        "var_C": np.linspace(0, 20, num=20),
-        "var_D": np.linspace(0, 20, num=20),
-        "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-    })
+    df = pd.DataFrame(
+        {
+            "var_C": np.linspace(0, 20, num=20),
+            "var_D": np.linspace(0, 20, num=20),
+            "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+        }
+    )
     X = df.drop("target", axis=1).copy()
     y = df["target"].copy()
 
@@ -154,7 +157,7 @@ def test_transformer_with_equal_frequency_discretization(df_enc):
     sel.fit(df.drop("target", axis=1), df["target"])
     sel.fit(X, y)
 
-    exp_dict = {'var_C': 0.010625883395914762, 'var_D': 0.010625883395914762}
+    exp_dict = {"var_C": 0.010625883395914762, "var_D": 0.010625883395914762}
 
     for key in exp_dict.keys():
         assert math.isclose(exp_dict[key], sel.information_values_[key])
