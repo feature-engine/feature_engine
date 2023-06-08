@@ -1,6 +1,50 @@
 Version 1.6.X
 =============
 
+Version 1.6.1
+-------------
+
+Deployed: 8th June 2023
+
+Contributors
+~~~~~~~~~~~~
+
+- `dlaprins <https://github.com/dlaprins>`_
+- `Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_
+- `Morgan Sell <https://github.com/Morgan-Sell>`_
+- `Gleb Levitski <https://github.com/GLevv>`_
+- `Soledad Galli <https://github.com/solegalli>`_
+
+In this release, we make Feature-engine compatible with pandas 2.0, extend the functionality
+of some transformers, and we fix bugs introduced in the previous release.
+
+Thank you so much to all contributors, `Gleb Levitski <https://github.com/GLevv>`_ and
+`Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_ for helping
+with review and to those of you who created issues flagging bugs or requesting new functionality.
+
+New functionality
+~~~~~~~~~~~~~~~~~
+
+- The Population Stability Index can now be used to evaluate categorical variables (`dlaprins <https://github.com/dlaprins>`_ and `Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_)
+- `RelativeFeatures` has the option to add a constant to avoid dividing by zero (`Morgan Sell <https://github.com/Morgan-Sell>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+- `SelectByShuffling` now accepts sample weights (`Soledad Galli <https://github.com/solegalli>`_)
+- `WoEEncoder` now let's you know which variables fail in the encoding (`Soledad Galli <https://github.com/solegalli>`_)
+- `WoEEncoder` has the option to add a constant to avoid dividing by zero (`Soledad Galli <https://github.com/solegalli>`_)
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed various bugs in `RareLabelEncoder()` (`Soledad Galli <https://github.com/solegalli>`_)
+- Renamed `transform` method in base classes to `check_transform_input_and_state`, which fixed bugs raised when `set_output(transform="pandas")` in various classes (`Soledad Galli <https://github.com/solegalli>`_ and `Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_)
+
+Code improvements
+~~~~~~~~~~~~~~~~~
+
+- Made code base compatible with pandas 2.0 (`Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_)
+- Moved docstrings of selection transformers to docstrings module (`Soledad Galli <https://github.com/solegalli>`_)
+
+
+
 Version 1.6.0
 -------------
 
