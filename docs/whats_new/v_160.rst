@@ -35,7 +35,7 @@ Bug fixes
 ~~~~~~~~~
 
 - Fixed various bugs in `RareLabelEncoder()` (`Soledad Galli <https://github.com/solegalli>`_)
-- Renamed `transform` method in base classes to `check_transform_input_and_state`, which fixed bugs raised when `set_output(transform="pandas")` in various classes (`Soledad Galli <https://github.com/solegalli>`_)
+- Renamed `transform` method in base classes to `check_transform_input_and_state`, which fixed bugs raised when `set_output(transform="pandas")` in various classes (`Soledad Galli <https://github.com/solegalli>`_ and `Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_)
 
 Code improvements
 ~~~~~~~~~~~~~~~~~
