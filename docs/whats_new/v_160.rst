@@ -18,7 +18,8 @@ Contributors
 In this release, we make Feature-engine compatible with pandas 2.0, extend the functionality
 of some transformers, and we fix bugs introduced in the previous release.
 
-Thank you so much to all contributors, `Gleb Levitski <https://github.com/GLevv>`_ for helping
+Thank you so much to all contributors, `Gleb Levitski <https://github.com/GLevv>`_ and
+`Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_ for helping
 with review and to those of you who created issues flagging bugs or requesting new functionality.
 
 New functionality
