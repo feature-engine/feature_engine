@@ -53,7 +53,13 @@ class WoE:
             y = pd.Series(np.where(y == y.min(), 0, 1))
         return X, y
 
-    def _calculate_woe(self, X: pd.DataFrame, y: pd.Series, variable: Union[str, int]):
+    def _calculate_woe(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series,
+        variable: Union[str, int],
+        fill_value: Union[float, None] = None,
+    ):
         total_pos = y.sum()
         inverse_y = y.ne(1).copy()
         total_neg = inverse_y.sum()
@@ -62,10 +68,16 @@ class WoE:
         neg = inverse_y.groupby(X[variable]).sum() / total_neg
 
         if not (pos[:] == 0).sum() == 0 or not (neg[:] == 0).sum() == 0:
-            raise ValueError(
-                "The proportion of one of the classes for a category in "
-                "variable {} is zero, and log of zero is not defined".format(variable)
-            )
+            if fill_value is None:
+                raise ValueError(
+                    "The proportion of one of the classes for a category in "
+                    "variable {} is zero, and log of zero is not defined".format(
+                        variable
+                    )
+                )
+            else:
+                pos[pos[:] == 0] = fill_value
+                neg[neg[:] == 0] = fill_value
 
         woe = np.log(pos / neg)
         return pos, neg, woe
@@ -107,7 +119,8 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
 
     The log(0) is not defined and the division by 0 is not defined. Thus, if any of the
     terms in the WoE equation are 0 for a given category, the encoder will return an
-    error. If this happens, try grouping less frequent categories.
+    error. If this happens, try grouping less frequent categories. Alternatively,
+    you can now add a fill_value (see parameter below).
 
     More details in the :ref:`User Guide <woe_encoder>`.
 
@@ -118,6 +131,12 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
     {ignore_format}
 
     {unseen}
+
+    fill_value: int, float, default=None
+        When the numerator or denominator of the WoE calculation are zero, the WoE
+        calculation is not possible. If `fill_value` is None (recommended), an error
+        will be raised in those cases. Alternatively, fill_value will be used in place
+        of denominators or numerators that equal zero.
 
     Attributes
     ----------
@@ -182,11 +201,17 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
         unseen: str = "ignore",
+        fill_value: Union[int, float, None] = None,
     ) -> None:
 
         super().__init__(variables, ignore_format)
         check_parameter_unseen(unseen, ["ignore", "raise"])
+        if fill_value is not None and not isinstance(fill_value, (int, float)):
+            raise ValueError(
+                f"fill_value takes None, integer or float. Got {fill_value} instead."
+            )
         self.unseen = unseen
+        self.fill_value = fill_value
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -205,13 +230,30 @@ class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
         variables_ = self._check_or_select_variables(X)
         _check_contains_na(X, variables_)
 
-        self.encoder_dict_ = {}
+        encoder_dict_ = {}
+        vars_that_fail = []
 
         for var in variables_:
-            _, _, woe = self._calculate_woe(X, y, var)
+            try:
+                _, _, woe = self._calculate_woe(X, y, var, self.fill_value)
+                encoder_dict_[var] = woe.to_dict()
+            except ValueError:
+                vars_that_fail.append(var)
 
-            self.encoder_dict_[var] = woe.to_dict()
+        if len(vars_that_fail) > 0:
+            vars_that_fail_str = (
+                ", ".join(vars_that_fail)
+                if len(vars_that_fail) > 1
+                else vars_that_fail[0]
+            )
 
+            raise ValueError(
+                "During the WoE calculation, some of the categories in the "
+                "following features contained 0 in the denominator or numerator, "
+                f"and hence the WoE can't be calculated: {vars_that_fail_str}."
+            )
+
+        self.encoder_dict_ = encoder_dict_
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
