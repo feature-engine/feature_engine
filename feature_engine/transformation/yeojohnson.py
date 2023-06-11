@@ -3,6 +3,7 @@
 
 from typing import List, Optional, Union
 
+import numpy as np
 import pandas as pd
 import scipy.stats as stats
 
@@ -103,7 +104,6 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
     def __init__(
         self, variables: Union[None, int, str, List[Union[str, int]]] = None
     ) -> None:
-
         self.variables = _check_init_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -152,3 +152,45 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
             X[feature] = stats.yeojohnson(X[feature], lmbda=self.lambda_dict_[feature])
 
         return X
+
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Apply the inverse-transform function Yeo-Johnson.
+
+        Parameters
+        ----------
+        X: Pandas DataFrame of shape = [n_samples, n_features]
+            The data to be inversed.
+
+        Returns
+        -------
+        X: pandas dataframe
+            The dataframe with the inversed variables, so original values.
+        """
+        # check input dataframe and if class was fitted
+        X = self._check_transform_input_and_state(X)
+
+        for feature in self.variables_:
+            X[feature] = self._inverse_transform_series(
+                X[feature], lmbda=self.lambda_dict_[feature]
+            )
+
+        return X
+
+    def _inverse_transform_series(self, X: pd.Series, lmbda: float) -> pd.Series:
+        x_inv = pd.Series(np.zeros_like(X))
+        pos = X >= 0
+
+        # when x >= 0
+        if lmbda == 0:
+            x_inv[pos] = np.exp(X[pos]) - 1
+        else:  # lmbda != 0
+            x_inv[pos] = np.power(X[pos] * lmbda + 1, 1 / lmbda) - 1
+
+        # when x < 0
+        if lmbda != 2:
+            x_inv[~pos] = 1 - np.power(-(2 - lmbda) * X[~pos] + 1, 1 / (2 - lmbda))
+        else:  # lmbda == 2
+            x_inv[~pos] = 1 - np.exp(-X[~pos])
+
+        return x_inv
