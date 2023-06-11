@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
+import numpy as np
 
 from feature_engine.transformation import YeoJohnsonTransformer
 
@@ -84,3 +85,25 @@ def test_non_fitted_error(df_vartypes):
     with pytest.raises(NotFittedError):
         transformer = YeoJohnsonTransformer()
         transformer.transform(df_vartypes)
+
+def test_inverse_transform_wit_columns_of_other_types(df_vartypes):
+    X = df_vartypes.copy(deep=True)
+    transformer = YeoJohnsonTransformer(variables=None)
+    X_trans = transformer.fit_transform(X)
+
+    X_inverse = transformer.inverse_transform(X_trans)
+
+    pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)
+
+def test_inverse_with_X_negative_and_positive(df_vartypes):
+
+    X = pd.DataFrame({'var1': np.arange(-20, 0),
+                      'var2': np.arange(0, 20),
+                      'var3': np.arange(-10, 10)})
+
+    transformer = YeoJohnsonTransformer(variables=None)
+    X_trans = transformer.fit_transform(X)
+
+    X_inverse = transformer.inverse_transform(X_trans)
+
+    pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)
