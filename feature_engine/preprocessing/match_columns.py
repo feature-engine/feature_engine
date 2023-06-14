@@ -273,7 +273,7 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
                 for column, new_dtype in _columns_to_update.items():
                     print(
                         f"The {column} dtype is changing from ",
-                        f"{_current_dtypes[column]} to {new_dtype}"
+                        f"{_current_dtypes[column]} to {new_dtype}",
                     )
 
             X = X.astype(_columns_to_update)

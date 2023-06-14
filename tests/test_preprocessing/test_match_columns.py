@@ -137,7 +137,9 @@ def test_drop_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
 
 
 def test_match_string_to_numbers():
-    train = pd.DataFrame(dict(my_int=range(5), my_float=pd.Series(range(5), dtype="float")))
+    train = pd.DataFrame(
+        dict(my_int=range(5), my_float=pd.Series(range(5), dtype="float"))
+    )
     # This creates a test df that contains several incorrect dtypes
     test = train.astype("string")
 
@@ -156,10 +158,16 @@ def test_match_string_to_numbers():
 
 
 def test_match_numbers_to_string():
-    train = pd.DataFrame({'my_int': ['0', '1', '2', '3', '4'], 'my_float': ['0.0', '1.0', '2.0', '3.0', '4.0']}
-)
+    train = pd.DataFrame(
+        {
+            "my_int": ["0", "1", "2", "3", "4"],
+            "my_float": ["0.0", "1.0", "2.0", "3.0", "4.0"],
+        }
+    )
     # This creates a test df that contains several incorrect dtypes
-    test = pd.DataFrame(dict(my_int=range(5), my_float=pd.Series(range(5), dtype="float")))
+    test = pd.DataFrame(
+        dict(my_int=range(5), my_float=pd.Series(range(5), dtype="float"))
+    )
 
     match_columns = MatchVariables(match_dtypes=True)
     match_columns.fit(train)
@@ -194,8 +202,9 @@ def test_match_string_to_datetime():
 
 
 def test_match_datetime_to_string():
-    train = pd.DataFrame({'dt': ['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04', '2023-01-05']}
-)
+    train = pd.DataFrame(
+        {"dt": ["2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04", "2023-01-05"]}
+    )
     # This creates a test df that contains several incorrect dtypes
     test = pd.DataFrame(dict(dt=pd.date_range("2023-01-01", periods=5)))
 
