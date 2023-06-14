@@ -161,7 +161,6 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         match_dtypes: bool = False,
         verbose: bool = True,
     ):
-
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
                 "missing_values takes only values 'raise' or 'ignore'."
@@ -215,7 +214,7 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         self.n_features_in_ = X.shape[1]
 
         if self.match_dtypes:
-            self.dtype_dict_: Dict = X.dtypes.to_dict()
+            self.dtype_dict_: Dict = X.dtypes.astype("string").to_dict()
 
         return self
 
@@ -263,7 +262,21 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         X = X.reindex(columns=self.feature_names_in_, fill_value=self.fill_value)
 
         if self.match_dtypes:
-            X = X.astype(self.dtype_dict_)
+            _current_dtypes = X.dtypes.astype("string").to_dict()
+            _columns_to_update = {
+                column: new_dtype
+                for column, new_dtype in self.dtype_dict_.items()
+                if new_dtype != _current_dtypes[column]
+            }
+
+            if self.verbose:
+                for column, new_dtype in _columns_to_update.items():
+                    print(
+                        f"The {column} dtype is changing from "
+                        f"{_current_dtypes[column]} to {new_dtype}"
+                    )
+
+            X = X.astype(_columns_to_update)
 
         return X
 
