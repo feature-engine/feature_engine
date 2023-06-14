@@ -172,7 +172,7 @@ class LagFeatures(BaseForecastTransformer):
             The dataframe with the original plus the new variables.
         """
         # Common dataframe checks and setting up.
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
         # if freq is not None, it overrides periods.
         if self.freq is not None:

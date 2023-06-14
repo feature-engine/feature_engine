@@ -154,7 +154,7 @@ class LogTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe and if class was fitted
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
         # check contains zero or negative values
         if (X[self.variables_] <= 0).any().any():
@@ -186,7 +186,7 @@ class LogTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe and if class was fitted
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
         # inverse_transform
         if self.base == "e":
@@ -374,7 +374,7 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
         """
 
         # check input dataframe and if class was fitted
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
         # check variable is positive after adding c
         if (X[self.variables_] + self.C_ <= 0).any().any():
@@ -407,7 +407,7 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
         """
 
         # check input dataframe and if class was fitted
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
         # inverse transform
         if self.base == "e":

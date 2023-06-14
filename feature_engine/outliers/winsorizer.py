@@ -177,11 +177,11 @@ class Winsorizer(WinsorizerBase):
             per processed feature for each tail.
         """
         if not self.add_indicators:
-            X_out = super().transform(X)
+            X_out = super()._transform(X)
 
         else:
             X_orig = check_X(X)
-            X_out = super().transform(X_orig)
+            X_out = super()._transform(X_orig)
             X_orig = X_orig[self.variables_]
             X_out_filtered = X_out[self.variables_]
 

@@ -29,7 +29,7 @@ def test_drop_1_variable(df_vartypes):
 
 def test_drop_1_variables_str_input(df_vartypes):
     """check that the internal variable features_to_drop has been
-     correctly cast from :str: to list of :str: internally"""
+    correctly cast from :str: to list of :str: internally"""
 
     transformer = DropFeatures(features_to_drop="Marks")
     X = transformer.fit_transform(df_vartypes)

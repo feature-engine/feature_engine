@@ -1,5 +1,7 @@
+import pandas as pd
 import pytest
 from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.selection import (
@@ -105,3 +107,25 @@ def test_raises_error_when_no_estimator_passed(estimator):
     # test error otherwise.
     with pytest.raises(TypeError):
         estimator()
+
+
+@pytest.mark.parametrize("transformer", _estimators)
+def test_transformers_in_pipeline_with_set_output_pandas(transformer):
+    if transformer.__class__.__name__ == "DropFeatures":
+        transformer.set_params(features_to_drop=["feature_1"])
+
+    if transformer.__class__.__name__ == "ProbeFeatureSelection":
+        transformer.set_params(cv=2)
+
+    if transformer.__class__.__name__ == "DropHighPSIFeatures":
+        transformer.set_params(bins=2)
+
+    X = pd.DataFrame({"feature_1": [1, 2, 3, 4, 5], "feature_2": [6, 7, 8, 9, 10]})
+    y = pd.Series([0, 1, 0, 1, 0])
+
+    pipe = Pipeline([("trs", transformer)]).set_output(transform="pandas")
+
+    Xtt = transformer.fit_transform(X, y)
+    Xtp = pipe.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(Xtt, Xtp)
