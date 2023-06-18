@@ -136,12 +136,9 @@ def test_drop_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
     pd.testing.assert_frame_equal(expected_result, transformed_df)
 
 
-def test_match_string_to_numbers():
-    train = pd.DataFrame(
-        dict(my_int=range(5), my_float=pd.Series(range(5), dtype="float"))
-    )
-    # This creates a test df that contains several incorrect dtypes
-    test = train.astype("string")
+def test_match_string_to_numbers(df_vartypes):
+    train = df_vartypes.copy().select_dtypes("number")
+    test = train.copy().astype("string")
 
     match_columns = MatchVariables(match_dtypes=True)
     match_columns.fit(train)
@@ -157,17 +154,9 @@ def test_match_string_to_numbers():
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
 
-def test_match_numbers_to_string():
-    train = pd.DataFrame(
-        {
-            "my_int": ["0", "1", "2", "3", "4"],
-            "my_float": ["0.0", "1.0", "2.0", "3.0", "4.0"],
-        }
-    )
-    # This creates a test df that contains several incorrect dtypes
-    test = pd.DataFrame(
-        dict(my_int=range(5), my_float=pd.Series(range(5), dtype="float"))
-    )
+def test_match_numbers_to_string(df_vartypes):
+    train = df_vartypes.copy().select_dtypes("number").astype("string")
+    test = df_vartypes.copy().select_dtypes("number")
 
     match_columns = MatchVariables(match_dtypes=True)
     match_columns.fit(train)
@@ -182,10 +171,9 @@ def test_match_numbers_to_string():
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
 
-def test_match_string_to_datetime():
-    train = pd.DataFrame(dict(dt=pd.date_range("2023-01-01", periods=5)))
-    # This creates a test df that contains several incorrect dtypes
-    test = train.astype("string")
+def test_match_string_to_datetime(df_vartypes):
+    train = df_vartypes.copy().loc[:, ["dob"]]
+    test = train.copy().astype("string")
 
     match_columns = MatchVariables(match_dtypes=True, verbose=False)
     match_columns.fit(train)
@@ -201,12 +189,9 @@ def test_match_string_to_datetime():
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
 
-def test_match_datetime_to_string():
-    train = pd.DataFrame(
-        {"dt": ["2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04", "2023-01-05"]}
-    )
-    # This creates a test df that contains several incorrect dtypes
-    test = pd.DataFrame(dict(dt=pd.date_range("2023-01-01", periods=5)))
+def test_match_datetime_to_string(df_vartypes):
+    train = df_vartypes.copy().loc[:, ["dob"]].astype("string")
+    test = df_vartypes.copy().loc[:, ["dob"]]
 
     match_columns = MatchVariables(match_dtypes=True, verbose=False)
     match_columns.fit(train)
@@ -222,10 +207,9 @@ def test_match_datetime_to_string():
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
 
-def test_match_missing_category():
-    train = pd.DataFrame(dict(cat=pd.Categorical(["red", "blue", "yellow", "green"])))
-    # This creates a test df that contains several incorrect dtypes
-    test = pd.DataFrame(dict(cat=pd.Categorical(["red", "blue", "yellow"])))
+def test_match_missing_category(df_vartypes):
+    train = df_vartypes.copy().loc[:, ["Name", "City"]].astype("category")
+    test = df_vartypes.copy().loc[:, ["Name", "City"]].iloc[:-1].astype("category")
 
     match_columns = MatchVariables(match_dtypes=True, verbose=True)
     match_columns.fit(train)
@@ -241,10 +225,9 @@ def test_match_missing_category():
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
 
-def test_match_extra_category():
-    train = pd.DataFrame(dict(cat=pd.Categorical(["red", "blue", "yellow"])))
-    # This creates a test df that contains several incorrect dtypes
-    test = pd.DataFrame(dict(cat=pd.Categorical(["red", "blue", "yellow", "green"])))
+def test_match_extra_category(df_vartypes):
+    train = df_vartypes.copy().loc[:, ["Name", "City"]].iloc[:-1].astype("category")
+    test = df_vartypes.copy().loc[:, ["Name", "City"]].astype("category")
 
     match_columns = MatchVariables(match_dtypes=True, verbose=True)
     match_columns.fit(train)
