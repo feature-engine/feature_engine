@@ -136,7 +136,7 @@ def test_drop_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
     pd.testing.assert_frame_equal(expected_result, transformed_df)
 
 
-def test_match_string_to_numbers(df_vartypes):
+def test_match_dtypes_string_to_numbers(df_vartypes):
     train = df_vartypes.copy().select_dtypes("number")
     test = train.copy().astype("string")
 
@@ -154,7 +154,7 @@ def test_match_string_to_numbers(df_vartypes):
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
 
-def test_match_numbers_to_string(df_vartypes):
+def test_match_dtypes_numbers_to_string(df_vartypes):
     train = df_vartypes.copy().select_dtypes("number").astype("string")
     test = df_vartypes.copy().select_dtypes("number")
 
@@ -171,7 +171,7 @@ def test_match_numbers_to_string(df_vartypes):
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
 
-def test_match_string_to_datetime(df_vartypes):
+def test_match_dtypes_string_to_datetime(df_vartypes):
     train = df_vartypes.copy().loc[:, ["dob"]]
     test = train.copy().astype("string")
 
@@ -189,7 +189,7 @@ def test_match_string_to_datetime(df_vartypes):
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
 
-def test_match_datetime_to_string(df_vartypes):
+def test_match_dtypes_datetime_to_string(df_vartypes):
     train = df_vartypes.copy().loc[:, ["dob"]].astype("string")
     test = df_vartypes.copy().loc[:, ["dob"]]
 
@@ -207,7 +207,7 @@ def test_match_datetime_to_string(df_vartypes):
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
 
-def test_match_missing_category(df_vartypes):
+def test_match_dtypes_missing_category(df_vartypes):
     train = df_vartypes.copy().loc[:, ["Name", "City"]].astype("category")
     test = df_vartypes.copy().loc[:, ["Name", "City"]].iloc[:-1].astype("category")
 
@@ -225,7 +225,7 @@ def test_match_missing_category(df_vartypes):
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
 
-def test_match_extra_category(df_vartypes):
+def test_match_dtypes_extra_category(df_vartypes):
     train = df_vartypes.copy().loc[:, ["Name", "City"]].iloc[:-1].astype("category")
     test = df_vartypes.copy().loc[:, ["Name", "City"]].astype("category")
 
