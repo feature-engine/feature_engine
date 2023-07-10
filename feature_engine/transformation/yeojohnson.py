@@ -7,15 +7,13 @@ import numpy as np
 import pandas as pd
 import scipy.stats as stats
 
-from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine._base_transformers.base_numerical import \
+    BaseNumericalTransformer
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-    _variables_attribute_docstring,
-)
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _variables_numerical_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring,
+    _variables_attribute_docstring)
+from feature_engine._docstrings.init_parameters.all_trasnformers import \
+    _variables_numerical_docstring
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
@@ -171,17 +169,17 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Apply the inverse-transform function Yeo-Johnson.
+        Convert the data back to the original representation.
 
         Parameters
         ----------
         X: Pandas DataFrame of shape = [n_samples, n_features]
-            The data to be inversed.
+            The data to be transformed.
 
         Returns
         -------
-        X: pandas dataframe
-            The dataframe with the inversed variables, so original values.
+        X_tr: pandas dataframe
+            The dataframe with the transformed variables.
         """
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
