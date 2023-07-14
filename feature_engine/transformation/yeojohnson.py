@@ -7,13 +7,16 @@ import numpy as np
 import pandas as pd
 import scipy.stats as stats
 
-from feature_engine._base_transformers.base_numerical import \
+from feature_engine._base_transformers.base_numerical import (
     BaseNumericalTransformer
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring, _n_features_in_docstring,
-    _variables_attribute_docstring)
-from feature_engine._docstrings.init_parameters.all_trasnformers import \
+    _variables_attribute_docstring
+)
+from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _variables_numerical_docstring
+)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
