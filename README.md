@@ -231,7 +231,7 @@ Now you can build the docs using: ``sphinx-build -b html docs build``
 
 ## License
 
-BSD 3-Clause
+The contents of this repository is licensed under a [BSD 3-Clause license](https://github.com/feature-engine/feature_engine/blob/main/LICENSE.md).
 
 ## Sponsor us
 
