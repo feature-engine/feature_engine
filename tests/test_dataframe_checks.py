@@ -170,3 +170,17 @@ def test_contains_inf(df_na):
     df_na.fillna(np.inf, inplace=True)
     with pytest.raises(ValueError):
         assert _check_contains_inf(df_na, ["Age", "Marks"])
+
+
+def test_check_X_raises_error_on_duplicated_column_names():
+    df = pd.DataFrame(
+        {
+            "col1": [1, 2, 3],
+            "col2": ["a", "b", "c"],
+            "col3": pd.date_range("2023-01-01", periods=3),
+        }
+    )
+    df.columns = ["same", "unique", "same"]
+
+    with pytest.raises(ValueError):
+        check_X(df)
