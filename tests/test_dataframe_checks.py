@@ -182,5 +182,7 @@ def test_check_X_raises_error_on_duplicated_column_names():
     )
     df.columns = ["same", "unique", "same"]
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as err_txt:
         check_X(df)
+
+    assert err_txt.match("Input data contains duplicated variable names.")
