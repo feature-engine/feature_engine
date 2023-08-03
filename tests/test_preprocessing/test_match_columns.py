@@ -147,9 +147,12 @@ def test_match_dtypes_string_to_numbers(df_vartypes):
 
     # test init params
     assert match_columns.match_dtypes is True
-    # assert match_columns.verbose is True
     # test fit attrs
-    assert isinstance(match_columns.dtype_dict_, dict)
+    assert match_columns.dtype_dict_ == {
+        "Age": np.dtype("int64"),
+        "Marks": np.dtype("float64"),
+    }
+
     # test transform output
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
@@ -184,7 +187,7 @@ def test_match_dtypes_string_to_datetime(df_vartypes):
     assert match_columns.match_dtypes is True
     assert match_columns.verbose is False
     # test fit attrs
-    assert isinstance(match_columns.dtype_dict_, dict)
+    assert match_columns.dtype_dict_ == {"dob": np.dtype("<M8[ns]")}
     # test transform output
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
@@ -220,7 +223,14 @@ def test_match_dtypes_missing_category(df_vartypes):
     assert match_columns.match_dtypes is True
     assert match_columns.verbose is True
     # test fit attrs
-    assert isinstance(match_columns.dtype_dict_, dict)
+    assert match_columns.dtype_dict_ == {
+        "Name": pd.CategoricalDtype(
+            categories=["jack", "krish", "nick", "tom"], ordered=False
+        ),
+        "City": pd.CategoricalDtype(
+            categories=["Bristol", "Liverpool", "London", "Manchester"], ordered=False
+        ),
+    }
     # test transform output
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
@@ -238,7 +248,13 @@ def test_match_dtypes_extra_category(df_vartypes):
     assert match_columns.match_dtypes is True
     assert match_columns.verbose is True
     # test fit attrs
-    assert isinstance(match_columns.dtype_dict_, dict)
+    assert match_columns.dtype_dict_ == {
+        "Name": pd.CategoricalDtype(categories=["krish", "nick", "tom"], ordered=False),
+        "City": pd.CategoricalDtype(
+            categories=["Liverpool", "London", "Manchester"], ordered=False
+        ),
+    }
+
     # test transform output
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
 
