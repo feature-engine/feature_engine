@@ -169,7 +169,7 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
 
         if not isinstance(match_dtypes, bool):
             raise ValueError(
-                "match_dtypes takes only booleans True and False."
+                "match_dtypes takes only booleans True and False. "
                 f"Got '{match_dtypes} instead."
             )
 
