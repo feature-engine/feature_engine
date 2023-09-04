@@ -125,6 +125,14 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
         Return UTC DatetimeIndex if True (converting any tz-aware datetime.datetime
         objects as well). Same as in `pandas.to_datetime`.
 
+    format: str, default None
+        The strftime to parse time, e.g. "%d/%m/%Y". Check pandas `to_datetime()` for
+        more information on choices. If you have variables with different formats pass
+        “mixed”, to infer the format for each element individually. This is risky,
+        and you should probably use it along with dayfirst, according to pandas'
+        documentation.
+
+
     Attributes
     ----------
     variables_:
@@ -177,6 +185,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
         dayfirst: bool = False,
         yearfirst: bool = False,
         utc: Union[None, bool] = None,
+        format: Union[None, str] = None,
     ) -> None:
 
         if features_to_extract:
@@ -217,6 +226,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
         self.yearfirst = yearfirst
         self.utc = utc
         self.features_to_extract = features_to_extract
+        self.format = format
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -316,6 +326,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
                     dayfirst=self.dayfirst,
                     yearfirst=self.yearfirst,
                     utc=self.utc,
+                    format=self.format,
                 ),
                 index=X.index,
             )
@@ -337,6 +348,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
                         dayfirst=self.dayfirst,
                         yearfirst=self.yearfirst,
                         utc=self.utc,
+                        format=self.format,
                     )
                     for variable in self.variables_
                 ],
