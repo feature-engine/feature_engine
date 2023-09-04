@@ -305,33 +305,43 @@ def test_extract_features_from_categorical_variable(
     )
 
 
-def test_extract_features_from_different_timezones(
-    df_datetime, df_datetime_transformed
-):
-    time_zones = [4, -1, 9, -7]
-    tz_df = pd.DataFrame(
-        {"time_obj": df_datetime["time_obj"].add(["+4", "-1", "+9", "-7"])}
+def test_extract_features_from_different_timezones():
+    df = pd.DataFrame()
+    df["time"] = pd.concat(
+        [
+            pd.Series(
+                pd.date_range(
+                    start="2014-08-01 09:00", freq="H", periods=3, tz="Europe/Berlin"
+                )
+            ),
+            pd.Series(
+                pd.date_range(
+                    start="2014-08-01 09:00", freq="H", periods=3, tz="US/Central"
+                )
+            ),
+        ],
+        axis=0,
     )
+    df.reset_index(inplace=True, drop=True)
+
     transformer = DatetimeFeatures(
-        variables="time_obj", features_to_extract=["hour"], utc=True
+        variables="time", features_to_extract=["hour"], utc=True
     )
-    X = transformer.fit_transform(tz_df)
+    X = transformer.fit_transform(df)
 
     pd.testing.assert_frame_equal(
         X,
-        df_datetime_transformed[["time_obj_hour"]].apply(
-            lambda x: x.subtract(time_zones)
-        ),
+        pd.DataFrame({"time_hour": [7, 8, 9, 14, 15, 16]}),
         check_dtype=False,
     )
     exp_err_msg = (
-        "ValueError: variable(s) time_obj "
-        "could not be converted to datetime. Try setting utc=True"
+        "Tz-aware datetime.datetime cannot be converted to datetime64 "
+        "unless utc=True, at position 3"
     )
     with pytest.raises(ValueError) as errinfo:
         assert DatetimeFeatures(
-            variables="time_obj", features_to_extract=["hour"], utc=False
-        ).fit_transform(tz_df)
+            variables="time", features_to_extract=["hour"], utc=False
+        ).fit_transform(df)
     assert str(errinfo.value) == exp_err_msg
 
 
