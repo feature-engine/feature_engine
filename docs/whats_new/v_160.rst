@@ -1,6 +1,32 @@
 Version 1.6.X
 =============
 
+Version 1.6.2
+-------------
+
+Deployed: xx September 2023
+
+Contributors
+~~~~~~~~~~~~
+
+- `Soledad Galli <https://github.com/solegalli>`_
+
+New functionality
+~~~~~~~~~~~~~~~~~
+
+- `DatetimeFeatures()` can now specify the format of the datetime variable (`Soledad Galli <https://github.com/solegalli>`_)
+
+Bug fixes
+~~~~~~~~~
+
+- Fix failing test for `DatetimeFeatures()` (`Soledad Galli <https://github.com/solegalli>`_)
+
+Code improvements
+~~~~~~~~~~~~~~~~~
+
+- Routine in `DatetimeFeatures()` does not enter into our check for utc=True when working with different timezones any more, commented out, to be removed in version 1.7.0 (`Soledad Galli <https://github.com/solegalli>`_)
+
+
 Version 1.6.1
 -------------
 

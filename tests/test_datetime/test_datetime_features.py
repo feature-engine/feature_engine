@@ -345,6 +345,27 @@ def test_extract_features_from_different_timezones():
     assert str(errinfo.value) == exp_err_msg
 
 
+def test_extract_features_from_different_timezones_when_string(
+    df_datetime, df_datetime_transformed
+):
+    time_zones = [4, -1, 9, -7]
+    tz_df = pd.DataFrame(
+        {"time_obj": df_datetime["time_obj"].add(["+4", "-1", "+9", "-7"])}
+    )
+    transformer = DatetimeFeatures(
+        variables="time_obj", features_to_extract=["hour"], utc=True, format="mixed",
+    )
+    X = transformer.fit_transform(tz_df)
+
+    pd.testing.assert_frame_equal(
+        X,
+        df_datetime_transformed[["time_obj_hour"]].apply(
+            lambda x: x.subtract(time_zones)
+        ),
+        check_dtype=False,
+    )
+
+
 def test_extract_features_from_localized_tz_variables():
     tz_df = pd.DataFrame(
         {
