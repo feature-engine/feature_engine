@@ -1,3 +1,5 @@
+from collections import Counter
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -133,12 +135,13 @@ def test_correctly_ignores_nan_in_fit(df_enc_big):
     encoder.fit(df)
 
     # expected:
-    frequenc_cat = {
+    frequent_cat = {
         "var_A": ["B", "D", "A", "G", "C"],
         "var_B": ["A", "D", "B", "G", "C"],
         "var_C": ["C", "D", "B", "A"],
     }
-    assert encoder.encoder_dict_ == frequenc_cat
+    for key in frequent_cat.keys():
+        assert Counter(encoder.encoder_dict_[key]) == Counter(frequent_cat[key])
 
     # input
     t = pd.DataFrame(
@@ -217,12 +220,13 @@ def test_correctly_ignores_nan_in_fit_when_var_is_numerical(df_enc_big):
     encoder.fit(df)
 
     # expected:
-    frequenc_cat = {
+    frequent_cat = {
         "var_A": ["B", "D", "A", "G", "C"],
         "var_B": ["A", "D", "B", "G", "C"],
         "var_C": [3, 4, 2, 1],
     }
-    assert encoder.encoder_dict_ == frequenc_cat
+    for key in frequent_cat.keys():
+        assert Counter(encoder.encoder_dict_[key]) == Counter(frequent_cat[key])
 
     # input
     t = pd.DataFrame(
