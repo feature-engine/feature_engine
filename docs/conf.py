@@ -173,7 +173,7 @@ htmlhelp_basename = "feature_enginedoc"
 autodoc_default_options = {
     "members": True,
     "inherited-members": True,
-    "exclude-members": "set_output,metadata_routing",
+    "exclude-members": "set_output",
 }
 
 # generate autosummary even if no references
@@ -272,9 +272,6 @@ epub_copyright = copyright
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ["search.html"]
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {"https://docs.python.org/": None}
 
 # The following is used by sphinx.ext.linkcode to provide links to github
 linkcode_resolve = make_linkcode_resolve(
