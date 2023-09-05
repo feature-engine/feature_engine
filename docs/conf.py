@@ -173,7 +173,7 @@ htmlhelp_basename = "feature_enginedoc"
 autodoc_default_options = {
     "members": True,
     "inherited-members": True,
-    "exclude-members": "set_output",
+    "exclude-members": "set_output,metadata_routing",
 }
 
 # generate autosummary even if no references
@@ -195,7 +195,7 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     "matplotlib": ("https://matplotlib.org/", None),
-    "sklearn": ("http://scikit-learn.org/stable", None),
+    "sklearn": ("https://scikit-learn.org/stable/", None),
 }
 
 # -- Options for LaTeX output ---------------------------------------------
