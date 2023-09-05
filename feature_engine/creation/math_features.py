@@ -228,7 +228,7 @@ class MathFeatures(BaseCreation):
 
             if isinstance(self.func, list):
                 functions = [
-                    fun if type(fun) == str else fun.__name__ for fun in self.func
+                    fun if type(fun) is str else fun.__name__ for fun in self.func
                 ]
                 feature_names = [
                     f"{function}_{'_'.join(varlist)}" for function in functions

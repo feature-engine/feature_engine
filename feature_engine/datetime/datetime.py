@@ -355,18 +355,6 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
                 axis=1,
             )
 
-            # With pandas update, it does not enter here any more
-            #TODO: delete in a few releases from now
-            # non_dt_columns = datetime_df.columns[
-            #     ~datetime_df.apply(is_datetime)
-            # ].tolist()
-            # if non_dt_columns:
-            #     raise ValueError(
-            #         "ValueError: variable(s) "
-            #         + (len(non_dt_columns) * "{} ").format(*non_dt_columns)
-            #         + "could not be converted to datetime. Try setting utc=True"
-            #     )
-
             # create new features
             for var in self.variables_:
                 for feat in self.features_to_extract_:

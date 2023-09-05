@@ -220,16 +220,14 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
 
             # if original variables are cast as categorical, they will remain
             # categorical after the encoding, and this is probably not desired
-            if X[feature].dtype.name =="category":
+            if X[feature].dtype.name == "category":
                 if all(isinstance(x, int) for x in X[feature]):
                     X[feature] = X[feature].astype("int")
                 else:
                     X[feature] = X[feature].astype("float")
 
         if self.unseen == "encode":
-            X[self.variables_] = X[self.variables_].fillna(
-                self._unseen
-            )
+            X[self.variables_] = X[self.variables_].fillna(self._unseen)
         else:
             # check if nan values were introduced by the transformation
             self._check_nan_values_after_transformation(X)
