@@ -235,6 +235,7 @@ parameter `missing_values` to `"ignore"`. Here is a code example:
 
 .. code:: python
 
+    import numpy as np
     import pandas as pd
     from feature_engine.datetime import DatetimeSubtraction
 

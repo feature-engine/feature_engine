@@ -14,7 +14,7 @@ Contributors
 New functionality
 ~~~~~~~~~~~~~~~~~
 
-- `DatetimeFeatures()` can now specify the format of the datetime variable (`Soledad Galli <https://github.com/solegalli>`_)
+- `DatetimeFeatures()` and `DatetimeSubtraction()` can now specify the format of the datetime variable (`Soledad Galli <https://github.com/solegalli>`_)
 
 Bug fixes
 ~~~~~~~~~
@@ -25,6 +25,7 @@ This bugs were introduced by the latest releases of pandas and other dependencie
 - Fix failing test for many encoders: removed `downcast=infer` as it will be deprecated (`Soledad Galli <https://github.com/solegalli>`_)
 - Fix version related failing style checks (`Soledad Galli <https://github.com/solegalli>`_)
 - Fix version related failing type checks (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix version related failing doc checks (`Soledad Galli <https://github.com/solegalli>`_)
 
 Code improvements
 ~~~~~~~~~~~~~~~~~
