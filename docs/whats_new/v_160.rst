@@ -21,6 +21,8 @@ Bug fixes
 
 This bugs were introduced by the latest releases of pandas and other dependencies.
 
+- Fix failing test for `YeoJohnsonTransformer()` (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix failing test for `RareLabelEncoder()` (`Soledad Galli <https://github.com/solegalli>`_)
 - Fix failing test for `DatetimeFeatures()` (`Soledad Galli <https://github.com/solegalli>`_)
 - Fix failing test for many encoders: removed `downcast=infer` as it will be deprecated (`Soledad Galli <https://github.com/solegalli>`_)
 - Fix version related failing style checks (`Soledad Galli <https://github.com/solegalli>`_)
