@@ -35,6 +35,7 @@ Code improvements
 ~~~~~~~~~~~~~~~~~
 
 - Routine in `DatetimeFeatures()` does not enter into our check for `utc=True` when working with different timezones any more (`Soledad Galli <https://github.com/solegalli>`_)
+- Improve performance in `OneHotEncoder()` (`Soledad Galli <https://github.com/solegalli>`_)
 
 
 Version 1.6.1
