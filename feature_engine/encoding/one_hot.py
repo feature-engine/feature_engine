@@ -275,7 +275,8 @@ class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
                 dummy_df = pd.DataFrame(
-                    {f"{feature}_{category}": np.where(X[feature] == category, 1, 0)}
+                    {f"{feature}_{category}": np.where(X[feature] == category, 1, 0)},
+                    index=X.index,
                 )
                 X = pd.concat([X, dummy_df], axis=1)
 
