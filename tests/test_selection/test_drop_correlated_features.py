@@ -103,6 +103,7 @@ def test_more_than_1_correlated_group(df_correlated_double):
     # test transform output
     pd.testing.assert_frame_equal(X, df)
 
+
 def test_callable_method(df_correlated_double, random_uniform_method):
     X = df_correlated_double
 

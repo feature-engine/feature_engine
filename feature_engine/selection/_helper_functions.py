@@ -2,7 +2,9 @@ from typing import List, Union
 import pandas as pd
 
 
-def _sort_variables(X: pd.DataFrame, variables: List, order_by: Union[str, None] = None):
+def _sort_variables(
+    X: pd.DataFrame, variables: List, order_by: Union[str, None] = None
+):
     """Helper function for sorting columns."""
     if order_by == "nan":
         ordered_vars = list(X[variables].isna().sum(0).sort_values().index)
