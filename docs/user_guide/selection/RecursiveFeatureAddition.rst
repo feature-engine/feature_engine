@@ -49,7 +49,7 @@ First, we load the data:
     import pandas as pd
     from sklearn.datasets import load_diabetes
     from sklearn.linear_model import LinearRegression
-    from feature_engine.selection import RecursiveFeatureElimination
+    from feature_engine.selection import RecursiveFeatureAddition
 
     # load dataset
     diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
@@ -66,7 +66,7 @@ we leave the parameter `threshold` to the default value which is 0.01.
     linear_model = LinearRegression()
 
     # initialize feature selector
-    tr = RecursiveFeatureElimination(estimator=linear_model, scoring="r2", cv=3)
+    tr = RecursiveFeatureAddition(estimator=linear_model, scoring="r2", cv=3)
 
 With `fit()` the model finds the most useful features, that is, features that when added
 cause an increase in model performance bigger than 0.01. With `transform()`, the transformer
@@ -99,16 +99,17 @@ adding each feature.
 
 ..  code:: python
 
-    {0: -0.0032800993162502845,
-     9: -0.00028194870232089997,
-     6: -0.0006751427734088544,
-     7: 0.00013890056776355575,
-     1: 0.01195652626644067,
-     3: 0.02863360798239445,
-     5: 0.012639242239088355,
-     2: 0.06630359039334816,
-     8: 0.10937354113435072,
-     4: 0.024318355833473526}
+    {4: 0,
+     8: 0.28371458794131676,
+     2: 0.1377714799388745,
+     5: 0.0023327265047610735,
+     3: 0.018759914615172735,
+     1: 0.0027996354657459643,
+     7: 0.002695149440021638,
+     6: 0.002683934134630306,
+     9: 0.000304067408860742,
+     0: -0.007387230783454768}
+
 
 :class:`RecursiveFeatureAddition` also stores the features that will be dropped based
 n the given threshold.
@@ -120,7 +121,7 @@ n the given threshold.
 
 ..  code:: python
 
-    [0, 6, 7, 9]
+    [0, 1, 5, 6, 7, 9]
 
 If we now print the transformed data, we see that the features above were removed.
 
@@ -130,11 +131,10 @@ If we now print the transformed data, we see that the features above were remove
 
 ..  code:: python
 
-              1         2         3         4         5         8
-    0  0.050680  0.061696  0.021872 -0.044223 -0.034821  0.019907
-    1 -0.044642 -0.051474 -0.026328 -0.008449 -0.019163 -0.068332
-    2  0.050680  0.044451 -0.005670 -0.045599 -0.034194  0.002861
-    3 -0.044642 -0.011595 -0.036656  0.012191  0.024991  0.022688
-    4 -0.044642 -0.036385  0.021872  0.003935  0.015596 -0.031988
-
+              2         3         4         8
+    0  0.061696  0.021872 -0.044223  0.019907
+    1 -0.051474 -0.026328 -0.008449 -0.068332
+    2  0.044451 -0.005670 -0.045599  0.002861
+    3 -0.011595 -0.036656  0.012191  0.022688
+    4 -0.036385  0.021872  0.003935 -0.031988
 
