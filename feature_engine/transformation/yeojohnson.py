@@ -7,7 +7,9 @@ import numpy as np
 import pandas as pd
 import scipy.stats as stats
 
-from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine._base_transformers.base_numerical import (
+    BaseNumericalTransformer
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring, _n_features_in_docstring,
     _variables_attribute_docstring
@@ -19,7 +21,7 @@ from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
+    _check_init_parameter_variables
 )
 
 
