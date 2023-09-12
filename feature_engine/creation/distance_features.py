@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -24,8 +24,8 @@ class DistanceFeatures(
             a_longitude: str,
             b_latitude: str,
             b_longitude: str,
-            output_column_name: str = None,
-            drop_original: Optional[bool] = False,
+            output_column_name: Union[str, None] = None,
+            drop_original: bool = False,
     ) -> None:
 
         self.a_latitude = self._check_column_name(a_latitude)
