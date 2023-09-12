@@ -41,7 +41,7 @@ Documentation
 ~~~~~~~~~~~~~
 
 - Fix various typos in user guide (`Soledad Galli <https://github.com/solegalli>`_)
-- Add link to license in Readme (`Darigov Research <https://github.com/darigovresearch`_)
+- Add link to license in Readme (`Darigov Research <https://github.com/darigovresearch>`_)
 
 
 Version 1.6.1
