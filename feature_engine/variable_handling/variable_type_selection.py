@@ -3,7 +3,6 @@
 from typing import List, Tuple, Union
 
 import pandas as pd
-from pandas.api.types import is_categorical_dtype as is_categorical
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from pandas.api.types import is_numeric_dtype as is_numeric
 from pandas.api.types import is_object_dtype as is_object
@@ -142,7 +141,7 @@ def find_or_check_categorical_variables(
             )
 
     elif isinstance(variables, (str, int)):
-        if is_categorical(X[variables]) or is_object(X[variables]):
+        if X[variables].dtype.name == "category" or is_object(X[variables]):
             variables = [variables]
         else:
             raise TypeError("The variable entered is not categorical.")
@@ -397,7 +396,7 @@ def find_categorical_and_numerical_variables(
     # If the user passes just 1 variable outside a list.
     if isinstance(variables, (str, int)):
 
-        if is_categorical(X[variables]) or is_object(X[variables]):
+        if X[variables].dtype.name == "category" or is_object(X[variables]):
             variables_cat = [variables]
             variables_num = []
         elif is_numeric(X[variables]):
