@@ -81,8 +81,8 @@ example shows how to use this syntax:
 
 .. code:: python
 
-    data["diff"] = data["date1"].sub(data["date2"], axis=0).apply(
-        lambda x: x / np.timedelta64(1, "Y"))
+    data["diff"] = data["date1"].sub(data["date2"], axis=0).div(
+        np.timedelta64(1, "Y").astype("timedelta64[ns]"))
 
     print(data)
 
@@ -294,6 +294,7 @@ the time difference in microseconds:
         reference="date2",
         utc=True,
         output_unit="ms",
+        format="mixed"
     )
 
     new = dfts.fit_transform(data)
