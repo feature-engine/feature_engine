@@ -38,7 +38,7 @@ First, we load the data:
     # load dataset
     diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
     X = pd.DataFrame(diabetes_X)
-    y = pd.DataFrame(diabetes_y)
+    y = pd.Series(diabetes_y)
 
 Now, we set up the model for which we want to have the performance drop evaluated:
 
@@ -88,16 +88,16 @@ an idea of where the threshold could be by looking at these values:
 
 .. code:: python
 
-    {0: -0.02368121940502793,
-     1: 0.017909161264480666,
-     2: 0.18565460365508413,
-     3: 0.07655405817715671,
-     4: 0.4327180164470878,
-     5: 0.16394693824418372,
-     6: -0.012876023845921625,
-     7: 0.01048781540981647,
-     8: 0.3921465005640224,
-     9: -0.01427065640301245}
+    {0: -0.0035681361984126747,
+     1: 0.041170843574652394,
+     2: 0.1920054944393057,
+     3: 0.07007527443645178,
+     4: 0.49871458125373913,
+     5: 0.1802858704499694,
+     6: 0.025536233845966705,
+     7: 0.024058931694668884,
+     8: 0.40901959802129045,
+     9: 0.004487448637912506}
 
 :class:`SelectByShuffling()` also stores the features that will be dropped based on the
 threshold indicated.
@@ -110,3 +110,17 @@ threshold indicated.
 
     [0, 1, 3, 6, 7, 9]
 
+If we now print the transformed data, we see that the features above were removed.
+
+..  code:: python
+
+    print(Xt.head())
+
+..  code:: python
+
+              2         4         5         8
+    0  0.061696 -0.044223 -0.034821  0.019907
+    1 -0.051474 -0.008449 -0.019163 -0.068332
+    2  0.044451 -0.045599 -0.034194  0.002861
+    3 -0.011595  0.012191  0.024991  0.022688
+    4 -0.036385  0.003935  0.015596 -0.031988

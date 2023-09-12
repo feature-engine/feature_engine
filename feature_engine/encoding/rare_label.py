@@ -165,7 +165,7 @@ class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
 
         if not isinstance(replace_with, (str, int, float)):
             raise ValueError(
-                "replace_with can should be a string, ingteger or float. "
+                "replace_with can should be a string, integer or float. "
                 f"Got {replace_with} instead."
             )
 
@@ -245,21 +245,16 @@ class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
         # check if dataset contains na
         if self.missing_values == "raise":
             _check_optional_contains_na(X, self.variables_)
-
-            for feature in self.variables_:
-                if X[feature].dtype == "category":
-                    X[feature] = X[feature].cat.add_categories(self.replace_with)
-                X.loc[
-                    ~X[feature].isin(self.encoder_dict_[feature]), feature
-                ] = self.replace_with
-
+            with_nan = []
         else:
-            for feature in self.variables_:
-                if X[feature].dtype == "category":
-                    X[feature] = X[feature].cat.add_categories(self.replace_with)
-                X.loc[
-                    ~X[feature].isin(self.encoder_dict_[feature] + [np.nan]), feature
-                ] = self.replace_with
+            with_nan = [np.nan]
+
+        for feature in self.variables_:
+            if X[feature].dtype == "category":
+                X[feature] = X[feature].cat.add_categories(self.replace_with)
+            X.loc[
+                ~X[feature].isin(self.encoder_dict_[feature] + with_nan), feature
+            ] = self.replace_with
 
         return X
 
