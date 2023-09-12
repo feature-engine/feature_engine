@@ -9,11 +9,13 @@ Deployed: xx September 2023
 Contributors
 ~~~~~~~~~~~~
 
+- `Kyle Gilde <https://github.com/kylegilde>`_
 - `Soledad Galli <https://github.com/solegalli>`_
 
 New functionality
 ~~~~~~~~~~~~~~~~~
 
+- `MatchVariables()` can now also match the **dtypes** of the variables (`Kyle Gilde <https://github.com/kylegilde>`_)
 - `DatetimeFeatures()` and `DatetimeSubtraction()` can now specify the format of the datetime variables (`Soledad Galli <https://github.com/solegalli>`_)
 
 Bug fixes
