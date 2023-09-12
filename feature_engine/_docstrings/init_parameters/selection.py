@@ -13,8 +13,8 @@ _estimator_docstring = """estimator: object
 _order_by_docstring = """order_by: str, default=None
             How to sort the variables in the dataframe before feature selection. This
             helps to obtain consistent results.\n
-            - None - preserves original variable order in the dataframe\n
-            - 'nan' - sorts columns by number of missing values (ascending)\n
-            - 'unique' - sorts columns by number of unique values (descending)\n
+            - None - preserves original variable order in the dataframe.\n
+            - 'nan' - sorts columns by number of missing values (ascending).\n
+            - 'unique' - sorts columns by number of unique values (descending).\n
             - 'alphabetic' - sorts columns alphabetically.\n
     """.rstrip()
