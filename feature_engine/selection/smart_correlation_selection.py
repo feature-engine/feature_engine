@@ -74,7 +74,7 @@ class SmartCorrelatedSelection(BaseSelector):
     analysis.
 
     Note: ordering of the coulmns matters! A different order of the columns could lead
-    to different results. To make the transformer consistent, use the `"order_by'`
+    to different results. To make the transformer consistent, use the `order_by`
     parameter.
 
     More details in the :ref:`User Guide <smart_correlation>`.
@@ -208,19 +208,19 @@ class SmartCorrelatedSelection(BaseSelector):
     ):
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError(
-                f"threshold must be a float between 0 and 1."
+                "threshold must be a float between 0 and 1."
                 f" Got {threshold} instead."
             )
 
         if missing_values not in ("raise", "ignore"):
             raise ValueError(
-                f"missing_values takes only values 'raise' or 'ignore'."
+                "missing_values takes only values 'raise' or 'ignore'."
                 f" Got {missing_values} instead."
             )
 
         if order_by is not None and order_by not in ("nan", "unique", "alphabetic"):
             raise ValueError(
-                f"order_by takes only values 'nan', 'unique', 'alphabetic', None."
+                "order_by takes only values 'nan', 'unique', 'alphabetic', None."
                 f" Got {order_by} instead."
             )
 
@@ -237,9 +237,8 @@ class SmartCorrelatedSelection(BaseSelector):
             "model_performance",
         ):
             raise ValueError(
-                f"selection_method takes only values 'missing_values', 'cardinality', "
-                f"'variance' or 'model_performance'. "
-                f"Got {selection_method} instead."
+                "selection_method takes only values 'missing_values', 'cardinality', "
+                f"'variance' or 'model_performance'. Got {selection_method} instead."
             )
 
         if selection_method == "model_performance" and estimator is None:
