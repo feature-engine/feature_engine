@@ -86,7 +86,7 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         The number of features in the train set used in fit.
 
     dtype_dict_:
-        If match_dtypes is set to True, then this attribute will exist, and it will
+        If `match_dtypes` is set to `True`, then this attribute will exist, and it will
         contain a dictionary of variables and their corresponding dtypes.
 
     Methods
