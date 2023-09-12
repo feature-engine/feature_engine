@@ -54,7 +54,7 @@ First, we load the data:
     # load dataset
     diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
     X = pd.DataFrame(diabetes_X)
-    y = pd.DataFrame(diabetes_y)
+    y = pd.Series(diabetes_y)
 
 Now, we set up :class:`RecursiveFeatureAddition` to select features based on the r2
 returned by a Linear Regression model, using 3 fold cross-validation. In this case,
@@ -99,16 +99,16 @@ adding each feature.
 
 ..  code:: python
 
-    {4: 0,
-     8: 0.2837159006046677,
-     2: 0.1377700238871593,
-     5: 0.0023329006089969906,
-     3: 0.0187608758643259,
-     1: 0.0027994385024313617,
-     7: 0.0026951300105543807,
-     6: 0.002683967832484757,
-     9: 0.0003040126429713075,
-     0: -0.007386876030245182}
+    {0: -0.0032800993162502845,
+     9: -0.00028194870232089997,
+     6: -0.0006751427734088544,
+     7: 0.00013890056776355575,
+     1: 0.01195652626644067,
+     3: 0.02863360798239445,
+     5: 0.012639242239088355,
+     2: 0.06630359039334816,
+     8: 0.10937354113435072,
+     4: 0.024318355833473526}
 
 :class:`RecursiveFeatureAddition` also stores the features that will be dropped based
 n the given threshold.
@@ -130,10 +130,11 @@ If we now print the transformed data, we see that the features above were remove
 
 ..  code:: python
 
-              4         8         2         3
-    0 -0.044223  0.019908  0.061696  0.021872
-    1 -0.008449 -0.068330 -0.051474 -0.026328
-    2 -0.045599  0.002864  0.044451 -0.005671
-    3  0.012191  0.022692 -0.011595 -0.036656
-    4  0.003935 -0.031991 -0.036385  0.021872
+              1         2         3         4         5         8
+    0  0.050680  0.061696  0.021872 -0.044223 -0.034821  0.019907
+    1 -0.044642 -0.051474 -0.026328 -0.008449 -0.019163 -0.068332
+    2  0.050680  0.044451 -0.005670 -0.045599 -0.034194  0.002861
+    3 -0.044642 -0.011595 -0.036656  0.012191  0.024991  0.022688
+    4 -0.044642 -0.036385  0.021872  0.003935  0.015596 -0.031988
+
 
