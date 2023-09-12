@@ -7,9 +7,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as stats
 
-from feature_engine._base_transformers.base_numerical import (
-    BaseNumericalTransformer
-)
+from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring, _n_features_in_docstring,
     _variables_attribute_docstring
@@ -155,21 +153,6 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
         return X
 
-    def _more_tags(self):
-        tags_dict = _return_tags()
-        tags_dict["variables"] = "numerical"
-
-        # =======  this tests fail because the transformers throw an error
-        # when the values are 0. Nothing to do with the test itself but
-        # mostly with the data created and used in the test
-        msg = (
-            "Transformer raises error when it can't find the optimal lambda for "
-            "the transformation, thus this check fails."
-        )
-        tags_dict["_xfail_checks"]["check_fit2d_1sample"] = msg
-
-        return tags_dict
-
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Convert the data back to the original representation.
@@ -211,4 +194,18 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
             x_inv[~pos] = 1 - np.exp(-X[~pos])
 
         return x_inv
->>>>>>> add inverse_transform in yeojonshon
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
+
+        # =======  this tests fail because the transformers throw an error
+        # when the values are 0. Nothing to do with the test itself but
+        # mostly with the data created and used in the test
+        msg = (
+            "Transformer raises error when it can't find the optimal lambda for "
+            "the transformation, thus this check fails."
+        )
+        tags_dict["_xfail_checks"]["check_fit2d_1sample"] = msg
+
+        return tags_dict
