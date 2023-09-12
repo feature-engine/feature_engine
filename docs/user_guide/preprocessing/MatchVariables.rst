@@ -145,6 +145,7 @@ And now, we transform the data with :class:`MatchVariables()`:
 Now, the transformer simultaneously added the missing columns with NA as values and
 removed the additional columns from the resulting dataset.
 
+
 However, if we look closely, the dtypes for the `sex` variable do not match. This could
 cause issues if other transformations depend upon having the correct dtypes.
 
