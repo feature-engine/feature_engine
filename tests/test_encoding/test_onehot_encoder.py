@@ -5,6 +5,24 @@ from sklearn.pipeline import Pipeline
 from feature_engine.encoding import OneHotEncoder
 
 
+@pytest.mark.parametrize("index_", [[1, 2, 3], [3, 2, 1], [4, 9, 2]])
+def test_concat_with_non_ordered_index(index_):
+    df = pd.DataFrame({"varA": ["a", "b", "c"], "varB": ["d", "d", "a"]}, index=index_)
+    encoder = OneHotEncoder()
+    dft = encoder.fit_transform(df)
+    df_expected = pd.DataFrame(
+        {
+            "varA_a": [1, 0, 0],
+            "varA_b": [0, 1, 0],
+            "varA_c": [0, 0, 1],
+            "varB_d": [1, 1, 0],
+            "varB_a": [0, 0, 1],
+        },
+        index=index_,
+    )
+    pd.testing.assert_frame_equal(dft, df_expected, check_dtype=False)
+
+
 def test_encode_categories_in_k_binary_plus_select_vars_automatically(df_enc_big):
     # test case 1: encode all categories into k binary variables, select variables
     # automatically

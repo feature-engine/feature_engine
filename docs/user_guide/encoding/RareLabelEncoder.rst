@@ -55,6 +55,7 @@ First, let's load the data and separate it into train and test:
         predictors_only=True,
         cabin="letter_only",
     )
+    X["pclass"] = X["pclass"].astype("O")
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, random_state=0,
@@ -73,19 +74,29 @@ We see the resulting data below:
     1193       3    male  29.881135      0      0   7.7250     M        Q
     686        3  female  22.000000      0      0   7.7250     M        Q
 
+Let's explore the number of uniue categories in the variable `"cabin"`.
+
+.. code:: python
+
+    X_train["cabin"].unique()
+
+We see the number of unique categories in the output below:
+
+.. code:: python
+
+    array(['M', 'E', 'C', 'D', 'B', 'A', 'F', 'T', 'G'], dtype=object)
+
 Now, we set up the :class:`RareLabelEncoder()` to group categories shown by less than 3%
 of the observations into a new group or category called 'Rare'. We will group the
 categories in the indicated variables if they have more than 2 unique categories each.
 
 .. code:: python
 
-    # set up the encoder
     encoder = RareLabelEncoder(
         tol=0.03,
         n_categories=2,
         variables=['cabin', 'pclass', 'embarked'],
         replace_with='Rare',
-        ignore_format=True,
     )
 
     # fit the encoder
@@ -115,6 +126,20 @@ Now we can go ahead and transform the variables:
     # transform the data
     train_t = encoder.transform(X_train)
     test_t = encoder.transform(X_test)
+
+Let's now inspect the number of unique categories in the variable `"cabin"` after the
+transformation:
+
+.. code:: python
+
+    train_t["cabin"].unique()
+
+In the output below, we see that the infrequent categories have been replaced by
+`"Rare"`.
+
+.. code:: python
+
+    array(['M', 'E', 'C', 'D', 'B', 'Rare'], dtype=object)
 
 We can also specify the maximum number of categories that can be considered frequent
 using the `max_n_categories` parameter.

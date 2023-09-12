@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, MutableSequence
 
 import numpy as np
 import pandas as pd
@@ -189,7 +189,7 @@ class SelectByShuffling(BaseSelector):
         self,
         X: pd.DataFrame,
         y: pd.Series,
-        sample_weight: Union[np.array, pd.Series, List] = None,
+        sample_weight: Union[MutableSequence, None] = None,
     ):
         """
         Find the important features.

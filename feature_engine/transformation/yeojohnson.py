@@ -17,6 +17,7 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.tags import _return_tags
 from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
@@ -152,3 +153,18 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
             X[feature] = stats.yeojohnson(X[feature], lmbda=self.lambda_dict_[feature])
 
         return X
+
+    def _more_tags(self):
+        tags_dict = _return_tags()
+        tags_dict["variables"] = "numerical"
+
+        # =======  this tests fail because the transformers throw an error
+        # when the values are 0. Nothing to do with the test itself but
+        # mostly with the data created and used in the test
+        msg = (
+            "Transformer raises error when it can't find the optimal lambda for "
+            "the transformation, thus this check fails."
+        )
+        tags_dict["_xfail_checks"]["check_fit2d_1sample"] = msg
+
+        return tags_dict

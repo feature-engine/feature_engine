@@ -62,7 +62,7 @@ First, we load the data:
     # load dataset
     diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
     X = pd.DataFrame(diabetes_X)
-    y = pd.DataFrame(diabetes_y)
+    y = pd.Series(diabetes_y)
 
 Now, we set up :class:`RecursiveFeatureElimination` to select features based on the r2
 returned by a Linear Regression model, using 3 fold cross-validation. In this case,
@@ -139,13 +139,12 @@ If we now print the transformed data, we see that the features above were remove
 
 ..  code:: python
 
-              1         3         5         2         8         4
-    0  0.050680  0.021872 -0.034821  0.061696  0.019908 -0.044223
-    1 -0.044642 -0.026328 -0.019163 -0.051474 -0.068330 -0.008449
-    2  0.050680 -0.005671 -0.034194  0.044451  0.002864 -0.045599
-    3 -0.044642 -0.036656  0.024991 -0.011595  0.022692  0.012191
-    4 -0.044642  0.021872  0.015596 -0.036385 -0.031991  0.003935
-
+              1         2         3         4         5         8
+    0  0.050680  0.061696  0.021872 -0.044223 -0.034821  0.019907
+    1 -0.044642 -0.051474 -0.026328 -0.008449 -0.019163 -0.068332
+    2  0.050680  0.044451 -0.005670 -0.045599 -0.034194  0.002861
+    3 -0.044642 -0.011595 -0.036656  0.012191  0.024991  0.022688
+    4 -0.044642 -0.036385  0.021872  0.003935  0.015596 -0.031988
 
 
 More details

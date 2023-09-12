@@ -49,12 +49,12 @@ First, we load the data:
     import pandas as pd
     from sklearn.datasets import load_diabetes
     from sklearn.linear_model import LinearRegression
-    from feature_engine.selection import RecursiveFeatureElimination
+    from feature_engine.selection import RecursiveFeatureAddition
 
     # load dataset
     diabetes_X, diabetes_y = load_diabetes(return_X_y=True)
     X = pd.DataFrame(diabetes_X)
-    y = pd.DataFrame(diabetes_y)
+    y = pd.Series(diabetes_y)
 
 Now, we set up :class:`RecursiveFeatureAddition` to select features based on the r2
 returned by a Linear Regression model, using 3 fold cross-validation. In this case,
@@ -66,7 +66,7 @@ we leave the parameter `threshold` to the default value which is 0.01.
     linear_model = LinearRegression()
 
     # initialize feature selector
-    tr = RecursiveFeatureElimination(estimator=linear_model, scoring="r2", cv=3)
+    tr = RecursiveFeatureAddition(estimator=linear_model, scoring="r2", cv=3)
 
 With `fit()` the model finds the most useful features, that is, features that when added
 cause an increase in model performance bigger than 0.01. With `transform()`, the transformer
@@ -100,15 +100,16 @@ adding each feature.
 ..  code:: python
 
     {4: 0,
-     8: 0.2837159006046677,
-     2: 0.1377700238871593,
-     5: 0.0023329006089969906,
-     3: 0.0187608758643259,
-     1: 0.0027994385024313617,
-     7: 0.0026951300105543807,
-     6: 0.002683967832484757,
-     9: 0.0003040126429713075,
-     0: -0.007386876030245182}
+     8: 0.28371458794131676,
+     2: 0.1377714799388745,
+     5: 0.0023327265047610735,
+     3: 0.018759914615172735,
+     1: 0.0027996354657459643,
+     7: 0.002695149440021638,
+     6: 0.002683934134630306,
+     9: 0.000304067408860742,
+     0: -0.007387230783454768}
+
 
 :class:`RecursiveFeatureAddition` also stores the features that will be dropped based
 n the given threshold.
@@ -120,7 +121,7 @@ n the given threshold.
 
 ..  code:: python
 
-    [0, 6, 7, 9]
+    [0, 1, 5, 6, 7, 9]
 
 If we now print the transformed data, we see that the features above were removed.
 
@@ -130,10 +131,10 @@ If we now print the transformed data, we see that the features above were remove
 
 ..  code:: python
 
-              4         8         2         3
-    0 -0.044223  0.019908  0.061696  0.021872
-    1 -0.008449 -0.068330 -0.051474 -0.026328
-    2 -0.045599  0.002864  0.044451 -0.005671
-    3  0.012191  0.022692 -0.011595 -0.036656
-    4  0.003935 -0.031991 -0.036385  0.021872
+              2         3         4         8
+    0  0.061696  0.021872 -0.044223  0.019907
+    1 -0.051474 -0.026328 -0.008449 -0.068332
+    2  0.044451 -0.005670 -0.045599  0.002861
+    3 -0.011595 -0.036656  0.012191  0.022688
+    4 -0.036385  0.021872  0.003935 -0.031988
 
