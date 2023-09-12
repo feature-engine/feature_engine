@@ -132,7 +132,7 @@ transformation:
 
 .. code:: python
 
-    X_train["cabin"].unique()
+    train_t["cabin"].unique()
 
 In the output below, we see that the infrequent categories have been replaced by
 `"Rare"`.
