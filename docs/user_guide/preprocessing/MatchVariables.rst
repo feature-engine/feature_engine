@@ -145,8 +145,54 @@ And now, we transform the data with :class:`MatchVariables()`:
 Now, the transformer simultaneously added the missing columns with NA as values and
 removed the additional columns from the resulting dataset.
 
+
+However, if we look closely, the dtypes for the `sex` variable do not match. This could
+cause issues if other transformations depend upon having the correct dtypes.
+
+.. code:: python
+
+    train.sex.dtype
+
+.. code:: python
+
+    dtype('O')
+
+.. code:: python
+
+    test_tt.sex.dtype
+
+.. code:: python
+
+    dtype('float64')
+
+Set the `match_dtypes` parameter to `True` in order to align the dtypes as well.
+
+.. code:: python
+
+    match_cols_and_dtypes = MatchVariables(missing_values="ignore", match_dtypes=True)
+    match_cols_and_dtypes.fit(train)
+
+    test_ttt = match_cols_and_dtypes.transform(test_t)
+
+.. code:: python
+
+    The following variables are added to the DataFrame: ['sex', 'age']
+    The following variables are dropped from the DataFrame: ['var_b', 'var_a']
+    The sex dtype is changing from  float64 to object
+
+Now the dtype matches.
+
+.. code:: python
+
+    test_ttt.sex.dtype
+
+.. code:: python
+
+    dtype('O')
+
 By default, :class:`MatchVariables()` will print out messages indicating which variables
-were added or removed. We can switch off the messages through the parameter `verbose`.
+were added, removed and altered. We can switch off the messages through the parameter `verbose`.
+
 
 When to use the transformer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
