@@ -155,6 +155,7 @@ def test_match_dtypes_string_to_numbers(df_vartypes):
 
     # test transform output
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
+    pd.testing.assert_frame_equal(transformed_df, train)
 
 
 def test_match_dtypes_numbers_to_string(df_vartypes):
@@ -172,6 +173,7 @@ def test_match_dtypes_numbers_to_string(df_vartypes):
     assert isinstance(match_columns.dtype_dict_, dict)
     # test transform output
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
+    pd.testing.assert_frame_equal(transformed_df, train)
 
 
 def test_match_dtypes_string_to_datetime(df_vartypes):
@@ -190,6 +192,7 @@ def test_match_dtypes_string_to_datetime(df_vartypes):
     assert match_columns.dtype_dict_ == {"dob": np.dtype("<M8[ns]")}
     # test transform output
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
+    pd.testing.assert_frame_equal(transformed_df, train)
 
 
 def test_match_dtypes_datetime_to_string(df_vartypes):
@@ -208,6 +211,7 @@ def test_match_dtypes_datetime_to_string(df_vartypes):
     assert isinstance(match_columns.dtype_dict_, dict)
     # test transform output
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
+    pd.testing.assert_frame_equal(transformed_df, train)
 
 
 def test_match_dtypes_missing_category(df_vartypes):
@@ -233,6 +237,7 @@ def test_match_dtypes_missing_category(df_vartypes):
     }
     # test transform output
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
+    pd.testing.assert_frame_equal(transformed_df, train.iloc[:-1])
 
 
 def test_match_dtypes_extra_category(df_vartypes):
