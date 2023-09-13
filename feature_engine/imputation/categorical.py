@@ -229,7 +229,7 @@ class CategoricalImputer(BaseImputer):
             # category, before filling in the nan
             add_cats = {}
             for variable in self.variables_:
-                if pd.api.types.is_categorical_dtype(X[variable]):
+                if X[variable].dtype.name == "category":
                     add_cats.update(
                         {
                             variable: X[variable].cat.add_categories(

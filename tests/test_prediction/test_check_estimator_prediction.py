@@ -220,17 +220,17 @@ def test_attributes_upon_fitting(_strategy, _bins, estimator):
     if _strategy == "equal_width":
         assert (
             type(transformer._pipeline.named_steps["discretiser"])
-            == EqualWidthDiscretiser
+            is EqualWidthDiscretiser
         )
     else:
         assert (
             type(transformer._pipeline.named_steps["discretiser"])
-            == EqualFrequencyDiscretiser
+            is EqualFrequencyDiscretiser
         )
 
-    assert type(transformer._pipeline.named_steps["encoder_num"]) == MeanEncoder
+    assert type(transformer._pipeline.named_steps["encoder_num"]) is MeanEncoder
 
-    assert type(transformer._pipeline.named_steps["encoder_cat"]) == MeanEncoder
+    assert type(transformer._pipeline.named_steps["encoder_cat"]) is MeanEncoder
 
 
 @pytest.mark.parametrize("estimator", _estimators)

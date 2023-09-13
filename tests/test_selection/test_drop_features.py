@@ -23,7 +23,7 @@ def test_drop_1_variable(df_vartypes):
 
     # transform params
     assert X.shape == (4, 4)
-    assert type(X) == pd.DataFrame
+    assert type(X) is pd.DataFrame
     pd.testing.assert_frame_equal(X, df)
 
 
@@ -49,7 +49,7 @@ def test_drop_1_variables_str_input(df_vartypes):
 
     # transform params
     assert X.shape == (4, 4)
-    assert type(X) == pd.DataFrame
+    assert type(X) is pd.DataFrame
     pd.testing.assert_frame_equal(X, df)
 
 
@@ -71,7 +71,7 @@ def test_drop_2_variables(df_vartypes):
 
     # transform params
     assert X.shape == (4, 3)
-    assert type(X) == pd.DataFrame
+    assert type(X) is pd.DataFrame
     pd.testing.assert_frame_equal(X, df)
 
 

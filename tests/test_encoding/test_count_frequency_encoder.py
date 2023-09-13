@@ -279,7 +279,7 @@ def test_zero_encoding_for_new_categories():
 
     # check that the counts are correct for both new and old
     expected_result = pd.DataFrame({"col1": [3, 0, 1, 3, 1], "col2": [2, 2, 1, 2, 0]})
-    pd.testing.assert_frame_equal(result, expected_result)
+    pd.testing.assert_frame_equal(result, expected_result, check_dtype=False)
 
 
 def test_zero_encoding_for_unseen_categories_if_unseen_is_encode():
@@ -299,7 +299,7 @@ def test_zero_encoding_for_unseen_categories_if_unseen_is_encode():
 
     # check that the counts are correct
     expected_result = pd.DataFrame({"col1": [3, 0, 1, 3, 1], "col2": [2, 2, 1, 2, 0]})
-    pd.testing.assert_frame_equal(result, expected_result)
+    pd.testing.assert_frame_equal(result, expected_result, check_dtype=False)
 
     # with frequency
     encoder = CountFrequencyEncoder(encoding_method="frequency", unseen="encode").fit(

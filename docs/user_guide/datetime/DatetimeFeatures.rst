@@ -77,7 +77,7 @@ First, we will create a toy dataframe with 2 date variables:
 
     toy_df = pd.DataFrame({
         "var_date1": ['May-1989', 'Dec-2020', 'Jan-1999', 'Feb-2002'],
-        "var_date2": ['06/21/12', '02/10/98', '08/03/10', '10/31/20'],
+        "var_date2": ['06/21/2012', '02/10/1998', '08/03/2010', '10/31/2020'],
     })
 
 Now, we will extract the variables month, month-end and the day of the year from the
@@ -148,9 +148,14 @@ First, let's create a toy dataset with 2 time variables and an object variable.
 datetime. So if we want to extract time features from all our datetime variables, we
 don't need to specify them.
 
+Note that from version 2.0.0 pandas deprecated the parameter `infer_datetime_format`.
+Hence, if you want pandas to infer the datetime format and you have different formats,
+you need to explicitly say so by passing `"mixed"` to the `format` parameter as shown
+below.
+
 .. code:: python
 
-    dfts = DatetimeFeatures(features_to_extract=["minute"])
+    dfts = DatetimeFeatures(features_to_extract=["minute"], format="mixed")
 
     df_transf = dfts.fit_transform(toy_df)
 
@@ -227,10 +232,11 @@ the features.
         variables=["var_dt1", "var_dt3"],
         features_to_extract=["year", "hour"],
         drop_original=False,
+        format="mixed",
     )
     df_transf = dfts.fit_transform(toy_df)
 
-    print(df_transf)
+    df_transf
 
 We can see the resulting dataframe in the following output:
 
@@ -373,10 +379,11 @@ And now we mistakenly extract only date features:
 
     dfts = DatetimeFeatures(
         features_to_extract=["year", "month", "day_of_week"],
+        format="mixed",
     )
     df_transf = dfts.fit_transform(toy_df)
 
-    print(df_transf)
+    df_transf
 
 .. code:: python
 
@@ -413,6 +420,7 @@ And we mistakenly extract the hour and the minute:
 
     dfts = DatetimeFeatures(
         features_to_extract=["hour", "minute"],
+        format="mixed",
     )
     df_transf = dfts.fit_transform(toy_df)
 
@@ -466,7 +474,7 @@ To do this, we leave the parameter `features_to_extract` to `None`.
 
     df_transf = dfts.fit_transform(toy_df)
 
-    print(df_transf)
+    df_transf
 
 .. code:: python
 
@@ -614,7 +622,7 @@ from the dataset.
 .. code:: python
 
     pipe = Pipeline([
-        ('datetime', DatetimeFeatures()),
+        ('datetime', DatetimeFeatures(format="mixed")),
         ('drop_constant', DropConstantFeatures()),
     ])
 
@@ -683,12 +691,13 @@ converts all data to UTC timezone.
     dfts = DatetimeFeatures(
         features_to_extract=["hour", "minute"],
         drop_original=False,
-        utc=True
+        utc=True,
+        format="mixed",
     )
 
     df_transf = dfts.fit_transform(toy_df)
 
-    print(df_transf)
+    df_transf
 
 .. code:: python
 
@@ -709,7 +718,7 @@ the datetime information extracted as if it were in UTC timezone.
     from feature_engine.datetime import DatetimeFeatures
 
     var_tz = pd.Series(['08/31/00 12:34:45', '12/01/90 23:01:02', '04/25/01 11:59:21'])
-    var_tz = pd.to_datetime(var_tz)
+    var_tz = pd.to_datetime(var_tz, format="mixed")
     var_tz = var_tz.dt.tz_localize("US/eastern")
     var_tz
 
@@ -735,7 +744,7 @@ timezone.
 
     df_transf = dfts.fit_transform(toy_df)
 
-    print(df_transf)
+    df_transf
 
 .. code:: python
 

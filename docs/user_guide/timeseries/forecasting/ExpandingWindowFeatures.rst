@@ -272,7 +272,7 @@ just need to remember to drop the original series after the transformation:
 
 .. code:: python
 
-    win_f = WindowFeatures(
+    win_f = ExpandingWindowFeatures(
         functions=["mean", "max"],
         drop_original=True,
     )

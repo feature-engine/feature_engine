@@ -1,6 +1,44 @@
 Version 1.6.X
 =============
 
+Version 1.6.2
+-------------
+
+Deployed: xx September 2023
+
+Contributors
+~~~~~~~~~~~~
+
+- `Soledad Galli <https://github.com/solegalli>`_
+
+New functionality
+~~~~~~~~~~~~~~~~~
+
+- `DatetimeFeatures()` and `DatetimeSubtraction()` can now specify the format of the datetime variables (`Soledad Galli <https://github.com/solegalli>`_)
+
+Bug fixes
+~~~~~~~~~
+
+This bugs were introduced by the latest releases of pandas, Scikit-learn and Scipy.
+
+- Fix failing test for `YeoJohnsonTransformer()` (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix failing test for `RareLabelEncoder()` (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix failing test for `DatetimeFeatures()` (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix failing test for many encoders: removed `downcast=infer` as it will be deprecated (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix version related failing style checks (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix version related failing type checks (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix version related failing doc checks (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix future warning categorical imputation (`Soledad Galli <https://github.com/solegalli>`_)
+
+
+Code improvements
+~~~~~~~~~~~~~~~~~
+
+- Routine in `DatetimeFeatures()` does not enter into our check for `utc=True` when working with different timezones any more (`Soledad Galli <https://github.com/solegalli>`_)
+- Improve performance in `OneHotEncoder()` (`Soledad Galli <https://github.com/solegalli>`_)
+- Add check for dupicated variable names in dataframe  (`David Cortes <https://github.com/david-cortes>`_)
+
+
 Version 1.6.1
 -------------
 
