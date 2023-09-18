@@ -4,7 +4,7 @@ Version 1.6.X
 Version 1.6.2
 -------------
 
-Deployed: xx September 2023
+Deployed: 18th September 2023
 
 Contributors
 ~~~~~~~~~~~~
