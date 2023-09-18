@@ -9,6 +9,16 @@ from feature_engine.tags import _return_tags
 
 class BaseImputer(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """shared set-up checks and methods across imputers"""
+    def __init__(
+            self,
+            missing_only: bool = False,
+    ):
+        if not isinstance(missing_only, bool):
+            raise ValueError(
+                f"missing_only must be a boolean type. Got {missing_only} instead."
+            )
+
+        self.missing_only = missing_only
 
     def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """

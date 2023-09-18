@@ -8,6 +8,7 @@ import pandas as pd
 from feature_engine._check_input_parameters.check_input_dictionary import (
     _check_numerical_dict,
 )
+
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _imputer_dict_docstring,
