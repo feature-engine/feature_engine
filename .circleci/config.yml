@@ -139,7 +139,11 @@ workflows:
       - test_style
       - test_docs
       - test_type
-      - upload_codecov
+      - upload_codecov:
+          - filters:
+              - branches:
+                  - ignore:
+                      - 1.6.X
       - package_and_upload_to_pypi:
           requires:
             - test_feature_engine_py38
