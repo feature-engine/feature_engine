@@ -9,7 +9,6 @@ Deployed: xx September 2023
 Contributors
 ~~~~~~~~~~~~
 
-
 - `Giorgio Segalla <https://github.com/GiorgioSgl>`_
 - `David Cortes <https://github.com/david-cortes>`_
 - `Kyle Gilde <https://github.com/kylegilde>`_
