@@ -16,7 +16,10 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _variables_numerical_docstring,
 )
-from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+    _inverse_transform_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling._init_parameter_checks import (
@@ -30,6 +33,7 @@ from feature_engine.variable_handling._init_parameter_checks import (
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
+    inverse_transform=_inverse_transform_docstring,
 )
 class YeoJohnsonTransformer(BaseNumericalTransformer):
     """
@@ -69,6 +73,8 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         Learn the optimal lambda for the Yeo-Johnson transformation.
 
     {fit_transform}
+
+    {inverse_transform}
 
     transform:
         Apply the Yeo-Johnson transformation.
