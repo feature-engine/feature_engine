@@ -14,13 +14,13 @@ from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _variables_numerical_docstring
+    _variables_numerical_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables
+    _check_init_parameter_variables,
 )
 
 
@@ -105,6 +105,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
     def __init__(
         self, variables: Union[None, int, str, List[Union[str, int]]] = None
     ) -> None:
+        
         self.variables = _check_init_parameter_variables(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
