@@ -47,6 +47,8 @@ def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
         A copy of original DataFrame or a converted Numpy array.
     """
     if isinstance(X, pd.DataFrame):
+        if not X.columns.is_unique:
+            raise ValueError("Input data contains duplicated variable names.")
         X = X.copy()
 
     elif isinstance(X, (np.generic, np.ndarray)):
