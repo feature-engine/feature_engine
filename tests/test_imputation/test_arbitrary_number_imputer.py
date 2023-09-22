@@ -82,3 +82,6 @@ def test_dictionary_of_imputation_values(df_na):
 def imputer_error_when_dictionary_value_is_string():
     with pytest.raises(ValueError):
         ArbitraryNumberImputer(imputer_dict={"Age": "arbitrary_number"})
+
+
+

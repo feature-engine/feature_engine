@@ -15,6 +15,9 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters.imputers import (
+    _missing_only_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
     _fit_transform_docstring,
@@ -28,11 +31,13 @@ from feature_engine.variable_handling._init_parameter_checks import (
 )
 from feature_engine.variable_handling.variable_type_selection import (
     find_or_check_numerical_variables,
+    find_variables_with_missing_values,
 )
 
 
 @Substitution(
     imputer_dict_=_imputer_dict_docstring,
+    missing_only=_missing_only_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -67,6 +72,7 @@ class ArbitraryNumberImputer(BaseImputer):
         The dictionary of variables and the arbitrary numbers for their imputation. If
         specified, it overrides the above parameters.
 
+    {missing_only}
 
     Attributes
     ----------
@@ -157,6 +163,11 @@ class ArbitraryNumberImputer(BaseImputer):
             self.imputer_dict_ = self.imputer_dict
         else:
             self.variables_ = find_or_check_numerical_variables(X, self.variables)
+
+            # identify variables with missing values
+            if self.missing_only and self.variables is None:
+                self.variables_ = find_variables_with_missing_values(X, self.variables_)
+
             self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables_}
 
         self._get_feature_names_in(X)
