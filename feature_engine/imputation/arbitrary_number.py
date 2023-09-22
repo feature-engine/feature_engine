@@ -117,6 +117,7 @@ class ArbitraryNumberImputer(BaseImputer):
         arbitrary_number: Union[int, float] = 999,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         imputer_dict: Optional[dict] = None,
+        missing_only: bool = False
     ) -> None:
 
         if isinstance(arbitrary_number, int) or isinstance(arbitrary_number, float):
@@ -124,6 +125,7 @@ class ArbitraryNumberImputer(BaseImputer):
         else:
             raise ValueError("arbitrary_number must be numeric of type int or float")
 
+        super().__init__(missing_only)
         _check_numerical_dict(imputer_dict)
 
         self.variables = _check_init_parameter_variables(variables)

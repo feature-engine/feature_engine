@@ -350,12 +350,12 @@ def test_find_categorical_and_numerical_variables(df_vartypes):
 
 def test_find_variables_with_missing_values(df_vartypes, df_na, df_enc_na):
     # Case 1: no missing values
-    assert find_variables_with_missing_values(df_vartypes) == []
+    assert find_variables_with_missing_values(df_vartypes, df_vartypes.columns) == []
 
     # Case 2: multiple variables with missing values and different data types
-    assert find_variables_with_missing_values(df_na) == [
+    assert find_variables_with_missing_values(df_na, df_na.columns) == [
         "Name", "City", "Studies", "Age", "Marks",
     ]
 
     # Case 3: categorical variable with one missing value
-    assert find_variables_with_missing_values(df_enc_na) == ["var_A"]
+    assert find_variables_with_missing_values(df_enc_na, df_enc_na.columns) == ["var_A"]
