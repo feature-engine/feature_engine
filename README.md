@@ -206,12 +206,31 @@ Details about how to contribute can be found in the [Contribute Page](https://fe
 Briefly:
 
 - Fork the repo
-- Clone your fork into your local computer: ``git clone https://github.com/<YOURUSERNAME>/feature_engine.git``
-- navigate into the repo folder ``cd feature_engine``
-- Install Feature-engine as a developer: ``pip install -e .``
+- Clone your fork into your local computer:
+```
+git clone https://github.com/<YOURUSERNAME>/feature_engine.git
+```
+- navigate into the repo folder
+```
+cd feature_engine
+```
+- Install Feature-engine as a developer: 
+```
+pip install -e .
+```
 - Optional: Create and activate a virtual environment with any tool of choice
-- Install Feature-engine dependencies: ``pip install -r requirements.txt`` and ``pip install -r test_requirements.txt``
-- Create a feature branch with a meaningful name for your feature: ``git checkout -b myfeaturebranch``
+- Install Feature-engine dependencies: 
+```
+pip install -r requirements.txt
+``` 
+and 
+```
+pip install -r test_requirements.txt
+```
+- Create a feature branch with a meaningful name for your feature: 
+```
+git checkout -b myfeaturebranch
+```
 - Develop your feature, tests and documentation
 - Make sure the tests pass
 - Make a PR
@@ -223,9 +242,15 @@ Thank you!!
 
 Feature-engine documentation is built using [Sphinx](https://www.sphinx-doc.org) and is hosted on [Read the Docs](https://readthedocs.org/).
 
-To build the documentation make sure you have the dependencies installed: from the root directory: ``pip install -r docs/requirements.txt``.
+To build the documentation make sure you have the dependencies installed: from the root directory: 
+```
+pip install -r docs/requirements.txt
+```
 
-Now you can build the docs using: ``sphinx-build -b html docs build``
+Now you can build the docs using: 
+```
+sphinx-build -b html docs build
+```
 
 
 ## License
