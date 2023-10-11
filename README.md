@@ -2,12 +2,7 @@
 
 | | |
 | --- | --- |
-| Package |
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/feature_engine?logo=Python)](https://pypi.org/project/feature-engine/)
-[![PyPI](https://img.shields.io/pypi/v/feature_engine?logo=PyPI)](https://pypi.org/project/feature-engine)
-[![Conda](https://img.shields.io/conda/v/conda-forge/feature_engine?logo=Anaconda)](https://anaconda.org/conda-forge/feature_engine)
-[![Monthly Downloads](https://img.shields.io/pypi/dm/feature-engine)](https://img.shields.io/pypi/dm/feature-engine)
-|
+| Package | [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/feature_engine?logo=Python)](https://pypi.org/project/feature-engine/) [![PyPI](https://img.shields.io/pypi/v/feature_engine?logo=PyPI)](https://pypi.org/project/feature-engine) [![Conda](https://img.shields.io/conda/v/conda-forge/feature_engine?logo=Anaconda)](https://anaconda.org/conda-forge/feature_engine) [![Monthly Downloads](https://img.shields.io/pypi/dm/feature-engine)](https://img.shields.io/pypi/dm/feature-engine) |
 | Meta | 
 [![GitHub](https://img.shields.io/github/license/feature-engine/feature_engine)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md)
 [![GitHub contributors](https://img.shields.io/github/contributors/feature-engine/feature_engine?logo=GitHub)](https://github.com/feature-engine/feature_engine/graphs/contributors)
