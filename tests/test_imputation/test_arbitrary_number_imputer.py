@@ -84,4 +84,23 @@ def imputer_error_when_dictionary_value_is_string():
         ArbitraryNumberImputer(imputer_dict={"Age": "arbitrary_number"})
 
 
+def test_transformation_when_missing_only_is_true(df_na):
+    # transform dataset
+    imputer = ArbitraryNumberImputer(
+        arbitrary_number=84,
+        variables=None,
+        missing_only=True,
+    )
+    X_transformed = imputer.fit_transform(df_na)
+
+    # prepare expected results
+    expected_results_df= df_na.copy()
+    expected_results_df["Age"] = expected_results_df["Age"].fillna(84)
+    expected_results_df["Marks"] = expected_results_df["Marks"].fillna(84)
+
+    # test transform output
+    pd.testing.assert_frame_equal(X_transformed, expected_results_df)
+
+
+
 
