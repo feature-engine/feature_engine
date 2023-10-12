@@ -140,6 +140,7 @@ class CategoricalImputer(BaseImputer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         return_object: bool = False,
         ignore_format: bool = False,
+        missing_only: bool = False,
     ) -> None:
         if imputation_method not in ["missing", "frequent"]:
             raise ValueError(
@@ -148,6 +149,8 @@ class CategoricalImputer(BaseImputer):
 
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
+
+        super().__init__(missing_only)
 
         self.imputation_method = imputation_method
         self.fill_value = fill_value

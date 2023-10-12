@@ -292,3 +292,28 @@ def test_variables_cast_as_category_frequent(df_na):
     assert X_transformed[["City", "Studies"]].isnull().sum().sum() == 0
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() > 0
     pd.testing.assert_frame_equal(X_transformed, X_reference)
+
+
+def test_transformation_when_missing_only_is_true(df_na):
+    # transform dataset
+    imputer = CategoricalImputer(
+        imputation_method="missing",
+        fill_value="pinecone",
+        variables=None,
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Var_No_Nulls"] = ["playa"] * X.shape[0]
+    X_transformed = imputer.fit_transform(X)
+
+    # prepare expect results
+    expected_results_df = df_na.copy()
+    expected_results_df["Name"] = expected_results_df["Name"].fillna("pinecone")
+    expected_results_df["City"] = expected_results_df["City"].fillna("pinecone")
+    expected_results_df["Studies"] = expected_results_df["Studies"].fillna("pinecone")
+    expected_results_df["Var_No_Nulls"] = ["playa"] * expected_results_df.shape[0]
+
+    # test transformed output
+    pd.testing.assert_frame_equal(X_transformed, expected_results_df)
+
+
