@@ -11,6 +11,9 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters.imputers import (
+    _missing_only_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
@@ -25,10 +28,12 @@ from feature_engine.variable_handling._init_parameter_checks import (
 from feature_engine.variable_handling.variable_type_selection import (
     find_all_variables,
     find_or_check_categorical_variables,
+    find_variables_with_missing_values,
 )
 
 
 @Substitution(
+    missing_only=_missing_only_docstring,
     imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -85,6 +90,8 @@ class CategoricalImputer(BaseImputer):
         object or categorical, or check that the variables entered by the user are of
         type object or categorical. If True, the imputer will select all variables or
         accept all variables entered by the user, including those cast as numeric.
+
+    {missing_only}
 
     Attributes
     ----------
@@ -174,6 +181,10 @@ class CategoricalImputer(BaseImputer):
         else:
             # select all variables or check variables entered by the user
             self.variables_ = find_all_variables(X, self.variables)
+
+        # identify variables with missing values
+        if self.missing_only and self.variables is None:
+            self.variables_ = find_variables_with_missing_values(X, self.variables_)
 
         if self.imputation_method == "missing":
             self.imputer_dict_ = {var: self.fill_value for var in self.variables_}
