@@ -313,8 +313,7 @@ def test_transformation_when_missing_only_is_true(df_na):
     expected_results_df["Studies"] = expected_results_df["Studies"].fillna("pinecone")
     expected_results_df["Var_No_Nulls"] = ["playa"] * expected_results_df.shape[0]
 
-
-    # test variables being saved and tranformed
+    # test variables being saved and transformed
     assert imputer.variables_ == ["Name", "City", "Studies"]
 
     # test transformed output
