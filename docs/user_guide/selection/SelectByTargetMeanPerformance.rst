@@ -279,3 +279,13 @@ Check also:
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Select-by-Target-Mean-Encoding.ipynb>`_
 
 All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
+
+For more details about this and other feature selection methods check out these resources:
+
+
+
+- Feature selection for machine learning _, online course.
+
+
+
+- Feature selection in machine learning _, book.

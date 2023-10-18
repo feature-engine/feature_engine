@@ -157,3 +157,13 @@ More details about feature selection can be found in the following resources:
 - `Feature Selection Online Course <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_
 - `Feature Selection book <https://leanpub.com/feature-selection-in-machine-learning/>`_
 - `Train in data's blog <https://www.blog.trainindata.com/>`_
+
+For more details about this and other feature selection methods check out these resources:
+
+
+
+- Feature selection for machine learning _, online course.
+
+
+
+- Feature selection in machine learning _, book.
