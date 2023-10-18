@@ -155,5 +155,6 @@ More details on recursive feature elimination in this article:
 - `Recursive feature elimination with Python <https://www.blog.trainindata.com/recursive-feature-elimination-with-python/>`_
 
 For more details about this and other feature selection methods check out these resources:
+
 - `Feature selection for machine learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>` _, online course.
 - `Feature selection in machine learning <https://leanpub.com/feature-selection-in-machine-learning>` _, book.

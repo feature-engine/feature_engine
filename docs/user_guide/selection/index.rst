@@ -151,7 +151,3 @@ Click below to find more details on how to use each one of the transformers.
 
 Additional Resources
 --------------------
-
-For more details about this and other feature selection methods check out these resources:
-- `Feature selection for machine learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>` _, online course.
-- `Feature selection in machine learning <https://leanpub.com/feature-selection-in-machine-learning>` _, book.

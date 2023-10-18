@@ -126,5 +126,6 @@ In this Kaggle kernel we use :class:`DropDuplicateFeatures()` together with othe
 All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
 
 For more details about this and other feature selection methods check out these resources:
+
 - `Feature selection for machine learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>` _, online course.
 - `Feature selection in machine learning <https://leanpub.com/feature-selection-in-machine-learning>` _, book.
