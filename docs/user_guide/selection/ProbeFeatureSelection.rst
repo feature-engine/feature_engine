@@ -376,11 +376,5 @@ More info about this method can be found in these resources:
 - `Feature Selection: Beyond feature importance? <https://www.kdnuggets.com/2019/10/feature-selection-beyond-feature-importance.html>`_, KDDNuggets.
 
 For more details about this and other feature selection methods check out these resources:
-
-
-
 - `Feature selection for machine learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>` _, online course.
-
-
-
 - `Feature selection in machine learning <https://leanpub.com/feature-selection-in-machine-learning>` _, book.
