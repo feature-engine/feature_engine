@@ -11,12 +11,6 @@ from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import (
-    _check_contains_inf,
-    _check_contains_na,
-    check_X,
-)
 from feature_engine._docstrings.selection._docstring import (
     _cv_docstring,
     _estimator_docstring,
@@ -25,6 +19,12 @@ from feature_engine._docstrings.selection._docstring import (
     _scoring_docstring,
     _variables_attribute_docstring,
     _variables_numerical_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na,
+    check_X,
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.variable_handling._init_parameter_checks import (
@@ -286,9 +286,7 @@ class SmartCorrelatedSelection(BaseSelector):
 
         # for each feature in the dataset (columns of the correlation matrix)
         for feature in _correlated_matrix.columns:
-
             if feature not in _examined_features:
-
                 # append so we can exclude when we create the combinations
                 _examined_features.add(feature)
 
@@ -304,7 +302,6 @@ class SmartCorrelatedSelection(BaseSelector):
 
                 # create combinations:
                 for f2 in _features_to_compare:
-
                     # if the correlation is higher than the threshold
                     # we are interested in absolute correlation coefficient value
                     if abs(_correlated_matrix.loc[f2, feature]) > self.threshold:
@@ -330,32 +327,50 @@ class SmartCorrelatedSelection(BaseSelector):
         if self.selection_method == "missing_values":
             for feature_group in self.correlated_feature_sets_:
                 feature_group = list(feature_group)  # type: ignore
-                f = X[feature_group].isnull().sum().sort_values(ascending=True).index[0]
+                f = (
+                    X[feature_group]
+                    .isnull()
+                    .sum()
+                    .sort_index()
+                    .sort_values(ascending=True)
+                    .index[0]
+                )
                 _selected_features.append(f)
 
         # select the feature with most unique values
         elif self.selection_method == "cardinality":
             for feature_group in self.correlated_feature_sets_:
                 feature_group = list(feature_group)  # type: ignore
-                f = X[feature_group].nunique().sort_values(ascending=False).index[0]
+                f = (
+                    X[feature_group]
+                    .nunique()
+                    .sort_index()
+                    .sort_values(ascending=False)
+                    .index[0]
+                )
                 _selected_features.append(f)
 
         # select the feature with biggest variance
         elif self.selection_method == "variance":
             for feature_group in self.correlated_feature_sets_:
                 feature_group = list(feature_group)  # type: ignore
-                f = X[feature_group].std().sort_values(ascending=False).index[0]
+                f = (
+                    X[feature_group]
+                    .std()
+                    .sort_index()
+                    .sort_values(ascending=False)
+                    .index[0]
+                )
                 _selected_features.append(f)
 
         # select best performing feature according to estimator
         else:
             for feature_group in self.correlated_feature_sets_:
-
-                # feature_group = list(feature_group)
+                _feature_group = sorted(list(feature_group))
                 temp_perf = []
 
                 # train a model for every feature
-                for feature in feature_group:
+                for feature in _feature_group:
                     model = cross_validate(
                         self.estimator,
                         X[feature].to_frame(),
@@ -368,7 +383,7 @@ class SmartCorrelatedSelection(BaseSelector):
                     temp_perf.append(model["test_score"].mean())
 
                 # select best performing feature from group
-                f = list(feature_group)[temp_perf.index(max(temp_perf))]
+                f = _feature_group[temp_perf.index(max(temp_perf))]
                 _selected_features.append(f)
 
         self.features_to_drop_ = [
