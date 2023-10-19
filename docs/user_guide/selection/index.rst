@@ -153,11 +153,6 @@ Additional Resources
 --------------------
 
 More details about feature selection can be found in the following resources:
-Member
-@solegalli solegalli Oct 19, 2023
-
-These lines were not the ones you added, they were there already. Could you please add them back?
-@solegalli
 
 - `Feature Selection Online Course <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_
 - `Feature Selection book <https://leanpub.com/feature-selection-in-machine-learning/>`_
