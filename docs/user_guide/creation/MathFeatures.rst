@@ -229,9 +229,11 @@ provided:
 More details
 ^^^^^^^^^^^^
 
-You can find creative ways to use :class:`MathFeatures()` in the
-following Jupyter notebooks.
+You can find creative ways to use :class:`MathFeatures()` in the following Jupyter notebooks.
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/creation/MathFeaturesn.ipynb>`_
 
-All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
+For more details about this and other feature engineering methods check out these resources:
+
+- `Feature engineering for machine learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.amazon.com/Python-Feature-Engineering-Cookbook-transforming-dp-1804611301/dp/1804611301>`_, book.
