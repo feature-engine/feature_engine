@@ -45,7 +45,7 @@ En Español
 
 Empezamos una nueva website con blogs en español. Chequeala:
 
-- `Entrena en Datos <http://www.entrenaendatos.com/>`_.
+- `Entrena en Datos <https://www.es.trainindata.com/>`_.
 
 Ademas, te pueden interesar:
 
