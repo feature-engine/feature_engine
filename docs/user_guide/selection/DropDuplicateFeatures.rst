@@ -51,7 +51,7 @@ manually:
     data.columns = ['pclass', 'survived', 'sex', 'age',
                     'sibsp', 'parch', 'fare','cabin', 'embarked',
                     'sex_dup', 'age_dup', 'sibsp_dup']
-```
+
 
 We then split the data into a training and a testing set:
 
@@ -86,7 +86,7 @@ Below we see the resulting data:
     686   female  22.000000          0
 
 As expected, the variables `sex` and `sex_dup` have duplicate field values throughout all
-the rows. The same is true for the variables `age` and `age_du`p.
+the rows. The same is true for the variables `age` and `age_dup`.
 
 Now, we set up :class:`DropDuplicateFeatures()` to find the duplicate features:
 
