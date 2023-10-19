@@ -23,11 +23,18 @@ selection in general in the following online courses:
 .. figure::  ../images/fetsf.png
    :width: 300
    :figclass: align-center
-   :align: center
+   :align: left
    :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
 
    Feature Engineering for Time Series Forecasting
 
+.. figure::  ../images/mli_logo.png
+   :width: 300
+   :figclass: align-center
+   :align: right
+   :target: https://www.courses.trainindata.com/p/machine-learning-interpretability
+
+   Interpreting Machine Learning Models
 
 We also show how to put an end-to-end machine learning pipeline in production, using
 Feature-engine and Scikit-learn in this course:
