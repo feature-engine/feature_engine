@@ -377,5 +377,5 @@ More info about this method can be found in these resources:
 
 For more details about this and other feature selection methods check out these resources:
 
-- `Feature selection for machine learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>` _, online course.
-- `Feature selection in machine learning <https://leanpub.com/feature-selection-in-machine-learning>` _, book.
+- `Feature selection for machine learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.
+- `Feature selection in machine learning <https://leanpub.com/feature-selection-in-machine-learning>`_, book.
