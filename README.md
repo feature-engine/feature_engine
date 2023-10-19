@@ -43,6 +43,17 @@ transforming parameters from the data and then transform it.
 * [Documentation](https://feature-engine.trainindata.com)
 
 
+## Pst! How did you find us?
+
+We want to share Feature-engine with more people. It'd help us loads if you tell us
+how you discovered us.
+
+Then we'd know what we are doing right and which channels to use to share the love.
+
+Please share your story by answering 1 quick question
+[at this link](https://docs.google.com/forms/d/e/1FAIpQLSfxvgnJvuvPf2XgosakhXo5VNQafqRrjNXkoW5qDWqnuxZNSQ/viewform?usp=sf_link)
+. 😃
+
 ## Current Feature-engine's transformers include functionality for:
 
 * Missing Data Imputation
