@@ -277,3 +277,8 @@ observations of class 0 is 0, the WoE is not defined, and the transformer will r
 
 If you encounter this problem try grouping variables into fewer bins if they are numerical,
 or grouping rare categories with the RareLabelEncoder if they are categorical.
+
+For more details about this and other feature selection methods check out these resources:
+
+- `Feature selection for machine learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.
+- `Feature selection in machine learning <https://leanpub.com/feature-selection-in-machine-learning>`_, book.

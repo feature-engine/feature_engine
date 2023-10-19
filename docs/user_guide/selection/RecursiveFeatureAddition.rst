@@ -138,3 +138,7 @@ If we now print the transformed data, we see that the features above were remove
     3 -0.011595 -0.036656  0.012191  0.022688
     4 -0.036385  0.021872  0.003935 -0.031988
 
+For more details about this and other feature selection methods check out these resources:
+
+- `Feature selection for machine learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.
+- `Feature selection in machine learning <https://leanpub.com/feature-selection-in-machine-learning>`_, book.

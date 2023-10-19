@@ -374,3 +374,8 @@ More info about this method can be found in these resources:
 
 - `Kaggle Tips for Feature Engineering and Selection <https://www.youtube.com/watch?v=RtqtM1UJfZc&t=3150s>`_, by Gilberto Titericz.
 - `Feature Selection: Beyond feature importance? <https://www.kdnuggets.com/2019/10/feature-selection-beyond-feature-importance.html>`_, KDDNuggets.
+
+For more details about this and other feature selection methods check out these resources:
+
+- `Feature selection for machine learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.
+- `Feature selection in machine learning <https://leanpub.com/feature-selection-in-machine-learning>`_, book.
