@@ -140,5 +140,5 @@ If we now print the transformed data, we see that the features above were remove
 
 For more details about this and other feature selection methods check out these resources:
 
-- `Feature selection for machine learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>` _, online course.
-- `Feature selection in machine learning <https://leanpub.com/feature-selection-in-machine-learning>` _, book.
+- `Feature selection for machine learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.
+- `Feature selection in machine learning <https://leanpub.com/feature-selection-in-machine-learning>`_, book.
