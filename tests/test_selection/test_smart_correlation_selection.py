@@ -255,7 +255,6 @@ def test_raises_param_errors():
 
 
 def test_error_method_supplied(df_test):
-
     X, _ = df_test
     method = "hola"
 
@@ -267,7 +266,186 @@ def test_error_method_supplied(df_test):
     exceptionmsg = errmsg.value.args[0]
 
     assert (
-        exceptionmsg
-        == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
-        + f" '{method}' was supplied"
+            exceptionmsg
+            == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
+            + f" '{method}' was supplied"
     )
+
+
+def test_consistent_features_to_drop_by_selection_method_missing_values():
+    import subprocess
+    script = """
+import seaborn as sns
+from sklearn.pipeline import Pipeline
+from feature_engine.encoding import OneHotEncoder
+from feature_engine.imputation import ArbitraryNumberImputer, CategoricalImputer
+from feature_engine.selection import SmartCorrelatedSelection
+import sys
+# load data
+data = sns.load_dataset("titanic")
+data.drop(["who", "adult_male", "alive"], axis=1, inplace=True)
+# preprocessing
+one_hot_encode_low_cardinal=["sex", "embarked", "class", "deck", "embark_town", "alone"]
+encoding_transformer = Pipeline(steps=[
+    ("step_1", ArbitraryNumberImputer(variables="age")),
+    ("step_2", CategoricalImputer(variables=["deck", "embark_town", "embarked"])),
+    ("step_3", OneHotEncoder(variables=one_hot_encode_low_cardinal,
+                             drop_last=True,
+                             ignore_format=True))
+])
+encoded_data = encoding_transformer.fit_transform(data)
+X_train = encoded_data.drop("survived", axis=1)
+y_train = encoded_data["survived"]
+# smartselection
+tr = SmartCorrelatedSelection(
+    variables=None,
+    method="pearson",
+    threshold=0.7,
+    missing_values="ignore",
+    selection_method="missing_values",
+    estimator=None,
+)
+Xt = tr.fit(X_train, y_train)
+sys.stdout.write(str(tr.features_to_drop_))
+    """
+    features_to_drop_0 = subprocess.check_output(["python", "-c", script])
+    for _ in range(25):
+        features_to_drop = subprocess.check_output(["python", "-c", script])
+        # print(features_to_drop_0)
+        assert eval(features_to_drop.decode()) == eval(features_to_drop_0.decode())
+
+
+def test_consistent_features_to_drop_by_selection_method_cardinality():
+    import subprocess
+    script = """
+import seaborn as sns
+from sklearn.pipeline import Pipeline
+from feature_engine.encoding import OneHotEncoder
+from feature_engine.imputation import ArbitraryNumberImputer, CategoricalImputer
+from feature_engine.selection import SmartCorrelatedSelection
+import sys
+# load data
+data = sns.load_dataset("titanic")
+data.drop(["who", "adult_male", "alive"], axis=1, inplace=True)
+# preprocessing
+one_hot_encode_low_cardinal=["sex", "embarked", "class", "deck", "embark_town", "alone"]
+encoding_transformer = Pipeline(steps=[
+    ("step_1", ArbitraryNumberImputer(variables="age")),
+    ("step_2", CategoricalImputer(variables=["deck", "embark_town", "embarked"])),
+    ("step_3", OneHotEncoder(variables=one_hot_encode_low_cardinal,
+                             drop_last=True,
+                             ignore_format=True))
+])
+encoded_data = encoding_transformer.fit_transform(data)
+X_train = encoded_data.drop("survived", axis=1)
+y_train = encoded_data["survived"]
+# smartselection
+tr = SmartCorrelatedSelection(
+    variables=None,
+    method="pearson",
+    threshold=0.7,
+    missing_values="raise",
+    selection_method="cardinality",
+    estimator=None,
+)
+Xt = tr.fit(X_train, y_train)
+sys.stdout.write(str(tr.features_to_drop_))
+    """
+    features_to_drop_0 = subprocess.check_output(["python", "-c", script])
+    for _ in range(25):
+        features_to_drop = subprocess.check_output(["python", "-c", script])
+        # print(features_to_drop_0)
+        assert eval(features_to_drop.decode()) == eval(features_to_drop_0.decode())
+
+
+def test_consistent_features_to_drop_by_selection_method_variance():
+    import subprocess
+    script = """
+import seaborn as sns
+from sklearn.pipeline import Pipeline
+from feature_engine.encoding import OneHotEncoder
+from feature_engine.imputation import ArbitraryNumberImputer, CategoricalImputer
+from feature_engine.selection import SmartCorrelatedSelection
+import sys
+# load data
+data = sns.load_dataset("titanic")
+data.drop(["who", "adult_male", "alive"], axis=1, inplace=True)
+# preprocessing
+one_hot_encode_low_cardinal=["sex", "embarked", "class", "deck", "embark_town", "alone"]
+encoding_transformer = Pipeline(steps=[
+    ("step_1", ArbitraryNumberImputer(variables="age")),
+    ("step_2", CategoricalImputer(variables=["deck", "embark_town", "embarked"])),
+    ("step_3", OneHotEncoder(variables=one_hot_encode_low_cardinal,
+                             drop_last=True,
+                             ignore_format=True))
+])
+encoded_data = encoding_transformer.fit_transform(data)
+X_train = encoded_data.drop("survived", axis=1)
+y_train = encoded_data["survived"]
+# smartselection
+tr = SmartCorrelatedSelection(
+    variables=None,
+    method="pearson",
+    threshold=0.7,
+    missing_values="raise",
+    selection_method="variance",
+    estimator=None,
+)
+Xt = tr.fit(X_train, y_train)
+sys.stdout.write(str(tr.features_to_drop_))
+    """
+    features_to_drop_0 = subprocess.check_output(["python", "-c", script])
+    for _ in range(25):
+        features_to_drop = subprocess.check_output(["python", "-c", script])
+        # print(features_to_drop_0)
+        assert eval(features_to_drop.decode()) == eval(features_to_drop_0.decode())
+
+
+def test_consistent_features_to_drop_by_selection_method_model_performance():
+    import subprocess
+    script = """
+import seaborn as sns
+from sklearn.pipeline import Pipeline
+from feature_engine.encoding import OneHotEncoder
+from feature_engine.imputation import ArbitraryNumberImputer, CategoricalImputer
+from feature_engine.selection import SmartCorrelatedSelection
+from xgboost import XGBClassifier
+import sys
+# load data
+data = sns.load_dataset("titanic")
+data.drop(["who", "adult_male", "alive"], axis=1, inplace=True)
+# preprocessing
+one_hot_encode_low_cardinal=["sex", "embarked", "class", "deck", "embark_town", "alone"]
+encoding_transformer = Pipeline(steps=[
+    ("step_1", ArbitraryNumberImputer(variables="age")),
+    ("step_2", CategoricalImputer(variables=["deck", "embark_town", "embarked"])),
+    ("step_3", OneHotEncoder(variables=one_hot_encode_low_cardinal,
+                             drop_last=True,
+                             ignore_format=True))
+])
+encoded_data = encoding_transformer.fit_transform(data)
+X_train = encoded_data.drop("survived", axis=1)
+X_train = X_train.fillna(-999999999)
+y_train = encoded_data["survived"]
+# model init
+xgb_model = XGBClassifier(
+    objective='binary:logistic',
+    eval_metric='logloss'
+)
+# smartselection
+tr = SmartCorrelatedSelection(
+    variables=None,
+    method="pearson",
+    threshold=0.7,
+    missing_values="raise",
+    selection_method="model_performance",
+    estimator=xgb_model,
+)
+Xt = tr.fit(X_train, y_train)
+sys.stdout.write(str(tr.features_to_drop_))
+    """
+    features_to_drop_0 = subprocess.check_output(["python", "-c", script])
+    for _ in range(25):
+        features_to_drop = subprocess.check_output(["python", "-c", script])
+        # print(features_to_drop)
+        assert eval(features_to_drop.decode()) == eval(features_to_drop_0.decode())
