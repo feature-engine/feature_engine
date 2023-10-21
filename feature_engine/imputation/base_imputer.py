@@ -15,7 +15,7 @@ class BaseImputer(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     ):
         if not isinstance(missing_only, bool):
             raise ValueError(
-                f"missing_only must be a boolean type. Got {missing_only} instead."
+                f"missing_only must be a boolean. Got {missing_only} instead."
             )
 
         self.missing_only = missing_only

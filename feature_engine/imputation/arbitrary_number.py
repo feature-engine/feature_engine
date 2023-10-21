@@ -161,6 +161,7 @@ class ArbitraryNumberImputer(BaseImputer):
                 X, self.imputer_dict.keys()  # type: ignore
             )
             self.imputer_dict_ = self.imputer_dict
+
         else:
             self.variables_ = find_or_check_numerical_variables(X, self.variables)
 

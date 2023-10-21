@@ -3,7 +3,6 @@ The module imputation includes classes to perform missing data imputation
 """
 
 from .arbitrary_number import ArbitraryNumberImputer
-from .base_imputer import BaseImputer
 from .categorical import CategoricalImputer
 from .drop_missing_data import DropMissingData
 from .end_tail import EndTailImputer
@@ -19,5 +18,4 @@ __all__ = [
     "AddMissingIndicator",
     "RandomSampleImputer",
     "DropMissingData",
-    "BaseImputer",
 ]
