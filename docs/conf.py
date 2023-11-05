@@ -167,7 +167,6 @@ html_show_copyright = True
 # Output file base name for HTML help builder.
 htmlhelp_basename = "feature_enginedoc"
 
-
 # -- Options for autodoc ------------------------------------------------------
 
 autodoc_default_options = {
@@ -184,7 +183,6 @@ autosummary_generate = True
 # this is needed for some reason...
 # see https://github.com/numpy/numpydoc/issues/69
 numpydoc_show_class_members = False
-
 
 # -- Options for intersphinx --------------------------------------------------
 
@@ -283,6 +281,17 @@ linkcode_resolve = make_linkcode_resolve(
 
 
 def setup(app):
-    kwargs = {"defer data-domain":"feature-engine.readthedocs.io"}
+    # plausible analytics
+    kwargs = {"defer data-domain": "feature-engine.readthedocs.io"}
     app.add_js_file("https://plausible.io/js/plausible.js", **kwargs)
+
+    # actenis analytics
+    kwargs = {"data-host": "https://dataweb.atecnis.com",
+              "data-dtn": "false",
+              "id": "ZwSg9rf6GA",
+              "async": "defer",
+              }
+    app.add_js_file("https://dataweb.atecnis.com/js/script.js", **kwargs)
+
+    # copy button for code
     app.add_js_file("js/copybutton.js")
