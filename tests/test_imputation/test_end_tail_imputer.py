@@ -104,22 +104,68 @@ def test_error_when_fold_is_1():
 
 #TODO: Upddate unit taste
 def test_transformation_when_missing_only_is_true(df_na):
-    # transform dataset
+    # Case 1: imputation method is IQR
     imputer = EndTailImputer(
-        arbitrary_number=84,
-        variables=None,
+        imputation_method="iqr",
+        tail="right",
+        fold=1.5,
         missing_only=True,
     )
     X = df_na.copy()
-    X["Var_No_Nulls"] = [999] * X.shape[0]
+    X["Var_No_Nulls"] = [1984] * X.shape[0]
     X_transformed = imputer.fit_transform(X)
-
 
     # prepare expected results
     expected_results_df= df_na.copy()
-    expected_results_df["Age"] = expected_results_df["Age"].fillna(84)
-    expected_results_df["Marks"] = expected_results_df["Marks"].fillna(84)
-    expected_results_df["Var_No_Nulls"] = [333] * X.shape[0]
+    expected_results_df["Age"] = expected_results_df["Age"].fillna(65.5)
+    expected_results_df["Marks"] = expected_results_df["Marks"].fillna(1.0625)
+    expected_results_df["Var_No_Nulls"] = [1984] * X.shape[0]
+
+    # test variables being saved and transformed
+    assert imputer.variables_ == ["Age", "Marks"]
+
+    # test transform output
+    pd.testing.assert_frame_equal(X_transformed, expected_results_df)
+
+    # Case 2: imputation method is Gaussian
+    imputer = EndTailImputer(
+        imputation_method="gaussian",
+        tail="left",
+        fold=3,
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Var_No_Nulls"] = [1984] * X.shape[0]
+    X_transformed = imputer.fit_transform(X)
+
+    # prepare expected results
+    expected_results_df= df_na.copy()
+    expected_results_df["Age"] = expected_results_df["Age"].fillna(-1.521)
+    expected_results_df["Marks"] = expected_results_df["Marks"].fillna(0.042)
+    expected_results_df["Var_No_Nulls"] = [1984] * X.shape[0]
+
+    # test variables being saved and transformed
+    assert imputer.variables_ == ["Age", "Marks"]
+
+    # test transform output
+    pd.testing.assert_frame_equal(X_transformed.round(3), expected_results_df)
+
+    # Case 3: imputation method is Max
+    imputer = EndTailImputer(
+        imputation_method="max",
+        tail="right",
+        fold=1,
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Var_No_Nulls"] = [1984] * X.shape[0]
+    X_transformed = imputer.fit_transform(X)
+
+    # prepare expected results
+    expected_results_df= df_na.copy()
+    expected_results_df["Age"] = expected_results_df["Age"].fillna(41.0)
+    expected_results_df["Marks"] = expected_results_df["Marks"].fillna(0.9)
+    expected_results_df["Var_No_Nulls"] = [1984] * X.shape[0]
 
     # test variables being saved and transformed
     assert imputer.variables_ == ["Age", "Marks"]
