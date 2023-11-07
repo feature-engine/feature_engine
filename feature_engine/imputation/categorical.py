@@ -174,17 +174,18 @@ class CategoricalImputer(BaseImputer):
         # check input dataframe
         X = check_X(X)
 
+
+        if self.missing_only and self.variables is None:
+            # only select variables with missing values
+            self.variables_ = find_categorical_variables_with_missing_values(X)
+
         # check or select the right variables
-        if not self.ignore_format:
+        elif not self.ignore_format:
             # find categorical variables or check variables entered by user are
             # categorical
             self.variables_: List[
                 Union[str, int]
             ] = find_or_check_categorical_variables(X, self.variables)
-
-        elif self.missing_only and self.variables is None:
-            # only select variables with missing values
-            self.variables_ = find_categorical_variables_with_missing_values(X)
 
         else:
             # select all variables or check variables entered by the user
