@@ -9,9 +9,6 @@ from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
-from feature_engine._docstrings.init_parameters.imputers import (
-    _missing_only_docstring,
-)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X

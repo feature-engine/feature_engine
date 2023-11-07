@@ -101,3 +101,28 @@ def test_error_when_tail_is_string():
 def test_error_when_fold_is_1():
     with pytest.raises(ValueError):
         EndTailImputer(fold=-1)
+
+#TODO: Upddate unit taste
+def test_transformation_when_missing_only_is_true(df_na):
+    # transform dataset
+    imputer = EndTailImputer(
+        arbitrary_number=84,
+        variables=None,
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Var_No_Nulls"] = [999] * X.shape[0]
+    X_transformed = imputer.fit_transform(X)
+
+
+    # prepare expected results
+    expected_results_df= df_na.copy()
+    expected_results_df["Age"] = expected_results_df["Age"].fillna(84)
+    expected_results_df["Marks"] = expected_results_df["Marks"].fillna(84)
+    expected_results_df["Var_No_Nulls"] = [333] * X.shape[0]
+
+    # test variables being saved and transformed
+    assert imputer.variables_ == ["Age", "Marks"]
+
+    # test transform output
+    pd.testing.assert_frame_equal(X_transformed, expected_results_df)
