@@ -123,7 +123,7 @@ class ArbitraryNumberImputer(BaseImputer):
         arbitrary_number: Union[int, float] = 999,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         imputer_dict: Optional[dict] = None,
-        missing_only: bool = False
+        missing_only: bool = False,
     ) -> None:
 
         if isinstance(arbitrary_number, int) or isinstance(arbitrary_number, float):

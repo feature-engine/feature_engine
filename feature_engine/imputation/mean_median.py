@@ -14,6 +14,9 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _variables_numerical_docstring,
 )
+from feature_engine._docstrings.init_parameters.imputers import (
+    _missing_only_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
@@ -25,12 +28,14 @@ from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
 from feature_engine.variable_handling.variable_type_selection import (
+    find_numerical_variables_with_missing_values,
     find_or_check_numerical_variables,
 )
 
 
 @Substitution(
     variables=_variables_numerical_docstring,
+    missing_only=_missing_only_docstring,
     imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -55,6 +60,8 @@ class MeanMedianImputer(BaseImputer):
         Desired method of imputation. Can take 'mean' or 'median'.
 
     {variables}
+
+    {missing_only}
 
     Attributes
     ----------
@@ -100,10 +107,13 @@ class MeanMedianImputer(BaseImputer):
         self,
         imputation_method: str = "median",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_only: bool = False,
     ) -> None:
 
         if imputation_method not in ["median", "mean"]:
             raise ValueError("imputation_method takes only values 'median' or 'mean'")
+
+        super().__init__(missing_only)
 
         self.imputation_method = imputation_method
         self.variables = _check_init_parameter_variables(variables)
@@ -124,8 +134,13 @@ class MeanMedianImputer(BaseImputer):
         # check input dataframe
         X = check_X(X)
 
+        # only process the variables with missing variables
+        if self.missing_only and self.variables is None:
+            self.variables_ = find_numerical_variables_with_missing_values(X)
+
         # find or check for numerical variables
-        self.variables_ = find_or_check_numerical_variables(X, self.variables)
+        else:
+            self.variables_ = find_or_check_numerical_variables(X, self.variables)
 
         # find imputation parameters: mean or median
         if self.imputation_method == "mean":

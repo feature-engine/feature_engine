@@ -102,9 +102,9 @@ def test_error_when_fold_is_1():
     with pytest.raises(ValueError):
         EndTailImputer(fold=-1)
 
-#TODO: Upddate unit taste
+
 def test_transformation_when_missing_only_is_true(df_na):
-    # Case 1: imputation method is IQR
+    # Case 1: imputation method is 'iqr'
     imputer = EndTailImputer(
         imputation_method="iqr",
         tail="right",
@@ -127,7 +127,7 @@ def test_transformation_when_missing_only_is_true(df_na):
     # test transform output
     pd.testing.assert_frame_equal(X_transformed, expected_results_df)
 
-    # Case 2: imputation method is Gaussian
+    # Case 2: imputation method is 'gaussian'
     imputer = EndTailImputer(
         imputation_method="gaussian",
         tail="left",
@@ -150,7 +150,7 @@ def test_transformation_when_missing_only_is_true(df_na):
     # test transform output
     pd.testing.assert_frame_equal(X_transformed.round(3), expected_results_df)
 
-    # Case 3: imputation method is Max
+    # Case 3: imputation method is 'max'
     imputer = EndTailImputer(
         imputation_method="max",
         tail="right",
