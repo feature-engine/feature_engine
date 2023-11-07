@@ -31,7 +31,7 @@ from feature_engine.variable_handling._init_parameter_checks import (
 )
 from feature_engine.variable_handling.variable_type_selection import (
     find_or_check_numerical_variables,
-    find_variables_with_missing_values,
+    find_numerical_variables_with_missing_values,
 )
 
 
@@ -163,11 +163,12 @@ class ArbitraryNumberImputer(BaseImputer):
             self.imputer_dict_ = self.imputer_dict
 
         else:
-            self.variables_ = find_or_check_numerical_variables(X, self.variables)
-
-            # identify variables with missing values
+            # only processes the variables with missing variables
             if self.missing_only and self.variables is None:
-                self.variables_ = find_variables_with_missing_values(X, self.variables_)
+                self.variables_ = find_numerical_variables_with_missing_values(X)
+
+            else:
+                self.variables_ = find_or_check_numerical_variables(X, self.variables)
 
             self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables_}
 

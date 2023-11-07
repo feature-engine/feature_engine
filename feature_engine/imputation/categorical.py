@@ -27,8 +27,8 @@ from feature_engine.variable_handling._init_parameter_checks import (
 )
 from feature_engine.variable_handling.variable_type_selection import (
     find_all_variables,
+    find_categorical_variables_with_missing_values,
     find_or_check_categorical_variables,
-    find_variables_with_missing_values,
 )
 
 
@@ -174,20 +174,21 @@ class CategoricalImputer(BaseImputer):
         # check input dataframe
         X = check_X(X)
 
-        # check or select the the right variables
+        # check or select the right variables
         if not self.ignore_format:
             # find categorical variables or check variables entered by user are
             # categorical
             self.variables_: List[
                 Union[str, int]
             ] = find_or_check_categorical_variables(X, self.variables)
+
+        elif self.missing_only and self.variables is None:
+            # only select variables with missing values
+            self.variables_ = find_categorical_variables_with_missing_values(X)
+
         else:
             # select all variables or check variables entered by the user
             self.variables_ = find_all_variables(X, self.variables)
-
-        # identify variables with missing values
-        if self.missing_only and self.variables is None:
-            self.variables_ = find_variables_with_missing_values(X, self.variables_)
 
         if self.imputation_method == "missing":
             self.imputer_dict_ = {var: self.fill_value for var in self.variables_}
