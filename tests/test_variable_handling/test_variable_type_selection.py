@@ -5,6 +5,7 @@ import pytest
 from feature_engine.variable_handling.variable_type_selection import (
     _filter_out_variables_not_in_dataframe,
     find_all_variables,
+    find_all_variables_with_missing_values,
     find_categorical_and_numerical_variables,
     find_categorical_variables_with_missing_values,
     find_numerical_variables_with_missing_values,
@@ -372,3 +373,23 @@ def test_find_categorical_variables_with_missing_values(df_vartypes, df_na, df_e
 
     # Case 3: one categorical variable with a missing value
     assert find_categorical_variables_with_missing_values(df_enc_na) == ["var_A"]
+
+
+def test_find_all_variables_with_missing_values(
+        df_vartypes, df_na, df_enc_na, df_enc_numeric
+):
+    # Case 1: no missing values
+    assert find_all_variables_with_missing_values(df_vartypes) == []
+
+    # Case 2: multiple variables with missing values. df_na has categorical and numerical vars
+    assert find_all_variables_with_missing_values(df_na) == [
+        "Name", "City", "Studies", "Age", "Marks",
+    ]
+
+    # Case 3: one categorical variable with a missing value
+    assert find_all_variables_with_missing_values(df_enc_na) == ["var_A"]
+
+    # Case 4: one numerical variable with a missing value
+    df_enc_numeric_na = df_enc_numeric.copy()
+    df_enc_numeric_na.loc[3, "var_A"] = np.nan
+    assert find_numerical_variables_with_missing_values(df_enc_numeric_na) == ["var_A"]

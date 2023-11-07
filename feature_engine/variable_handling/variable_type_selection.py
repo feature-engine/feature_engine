@@ -507,3 +507,35 @@ def find_categorical_variables_with_missing_values(
     ]
 
     return vars_with_missing_values
+
+
+def find_all_variables_with_missing_values(
+        X: pd.DataFrame
+) -> List[Union[str, int]]:
+    """
+    Find all variables that contain missing values.
+
+    This function returns a list of all the variable names that contain missing values.
+
+    Parameters
+    ----------
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
+
+    Returns
+    -------
+    vars_with_missing_values: list
+        List of all the variables that have missing values.
+    """
+    # identify  variables
+    vars = find_all_variables(X, None)
+
+    # identify which missing values within the dataframe
+    X_bool = X[vars].isna()
+
+    # get the names of the variables that have any missing values
+    vars_with_missing_values = [
+        var for var in vars if X_bool[var].any()
+    ]
+
+    return vars_with_missing_values
