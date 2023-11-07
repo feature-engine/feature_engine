@@ -307,3 +307,54 @@ def test_variables_cast_as_category(df_na):
 
     # test transform output
     pd.testing.assert_frame_equal(X_transformed, ref, check_dtype=False)
+
+
+def test_transformation_when_missing_only_is_true(df_na):
+    # transform dataset
+    imputer = RandomSampleImputer(
+        variables=None,
+        random_state=47,
+        seed="general",
+        seeding_method="add",
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Var_No_Nulls"] = ["pasta"] * X.shape[0]
+    X_transformed = imputer.fit_transform(X)
+
+    # prepare expected results
+    # fillna based on seed used (found experimenting on Jupyter notebook)
+    expected_results = {
+        "Name": ["tom", "nick", "krish", "tom", "peter", "tom", "fred", "sam"],
+        "City": [
+            "London",
+            "Manchester",
+            "London",
+            "London",
+            "London",
+            "London",
+            "Bristol",
+            "Manchester",
+        ],
+        "Studies": [
+            "Bachelor",
+            "Bachelor",
+            "Bachelor",
+            "Bachelor",
+            "Bachelor",
+            "PhD",
+            "None",
+            "Masters",
+        ],
+        "Age": [20.0, 21.0, 19.0, 37.0, 23.0, 40.0, 41.0, 37.0],
+        "Marks": [0.9, 0.8, 0.7, 0.9, 0.3, 0.9, 0.8, 0.6],
+        "dob": pd.date_range("2020-02-24", periods=8, freq="T"),
+        "Var_No_Nulls": ["pasta"] * X.shape[0],
+    }
+    expected_results_df = pd.DataFrame(expected_results)
+
+    # test variables being saved and transformed
+    assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks"]
+
+    # test transform output
+    pd.testing.assert_frame_equal(X_transformed, expected_results_df)
