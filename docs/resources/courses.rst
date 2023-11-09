@@ -36,6 +36,28 @@ selection in general in the following online courses:
 
    Interpreting Machine Learning Models
 
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
 We also show how to put an end-to-end machine learning pipeline in production, using
 Feature-engine and Scikit-learn in this course:
 
