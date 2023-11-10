@@ -14,6 +14,9 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _variables_numerical_docstring,
 )
+from feature_engine._docstrings.init_parameters.imputers import (
+    _missing_only_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
@@ -25,6 +28,7 @@ from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
 from feature_engine.variable_handling.variable_type_selection import (
+    find_numerical_variables_with_missing_values,
     find_or_check_numerical_variables,
 )
 
@@ -32,6 +36,7 @@ from feature_engine.variable_handling.variable_type_selection import (
 @Substitution(
     variables=_variables_numerical_docstring,
     imputer_dict_=_imputer_dict_docstring,
+    missing_only=_missing_only_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -98,6 +103,8 @@ class EndTailImputer(BaseImputer):
 
     {variables}
 
+    {missing_only}
+
     Attributes
     ----------
     {imputer_dict_}
@@ -141,6 +148,7 @@ class EndTailImputer(BaseImputer):
         tail: str = "right",
         fold: int = 3,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_only: bool = False,
     ) -> None:
 
         if imputation_method not in ["gaussian", "iqr", "max"]:
@@ -153,6 +161,8 @@ class EndTailImputer(BaseImputer):
 
         if fold <= 0:
             raise ValueError("fold takes only positive numbers")
+
+        super().__init__(missing_only)
 
         self.imputation_method = imputation_method
         self.tail = tail
@@ -174,8 +184,13 @@ class EndTailImputer(BaseImputer):
         # check input dataframe
         X = check_X(X)
 
+        # only processes the variables with missing variables
+        if self.missing_only and self.variables is None:
+            self.variables_ = find_numerical_variables_with_missing_values(X)
+
         # find or check for numerical variables
-        self.variables_ = find_or_check_numerical_variables(X, self.variables)
+        else:
+            self.variables_ = find_or_check_numerical_variables(X, self.variables)
 
         # estimate imputation values
         if self.imputation_method == "max":

@@ -62,3 +62,49 @@ def test_median_imputation_when_user_enters_single_variables(df_na):
 def test_error_with_wrong_imputation_method():
     with pytest.raises(ValueError):
         MeanMedianImputer(imputation_method="arbitrary")
+
+
+def test_transformation_when_missing_only_is_true(df_na):
+    # Case 1: imputation method is 'mean'
+    imputer = MeanMedianImputer(
+        imputation_method="mean",
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Var_No_Nulls"] = [333] * X.shape[0]
+    X_transformed = imputer.fit_transform(X)
+
+
+    # prepare expected results
+    expected_results_df= df_na.copy()
+    expected_results_df["Age"] = expected_results_df["Age"].fillna(28.714)
+    expected_results_df["Marks"] = expected_results_df["Marks"].fillna(0.683)
+    expected_results_df["Var_No_Nulls"] = [333] * X.shape[0]
+
+    # test variables being saved and transformed
+    assert imputer.variables_ == ["Age", "Marks"]
+
+    # test transform output
+    pd.testing.assert_frame_equal(X_transformed.round(3), expected_results_df)
+
+    # Case 2: imputation method is 'median'
+    imputer = MeanMedianImputer(
+        imputation_method="median",
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Var_No_Nulls"] = [333] * X.shape[0]
+    X_transformed = imputer.fit_transform(X)
+
+
+    # prepare expected results
+    expected_results_df= df_na.copy()
+    expected_results_df["Age"] = expected_results_df["Age"].fillna(23.0)
+    expected_results_df["Marks"] = expected_results_df["Marks"].fillna(0.75)
+    expected_results_df["Var_No_Nulls"] = [333] * X.shape[0]
+
+    # test variables being saved and transformed
+    assert imputer.variables_ == ["Age", "Marks"]
+
+    # test transform output
+    pd.testing.assert_frame_equal(X_transformed, expected_results_df)

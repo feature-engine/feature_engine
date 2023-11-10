@@ -11,6 +11,9 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters.imputers import (
+    _missing_only_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
@@ -24,11 +27,13 @@ from feature_engine.variable_handling._init_parameter_checks import (
 )
 from feature_engine.variable_handling.variable_type_selection import (
     find_all_variables,
+    find_categorical_variables_with_missing_values,
     find_or_check_categorical_variables,
 )
 
 
 @Substitution(
+    missing_only=_missing_only_docstring,
     imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -86,6 +91,8 @@ class CategoricalImputer(BaseImputer):
         type object or categorical. If True, the imputer will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
+    {missing_only}
+
     Attributes
     ----------
     {imputer_dict_}
@@ -133,6 +140,7 @@ class CategoricalImputer(BaseImputer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         return_object: bool = False,
         ignore_format: bool = False,
+        missing_only: bool = False,
     ) -> None:
         if imputation_method not in ["missing", "frequent"]:
             raise ValueError(
@@ -141,6 +149,8 @@ class CategoricalImputer(BaseImputer):
 
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
+
+        super().__init__(missing_only)
 
         self.imputation_method = imputation_method
         self.fill_value = fill_value
@@ -164,13 +174,19 @@ class CategoricalImputer(BaseImputer):
         # check input dataframe
         X = check_X(X)
 
-        # check or select the the right variables
-        if not self.ignore_format:
+
+        if self.missing_only and self.variables is None:
+            # only select variables with missing values
+            self.variables_ = find_categorical_variables_with_missing_values(X)
+
+        # check or select the right variables
+        elif not self.ignore_format:
             # find categorical variables or check variables entered by user are
             # categorical
             self.variables_: List[
                 Union[str, int]
             ] = find_or_check_categorical_variables(X, self.variables)
+
         else:
             # select all variables or check variables entered by the user
             self.variables_ = find_all_variables(X, self.variables)

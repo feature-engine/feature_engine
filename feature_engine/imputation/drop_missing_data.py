@@ -20,6 +20,7 @@ from feature_engine.variable_handling._init_parameter_checks import (
 from feature_engine.variable_handling.variable_type_selection import find_all_variables
 
 
+
 @Substitution(
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,

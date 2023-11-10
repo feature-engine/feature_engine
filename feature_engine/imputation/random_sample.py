@@ -11,6 +11,9 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters.imputers import (
+    _missing_only_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
@@ -22,7 +25,10 @@ from feature_engine.tags import _return_tags
 from feature_engine.variable_handling._init_parameter_checks import (
     _check_init_parameter_variables,
 )
-from feature_engine.variable_handling.variable_type_selection import find_all_variables
+from feature_engine.variable_handling.variable_type_selection import (
+    find_all_variables,
+    find_all_variables_with_missing_values,
+)
 
 
 # for RandomSampleImputer
@@ -42,6 +48,7 @@ def _define_seed(
 
 
 @Substitution(
+    missing_only=_missing_only_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -91,6 +98,8 @@ class RandomSampleImputer(BaseImputer):
         observation, you can choose to combine those values as an addition or a
         multiplication. Can take the values 'add' or 'multiply'.
 
+    {missing_only}
+
     Attributes
     ----------
     X_:
@@ -138,6 +147,7 @@ class RandomSampleImputer(BaseImputer):
         random_state: Union[None, int, str, List[Union[str, int]]] = None,
         seed: str = "general",
         seeding_method: str = "add",
+        missing_only: bool = False,
     ) -> None:
 
         if seed not in ["general", "observation"]:
@@ -157,6 +167,8 @@ class RandomSampleImputer(BaseImputer):
                 "if seed == 'observation' the random state must take the name of one "
                 "or more variables which will be used to seed the imputer"
             )
+
+        super().__init__(missing_only)
 
         self.variables = _check_init_parameter_variables(variables)
         self.random_state = random_state
@@ -182,8 +194,13 @@ class RandomSampleImputer(BaseImputer):
         # check input dataframe
         X = check_X(X)
 
+        # only processes the variables with missing variables
+        if self.missing_only and self.variables is None:
+            self.variables_ = find_all_variables_with_missing_values(X)
+
         # find variables to impute
-        self.variables_ = find_all_variables(X, self.variables)
+        else:
+            self.variables_ = find_all_variables(X, self.variables)
 
         # take a copy of the selected variables
         self.X_ = X[self.variables_].copy()
