@@ -13,14 +13,12 @@ from feature_engine.variable_handling._variable_type_checks import (
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
+Variables_tmp = Union[int, str, List[Union[str, int]]]
 
 
-def find_or_check_numerical_variables(
-    X: pd.DataFrame, variables: Variables = None
-) -> List[Union[str, int]]:
+def find_numerical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
     """
-    Returns the names of all the numerical variables in a dataframe. Alternatively, it
-    checks that the variables entered by the user are numerical.
+    Returns a list with the names of all the numerical variables in a dataframe.
 
     More details in the :ref:`User Guide <find_num_vars>`.
 
@@ -28,10 +26,6 @@ def find_or_check_numerical_variables(
     ----------
     X : pandas dataframe of shape = [n_samples, n_features]
         The dataset
-
-    variables : list, default=None
-        If `None`, the function will return the names of all numerical variables in X.
-        Alternatively, it checks that the variables in the list are of type numerical.
 
     Returns
     -------
@@ -41,44 +35,68 @@ def find_or_check_numerical_variables(
     Examples
     --------
     >>> import pandas as pd
-    >>> from feature_engine.variable_handling import find_or_check_numerical_variables
+    >>> from feature_engine.variable_handling import find_numerical_variables
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
     >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
     >>> })
-    >>> var_num = find_or_check_numerical_variables(X)
+    >>> var_num = find_numerical_variables(X)
     >>> var_num
+    ['var_num']
+    """
+    variables = list(X.select_dtypes(include="number").columns)
+    if len(variables) == 0:
+        raise TypeError(
+            "No numerical variables found in this dataframe. Please check "
+            "variable format with pandas dtypes."
+        )
+    return variables
 
+
+def check_numerical_variables(
+    X: pd.DataFrame, variables: Variables_tmp
+) -> List[Union[str, int]]:
+    """
+    Checks that the variables in the list are of type numerical.
+
+    More details in the :ref:`User Guide <check_num_vars>`.
+
+    Parameters
+    ----------
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
+
+    variables : List
+        List with the names of the variables to check.
+
+    Returns
+    -------
+    variables: List
+        The names of the numerical variables.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from feature_engine.variable_handling import check_numerical_variables
+    >>> X = pd.DataFrame({
+    >>>     "var_num": [1, 2, 3],
+    >>>     "var_cat": ["A", "B", "C"],
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>> })
+    >>> var_num = check_numerical_variables(X, variables=["var_num"])
+    >>> var_num
     ['var_num']
     """
 
-    if variables is None:
-        # find numerical variables in dataset
-        variables = list(X.select_dtypes(include="number").columns)
-        if len(variables) == 0:
-            raise ValueError(
-                "No numerical variables found in this dataframe. Please check "
-                "variable format with pandas dtypes."
-            )
+    if isinstance(variables, (str, int)):
+        variables = [variables]
 
-    elif isinstance(variables, (str, int)):
-        if is_numeric(X[variables]):
-            variables = [variables]
-        else:
-            raise TypeError("The variable entered is not numeric.")
-
-    else:
-        if len(variables) == 0:
-            raise ValueError("The list of variables is empty.")
-
-        # check that user entered variables are of type numerical
-        else:
-            if len(X[variables].select_dtypes(exclude="number").columns) > 0:
-                raise TypeError(
-                    "Some of the variables are not numerical. Please cast them as "
-                    "numerical before using this transformer."
-                )
+    if len(X[variables].select_dtypes(exclude="number").columns) > 0:
+        raise TypeError(
+            "Some of the variables are not numerical. Please cast them as "
+            "numerical before using this transformer."
+        )
 
     return variables
 

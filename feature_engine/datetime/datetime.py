@@ -35,7 +35,7 @@ from feature_engine._check_init_parameters.check_variables import (
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
 )
-from feature_engine.variable_handling.variable_type_selection import (
+from feature_engine.variable_handling.variable_selection import (
     find_or_check_datetime_variables,
 )
 

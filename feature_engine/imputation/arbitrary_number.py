@@ -25,8 +25,9 @@ from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+from feature_engine.variable_handling.variable_selection import (
+    find_numerical_variables,
+    check_numerical_variables,
 )
 
 
@@ -148,12 +149,15 @@ class ArbitraryNumberImputer(BaseImputer):
         # find or check for numerical variables
         # create the imputer dictionary
         if self.imputer_dict:
-            self.variables_ = find_or_check_numerical_variables(
-                X, self.imputer_dict.keys()  # type: ignore
+            self.variables_ = check_numerical_variables(
+                X, list(self.imputer_dict.keys())
             )
             self.imputer_dict_ = self.imputer_dict
         else:
-            self.variables_ = find_or_check_numerical_variables(X, self.variables)
+            if self.variables is None:
+                self.variables_ = find_numerical_variables(X)
+            else:
+                self.variables_ = check_numerical_variables(X, self.variables)
             self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables_}
 
         self._get_feature_names_in(X)

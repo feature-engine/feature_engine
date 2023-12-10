@@ -1,46 +1,90 @@
 import pandas as pd
 import pytest
 
-from feature_engine.variable_handling.variable_type_selection import (
+from feature_engine.variable_handling.variable_selection import (
     _filter_out_variables_not_in_dataframe,
     find_all_variables,
     find_categorical_and_numerical_variables,
     find_or_check_categorical_variables,
     find_or_check_datetime_variables,
-    find_or_check_numerical_variables,
+    find_numerical_variables,
+    check_numerical_variables,
 )
 
 
-def test_find_or_check_numerical_variables(df_vartypes, df_numeric_columns):
-    vars_num = ["Age", "Marks"]
-    var_num = "Age"
-    vars_mix = ["Age", "Marks", "Name"]
-    vars_none = None
+df = pd.DataFrame({
+    "Name": ["tom", "nick", "krish", "jack"],
+    "City": ["London", "Manchester", "Liverpool", "Bristol"],
+    "Age": [20, 21, 19, 18],
+    "Marks": [0.9, 0.8, 0.7, 0.6],
+    "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+})
 
-    assert find_or_check_numerical_variables(df_vartypes, vars_num) == vars_num
-    assert find_or_check_numerical_variables(df_vartypes, var_num) == ["Age"]
-    assert find_or_check_numerical_variables(df_vartypes, vars_none) == vars_num
+df_int = pd.DataFrame({
+    1: ["tom", "nick", "krish", "jack"],
+    2: ["London", "Manchester", "Liverpool", "Bristol"],
+    3: [20, 21, 19, 18],
+    4: [0.9, 0.8, 0.7, 0.6],
+    5: pd.date_range("2020-02-24", periods=4, freq="T"),
+})
 
-    with pytest.raises(TypeError):
-        assert find_or_check_numerical_variables(df_vartypes, "City")
 
-    with pytest.raises(TypeError):
-        assert find_or_check_numerical_variables(df_numeric_columns, 0)
+def test_find_numerical_variables_finds_numerical_variables():
+    assert find_numerical_variables(df) == ["Age", "Marks"]
+    assert find_numerical_variables(df_int) == [3, 4]
 
-    with pytest.raises(TypeError):
-        assert find_or_check_numerical_variables(df_numeric_columns, [1, 3])
 
-    with pytest.raises(TypeError):
-        assert find_or_check_numerical_variables(df_vartypes, vars_mix)
+def test_find_numerical_variables_raises_error_when_no_numerical_variables():
+    msg = (
+        "No numerical variables found in this dataframe. Please check "
+        "variable format with pandas dtypes."
+           )
+    with pytest.raises(TypeError) as record:
+        assert find_numerical_variables(df.drop(["Age", "Marks"], axis=1))
+    assert str(record.value) == msg
 
-    with pytest.raises(ValueError):
-        assert find_or_check_numerical_variables(df_vartypes, variables=[])
+    with pytest.raises(TypeError) as record:
+        assert find_numerical_variables(df_int.drop([3, 4], axis=1))
+    assert str(record.value) == msg
 
-    with pytest.raises(ValueError):
-        assert find_or_check_numerical_variables(df_vartypes[["Name", "City"]], None)
 
-    assert find_or_check_numerical_variables(df_numeric_columns, [2, 3]) == [2, 3]
-    assert find_or_check_numerical_variables(df_numeric_columns, 2) == [2]
+def test_check_numerical_variables_returns_numerical_variables():
+    assert check_numerical_variables(df, ["Age", "Marks"]) == ["Age", "Marks"]
+    assert check_numerical_variables(df, ["Age"]) == ["Age"]
+    assert check_numerical_variables(df, "Age") == ["Age"]
+    assert check_numerical_variables(df_int, [3, 4]) == [3, 4]
+    assert check_numerical_variables(df_int, [3]) == [3]
+    assert check_numerical_variables(df_int, 4) == [4]
+
+
+def test_check_numerical_variables_raises_errors_when_not_numerical():
+    msg = (
+        "Some of the variables are not numerical. Please cast them as "
+        "numerical before using this transformer."
+           )
+    with pytest.raises(TypeError) as record:
+        assert check_numerical_variables(df, "Name")
+    assert str(record.value) == msg
+
+    with pytest.raises(TypeError) as record:
+        assert check_numerical_variables(df, ["Name"])
+    assert str(record.value) == msg
+
+    with pytest.raises(TypeError) as record:
+        assert check_numerical_variables(df_int, 1)
+    assert str(record.value) == msg
+
+    with pytest.raises(TypeError) as record:
+        assert check_numerical_variables(df_int, [1])
+    assert str(record.value) == msg
+
+    with pytest.raises(TypeError) as record:
+        assert check_numerical_variables(df, ["Name", "Marks"])
+    assert str(record.value) == msg
+
+    with pytest.raises(TypeError) as record:
+        assert check_numerical_variables(df_int, [2, 3])
+    assert str(record.value) == msg
 
 
 def _cast_var_as_type(df, var, new_type):

@@ -27,7 +27,10 @@ from feature_engine._docstrings.selection._docstring import (
 )
 from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import find_or_check_numerical_variables
+from feature_engine.variable_handling import (
+    find_numerical_variables,
+    check_numerical_variables,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -193,7 +196,10 @@ class ProbeFeatureSelection(BaseSelector):
         self._confirm_variables(X)
 
         # find numerical variables
-        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
+        if self.variables is None:
+            self.variables_ = find_numerical_variables(X)
+        else:
+            self.variables_ = check_numerical_variables(X, self.variables_)
 
         # save input features
         self._get_feature_names_in(X)

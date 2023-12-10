@@ -32,8 +32,9 @@ from feature_engine.tags import _return_tags
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+from feature_engine.variable_handling.variable_selection import (
+    find_numerical_variables,
+    check_numerical_variables,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -195,7 +196,10 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         self._confirm_variables(X)
 
         # find numerical variables or check variables entered by user
-        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
+        if self.variables is None:
+            self.variables_ = find_numerical_variables(X)
+        else:
+            self.variables_ = check_numerical_variables(X, self.variables_)
 
         if len(self.variables_) == 1 and self.threshold is None:
             raise ValueError(

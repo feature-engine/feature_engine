@@ -26,8 +26,9 @@ from feature_engine.selection.base_selector import BaseSelector
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+from feature_engine.variable_handling.variable_selection import (
+    find_numerical_variables,
+    check_numerical_variables,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -170,7 +171,10 @@ class DropCorrelatedFeatures(BaseSelector):
         self._confirm_variables(X)
 
         # find all numerical variables or check those entered are in the dataframe
-        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
+        if self.variables is None:
+            self.variables_ = find_numerical_variables(X)
+        else:
+            self.variables_ = check_numerical_variables(X, self.variables_)
 
         # check that there are more than 1 variable to select from
         self._check_variable_number()
