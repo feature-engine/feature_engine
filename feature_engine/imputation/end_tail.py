@@ -24,8 +24,9 @@ from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+from feature_engine.variable_handling.variable_selection import (
+    find_numerical_variables,
+    check_numerical_variables,
 )
 
 
@@ -175,7 +176,10 @@ class EndTailImputer(BaseImputer):
         X = check_X(X)
 
         # find or check for numerical variables
-        self.variables_ = find_or_check_numerical_variables(X, self.variables)
+        if self.variables is None:
+            self.variables_ = find_numerical_variables(X)
+        else:
+            self.variables_ = check_numerical_variables(X, self.variables)
 
         # estimate imputation values
         if self.imputation_method == "max":

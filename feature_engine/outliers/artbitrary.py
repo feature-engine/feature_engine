@@ -31,8 +31,8 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+from feature_engine.variable_handling.variable_selection import (
+    check_numerical_variables,
 )
 
 
@@ -166,7 +166,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
             _check_contains_inf(X, self.variables_)
 
         # find or check for numerical variables
-        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
+        self.variables_ = check_numerical_variables(X, self.variables_)
 
         if self.max_capping_dict is not None:
             self.right_tail_caps_ = self.max_capping_dict

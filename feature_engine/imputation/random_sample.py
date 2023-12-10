@@ -22,7 +22,7 @@ from feature_engine.tags import _return_tags
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine.variable_handling.variable_type_selection import find_all_variables
+from feature_engine.variable_handling.variable_selection import find_all_variables
 
 
 # for RandomSampleImputer

@@ -9,9 +9,10 @@ from feature_engine.tags import _return_tags
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine.variable_handling.variable_type_selection import (
+from feature_engine.variable_handling.variable_selection import (
     find_all_variables,
-    find_or_check_numerical_variables,
+    find_numerical_variables,
+    check_numerical_variables,
 )
 
 _SELECTORS = [
@@ -262,7 +263,10 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             self.variables_ = find_all_variables(X, self.variables)
 
         else:
-            self.variables_ = find_or_check_numerical_variables(X, self.variables)
+            if self.variables is None:
+                self.variables_ = find_numerical_variables(X)
+            else:
+                self.variables_ = check_numerical_variables(X, self.variables)
 
         self.transformer_.fit(X[self.variables_], y)
 
