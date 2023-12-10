@@ -26,7 +26,7 @@ from feature_engine.selection.base_selector import BaseSelector
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine.variable_handling.variable_selection import (
+from feature_engine.variable_handling import (
     find_numerical_variables,
     check_numerical_variables,
 )

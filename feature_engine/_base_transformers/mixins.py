@@ -10,9 +10,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_na,
     check_X,
 )
-from feature_engine.variable_handling.variable_selection import (
-    check_numerical_variables,
-)
+from feature_engine.variable_handling import check_numerical_variables
 
 
 class FitFromDictMixin:

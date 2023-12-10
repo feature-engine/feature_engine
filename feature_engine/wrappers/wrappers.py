@@ -11,6 +11,8 @@ from feature_engine._check_init_parameters.check_variables import (
 )
 from feature_engine.variable_handling.variable_selection import (
     find_all_variables,
+)
+from feature_engine.variable_handling import (
     find_numerical_variables,
     check_numerical_variables,
 )

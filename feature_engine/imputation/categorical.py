@@ -22,9 +22,10 @@ from feature_engine.tags import _return_tags
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine.variable_handling.variable_selection import (
+from feature_engine.variable_handling import (
     find_all_variables,
-    find_or_check_categorical_variables,
+    find_categorical_variables,
+    check_categorical_variables,
 )
 
 
@@ -164,16 +165,14 @@ class CategoricalImputer(BaseImputer):
         # check input dataframe
         X = check_X(X)
 
-        # check or select the the right variables
-        if not self.ignore_format:
-            # find categorical variables or check variables entered by user are
-            # categorical
-            self.variables_: List[
-                Union[str, int]
-            ] = find_or_check_categorical_variables(X, self.variables)
-        else:
-            # select all variables or check variables entered by the user
+        # select variables to encode
+        if self.ignore_format is True:
             self.variables_ = find_all_variables(X, self.variables)
+        else:
+            if self.variables is None:
+                self.variables_ = find_categorical_variables(X)
+            else:
+                self.variables_ = check_categorical_variables(X, self.variables)
 
         if self.imputation_method == "missing":
             self.imputer_dict_ = {var: self.fill_value for var in self.variables_}

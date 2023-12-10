@@ -7,7 +7,7 @@ from feature_engine._check_init_parameters.check_variables import (
 
 @pytest.mark.parametrize("_input_vars", [("var1", "var2"), {"var1": 1, "var2": 2}])
 def test_raises_errors_when_not_list_str_or_int(_input_vars):
-    with pytest.raises(ValueError)as record:
+    with pytest.raises(ValueError) as record:
         assert _check_variables_input_value(_input_vars)
     msg = (
         "`variables` should contain a string, an integer or a list of strings or "
