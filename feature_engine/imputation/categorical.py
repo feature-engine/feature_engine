@@ -22,9 +22,11 @@ from feature_engine.tags import _return_tags
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine.variable_handling.variable_selection import find_all_variables
-from feature_engine.variable_handling.find_variables import find_categorical_variables
-from feature_engine.variable_handling.check_variables import check_categorical_variables
+from feature_engine.variable_handling import (
+    find_all_variables,
+    find_categorical_variables,
+    check_categorical_variables,
+)
 
 
 @Substitution(
