@@ -32,8 +32,8 @@ from feature_engine.selection._selection_constants import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
 )
 from feature_engine.variable_handling.variable_type_selection import find_all_variables
 
@@ -245,7 +245,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
             )
 
         super().__init__(confirm_variables)
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.bins = bins
         self.strategy = strategy
         self.scoring = scoring

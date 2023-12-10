@@ -25,8 +25,8 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.variable_handling import find_or_check_datetime_variables
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
 )
 
 _example = """
@@ -198,8 +198,8 @@ class DatetimeSubtraction(BaseCreation):
                 )
 
         super().__init__(missing_values, drop_original)
-        self.variables = _check_init_parameter_variables(variables)
-        self.reference = _check_init_parameter_variables(reference)
+        self.variables = _check_variables_input_value(variables)
+        self.reference = _check_variables_input_value(reference)
         self.new_variables_names = new_variables_names
         self.output_unit = output_unit
         self.dayfirst = dayfirst

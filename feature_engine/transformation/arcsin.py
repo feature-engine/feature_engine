@@ -22,8 +22,8 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
 )
 
 
@@ -104,7 +104,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
         self, variables: Union[None, int, str, List[Union[str, int]]] = None
     ) -> None:
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

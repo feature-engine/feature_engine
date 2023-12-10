@@ -20,8 +20,8 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
 )
 
 
@@ -172,7 +172,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.cv = cv
         self.scoring = scoring
         self.regression = regression
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.param_grid = param_grid
         self.random_state = random_state
 

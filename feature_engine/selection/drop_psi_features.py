@@ -30,8 +30,8 @@ from feature_engine._docstrings.selection._docstring import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
 )
 from feature_engine.variable_handling.variable_type_selection import (
     find_categorical_and_numerical_variables,
@@ -385,7 +385,7 @@ class DropHighPSIFeatures(BaseSelector):
         super().__init__(confirm_variables)
 
         # Check the variables before assignment.
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
 
         # Set all remaining arguments as attributes.
         self.split_col = split_col

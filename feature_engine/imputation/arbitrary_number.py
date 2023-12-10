@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine._check_input_parameters.check_input_dictionary import (
+from feature_engine._check_init_parameters.check_input_dictionary import (
     _check_numerical_dict,
 )
 from feature_engine._docstrings.fit_attributes import (
@@ -22,8 +22,8 @@ from feature_engine._docstrings.methods import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
 )
 from feature_engine.variable_handling.variable_type_selection import (
     find_or_check_numerical_variables,
@@ -125,7 +125,7 @@ class ArbitraryNumberImputer(BaseImputer):
 
         _check_numerical_dict(imputer_dict)
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
 
         self.imputer_dict = imputer_dict
 
