@@ -14,8 +14,8 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
 )
 from feature_engine.variable_handling.variable_type_selection import find_all_variables
 
@@ -108,7 +108,7 @@ class AddMissingIndicator(BaseImputer):
         if not isinstance(missing_only, bool):
             raise ValueError("missing_only takes values True or False")
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.missing_only = missing_only
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):

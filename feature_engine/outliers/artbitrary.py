@@ -6,7 +6,7 @@ from typing import Optional
 
 import pandas as pd
 
-from feature_engine._check_input_parameters.check_input_dictionary import (
+from feature_engine._check_init_parameters.check_input_dictionary import (
     _check_numerical_dict,
 )
 from feature_engine._docstrings.fit_attributes import (

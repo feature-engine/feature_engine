@@ -29,8 +29,8 @@ from feature_engine.datetime._datetime_constants import (
     FEATURES_SUFFIXES,
     FEATURES_SUPPORTED,
 )
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
 )
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
@@ -219,7 +219,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
         if utc is not None and not isinstance(utc, bool):
             raise ValueError("utc takes only booleans or None. " f"Got {utc} instead.")
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.drop_original = drop_original
         self.missing_values = missing_values
         self.dayfirst = dayfirst
