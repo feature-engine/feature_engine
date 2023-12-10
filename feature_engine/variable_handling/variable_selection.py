@@ -18,7 +18,7 @@ Variables_tmp = Union[int, str, List[Union[str, int]]]
 
 def find_numerical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
     """
-    Return the names of all the numerical variables in a dataframe.
+    Returns a list with the names of all the numerical variables in a dataframe.
 
     More details in the :ref:`User Guide <find_num_vars>`.
 
@@ -43,7 +43,6 @@ def find_numerical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
     >>> })
     >>> var_num = find_numerical_variables(X)
     >>> var_num
-
     ['var_num']
     """
     variables = list(X.select_dtypes(include="number").columns)
@@ -59,9 +58,9 @@ def check_numerical_variables(
     X: pd.DataFrame, variables: Variables_tmp
 ) -> List[Union[str, int]]:
     """
-    Checks that the variables entered by the user are of type numerical.
+    Checks that the variables in the list are of type numerical.
 
-    More details in the :ref:`User Guide <find_num_vars>`.
+    More details in the :ref:`User Guide <check_num_vars>`.
 
     Parameters
     ----------
@@ -85,9 +84,8 @@ def check_numerical_variables(
     >>>     "var_cat": ["A", "B", "C"],
     >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
     >>> })
-    >>> var_num = find_numerical_variables(X, variables=["var_num"])
+    >>> var_num = check_numerical_variables(X, variables=["var_num"])
     >>> var_num
-
     ['var_num']
     """
 
