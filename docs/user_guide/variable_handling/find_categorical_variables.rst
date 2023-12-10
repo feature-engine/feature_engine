@@ -2,11 +2,11 @@
 
 .. currentmodule:: feature_engine.variable_handling.variable_type_selection
 
-find_or_check_categorical_variables
-===================================
+find_categorical_variables
+==========================
 
-With :class:`find_or_check_categorical_variables()` you can automatically capture in a list
-the names of all the variables of type object or categorical in the dataset.
+With :class:`find_categorical_variables()` you can capture in a list the names of all
+the variables of type object or categorical in the dataset.
 
 Let's create a toy dataset with numerical, categorical and datetime variables:
 
@@ -56,16 +56,16 @@ We see the resulting dataframe below:
     3 2020-02-24 00:03:00 2021-09-29 03:00:00  2020-02-24
     4 2020-02-24 00:04:00 2021-09-29 04:00:00  2020-02-24
 
-We can now use :class:`find_or_check_categorical_variables()` to capture the names of all
+We can use :class:`find_categorical_variables()` to capture the names of all
 variables of type object or categorical in a list.
 
 So let's do that and then display the list:
 
 .. code:: python
 
-    from feature_engine.variable_handling import find_or_check_categorical_variables
+    from feature_engine.variable_handling import find_categorical_variables
 
-    var_cat = find_or_check_categorical_variables(X)
+    var_cat = find_categorical_variables(X)
 
     var_cat
 
@@ -75,34 +75,9 @@ We see the variable names in the list below:
 
     ['cat_var1', 'cat_var2']
 
-Note that when using the default parameters, :class:`find_or_check_categorical_variables()`
-will not return variables cast as object or categorical that could be parsed as datetime.
-Therefore, the variable `date3` was excluded from the returned list.
+Note that :class:`find_categorical_variables()` will not return variables cast as
+object or categorical that could be parsed as datetime. That's why, the variable
+`date3` was excluded from the returned list.
 
-We can force the function to select datetime variables cast as object as follows:
-
-.. code:: python
-
-    var_cat = find_or_check_categorical_variables(X, ["cat_var1", "date3"])
-
-    var_cat
-
-In this case, both variables, if object or categorical, will be in the resulting list:
-
-.. code:: python
-
-    ['cat_var1', 'date3']
-
-If we pass a variable that is not of type object or categorical, :class:`find_or_check_categorical_variables()`
-will return an error:
-
-.. code:: python
-
-    find_or_check_categorical_variables(X, ["cat_var1", "num_var_1"])
-
-Below we see the error message:
-
-.. code:: python
-
-    TypeError: Some of the variables are not categorical. Please cast them as categorical
-    or object before using this transformer.
+If there are no categorical variables in the dataset, this function will raise an
+error.

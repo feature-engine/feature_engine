@@ -21,10 +21,9 @@ from feature_engine.tags import _return_tags
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine.variable_handling.variable_selection import (
-    find_all_variables,
-    find_or_check_categorical_variables,
-)
+from feature_engine.variable_handling.variable_selection import find_all_variables
+from feature_engine.variable_handling.find_variables import find_categorical_variables
+from feature_engine.variable_handling.check_variables import check_categorical_variables
 
 
 @Substitution(
@@ -130,14 +129,14 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
             If there are no categorical variables in the df or the df is empty
             If the variable(s) contain null values
         """
-        if self.ignore_format is False:
-            # find categorical variables or check variables entered by user are object
-            variables_: List[Union[str, int]] = find_or_check_categorical_variables(
-                X, self.variables
-            )
-        else:
-            # select all variables or check variables entered by the user
+        # select variables to encode
+        if self.ignore_format is True:
             variables_ = find_all_variables(X, self.variables)
+        else:
+            if self.variables is None:
+                variables_ = find_categorical_variables(X)
+            else:
+                variables_ = check_categorical_variables(X, self.variables)
 
         return variables_
 

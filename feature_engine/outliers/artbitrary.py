@@ -31,9 +31,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.outliers.base_outlier import BaseOutlier
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling.variable_selection import (
-    check_numerical_variables,
-)
+from feature_engine.variable_handling import check_numerical_variables
 
 
 @Substitution(

@@ -134,12 +134,7 @@ def test_lambda_equals_lambda_equal_0():
 
 
 def test_lambda_equals_lambda_equal_2():
-    X = pd.DataFrame(
-        {
-            "var1": np.arange(-21, -1),
-            "var2": np.arange(-41, -21)
-        }
-    )
+    X = pd.DataFrame({"var1": np.arange(-21, -1), "var2": np.arange(-41, -21)})
 
     transformer = YeoJohnsonTransformer(variables=None)
     transformer = transformer.fit(X)
