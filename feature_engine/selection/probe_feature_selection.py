@@ -13,8 +13,6 @@ from feature_engine._docstrings.init_parameters.selection import (
     _estimator_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X_y
 from feature_engine._docstrings.selection._docstring import (
     _cv_docstring,
     _features_to_drop_docstring,
@@ -25,11 +23,13 @@ from feature_engine._docstrings.selection._docstring import (
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import (
-    find_numerical_variables,
     check_numerical_variables,
+    find_numerical_variables,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]

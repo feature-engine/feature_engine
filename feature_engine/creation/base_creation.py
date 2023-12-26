@@ -17,8 +17,8 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import (
-    find_numerical_variables,
     check_numerical_variables,
+    find_numerical_variables,
 )
 
 

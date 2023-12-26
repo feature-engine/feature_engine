@@ -4,6 +4,9 @@ from typing import List, Union
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -12,8 +15,6 @@ from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X_y
 from feature_engine._docstrings.selection._docstring import (
     _cv_docstring,
     _estimator_docstring,
@@ -27,14 +28,13 @@ from feature_engine._docstrings.selection._docstring import (
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
 from feature_engine.variable_handling import (
-    find_numerical_variables,
     check_numerical_variables,
+    find_numerical_variables,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]

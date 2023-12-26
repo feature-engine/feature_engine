@@ -1,12 +1,15 @@
-from typing import List, Union, MutableSequence
+from typing import List, MutableSequence, Union
 
 import numpy as np
 import pandas as pd
 from sklearn.base import is_classifier
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import check_cv, cross_validate
-from sklearn.utils.validation import check_random_state, _check_sample_weight
+from sklearn.utils.validation import _check_sample_weight, check_random_state
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -15,8 +18,6 @@ from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X_y
 from feature_engine._docstrings.selection._docstring import (
     _cv_docstring,
     _estimator_docstring,
@@ -30,14 +31,13 @@ from feature_engine._docstrings.selection._docstring import (
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
 from feature_engine.variable_handling import (
-    find_numerical_variables,
     check_numerical_variables,
+    find_numerical_variables,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]

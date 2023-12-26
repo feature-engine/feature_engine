@@ -5,6 +5,9 @@ import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -24,11 +27,8 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.variable_handling.find_variables import find_datetime_variables
 from feature_engine.variable_handling.check_variables import check_datetime_variables
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
+from feature_engine.variable_handling.find_variables import find_datetime_variables
 
 _example = """
     >>> import pandas as pd

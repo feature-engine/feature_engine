@@ -9,6 +9,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -29,14 +32,12 @@ from feature_engine.datetime._datetime_constants import (
     FEATURES_SUFFIXES,
     FEATURES_SUPPORTED,
 )
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
 )
-from feature_engine.variable_handling.find_variables import find_datetime_variables
 from feature_engine.variable_handling.check_variables import check_datetime_variables
+from feature_engine.variable_handling.find_variables import find_datetime_variables
+
 
 @Substitution(
     feature_names_in_=_feature_names_in_docstring,

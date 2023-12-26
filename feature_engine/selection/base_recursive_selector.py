@@ -3,15 +3,15 @@ from typing import List, Union
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import check_X_y
-from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
-from feature_engine.tags import _return_tags
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
+from feature_engine.dataframe_checks import check_X_y
+from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
+from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import (
-    find_numerical_variables,
     check_numerical_variables,
+    find_numerical_variables,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]

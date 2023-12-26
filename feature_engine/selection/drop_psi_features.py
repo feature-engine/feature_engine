@@ -6,6 +6,9 @@ import pandas as pd
 import scipy.stats as stats
 from pandas.api.types import is_numeric_dtype
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -14,6 +17,10 @@ from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.selection._docstring import (
+    _get_support_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
@@ -24,15 +31,8 @@ from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
 )
-from feature_engine._docstrings.selection._docstring import (
-    _get_support_docstring,
-    _variables_attribute_docstring,
-)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
 from feature_engine.variable_handling.variable_selection import (
     find_categorical_and_numerical_variables,
 )

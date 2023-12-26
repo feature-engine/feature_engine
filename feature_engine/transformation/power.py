@@ -7,6 +7,9 @@ import numpy as np
 import pandas as pd
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -21,9 +24,6 @@ from feature_engine._docstrings.methods import (
     _inverse_transform_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
 
 
 @Substitution(
