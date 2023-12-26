@@ -1,13 +1,12 @@
-﻿.. _find_datetime_vars:
+.. _check_datetime_vars:
 
 .. currentmodule:: feature_engine.variable_handling.variable_type_selection
 
-find_or_check_datetime_variables
-================================
+check_datetime_variables
+========================
 
-With :class:`find_or_check_datetime_variables()` you can automatically capture in a list
-the names of all datetime variables in a dataset, whether they are parsed as datetime
-or object.
+:class:`check_datetime_variables()` checks that the variables in the list are, or can
+be parsed as datetime.
 
 Let's create a toy dataset with numerical, categorical and datetime variables:
 
@@ -60,50 +59,32 @@ We see the resulting dataframe below:
 The dataframe has 3 datetime variables, two of them are of type datetime and one of type
 object.
 
-We can now use :class:`find_or_check_datetime_variables()` to capture all datetime variables
-regardless of their data type. So let's do that and then display the list:
+Let's check that a list of variables can be parsed as datetime:
 
 .. code:: python
 
-    from feature_engine.variable_handling import find_or_check_datetime_variables
+    from feature_engine.variable_handling import check_datetime_variables
 
-    var_date = find_or_check_datetime_variables(X)
+    var_date = check_datetime_variables(X, ["date2", "date3"])
 
     var_date
 
-Below we see the variable names in the list:
-
-.. code:: python
-
-    ['date1', 'date2', 'date3']
-
-Note that :class:`find_or_check_datetime_variables()` captures all 3 datetime variables.
-The first 2 are of type datetime, whereas the third variable is of type object. But as it
-can be parsed as datetime, it will be captured in the list as well.
-
-We can also corroborate that a list of variables can be parsed as datetime as follows:
-
-.. code:: python
-
-    var_date = find_or_check_datetime_variables(X, ["date2", "date3"])
-
-    var_date
-
-In this case, both variables, if they can be parsed as datetime, will be in the resulting list:
+In this case, both variables, if they can be parsed as datetime, will be in the
+resulting list:
 
 .. code:: python
 
     ['date2', 'date3']
 
-If we pass a variable that can't be parsed as datetime, :class:`find_or_check_datetime_variables()`
+If we pass a variable that can't be parsed as datetime, :class:`check_datetime_variables()`
 will return an error:
 
 .. code:: python
 
-    find_or_check_datetime_variables(X, ["date2", "cat_var1"])
+    check_datetime_variables(X, ["date2", "cat_var1"])
 
 Below the error message:
 
 .. code:: python
 
-    TypeError: Some of the variables are not datetime.
+    TypeError: Some of the variables are not or cannot be parsed as datetime.
