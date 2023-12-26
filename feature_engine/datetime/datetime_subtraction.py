@@ -24,7 +24,8 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.variable_handling import find_or_check_datetime_variables
+from feature_engine.variable_handling.find_variables import find_datetime_variables
+from feature_engine.variable_handling.check_variables import check_datetime_variables
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -224,8 +225,15 @@ class DatetimeSubtraction(BaseCreation):
         X = check_X(X)
 
         # check variables are datetime
-        self.reference_ = find_or_check_datetime_variables(X, self.reference)
-        self.variables_ = find_or_check_datetime_variables(X, self.variables)
+        if self.variables is None:
+            self.variables_ = find_datetime_variables(X)
+        else:
+            self.variables_ = check_datetime_variables(X, self.variables)
+
+        if self.reference is None:
+            self.reference_ = find_datetime_variables(X)
+        else:
+            self.reference_ = check_datetime_variables(X, self.reference)
 
         if self.new_variables_names is not None:
             if len(self.new_variables_names) != len(self.variables_) * len(

@@ -8,93 +8,10 @@ from pandas.api.types import is_numeric_dtype as is_numeric
 from pandas.api.types import is_object_dtype as is_object
 
 from feature_engine.variable_handling._variable_type_checks import (
-    _is_categorical_and_is_datetime,
     _is_categorical_and_is_not_datetime,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
-
-
-def find_or_check_datetime_variables(
-    X: pd.DataFrame, variables: Variables = None
-) -> List[Union[str, int]]:
-    """
-    Returns the names of all the variables that are or can be parsed as datetime.
-    Alternatively, it checks that the variables entered by the user can be parsed as
-    datetime.
-
-    Note that this function will select variables cast as object if they can be cast as
-    datetime as well.
-
-    More details in the :ref:`User Guide <find_datetime_vars>`.
-
-    Parameters
-    ----------
-    X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset
-
-    variables : list, default=None
-        If `None`, the function returns the names of all variables in X that can be
-        parsed as datetime. These include those cast as datetime, and also object and
-        categorical if they can be transformed to datetime variables. Alternatively, it
-        checks that the variables in the list are or can be parsed to datetime.
-
-    Returns
-    -------
-    variables: List
-        The names of the datetime variables.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> from feature_engine.variable_handling import find_or_check_datetime_variables
-    >>> X = pd.DataFrame({
-    >>>     "var_num": [1, 2, 3],
-    >>>     "var_cat": ["A", "B", "C"],
-    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
-    >>> })
-    >>> var_date = find_or_check_datetime_variables(X)
-    >>> var_date
-    ['var_date']
-    """
-
-    if variables is None:
-        variables = [
-            column
-            for column in X.select_dtypes(exclude="number").columns
-            if is_datetime(X[column]) or _is_categorical_and_is_datetime(X[column])
-        ]
-
-        if len(variables) == 0:
-            raise ValueError("No datetime variables found in this dataframe.")
-
-    elif isinstance(variables, (str, int)):
-
-        if is_datetime(X[variables]) or (
-            not is_numeric(X[variables])
-            and _is_categorical_and_is_datetime(X[variables])
-        ):
-            variables = [variables]
-        else:
-            raise TypeError("The variable entered is not datetime.")
-
-    else:
-        if len(variables) == 0:
-            raise ValueError("The indicated list of variables is empty.")
-
-        # check that the variables entered by the user are datetime
-        else:
-            vars_non_dt = [
-                column
-                for column in X[variables].select_dtypes(exclude="datetime")
-                if is_numeric(X[column])
-                or not _is_categorical_and_is_datetime(X[column])
-            ]
-
-            if len(vars_non_dt) > 0:
-                raise TypeError("Some of the variables are not datetime.")
-
-    return variables
 
 
 def find_all_variables(

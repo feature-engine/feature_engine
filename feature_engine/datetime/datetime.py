@@ -35,10 +35,8 @@ from feature_engine._check_init_parameters.check_variables import (
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
 )
-from feature_engine.variable_handling.variable_selection import (
-    find_or_check_datetime_variables,
-)
-
+from feature_engine.variable_handling.find_variables import find_datetime_variables
+from feature_engine.variable_handling.check_variables import check_datetime_variables
 
 @Substitution(
     feature_names_in_=_feature_names_in_docstring,
@@ -258,17 +256,19 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
             ):
                 raise TypeError("The dataframe index is not datetime.")
 
-            if self.missing_values == "raise":
-                self._check_index_contains_na(X.index)
-
             self.variables_ = None
 
-        else:
-            # find or check for datetime variables
-            self.variables_ = find_or_check_datetime_variables(X, self.variables)
+        elif self.variables is None:
+            self.variables_ = find_datetime_variables(X)
 
-            # check if datetime variables contains na
-            if self.missing_values == "raise":
+        else:
+            self.variables_ = check_datetime_variables(X, self.variables)
+
+        # check if datetime variables contains na
+        if self.missing_values == "raise":
+            if self.variables == "index":
+                self._check_index_contains_na(X.index)
+            else:
                 _check_contains_na(X, self.variables_)
 
         if self.features_to_extract is None:

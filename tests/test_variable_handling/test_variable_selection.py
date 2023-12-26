@@ -5,7 +5,6 @@ from feature_engine.variable_handling.variable_selection import (
     _filter_out_variables_not_in_dataframe,
     find_all_variables,
     find_categorical_and_numerical_variables,
-    find_or_check_datetime_variables,
 )
 
 
