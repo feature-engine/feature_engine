@@ -104,7 +104,7 @@ def check_categorical_variables(
     return variables
 
 
-def datetime_variables(
+def check_datetime_variables(
     X: pd.DataFrame, variables: Variables = None
 ) -> List[Union[str, int]]:
     """
