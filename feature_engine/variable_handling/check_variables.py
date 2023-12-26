@@ -1,6 +1,11 @@
 from typing import List, Union
 
 import pandas as pd
+from pandas.api.types import is_numeric_dtype as is_numeric
+
+from feature_engine.variable_handling._variable_type_checks import (
+    _is_categorical_and_is_datetime,
+)
 
 Variables = Union[int, str, List[Union[str, int]]]
 
@@ -19,7 +24,7 @@ def check_numerical_variables(
         The dataset
 
     variables : List
-        List with the names of the variables to check.
+        The list with the names of the variables to check.
 
     Returns
     -------
@@ -66,7 +71,7 @@ def check_categorical_variables(
         The dataset
 
     variables : list
-        List with the names of the variables to check.
+        The list with the names of the variables to check.
 
     Returns
     -------
@@ -94,6 +99,58 @@ def check_categorical_variables(
         raise TypeError(
             "Some of the variables are not categorical. Please cast them as "
             "object or categorical before using this transformer."
+        )
+
+    return variables
+
+
+def datetime_variables(
+    X: pd.DataFrame, variables: Variables = None
+) -> List[Union[str, int]]:
+    """
+    Checks that the variables in the list are or can be parsed as datetime.
+
+    More details in the :ref:`User Guide <check_datetime_vars>`.
+
+    Parameters
+    ----------
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
+
+    variables : list
+        The list with the names of the variables to check.
+
+    Returns
+    -------
+    variables: List
+        The names of the datetime variables.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from feature_engine.variable_handling import check_datetime_variables
+    >>> X = pd.DataFrame({
+    >>>     "var_num": [1, 2, 3],
+    >>>     "var_cat": ["A", "B", "C"],
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>> })
+    >>> var_date = check_datetime_variables(X, "var_date")
+    >>> var_date
+    ['var_date']
+    """
+
+    if isinstance(variables, (str, int)):
+        variables = [variables]
+
+    # find non datetime variables, if any:
+    non_datetime_vars = []
+    for column in X[variables].select_dtypes(exclude="datetime"):
+        if is_numeric(X[column]) or not _is_categorical_and_is_datetime(X[column]):
+            non_datetime_vars.append(column)
+
+    if len(non_datetime_vars) > 0:
+        raise TypeError(
+            "Some of the variables are not or cannot be parsed as datetime."
         )
 
     return variables
