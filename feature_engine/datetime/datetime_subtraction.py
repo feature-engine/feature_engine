@@ -152,8 +152,8 @@ class DatetimeSubtraction(BaseCreation):
 
     def __init__(
         self,
-        variables: Union[None, int, str, List[Union[str, int]]],
-        reference: Union[None, int, str, List[Union[str, int]]],
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        reference: Union[None, int, str, List[Union[str, int]]] = None,
         new_variables_names: Union[None, List[str], str] = None,
         output_unit: str = "D",
         missing_values: str = "ignore",
@@ -248,7 +248,8 @@ class DatetimeSubtraction(BaseCreation):
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_ + self.reference_)
+            vars = list(set(self.variables_ + self.reference_))
+            _check_contains_na(X, vars)
 
         # save input features
         self.feature_names_in_ = X.columns.tolist()
@@ -283,7 +284,8 @@ class DatetimeSubtraction(BaseCreation):
         _check_X_matches_training_df(X, self.n_features_in_)
 
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_ + self.reference_)
+            vars = list(set(self.variables_ + self.reference_))
+            _check_contains_na(X, vars)
 
         # reorder variables to match train set
         X = X[self.feature_names_in_]

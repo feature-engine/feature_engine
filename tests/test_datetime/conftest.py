@@ -1,8 +1,25 @@
+import numpy as np
 import pandas as pd
 import pytest
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
+def df_datetime():
+    data = {
+        "Name": ["tom", "nick", "krish", "jack"],
+        "Age": [20, 21, 19, 18],
+        "datetime_range": pd.date_range("2020-02-24", periods=4, freq="D"),
+        "date_obj1": ["01-Jan-2010", "24-Feb-1945", "14-Jun-2100", "17-May-1999"],
+        "date_obj2": ["10/11/12", "12/31/09", "06/30/95", "03/17/04"],
+        "time_obj": ["21:45:23", "09:15:33", "12:34:59", "03:27:02"],
+    }
+
+    df = pd.DataFrame(data)
+
+    return df
+
+
+@pytest.fixture
 def df_datetime_transformed(df_datetime):
     today = pd.Timestamp.today()
     data = {
@@ -89,3 +106,10 @@ def df_datetime_transformed(df_datetime):
     }
     df = df_datetime.join(pd.DataFrame(data))
     return df
+
+    df = pd.DataFrame(
+        {
+            "dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan],
+            "dates_full": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
+        }
+    )
