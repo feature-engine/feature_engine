@@ -88,12 +88,6 @@ def test_check_categorical_variables_raises_errors_when_not_categorical(df, df_i
     assert str(record.value) == msg
 
 
-def _cast_var_as_type(df, var, new_type):
-    df_copy = df.copy()
-    df_copy[var] = df[var].astype(new_type)
-    return df_copy
-
-
 def test_check_datetime_variables_returns_datetime_variables(df_datetime):
     var_dt = ["date_range"]
     var_dt_str = "date_range"
