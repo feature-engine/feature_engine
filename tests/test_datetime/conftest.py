@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -106,10 +105,3 @@ def df_datetime_transformed(df_datetime):
     }
     df = df_datetime.join(pd.DataFrame(data))
     return df
-
-    df = pd.DataFrame(
-        {
-            "dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan],
-            "dates_full": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
-        }
-    )
