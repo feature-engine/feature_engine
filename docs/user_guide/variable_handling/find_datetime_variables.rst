@@ -1,6 +1,6 @@
 ﻿.. _find_datetime_vars:
 
-.. currentmodule:: feature_engine.variable_handling.variable_type_selection
+.. currentmodule:: feature_engine.variable_handling
 
 find_datetime_variables
 =======================

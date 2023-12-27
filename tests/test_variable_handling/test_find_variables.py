@@ -1,6 +1,7 @@
 import pytest
 
 from feature_engine.variable_handling import (
+    find_all_variables,
     find_categorical_variables,
     find_datetime_variables,
     find_numerical_variables,
@@ -71,3 +72,11 @@ def test_datetime_variables_raises_error_when_no_datetime_variables(df_datetime)
     with pytest.raises(ValueError) as record:
         assert find_datetime_variables(df_datetime.loc[:, vars_nondt])
     assert str(record.value) == msg
+
+
+def test_find_all_variables(df_vartypes):
+    all_vars = ["Name", "City", "Age", "Marks", "dob"]
+    all_vars_no_dt = ["Name", "City", "Age", "Marks"]
+
+    assert find_all_variables(df_vartypes, exclude_datetime=False) == all_vars
+    assert find_all_variables(df_vartypes, exclude_datetime=True) == all_vars_no_dt

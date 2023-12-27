@@ -13,7 +13,8 @@ from feature_engine.variable_handling import (
     check_numerical_variables,
     find_numerical_variables,
 )
-from feature_engine.variable_handling.variable_selection import find_all_variables
+from feature_engine.variable_handling.check_variables import check_all_variables
+from feature_engine.variable_handling.find_variables import find_all_variables
 
 _SELECTORS = [
     "GenericUnivariateSelect",
@@ -260,7 +261,10 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             "SimpleImputer",
             "FunctionTransformer",
         ]:
-            self.variables_ = find_all_variables(X, self.variables)
+            if self.variables is None:
+                self.variables_ = find_all_variables(X)
+            else:
+                self.variables_ = check_all_variables(X, self.variables)
 
         else:
             if self.variables is None:

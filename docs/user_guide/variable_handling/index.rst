@@ -24,6 +24,7 @@ Feature-engine or Scikit-learn compatible transformers.
    find_datetime_variables
    find_numerical_variables
    find_categorical_and_numerical_variables
+   check_all_variables
    check_categorical_variables
    check_datetime_variables
    check_numerical_variables
