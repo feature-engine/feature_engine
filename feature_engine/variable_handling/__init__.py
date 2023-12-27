@@ -15,9 +15,7 @@ from .find_variables import (
     find_datetime_variables,
     find_numerical_variables,
 )
-from .variable_selection import (
-    find_categorical_and_numerical_variables,
-)
+from .variable_selection import find_categorical_and_numerical_variables
 
 __all__ = [
     "find_categorical_and_numerical_variables",

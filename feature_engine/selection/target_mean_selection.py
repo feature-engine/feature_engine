@@ -35,7 +35,7 @@ from feature_engine.selection._selection_constants import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import find_all_variables, check_all_variables
+from feature_engine.variable_handling import check_all_variables, find_all_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 

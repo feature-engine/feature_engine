@@ -13,8 +13,8 @@ from feature_engine.variable_handling import (
     check_numerical_variables,
     find_numerical_variables,
 )
-from feature_engine.variable_handling.find_variables import find_all_variables
 from feature_engine.variable_handling.check_variables import check_all_variables
+from feature_engine.variable_handling.find_variables import find_all_variables
 
 _SELECTORS = [
     "GenericUnivariateSelect",

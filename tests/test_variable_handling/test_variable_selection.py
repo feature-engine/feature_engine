@@ -6,7 +6,6 @@ from feature_engine.variable_handling.variable_selection import (
     find_categorical_and_numerical_variables,
 )
 
-
 filter_dict = [
     (
         pd.DataFrame(columns=["A", "B", "C", "D", "E"]),
