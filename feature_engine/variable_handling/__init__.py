@@ -11,10 +11,10 @@ from .check_variables import (
 )
 from .find_variables import (
     find_all_variables,
+    find_categorical_and_numerical_variables,
     find_categorical_variables,
     find_datetime_variables,
     find_numerical_variables,
-    find_categorical_and_numerical_variables,
 )
 
 __all__ = [

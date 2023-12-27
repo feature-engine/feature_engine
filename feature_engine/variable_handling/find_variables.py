@@ -1,14 +1,14 @@
-from typing import List, Union, Tuple
+from typing import List, Tuple, Union
 
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
-from pandas.core.dtypes.common import is_object_dtype as is_object, is_numeric_dtype as is_numeric
+from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
+from pandas.core.dtypes.common import is_object_dtype as is_object
 
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
     _is_categorical_and_is_not_datetime,
 )
-from feature_engine.variable_handling.variable_selection import Variables
 
 
 def find_numerical_variables(X: pd.DataFrame) -> List[Union[str, int]]:

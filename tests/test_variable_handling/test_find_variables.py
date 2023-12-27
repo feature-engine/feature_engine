@@ -2,10 +2,10 @@ import pytest
 
 from feature_engine.variable_handling import (
     find_all_variables,
+    find_categorical_and_numerical_variables,
     find_categorical_variables,
     find_datetime_variables,
     find_numerical_variables,
-    find_categorical_and_numerical_variables,
 )
 
 
