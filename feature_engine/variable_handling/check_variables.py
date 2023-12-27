@@ -105,7 +105,7 @@ def check_categorical_variables(
 
 
 def check_datetime_variables(
-    X: pd.DataFrame, variables: Variables = None
+    X: pd.DataFrame, variables: Variables,
 ) -> List[Union[str, int]]:
     """
     Checks that the variables in the list are or can be parsed as datetime.

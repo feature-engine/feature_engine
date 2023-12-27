@@ -257,7 +257,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
             ):
                 raise TypeError("The dataframe index is not datetime.")
 
-            self.variables_ = None
+            self.variables_ = []
 
         elif self.variables is None:
             self.variables_ = find_datetime_variables(X)
@@ -315,7 +315,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
         X = X[self.feature_names_in_]
 
         # special case index
-        if self.variables_ is None:
+        if self.variables == "index":
             # check if dataset contains na
             if self.missing_values == "raise":
                 self._check_index_contains_na(X.index)
@@ -377,7 +377,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
         else:
             feature_names = [
                 str(var) + FEATURES_SUFFIXES[feat]
-                for var in self.variables_  # type: ignore
+                for var in self.variables_
                 for feat in self.features_to_extract_
             ]
 
