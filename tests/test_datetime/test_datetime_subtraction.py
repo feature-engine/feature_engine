@@ -216,7 +216,7 @@ def test_raises_error_when_nan_in_variables_in_transform(
     )
     tr.fit(df_nan.fillna("Mar-2010"))
     with pytest.raises(ValueError):
-        tr.fit(df_nan)
+        tr.transform(df_nan)
 
 
 @pytest.mark.parametrize("input_vars_1", ["dates_full", None])
@@ -229,7 +229,7 @@ def test_raises_error_when_nan_in_reference_in_transform(
     )
     tr.fit(df_nan.fillna("Mar-2010"))
     with pytest.raises(ValueError):
-        tr.fit(df_nan)
+        tr.transform(df_nan)
 
 
 @pytest.mark.parametrize(
