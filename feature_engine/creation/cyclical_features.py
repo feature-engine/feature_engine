@@ -11,11 +11,11 @@ from feature_engine._base_transformers.mixins import (
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_param_drop_original,
 )
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
 from feature_engine._check_init_parameters.check_input_dictionary import (
     _check_numerical_dict,
+)
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,

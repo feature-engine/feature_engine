@@ -6,6 +6,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _missing_values_docstring,
     _variables_categorical_docstring,
@@ -18,13 +21,10 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.tags import _return_tags
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
 from feature_engine.variable_handling import (
+    check_categorical_variables,
     find_all_variables,
     find_categorical_variables,
-    check_categorical_variables,
 )
 
 

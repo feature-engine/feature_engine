@@ -1,36 +1,13 @@
-import pandas as pd
 import pytest
 
 from feature_engine.variable_handling import (
-    check_numerical_variables,
     check_categorical_variables,
+    check_datetime_variables,
+    check_numerical_variables,
 )
 
-df = pd.DataFrame(
-    {
-        "Name": ["tom", "nick", "krish", "jack"],
-        "City": ["London", "Manchester", "Liverpool", "Bristol"],
-        "Age": [20, 21, 19, 18],
-        "Marks": [0.9, 0.8, 0.7, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
-        "date": ["2020-02-24", "2020-02-25", "2020-02-26", "2020-02-27"],
-    }
-)
-df["Name"] = df["Name"].astype("category")
 
-df_int = pd.DataFrame(
-    {
-        1: ["tom", "nick", "krish", "jack"],
-        2: ["London", "Manchester", "Liverpool", "Bristol"],
-        3: [20, 21, 19, 18],
-        4: [0.9, 0.8, 0.7, 0.6],
-        5: pd.date_range("2020-02-24", periods=4, freq="T"),
-    }
-)
-df_int[1] = df_int[1].astype("category")
-
-
-def test_check_numerical_variables_returns_numerical_variables():
+def test_check_numerical_variables_returns_numerical_variables(df, df_int):
     assert check_numerical_variables(df, ["Age", "Marks"]) == ["Age", "Marks"]
     assert check_numerical_variables(df, ["Age"]) == ["Age"]
     assert check_numerical_variables(df, "Age") == ["Age"]
@@ -39,7 +16,7 @@ def test_check_numerical_variables_returns_numerical_variables():
     assert check_numerical_variables(df_int, 4) == [4]
 
 
-def test_check_numerical_variables_raises_errors_when_not_numerical():
+def test_check_numerical_variables_raises_errors_when_not_numerical(df, df_int):
     msg = (
         "Some of the variables are not numerical. Please cast them as "
         "numerical before using this transformer."
@@ -69,16 +46,19 @@ def test_check_numerical_variables_raises_errors_when_not_numerical():
     assert str(record.value) == msg
 
 
-def test_check_categorical_variables_returns_categorical_variables():
-    assert check_categorical_variables(df, ["Name", "date"]) == ["Name", "date"]
+def test_check_categorical_variables_returns_categorical_variables(df, df_int):
+    assert check_categorical_variables(df, ["Name", "date_obj0"]) == [
+        "Name",
+        "date_obj0",
+    ]
     assert check_categorical_variables(df, ["Name"]) == ["Name"]
-    assert check_categorical_variables(df, "date") == ["date"]
+    assert check_categorical_variables(df, "date_obj0") == ["date_obj0"]
     assert check_categorical_variables(df_int, [1, 2]) == [1, 2]
     assert check_categorical_variables(df_int, [2]) == [2]
     assert check_categorical_variables(df_int, 2) == [2]
 
 
-def test_check_categorical_variables_raises_errors_when_not_categorical():
+def test_check_categorical_variables_raises_errors_when_not_categorical(df, df_int):
     msg = (
         "Some of the variables are not categorical. Please cast them as "
         "object or categorical before using this transformer."
@@ -105,4 +85,40 @@ def test_check_categorical_variables_raises_errors_when_not_categorical():
 
     with pytest.raises(TypeError) as record:
         assert check_categorical_variables(df_int, [2, 3])
+    assert str(record.value) == msg
+
+
+def test_check_datetime_variables_returns_datetime_variables(df_datetime):
+    var_dt = ["date_range"]
+    var_dt_str = "date_range"
+    vars_convertible_to_dt = ["date_range", "date_obj1", "date_obj2", "time_obj"]
+    var_convertible_to_dt = "date_obj1"
+    tz_time = "time_objTZ"
+
+    # when variables are specified
+    assert check_datetime_variables(df_datetime, var_dt_str) == [var_dt_str]
+    assert check_datetime_variables(df_datetime, var_dt) == var_dt
+    assert check_datetime_variables(df_datetime, var_convertible_to_dt) == [
+        var_convertible_to_dt
+    ]
+    assert (
+        check_datetime_variables(df_datetime, vars_convertible_to_dt)
+        == vars_convertible_to_dt
+    )
+    assert check_datetime_variables(df_datetime, tz_time) == [tz_time]
+
+
+def test_check_datetime_variables_raises_errors_when_not_datetime(df_datetime):
+    msg = "Some of the variables are not or cannot be parsed as datetime."
+
+    with pytest.raises(TypeError) as record:
+        assert check_datetime_variables(df_datetime, variables="Age")
+    assert str(record.value) == msg
+
+    with pytest.raises(TypeError) as record:
+        assert check_datetime_variables(df_datetime, variables=["Age", "Name"])
+    assert str(record.value) == msg
+
+    with pytest.raises(TypeError):
+        assert check_datetime_variables(df_datetime, variables=["date_range", "Age"])
     assert str(record.value) == msg

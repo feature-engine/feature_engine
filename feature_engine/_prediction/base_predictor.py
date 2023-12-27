@@ -6,6 +6,9 @@ from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -19,9 +22,6 @@ from feature_engine.discretisation import (
 )
 from feature_engine.encoding import MeanEncoder
 from feature_engine.tags import _return_tags
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
 from feature_engine.variable_handling.variable_selection import (
     find_categorical_and_numerical_variables,
 )

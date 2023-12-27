@@ -4,6 +4,9 @@ import pandas as pd
 from sklearn.base import clone
 from sklearn.model_selection import cross_validate
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -12,10 +15,6 @@ from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.substitute import Substitution
-from feature_engine._prediction.target_mean_classifier import TargetMeanClassifier
-from feature_engine._prediction.target_mean_regressor import TargetMeanRegressor
-from feature_engine.dataframe_checks import check_X_y
 from feature_engine._docstrings.selection._docstring import (
     _cv_docstring,
     _features_to_drop_docstring,
@@ -26,15 +25,16 @@ from feature_engine._docstrings.selection._docstring import (
     _transform_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine._prediction.target_mean_classifier import TargetMeanClassifier
+from feature_engine._prediction.target_mean_regressor import TargetMeanRegressor
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection._selection_constants import (
     _CLASSIFICATION_METRICS,
     _REGRESSION_METRICS,
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
 from feature_engine.variable_handling.variable_selection import find_all_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
