@@ -135,3 +135,46 @@ def find_datetime_variables(X: pd.DataFrame) -> List[Union[str, int]]:
         raise ValueError("No datetime variables found in this dataframe.")
 
     return variables
+
+
+def find_all_variables(
+    X: pd.DataFrame,
+    exclude_datetime: bool = False,
+) -> List[Union[str, int]]:
+    """
+    Returns a list with the names of all the variables in the dataframe. It has the
+    option to exlcude variables that can be parsed as datetime.
+
+    More details in the :ref:`User Guide <find_all_vars>`.
+
+    Parameters
+    ----------
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
+
+    exclude_datetime: bool, default=False
+        Whether to exclude datetime variables.
+
+    Returns
+    -------
+    variables: List
+        The names of the variables.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from feature_engine.variable_handling import find_all_variables
+    >>> X = pd.DataFrame({
+    >>>     "var_num": [1, 2, 3],
+    >>>     "var_cat": ["A", "B", "C"],
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>> })
+    >>> vars_all = find_all_variables(X)
+    >>> vars_all
+    ['var_num', 'var_cat', 'var_date']
+    """
+    if exclude_datetime is True:
+        variables = X.select_dtypes(exclude="datetime").columns.to_list()
+    else:
+        variables = X.columns.to_list()
+    return variables

@@ -23,6 +23,7 @@ from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import (
+    check_all_variables,
     check_categorical_variables,
     find_all_variables,
     find_categorical_variables,
@@ -167,7 +168,10 @@ class CategoricalImputer(BaseImputer):
 
         # select variables to encode
         if self.ignore_format is True:
-            self.variables_ = find_all_variables(X, self.variables)
+            if self.variables is None:
+                self.variables_ = find_all_variables(X)
+            else:
+                self.variables_ = check_all_variables(X, self.variables)
         else:
             if self.variables is None:
                 self.variables_ = find_categorical_variables(X)

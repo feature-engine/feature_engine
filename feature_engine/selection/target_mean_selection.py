@@ -35,7 +35,7 @@ from feature_engine.selection._selection_constants import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling.variable_selection import find_all_variables
+from feature_engine.variable_handling import find_all_variables, check_all_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -272,7 +272,10 @@ class SelectByTargetMeanPerformance(BaseSelector):
         self._confirm_variables(X)
 
         # find all variables or check those entered are present in the dataframe
-        self.variables_ = find_all_variables(X, self.variables_, exclude_datetime=True)
+        if self.variables is None:
+            self.variables_ = find_all_variables(X, exclude_datetime=True)
+        else:
+            self.variables_ = check_all_variables(X, self.variables_)
 
         if len(self.variables_) == 1 and self.threshold is None:
             raise ValueError(

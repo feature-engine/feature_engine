@@ -30,7 +30,8 @@ from feature_engine.discretisation import (
 from feature_engine.encoding.woe import WoE
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling.variable_selection import (
+from feature_engine.variable_handling import (
+    check_all_variables,
     find_all_variables,
     find_categorical_and_numerical_variables,
 )
@@ -212,7 +213,10 @@ class SelectByInformationValue(BaseSelector, WoE):
 
         # find categorical and numerical variables
         # find all variables or check those entered are present in the dataframe
-        self.variables_ = find_all_variables(X, self.variables_, exclude_datetime=True)
+        if self.variables is None:
+            self.variables_ = find_all_variables(X, exclude_datetime=True)
+        else:
+            self.variables_ = check_all_variables(X, self.variables_)
 
         _, variables_numerical = find_categorical_and_numerical_variables(
             X, self.variables_

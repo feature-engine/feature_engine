@@ -1,6 +1,7 @@
 import pytest
 
 from feature_engine.variable_handling import (
+    check_all_variables,
     check_categorical_variables,
     check_datetime_variables,
     check_numerical_variables,
@@ -122,3 +123,21 @@ def test_check_datetime_variables_raises_errors_when_not_datetime(df_datetime):
     with pytest.raises(TypeError):
         assert check_datetime_variables(df_datetime, variables=["date_range", "Age"])
     assert str(record.value) == msg
+
+
+@pytest.mark.parametrize("input_vars", [["Name", "City", "Age", "Marks", "dob"], ["Name", "City", "Age", "Marks",], "Name", ["Age"]])
+def test_check_all_variables_returns_all_variables(df_vartypes, input_vars):
+    assert check_all_variables(df_vartypes, input_vars) == input_vars
+
+
+@pytest.mark.parametrize("input_vars", [["Name", "City", "Absent"], "Absent", ["Absent"]])
+def test_check_all_variables_raises_errors_when_not_in_dataframe(df_vartypes, input_vars):
+    msg_ls = "'Some of the variables are not in the dataframe.'"
+    msg_single = "'The variable Absent is not in the dataframe.'"
+
+    with pytest.raises(KeyError) as record:
+        assert check_all_variables(df_vartypes, input_vars)
+    if isinstance(input_vars, list):
+        assert str(record.value) == msg_ls
+    else:
+        assert str(record.value) == msg_single

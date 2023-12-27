@@ -3,23 +3,8 @@ import pytest
 
 from feature_engine.variable_handling.variable_selection import (
     _filter_out_variables_not_in_dataframe,
-    find_all_variables,
     find_categorical_and_numerical_variables,
 )
-
-
-def test_find_all_variables(df_vartypes):
-    all_vars = ["Name", "City", "Age", "Marks", "dob"]
-    all_vars_no_dt = ["Name", "City", "Age", "Marks"]
-    user_vars = ["Name", "City"]
-    non_existing_vars = ["Grades"]
-
-    assert find_all_variables(df_vartypes) == all_vars
-    assert find_all_variables(df_vartypes, exclude_datetime=True) == all_vars_no_dt
-    assert find_all_variables(df_vartypes, ["Name", "City"]) == user_vars
-
-    with pytest.raises(KeyError):
-        assert find_all_variables(df_vartypes, non_existing_vars)
 
 
 filter_dict = [

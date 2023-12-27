@@ -22,6 +22,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import (
+    check_all_variables,
     check_categorical_variables,
     find_all_variables,
     find_categorical_variables,
@@ -133,7 +134,10 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         """
         # select variables to encode
         if self.ignore_format is True:
-            variables_ = find_all_variables(X, self.variables)
+            if self.variables is None:
+                variables_ = find_all_variables(X)
+            else:
+                variables_ = check_all_variables(X, self.variables)
         else:
             if self.variables is None:
                 variables_ = find_categorical_variables(X)

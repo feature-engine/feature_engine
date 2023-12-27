@@ -154,3 +154,52 @@ def check_datetime_variables(
         )
 
     return variables
+
+
+def check_all_variables(
+    X: pd.DataFrame,
+    variables: Variables,
+) -> List[Union[str, int]]:
+    """
+    Checks that the variables in the list are in the dataframe.
+
+    More details in the :ref:`User Guide <check_all_vars>`.
+
+    Parameters
+    ----------
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
+
+    variables : list
+        The list with the names of the variables to check.
+
+    Returns
+    -------
+    variables: List
+        The names of the variables.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from feature_engine.variable_handling import check_all_variables
+    >>> X = pd.DataFrame({
+    >>>     "var_num": [1, 2, 3],
+    >>>     "var_cat": ["A", "B", "C"],
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>> })
+    >>> vars_all = check_all_variables(X, ['var_num', 'var_cat', 'var_date'])
+    >>> vars_all
+    ['var_num', 'var_cat', 'var_date']
+    """
+    if isinstance(variables, (str, int)):
+        if variables not in X.columns.to_list():
+            raise KeyError(f"The variable {variables} is not in the dataframe.")
+        variables_ = [variables]
+
+    else:
+        if not set(variables).issubset(set(X.columns)):
+            raise KeyError("Some of the variables are not in the dataframe.")
+
+        variables_ = variables
+
+    return variables_
