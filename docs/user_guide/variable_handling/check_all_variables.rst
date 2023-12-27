@@ -1,13 +1,12 @@
-﻿.. _find_cat_and_num_vars:
+.. _check_all_vars:
 
 .. currentmodule:: feature_engine.variable_handling
 
-find_categorical_and_numerical_variables
-========================================
+check_all_variables
+===================
 
-With :class:`find_categorical_and_numerical_variables()` you can automatically capture in
-2 separate lists the names of all the categorical and numerical variables in the dataset,
-respectively.
+With :class:`check_all_variables()` we can check that the variables in a list are
+present in the dataframe.
 
 Let's create a toy dataset with numerical, categorical and datetime variables:
 
@@ -39,7 +38,7 @@ Let's create a toy dataset with numerical, categorical and datetime variables:
 
     print(X.head())
 
-Below we see the resulting dataframe:
+We see the resulting dataframe below:
 
 .. code:: python
 
@@ -57,49 +56,33 @@ Below we see the resulting dataframe:
     3 2020-02-24 00:03:00 2021-09-29 03:00:00  2020-02-24
     4 2020-02-24 00:04:00 2021-09-29 04:00:00  2020-02-24
 
-We can now use :class:`find_categorical_and_numerical_variables()` to capture categorical
-and numerical variables in separate lists. So let's do that and then display the lists:
+
+We can use :class:`check_all_variables()` with a list of variable names to verify that
+the variables in the list are in the dataframe.
 
 .. code:: python
 
-    from feature_engine.variable_handling import find_categorical_and_numerical_variables
+    from feature_engine.variable_handling import check_all_variables
 
-    var_cat, var_num = find_categorical_and_numerical_variables(X)
+    checked_vars = check_all_variables(X, ["num_var_1", "cat_var1", "date1"])
 
-    var_cat, var_num
+    checked_vars
 
-Below we see the names of the categorical variables, followed by the names of the numerical
-variables:
-
-.. code:: python
-
-    (['cat_var1', 'cat_var2'],
-     ['num_var_1', 'num_var_2', 'num_var_3', 'num_var_4'])
-
-We can also use :class:`find_categorical_and_numerical_variables()` with a list of variables,
-to indentify their types:
+The output is the list of variable names passed to the function:
 
 .. code:: python
 
-    var_cat, var_num = find_categorical_and_numerical_variables(X, ["num_var_1", "cat_var1"])
+    ['num_var_1', 'cat_var1', 'date1']
 
-    var_cat, var_num
-
-We see the resulting lists below:
-
-.. code:: python
-
-    (['cat_var1'], ['num_var_1'])
-
-If we pass a variable that is not of type numerical or categorical, :class:`find_categorical_and_numerical_variables()`
+If we pass the name of a variable that is not in the dataframe, :class:`check_all_variables()`
 will return an error:
 
 .. code:: python
 
-    find_categorical_and_numerical_variables(X, ["num_var_1", "cat_var1", "date1"])
+    check_all_variables(X, ["hola", "cat_var1", "date1"])
 
-Below the error message:
+Below we see the error message:
 
 .. code:: python
 
-    TypeError: Some of the variables are neither numerical nor categorical.
+    KeyError: 'Some of the variables are not in the dataframe.'
