@@ -1,12 +1,14 @@
-from typing import List, Union
+from typing import List, Union, Tuple
 
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
+from pandas.core.dtypes.common import is_object_dtype as is_object, is_numeric_dtype as is_numeric
 
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
     _is_categorical_and_is_not_datetime,
 )
+from feature_engine.variable_handling.variable_selection import Variables
 
 
 def find_numerical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
@@ -178,3 +180,100 @@ def find_all_variables(
     else:
         variables = X.columns.to_list()
     return variables
+
+
+def find_categorical_and_numerical_variables(
+    X: pd.DataFrame,
+    variables: Union[None, int, str, List[Union[str, int]]] = None,
+) -> Tuple[List[Union[str, int]], List[Union[str, int]]]:
+    """
+    Find numerical and categorical variables in a dataframe or from a list.
+
+    The function returns two lists; the first one with the names of the variables of
+    type object or categorical and the second list with the names of the numerical
+    variables.
+
+    More details in the :ref:`User Guide <find_cat_and_num_vars>`.
+
+    Parameters
+    ----------
+    X : pandas dataframe of shape = [n_samples, n_features]
+        The dataset
+
+    variables : list, default=None
+        If `None`, the function will find all categorical and numerical variables in X.
+        Alternatively, it will find categorical and numerical variables in X, selecting
+        from the given list.
+
+    Returns
+    -------
+    variables: tuple
+        Tupe containing a list with the categorical variables, and a List with the
+        numerical variables.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from feature_engine.variable_handling import (
+    >>>   find_categorical_and_numerical_variables
+    >>>)
+    >>> X = pd.DataFrame({
+    >>>     "var_num": [1, 2, 3],
+    >>>     "var_cat": ["A", "B", "C"],
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>> })
+    >>> var_cat, var_num = find_categorical_and_numerical_variables(X)
+    >>> var_cat, var_num
+    (['var_cat'], ['var_num'])
+    """
+
+    # If the user passes just 1 variable outside a list.
+    if isinstance(variables, (str, int)):
+
+        if X[variables].dtype.name == "category" or is_object(X[variables]):
+            variables_cat = [variables]
+            variables_num = []
+        elif is_numeric(X[variables]):
+            variables_num = [variables]
+            variables_cat = []
+        else:
+            raise TypeError(
+                "The variable entered is neither numerical nor categorical."
+            )
+
+    # If user leaves default None parameter.
+    elif variables is None:
+        # find categorical variables
+        if variables is None:
+            variables_cat = [
+                column
+                for column in X.select_dtypes(include=["O", "category"]).columns
+                if _is_categorical_and_is_not_datetime(X[column])
+            ]
+        # find numerical variables in dataset
+        variables_num = list(X.select_dtypes(include="number").columns)
+
+        if len(variables_num) == 0 and len(variables_cat) == 0:
+            raise TypeError(
+                "There are no numerical or categorical variables in the dataframe"
+            )
+
+    # If user passes variable list.
+    else:
+        if len(variables) == 0:
+            raise ValueError("The list of variables is empty.")
+
+        # find categorical variables
+        variables_cat = [
+            var for var in X[variables].select_dtypes(include=["O", "category"]).columns
+        ]
+
+        # find numerical variables
+        variables_num = list(X[variables].select_dtypes(include="number").columns)
+
+        if any([v for v in variables if v not in variables_cat + variables_num]):
+            raise TypeError(
+                "Some of the variables are neither numerical nor categorical."
+            )
+
+    return variables_cat, variables_num
