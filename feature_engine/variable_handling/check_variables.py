@@ -1,3 +1,5 @@
+"""Functions to check that the variables in a list are of a certain type."""
+
 from typing import List, Union
 
 import pandas as pd
@@ -21,7 +23,7 @@ def check_numerical_variables(
     Parameters
     ----------
     X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset
+        The dataset.
 
     variables : List
         The list with the names of the variables to check.

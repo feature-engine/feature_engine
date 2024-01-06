@@ -1,3 +1,5 @@
+"""Functions to select certain types of variables."""
+
 from typing import List, Tuple, Union
 
 import pandas as pd
@@ -20,7 +22,7 @@ def find_numerical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
     Parameters
     ----------
     X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset
+        The dataset.
 
     Returns
     -------
