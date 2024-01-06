@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 from feature_engine.variable_handling.remove_variables import (
-    return_variables_if_in_df,
+    retain_variables_if_in_df,
 )
 
 test_dict = [
@@ -19,12 +19,12 @@ test_dict = [
 
 
 @pytest.mark.parametrize("df, variables, overlap, col_not_in_df", test_dict)
-def test_return_variables_if_in_df(df, variables, overlap, col_not_in_df):
+def test_retain_variables_if_in_df(df, variables, overlap, col_not_in_df):
 
     msg = "None of the variables in the list is present in the dataframe."
 
-    assert return_variables_if_in_df(df, variables) == overlap
+    assert retain_variables_if_in_df(df, variables) == overlap
 
     with pytest.raises(ValueError) as record:
-        return_variables_if_in_df(df, col_not_in_df)
+        retain_variables_if_in_df(df, col_not_in_df)
     assert str(record.value) == msg

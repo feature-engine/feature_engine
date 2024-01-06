@@ -5,7 +5,7 @@ from typing import List, Union
 Variables = Union[int, str, List[Union[str, int]]]
 
 
-def return_variables_if_in_df(X, variables):
+def retain_variables_if_in_df(X, variables):
     """Returns the subset of variables in the list that are present in the dataframe.
 
     Parameters
@@ -20,6 +20,19 @@ def return_variables_if_in_df(X, variables):
     -------
     variables_in_df: List.
         The subset of `variables` that is present `X`.
+        
+        Examples
+    --------
+    >>> import pandas as pd
+    >>> from feature_engine.variable_handling import retain_variables_if_in_df
+    >>> X = pd.DataFrame({
+    >>>     "var_num": [1, 2, 3],
+    >>>     "var_cat": ["A", "B", "C"],
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>> })
+    >>> vars_in_df = retain_variables_if_in_df(X, ['var_num', 'var_cat', 'var_other'])
+    >>> vars_in_df
+    ['var_num', 'var_cat']
     """
     if isinstance(variables, (str, int)):
         variables = [variables]
