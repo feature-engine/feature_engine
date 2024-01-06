@@ -30,10 +30,7 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.variable_handling import (
-    check_numerical_variables,
-    find_numerical_variables,
-)
+from .base_selection_functions import _select_numerical_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -256,14 +253,7 @@ class SmartCorrelatedSelection(BaseSelector):
         # check input dataframe
         X = check_X(X)
 
-        # If required exclude variables that are not in the input dataframe
-        self._confirm_variables(X)
-
-        # find all numerical variables or check those entered are in the dataframe
-        if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
-        else:
-            self.variables_ = check_numerical_variables(X, self.variables_)
+        self.variables_ = _select_numerical_variables(X, self.variables, self.confirm_variables)
 
         # check that there are more than 1 variable to select from
         self._check_variable_number()

@@ -7,11 +7,13 @@ from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
 from feature_engine.dataframe_checks import check_X_y
-from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
+from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.selection.base_selection_functions import get_feature_importances
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import (
     check_numerical_variables,
     find_numerical_variables,
+    retain_variables_if_in_df,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -133,14 +135,14 @@ class BaseRecursiveSelector(BaseSelector):
         # check input dataframe
         X, y = check_X_y(X, y)
 
-        # If required exclude variables that are not in the input dataframe
-        self._confirm_variables(X)
-
-        # find numerical variables or check variables entered by user
         if self.variables is None:
             self.variables_ = find_numerical_variables(X)
         else:
-            self.variables_ = check_numerical_variables(X, self.variables_)
+            if self.confirm_variables is True:
+                variables_ = retain_variables_if_in_df(X, self.variables)
+                self.variables_ = check_numerical_variables(X, variables_)
+            else:
+                self.variables_ = check_numerical_variables(X, self.variables)
 
         # check that there are more than 1 variable to select from
         self._check_variable_number()
