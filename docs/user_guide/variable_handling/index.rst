@@ -11,6 +11,8 @@ of the variables of the desired type.
 
 The `check` functions check that the list of variables are all of the desired data type.
 
+The `retain` functions select the variables in a list if they fulfill a condition.
+
 You can use these functions to identify different sets of variables based on their
 data type to streamline your feature engineering pipelines or create your own
 Feature-engine or Scikit-learn compatible transformers.
@@ -28,3 +30,4 @@ Feature-engine or Scikit-learn compatible transformers.
    check_categorical_variables
    check_datetime_variables
    check_numerical_variables
+   retain_variables_if_in_df

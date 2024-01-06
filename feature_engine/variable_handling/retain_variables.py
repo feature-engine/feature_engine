@@ -8,6 +8,8 @@ Variables = Union[int, str, List[Union[str, int]]]
 def retain_variables_if_in_df(X, variables):
     """Returns the subset of variables in the list that are present in the dataframe.
 
+    More details in the :ref:`User Guide <retain_vars>`.
+
     Parameters
     ----------
     X:  pandas dataframe of shape = [n_samples, n_features]
