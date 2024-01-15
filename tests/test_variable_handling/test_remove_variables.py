@@ -1,9 +1,7 @@
 import pandas as pd
 import pytest
 
-from feature_engine.variable_handling.retain_variables import (
-    retain_variables_if_in_df,
-)
+from feature_engine.variable_handling.retain_variables import retain_variables_if_in_df
 
 test_dict = [
     (

@@ -24,6 +24,7 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
+
 from .base_selection_functions import _select_all_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -136,8 +137,9 @@ class DropDuplicateFeatures(BaseSelector):
         # check input dataframe
         X = check_X(X)
 
-        self.variables_ = _select_all_variables(X, self.variables, self.confirm_variables)
-
+        self.variables_ = _select_all_variables(
+            X, self.variables, self.confirm_variables
+        )
 
         # check that there are more than 1 variable to select from
         self._check_variable_number()

@@ -1,8 +1,11 @@
 import numpy as np
 
 from feature_engine.variable_handling import (
-    check_all_variables, find_all_variables, retain_variables_if_in_df,
-    find_numerical_variables, check_numerical_variables,
+    check_all_variables,
+    check_numerical_variables,
+    find_all_variables,
+    find_numerical_variables,
+    retain_variables_if_in_df,
 )
 
 

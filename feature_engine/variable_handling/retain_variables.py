@@ -22,7 +22,7 @@ def retain_variables_if_in_df(X, variables):
     -------
     variables_in_df: List.
         The subset of `variables` that is present `X`.
-        
+
         Examples
     --------
     >>> import pandas as pd

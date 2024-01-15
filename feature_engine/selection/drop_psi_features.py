@@ -33,7 +33,11 @@ from feature_engine.discretisation import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import find_categorical_and_numerical_variables, find_numerical_variables, retain_variables_if_in_df
+from feature_engine.variable_handling import (
+    find_categorical_and_numerical_variables,
+    find_numerical_variables,
+    retain_variables_if_in_df,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
