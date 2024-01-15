@@ -364,7 +364,7 @@ def test_error_if_confirm_variables_returns_empty_list(df):
     )
     data = df.copy()
     data = data.drop(["cat_1", "drift_cat_1"], axis=1)
-    msg = "None of the variables in the list is present in the dataframe."
+    msg = "None of the variables in the list are present in the dataframe."
     with pytest.raises(ValueError) as record:
         transformer.fit(data)
     assert str(record.value) == msg
