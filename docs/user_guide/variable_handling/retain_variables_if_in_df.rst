@@ -5,8 +5,8 @@
 retain_variables_if_in_df
 =========================
 
-:class:`retain_variables_if_in_df()` returns a subset of the variables in a list that
-are present in the dataset.
+:class:`retain_variables_if_in_df()` returns the subset of variables in a list that
+is present in the dataset.
 
 Let's create a toy dataset with numerical, categorical and datetime variables:
 
@@ -33,9 +33,9 @@ We see the resulting dataframe below:
     2  krish   Liverpool   19    0.7 2020-02-24 00:02:00
     3   jack     Bristol   18    0.6 2020-02-24 00:03:00
 
-With :class:`retain_variables_if_in_df()` we capture the names of the variables in a
-list that are present in the dataset. So let's do that and then display the resulting
-list:
+With :class:`retain_variables_if_in_df()` we capture in a list, the names of the
+variables that are present in the dataset. So let's do that and then display the
+resulting list:
 
 .. code:: python
 
@@ -61,10 +61,10 @@ This function was originally developed for internal use.
 
 When we run various feature selection transformers one after the other, for example,
 `DropConstantFeatures`, then `DropDuplicateFeatures`, and finally
-`RecursiveFeatureElimination`, we can't anticipate which variables will be dropped. Hence,
-these transformers use :class:`retain_variables_if_in_df()` to select those
-variables that were input by the user that still remain in the dataset before applying
-the selection algorithm.
+`RecursiveFeatureElimination`, we can't anticipate which variables will be dropped by
+each transformer. Hence, these transformers use :class:`retain_variables_if_in_df()`
+under the hood, to select those variables that were entered by the user and that still
+remain in the dataset, before applying the selection algorithm.
 
 We've now decided to expose this function as part of the `variable_handling` module. It
 might be useful, for example, if you are creating `Feature-engine` compatible selection
