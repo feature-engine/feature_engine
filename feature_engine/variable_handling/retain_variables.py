@@ -44,7 +44,7 @@ def retain_variables_if_in_df(X, variables):
     # Raise an error if no column is left to work with.
     if len(variables_in_df) == 0:
         raise ValueError(
-            "None of the variables in the list is present in the dataframe."
+            "None of the variables in the list are present in the dataframe."
         )
 
     return variables_in_df
