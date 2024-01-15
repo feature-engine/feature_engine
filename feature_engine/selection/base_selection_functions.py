@@ -1,4 +1,7 @@
+from typing import List, Union
+
 import numpy as np
+import pandas as pd
 
 from feature_engine.variable_handling import (
     check_all_variables,
@@ -7,6 +10,8 @@ from feature_engine.variable_handling import (
     find_numerical_variables,
     retain_variables_if_in_df,
 )
+
+Variables = Union[int, str, List[Union[str, int]], None]
 
 
 def get_feature_importances(estimator):
@@ -29,7 +34,20 @@ def get_feature_importances(estimator):
     return importances
 
 
-def _select_all_variables(X, variables, confirm_variables, exclude_datetime=False):
+def _select_all_variables(
+        X: pd.DataFrame,
+        variables: Variables,
+        confirm_variables: bool,
+        exclude_datetime: bool=False,
+):
+    """
+    Selects the variables over which the selector will operate.
+
+    If variables is None, it will select all variables except datetime.
+    If variables is a list and confirm_variables is True, it will retain those
+    variables that are present in X. If confirm_variables is False, it will use all
+    variables in the list.
+    """
     if variables is None:
         variables_ = find_all_variables(X, exclude_datetime)
     else:
@@ -41,7 +59,19 @@ def _select_all_variables(X, variables, confirm_variables, exclude_datetime=Fals
     return variables_
 
 
-def _select_numerical_variables(X, variables, confirm_variables):
+def _select_numerical_variables(
+        X: pd.DataFrame,
+        variables: Variables,
+        confirm_variables: bool,
+):
+    """
+    Selects the numerical variables over which the selector will operate.
+
+    If variables is None, it will select all numerical variables.
+    If variables is a list and confirm_variables is True, it will retain those
+    numerical variables that are present in X. If confirm_variables is False, it will
+    use all numerical variables in the list.
+    """
     if variables is None:
         variables_ = find_numerical_variables(X)
     else:
