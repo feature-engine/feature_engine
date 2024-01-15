@@ -27,12 +27,46 @@ def test_select_all_variables(df):
     # select all variables
     assert (
         _select_all_variables(
-            df, variables=None, confirm_variables=None, exclude_datetime=False
+            df, variables=None, confirm_variables=False, exclude_datetime=False
         )
         == df.columns.to_list()
     )
 
     # select all variables except datetime
     assert _select_all_variables(
-        df, variables=None, confirm_variables=None, exclude_datetime=True
+        df, variables=None, confirm_variables=False, exclude_datetime=True
     ) == ["Name", "City", "Age", "Marks"]
+
+    # select subset of variables, without confirm
+    subset = ["Name", "City", "Age", "Marks"]
+    assert _select_all_variables(
+        df, variables=subset, confirm_variables=False, exclude_datetime=True
+    ) == subset
+
+    # select subset of variables, with confirm
+    subset = ["Name", "City", "Age", "Marks", "Hola"]
+    assert _select_all_variables(
+        df, variables=subset, confirm_variables=True, exclude_datetime=True
+    ) == subset[:-1]
+
+
+def test_select_numerical_variables(df):
+    # select all numerical variables
+    assert (
+            _select_numerical_variables(
+                df, variables=None, confirm_variables=False,
+            )
+            == ["Age", "Marks"]
+    )
+
+    # select subset of variables, without confirm
+    subset = ["Marks"]
+    assert _select_numerical_variables(
+        df, variables=subset, confirm_variables=False,
+    ) == subset
+
+    # select subset of variables, with confirm
+    subset = ["Marks", "Hola"]
+    assert _select_numerical_variables(
+        df, variables=subset, confirm_variables=True,
+    ) == subset[:-1]
