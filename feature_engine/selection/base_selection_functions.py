@@ -38,7 +38,7 @@ def _select_all_variables(
         X: pd.DataFrame,
         variables: Variables,
         confirm_variables: bool,
-        exclude_datetime: bool=False,
+        exclude_datetime: bool = False,
 ):
     """
     Selects the variables over which the selector will operate.
