@@ -179,6 +179,11 @@ def find_all_variables(
     """
     if exclude_datetime is True:
         variables = X.select_dtypes(exclude="datetime").columns.to_list()
+        variables = [
+            var
+            for var in variables
+            if is_numeric(X[var]) or not _is_categorical_and_is_datetime(X[var])
+        ]
     else:
         variables = X.columns.to_list()
     return variables

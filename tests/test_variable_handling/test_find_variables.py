@@ -75,12 +75,12 @@ def test_datetime_variables_raises_error_when_no_datetime_variables(df_datetime)
     assert str(record.value) == msg
 
 
-def test_find_all_variables(df_vartypes):
-    all_vars = ["Name", "City", "Age", "Marks", "dob"]
+def test_find_all_variables(df):
+    all_vars = ["Name", "City", "Age", "Marks", "date_range", "date_obj0"]
     all_vars_no_dt = ["Name", "City", "Age", "Marks"]
 
-    assert find_all_variables(df_vartypes, exclude_datetime=False) == all_vars
-    assert find_all_variables(df_vartypes, exclude_datetime=True) == all_vars_no_dt
+    assert find_all_variables(df, exclude_datetime=False) == all_vars
+    assert find_all_variables(df, exclude_datetime=True) == all_vars_no_dt
 
 
 def test_find_categorical_and_numerical_variables(df_vartypes):
