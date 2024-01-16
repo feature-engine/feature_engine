@@ -1,5 +1,6 @@
 from typing import List, Union
 
+import numpy as np
 import pandas as pd
 
 from feature_engine._check_init_parameters.check_variables import (
@@ -45,11 +46,14 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 class DropCorrelatedFeatures(BaseSelector):
     """
     DropCorrelatedFeatures() finds and removes correlated features. Correlation is
-    calculated with `pandas.corr()`. Features are removed on first found first removed
+    calculated with `pandas.corr()`. Features are removed on first found, first removed
     basis, without any further insight.
 
     DropCorrelatedFeatures() works only with numerical variables. Categorical variables
     will need to be encoded to numerical or will be excluded from the analysis.
+
+    To make the selector deterministic, features are sorted alphabetically before
+    examining correlation.
 
     More details in the :ref:`User Guide <drop_correlated>`.
 
@@ -137,10 +141,16 @@ class DropCorrelatedFeatures(BaseSelector):
     ):
 
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
-            raise ValueError("threshold must be a float between 0 and 1")
+            raise ValueError(
+                "`threshold` must be a float between 0 and 1. "
+                f"Got {threshold} instead."
+            )
 
         if missing_values not in ["raise", "ignore"]:
-            raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
+            raise ValueError(
+                "`missing_values` takes only values 'raise' or 'ignore'. "
+                f"Got {missing_values} instead."
+            )
 
         super().__init__(confirm_variables)
 
@@ -177,52 +187,34 @@ class DropCorrelatedFeatures(BaseSelector):
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
 
-        # set to collect features that are correlated
-        self.features_to_drop_ = set()
-
-        # create tuples of correlated feature groups
-        self.correlated_feature_sets_ = []
+        # sort features alphabetically to make selector deterministic
+        # features = sorted(self.variables_)
+        features = (self.variables_)
 
         # the correlation matrix
-        _correlated_matrix = X[self.variables_].corr(method=self.method)
+        correlated_matrix = X[features].corr(method=self.method).to_numpy()
 
-        # create set of examined features, helps to determine feature combinations
-        # to evaluate below
-        _examined_features = set()
+        # the correlated pairs
+        correlated_mask = (abs(correlated_matrix) > self.threshold) - np.eye(len(features))
 
-        # for each feature in the dataset (columns of the correlation matrix)
-        for feature in _correlated_matrix.columns:
+        examined = set()
+        correlated_groups = list()
+        features_to_drop = set()
+        for i, f_i in enumerate(features):
+            if f_i not in examined:
+                examined.add(f_i)
+                temp_set = set([f_i])
+                for j, f_j in enumerate(features):
+                    if f_j not in examined:
+                        if correlated_mask[i, j] == 1:
+                            examined.add(f_j)
+                            features_to_drop.add(f_j)
+                            temp_set.add(f_j)
+                if len(temp_set)>1:
+                    correlated_groups.append(temp_set)
 
-            if feature not in _examined_features:
-
-                # append so we can exclude when we create the combinations
-                _examined_features.add(feature)
-
-                # here we collect potentially correlated features
-                # we need this for the correlated groups sets
-                _temp_set = set([feature])
-
-                # features that have not been examined, are not currently examined and
-                # were not found correlated
-                _features_to_compare = [
-                    f for f in _correlated_matrix.columns if f not in _examined_features
-                ]
-
-                # create combinations:
-                for f2 in _features_to_compare:
-
-                    # if the correlation is higher than the threshold
-                    # we are interested in absolute correlation coefficient value
-                    if abs(_correlated_matrix.loc[f2, feature]) > self.threshold:
-
-                        # add feature (f2) to our correlated set
-                        self.features_to_drop_.add(f2)
-                        _temp_set.add(f2)
-                        _examined_features.add(f2)
-
-                # if there are correlated features
-                if len(_temp_set) > 1:
-                    self.correlated_feature_sets_.append(_temp_set)
+        self.features_to_drop_ = features_to_drop
+        self.correlated_feature_sets_ = correlated_groups
 
         # save input features
         self._get_feature_names_in(X)
