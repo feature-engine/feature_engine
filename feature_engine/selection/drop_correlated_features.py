@@ -194,7 +194,9 @@ class DropCorrelatedFeatures(BaseSelector):
         correlated_matrix = X[features].corr(method=self.method).to_numpy()
 
         # the correlated pairs
-        correlated_mask = (abs(correlated_matrix) > self.threshold) - np.eye(len(features))
+        correlated_mask = (abs(correlated_matrix) > self.threshold) - np.eye(
+            len(features)
+        )
 
         examined = set()
         correlated_groups = list()
@@ -209,7 +211,7 @@ class DropCorrelatedFeatures(BaseSelector):
                             examined.add(f_j)
                             features_to_drop.add(f_j)
                             temp_set.add(f_j)
-                if len(temp_set)>1:
+                if len(temp_set) > 1:
                     correlated_groups.append(temp_set)
 
         self.features_to_drop_ = features_to_drop

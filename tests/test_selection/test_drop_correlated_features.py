@@ -1,8 +1,13 @@
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
 
 from feature_engine.selection import DropCorrelatedFeatures
+from tests.estimator_checks.init_params_allowed_values_checks import (
+    check_error_param_confirm_variables,
+    check_error_param_missing_values,
+)
 
 
 @pytest.fixture(scope="module")
@@ -45,6 +50,50 @@ def df_correlated_double():
     return X
 
 
+_input_params = [
+    (None, "pearson", 0.8, "ignore", False),
+    ("var1", "kendall", 0.5, "raise", True),
+    (["var1", "var2"], "spearman", 0.4, "raise", False),
+]
+
+
+@pytest.mark.parametrize(
+    "_variables, _method, _threshold, _missing_values, _confirm_vars", _input_params
+)
+def test_input_params_assignment(
+    _variables, _method, _threshold, _missing_values, _confirm_vars
+):
+    sel = DropCorrelatedFeatures(
+        variables=_variables,
+        method=_method,
+        threshold=_threshold,
+        missing_values=_missing_values,
+        confirm_variables=_confirm_vars,
+    )
+
+    assert sel.variables == _variables
+    assert sel.method == _method
+    assert sel.threshold == _threshold
+    assert sel.missing_values == _missing_values
+    assert sel.confirm_variables == _confirm_vars
+
+
+@pytest.mark.parametrize("_threshold", [3, "0.1", -0, 2, 0, 3, 1])
+def test_raises_error_when_threshold_not_permitted(_threshold):
+    msg = f"`threshold` must be a float between 0 and 1. Got {_threshold} instead."
+    with pytest.raises(ValueError) as record:
+        DropCorrelatedFeatures(threshold=_threshold)
+    assert record.value.args[0] == msg
+
+
+def test_error_param_missing_values():
+    check_error_param_missing_values(DropCorrelatedFeatures())
+
+
+def test_error_param_confirm_variables():
+    check_error_param_confirm_variables(DropCorrelatedFeatures())
+
+
 def test_default_params(df_correlated_single):
     transformer = DropCorrelatedFeatures(
         variables=None, method="pearson", threshold=0.8
@@ -53,10 +102,6 @@ def test_default_params(df_correlated_single):
 
     # expected result
     df = df_correlated_single.drop("var_2", axis=1)
-
-    # test init params
-    assert transformer.method == "pearson"
-    assert transformer.threshold == 0.8
 
     # test fit attrs
     assert transformer.features_to_drop_ == {"var_2"}
@@ -75,10 +120,6 @@ def test_default_params_different_var_order(df_correlated_single):
     # expected result
     df = df_correlated_single[var_order].drop("var_2", axis=1)
 
-    # test init params
-    assert transformer.method == "pearson"
-    assert transformer.threshold == 0.8
-
     # test fit attrs
     assert transformer.features_to_drop_ == {"var_2"}
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
@@ -94,10 +135,6 @@ def test_lower_threshold(df_correlated_single):
 
     # expected result
     df = df_correlated_single.drop(["var_2", "var_4"], axis=1)
-
-    # test init params
-    assert transformer.method == "pearson"
-    assert transformer.threshold == 0.6
 
     # test fit attrs
     assert transformer.features_to_drop_ == {"var_2", "var_4"}
@@ -161,3 +198,16 @@ def test_error_method_supplied(df_correlated_double):
         == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
         + f" '{method}' was supplied"
     )
+
+
+def test_raises_missing_data_error(df_correlated_single):
+    df = df_correlated_single.copy()
+    df.iloc[0, 1] = np.nan
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
+    sel = DropCorrelatedFeatures(missing_values="raise")
+    with pytest.raises(ValueError) as record:
+        sel.fit(df)
+    assert record.value.args[0] == msg
