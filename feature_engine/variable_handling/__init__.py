@@ -16,6 +16,7 @@ from .find_variables import (
     find_datetime_variables,
     find_numerical_variables,
 )
+from .retain_variables import retain_variables_if_in_df
 
 __all__ = [
     "check_all_variables",
@@ -27,4 +28,5 @@ __all__ = [
     "find_categorical_variables",
     "find_datetime_variables",
     "find_categorical_and_numerical_variables",
+    "retain_variables_if_in_df",
 ]

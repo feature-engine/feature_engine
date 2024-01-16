@@ -46,17 +46,6 @@ def test_get_feature_names_in(df_vartypes):
     assert tr.feature_names_in_ == list(df_vartypes.columns)
 
 
-def test_confirm_variables(df_vartypes):
-    variables = ["banana", "manzana", "Name", "Age"]
-    tr = MockClass(variables=variables, confirm_variables=False)
-    tr._confirm_variables(df_vartypes)
-    assert tr.variables_ == variables
-
-    tr = MockClass(variables=variables, confirm_variables=True)
-    tr._confirm_variables(df_vartypes)
-    assert tr.variables_ == variables[2:4]
-
-
 def test_get_support(df_vartypes):
     tr = MockClass()
     tr.fit(df_vartypes)

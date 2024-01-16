@@ -33,7 +33,11 @@ from feature_engine.discretisation import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import find_categorical_and_numerical_variables
+from feature_engine.variable_handling import (
+    find_categorical_and_numerical_variables,
+    find_numerical_variables,
+    retain_variables_if_in_df,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -530,21 +534,16 @@ class DropHighPSIFeatures(BaseSelector):
         return self
 
     def _select_variables(self, X: pd.DataFrame):
-        """Based on the user input to the `variables` attribute in init, find or check
-        the variables for which the PSI should be calculated.
+        """Based on the user input to the `variables` attribute in init, find the
+        numerical and categorical variables for which the PSI should be calculated.
 
         If `None`, select all numerical variables.
         If `"all", select all numerical and categorical variables.
-        If string or list, check that the variables are numerical or categorical.
+        If string, int, or list, split into lists of numerical or categorical variables.
         """
 
         if self.variables is None:
-            num_variables = list(X.select_dtypes(include="number").columns)
-            if len(num_variables) == 0:
-                raise ValueError(
-                    "No numerical variables found in this dataframe. Please check "
-                    "variable format with pandas dtypes."
-                )
+            num_variables = find_numerical_variables(X)
             cat_variables: List[Union[str, int]] = []
 
         elif self.variables == "all":
@@ -554,19 +553,10 @@ class DropHighPSIFeatures(BaseSelector):
             ) = find_categorical_and_numerical_variables(X, None)
 
         else:
-            if not isinstance(self.variables, list):
-                variables = [self.variables]
+            if self.confirm_variables is True:
+                variables = retain_variables_if_in_df(X, self.variables)
             else:
                 variables = self.variables
-
-            if self.confirm_variables is True:
-                variables = [var for var in variables if var in X.columns]
-                # Raise an error if no column is left to work with.
-                if len(variables) == 0:
-                    raise ValueError(
-                        "After confirming variables, no variable remains. At least 1 "
-                        "variable is required for the selection."
-                    )
 
             (
                 cat_variables,
@@ -592,7 +582,7 @@ class DropHighPSIFeatures(BaseSelector):
                 raise ValueError(f"{self.split_col} is not in the dataframe.")
 
             # Remove the split_col from variables lists. Happens when variables are
-            # selected by transformer.
+            # selected automatically by the transformer.
             if self.variables is None or self.variables == "all":
                 if self.split_col in num_variables:
                     num_variables.remove(self.split_col)

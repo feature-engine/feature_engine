@@ -1,3 +1,5 @@
+"""Functions to select certain types of variables."""
+
 from typing import List, Tuple, Union
 
 import pandas as pd
@@ -20,7 +22,7 @@ def find_numerical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
     Parameters
     ----------
     X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset
+        The dataset.
 
     Returns
     -------
@@ -177,6 +179,11 @@ def find_all_variables(
     """
     if exclude_datetime is True:
         variables = X.select_dtypes(exclude="datetime").columns.to_list()
+        variables = [
+            var
+            for var in variables
+            if is_numeric(X[var]) or not _is_categorical_and_is_datetime(X[var])
+        ]
     else:
         variables = X.columns.to_list()
     return variables

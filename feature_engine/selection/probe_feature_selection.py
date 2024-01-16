@@ -25,12 +25,11 @@ from feature_engine._docstrings.selection._docstring import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
-from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
+from feature_engine.selection.base_selection_functions import get_feature_importances
+from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import (
-    check_numerical_variables,
-    find_numerical_variables,
-)
+
+from .base_selection_functions import _select_numerical_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -191,15 +190,9 @@ class ProbeFeatureSelection(BaseSelector):
         # check input dataframe
         X, y = check_X_y(X, y)
 
-        # if required exclude variables that are not in the input dataframe
-        # instantiates the 'variables_' attribute
-        self._confirm_variables(X)
-
-        # find numerical variables
-        if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
-        else:
-            self.variables_ = check_numerical_variables(X, self.variables_)
+        self.variables_ = _select_numerical_variables(
+            X, self.variables, self.confirm_variables
+        )
 
         # save input features
         self._get_feature_names_in(X)

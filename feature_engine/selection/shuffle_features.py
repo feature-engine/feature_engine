@@ -35,10 +35,8 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import (
-    check_numerical_variables,
-    find_numerical_variables,
-)
+
+from .base_selection_functions import _select_numerical_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -216,14 +214,9 @@ class SelectByShuffling(BaseSelector):
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
 
-        # If required exclude variables that are not in the input dataframe
-        self._confirm_variables(X)
-
-        # find numerical variables or check variables entered by user
-        if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
-        else:
-            self.variables_ = check_numerical_variables(X, self.variables_)
+        self.variables_ = _select_numerical_variables(
+            X, self.variables, self.confirm_variables
+        )
 
         # check that there are more than 1 variable to select from
         self._check_variable_number()
