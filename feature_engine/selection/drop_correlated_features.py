@@ -188,8 +188,7 @@ class DropCorrelatedFeatures(BaseSelector):
             _check_contains_inf(X, self.variables_)
 
         # sort features alphabetically to make selector deterministic
-        # features = sorted(self.variables_)
-        features = (self.variables_)
+        features = sorted(self.variables_)
 
         # the correlation matrix
         correlated_matrix = X[features].corr(method=self.method).to_numpy()

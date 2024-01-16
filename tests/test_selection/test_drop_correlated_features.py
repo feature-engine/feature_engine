@@ -65,6 +65,27 @@ def test_default_params(df_correlated_single):
     pd.testing.assert_frame_equal(X, df)
 
 
+def test_default_params_different_var_order(df_correlated_single):
+    transformer = DropCorrelatedFeatures(
+        variables=None, method="pearson", threshold=0.8
+    )
+    var_order = list(reversed(list(df_correlated_single.columns)))
+    X = transformer.fit_transform(df_correlated_single[var_order])
+
+    # expected result
+    df = df_correlated_single[var_order].drop("var_2", axis=1)
+
+    # test init params
+    assert transformer.method == "pearson"
+    assert transformer.threshold == 0.8
+
+    # test fit attrs
+    assert transformer.features_to_drop_ == {"var_2"}
+    assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
+    # test transform output
+    pd.testing.assert_frame_equal(X, df)
+
+
 def test_lower_threshold(df_correlated_single):
     transformer = DropCorrelatedFeatures(
         variables=None, method="pearson", threshold=0.6
