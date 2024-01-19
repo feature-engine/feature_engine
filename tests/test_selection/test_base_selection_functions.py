@@ -1,9 +1,10 @@
-import pytest
 import pandas as pd
+import pytest
 
 from feature_engine.selection.base_selection_functions import (
     _select_all_variables,
     _select_numerical_variables,
+    find_correlated_features,
 )
 
 
@@ -39,34 +40,64 @@ def test_select_all_variables(df):
 
     # select subset of variables, without confirm
     subset = ["Name", "City", "Age", "Marks"]
-    assert _select_all_variables(
-        df, variables=subset, confirm_variables=False, exclude_datetime=True
-    ) == subset
+    assert (
+        _select_all_variables(
+            df, variables=subset, confirm_variables=False, exclude_datetime=True
+        )
+        == subset
+    )
 
     # select subset of variables, with confirm
     subset = ["Name", "City", "Age", "Marks", "Hola"]
-    assert _select_all_variables(
-        df, variables=subset, confirm_variables=True, exclude_datetime=True
-    ) == subset[:-1]
+    assert (
+        _select_all_variables(
+            df, variables=subset, confirm_variables=True, exclude_datetime=True
+        )
+        == subset[:-1]
+    )
 
 
 def test_select_numerical_variables(df):
     # select all numerical variables
-    assert (
-            _select_numerical_variables(
-                df, variables=None, confirm_variables=False,
-            )
-            == ["Age", "Marks"]
-    )
+    assert _select_numerical_variables(
+        df,
+        variables=None,
+        confirm_variables=False,
+    ) == ["Age", "Marks"]
 
     # select subset of variables, without confirm
     subset = ["Marks"]
-    assert _select_numerical_variables(
-        df, variables=subset, confirm_variables=False,
-    ) == subset
+    assert (
+        _select_numerical_variables(
+            df,
+            variables=subset,
+            confirm_variables=False,
+        )
+        == subset
+    )
 
     # select subset of variables, with confirm
     subset = ["Marks", "Hola"]
-    assert _select_numerical_variables(
-        df, variables=subset, confirm_variables=True,
-    ) == subset[:-1]
+    assert (
+        _select_numerical_variables(
+            df,
+            variables=subset,
+            confirm_variables=True,
+        )
+        == subset[:-1]
+    )
+
+
+def test_find_correlated_features():
+    X = pd.DataFrame()
+    X["a"] = [1, -1, 0, 0, 0, 0]
+    X["b"] = [0, 0, 1, -1, 1, -1]
+    X["c"] = [0, 0, 1, -1, 0, 0]
+    X["d"] = [0, 0, 0, 0, 1, -1]
+
+    groups, drop = find_correlated_features(
+        X, variables=["a", "b", "c", "d"], method="pearson", threshold=0.7
+    )
+
+    assert groups == [{"b", "c", "d"}]
+    assert drop == {"c", "d"}

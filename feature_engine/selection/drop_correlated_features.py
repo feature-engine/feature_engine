@@ -28,7 +28,10 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 
-from .base_selection_functions import _select_numerical_variables
+from .base_selection_functions import (
+    _select_numerical_variables,
+    find_correlated_features,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -190,29 +193,9 @@ class DropCorrelatedFeatures(BaseSelector):
         # sort features alphabetically to make selector deterministic
         features = sorted(self.variables_)
 
-        # the correlation matrix
-        correlated_matrix = X[features].corr(method=self.method).to_numpy()
-
-        # the correlated pairs
-        correlated_mask = (abs(correlated_matrix) > self.threshold) - np.eye(
-            len(features)
+        correlated_groups, features_to_drop = find_correlated_features(
+            X, features, self.method, self.threshold
         )
-
-        examined = set()
-        correlated_groups = list()
-        features_to_drop = set()
-        for i, f_i in enumerate(features):
-            if f_i not in examined:
-                examined.add(f_i)
-                temp_set = set([f_i])
-                for j, f_j in enumerate(features):
-                    if f_j not in examined:
-                        if correlated_mask[i, j] == 1:
-                            examined.add(f_j)
-                            features_to_drop.add(f_j)
-                            temp_set.add(f_j)
-                if len(temp_set) > 1:
-                    correlated_groups.append(temp_set)
 
         self.features_to_drop_ = features_to_drop
         self.correlated_feature_sets_ = correlated_groups
