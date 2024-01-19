@@ -106,6 +106,7 @@ def test_default_params(df_correlated_single):
     # test fit attrs
     assert transformer.features_to_drop_ == {"var_2"}
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
+    assert transformer.correlated_feature_dict_ == {"var_1":{"var_2"}}
     # test transform output
     pd.testing.assert_frame_equal(X, df)
 
@@ -123,6 +124,7 @@ def test_default_params_different_var_order(df_correlated_single):
     # test fit attrs
     assert transformer.features_to_drop_ == {"var_2"}
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
+    assert transformer.correlated_feature_dict_ == {"var_1":{"var_2"}}
     # test transform output
     pd.testing.assert_frame_equal(X, df)
 
@@ -139,6 +141,7 @@ def test_lower_threshold(df_correlated_single):
     # test fit attrs
     assert transformer.features_to_drop_ == {"var_2", "var_4"}
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2", "var_4"}]
+    assert transformer.correlated_feature_dict_ == {"var_1":{"var_2", "var_4"}}
     # test transform output
     pd.testing.assert_frame_equal(X, df)
 
@@ -158,6 +161,10 @@ def test_more_than_1_correlated_group(df_correlated_double):
         {"var_0", "var_8"},
         {"var_4", "var_6", "var_7", "var_9"},
     ]
+    assert transformer.correlated_feature_dict_ == {
+        "var_0":{"var_8"},
+        "var_4": {"var_6", "var_7", "var_9"},
+    }
     # test transform output
     pd.testing.assert_frame_equal(X, df)
 

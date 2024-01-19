@@ -91,6 +91,14 @@ class DropCorrelatedFeatures(BaseSelector):
     correlated_feature_sets_:
         Groups of correlated features. Each list is a group of correlated features.
 
+    correlated_feature_dict_: dict
+        Dictionary containing the correlated feature groups. The key is the feature
+        against which all other features were evaluated. The values are the features
+        correlated with the key. Key + values should be the same as the set found in
+        `correlated_feature_groups`. We introduced this attribute in version 1.17.0
+        because from the set, it is not easy to see which feature will be retained and
+        which ones will be removed. The key is retained, the values will be dropped.
+
     {variables_}
 
     {feature_names_in_}
@@ -193,12 +201,13 @@ class DropCorrelatedFeatures(BaseSelector):
         # sort features alphabetically to make selector deterministic
         features = sorted(self.variables_)
 
-        correlated_groups, features_to_drop = find_correlated_features(
+        correlated_groups, features_to_drop, correlated_dict = find_correlated_features(
             X, features, self.method, self.threshold
         )
 
         self.features_to_drop_ = features_to_drop
         self.correlated_feature_sets_ = correlated_groups
+        self.correlated_feature_dict_ = correlated_dict
 
         # save input features
         self._get_feature_names_in(X)

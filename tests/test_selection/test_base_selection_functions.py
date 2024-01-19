@@ -89,15 +89,28 @@ def test_select_numerical_variables(df):
 
 
 def test_find_correlated_features():
+    # given a correlation-threshold of 0.7
+    # a is uncorrelated,
+    # b is collinear to c and d,
+    # c and d are collinear only to b.
     X = pd.DataFrame()
     X["a"] = [1, -1, 0, 0, 0, 0]
     X["b"] = [0, 0, 1, -1, 1, -1]
     X["c"] = [0, 0, 1, -1, 0, 0]
     X["d"] = [0, 0, 0, 0, 1, -1]
 
-    groups, drop = find_correlated_features(
+    groups, drop, dict_ = find_correlated_features(
         X, variables=["a", "b", "c", "d"], method="pearson", threshold=0.7
     )
 
     assert groups == [{"b", "c", "d"}]
     assert drop == {"c", "d"}
+    assert dict_ == {"b": {"c", "d"}}
+
+    groups, drop, dict_ = find_correlated_features(
+        X, variables=["a", "c", "b", "d"], method="pearson", threshold=0.7
+    )
+
+    assert groups == [{"c", "b"}]
+    assert drop == {"b"}
+    assert dict_ == {"c": {"b"}}
