@@ -87,7 +87,7 @@ def find_correlated_features(
     X: pd.DataFrame,
     variables: list[Union[str, int]],
     method: str,
-    threshold: int,
+    threshold: float,
 ):
     """
     Find groups of correlated variables.

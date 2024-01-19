@@ -31,7 +31,7 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 
-from .base_selection_functions import _select_numerical_variables
+from .base_selection_functions import _select_numerical_variables, find_correlated_features
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -54,10 +54,10 @@ class SmartCorrelatedSelection(BaseSelector):
     SmartCorrelatedSelection() finds groups of correlated features and then selects,
     from each group, a feature following certain criteria:
 
-    - Feature with least missing values
-    - Feature with most unique values
-    - Feature with highest variance
-    - Feature with highest importance according to an estimator
+    - Feature with the least missing values
+    - Feature with the most unique values
+    - Feature with the highest variance
+    - Feature with the highest importance according to an estimator
 
     SmartCorrelatedSelection() returns a dataframe containing from each group of
     correlated features, the selected variable, plus all original features that were
@@ -120,6 +120,14 @@ class SmartCorrelatedSelection(BaseSelector):
     ----------
     correlated_feature_sets_:
         Groups of correlated features. Each list is a group of correlated features.
+
+    correlated_feature_dict_: dict
+        Dictionary containing the correlated feature groups. The key is the feature
+        against which all other features were evaluated. The values are the features
+        correlated with the key. Key + values should be the same as the set found in
+        `correlated_feature_groups`. We introduced this attribute in version 1.17.0
+        because from the set, it is not easy to see which feature will be retained and
+        which ones will be removed. The key is retained, the values will be dropped.
 
     features_to_drop_:
         The correlated features to remove from the dataset.
@@ -196,10 +204,10 @@ class SmartCorrelatedSelection(BaseSelector):
         confirm_variables: bool = False,
     ):
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
-            raise ValueError("threshold must be a float between 0 and 1")
+            raise ValueError(f"threshold must be a float between 0 and 1. Got {threshold} instead")
 
         if missing_values not in ["raise", "ignore"]:
-            raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
+            raise ValueError(f"missing_values takes only values 'raise' or 'ignore'. Got {missing_values} instead.")
 
         if selection_method not in [
             "missing_values",
@@ -209,19 +217,19 @@ class SmartCorrelatedSelection(BaseSelector):
         ]:
             raise ValueError(
                 "selection_method takes only values 'missing_values', 'cardinality', "
-                "'variance' or 'model_performance'."
+                f"'variance' or 'model_performance'. Got {selection_method} instead."
             )
 
         if selection_method == "model_performance" and estimator is None:
             raise ValueError(
                 "Please provide an estimator, e.g., "
                 "RandomForestClassifier or select another "
-                "selection_method"
+                "selection_method."
             )
 
         if selection_method == "missing_values" and missing_values == "raise":
             raise ValueError(
-                "To select the variables with least missing values, we "
+                "To select the variables with the least missing values, we "
                 "need to allow this transformer to contemplate variables "
                 "with NaN by setting missing_values to 'ignore."
             )
@@ -267,7 +275,7 @@ class SmartCorrelatedSelection(BaseSelector):
             _check_contains_inf(X, self.variables_)
 
         if self.selection_method == "model_performance" and y is None:
-            raise ValueError("y is needed to fit the transformer")
+            raise ValueError("y is needed to fit the transformer.")
 
         # FIND CORRELATED FEATURES
         # ========================
