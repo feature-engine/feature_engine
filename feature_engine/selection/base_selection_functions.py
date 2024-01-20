@@ -2,6 +2,7 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import cross_validate
 
 from feature_engine.variable_handling import (
     check_all_variables,
@@ -156,3 +157,57 @@ def find_correlated_features(
                 correlated_dict[f_i] = temp_set.difference({f_i})
 
     return correlated_groups, features_to_drop, correlated_dict
+
+
+def single_feature_performance(
+    X: pd.DataFrame,
+    y: pd.Series,
+    variables: List[Union[str, int]],
+    estimator,
+    cv,
+    scoring,
+):
+    """
+    Trains one estimator per feature and determines the performance of that estimator.
+
+    Parameters
+    ----------
+    X: pandas dataframe of shape = [n_samples, n_features]
+       The input dataframe
+
+    y: array-like of shape (n_samples)
+       Target variable. Required to train the estimator.
+
+    variables: list
+        The variables to examine.
+
+    estimator:
+        Any Scikit-learn estimator.
+
+    cv:
+        Cross-validation scheme. Any supported by the Scikit-learn estimator.
+
+    scoring:
+        The performance metric. Any supported by the Scikit-learn estimator.
+
+    Returns
+    -------
+    feature_performance: dict
+        A dictionary with the feature as key and the performance of the model using
+        that feature as value.
+    """
+    feature_performance = {}
+
+    # train a model for every feature and store the performance
+    for feature in variables:
+        model = cross_validate(
+            estimator,
+            X[feature].to_frame(),
+            y,
+            cv=cv,
+            return_estimator=False,
+            scoring=scoring,
+        )
+
+        feature_performance[feature] = model["test_score"].mean()
+    return feature_performance

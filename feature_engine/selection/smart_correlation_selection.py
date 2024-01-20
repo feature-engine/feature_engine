@@ -1,7 +1,6 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.model_selection import cross_validate
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -31,8 +30,11 @@ from feature_engine.dataframe_checks import (
 )
 from feature_engine.selection.base_selector import BaseSelector
 
-from .base_selection_functions import _select_numerical_variables, find_correlated_features
-from . import SelectBySingleFeaturePerformance
+from .base_selection_functions import (
+    _select_numerical_variables,
+    find_correlated_features,
+    single_feature_performance,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -55,13 +57,13 @@ class SmartCorrelatedSelection(BaseSelector):
     SmartCorrelatedSelection() finds groups of correlated features and then selects,
     from each group, a feature following certain criteria:
 
-    - Feature with the least missing values
-    - Feature with the most unique values
-    - Feature with the highest variance
-    - Feature with the highest importance according to an estimator
+    - Feature with the least missing values.
+    - Feature with the highest cardinality (greatest number of unique values).
+    - Feature with the highest variance.
+    - Feature with the highest importance according to an estimator.
 
     SmartCorrelatedSelection() returns a dataframe containing from each group of
-    correlated features, the selected variable, plus all original features that were
+    correlated features, the selected variable, plus all the features that were
     not correlated to any other.
 
     Correlation is calculated with `pandas.corr()`.
@@ -177,8 +179,8 @@ class SmartCorrelatedSelection(BaseSelector):
     2   3   0
     3   1   0
 
-    It is also possible alternative selection methods, in this case seleting
-    features with higher variance:
+    It is also possible to use alternative selection methods. Here, we select those
+    features with the higher variance:
 
     >>> X = pd.DataFrame(dict(x1 = [2,4,3,1],
     >>>                 x2 = [1000,2000,1500,500],
@@ -205,10 +207,14 @@ class SmartCorrelatedSelection(BaseSelector):
         confirm_variables: bool = False,
     ):
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
-            raise ValueError(f"threshold must be a float between 0 and 1. Got {threshold} instead")
+            raise ValueError(
+                f"threshold must be a float between 0 and 1. Got {threshold} instead"
+            )
 
         if missing_values not in ["raise", "ignore"]:
-            raise ValueError(f"missing_values takes only values 'raise' or 'ignore'. Got {missing_values} instead.")
+            raise ValueError(
+                f"missing_values takes only values 'raise' or 'ignore'. Got {missing_values} instead."
+            )
 
         if selection_method not in [
             "missing_values",
@@ -293,28 +299,27 @@ class SmartCorrelatedSelection(BaseSelector):
 
         # select best performing feature according to estimator
         if self.selection_method == "model_performance":
+            correlated_dict = dict()
             for feature_group in correlated_groups:
-                sel_ = SelectBySingleFeaturePerformance(
-                    variables=feature_group,
-                    estimator=self.estimator,
-                    scoring=self.scoring,
-                    cv = self.cv
+                feature_performance = single_feature_performance(
+                    X,
+                    y,
+                    feature_group,
+                    self.estimator,
+                    self.cv,
+                    self.scoring,
                 )
-                sel_.fit(X, y)
-                # TODO pick up best feature from dictionary
-                # somehow rearrange the list of selected features and
-                # features to drop
+                # get most important feature
+                f_i = (
+                    pd.Series(feature_performance).sort_values(ascending=False).index[0]
+                )
+                correlated_dict[f_i] = feature_group.difference({f_i})
 
+            features_to_drop = set(correlated_dict.values())
 
         self.features_to_drop_ = features_to_drop
         self.correlated_feature_sets_ = correlated_groups
         self.correlated_feature_dict_ = correlated_dict
-
-
-
-        self.features_to_drop_ = [
-            f for f in self.variables_ if f not in _selected_features
-        ]
 
         # save input features
         self._get_feature_names_in(X)
