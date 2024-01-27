@@ -122,9 +122,9 @@ def find_correlated_features(
     correlated_feature_groups: set
         Sets of correlated feature groups.
 
-    features_to_drop:
-        The list of features that have been found to be correlated to at least another
-        feature.
+    features_to_drop: list
+        The list of features that have been found to be correlated to at least one
+        other feature.
 
     correlated_feature_dict: dict
         Dictionary containing the correlated feature groups. The key is the feature
@@ -140,7 +140,7 @@ def find_correlated_features(
 
     examined = set()
     correlated_groups = list()
-    features_to_drop = set()
+    features_to_drop = list()
     correlated_dict = {}
     for i, f_i in enumerate(variables):
         if f_i not in examined:
@@ -150,7 +150,7 @@ def find_correlated_features(
                 if f_j not in examined:
                     if correlated_mask[i, j] == 1:
                         examined.add(f_j)
-                        features_to_drop.add(f_j)
+                        features_to_drop.append(f_j)
                         temp_set.add(f_j)
             if len(temp_set) > 1:
                 correlated_groups.append(temp_set)

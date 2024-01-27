@@ -1,3 +1,4 @@
+from itertools import chain
 from typing import List, Union
 
 import pandas as pd
@@ -285,11 +286,24 @@ class SmartCorrelatedSelection(BaseSelector):
             raise ValueError("y is needed to fit the transformer.")
 
         if self.selection_method == "missing_values":
-            features = X[self.variables_].isnull().sum().sort_values(ascending=True)
+            features = (
+                X[self.variables_]
+                .isnull()
+                .sum()
+                .sort_values(ascending=True)
+                .index.to_list()
+            )
         elif self.selection_method == "variance":
-            features = X[self.variables_].std().sort_values(ascending=False)
+            features = (
+                X[self.variables_].std().sort_values(ascending=False).index.to_list()
+            )
         elif self.selection_method == "cardinality":
-            features = X[self.variables_].nunique().sort_values(ascending=False)
+            features = (
+                X[self.variables_]
+                .nunique()
+                .sort_values(ascending=False)
+                .index.to_list()
+            )
         else:
             features = sorted(self.variables_)
 
@@ -315,7 +329,13 @@ class SmartCorrelatedSelection(BaseSelector):
                 )
                 correlated_dict[f_i] = feature_group.difference({f_i})
 
-            features_to_drop = set(correlated_dict.values())
+            # convoluted way to pick up the variables from the sets in the
+            # order shown in the dictionary. Helps make transformer deterministic
+            features_to_drop = [
+                variable
+                for set_ in correlated_dict.values()
+                for variable in sorted(set_)
+            ]
 
         self.features_to_drop_ = features_to_drop
         self.correlated_feature_sets_ = correlated_groups

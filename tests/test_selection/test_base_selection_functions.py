@@ -106,7 +106,7 @@ def test_find_correlated_features():
     )
 
     assert groups == [{"b", "c", "d"}]
-    assert drop == {"c", "d"}
+    assert drop == ["c", "d"]
     assert dict_ == {"b": {"c", "d"}}
 
     groups, drop, dict_ = find_correlated_features(
@@ -114,7 +114,7 @@ def test_find_correlated_features():
     )
 
     assert groups == [{"c", "b"}]
-    assert drop == {"b"}
+    assert drop == ["b"]
     assert dict_ == {"c": {"b"}}
 
 

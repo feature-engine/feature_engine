@@ -56,6 +56,7 @@ def test_model_performance_single_corr_group(df_single):
     # test fit attrs
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
     assert transformer.features_to_drop_ == ["var_1"]
+    assert transformer.correlated_feature_dict_ == {"var_2": {"var_1"}}
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
 
@@ -87,11 +88,15 @@ def test_model_performance_2_correlated_groups(df_test):
         {"var_4", "var_6", "var_7", "var_9"},
     ]
     assert transformer.features_to_drop_ == [
+        "var_8",
         "var_4",
         "var_6",
-        "var_8",
         "var_9",
     ]
+    assert transformer.correlated_feature_dict_ == {
+        "var_0": {"var_8"},
+        "var_7": {"var_4", "var_6", "var_9"},
+    }
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
 
@@ -161,11 +166,15 @@ def test_cardinality_2_correlated_groups(df_test):
     ].copy()
 
     assert transformer.features_to_drop_ == [
-        "var_0",
         "var_6",
         "var_7",
         "var_9",
+        "var_0",
     ]
+    assert transformer.correlated_feature_dict_ == {
+        "var_8": {"var_0"},
+        "var_4": {"var_6", "var_7", "var_9"},
+    }
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
 
