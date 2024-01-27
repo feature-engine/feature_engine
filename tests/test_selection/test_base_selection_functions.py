@@ -1,10 +1,12 @@
 import pandas as pd
 import pytest
+from sklearn.ensemble import RandomForestClassifier
 
 from feature_engine.selection.base_selection_functions import (
     _select_all_variables,
     _select_numerical_variables,
     find_correlated_features,
+    single_feature_performance,
 )
 
 
@@ -114,3 +116,27 @@ def test_find_correlated_features():
     assert groups == [{"c", "b"}]
     assert drop == {"b"}
     assert dict_ == {"c": {"b"}}
+
+
+def test_single_feature_performance(df_test):
+    X, y = df_test
+    rf = RandomForestClassifier(random_state=1)
+    variables = X.columns.to_list()
+
+    result = single_feature_performance(X, y, variables, rf, 3, "roc_auc")
+
+    expected = {
+        "var_0": 0.5957642619540211,
+        "var_1": 0.5365534287221033,
+        "var_2": 0.5001855546283257,
+        "var_3": 0.4752954458526748,
+        "var_4": 0.9780875304971691,
+        "var_5": 0.5065441419357082,
+        "var_6": 0.9758243290622809,
+        "var_7": 0.994571685008432,
+        "var_8": 0.5164434795458892,
+        "var_9": 0.9543427678969847,
+        "var_10": 0.47404183834906727,
+        "var_11": 0.5227164067525513,
+    }
+    assert result == expected
