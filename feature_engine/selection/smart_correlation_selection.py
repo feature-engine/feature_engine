@@ -1,4 +1,3 @@
-from itertools import chain
 from typing import List, Union
 
 import pandas as pd
@@ -209,12 +208,13 @@ class SmartCorrelatedSelection(BaseSelector):
     ):
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError(
-                f"threshold must be a float between 0 and 1. Got {threshold} instead"
+                f"`threshold` must be a float between 0 and 1. Got {threshold} instead."
             )
 
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
-                f"missing_values takes only values 'raise' or 'ignore'. Got {missing_values} instead."
+                "missing_values takes only values 'raise' or 'ignore'. "
+                f"Got {missing_values} instead."
             )
 
         if selection_method not in [
@@ -237,9 +237,8 @@ class SmartCorrelatedSelection(BaseSelector):
 
         if selection_method == "missing_values" and missing_values == "raise":
             raise ValueError(
-                "To select the variables with the least missing values, we "
-                "need to allow this transformer to contemplate variables "
-                "with NaN by setting missing_values to 'ignore."
+                "When `selection_method = 'missing_values'`, you need to set "
+                f"`missing_values` to `'ignore'`. Got {missing_values} instead."
             )
 
         super().__init__(confirm_variables)
@@ -283,7 +282,10 @@ class SmartCorrelatedSelection(BaseSelector):
             _check_contains_inf(X, self.variables_)
 
         if self.selection_method == "model_performance" and y is None:
-            raise ValueError("y is needed to fit the transformer.")
+            raise ValueError(
+                "When `selection_method = 'model_performance'` y is needed to "
+                "fit the transformer."
+            )
 
         if self.selection_method == "missing_values":
             features = (

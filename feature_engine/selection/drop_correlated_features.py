@@ -1,6 +1,5 @@
 from typing import List, Union
 
-import numpy as np
 import pandas as pd
 
 from feature_engine._check_init_parameters.check_variables import (
