@@ -155,7 +155,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         if threshold:
             if not isinstance(threshold, (int, float)):
                 raise ValueError(
-                    "`threshold` can only be integer, float or None . "
+                    "`threshold` can only be integer, float or None. "
                     f"Got {threshold} instead."
                 )
 
@@ -180,7 +180,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Determines model performance based on single features. Select features whose
+        Determines model performance based on single features. Selects features whose
         performance is above the threshold.
 
         Parameters
