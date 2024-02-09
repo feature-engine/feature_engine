@@ -108,9 +108,28 @@ Note that in the second group, 4 features are correlated among themselves.
 
 .. code:: python
 
-    [{'var_0', 'var_8'}, {'var_4', 'var_6', 'var_7', 'var_9'}]
+    [{'var_4', 'var_6', 'var_7', 'var_9'}, {'var_0', 'var_8'}]
 
-In the following attribute we find the features that will be removed from the dataset:
+We can identify from each group which feature will be retained and which ones removed
+by inspecting the dictionary:
+
+.. code:: python
+
+    tr.correlated_feature_dict_
+
+In the dictionary below we see that from the first correlated group, `var_7` is a key,
+hence it will be retained, whereas variables 4, 6 and  9 are values, which means that
+they are correlated to `var_7` and will therefore be removed.
+
+.. code:: python
+
+   {'var_7': {'var_4', 'var_6', 'var_9'}, 'var_8': {'var_0'}}
+
+Similarly, `var_8` is a key and will be retained, whereas the `var_0` is a value, which
+means that it was found correlated to `var_8` and will therefore be removed.
+
+The features that will be removed from the dataset are stored in a different attribute
+as well:
 
 ..  code:: python
 
@@ -118,7 +137,7 @@ In the following attribute we find the features that will be removed from the da
 
 .. code:: python
 
-   ['var_0', 'var_4', 'var_6', 'var_9']
+   ['var_6', 'var_4', 'var_9', 'var_0']
 
 If we now go ahead and print the transformed data, we see that the correlated features
 have been removed.
@@ -142,6 +161,7 @@ have been removed.
     2 -0.852703
     3  0.484649
     4 -0.186530
+
 
 
 More details
