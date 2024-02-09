@@ -99,8 +99,8 @@ class SmartCorrelatedSelection(BaseSelector):
         Takes the values "missing_values", "cardinality", "variance" and
         "model_performance".
 
-        **"missing_values"**: keeps the feature from the correlated group with least
-        missing observations
+        **"missing_values"**: keeps the feature from the correlated group with the least
+        missing observations.
 
         **"cardinality"**: keeps the feature from the correlated group with the highest
         cardinality.
@@ -108,8 +108,9 @@ class SmartCorrelatedSelection(BaseSelector):
         **"variance"**: keeps the feature from the correlated group with the highest
         variance.
 
-        **"model_performance"**: trains a machine learning model using the correlated
-        feature group and retains the feature with the highest importance.
+        **"model_performance"**: trains a machine learning model using each of the
+        features in a correlated group and retains the feature with the highest
+        importance.
 
     {estimator}
 
