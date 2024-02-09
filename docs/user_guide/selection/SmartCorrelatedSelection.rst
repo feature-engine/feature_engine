@@ -12,12 +12,12 @@ drop?
 :class:`SmartCorrelatedSelection` tries to answer this question.
 
 From a group of correlated variables, the :class:`SmartCorrelatedSelection` will retain
-the one with:
+the variable with:
 
 - the highest variance
 - the highest cardinality
 - the least missing data
-- the most important (based on embedded selection methods)
+- the most important (based on single feature machine learning models)
 
 And drop the rest.
 
@@ -35,11 +35,10 @@ Then, from each group of correlated features, it will try and identify the best 
 based on the above criteria.
 
 If the criteria is based on feature importance, :class:`SmartCorrelatedSelection` will
-train a machine learning model using the correlated feature group, derive the feature importance
-from this model, end then keep the feature with the highest important.
-
-:class:`SmartCorrelatedSelection` works with machine learning models that derive coefficients
-or feature importance values.
+train a machine learning model using each one of the features in a correlated feature
+group, calculate the models performance, and select the feature that returned the highest
+performing model. In other words, it trains single feature models, and retains the
+feature of the highest performing model.
 
 If the criteria is based on variance or cardinality, :class:`SmartCorrelatedSelection` will
 determine these attributes for each feature in the group and retain that one with the highest.
