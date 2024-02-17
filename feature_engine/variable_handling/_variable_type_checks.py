@@ -34,7 +34,7 @@ def _is_convertible_to_dt(column: pd.Series) -> bool:
 def _is_convertible_to_num(column: pd.Series) -> bool:
     try:
         ser = pd.to_numeric(column)
-    except ValueError:
+    except (ValueError, TypeError):
         ser = column
     return is_numeric(ser)
 
