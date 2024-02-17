@@ -24,18 +24,6 @@ init_pypirc: &init_pypirc
       echo -e "username = $FE_PYPI_USER" >> ~/.pypirc
       echo -e "password = $FE_PYPI_API_KEY" >> ~/.pypirc
 jobs:
-  test_feature_engine_py38:
-    docker:
-      - image: cimg/python:3.8.0
-    working_directory: ~/project
-    steps:
-      - checkout:
-          path: ~/project
-      - *prepare_tox
-      - run:
-          name: Run tests with Python 3.8
-          command: |
-            tox -e py38
   test_feature_engine_py39:
     docker:
       - image: cimg/python:3.9.0
@@ -133,7 +121,6 @@ workflows:
   version: 2
   test-all:
     jobs:
-      - test_feature_engine_py38
       - test_feature_engine_py39
       - test_feature_engine_py310
       - test_style
@@ -146,7 +133,6 @@ workflows:
                 - 1.6.X
       - package_and_upload_to_pypi:
           requires:
-            - test_feature_engine_py38
             - test_feature_engine_py39
             - test_feature_engine_py310
             - test_style
