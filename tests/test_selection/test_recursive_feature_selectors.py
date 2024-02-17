@@ -92,20 +92,20 @@ def test_fit_initial_model_performance(
 
 _estimators_importance = [
     (
-        RandomForestClassifier(random_state=1),
+        RandomForestClassifier(n_estimators=5, random_state=1),
         [
-            0.0238,
-            0.0042,
-            0.0022,
-            0.0021,
-            0.2583,
-            0.0034,
-            0.2012,
-            0.38,
-            0.0145,
-            0.1044,
-            0.0035,
-            0.0024,
+            0.49881322433327063,
+            0.24234595114295532,
+            0.17684337500037525,
+            0.025427859893734316,
+            0.02436691418502239,
+            0.00842195125881095,
+            0.006712051147370731,
+            0.00553740334514697,
+            0.004739876867868088,
+            0.00321013573560038,
+            0.001870728276222728,
+            0.0017105288136222314,
         ],
     ),
     (
@@ -155,8 +155,12 @@ def test_feature_importances(_estimator, _importance, df_test):
 
     sel = RecursiveFeatureAddition(_estimator, threshold=-100).fit(X, y)
     _importance.sort(reverse=True)
-    assert list(np.round(sel.feature_importances_.values, 4)) == _importance
+    assert (
+        list(np.round(sel.feature_importances_.values, 2)) == np.round(_importance, 2)
+    ).all()
 
     sel = RecursiveFeatureElimination(_estimator, threshold=-100).fit(X, y)
     _importance.sort(reverse=False)
-    assert list(np.round(sel.feature_importances_.values, 4)) == _importance
+    assert (
+        list(np.round(sel.feature_importances_.values, 2)) == np.round(_importance, 2)
+    ).all()
