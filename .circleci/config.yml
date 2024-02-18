@@ -4,7 +4,7 @@ orbs:
 
 defaults: &defaults
   docker:
-    - image: cimg/python:3.9.0
+    - image: cimg/python:3.10.0
   working_directory: ~/project
 
 prepare_tox: &prepare_tox
@@ -50,7 +50,7 @@ jobs:
             tox -e py310
   test_feature_engine_py311:
     docker:
-      - image: cimg/python:3.11.0
+      - image: cimg/python:3.11.7
     working_directory: ~/project
     steps:
       - checkout:
@@ -62,7 +62,7 @@ jobs:
             tox -e py311
   test_feature_engine_py312:
     docker:
-      - image: cimg/python:3.12.0
+      - image: cimg/python:3.12.1
     working_directory: ~/project
     steps:
       - checkout:
