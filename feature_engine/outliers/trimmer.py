@@ -91,7 +91,7 @@ class OutlierTrimmer(WinsorizerBase, TransformXyMixing):
         Remove outliers.
 
     transform_x_y:
-        Remove rows with outliers from the train set and target.
+        Remove rows with outliers from X set and y.
 
     Examples
     --------

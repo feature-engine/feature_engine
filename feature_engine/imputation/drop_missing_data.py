@@ -88,7 +88,7 @@ class DropMissingData(BaseImputer, TransformXyMixing):
         Remove rows with missing data.
 
     transform_x_y:
-        Remove rows with missing data from the train set and target.
+        Remove rows with missing data from X and y.
 
     Examples
     --------
