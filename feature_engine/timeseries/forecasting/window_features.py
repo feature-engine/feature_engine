@@ -114,6 +114,9 @@ class WindowFeatures(BaseForecastTransformer):
     transform:
         Add window features.
 
+    transform_x_y:
+        Transform X and then remove rows with missing data from X and target.
+
     {fit_transform}
 
     See Also

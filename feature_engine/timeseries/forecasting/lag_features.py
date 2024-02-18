@@ -1,9 +1,11 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
+from collections.abc import Hashable
 from typing import List, Union
 
 import pandas as pd
+from pandas._libs import lib
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -67,12 +69,21 @@ class LagFeatures(BaseForecastTransformer):
         will be created for each one of the frequency values in the list. If freq is not
         None, then this parameter overrides the parameter `periods`.
 
+    fill_value: object, optional
+        The scalar value to use for newly introduced missing values. the default
+        depends on the dtype of self. For numeric data, np.nan is used. For datetime,
+        timedelta, or period data, etc. NaT is used. For extension dtypes,
+        self.dtype.na_value is used.
+
     sort_index: bool, default=True
         Whether to order the index of the dataframe before creating the lag features.
 
     {missing_values}
 
     {drop_original}
+
+    drop_na: bool, default=False.
+        Whether the NAN introduced in the lag features should be removed.
 
     Attributes
     ----------
@@ -91,6 +102,9 @@ class LagFeatures(BaseForecastTransformer):
 
     transform:
         Add lag features.
+
+    transform_x_y:
+        Transform X and then remove rows with missing data from X and target.
 
     See Also
     --------
@@ -124,9 +138,11 @@ class LagFeatures(BaseForecastTransformer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         periods: Union[int, List[int]] = 1,
         freq: Union[str, List[str], None] = None,
+        fill_value: Hashable = lib.no_default,
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
+        drop_na: bool = False,
     ) -> None:
 
         if not (
@@ -151,10 +167,11 @@ class LagFeatures(BaseForecastTransformer):
                 "sort_index takes values True and False." f"Got {sort_index} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original)
+        super().__init__(variables, missing_values, drop_original, drop_na)
 
         self.periods = periods
         self.freq = freq
+        self.fill_value = fill_value
         self.sort_index = sort_index
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -182,6 +199,7 @@ class LagFeatures(BaseForecastTransformer):
                 for fr in self.freq:
                     tmp = X[self.variables_].shift(
                         freq=fr,
+                        fill_value=self.fill_value,
                         axis=0,
                     )
                     df_ls.append(tmp)
@@ -190,6 +208,7 @@ class LagFeatures(BaseForecastTransformer):
             else:
                 tmp = X[self.variables_].shift(
                     freq=self.freq,
+                    fill_value=self.fill_value,
                     axis=0,
                 )
 
@@ -199,6 +218,7 @@ class LagFeatures(BaseForecastTransformer):
                 for pr in self.periods:
                     tmp = X[self.variables_].shift(
                         periods=pr,
+                        fill_value=self.fill_value,
                         axis=0,
                     )
                     df_ls.append(tmp)
@@ -207,6 +227,7 @@ class LagFeatures(BaseForecastTransformer):
             else:
                 tmp = X[self.variables_].shift(
                     periods=self.periods,
+                    fill_value=self.fill_value,
                     axis=0,
                 )
 
@@ -216,6 +237,9 @@ class LagFeatures(BaseForecastTransformer):
 
         if self.drop_original:
             X = X.drop(self.variables_, axis=1)
+
+        if self.drop_na:
+            X = X.dropna(subset = tmp.columns, axis=1)
 
         return X
 

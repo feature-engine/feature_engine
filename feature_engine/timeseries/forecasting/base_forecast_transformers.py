@@ -4,7 +4,10 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
+from feature_engine._base_transformers.mixins import (
+    GetFeatureNamesOutMixin,
+    TransformXyMixing,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -38,7 +41,9 @@ from feature_engine.variable_handling import (
     fit=_fit_not_learn_docstring,
     n_features_in_=_n_features_in_docstring,
 )
-class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
+class BaseForecastTransformer(
+    BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin, TransformXyMixing
+):
     """
     Shared methods across time-series forecasting transformers.
 
@@ -50,6 +55,9 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
     {missing_values}
 
     {drop_original}
+
+    drop_na: bool, default=False.
+        Whether the NAN introduced in the created features should be removed.
 
     Attributes
     ----------
@@ -64,6 +72,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
+        drop_na: bool = False,
     ) -> None:
 
         if missing_values not in ["raise", "ignore"]:
@@ -81,6 +90,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         self.variables = _check_variables_input_value(variables)
         self.missing_values = missing_values
         self.drop_original = drop_original
+        self.drop_na = drop_na
 
     def _check_index(self, X: pd.DataFrame):
         """
