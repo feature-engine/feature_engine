@@ -35,7 +35,7 @@ def df_single():
 def df_var_car():
     # create dataframe with known variance and cardinality:
 
-    # at threshold 0.4
+    # at threshold 0.506
 
     # a=> no correlated
     # b => correlated with c and d
@@ -46,12 +46,12 @@ def df_var_car():
 
     X = pd.DataFrame(
         {
-            "var_a": [1, -1, 0, 0, 0, 0, 0, 0],
-            "var_b": [0, 0, 1, -1, 2, -2, 0, 0],
-            "var_c": [0, 0, 10, -10, 0, 0, 0, 0],
-            "var_d": [0, 0, 0, 0, 1, -1, 0, 0],
-            "var_e": [0, 0, 0, 0, 0, -1, 2, 3],
-            "var_f": [0, 0, 0, 0, 0, -1, 20, 30],
+            "var_a": [1, -1, 0, 0, 0, 0, 0, 0, 0],
+            "var_b": [0, 0, 1, -1, 2, -2, 0, 0, 1],
+            "var_c": [0, 0, 10, -10, 0, 0, 0, 0, 9],
+            "var_d": [0, 0, 0, 0, 1, -1, 0, 0, 1],
+            "var_e": [0, 0, 0, 0, 0, -1, 2, 3, 4],
+            "var_f": [0, 0, 0, 0, 0, -1, 20, 30, 30],
         }
     )
 
@@ -234,17 +234,17 @@ def test_selection_method_variance(df_var_car):
     X = df_var_car
 
     # std of each variable:
-    # var_f     11.957514
-    # var_c     5.345225
-    # var_e     1.309307
-    # var_b     1.195229
-    # var_a     0.534522
-    # var_d     0.534522
+    # var_f  13.727507
+    # var_c  5.830952
+    # var_e  1.691482
+    # var_b  1.166667
+    # var_d  0.600925
+    # var_a  0.500000
 
     transformer = SmartCorrelatedSelection(
         variables=None,
         method="pearson",
-        threshold=0.4,
+        threshold=0.506,
         missing_values="raise",
         selection_method="variance",
         estimator=None,
@@ -265,17 +265,17 @@ def test_selection_method_cardinality(df_var_car):
     X = df_var_car
 
     # cardinality of variables:
-    # var_b    5
-    # var_e    4
-    # var_f    4
-    # var_a    3
-    # var_c    3
-    # var_d    3
+    # var_b   5
+    # var_e   5
+    # var_c   4
+    # var_f   4
+    # var_a   3
+    # var_d   3
 
     transformer = SmartCorrelatedSelection(
         variables=None,
         method="pearson",
-        threshold=0.4,
+        threshold=0.506,
         missing_values="raise",
         selection_method="cardinality",
         estimator=None,
