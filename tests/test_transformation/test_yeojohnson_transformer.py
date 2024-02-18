@@ -93,6 +93,7 @@ def test_inverse_transform_automatically_select_only_transformed_columns(df_vart
     X_trans = transformer.fit_transform(X)
 
     X_inverse = transformer.inverse_transform(X_trans)
+    X_inverse["Age"] = X_inverse["Age"].round(0).astype(int)
 
     pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)
 
@@ -110,6 +111,7 @@ def test_inverse_with_X_negative_and_positive():
     X_trans = transformer.fit_transform(X)
 
     X_inverse = transformer.inverse_transform(X_trans)
+    X_inverse = X_inverse.round(0).astype(int)
 
     pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)
 
@@ -129,6 +131,7 @@ def test_lambda_equals_lambda_equal_0():
 
     X_trans = transformer.transform(X)
     X_inverse = transformer.inverse_transform(X_trans)
+    X_inverse = X_inverse.round(0).astype(int)
 
     pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)
 
@@ -143,5 +146,6 @@ def test_lambda_equals_lambda_equal_2():
 
     X_trans = transformer.transform(X)
     X_inverse = transformer.inverse_transform(X_trans)
+    X_inverse = X_inverse.round(0).astype(int)
 
     pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)

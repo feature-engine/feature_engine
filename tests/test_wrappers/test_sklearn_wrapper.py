@@ -89,7 +89,7 @@ def test_error_when_transformer_is_estimator(transformer, df_na):
         MissingIndicator(),
         KBinsDiscretizer(encode="one_hot"),
         SimpleImputer(add_indicator=True),
-        OneHotEncoder(sparse=True),
+        _OneHotEncoder(sparse=True),
     ],
 )
 def test_error_not_implemented_transformer(transformer, df_na):
