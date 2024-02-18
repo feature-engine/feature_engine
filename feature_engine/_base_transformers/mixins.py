@@ -16,25 +16,26 @@ from feature_engine.variable_handling import check_numerical_variables
 class TransformXyMixing:
     def transform_x_y(self, X: pd.DataFrame, y: pd.Series):
         """
-        Transform X and then remove the same rows from y.
+        Transform, align and adjust both X and y based on the transformations applied
+        to X, ensuring that they correspond to the same set of rows after removal.
 
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
-            The dataframe to be transformed.
+            The dataframe to transform.
 
-        y: pandas Series
-            The target variable. It will be transformed.
+        y: pandas Series of shape = [n_samples]
+            The target variable to transform.
 
         Returns
         -------
         X_new: pandas dataframe
-            The transformed dataframe of shape [n_samples , n_features]. It may contain
-            less rows than the original dataset.
+            The transformed dataframe of shape [n_samples - n_rows, n_features]. It may
+            contain less rows than the original dataset.
 
         y_new: pandas Series
-            The transformed target variable. It will contain as many rows as those left
-            in X_new.
+            The transformed target variable of shape [n_samples - n_rows]. It contains
+            as many rows as those left in X_new.
         """
         X = self.transform(X)
         y = y.loc[X.index]
