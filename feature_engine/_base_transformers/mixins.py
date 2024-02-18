@@ -13,6 +13,34 @@ from feature_engine.dataframe_checks import (
 from feature_engine.variable_handling import check_numerical_variables
 
 
+class TransformXyMixing:
+    def transform_x_y(self, X: pd.DataFrame, y: pd.Series):
+        """
+        Transform X and then remove the same rows from y.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The dataframe to be transformed.
+
+        y: pandas Series
+            The target variable. It will be transformed.
+
+        Returns
+        -------
+        X_new: pandas dataframe
+            The transformed dataframe of shape [n_samples , n_features]. It may contain
+            less rows than the original dataset.
+
+        y_new: pandas Series
+            The transformed target variable. It will contain as many rows as those left
+            in X_new.
+        """
+        X = self.transform(X)
+        y = y.loc[X.index]
+        return X, y
+
+
 class FitFromDictMixin:
     def _fit_from_dict(self, X: pd.DataFrame, user_dict_: Dict) -> pd.DataFrame:
         """
