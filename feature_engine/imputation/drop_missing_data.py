@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
+from feature_engine._base_transformers.mixins import TransformXyMixing
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -25,27 +26,28 @@ from feature_engine.variable_handling import check_all_variables, find_all_varia
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class DropMissingData(BaseImputer):
+class DropMissingData(BaseImputer, TransformXyMixing):
     """
-    DropMissingData() will delete rows containing missing values. It provides
-    similar functionality to pandas.drop_na().
+    DropMissingData() deletes rows containing missing values. It provides
+    similar functionality to `pandas.drop_na()`, but within the `fit` and `transform`
+    framework.
 
     It works for numerical and categorical variables. You can enter the list of
-    variables for which missing values should be evaluated. Alternatively, the imputer
-    will evaluate missing data in all variables in the dataframe.
+    variables for which missing values should be removed. Alternatively, the imputer
+    will find and remove missing data in all dataframe variables.
 
     More details in the :ref:`User Guide <drop_missing_data>`.
 
     Parameters
     ----------
     variables: list, default=None
-        The list of variables to consider for the imputation. If None, the imputer will
-        evaluate missing data in all variables in the dataframe. Alternatively, the
+        The list of variables to consider for the imputation. If `None`, the imputer
+        will check missing data in all variables in the dataframe. Alternatively, the
         imputer will evaluate missing data only in the variables in the list.
 
-        Note that if `missing_only=True` only variables with missing data in the train
-        set will be considered to drop a row, which might be a subset of the indicated
-        list.
+        Note that if `missing_only=True`, missing data will be removed from variables
+        that had missing data in the train set. These might be a subset of the
+        variables indicated in the list.
 
     missing_only: bool, default=True
         If `True`, rows will be dropped when they show missing data in variables that
@@ -84,6 +86,9 @@ class DropMissingData(BaseImputer):
 
     transform:
         Remove rows with missing data.
+
+    transform_x_y:
+        Remove rows with missing data from the train set and target.
 
     Examples
     --------
