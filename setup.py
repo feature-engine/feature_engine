@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 # Package meta-data.
 NAME = "feature_engine"
-DESCRIPTION = "Feature engineering package with Scikit-learn's fit transform functionality"
+DESCRIPTION = "Feature engineering and selection package with Scikit-learn's fit transform functionality"
 URL = "http://github.com/feature-engine/feature_engine"
 EMAIL = "solegalli@protonmail.com"
 AUTHOR = "Soledad Galli"
@@ -49,5 +49,7 @@ setup(name=NAME,
           "License :: OSI Approved :: BSD License",
           "Programming Language :: Python :: 3.9",
           "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
       ],
       zip_safe=False)
