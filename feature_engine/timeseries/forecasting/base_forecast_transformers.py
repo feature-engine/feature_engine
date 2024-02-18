@@ -87,6 +87,12 @@ class BaseForecastTransformer(
                 f"Got {drop_original} instead."
             )
 
+        if not isinstance(drop_na, bool):
+            raise ValueError(
+                "drop_na takes only boolean values True and False. "
+                f"Got {drop_na} instead."
+            )
+
         self.variables = _check_variables_input_value(variables)
         self.missing_values = missing_values
         self.drop_original = drop_original
