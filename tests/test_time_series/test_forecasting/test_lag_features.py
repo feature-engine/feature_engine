@@ -214,6 +214,81 @@ def test_correct_lag_when_using_freq(df_time):
     )
 
 
+@pytest.mark.parametrize("fill_val", [-1, 0, 15])
+def test_fill_value(df_time, fill_val):
+    # Expected
+    date_time = [
+        pd.Timestamp("2020-05-15 12:00:00"),
+        pd.Timestamp("2020-05-15 12:15:00"),
+        pd.Timestamp("2020-05-15 12:30:00"),
+        pd.Timestamp("2020-05-15 12:45:00"),
+        pd.Timestamp("2020-05-15 13:00:00"),
+    ]
+    expected_results = {
+        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62],
+        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61],
+        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42],
+        "color": ["blue"] * 5,
+        "ambient_temp_lag_3": [fill_val, fill_val, fill_val, 31.31, 31.51],
+        "module_temp_lag_3": [fill_val, fill_val, fill_val, 49.18, 49.84],
+        "ambient_temp_lag_2": [fill_val, fill_val, 31.31, 31.51, 32.15],
+        "module_temp_lag_2": [fill_val, fill_val, 49.18, 49.84, 52.35],
+    }
+    expected_results_df = pd.DataFrame(data=expected_results, index=date_time)
+
+    # When period is an int.
+    transformer = LagFeatures(variables=["ambient_temp", "module_temp"], periods=3, fill_value=fill_val)
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.head(5).equals(
+        expected_results_df.drop(["ambient_temp_lag_2", "module_temp_lag_2"], axis=1)
+    )
+
+    # When period is list.
+    transformer = LagFeatures(variables=["ambient_temp", "module_temp"], periods=[3, 2], fill_value=fill_val)
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.head(5).equals(expected_results_df)
+
+    # When drop original is True
+    transformer = LagFeatures(
+        variables=["ambient_temp", "module_temp"], periods=[3, 2], drop_original=True, fill_value=fill_val
+    )
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.head(5).equals(
+        expected_results_df.drop(["ambient_temp", "module_temp"], axis=1)
+    )
+
+
+def test_drop_na(df_time):
+    # Expected
+    date_time = [
+        pd.Timestamp("2020-05-15 12:45:00"),
+        pd.Timestamp("2020-05-15 13:00:00"),
+    ]
+    expected_results = {
+        "ambient_temp": [32.39, 32.62],
+        "module_temp": [50.63, 49.61],
+        "irradiation": [0.76, 0.42],
+        "color": ["blue"] * 2,
+        "ambient_temp_lag_3": [31.31, 31.51],
+        "module_temp_lag_3": [49.18, 49.84],
+        "ambient_temp_lag_2": [31.51, 32.15],
+        "module_temp_lag_2": [49.84, 52.35],
+    }
+    expected_results_df = pd.DataFrame(data=expected_results, index=date_time)
+
+    # When period is an int.
+    transformer = LagFeatures(variables=["ambient_temp", "module_temp"], periods=3, drop_na=True)
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.head(2).equals(
+        expected_results_df.drop(["ambient_temp_lag_2", "module_temp_lag_2"], axis=1)
+    )
+
+    # When period is list.
+    transformer = LagFeatures(variables=["ambient_temp", "module_temp"], periods=[3, 2], drop_na=True)
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.head(2).equals(expected_results_df)
+
+
 def test_sort_index(df_time):
     X = df_time.copy()
 
