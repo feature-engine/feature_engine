@@ -1,0 +1,52 @@
+Version 1.7.X
+=============
+
+Version 1.7.0
+-------------
+
+Deployed: XX 2024
+
+Contributors
+~~~~~~~~~~~~
+
+- `dlaprins <https://github.com/dlaprins>`_
+- `Gleb Levitski <https://github.com/GLevv>`_
+- `Chris Samiullah <https://github.com/christophergs>`_
+- `Soledad Galli <https://github.com/solegalli>`_
+
+
+New functionality
+~~~~~~~~~~~~~~~~~
+
+
+Enhancements
+~~~~~~~~~~~~
+
+- `DropCorrelatedFeatures()` and `SmartCorrelationSelection` have a new attribute to indicate which feature will be retained from each correlated group (`Soledad Galli <https://github.com/solegalli>`_, `dlaprins <https://github.com/dlaprins>`_)
+
+
+Bug fixes
+~~~~~~~~~
+
+- `DropCorrelatedFeatures()` and `SmartCorrelationSelection` are now deterministic (`Soledad Galli <https://github.com/solegalli>`_, `Gleb Levitski <https://github.com/GLevv>`_, `dlaprins <https://github.com/dlaprins>`_)
+
+In addition to these bug fixes, we fixed other pandas, and scikit-learn new version and deprecation
+related bugs.
+
+Code improvements
+~~~~~~~~~~~~~~~~~
+
+- `DropCorrelatedFeatures()` and `SmartCorrelationSelection` are faster (`Soledad Galli <https://github.com/solegalli>`_, `Gleb Levitski <https://github.com/GLevv>`_, `dlaprins <https://github.com/dlaprins>`_)
+- Improves logic to select the variables to examine in all feature selection transformers (`Soledad Galli <https://github.com/solegalli>`_)
+- Add circleCI tests for python 3.11 and 3.12 (`Soledad Galli <https://github.com/solegalli>`_, `Chris Samiullah <https://github.com/christophergs>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+- Improves user guide for `DropCorrelatedFeatures()` and `SmartCorrelationSelection` (`Soledad Galli <https://github.com/solegalli>`_)
+
+
+Deprecations
+~~~~~~~~~~~~
+
+- We remove support for Python 3.8 (`Soledad Galli <https://github.com/solegalli>`_)

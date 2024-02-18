@@ -225,14 +225,15 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
                 "parameter `encode` is `ordinal`. "
             )
 
-        if (
-            transformer.__class__.__name__ == "OneHotEncoder"
-            and transformer.sparse is True
-        ):
-            raise NotImplementedError(
+        if transformer.__class__.__name__ == "OneHotEncoder":
+            msg = (
                 "The SklearnTransformerWrapper can only wrap the OneHotEncoder if the "
                 "sparse is set to False."
             )
+            if getattr(transformer, "sparse", False) or getattr(
+                transformer, "sparse_output", False
+            ):
+                raise NotImplementedError(msg)
 
         self.transformer = transformer
         self.variables = _check_variables_input_value(variables)
