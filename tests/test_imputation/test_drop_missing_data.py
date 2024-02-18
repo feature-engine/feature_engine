@@ -7,7 +7,6 @@ from feature_engine.imputation import DropMissingData
 
 def test_detect_variables_with_na(df_na):
     # test case 1: automatically detect variables with missing data
-    y = pd.Series(np.zeros(len(df_na)))
     imputer = DropMissingData(missing_only=True, variables=None)
     X_transformed = imputer.fit_transform(df_na)
     # init params
