@@ -237,20 +237,27 @@ def test_fill_value(df_time, fill_val):
     expected_results_df = pd.DataFrame(data=expected_results, index=date_time)
 
     # When period is an int.
-    transformer = LagFeatures(variables=["ambient_temp", "module_temp"], periods=3, fill_value=fill_val)
+    transformer = LagFeatures(
+        variables=["ambient_temp", "module_temp"], periods=3, fill_value=fill_val
+    )
     df_tr = transformer.fit_transform(df_time)
     assert df_tr.head(5).equals(
         expected_results_df.drop(["ambient_temp_lag_2", "module_temp_lag_2"], axis=1)
     )
 
     # When period is list.
-    transformer = LagFeatures(variables=["ambient_temp", "module_temp"], periods=[3, 2], fill_value=fill_val)
+    transformer = LagFeatures(
+        variables=["ambient_temp", "module_temp"], periods=[3, 2], fill_value=fill_val
+    )
     df_tr = transformer.fit_transform(df_time)
     assert df_tr.head(5).equals(expected_results_df)
 
     # When drop original is True
     transformer = LagFeatures(
-        variables=["ambient_temp", "module_temp"], periods=[3, 2], drop_original=True, fill_value=fill_val
+        variables=["ambient_temp", "module_temp"],
+        periods=[3, 2],
+        drop_original=True,
+        fill_value=fill_val,
     )
     df_tr = transformer.fit_transform(df_time)
     assert df_tr.head(5).equals(
@@ -259,6 +266,8 @@ def test_fill_value(df_time, fill_val):
 
 
 def test_drop_na(df_time):
+    df = df_time.head(5).copy()
+
     # Expected
     date_time = [
         pd.Timestamp("2020-05-15 12:45:00"),
@@ -274,19 +283,60 @@ def test_drop_na(df_time):
         "ambient_temp_lag_2": [31.51, 32.15],
         "module_temp_lag_2": [49.84, 52.35],
     }
-    expected_results_df = pd.DataFrame(data=expected_results, index=date_time)
+    expected_df = pd.DataFrame(data=expected_results, index=date_time)
 
     # When period is an int.
-    transformer = LagFeatures(variables=["ambient_temp", "module_temp"], periods=3, drop_na=True)
-    df_tr = transformer.fit_transform(df_time)
-    assert df_tr.head(2).equals(
-        expected_results_df.drop(["ambient_temp_lag_2", "module_temp_lag_2"], axis=1)
+    transformer = LagFeatures(
+        variables=["ambient_temp", "module_temp"], periods=3, drop_na=True
+    )
+    df_tr = transformer.fit_transform(df)
+    assert df_tr.equals(
+        expected_df.drop(["ambient_temp_lag_2", "module_temp_lag_2"], axis=1)
     )
 
     # When period is list.
-    transformer = LagFeatures(variables=["ambient_temp", "module_temp"], periods=[3, 2], drop_na=True)
-    df_tr = transformer.fit_transform(df_time)
-    assert df_tr.head(2).equals(expected_results_df)
+    transformer = LagFeatures(
+        variables=["ambient_temp", "module_temp"], periods=[3, 2], drop_na=True
+    )
+    df_tr = transformer.fit_transform(df)
+    assert df_tr.equals(expected_df)
+
+
+def test_transform_x_y(df_time):
+    df = df_time.head(5).copy()
+    y = pd.Series(np.zeros(len(df)), index=df.index)
+
+    # Expected
+    date_time = [
+        pd.Timestamp("2020-05-15 12:45:00"),
+        pd.Timestamp("2020-05-15 13:00:00"),
+    ]
+    expected_results = {
+        "ambient_temp": [32.39, 32.62],
+        "module_temp": [50.63, 49.61],
+        "irradiation": [0.76, 0.42],
+        "color": ["blue"] * 2,
+        "ambient_temp_lag_3": [31.31, 31.51],
+        "module_temp_lag_3": [49.18, 49.84],
+        "ambient_temp_lag_2": [31.51, 32.15],
+        "module_temp_lag_2": [49.84, 52.35],
+    }
+    expected_df = pd.DataFrame(data=expected_results, index=date_time)
+
+    # When period is an int.
+    transformer = LagFeatures(
+        variables=["ambient_temp", "module_temp"], periods=3, drop_na=True
+    )
+    df_tr = transformer.fit_transform(df)
+    assert df_tr.equals(
+        expected_df.drop(["ambient_temp_lag_2", "module_temp_lag_2"], axis=1)
+    )
+    assert len(df_tr) != len(y)
+
+    Xt, yt = transformer.transform_x_y(df, y)
+    assert len(Xt) == len(yt)
+    assert len(y) != len(yt)
+    assert (Xt.index == yt.index).all()
 
 
 def test_sort_index(df_time):

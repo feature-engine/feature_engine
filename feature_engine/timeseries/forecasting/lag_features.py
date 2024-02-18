@@ -104,7 +104,7 @@ class LagFeatures(BaseForecastTransformer):
         Add lag features.
 
     transform_x_y:
-        Transform X and then remove rows with missing data from X and target.
+        Transform X and then remove rows with missing data from X and y.
 
     See Also
     --------
@@ -239,7 +239,7 @@ class LagFeatures(BaseForecastTransformer):
             X = X.drop(self.variables_, axis=1)
 
         if self.drop_na:
-            X = X.dropna(subset = tmp.columns, axis=1)
+            X = X.dropna(subset=tmp.columns, axis=0)
 
         return X
 
