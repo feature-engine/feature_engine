@@ -70,9 +70,9 @@ class LagFeatures(BaseForecastTransformer):
         None, then this parameter overrides the parameter `periods`.
 
     fill_value: object, optional
-        The scalar value to use for newly introduced missing values. the default
-        depends on the dtype of self. For numeric data, np.nan is used. For datetime,
-        timedelta, or period data, etc. NaT is used. For extension dtypes,
+        The scalar value to use for newly introduced missing values. The default
+        depends on the dtype of the variable. For numeric data, np.nan is used. For
+        datetime, timedelta, or period data, NaT is used. For extension dtypes,
         self.dtype.na_value is used.
 
     sort_index: bool, default=True
