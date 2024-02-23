@@ -51,6 +51,9 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
 
     {drop_original}
 
+    group_by_variables: str, list of str, default=None
+            variable of list of variables to create lag features based on.
+
     Attributes
     ----------
     {feature_names_in_}
@@ -64,6 +67,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
+        group_by_variables: Optional[Union[str, List[str]]] = None,
     ) -> None:
 
         if missing_values not in ["raise", "ignore"]:
@@ -78,9 +82,26 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
                 f"Got {drop_original} instead."
             )
 
+        # check validity if group by variables passed
+        if group_by_variables:
+            # check group by variables data-types
+            if not (
+                isinstance(group_by_variables, str)
+                or isinstance(group_by_variables, list)
+            ):
+                raise ValueError(
+                    "group_by_variables must be an string or a list of strings. "
+                    f"Got {group_by_variables} instead."
+                )
+            # check if passed list has duplicates.
+            if isinstance(group_by_variables, list):
+                if len(set(group_by_variables)) != len(group_by_variables):
+                    raise ValueError(f"group_by_variables contains duplicate values")
+
         self.variables = _check_variables_input_value(variables)
         self.missing_values = missing_values
         self.drop_original = drop_original
+        self.group_by_variables = group_by_variables
 
     def _check_index(self, X: pd.DataFrame):
         """
@@ -164,6 +185,18 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         # check if dataset contains na
         if self.missing_values == "raise":
             self._check_na_and_inf(X)
+
+        if self.group_by_variables:
+            # check if input group by variables is in input dataframe variables.
+            # set of differences between input group by variables and dataframe variables
+            # valid if no differences between both
+            if isinstance(self.group_by_variables, list):
+                diff = set(self.group_by_variables).difference(X.columns.tolist())
+                if len(diff) != 0:
+                    raise ValueError(f"{list(diff)} not exist in dataframe")
+            else:
+                if self.group_by_variables not in X.columns.tolist():
+                    raise ValueError(f"{list(diff)} not exists in dataframe")
 
         self._get_feature_names_in(X)
 
