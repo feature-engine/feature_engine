@@ -8,21 +8,21 @@ constructing new variables from the dataset’s original features. By combining
 or amalgamating two or more variables, a new variable is developed to improve 
 the performance of a machine learning model.
 
-One of the most common feature-creation methods in data science is one-hot 
-encoding, which  is a preprocessing technique used to transform a categorical 
+One of the most common feature-creation methods in data science is `one-hot 
+encoding <https://www.blog.trainindata.com/one-hot-encoding-categorical-variables/>`_, which  is a preprocessing technique used to transform a categorical 
 feature into multiple binary features that represent each category.
 
 In general, feature creation requires significant time analyzing the raw data, 
 including evaluating the relationship between the independent or predictor 
-variable and the dependent/target variable. It is useful to have domain knowledge 
+variables and the dependent/target variable. It is useful to have domain knowledge 
 of the dataset when performing feature creation, making it one of the more 
 creative approaches to improve a predictive model’s performance. 
 
-Lastly, a data scientist should be mindful that creating features increases the 
-number of features, which increases the dimensionality. This may have downstream 
-effects depending on the machine learning algorithm being used. 
+Lastly, a data scientist should be mindful that creating new features increases 
+increases the dimensionality. This may have downstream effects depending on 
+the machine learning algorithm being used. 
 
-Creating New Features with feature-engine
+Creating New Features with Feature-engine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 feature-engine’s creation transformers generate new features that are added to the 
@@ -31,7 +31,7 @@ mathematical or statistical operations used in the Python package vary depending
 on the selected transformer. The transformers are to be used with numerical 
 variables, e.g., integer and float data types.
 
-Summary of feature-engine’s feature-creation transformers:
+Summary of Feature-engine’s feature-creation transformers:
 
    - CyclicalFeatures - Create two new features per original feature by applying 
      the trigonometric operations sine and cosine to each original feature.
@@ -55,7 +55,7 @@ variable does not have a linear or monotonic relationship with the target variab
 A data scientist may perform feature creation when they believe that the interaction 
 between two variables can have a strong relationship with the target variable.
 
-feature-engine in Practice
+Feature-engine in Practice
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Let’s use Kaggle’s wine quality dataset as an example. The dataset is comprised of 11 
 features, including ``alcohol``, ``pH``, and ``residual sugar``, and has ``quality`` as its 
@@ -85,11 +85,21 @@ feature transformation.
    # read raw data and extract relevant features
    data = pd.read_csv("WineQT.csv")
    df = data[["alcohol", "pH", "residual sugar"]].copy()
-   
+   df.head()
+
+.. figure:: ../../images/feature_creation_input_data.png
+   :align:  center
+
+.. code-block:: python
+
    # perform feature transformation
    rf = RelativeFeatures(variables=["alcohol", "pH"], reference=["residual sugar"], func=["div"])
    rf.fit(df)
    df_tr = rf.transform(df)
+   df_tr.head()
+
+.. figure:: ../../images/feature_creation_transformed_data.png
+   :align:  center
 
 In the above example, we see that ``RelativeFeature()`` performs automated feature engineering on 
 the input data by applying the transformation defined in the ``func``  parameter on the features 
@@ -110,7 +120,7 @@ understand the relationships among the various independent variables.
 One must be mindful of excessive feature creation, in addition to high dimensionality, unrestrained 
 feature creation can cause overfitting, i.e., high variance.  Predictive models with high variance 
 are susceptible to outliers. That is why we  recommend using feature creation in conjunction with 
-feature selection, which feature-engine has a module for.
+feature selection, which Feature-engine has a module for.
 
 Also, since we use existing features to develop new features, data validation must be performed 
 before starting the process of feature engineering. Otherwise, the predictive model will be 
