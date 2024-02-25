@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import List
+from typing import List, Union, Optional
 
 import pandas as pd
 
@@ -139,6 +139,37 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
     2  2022-09-20   3   8                1.5                6.5
     3  2022-09-21   4   9                2.0                7.0
     4  2022-09-22   5  10                2.5                7.5
+
+    create expanding window features based on other variables.
+    >>> import pandas as pd
+    >>> from feature_engine.timeseries.forecasting import ExpandingWindowFeatures
+    >>> X = pd.DataFrame(dict(date = ["2022-09-18",
+    >>>                          "2022-09-19",
+    >>>                          "2022-09-20",
+    >>>                          "2022-09-21",
+    >>>                          "2022-09-22",
+    >>>                          "2022-09-18",
+    >>>                          "2022-09-19",
+    >>>                          "2022-09-20",
+    >>>                          "2022-09-21",
+    >>>                          "2022-09-22"],
+    >>>                  x1 = [1,2,3,4,5, 3,5,6,8,11],
+    >>>                  x2 = [6,7,8,9,10, 2,9,10,15,2],
+    >>>                  x3=['a','a','a','a','a', 'b','b','b','b','b']
+    >>>                ))
+    >>> ewf = ExpandingWindowFeatures(group_by_variables='x3')
+    >>> ewf.fit_transform(X)
+             date  x1  x2 x3  x1_expanding_mean  x2_expanding_mean
+    0  2022-09-18   1   6  a                NaN                NaN
+    1  2022-09-19   2   7  a           1.000000                6.0
+    2  2022-09-20   3   8  a           1.500000                6.5
+    3  2022-09-21   4   9  a           2.000000                7.0
+    4  2022-09-22   5  10  a           2.500000                7.5
+    5  2022-09-18   3   2  b                NaN                NaN
+    6  2022-09-19   5   9  b           3.000000                2.0
+    7  2022-09-20   6  10  b           4.000000                5.5
+    8  2022-09-21   8  15  b           4.666667                7.0
+    9  2022-09-22  11   2  b           5.500000                9.0
     """
 
     def __init__(
@@ -151,6 +182,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
+        group_by_variables: Optional[Union[str, List[str]]] = None,
     ) -> None:
 
         if not isinstance(functions, (str, list)) or not all(
@@ -168,7 +200,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
                 f"periods must be a non-negative integer. Got {periods} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original)
+        super().__init__(variables, missing_values, drop_original, group_by_variables)
 
         self.min_periods = min_periods
         self.functions = functions
@@ -193,12 +225,17 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         # Common dataframe checks and setting up.
         X = self._check_transform_input_and_state(X)
 
-        tmp = (
-            X[self.variables_]
-            .expanding(min_periods=self.min_periods)
-            .agg(self.functions)
-            .shift(periods=self.periods, freq=self.freq)
-        )
+        if self.group_by_variables:
+            tmp = self._agg_expanding_window_features(
+                grouped_df=X.groupby(self.group_by_variables)
+            )
+        else:
+            tmp = (
+                X[self.variables_]
+                .expanding(min_periods=self.min_periods)
+                .agg(self.functions)
+                .shift(periods=self.periods, freq=self.freq)
+            )
 
         tmp.columns = self._get_new_features_name()
 
@@ -224,3 +261,30 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         ]
 
         return feature_names
+
+    def _agg_expanding_window_features(
+        self,
+        grouped_df: pd.core.groupby.generic.DataFrameGroupBy,
+    ) -> Union[pd.Series, pd.DataFrame]:
+        """generate expanding window features based on groups
+        Parameters
+        ----------
+        grouped_df : pd.core.groupby.generic.DataFrameGroupBy
+            dataframe of groups
+
+        Returns
+        -------
+        Union[pd.Series, pd.DataFrame]
+            returned expanding window features
+        """
+        tmp_data = []
+        for _, group in grouped_df:
+            tmp = (
+                group[self.variables_]
+                .expanding(min_periods=self.min_periods)
+                .agg(self.functions)
+                .shift(periods=self.periods, freq=self.freq)
+            )
+            tmp_data.append(tmp)
+        tmp = pd.concat(tmp_data).sort_index()
+        return tmp
