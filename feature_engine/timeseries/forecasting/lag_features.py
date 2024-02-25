@@ -5,7 +5,6 @@ from collections.abc import Hashable
 from typing import List, Union
 
 import pandas as pd
-from pandas._libs import lib
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -138,7 +137,7 @@ class LagFeatures(BaseForecastTransformer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         periods: Union[int, List[int]] = 1,
         freq: Union[str, List[str], None] = None,
-        fill_value: Hashable = lib.no_default,
+        fill_value: Hashable = None,
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
