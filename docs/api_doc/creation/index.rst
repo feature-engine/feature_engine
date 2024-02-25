@@ -25,7 +25,7 @@ the machine learning algorithm being used.
 Creating New Features with Feature-engine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-feature-engine’s creation transformers generate new features that are added to the 
+Feature-engine’s creation transformers generate new features that are added to the 
 pandas dataframe by either combining or transforming existing features. The 
 mathematical or statistical operations used in the Python package vary depending 
 on the selected transformer. The transformers are to be used with numerical 
@@ -43,7 +43,7 @@ Summary of Feature-engine’s feature-creation transformers:
      of variables and one or more reference features, appending the new features 
      to the dataframe.
 
-In addition to the abovementioned transformer, feature-engine includes the 
+In addition to the abovementioned transformer, Feature-engine includes the 
 ``SklearnTransformerWrapper()``, which applies a Scikit-learn transformer to a 
 selected set of features. ``SklearnTransformerWrapper()`` is similar to Scikit-learn’s 
 ``ColumnTrasnformer()`` but differs in implementation.
@@ -66,8 +66,8 @@ experimentation, i.e., drinking various brands/types of wine, we believe that we
 create better features to train our algorithm by deriving the ratios of acidic-to-sweet 
 and alcohol-to-sweet.
 
-In our example, we import three Python packages - os, pandas, and feature-engine. We also 
-download the Kaggle dataset. We then use feature-engine’s ``RelativeFeatures()`` to perform 
+In our example, we import three Python packages - os, pandas, and Feature-engine. We also 
+download the Kaggle dataset. We then use Feature-engine’s ``RelativeFeatures()`` to perform 
 feature transformation.
 
 .. code-block:: python
