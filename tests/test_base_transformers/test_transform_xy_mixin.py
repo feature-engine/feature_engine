@@ -13,7 +13,6 @@ def test_transform_x_y_method(df_vartypes):
     y = pd.Series(pd.Series(0, index=np.arange(len(df_vartypes))))
     transformer = MockTransformer()
     Xt, yt = transformer.transform_x_y(df_vartypes, y)
-    print(Xt)
 
     assert len(Xt) == len(yt)
     assert len(Xt) != len(df_vartypes)

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
@@ -428,3 +429,112 @@ def test_expanding_window_raises_when_periods_negative():
         ValueError, match="periods must be a non-negative integer. Got -1 instead."
     ):
         ExpandingWindowFeatures(periods=-1)
+
+
+def test_drop_na(df_time):
+    expected_results = {
+        "ambient_temp_expanding_sum": [
+            31.31,
+            62.82,
+            94.97,
+            127.36,
+            159.98,
+            192.48,
+            225.00,
+            257.68,
+            291.44,
+            325.57,
+            359.65,
+            393.35,
+            427.24,
+            461.28,
+        ],
+        "irradiation_expanding_sum": [
+            0.51,
+            1.3,
+            1.95,
+            2.71,
+            3.13,
+            3.62,
+            4.19,
+            4.75,
+            5.49,
+            6.38,
+            6.85,
+            7.39,
+            7.79,
+            8.24,
+        ],
+    }
+    expected_df = df_time.iloc[1:].copy()
+    expected_df["ambient_temp_expanding_sum"] = expected_results[
+        "ambient_temp_expanding_sum"
+    ]
+    expected_df["irradiation_expanding_sum"] = expected_results[
+        "irradiation_expanding_sum"
+    ]
+
+    transformer = ExpandingWindowFeatures(
+        variables=["ambient_temp", "irradiation"],
+        functions="sum",
+        drop_na=True,
+    )
+    df_tr = transformer.fit_transform(df_time)
+    assert_frame_equal(df_tr, expected_df)
+
+
+def test_transform_x_y(df_time):
+    y = pd.Series(np.zeros(len(df_time)), index=df_time.index)
+    expected_results = {
+        "ambient_temp_expanding_sum": [
+            31.31,
+            62.82,
+            94.97,
+            127.36,
+            159.98,
+            192.48,
+            225.00,
+            257.68,
+            291.44,
+            325.57,
+            359.65,
+            393.35,
+            427.24,
+            461.28,
+        ],
+        "irradiation_expanding_sum": [
+            0.51,
+            1.3,
+            1.95,
+            2.71,
+            3.13,
+            3.62,
+            4.19,
+            4.75,
+            5.49,
+            6.38,
+            6.85,
+            7.39,
+            7.79,
+            8.24,
+        ],
+    }
+    expected_df = df_time.iloc[1:].copy()
+    expected_df["ambient_temp_expanding_sum"] = expected_results[
+        "ambient_temp_expanding_sum"
+    ]
+    expected_df["irradiation_expanding_sum"] = expected_results[
+        "irradiation_expanding_sum"
+    ]
+
+    transformer = ExpandingWindowFeatures(
+        variables=["ambient_temp", "irradiation"],
+        functions="sum",
+        drop_na=True,
+    )
+    transformer.fit(df_time)
+
+    Xt, yt = transformer.transform_x_y(df_time, y)
+    assert len(Xt) == len(yt)
+    assert len(y) != len(yt)
+    assert (Xt.index == yt.index).all()
