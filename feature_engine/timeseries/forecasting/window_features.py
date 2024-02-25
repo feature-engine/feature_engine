@@ -3,22 +3,15 @@ from typing import Callable, List, Optional, Union
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring)
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _drop_original_docstring,
-    _missing_values_docstring,
-    _variables_numerical_docstring,
-)
-from feature_engine._docstrings.methods import (
-    _fit_not_learn_docstring,
-    _fit_transform_docstring,
-)
+    _drop_original_docstring, _missing_values_docstring,
+    _variables_numerical_docstring)
+from feature_engine._docstrings.methods import (_fit_not_learn_docstring,
+                                                _fit_transform_docstring)
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.timeseries.forecasting.base_forecast_transformers import (
-    BaseForecastTransformer,
-)
+from feature_engine.timeseries.forecasting.base_forecast_transformers import \
+    BaseForecastTransformer
 
 
 @Substitution(
@@ -212,7 +205,7 @@ class WindowFeatures(BaseForecastTransformer):
                 if self.group_by_variables:
                     tmp = self._agg_window_features(
                         grouped_df=X.groupby(self.group_by_variables),
-                        window=win,
+                        win=win,
                     )
                 else:
                     tmp = (
@@ -228,7 +221,7 @@ class WindowFeatures(BaseForecastTransformer):
             if self.group_by_variables:
                 tmp = self._agg_window_features(
                     grouped_df=X.groupby(self.group_by_variables),
-                    window=self.window,
+                    win=self.window,
                 )
             else:
                 tmp = (
@@ -272,7 +265,9 @@ class WindowFeatures(BaseForecastTransformer):
         return feature_names
 
     def _agg_window_features(
-        self, grouped_df: pd.core.groupby.generic.DataFrameGroupBy, window: int
+        self,
+        grouped_df: pd.core.groupby.generic.DataFrameGroupBy,
+        win: Union[str, int, Callable, List[int], List[str]],
     ) -> Union[pd.Series, pd.DataFrame]:
         """generate window features based on groups
         Parameters
@@ -280,7 +275,7 @@ class WindowFeatures(BaseForecastTransformer):
         grouped_df : pd.core.groupby.generic.DataFrameGroupBy
             dataframe of groups
 
-        window: int
+        window: Union[str, int, Callable, List[int], List[str]]
             Size of the moving window
 
         Returns
@@ -292,7 +287,7 @@ class WindowFeatures(BaseForecastTransformer):
         for _, group in grouped_df:
             tmp = (
                 group[self.variables_]
-                .rolling(window=window)
+                .rolling(window=win)
                 .agg(self.functions)
                 .shift(periods=self.periods, freq=self.freq)
             )

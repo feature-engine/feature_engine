@@ -5,30 +5,21 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
+from feature_engine._check_init_parameters.check_variables import \
+    _check_variables_input_value
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring)
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _drop_original_docstring,
-    _missing_values_docstring,
-)
+    _drop_original_docstring, _missing_values_docstring)
 from feature_engine._docstrings.methods import _fit_not_learn_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import (
-    _check_contains_inf,
-    _check_contains_na,
-    _check_X_matches_training_df,
-    check_X,
-)
+from feature_engine.dataframe_checks import (_check_contains_inf,
+                                             _check_contains_na,
+                                             _check_X_matches_training_df,
+                                             check_X)
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import (
-    check_numerical_variables,
-    find_numerical_variables,
-)
+from feature_engine.variable_handling import (check_numerical_variables,
+                                              find_numerical_variables)
 
 
 @Substitution(
@@ -194,7 +185,9 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
                     raise ValueError(f"{list(diff)} not exist in dataframe")
             else:
                 if self.group_by_variables not in X.columns.tolist():
-                    raise ValueError(f"{list(diff)} not exists in dataframe")
+                    raise ValueError(
+                        f"{self.group_by_variables} not exists in dataframe"
+                    )
 
         self._get_feature_names_in(X)
 
