@@ -9,11 +9,12 @@ from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     check_X,
+    check_X_y,
 )
 from feature_engine.variable_handling import check_numerical_variables
 
 
-class TransformXyMixing:
+class TransformXyMixin:
     def transform_x_y(self, X: pd.DataFrame, y: pd.Series):
         """
         Transform, align and adjust both X and y based on the transformations applied
@@ -37,6 +38,7 @@ class TransformXyMixing:
             The transformed target variable of shape [n_samples - n_rows]. It contains
             as many rows as those left in X_new.
         """
+        X, y = check_X_y(X, y)
         X = self.transform(X)
         y = y.loc[X.index]
         return X, y

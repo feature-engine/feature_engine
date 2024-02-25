@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine._base_transformers.mixins import TransformXyMixing
+from feature_engine._base_transformers.mixins import TransformXyMixin
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -26,7 +26,7 @@ from feature_engine.variable_handling import check_all_variables, find_all_varia
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class DropMissingData(BaseImputer, TransformXyMixing):
+class DropMissingData(BaseImputer, TransformXyMixin):
     """
     DropMissingData() deletes rows containing missing values. It provides
     similar functionality to `pandas.drop_na()`, but within the `fit` and `transform`

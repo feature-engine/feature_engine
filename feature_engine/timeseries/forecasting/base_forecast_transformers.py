@@ -6,7 +6,7 @@ from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import (
     GetFeatureNamesOutMixin,
-    TransformXyMixing,
+    TransformXyMixin,
 )
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -42,7 +42,7 @@ from feature_engine.variable_handling import (
     n_features_in_=_n_features_in_docstring,
 )
 class BaseForecastTransformer(
-    BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin, TransformXyMixing
+    BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin, TransformXyMixin
 ):
     """
     Shared methods across time-series forecasting transformers.
