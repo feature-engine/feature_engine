@@ -113,7 +113,6 @@ class LagFeatures(BaseForecastTransformer):
     2  2022-09-20   3   8       2.0       7.0       1.0       6.0
     3  2022-09-21   4   9       3.0       8.0       2.0       7.0
     4  2022-09-22   5  10       4.0       9.0       3.0       8.0
-
     create lags based on other variables.
     >>> import pandas as pd
     >>> from feature_engine.timeseries.forecasting import LagFeatures
