@@ -495,14 +495,20 @@ def test_drop_na(df_time):
     expected_results_df = pd.DataFrame(data=expected_results, index=_date_time[4:])
 
     # Case 1: automatically select variables
-    transformer = WindowFeatures(window=3, functions=["median"], periods=2, drop_na=True)
+    transformer = WindowFeatures(
+        window=3, functions=["median"], periods=2, drop_na=True
+    )
     df_tr = transformer.fit_transform(df)
 
     assert df_tr.equals(expected_results_df)
 
     # Case 2: when drop_original is true
     transformer = WindowFeatures(
-        window=3, functions=["median"], periods=2, drop_original=True, drop_na=True,
+        window=3,
+        functions=["median"],
+        periods=2,
+        drop_original=True,
+        drop_na=True,
     )
     df_tr = transformer.fit_transform(df)
 
@@ -524,3 +530,56 @@ def test_drop_na(df_time):
     assert df_tr.equals(
         expected_results_df.drop(["ambient_temp_window_3_median"], axis=1)
     )
+
+
+def test_transform_x_y(df_time):
+    df = df_time.head(9).copy()
+    y = pd.Series(np.zeros(len(df)), index=df.index)
+
+    expected_results = {
+        "ambient_temp": [32.62, 32.5, 32.52, 32.68, 33.76],
+        "module_temp": [49.61, 47.01, 46.67, 47.52, 49.8],
+        "irradiation": [0.42, 0.49, 0.57, 0.56, 0.74],
+        "color": [
+            "blue",
+            "blue",
+            "blue",
+            "blue",
+            "blue",
+        ],
+        "ambient_temp_window_3_median": [
+            31.51,
+            32.15,
+            32.39,
+            32.5,
+            32.52,
+        ],
+        "module_temp_window_3_median": [
+            49.84,
+            50.63,
+            50.63,
+            49.61,
+            47.01,
+        ],
+        "irradiation_window_3_median": [
+            0.65,
+            0.76,
+            0.65,
+            0.49,
+            0.49,
+        ],
+    }
+    expected_results_df = pd.DataFrame(data=expected_results, index=_date_time[4:])
+    transformer = WindowFeatures(
+        window=3, functions=["median"], periods=2, drop_na=True
+    )
+
+    df_tr = transformer.fit_transform(df)
+
+    assert df_tr.equals(expected_results_df)
+    assert len(df_tr) != len(y)
+
+    Xt, yt = transformer.transform_x_y(df, y)
+    assert len(Xt) == len(yt)
+    assert len(y) != len(yt)
+    assert (Xt.index == yt.index).all()
