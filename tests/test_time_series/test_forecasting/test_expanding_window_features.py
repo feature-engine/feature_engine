@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from pandas.testing import assert_frame_equal
+import pandas as pd
 
 from feature_engine.timeseries.forecasting import ExpandingWindowFeatures
 
@@ -428,3 +429,137 @@ def test_expanding_window_raises_when_periods_negative():
         ValueError, match="periods must be a non-negative integer. Got -1 instead."
     ):
         ExpandingWindowFeatures(periods=-1)
+
+
+def test_correct_groupby_expanding_window_when_using_periods(df_time):
+    date_time = [
+        pd.Timestamp("2020-05-15 12:00:00"),
+        pd.Timestamp("2020-05-15 12:15:00"),
+        pd.Timestamp("2020-05-15 12:30:00"),
+        pd.Timestamp("2020-05-15 12:45:00"),
+        pd.Timestamp("2020-05-15 13:00:00"),
+        pd.Timestamp("2020-05-15 13:15:00"),
+        pd.Timestamp("2020-05-15 13:30:00"),
+        pd.Timestamp("2020-05-15 13:45:00"),
+        pd.Timestamp("2020-05-15 14:00:00"),
+        pd.Timestamp("2020-05-15 14:15:00"),
+        pd.Timestamp("2020-05-15 14:30:00"),
+        pd.Timestamp("2020-05-15 14:45:00"),
+        pd.Timestamp("2020-05-15 15:00:00"),
+        pd.Timestamp("2020-05-15 15:15:00"),
+        pd.Timestamp("2020-05-15 15:30:00"),
+    ]
+    expected_results = {
+        "ambient_temp": [
+            31.31,
+            31.51,
+            32.15,
+            32.39,
+            32.62,
+            32.5,
+            32.52,
+            32.68,
+            33.76,
+            34.13,
+            34.08,
+            33.7,
+            33.89,
+            34.04,
+            34.4,
+        ],
+        "module_temp": [
+            49.18,
+            49.84,
+            52.35,
+            50.63,
+            49.61,
+            47.01,
+            46.67,
+            47.52,
+            49.8,
+            55.03,
+            54.52,
+            47.62,
+            46.03,
+            44.29,
+            46.74,
+        ],
+        "irradiation": [
+            0.51,
+            0.79,
+            0.65,
+            0.76,
+            0.42,
+            0.49,
+            0.57,
+            0.56,
+            0.74,
+            0.89,
+            0.47,
+            0.54,
+            0.4,
+            0.45,
+            0.57,
+        ],
+        "color": [
+            "blue",
+            "blue",
+            "blue",
+            "blue",
+            "blue",
+            "blue",
+            "blue",
+            "blue",
+            "blue",
+            "blue",
+            "green",
+            "green",
+            "green",
+            "green",
+            "green",
+        ],
+        "ambient_temp_expanding_mean": [
+            np.nan,
+            31.31,
+            31.41,
+            31.656666666666666,
+            31.84,
+            31.996,
+            32.08,
+            32.142857142857146,
+            32.21,
+            32.382222222222225,
+            np.nan,
+            34.08,
+            33.89,
+            33.89,
+            33.9275,
+        ],
+        "irradiation_expanding_mean": [
+            np.nan,
+            0.51,
+            0.65,
+            0.65,
+            0.6775,
+            0.626,
+            0.6033333333333334,
+            0.5985714285714285,
+            0.59375,
+            0.61,
+            np.nan,
+            0.47,
+            0.505,
+            0.47000000000000003,
+            0.465,
+        ],
+    }
+    expected_results_df = pd.DataFrame(
+        data=expected_results,
+        index=date_time,
+    )
+    # When setting group_by_variabels to color
+    transformer = ExpandingWindowFeatures(
+        variables=["ambient_temp", "irradiation"], group_by_variables="color"
+    )
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.equals(expected_results_df)
