@@ -132,7 +132,6 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
     2  2022-09-20   3   8                1.5                6.5
     3  2022-09-21   4   9                2.0                7.0
     4  2022-09-22   5  10                2.5                7.5
-
     create expanding window features based on other variables.
     >>> import pandas as pd
     >>> from feature_engine.timeseries.forecasting import ExpandingWindowFeatures
