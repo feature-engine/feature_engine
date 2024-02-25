@@ -1,7 +1,7 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 

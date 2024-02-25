@@ -96,7 +96,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
             # check if passed list has duplicates.
             if isinstance(group_by_variables, list):
                 if len(set(group_by_variables)) != len(group_by_variables):
-                    raise ValueError(f"group_by_variables contains duplicate values")
+                    raise ValueError("group_by_variables contains duplicate values")
 
         self.variables = _check_variables_input_value(variables)
         self.missing_values = missing_values
@@ -188,8 +188,6 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
 
         if self.group_by_variables:
             # check if input group by variables is in input dataframe variables.
-            # set of differences between input group by variables and dataframe variables
-            # valid if no differences between both
             if isinstance(self.group_by_variables, list):
                 diff = set(self.group_by_variables).difference(X.columns.tolist())
                 if len(diff) != 0:

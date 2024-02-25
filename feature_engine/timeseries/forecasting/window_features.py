@@ -1,4 +1,4 @@
-from typing import Callable, List, Union, Optional
+from typing import Callable, List, Optional, Union
 
 import pandas as pd
 
@@ -270,11 +270,9 @@ class WindowFeatures(BaseForecastTransformer):
             ]
 
         return feature_names
-    
+
     def _agg_window_features(
-            self, 
-            grouped_df: pd.core.groupby.generic.DataFrameGroupBy,
-            window: int
+        self, grouped_df: pd.core.groupby.generic.DataFrameGroupBy, window: int
     ) -> Union[pd.Series, pd.DataFrame]:
         """generate window features based on groups
         Parameters
