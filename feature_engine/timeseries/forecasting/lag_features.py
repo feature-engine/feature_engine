@@ -1,20 +1,27 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import List, Union
 
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring, _n_features_in_docstring)
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _drop_original_docstring, _missing_values_docstring,
-    _variables_numerical_docstring)
-from feature_engine._docstrings.methods import (_fit_not_learn_docstring,
-                                                _fit_transform_docstring)
+    _drop_original_docstring,
+    _missing_values_docstring,
+    _variables_numerical_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.timeseries.forecasting.base_forecast_transformers import \
-    BaseForecastTransformer
+from feature_engine.timeseries.forecasting.base_forecast_transformers import (
+    BaseForecastTransformer,
+)
 
 
 @Substitution(
@@ -67,7 +74,7 @@ class LagFeatures(BaseForecastTransformer):
 
     {drop_original}
 
-    group_by_variables: str, list of str, default=None
+    group_by: str, str, int, or list of strings or integers, default=None
             variable of list of variables to create lag features based on.
 
     Attributes
@@ -143,7 +150,7 @@ class LagFeatures(BaseForecastTransformer):
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
-        group_by_variables: Optional[Union[str, List[str]]] = None,
+        group_by: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if not (
@@ -168,7 +175,7 @@ class LagFeatures(BaseForecastTransformer):
                 "sort_index takes values True and False." f"Got {sort_index} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original, group_by_variables)
+        super().__init__(variables, missing_values, drop_original, group_by)
 
         self.periods = periods
         self.freq = freq
@@ -197,8 +204,8 @@ class LagFeatures(BaseForecastTransformer):
             if isinstance(self.freq, list):
                 df_ls = []
                 for fr in self.freq:
-                    if self.group_by_variables:
-                        tmp = X.groupby(self.group_by_variables)[self.variables_].shift(
+                    if self.group_by:
+                        tmp = X.groupby(self.group_by)[self.variables_].shift(
                             freq=fr,
                         )
                     else:
@@ -210,8 +217,8 @@ class LagFeatures(BaseForecastTransformer):
                 tmp = pd.concat(df_ls, axis=1)
 
             else:
-                if self.group_by_variables:
-                    tmp = X.groupby(self.group_by_variables)[self.variables_].shift(
+                if self.group_by:
+                    tmp = X.groupby(self.group_by)[self.variables_].shift(
                         freq=self.freq,
                     )
                 else:
@@ -224,8 +231,8 @@ class LagFeatures(BaseForecastTransformer):
             if isinstance(self.periods, list):
                 df_ls = []
                 for pr in self.periods:
-                    if self.group_by_variables:
-                        tmp = X.groupby(self.group_by_variables)[self.variables_].shift(
+                    if self.group_by:
+                        tmp = X.groupby(self.group_by)[self.variables_].shift(
                             periods=pr,
                         )
                     else:
@@ -237,8 +244,8 @@ class LagFeatures(BaseForecastTransformer):
                 tmp = pd.concat(df_ls, axis=1)
 
             else:
-                if self.group_by_variables:
-                    tmp = X.groupby(self.group_by_variables)[self.variables_].shift(
+                if self.group_by:
+                    tmp = X.groupby(self.group_by)[self.variables_].shift(
                         periods=self.periods,
                     )
                 else:

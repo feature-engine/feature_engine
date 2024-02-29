@@ -3,20 +3,27 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Union
+from typing import List, Union
 
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring, _n_features_in_docstring)
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _drop_original_docstring, _missing_values_docstring,
-    _variables_numerical_docstring)
-from feature_engine._docstrings.methods import (_fit_not_learn_docstring,
-                                                _fit_transform_docstring)
+    _drop_original_docstring,
+    _missing_values_docstring,
+    _variables_numerical_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.timeseries.forecasting.base_forecast_transformers import \
-    BaseForecastTransformer
+from feature_engine.timeseries.forecasting.base_forecast_transformers import (
+    BaseForecastTransformer,
+)
 
 
 @Substitution(
@@ -86,6 +93,9 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
 
     {drop_original}
 
+    group_by: str, str, int, or list of strings or integers, default=None
+            variable of list of variables to create lag features based on.
+
     Attributes
     ----------
     variables_:
@@ -149,7 +159,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
     >>>                  x2 = [6,7,8,9,10, 2,9,10,15,2],
     >>>                  x3=['a','a','a','a','a', 'b','b','b','b','b']
     >>>                ))
-    >>> ewf = ExpandingWindowFeatures(group_by_variables='x3')
+    >>> ewf = ExpandingWindowFeatures(group_by='x3')
     >>> ewf.fit_transform(X)
              date  x1  x2 x3  x1_expanding_mean  x2_expanding_mean
     0  2022-09-18   1   6  a                NaN                NaN
@@ -174,7 +184,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
-        group_by_variables: Optional[Union[str, List[str]]] = None,
+        group_by: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if not isinstance(functions, (str, list)) or not all(
@@ -192,7 +202,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
                 f"periods must be a non-negative integer. Got {periods} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original, group_by_variables)
+        super().__init__(variables, missing_values, drop_original, group_by)
 
         self.min_periods = min_periods
         self.functions = functions
@@ -217,9 +227,9 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         # Common dataframe checks and setting up.
         X = self._check_transform_input_and_state(X)
 
-        if self.group_by_variables:
+        if self.group_by:
             tmp = self._agg_expanding_window_features(
-                grouped_df=X.groupby(self.group_by_variables)
+                grouped_df=X.groupby(self.group_by)
             )
         else:
             tmp = (

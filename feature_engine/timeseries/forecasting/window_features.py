@@ -1,17 +1,24 @@
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Union
 
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring, _n_features_in_docstring)
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _drop_original_docstring, _missing_values_docstring,
-    _variables_numerical_docstring)
-from feature_engine._docstrings.methods import (_fit_not_learn_docstring,
-                                                _fit_transform_docstring)
+    _drop_original_docstring,
+    _missing_values_docstring,
+    _variables_numerical_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.timeseries.forecasting.base_forecast_transformers import \
-    BaseForecastTransformer
+from feature_engine.timeseries.forecasting.base_forecast_transformers import (
+    BaseForecastTransformer,
+)
 
 
 @Substitution(
@@ -91,7 +98,7 @@ class WindowFeatures(BaseForecastTransformer):
 
     {drop_original}
 
-    group_by_variables: str, list of str, default=None
+    group_by: str, str, int, or list of strings or integers, default=None
             variable of list of variables to create lag features based on.
 
     Attributes
@@ -152,7 +159,7 @@ class WindowFeatures(BaseForecastTransformer):
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
-        group_by_variables: Optional[Union[str, List[str]]] = None,
+        group_by: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if isinstance(window, list) and len(window) != len(set(window)):
@@ -173,7 +180,7 @@ class WindowFeatures(BaseForecastTransformer):
                 f"periods must be a positive integer. Got {periods} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original, group_by_variables)
+        super().__init__(variables, missing_values, drop_original, group_by)
 
         self.window = window
         self.min_periods = min_periods
@@ -202,9 +209,9 @@ class WindowFeatures(BaseForecastTransformer):
         if isinstance(self.window, list):
             df_ls = []
             for win in self.window:
-                if self.group_by_variables:
+                if self.group_by:
                     tmp = self._agg_window_features(
-                        grouped_df=X.groupby(self.group_by_variables),
+                        grouped_df=X.groupby(self.group_by),
                         win=win,
                     )
                 else:
@@ -218,9 +225,9 @@ class WindowFeatures(BaseForecastTransformer):
             tmp = pd.concat(df_ls, axis=1)
 
         else:
-            if self.group_by_variables:
+            if self.group_by:
                 tmp = self._agg_window_features(
-                    grouped_df=X.groupby(self.group_by_variables),
+                    grouped_df=X.groupby(self.group_by),
                     win=self.window,
                 )
             else:
