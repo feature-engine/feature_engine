@@ -582,9 +582,9 @@ def test_correct_groupby_window_when_using_periods(df_time):
         data=expected_results,
         index=date_time,
     )
-    # When setting group_by_variabels to color
+    # When setting group_by to color
     transformer = WindowFeatures(
-        variables=["ambient_temp", "irradiation"], window=3, group_by_variables="color"
+        variables=["ambient_temp", "irradiation"], window=3, group_by="color"
     )
     df_tr = transformer.fit_transform(df_time)
     assert df_tr.equals(expected_results_df)
