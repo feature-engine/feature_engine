@@ -205,7 +205,8 @@ class LagFeatures(BaseForecastTransformer):
                 df_ls = []
                 for fr in self.freq:
                     if self.group_by:
-                        tmp = X.groupby(self.group_by)[self.variables_].shift(
+                        tmp = self._agg_freq_lags(
+                            grouped_df=X.groupby(self.group_by),
                             freq=fr,
                         )
                     else:
@@ -218,7 +219,8 @@ class LagFeatures(BaseForecastTransformer):
 
             else:
                 if self.group_by:
-                    tmp = X.groupby(self.group_by)[self.variables_].shift(
+                    tmp = self._agg_freq_lags(
+                        grouped_df=X.groupby(self.group_by),
                         freq=self.freq,
                     )
                 else:
@@ -287,3 +289,36 @@ class LagFeatures(BaseForecastTransformer):
             ]
 
         return feature_names
+    
+    def _agg_freq_lags(
+            self, 
+            grouped_df: pd.core.groupby.generic.DataFrameGroupBy, 
+            freq: Union[str, List[str]],
+    ) -> Union[pd.Series, pd.DataFrame]:
+        """_summary_
+
+        Parameters
+        ----------
+        grouped_df : pd.core.groupby.generic.DataFrameGroupBy
+            dataframe of groups
+        freq : Union[str, List[str]]
+            Offset to use from the tseries module or time rule. See parameter `freq` in
+            pandas `shift()`. It is the same functionality. If freq is a list, lag features
+            will be created for each one of the frequency values in the list.
+
+        Returns
+        -------
+        Union[pd.Series, pd.DataFrame]
+            lag feature or dataframe of lag features
+        """
+        tmp_data = []
+        for _, group in grouped_df:
+            original_idx = group.index
+            tmp = (
+                group[self.variables_]
+                .shift(freq=freq)
+                .reindex(original_idx)
+            )
+            tmp_data.append(tmp)
+        tmp = pd.concat(tmp_data).sort_index()
+        return tmp
