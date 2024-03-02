@@ -51,6 +51,9 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
 
     {drop_original}
 
+    group_by: str, str, int, or list of strings or integers, default=None
+            variable of list of variables to create lag features based on.
+
     Attributes
     ----------
     {feature_names_in_}
@@ -64,6 +67,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
+        group_by: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if missing_values not in ["raise", "ignore"]:
@@ -81,6 +85,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         self.variables = _check_variables_input_value(variables)
         self.missing_values = missing_values
         self.drop_original = drop_original
+        self.group_by = _check_variables_input_value(group_by)
 
     def _check_index(self, X: pd.DataFrame):
         """

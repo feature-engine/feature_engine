@@ -98,6 +98,9 @@ class WindowFeatures(BaseForecastTransformer):
 
     {drop_original}
 
+    group_by: str, str, int, or list of strings or integers, default=None
+            variable of list of variables to create lag features based on.
+
     Attributes
     ----------
     variables_:
@@ -156,6 +159,7 @@ class WindowFeatures(BaseForecastTransformer):
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
+        group_by: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if isinstance(window, list) and len(window) != len(set(window)):
@@ -176,7 +180,7 @@ class WindowFeatures(BaseForecastTransformer):
                 f"periods must be a positive integer. Got {periods} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original)
+        super().__init__(variables, missing_values, drop_original, group_by)
 
         self.window = window
         self.min_periods = min_periods
@@ -205,22 +209,34 @@ class WindowFeatures(BaseForecastTransformer):
         if isinstance(self.window, list):
             df_ls = []
             for win in self.window:
-                tmp = (
-                    X[self.variables_]
-                    .rolling(window=win)
-                    .agg(self.functions)
-                    .shift(periods=self.periods, freq=self.freq)
-                )
+                if self.group_by:
+                    tmp = self._agg_window_features(
+                        grouped_df=X.groupby(self.group_by),
+                        win=win,
+                    )
+                else:
+                    tmp = (
+                        X[self.variables_]
+                        .rolling(window=win)
+                        .agg(self.functions)
+                        .shift(periods=self.periods, freq=self.freq)
+                    )
                 df_ls.append(tmp)
             tmp = pd.concat(df_ls, axis=1)
 
         else:
-            tmp = (
-                X[self.variables_]
-                .rolling(window=self.window)
-                .agg(self.functions)
-                .shift(periods=self.periods, freq=self.freq)
-            )
+            if self.group_by:
+                tmp = self._agg_window_features(
+                    grouped_df=X.groupby(self.group_by),
+                    win=self.window,
+                )
+            else:
+                tmp = (
+                    X[self.variables_]
+                    .rolling(window=self.window)
+                    .agg(self.functions)
+                    .shift(periods=self.periods, freq=self.freq)
+                )
 
         tmp.columns = self._get_new_features_name()
 
@@ -254,3 +270,34 @@ class WindowFeatures(BaseForecastTransformer):
             ]
 
         return feature_names
+
+    def _agg_window_features(
+        self,
+        grouped_df: pd.core.groupby.generic.DataFrameGroupBy,
+        win: Union[str, int, Callable, List[int], List[str]],
+    ) -> Union[pd.Series, pd.DataFrame]:
+        """generate window features based on groups
+        Parameters
+        ----------
+        grouped_df : pd.core.groupby.generic.DataFrameGroupBy
+            dataframe of groups
+
+        window: Union[str, int, Callable, List[int], List[str]]
+            Size of the moving window
+
+        Returns
+        -------
+        Union[pd.Series, pd.DataFrame]
+            returned window features
+        """
+        tmp_data = []
+        for _, group in grouped_df:
+            tmp = (
+                group[self.variables_]
+                .rolling(window=win)
+                .agg(self.functions)
+                .shift(periods=self.periods, freq=self.freq)
+            )
+            tmp_data.append(tmp)
+        tmp = pd.concat(tmp_data).sort_index()
+        return tmp

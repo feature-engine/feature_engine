@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Union
+from typing import Dict, List, Union
 
 import numpy as np
 import pandas as pd
@@ -475,7 +475,7 @@ class DropHighPSIFeatures(BaseSelector):
                 threshold_cat = self.threshold
 
         # Compute the PSI by looping over the features
-        self.psi_values_ = {}
+        self.psi_values_: Dict = {}
         self.features_to_drop_ = []
 
         # Compute PSI for numerical features

@@ -74,6 +74,9 @@ class LagFeatures(BaseForecastTransformer):
 
     {drop_original}
 
+    group_by: str, str, int, or list of strings or integers, default=None
+            variable of list of variables to create lag features based on.
+
     Attributes
     ----------
     variables_:
@@ -117,6 +120,26 @@ class LagFeatures(BaseForecastTransformer):
     2  2022-09-20   3   8       2.0       7.0       1.0       6.0
     3  2022-09-21   4   9       3.0       8.0       2.0       7.0
     4  2022-09-22   5  10       4.0       9.0       3.0       8.0
+    create lags based on other variables.
+    >>> import pandas as pd
+    >>> from feature_engine.timeseries.forecasting import LagFeatures
+    >>> X = pd.DataFrame(dict(date = ["2022-09-18",
+    >>>                               "2022-09-19",
+    >>>                               "2022-09-20",
+    >>>                               "2022-09-21",
+    >>>                               "2022-09-22"],
+    >>>                       x1 = [1,2,3,4,5],
+    >>>                       x2 = [6,7,8,9,10],
+    >>>                       x3 = ['a','b','a','b','a']
+    >>>                     ))
+    >>> lf = LagFeatures(periods=[1,2], group_by_variables='x3')
+    >>> lf.fit_transform(X)
+              date  x1  x2 x3  x1_lag_1  x2_lag_1  x1_lag_2  x2_lag_2
+    0  2022-09-18   1   6  a       NaN       NaN       NaN       NaN
+    1  2022-09-19   2   7  b       NaN       NaN       NaN       NaN
+    2  2022-09-20   3   8  a       1.0       6.0       NaN       NaN
+    3  2022-09-21   4   9  b       2.0       7.0       NaN       NaN
+    4  2022-09-22   5  10  a       3.0       8.0       1.0       6.0
     """
 
     def __init__(
@@ -127,6 +150,7 @@ class LagFeatures(BaseForecastTransformer):
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
+        group_by: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
 
         if not (
@@ -151,7 +175,7 @@ class LagFeatures(BaseForecastTransformer):
                 "sort_index takes values True and False." f"Got {sort_index} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original)
+        super().__init__(variables, missing_values, drop_original, group_by)
 
         self.periods = periods
         self.freq = freq
@@ -180,35 +204,57 @@ class LagFeatures(BaseForecastTransformer):
             if isinstance(self.freq, list):
                 df_ls = []
                 for fr in self.freq:
-                    tmp = X[self.variables_].shift(
-                        freq=fr,
-                        axis=0,
-                    )
+                    if self.group_by:
+                        tmp = self._agg_freq_lags(
+                            grouped_df=X.groupby(self.group_by),
+                            freq=fr,
+                        )
+                    else:
+                        tmp = X[self.variables_].shift(
+                            freq=fr,
+                            axis=0,
+                        )
                     df_ls.append(tmp)
                 tmp = pd.concat(df_ls, axis=1)
 
             else:
-                tmp = X[self.variables_].shift(
-                    freq=self.freq,
-                    axis=0,
-                )
+                if self.group_by:
+                    tmp = self._agg_freq_lags(
+                        grouped_df=X.groupby(self.group_by),
+                        freq=self.freq,
+                    )
+                else:
+                    tmp = X[self.variables_].shift(
+                        freq=self.freq,
+                        axis=0,
+                    )
 
         else:
             if isinstance(self.periods, list):
                 df_ls = []
                 for pr in self.periods:
-                    tmp = X[self.variables_].shift(
-                        periods=pr,
-                        axis=0,
-                    )
+                    if self.group_by:
+                        tmp = X.groupby(self.group_by)[self.variables_].shift(
+                            periods=pr,
+                        )
+                    else:
+                        tmp = X[self.variables_].shift(
+                            periods=pr,
+                            axis=0,
+                        )
                     df_ls.append(tmp)
                 tmp = pd.concat(df_ls, axis=1)
 
             else:
-                tmp = X[self.variables_].shift(
-                    periods=self.periods,
-                    axis=0,
-                )
+                if self.group_by:
+                    tmp = X.groupby(self.group_by)[self.variables_].shift(
+                        periods=self.periods,
+                    )
+                else:
+                    tmp = X[self.variables_].shift(
+                        periods=self.periods,
+                        axis=0,
+                    )
 
         tmp.columns = self._get_new_features_name()
 
@@ -243,3 +289,30 @@ class LagFeatures(BaseForecastTransformer):
             ]
 
         return feature_names
+
+    def _agg_freq_lags(
+        self,
+        grouped_df: pd.core.groupby.generic.DataFrameGroupBy,
+        freq: Union[str, List[str]],
+    ) -> Union[pd.Series, pd.DataFrame]:
+        """_summary_
+
+        Parameters
+        ----------
+        grouped_df : pd.core.groupby.generic.DataFrameGroupBy
+            dataframe of groups
+        freq : Union[str, List[str]]
+            Offset to use from the tseries module or time rule.
+
+        Returns
+        -------
+        Union[pd.Series, pd.DataFrame]
+            lag feature or dataframe of lag features
+        """
+        tmp_data = []
+        for _, group in grouped_df:
+            original_idx = group.index
+            tmp = group[self.variables_].shift(freq=freq).reindex(original_idx)
+            tmp_data.append(tmp)
+        tmp = pd.concat(tmp_data).sort_index()
+        return tmp
