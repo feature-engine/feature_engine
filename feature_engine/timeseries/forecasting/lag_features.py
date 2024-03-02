@@ -289,11 +289,11 @@ class LagFeatures(BaseForecastTransformer):
             ]
 
         return feature_names
-    
+
     def _agg_freq_lags(
-            self, 
-            grouped_df: pd.core.groupby.generic.DataFrameGroupBy, 
-            freq: Union[str, List[str]],
+        self,
+        grouped_df: pd.core.groupby.generic.DataFrameGroupBy,
+        freq: Union[str, List[str]],
     ) -> Union[pd.Series, pd.DataFrame]:
         """_summary_
 
@@ -302,9 +302,7 @@ class LagFeatures(BaseForecastTransformer):
         grouped_df : pd.core.groupby.generic.DataFrameGroupBy
             dataframe of groups
         freq : Union[str, List[str]]
-            Offset to use from the tseries module or time rule. See parameter `freq` in
-            pandas `shift()`. It is the same functionality. If freq is a list, lag features
-            will be created for each one of the frequency values in the list.
+            Offset to use from the tseries module or time rule.
 
         Returns
         -------
@@ -314,11 +312,7 @@ class LagFeatures(BaseForecastTransformer):
         tmp_data = []
         for _, group in grouped_df:
             original_idx = group.index
-            tmp = (
-                group[self.variables_]
-                .shift(freq=freq)
-                .reindex(original_idx)
-            )
+            tmp = group[self.variables_].shift(freq=freq).reindex(original_idx)
             tmp_data.append(tmp)
         tmp = pd.concat(tmp_data).sort_index()
         return tmp
