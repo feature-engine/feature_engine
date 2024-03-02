@@ -134,3 +134,15 @@ Check also the following transformer from Scikit-learn:
 
 * `PolynomialFeatures <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html>`_
 * `SplineTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.SplineTransformer.html>`_
+
+
+Feature creation transformers in Feature-engine
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. toctree:: 
+   :maxdepth: 1
+   :hidden:
+
+   CyclicalFeatures
+   MathFeatures
+   RelativeFeatures
