@@ -77,8 +77,8 @@ feature transformation.
    from feature_engine.creation import RelativeFeatures
 
    # download and unzip Kaggle wine-quality raw data
-   os.environ["KAGGLE_USERNAME"] = "kaggle_username”
-   os.environ["KAGGLE_KEY"] = "kaggle_api_key"
+   os.environ["KAGGLE_USERNAME"] = <kaggle_username>
+   os.environ["KAGGLE_KEY"] = <kaggle_api_key>
    !kaggle datasets download -d yasserh/wine-quality-dataset
    !unzip -q wine-quality-dataset.zip
    
