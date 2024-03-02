@@ -70,7 +70,7 @@ In our example, we import three Python packages - os, pandas, and Feature-engine
 download the Kaggle dataset. We then use Feature-engine’s ``RelativeFeatures()`` to perform 
 feature transformation.
 
-.. code-block:: python
+.. code:: python
 
    import os
    import pandas as pd
@@ -90,7 +90,7 @@ feature transformation.
 .. figure:: ../../images/feature_creation_input_data.png
    :align:  center
 
-.. code-block:: python
+.. code:: python
 
    # perform feature transformation
    rf = RelativeFeatures(variables=["alcohol", "pH"], reference=["residual sugar"], func=["div"])
