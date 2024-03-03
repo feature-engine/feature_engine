@@ -1,21 +1,29 @@
 # Modified from scikit-learn's pipeline:
 # https://github.com/scikit-learn/scikit-learn/blob/6eff1757e/sklearn/pipeline.py#L59
 
-from sklearn.pipeline import Pipeline as pipe
-from sklearn.pipeline import _final_estimator_has, _fit_transform_one
-
+from sklearn import pipeline
 from sklearn.base import _fit_context, clone
+from sklearn.pipeline import _final_estimator_has, _fit_transform_one, _transform_one
 from sklearn.utils import Bunch, _print_elapsed_time
+from sklearn.utils._metadata_requests import METHODS
+from sklearn.utils._param_validation import HasMethods, Hidden
+from sklearn.utils.metadata_routing import _routing_enabled, process_routing
 from sklearn.utils.metaestimators import _BaseComposition, available_if
 from sklearn.utils.validation import check_memory
-from sklearn.utils.metadata_routing import (
-    _routing_enabled,
-    process_routing,
-)
-from sklearn.utils._metadata_requests import METHODS
+
+METHODS.append("transform_x_y")
 
 
-class Pipeline(pipe):
+def _fit_transform_x_y_one(
+    transformer, X, y, message_clsname="", message=None, params=None
+):
+    with _print_elapsed_time(message_clsname, message):
+        transformer.fit(X, y)
+        Xt, yt = transformer.transform_x_y(X, y, **params.get("transform_x_y", {}))
+        return Xt, yt, transformer
+
+
+class Pipeline(pipeline.Pipeline):
     """
     A sequence of data transformers with an optional final predictor.
 
@@ -116,10 +124,21 @@ class Pipeline(pipe):
     0.76
     """
 
-    def __init__(self, steps, *, memory=None, verbose=False):
-        super().__init__(steps=steps, memory=memory, verbose=verbose)
+    # BaseEstimator interface
+    _required_parameters = ["steps"]
 
-    def _fit(self, X, y, routed_params=None):
+    _parameter_constraints: dict = {
+        "steps": [list, Hidden(tuple)],
+        "memory": [None, str, HasMethods(["cache"])],
+        "verbose": ["boolean"],
+    }
+
+    def __init__(self, steps, *, memory=None, verbose=False):
+        self.steps = steps
+        self.memory = memory
+        self.verbose = verbose
+
+    def _fit(self, X, y=None, routed_params=None):
         # shallow copy of steps - this should really be steps_
         self.steps = list(self.steps)
         self._validate_steps()
@@ -127,6 +146,7 @@ class Pipeline(pipe):
         memory = check_memory(self.memory)
 
         fit_transform_one_cached = memory.cache(_fit_transform_one)
+        fit_transform_x_y_one_cached = memory.cache(_fit_transform_x_y_one)
 
         for step_idx, name, transformer in self._iter(
             with_final=False, filter_passthrough=False
@@ -141,17 +161,30 @@ class Pipeline(pipe):
                 cloned_transformer = transformer
             else:
                 cloned_transformer = clone(transformer)
+
             # Fit or load from cache the current transformer
-            X, fitted_transformer = fit_transform_one_cached(
-                cloned_transformer,
-                X,
-                y,
-                None,
-                message_clsname="Pipeline",
-                message=self._log_message(step_idx),
-                params=routed_params[name],
-            )
-            y = y.loc[X.index]
+            if hasattr(cloned_transformer, "transform_x_y"):
+                X, y, fitted_transformer = fit_transform_x_y_one_cached(
+                    cloned_transformer,
+                    X,
+                    y,
+                    message_clsname="Pipeline",
+                    message=self._log_message(step_idx),
+                    params=routed_params[name],
+                )
+            elif hasattr(cloned_transformer, "transform") or hasattr(
+                cloned_transformer, "fit_transform"
+            ):
+                X, fitted_transformer = fit_transform_one_cached(
+                    cloned_transformer,
+                    X,
+                    y,
+                    None,
+                    message_clsname="Pipeline",
+                    message=self._log_message(step_idx),
+                    params=routed_params[name],
+                )
+
             # Replace the transformer of the step with the fitted
             # transformer. This is necessary when loading the transformer
             # from the cache.
@@ -165,8 +198,9 @@ class Pipeline(pipe):
     def fit(self, X, y=None, **params):
         """Fit the model.
 
-        Fit all the transformers one after the other and sequentially transform the
-        data. Finally, fit the transformed data using the final estimator.
+        Fit all the transforms/samplers one after the other and
+        transform/sample the data, then fit the transformed/sampled
+        data using the final estimator.
 
         Parameters
         ----------
@@ -202,16 +236,15 @@ class Pipeline(pipe):
 
         Returns
         -------
-        self : object
-            Pipeline with fitted steps.
+        self : Pipeline
+            This estimator.
         """
-        routed_params = super()._check_method_params(method="fit", props=params)
+        routed_params = self._check_method_params(method="fit", props=params)
         Xt, yt = self._fit(X, y, routed_params)
         with _print_elapsed_time("Pipeline", self._log_message(len(self.steps) - 1)):
             if self._final_estimator != "passthrough":
                 last_step_params = routed_params[self.steps[-1][0]]
                 self._final_estimator.fit(Xt, yt, **last_step_params["fit"])
-
         return self
 
     def _can_fit_transform(self):
@@ -269,26 +302,27 @@ class Pipeline(pipe):
         Xt : ndarray of shape (n_samples, n_transformed_features)
             Transformed samples.
         """
-        routed_params = super()._check_method_params(method="fit_transform", props=params)
+        routed_params = super()._check_method_params(
+            method="fit_transform", props=params
+        )
         Xt, yt = self._fit(X, y, routed_params)
 
         last_step = self._final_estimator
         with _print_elapsed_time("Pipeline", self._log_message(len(self.steps) - 1)):
             if last_step == "passthrough":
-                return Xt, yt
+                return Xt
             last_step_params = routed_params[self.steps[-1][0]]
-            if hasattr(last_step, "fit_transform"):
-                Xt = last_step.fit_transform(
+            if hasattr(last_step, "transform_x_y"):
+                last_step.fit(Xt, yt)
+                return last_step.transform_x_y(Xt, yt)
+            elif hasattr(last_step, "fit_transform"):
+                return last_step.fit_transform(
                     Xt, yt, **last_step_params["fit_transform"]
                 )
-                yt = yt.loc[Xt.index]
-                return Xt, yt
             else:
-                Xt = last_step.fit(Xt, yt, **last_step_params["fit"]).transform(
+                return last_step.fit(Xt, y, **last_step_params["fit"]).transform(
                     Xt, **last_step_params["transform"]
                 )
-                yt = yt.loc[Xt.index]
-                return Xt, yt
 
     @available_if(_final_estimator_has("fit_predict"))
     @_fit_context(
