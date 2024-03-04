@@ -50,10 +50,21 @@ def test_check_y_returns_series():
     assert_series_equal(check_y(s), s)
 
 
+def test_check_y_returns_dataframe():
+    d = pd.DataFrame({"t1": [0, 1, 2, 3, 4], "t2": [5, 6, 7, 8, 9]})
+    assert_frame_equal(check_y(d), d)
+
+
 def test_check_y_converts_np_array():
     a1D = np.array([1, 2, 3, 4])
     s = pd.Series(a1D)
     assert_series_equal(check_y(a1D), s)
+
+
+def test_check_y_converts_np_array_2D():
+    a2D = np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(2, 4)
+    d = pd.DataFrame(a2D)
+    assert_frame_equal(check_y(a2D), d)
 
 
 def test_check_y_raises_none_error():
@@ -65,12 +76,18 @@ def test_check_y_raises_nan_error():
     s = pd.Series([0, np.nan, 2, 3, 4])
     with pytest.raises(ValueError):
         check_y(s)
+    d = pd.DataFrame(np.array([1, np.nan, 3, 4, 5, 6, np.nan, 8]).reshape(2, 4))
+    with pytest.raises(ValueError):
+        check_y(d)
 
 
 def test_check_y_raises_inf_error():
     s = pd.Series([0, np.inf, 2, 3, 4])
     with pytest.raises(ValueError):
         check_y(s)
+    d = pd.DataFrame(np.array([1, np.inf, 3, 4, 5, 6, np.inf, 8]).reshape(2, 4))
+    with pytest.raises(ValueError):
+        check_y(d)
 
 
 def test_check_y_converts_string_to_number():
@@ -79,10 +96,17 @@ def test_check_y_converts_string_to_number():
 
 
 def test_check_x_y_returns_pandas_from_pandas(df_vartypes):
+    # when s is series
     s = pd.Series([0, 1, 2, 3])
     x, y = check_X_y(df_vartypes, s)
     assert_frame_equal(df_vartypes, x)
     assert_series_equal(s, y)
+
+    # when y is multioutput
+    d = pd.DataFrame(np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(4, 2))
+    x, y = check_X_y(df_vartypes, d)
+    assert_frame_equal(df_vartypes, x)
+    assert_frame_equal(d, y)
 
 
 def test_check_X_y_returns_pandas_from_pandas_with_non_typical_index():
@@ -98,6 +122,13 @@ def test_check_X_y_raises_error_when_pandas_index_dont_match():
     s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 999])
     with pytest.raises(ValueError):
         check_X_y(df, s)
+
+    # when y is multioutput
+    d = pd.DataFrame(
+        np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(4, 2), index=[22, 99, 101, 999]
+    )
+    with pytest.raises(ValueError):
+        check_X_y(df, d)
 
 
 def test_check_x_y_reassings_index_when_only_one_input_is_pandas():

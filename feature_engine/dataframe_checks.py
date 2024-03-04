@@ -7,7 +7,7 @@ from typing import List, Tuple, Union
 import numpy as np
 import pandas as pd
 from scipy.sparse import issparse
-from sklearn.utils.validation import _check_y, check_consistent_length
+from sklearn.utils.validation import _check_y, check_consistent_length, column_or_1d
 
 
 def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
@@ -89,22 +89,17 @@ def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
 
 
 def check_y(
-    y: Union[np.generic, np.ndarray, pd.Series, List],
-    multi_output: bool = False,
+    y: Union[np.generic, np.ndarray, pd.Series, pd.DataFrame, List],
     y_numeric: bool = False,
 ) -> pd.Series:
     """
-    Checks that y is a series, or alternatively, if it can be converted to a series.
+    Checks that y is a series or a dataframe, or alternatively, if it can be converted
+    to a series or dataframe.
 
     Parameters
     ----------
-    y : pd.Series, np.array, list
+    y : pd.Series, pd.DataFrame, np.array, list
         The input to check and copy or transform.
-
-    multi_output : bool, default=False
-        Whether to allow 2D y (array). If false, y will be
-        validated as a vector. y cannot have np.nan or np.inf values if
-        multi_output=True.
 
     y_numeric : bool, default=False
         Whether to ensure that y has a numeric type. If dtype of y is object,
@@ -113,7 +108,7 @@ def check_y(
 
     Returns
     -------
-    y: pd.Series
+    y: pd.Series or pd.DataFrame
     """
 
     if y is None:
@@ -132,17 +127,27 @@ def check_y(
             y = y.astype("float")
         y = y.copy()
 
-    else:
-        y = _check_y(y, multi_output=multi_output, y_numeric=y_numeric)
-        y = pd.Series(y)
+    elif isinstance(y, pd.DataFrame):
+        if y.isnull().any().any():
+            raise ValueError("y contains NaN values.")
+        if not np.isfinite(y).all().all():
+            raise ValueError("y contains infinity values.")
+        y = y.copy()
 
+    else:
+        try:
+            y = column_or_1d(y)
+            y = _check_y(y, multi_output=False, y_numeric=y_numeric)
+            y = pd.Series(y)
+        except ValueError:
+            y = _check_y(y, multi_output=True, y_numeric=y_numeric)
+            y = pd.DataFrame(y)
     return y
 
 
 def check_X_y(
     X: Union[np.generic, np.ndarray, pd.DataFrame],
     y: Union[np.generic, np.ndarray, pd.Series, List],
-    multi_output: bool = False,
     y_numeric: bool = False,
 ) -> Tuple[pd.DataFrame, pd.Series]:
     """
@@ -160,11 +165,6 @@ def check_X_y(
 
     y: pd.Series, np.array, list
         The input to check and copy or transform.
-
-    multi_output : bool, default=False
-        Whether to allow 2D y (array). If false, y will be
-        validated as a vector. y cannot have np.nan or np.inf values if
-        multi_output=True.
 
     y_numeric : bool, default=False
         Whether to ensure that y has a numeric type. If dtype of y is object,
@@ -185,24 +185,24 @@ def check_X_y(
 
     def _check_X_y(X, y):
         X = check_X(X)
-        y = check_y(y, multi_output=multi_output, y_numeric=y_numeric)
+        y = check_y(y, y_numeric=y_numeric)
         check_consistent_length(X, y)
         return X, y
 
     # case 1: both are pandas objects
-    if isinstance(X, pd.DataFrame) and isinstance(y, pd.Series):
+    if isinstance(X, pd.DataFrame) and isinstance(y, (pd.Series, pd.DataFrame)):
         X, y = _check_X_y(X, y)
         # Check that their indexes match.
         if X.index.equals(y.index) is False:
             raise ValueError("The indexes of X and y do not match.")
 
     # case 2: X is dataframe and y is something else
-    if isinstance(X, pd.DataFrame) and not isinstance(y, pd.Series):
+    if isinstance(X, pd.DataFrame) and not isinstance(y, (pd.Series, pd.DataFrame)):
         X, y = _check_X_y(X, y)
         y.index = X.index
 
     # case 3: X is not a dataframe and y is a series
-    elif not isinstance(X, pd.DataFrame) and isinstance(y, pd.Series):
+    elif not isinstance(X, pd.DataFrame) and isinstance(y, (pd.Series, pd.DataFrame)):
         X, y = _check_X_y(X, y)
         X.index = y.index
 
