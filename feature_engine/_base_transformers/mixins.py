@@ -18,15 +18,16 @@ class TransformXyMixin:
     def transform_x_y(self, X: pd.DataFrame, y: pd.Series):
         """
         Transform, align and adjust both X and y based on the transformations applied
-        to X, ensuring that they correspond to the same set of rows after removal.
+        to X, ensuring that they correspond to the same set of rows if any were
+        removed from X.
 
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
             The dataframe to transform.
 
-        y: pandas Series of shape = [n_samples]
-            The target variable to transform.
+        y: pandas Series or Dataframe of length = n_samples
+            The target variable to transform. Can be multi-output.
 
         Returns
         -------
@@ -34,8 +35,8 @@ class TransformXyMixin:
             The transformed dataframe of shape [n_samples - n_rows, n_features]. It may
             contain less rows than the original dataset.
 
-        y_new: pandas Series
-            The transformed target variable of shape [n_samples - n_rows]. It contains
+        y_new: pandas Series or DataFrame
+            The transformed target variable of length [n_samples - n_rows]. It contains
             as many rows as those left in X_new.
         """
         X, y = check_X_y(X, y)
