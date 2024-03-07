@@ -115,7 +115,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         Add expanding window features.
 
     transform_x_y:
-        Transform X and then remove rows with missing data from X and target.
+        Remove rows with missing data from X and y.
 
     {fit_transform}
 
