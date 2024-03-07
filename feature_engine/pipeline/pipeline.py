@@ -1,6 +1,9 @@
 # Modified from scikit-learn's pipeline:
 # https://github.com/scikit-learn/scikit-learn/blob/6eff1757e/sklearn/pipeline.py#L59
 
+# Looked at imbalanced learn pipeline as template:
+# https://github.com/scikit-learn-contrib/imbalanced-learn
+
 from sklearn import pipeline
 from sklearn.base import _fit_context, clone
 from sklearn.pipeline import _final_estimator_has, _fit_transform_one, _transform_one
@@ -29,11 +32,11 @@ class Pipeline(pipeline.Pipeline):
 
     `Pipeline` allows you to sequentially apply a list of transformers to
     preprocess the data and, if desired, conclude the sequence with a final
-    :term:`predictor` for predictive modeling.
+    `predictor` for predictive modeling.
 
     Intermediate steps of the pipeline must be 'transforms', that is, they
     must implement `fit` and `transform` methods.
-    The final :term:`estimator` only needs to implement `fit`.
+    The final `estimator` only needs to implement `fit`.
     The transformers in the pipeline can be cached using ``memory`` argument.
 
     The purpose of the pipeline is to assemble several steps that can be
@@ -44,15 +47,7 @@ class Pipeline(pipeline.Pipeline):
     to another estimator, or a transformer removed by setting it to
     `'passthrough'` or `None`.
 
-    For an example use case of `Pipeline` combined with
-    :class:`~sklearn.model_selection.GridSearchCV`, refer to
-    :ref:`sphx_glr_auto_examples_compose_plot_compare_reduction.py`. The
-    example :ref:`sphx_glr_auto_examples_compose_plot_digits_pipe.py` shows how
-    to grid search on a pipeline using `'__'` as a separator in the parameter names.
-
-    Read more in the :ref:`User Guide <pipeline>`.
-
-    .. versionadded:: 0.5
+    More details in the :ref:`User Guide <pipeline>`.
 
     Parameters
     ----------
@@ -92,17 +87,10 @@ class Pipeline(pipeline.Pipeline):
         underlying first estimator in `steps` exposes such an attribute
         when fit.
 
-        .. versionadded:: 0.24
-
     feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during :term:`fit`. Only defined if the
         underlying estimator exposes such an attribute when fit.
 
-        .. versionadded:: 1.0
-
-    See Also
-    --------
-    make_pipeline : Convenience function for simplified pipeline construction.
 
     Examples
     --------
@@ -247,6 +235,7 @@ class Pipeline(pipeline.Pipeline):
                 self._final_estimator.fit(Xt, yt, **last_step_params["fit"])
         return self
 
+
     def _can_fit_transform(self):
         return (
             self._final_estimator == "passthrough"
@@ -260,6 +249,72 @@ class Pipeline(pipeline.Pipeline):
         prefer_skip_nested_validation=False
     )
     def fit_transform(self, X, y=None, **params):
+        """Fit the model and transform with the final estimator.
+
+        Fits all the transformers/samplers one after the other and
+        transform/sample the data, then uses fit_transform on
+        transformed data with the final estimator.
+
+        Parameters
+        ----------
+        X : iterable
+            Training data. Must fulfill input requirements of first step of the
+            pipeline.
+
+        y : iterable, default=None
+            Training targets. Must fulfill label requirements for all steps of
+            the pipeline.
+
+        **params : dict of str -> object
+            - If `enable_metadata_routing=False` (default):
+
+                Parameters passed to the ``fit`` method of each step, where
+                each parameter name is prefixed such that parameter ``p`` for step
+                ``s`` has key ``s__p``.
+
+            - If `enable_metadata_routing=True`:
+
+                Parameters requested and accepted by steps. Each step must have
+                requested certain metadata for these parameters to be forwarded to
+                them.
+
+            .. versionchanged:: 1.4
+                Parameters are now passed to the ``transform`` method of the
+                intermediate steps as well, if requested, and if
+                `enable_metadata_routing=True`.
+
+            See :ref:`Metadata Routing User Guide <metadata_routing>` for more
+            details.
+
+        Returns
+        -------
+        Xt : array-like of shape (n_samples, n_transformed_features)
+            Transformed samples.
+        """
+        routed_params = self._check_method_params(method="fit_transform", props=params)
+        Xt, yt = self._fit(X, y, routed_params)
+
+        last_step = self._final_estimator
+        with _print_elapsed_time("Pipeline", self._log_message(len(self.steps) - 1)):
+            if last_step == "passthrough":
+                return Xt
+            last_step_params = routed_params[self.steps[-1][0]]
+            if hasattr(last_step, "fit_transform"):
+                return last_step.fit_transform(
+                    Xt, yt, **last_step_params["fit_transform"]
+                )
+            else:
+                return last_step.fit(Xt, y, **last_step_params["fit"]).transform(
+                    Xt, **last_step_params["transform"]
+                )
+
+    def _can_transform_x_y(self):
+        return any([transformer for _, _, transformer in self._iter(
+            with_final=True, filter_passthrough=False
+        ) if hasattr(transformer, "transform_x_y")])
+
+    @available_if(_can_transform_x_y)
+    def transform_x_y(self, X, y, **params):
         """Fit the model and transform with the final estimator.
 
         Fit all the transformers one after the other and sequentially transform
@@ -303,26 +358,24 @@ class Pipeline(pipeline.Pipeline):
             Transformed samples.
         """
         routed_params = super()._check_method_params(
-            method="fit_transform", props=params
+            method="transform", props=params
         )
         Xt, yt = self._fit(X, y, routed_params)
 
         last_step = self._final_estimator
         with _print_elapsed_time("Pipeline", self._log_message(len(self.steps) - 1)):
             if last_step == "passthrough":
-                return Xt
+                return Xt, yt
             last_step_params = routed_params[self.steps[-1][0]]
             if hasattr(last_step, "transform_x_y"):
-                last_step.fit(Xt, yt)
                 return last_step.transform_x_y(Xt, yt)
-            elif hasattr(last_step, "fit_transform"):
-                return last_step.fit_transform(
-                    Xt, yt, **last_step_params["fit_transform"]
-                )
+            elif hasattr(last_step, "transform"):
+                Xt = last_step.transform(Xt)
+                yt = y.loc[Xt.index]
+                return Xt, yt
             else:
-                return last_step.fit(Xt, y, **last_step_params["fit"]).transform(
-                    Xt, **last_step_params["transform"]
-                )
+                raise Exception("Last transformer in pipeline does not have method transform or transform_x_y")
+
 
     @available_if(_final_estimator_has("fit_predict"))
     @_fit_context(
