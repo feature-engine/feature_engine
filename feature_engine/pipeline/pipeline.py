@@ -186,9 +186,8 @@ class Pipeline(pipeline.Pipeline):
     def fit(self, X, y=None, **params):
         """Fit the model.
 
-        Fit all the transforms/samplers one after the other and
-        transform/sample the data, then fit the transformed/sampled
-        data using the final estimator.
+        Fit all the transformers one after the other and transform the data, then fit
+        the transformed data using the final estimator.
 
         Parameters
         ----------
@@ -249,11 +248,10 @@ class Pipeline(pipeline.Pipeline):
         prefer_skip_nested_validation=False
     )
     def fit_transform(self, X, y=None, **params):
-        """Fit the model and transform with the final estimator.
+        """Fit the model and transform with the final transformer.
 
-        Fits all the transformers/samplers one after the other and
-        transform/sample the data, then uses fit_transform on
-        transformed data with the final estimator.
+        Fit all the transformers one after the other and sequentially transform
+        the data. Only valid if last step of the pipeline has method `transform`.
 
         Parameters
         ----------
@@ -354,8 +352,11 @@ class Pipeline(pipeline.Pipeline):
 
         Returns
         -------
-        Xt : ndarray of shape (n_samples, n_transformed_features)
+        Xt : ndarray of shape (n_samples - n_rows, n_transformed_features)
             Transformed samples.
+
+        yt : ndarray of length (n_samples - n_rows)
+            Transformed target.
         """
         routed_params = super()._check_method_params(
             method="transform", props=params

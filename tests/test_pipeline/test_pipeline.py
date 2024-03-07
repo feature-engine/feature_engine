@@ -154,5 +154,5 @@ def test_with_trasnformer_and_estimator_from_sklearn(create_data):
     assert (preds_pipe == preds).all()
 
 
-
 # TODO: test with column transformer and with predict_proba and to see if that also works
+# check https://github.com/scikit-learn-contrib/imbalanced-learn/blob/master/imblearn/tests/test_pipeline.py
