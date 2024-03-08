@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.linear_model import Lasso
 from sklearn.preprocessing import OrdinalEncoder as sk_OrdinalEncoder
 
 from feature_engine.encoding import OrdinalEncoder
@@ -152,7 +152,3 @@ def test_with_trasnformer_and_estimator_from_sklearn(create_data):
     pipe.fit(X, y)
     preds_pipe = pipe.predict(X)
     assert (preds_pipe == preds).all()
-
-
-# TODO: test with column transformer and with predict_proba and to see if that also works
-# check https://github.com/scikit-learn-contrib/imbalanced-learn/blob/master/imblearn/tests/test_pipeline.py
