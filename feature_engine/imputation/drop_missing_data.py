@@ -141,7 +141,7 @@ class DropMissingData(BaseImputer, TransformXyMixin):
         X: pandas dataframe of shape = [n_samples, n_features]
             The training data set.
 
-        y: pandas Series, default=None
+        y: pandas Series or dataframe, default=None
             y is not needed in this imputation. You can pass None or y.
         """
 
