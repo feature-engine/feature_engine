@@ -107,6 +107,17 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
 
+    unseen: str, default='raise'
+        The unseen param of the OrdinalEncoder used before DecisionTreeDiscretiser
+        in the fit method. It tells the encoder how to handle unseen categories.
+        Following OrdinalEncoder we have : 
+            -  If 'raise', then unseen categories will raise an error. 
+
+            -  If 'ignore', then unseen categories will be encoded as NaN 
+               and a warning will be raised instead. 
+
+            -  If 'encode', unseen categories will be encoded as -1.
+
     {variables}
 
     {ignore_format}
@@ -198,6 +209,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
+        unseen: str = "raise"
     ) -> None:
 
         super().__init__(variables, ignore_format)
@@ -207,6 +219,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self.regression = regression
         self.param_grid = param_grid
         self.random_state = random_state
+        self.unseen = unseen
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -247,7 +260,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             variables=variables_,
             missing_values="raise",
             ignore_format=self.ignore_format,
-            unseen="raise",
+            unseen=self.unseen,
         )
 
         # initialize decision tree discretiser
