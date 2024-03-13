@@ -110,11 +110,11 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     unseen: str, default='raise'
         The unseen param of the OrdinalEncoder used before DecisionTreeDiscretiser
         in the fit method. It tells the encoder how to handle unseen categories.
-        Following OrdinalEncoder we have : 
-            -  If 'raise', then unseen categories will raise an error. 
+        Following OrdinalEncoder we have :
+            -  If 'raise', then unseen categories will raise an error.
 
-            -  If 'ignore', then unseen categories will be encoded as NaN 
-               and a warning will be raised instead. 
+            -  If 'ignore', then unseen categories will be encoded as NaN
+               and a warning will be raised instead.
 
             -  If 'encode', unseen categories will be encoded as -1.
 
@@ -209,7 +209,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        unseen: str = "raise"
+        unseen: str = "raise",
     ) -> None:
 
         super().__init__(variables, ignore_format)
