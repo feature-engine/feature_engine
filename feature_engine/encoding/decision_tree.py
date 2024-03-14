@@ -111,6 +111,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         The unseen param of the OrdinalEncoder used before DecisionTreeDiscretiser
         in the fit method. It tells the encoder how to handle unseen categories.
         Following OrdinalEncoder we have :
+
             -  If 'raise', then unseen categories will raise an error.
 
             -  If 'ignore', then unseen categories will be encoded as NaN
