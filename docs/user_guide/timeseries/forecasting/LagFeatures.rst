@@ -59,7 +59,7 @@ containing the time series timestamp, contains unique values and no NaN.
 Examples
 --------
 
-Let's create a toy dataset to demonstrate the functionality of :class:`LagFeatures`.
+Let's create a toy dataset to show how to add lag features with :class:`LagFeatures`.
 The dataframe contains 3 numerical variables, a categorical variable, and a datetime
 index. We also create an arbitrary target.
 
@@ -113,7 +113,7 @@ And here we print and show the target variable:
 Shift a row forward
 ~~~~~~~~~~~~~~~~~~~
 
-Now we will create new features by lagging all numerical variables 1 row forward. Note
+Now we will create lag features by lagging all numerical variables 1 row forward. Note
 that :class:`LagFeatures` automatically finds all numerical variables.
 
 .. code:: python
@@ -156,8 +156,8 @@ The variables to lag are stored in the `variables_` attribute of the
 
     ['ambient_temp', 'module_temp', 'irradiation']
 
-We can obtain the names of the variables in the returned dataframe using the
-`get_feature_names_out()` method:
+We can obtain the names of the original variables plus the lag features that are the
+returned in the transformed dataframe using the `get_feature_names_out()` method:
 
 .. code:: python
 
@@ -173,9 +173,9 @@ We can obtain the names of the variables in the returned dataframe using the
      'module_temp_lag_1',
      'irradiation_lag_1']
 
-When we create lags, we introduce nan values for the first rows of the training data set,
-because there are no past values for those data points. We can impute those nan values with
-an arbitrary value as follows:
+When we create lag features, we introduce nan values for the first rows of the training
+data set, because there are no past values for those data points. We can impute those
+nan values with an arbitrary value as follows:
 
 .. code:: python
 
@@ -203,7 +203,7 @@ We see that the nan values were replaced by 0:
     2020-05-15 12:45:00               32.15              52.35               0.65
     2020-05-15 13:00:00               32.39              50.63               0.76
 
-Alternatively, we can drop the rows with missing values, like this:
+Alternatively, we can drop the rows with missing values in the lag features, like this:
 
 .. code:: python
 
@@ -229,7 +229,8 @@ Alternatively, we can drop the rows with missing values, like this:
     2020-05-15 13:00:00               32.39              50.63               0.76
     2020-05-15 13:15:00               32.62              49.61               0.42
 
-We can also drop the rows with nan and adjust the target variable like this:
+We can also drop the rows with nan in the lag features and then adjust the target
+variable like this:
 
 .. code:: python
 
@@ -237,7 +238,7 @@ We can also drop the rows with nan and adjust the target variable like this:
 
     X_tr.shape, y_tr.shape, X.shape, y.shape
 
-We created a lag of 1, hence there is only 1 row with nan, which was removed from
+We created a lag feature of 1, hence there is only 1 row with nan, which was removed from
 train set and target:
 
 .. code:: python
@@ -303,8 +304,9 @@ We can get the names of features in the resulting dataframe as follows:
      'module_temp_lag_2',
      'irradiation_lag_2']
 
-We can replace the nan introduced in the lags as well. In this opportunity, we'll use
-a string:
+We can replace the nan introduced in the lag features as well. In this opportunity,
+we'll use a string. Not that this is a suitable solution to train machine learning
+algorithms, but the idea here is to showcase :class:`LagFeatures`'s functionality.
 
 .. code:: python
 
@@ -314,7 +316,7 @@ a string:
 
     print(X_tr.head())
 
-In this case, we replaced nan with the string None:
+In this case, we replaced the nan in the lag features with the string None:
 
 .. code:: python
 
@@ -339,7 +341,8 @@ In this case, we replaced nan with the string None:
     2020-05-15 12:45:00              31.51             49.84              0.79
     2020-05-15 13:00:00              32.15             52.35              0.65
 
-Alternatively, we can drop the nan and readjust the target variable:
+Alternatively, we can drop rows containing nan in the lag features and then adjust the
+target variable:
 
 .. code:: python
 
@@ -392,7 +395,7 @@ Note that the features were moved forward 30 minutes.
     2020-05-15 12:45:00                  49.84                   0.79
     2020-05-15 13:00:00                  52.35                   0.65
 
-We can replace the nan with a number like this:
+We can replace the nan in the lag features with a number like this:
 
 .. code:: python
 
@@ -422,7 +425,7 @@ Here, we replaced nan by 100:
     2020-05-15 13:00:00                  52.35                   0.65
 
 
-Alternatively, we can remove the introduced nan values and readjust the target:
+Alternatively, we can remove the nan introduced in the lag features and adjust the target:
 
 .. code:: python
 
@@ -479,7 +482,7 @@ original variable is not present in the output dataframe.
 
 This is super useful in time series forecasting, because the original variable is usually
 the one that we are trying to forecast, that is, the target variable. The original variables
-also contain values that are not available at the time points that we are forecasting.
+also contain values that are **NOT** available at the time points that we are forecasting.
 
 Working with pandas series
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -505,7 +508,7 @@ The following is a pandas Series:
     2020-05-15 13:45:00    32.68
     Freq: 15T, Name: ambient_temp, dtype: float64
 
-We can use :class:`LagFeatures` to create, for example, 3 new features by lagging the
+We can use :class:`LagFeatures` to create, for example, 3 features by lagging the
 pandas Series if we convert it to a pandas Dataframe using the method `to_frame()`:
 
 .. code:: python
