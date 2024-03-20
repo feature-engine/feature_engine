@@ -198,7 +198,6 @@ class LagFeatures(BaseForecastTransformer):
                 for fr in self.freq:
                     tmp = X[self.variables_].shift(
                         freq=fr,
-                        fill_value=self.fill_value,
                         axis=0,
                     )
                     df_ls.append(tmp)
@@ -207,7 +206,6 @@ class LagFeatures(BaseForecastTransformer):
             else:
                 tmp = X[self.variables_].shift(
                     freq=self.freq,
-                    fill_value=self.fill_value,
                     axis=0,
                 )
 
@@ -233,6 +231,11 @@ class LagFeatures(BaseForecastTransformer):
         tmp.columns = self._get_new_features_name()
 
         X = X.merge(tmp, left_index=True, right_index=True, how="left")
+
+        # we need this because pandas deprecated fill_value when using frequency
+        if self.freq is not None and self.fill_value is not None:
+            lags = [x for x in tmp.columns if x not in self.feature_names_in_]
+            X[lags] = X[lags].fillna(value=self.fill_value)
 
         if self.drop_original:
             X = X.drop(self.variables_, axis=1)

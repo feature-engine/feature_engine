@@ -265,6 +265,61 @@ def test_fill_value(df_time, fill_val):
     )
 
 
+@pytest.mark.parametrize("fill_val", [-1, 0, 15])
+def test_fill_value_with_freq(df_time, fill_val):
+    # Expected
+    date_time = [
+        pd.Timestamp("2020-05-15 12:00:00"),
+        pd.Timestamp("2020-05-15 12:15:00"),
+        pd.Timestamp("2020-05-15 12:30:00"),
+        pd.Timestamp("2020-05-15 12:45:00"),
+        pd.Timestamp("2020-05-15 13:00:00"),
+    ]
+    expected_results = {
+        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62],
+        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61],
+        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42],
+        "color": ["blue"] * 5,
+        "ambient_temp_lag_45min": [fill_val, fill_val, fill_val, 31.31, 31.51],
+        "module_temp_lag_45min": [fill_val, fill_val, fill_val, 49.18, 49.84],
+        "ambient_temp_lag_30min": [fill_val, fill_val, 31.31, 31.51, 32.15],
+        "module_temp_lag_30min": [fill_val, fill_val, 49.18, 49.84, 52.35],
+    }
+    expected_results_df = pd.DataFrame(data=expected_results, index=date_time)
+
+    # When period is an int.
+    transformer = LagFeatures(
+        variables=["ambient_temp", "module_temp"], freq="45min", fill_value=fill_val
+    )
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.head(5).equals(
+        expected_results_df.drop(
+            ["ambient_temp_lag_30min", "module_temp_lag_30min"], axis=1
+        )
+    )
+
+    # When period is list.
+    transformer = LagFeatures(
+        variables=["ambient_temp", "module_temp"],
+        freq=["45min", "30min"],
+        fill_value=fill_val,
+    )
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.head(5).equals(expected_results_df)
+
+    # When drop original is True
+    transformer = LagFeatures(
+        variables=["ambient_temp", "module_temp"],
+        freq=["45min", "30min"],
+        drop_original=True,
+        fill_value=fill_val,
+    )
+    df_tr = transformer.fit_transform(df_time)
+    assert df_tr.head(5).equals(
+        expected_results_df.drop(["ambient_temp", "module_temp"], axis=1)
+    )
+
+
 def test_drop_na(df_time):
     df = df_time.head(5).copy()
 
