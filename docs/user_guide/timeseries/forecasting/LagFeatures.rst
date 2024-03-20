@@ -632,10 +632,10 @@ If you want to use :class:`LagFeatures` as part of a feature engineering pipelin
 check out Feature-engine's `Pipeline`.
 
 Tutorials and courses
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 For tutorials about this and other feature engineering methods for time series forecasting
-check out our online course:
+check out our online courses:
 
 .. figure::  ../../../images/fetsf.png
    :width: 300

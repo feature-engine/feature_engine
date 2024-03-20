@@ -5,16 +5,17 @@
 WindowFeatures
 ==============
 
-Window features are commonly used in time series forecasting with traditional machine
-learning models, like linear regression models. Window features are created by
-performing mathematical operations over windows of data.
+Window features are commonly used in data science to forecast time series with traditional
+machine learning models, like linear regression or gradient boosting machines. Window features
+are created by performing mathematical operations over windows of past data.
 
 For example, the mean “sales” value of the previous 3 months of data is a window feature.
 The maximum “revenue” of the previous three rows of data is another window feature.
 
 In time series forecasting, we want to predict future values of the time series. To do this,
 we can create window features by performing mathematical operations over windows of past
-values of the time series data.
+values of the time series data. Then, we would use this features to predict the time series
+with any regression model.
 
 
 Rolling window features with pandas
@@ -34,16 +35,18 @@ by executing:
 
     X[["var_1", "var_2"].rolling(window=3).agg(["max", "mean"])
 
-we create 2 window features for each variable, `var_1` and `var_2`, by taking the maximum and
-average value of the current and 2 previous rows of data.
+With the previous command, we create 2 window features for each variable, `var_1` and
+`var_2`, by taking the maximum and average value of the current and 2 previous rows of data.
 
-If we want to use those features for forecasting using traditional machine learning algorithms,
-we would also shift the window forward with pandas method `shift`:
+If we want to use those features for forecasting using traditional machine learning
+algorithms, we also need to shift the window forward with pandas method `shift`:
 
 .. code:: python
 
     X[["var_1", "var_2"].rolling(window=3).agg(["max", "mean"]).shift(period=1)
 
+Shifting is important to ensure that we are using values strictly in the past, respect
+to the point that we want to forecast.
 
 Sliding window features with Feature-engine
 -------------------------------------------
@@ -97,9 +100,9 @@ containing the time series timestamp, contains unique values and no NaN.
 Examples
 --------
 
-Let's create a toy time series dataset to demonstrate the functionality of :class:`WindowFeatures`.
-The dataframe contains 3 numerical variables, a categorical variable, and a datetime
-index.
+Let's create a time series dataset to see how to create window features with
+:class:`WindowFeatures`. The dataframe contains 3 numerical variables, a categorical
+variable, and a datetime index. We also create a target variable.
 
 .. code:: python
 
@@ -114,9 +117,12 @@ index.
     X = pd.DataFrame(X)
     X.index = pd.date_range("2020-05-15 12:00:00", periods=8, freq="15min")
 
+    y = pd.Series([1,2,3,4,5,6,7,8])
+    y.index = X.index
+
     X.head()
 
-Below we see the output of our toy dataframe:
+Below we see the dataframe:
 
 .. code:: python
 
@@ -128,6 +134,25 @@ Below we see the output of our toy dataframe:
     2020-05-15 13:00:00         32.62        49.61         0.42   blue
 
 
+Let's now print out the target:
+
+.. code:: python
+
+    y
+
+Below we see the target variable:
+
+.. code:: python
+
+    2020-05-15 12:00:00    1
+    2020-05-15 12:15:00    2
+    2020-05-15 12:30:00    3
+    2020-05-15 12:45:00    4
+    2020-05-15 13:00:00    5
+    2020-05-15 13:15:00    6
+    2020-05-15 13:30:00    7
+    2020-05-15 13:45:00    8
+    Freq: 15min, dtype: int64
 
 Now we will create window features from the numerical variables. By setting
 `window=["30min", "60min"]` we perform calculations over windows of 30 and 60
@@ -157,7 +182,7 @@ before the forecasting point.
 
     X_tr.head()
 
-We can find the window features on the right side of the dataframe.
+We find the window features on the right side of the dataframe.
 
 .. code:: python
 
@@ -294,8 +319,8 @@ attribute of the :class:`WindowFeatures`:
 
     ['ambient_temp', 'module_temp', 'irradiation']
 
-We can obtain the names of the variables in the returned dataframe using the
-get_feature_names_out() method:
+We can obtain the names of the variables in the transformed dataframe using the
+`get_feature_names_out()` method:
 
 .. code:: python
 
@@ -326,6 +351,116 @@ get_feature_names_out() method:
      'irradiation_window_60min_max',
      'irradiation_window_60min_std']
 
+Dropping rows with nan
+~~~~~~~~~~~~~~~~~~~~~~
+
+When we create window features, we may introduce nan values for those data points where
+there isn't enough data in the past to create the windows. We can automatically drop
+the rows with nan values in the window features both in the train set and in the target
+variable as follows:
+
+.. code:: python
+
+    win_f = WindowFeatures(
+        window=["30min", "60min"],
+        functions=["mean", ],
+        freq="15min",
+        drop_na=True,
+    )
+
+    win_f.fit(X)
+
+    X_tr, y_tr = win_f.transform_x_y(X, y)
+
+    X.shape, y.shape, X_tr.shape, y_tr.shape
+
+We see that the resulting dataframe contains less rows than the original dataframe:
+
+.. code:: python
+
+    ((8, 4), (8,), (7, 10), (7,))
+
+
+Imputing rows with nan
+~~~~~~~~~~~~~~~~~~~~~~
+
+If instead of removing the row with nan in the window features, we want to impute those
+values, we can do so with any of Feature-engine's imputers. Here, we will replace nan with
+the arbitrary value -99, using the `ArbitraryNumberImputer` within a pipeline:
+
+
+.. code:: python
+
+    from feature_engine.imputation import ArbitraryNumberImputer
+    from feature_engine.pipeline import Pipeline
+
+    win_f = WindowFeatures(
+        window=["30min", "60min"],
+        functions=["mean", ],
+        freq="15min",
+    )
+
+    pipe = Pipeline([
+        ("windows", win_f),
+        ("imputer", ArbitraryNumberImputer(arbitrary_number=-99))
+    ])
+
+    X_tr = pipe.fit_transform(X, y)
+
+    print(X_tr.head())
+
+We see the resulting dataframe, where the nan values were replaced by -99:
+
+.. code:: python
+
+                         ambient_temp  module_temp  irradiation  color  \
+    2020-05-15 12:00:00         31.31        49.18         0.51  green
+    2020-05-15 12:15:00         31.51        49.84         0.79  green
+    2020-05-15 12:30:00         32.15        52.35         0.65  green
+    2020-05-15 12:45:00         32.39        50.63         0.76  green
+    2020-05-15 13:00:00         32.62        49.61         0.42   blue
+
+                         ambient_temp_window_30min_mean  \
+    2020-05-15 12:00:00                          -99.00
+    2020-05-15 12:15:00                           31.31
+    2020-05-15 12:30:00                           31.41
+    2020-05-15 12:45:00                           31.83
+    2020-05-15 13:00:00                           32.27
+
+                         module_temp_window_30min_mean  \
+    2020-05-15 12:00:00                        -99.000
+    2020-05-15 12:15:00                         49.180
+    2020-05-15 12:30:00                         49.510
+    2020-05-15 12:45:00                         51.095
+    2020-05-15 13:00:00                         51.490
+
+                         irradiation_window_30min_mean  \
+    2020-05-15 12:00:00                        -99.000
+    2020-05-15 12:15:00                          0.510
+    2020-05-15 12:30:00                          0.650
+    2020-05-15 12:45:00                          0.720
+    2020-05-15 13:00:00                          0.705
+
+                         ambient_temp_window_60min_mean  \
+    2020-05-15 12:00:00                      -99.000000
+    2020-05-15 12:15:00                       31.310000
+    2020-05-15 12:30:00                       31.410000
+    2020-05-15 12:45:00                       31.656667
+    2020-05-15 13:00:00                       31.840000
+
+                         module_temp_window_60min_mean  \
+    2020-05-15 12:00:00                     -99.000000
+    2020-05-15 12:15:00                      49.180000
+    2020-05-15 12:30:00                      49.510000
+    2020-05-15 12:45:00                      50.456667
+    2020-05-15 13:00:00                      50.500000
+
+                         irradiation_window_60min_mean
+    2020-05-15 12:00:00                       -99.0000
+    2020-05-15 12:15:00                         0.5100
+    2020-05-15 12:30:00                         0.6500
+    2020-05-15 12:45:00                         0.6500
+    2020-05-15 13:00:00                         0.6775
 
 Working with pandas series
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -465,17 +600,12 @@ past pollutant concentrations, that is, from past time steps of our target varia
 And, in addition, we can create features from windows of past data from accompanying
 time series, like the concentrations of other gases or the temperature or humidity.
 
+The process of feature extraction from time series data, to create a table of predictors
+and a target variable to forecast using supervised learning models like linear regression
+or random forest, is called “tabularizing” the time series.
+
 See also
 --------
-
-You can find examples of window features and its considerations in
-`Train in Data’s github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/08-Window-Features>`_.
-
-You can find examples of window features used together with supervised learning in
-`This section of the former github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/02-Time-Series-Forecasting>`_.
-
-For tutorials on how to create window features for forecasting, check the course
-`Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_.
 
 Check out the additional transformers to create expanding window features
 (:class:`ExpandingWindowFeatures`) or lag features, by lagging past values of the time
@@ -486,3 +616,42 @@ Other open-source packages for window features
 
 - `tsfresh <https://tsfresh.readthedocs.io/en/latest/text/forecasting.html>`_
 - `featuretools <https://featuretools.alteryx.com/en/stable/guides/time_series.html>`_
+
+Tutorials and courses
+---------------------
+
+For tutorials about this and other feature engineering methods for time series forecasting
+check out our online courses:
+
+.. figure::  ../../../images/fetsf.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
+
+   Feature Engineering for Time Series Forecasting
+
+.. figure::  ../../../images/fwml.png
+   :width: 300
+   :figclass: align-center
+   :align: right
+   :target: https://www.courses.trainindata.com/p/forecasting-with-machine-learning
+
+   Forecasting with Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Our courses are suitable for beginners and more advanced data scientists looking to
+forecast time series using traditional machine learning models, like linear regression
+or gradient boosting machines.
+
+By purchasing them you are supporting Sole, the main developer of Feature-engine.
