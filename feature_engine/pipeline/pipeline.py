@@ -306,77 +306,6 @@ class Pipeline(pipeline.Pipeline):
                     Xt, **last_step_params["transform"]
                 )
 
-    def _can_transform_x_y(self):
-        return any([transformer for _, _, transformer in self._iter(
-            with_final=True, filter_passthrough=False
-        ) if hasattr(transformer, "transform_x_y")])
-
-    @available_if(_can_transform_x_y)
-    def transform_x_y(self, X, y, **params):
-        """Fit the model and transform with the final estimator.
-
-        Fit all the transformers one after the other and sequentially transform
-        the data. Only valid if the final estimator either implements
-        `fit_transform` or `fit` and `transform`.
-
-        Parameters
-        ----------
-        X : iterable
-            Training data. Must fulfill input requirements of first step of the
-            pipeline.
-
-        y : iterable, default=None
-            Training targets. Must fulfill label requirements for all steps of
-            the pipeline.
-
-        **params : dict of str -> object
-            - If `enable_metadata_routing=False` (default):
-
-                Parameters passed to the ``fit`` method of each step, where
-                each parameter name is prefixed such that parameter ``p`` for step
-                ``s`` has key ``s__p``.
-
-            - If `enable_metadata_routing=True`:
-
-                Parameters requested and accepted by steps. Each step must have
-                requested certain metadata for these parameters to be forwarded to
-                them.
-
-            .. versionchanged:: 1.4
-                Parameters are now passed to the ``transform`` method of the
-                intermediate steps as well, if requested, and if
-                `enable_metadata_routing=True`.
-
-            See :ref:`Metadata Routing User Guide <metadata_routing>` for more
-            details.
-
-        Returns
-        -------
-        Xt : ndarray of shape (n_samples - n_rows, n_transformed_features)
-            Transformed samples.
-
-        yt : ndarray of length (n_samples - n_rows)
-            Transformed target.
-        """
-        routed_params = super()._check_method_params(
-            method="transform", props=params
-        )
-        Xt, yt = self._fit(X, y, routed_params)
-
-        last_step = self._final_estimator
-        with _print_elapsed_time("Pipeline", self._log_message(len(self.steps) - 1)):
-            if last_step == "passthrough":
-                return Xt, yt
-            last_step_params = routed_params[self.steps[-1][0]]
-            if hasattr(last_step, "transform_x_y"):
-                return last_step.transform_x_y(Xt, yt)
-            elif hasattr(last_step, "transform"):
-                Xt = last_step.transform(Xt)
-                yt = y.loc[Xt.index]
-                return Xt, yt
-            else:
-                raise Exception("Last transformer in pipeline does not have method transform or transform_x_y")
-
 
     @available_if(_final_estimator_has("fit_predict"))
     @_fit_context(
@@ -442,6 +371,128 @@ class Pipeline(pipeline.Pipeline):
                 Xt, yt, **params_last_step.get("fit_predict", {})
             )
         return y_pred
+
+
+    def _can_transform_x_y(self):
+        can_transform_x_y = any([transformer for _, _, transformer in self._iter(
+            with_final=True, filter_passthrough=False
+        ) if hasattr(transformer, "transform_x_y")])
+        last_step_is_transform = self._final_estimator == "passthrough" or hasattr(
+            self._final_estimator, "transform")
+        return can_transform_x_y and last_step_is_transform
+
+    @available_if(_can_transform_x_y)
+    def transform_x_y(self, X, y, **params):
+        """Fit the model and transform with the final estimator.
+
+        Fit all the transformers one after the other and sequentially transform
+        the data. Only valid if the final estimator either implements
+        `fit_transform` or `fit` and `transform`.
+
+        Parameters
+        ----------
+        X : iterable
+            Training data. Must fulfill input requirements of first step of the
+            pipeline.
+
+        y : iterable, default=None
+            Training targets. Must fulfill label requirements for all steps of
+            the pipeline.
+
+        **params : dict of str -> object
+            - If `enable_metadata_routing=False` (default):
+
+                Parameters passed to the ``fit`` method of each step, where
+                each parameter name is prefixed such that parameter ``p`` for step
+                ``s`` has key ``s__p``.
+
+            - If `enable_metadata_routing=True`:
+
+                Parameters requested and accepted by steps. Each step must have
+                requested certain metadata for these parameters to be forwarded to
+                them.
+
+            .. versionchanged:: 1.4
+                Parameters are now passed to the ``transform`` method of the
+                intermediate steps as well, if requested, and if
+                `enable_metadata_routing=True`.
+
+            See :ref:`Metadata Routing User Guide <metadata_routing>` for more
+            details.
+
+        Returns
+        -------
+        Xt : ndarray of shape (n_samples - n_rows, n_transformed_features)
+            Transformed samples.
+
+        yt : ndarray of length (n_samples - n_rows)
+            Transformed target.
+        """
+        routed_params = super()._check_method_params(
+            method="transform", props=params
+        )
+
+        Xt = X
+        yt = y
+        for _, name, transform in self._iter():
+            if hasattr(transform, "transform_x_y"):
+                Xt, yt = transform.transform_x_y(Xt, yt, **routed_params[name].transform)
+            else:
+                Xt = transform.transform(Xt, **routed_params[name].transform)
+        return Xt, yt
+
+        Xt, yt = self._fit(X, y, routed_params)
+
+
+    @available_if(pipeline._final_estimator_has("score"))
+    def score(self, X, y=None, sample_weight=None, **params):
+        """Transform the data, and apply `score` with the final estimator.
+
+        Call `transform` of each transformer in the pipeline. The transformed
+        data are finally passed to the final estimator that calls
+        `score` method. Only valid if the final estimator implements `score`.
+
+        Parameters
+        ----------
+        X : iterable
+            Data to predict on. Must fulfill input requirements of first step
+            of the pipeline.
+
+        y : iterable, default=None
+            Targets used for scoring. Must fulfill label requirements for all
+            steps of the pipeline.
+
+        sample_weight : array-like, default=None
+            If not None, this argument is passed as ``sample_weight`` keyword
+            argument to the ``score`` method of the final estimator.
+
+        **params : dict of str -> object
+            Parameters requested and accepted by steps. Each step must have
+            requested certain metadata for these parameters to be forwarded to
+            them.
+
+            .. versionadded:: 1.4
+                Only available if `enable_metadata_routing=True`. See
+                :ref:`Metadata Routing User Guide <metadata_routing>` for more
+                details.
+
+        Returns
+        -------
+        score : float
+            Result of calling `score` on the final estimator.
+        """
+        routed_params = super()._check_method_params(
+            method="transform", props=params
+        )
+
+        Xt = X
+        yt = y
+        for _, name, transform in self._iter(with_final=False):
+            if hasattr(transform, "transform_x_y"):
+                Xt, yt = transform.transform_x_y(Xt, yt, **routed_params[name].transform)
+            else:
+                Xt = transform.transform(Xt, **routed_params[name].transform)
+        return self.steps[-1][1].score(Xt, yt, **routed_params[self.steps[-1][0]].score)
 
 
 def make_pipeline(*steps, memory=None, verbose=False):

@@ -50,6 +50,13 @@ Other
    preprocessing/index
    wrappers/index
 
+Pipeline
+--------
+.. toctree::
+   :maxdepth: 1
+
+   pipeline/index
+
 Datasets
 --------
 .. toctree::
