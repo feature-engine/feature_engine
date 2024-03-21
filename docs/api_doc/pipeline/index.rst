@@ -13,3 +13,4 @@ rows are removed from X.
    :maxdepth: 1
 
    Pipeline
+   make_pipeline

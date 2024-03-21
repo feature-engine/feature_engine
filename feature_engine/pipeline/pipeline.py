@@ -39,6 +39,10 @@ class Pipeline(pipeline.Pipeline):
     The final `estimator` only needs to implement `fit`.
     The transformers in the pipeline can be cached using ``memory`` argument.
 
+    This pipeline allows intermediate transformers to remove rows from the
+    dataset. It will automatically adjust the target variable to match the
+    remaining observations.
+
     The purpose of the pipeline is to assemble several steps that can be
     cross-validated together while setting different parameters. For this, it
     enables setting parameters of the various steps using their names and the
@@ -98,7 +102,7 @@ class Pipeline(pipeline.Pipeline):
     >>> from sklearn.preprocessing import StandardScaler
     >>> from sklearn.datasets import make_classification
     >>> from sklearn.model_selection import train_test_split
-    >>> from sklearn.pipeline import Pipeline
+    >>> from feature_engine.pipeline import Pipeline
     >>> X, y = make_classification(random_state=0)
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y,
     ...                                                     random_state=0)
@@ -130,7 +134,7 @@ class Pipeline(pipeline.Pipeline):
         # shallow copy of steps - this should really be steps_
         self.steps = list(self.steps)
         self._validate_steps()
-        # Setup the memory
+        # Set up the memory
         memory = check_memory(self.memory)
 
         fit_transform_one_cached = memory.cache(_fit_transform_one)
@@ -386,7 +390,7 @@ class Pipeline(pipeline.Pipeline):
         """Fit the model and transform with the final estimator.
 
         Fit all the transformers one after the other and sequentially transform
-        the data. Only valid if the final estimator either implements
+        the data and the target. Only valid if the final estimator either implements
         `fit_transform` or `fit` and `transform`.
 
         Parameters
@@ -395,7 +399,7 @@ class Pipeline(pipeline.Pipeline):
             Training data. Must fulfill input requirements of first step of the
             pipeline.
 
-        y : iterable, default=None
+        y : iterable
             Training targets. Must fulfill label requirements for all steps of
             the pipeline.
 
@@ -445,7 +449,7 @@ class Pipeline(pipeline.Pipeline):
 
 
     @available_if(pipeline._final_estimator_has("score"))
-    def score(self, X, y=None, sample_weight=None, **params):
+    def score(self, X, y, sample_weight=None, **params):
         """Transform the data, and apply `score` with the final estimator.
 
         Call `transform` of each transformer in the pipeline. The transformed
@@ -496,9 +500,9 @@ class Pipeline(pipeline.Pipeline):
 
 
 def make_pipeline(*steps, memory=None, verbose=False):
-    """Construct a :class:`Pipeline` from the given estimators.
+    """Construct a Pipeline from the given estimators.
 
-    This is a shorthand for the :class:`Pipeline` constructor; it does not
+    This is a shorthand for the `Pipeline` constructor; it does not
     require, and does not permit, naming the estimators. Instead, their names
     will be set to the lowercase of their types automatically.
 
@@ -535,7 +539,7 @@ def make_pipeline(*steps, memory=None, verbose=False):
     --------
     >>> from sklearn.naive_bayes import GaussianNB
     >>> from sklearn.preprocessing import StandardScaler
-    >>> from sklearn.pipeline import make_pipeline
+    >>> from feature_engine.pipeline import make_pipeline
     >>> make_pipeline(StandardScaler(), GaussianNB(priors=None))
     Pipeline(steps=[('standardscaler', StandardScaler()),
                     ('gaussiannb', GaussianNB())])
