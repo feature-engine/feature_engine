@@ -32,6 +32,18 @@ def test_permitted_param_periods(_periods):
     assert transformer.periods == _periods
 
 
+@pytest.mark.parametrize("_drop_or", [-1, [0], None, 7, "hola"])
+def test_error_when_non_permitted_param_drop_original(_drop_or):
+    with pytest.raises(ValueError):
+        ExpandingWindowFeatures(drop_original=_drop_or)
+
+
+@pytest.mark.parametrize("_drop_na", [-1, [0], None, 7, "hola"])
+def test_error_when_non_permitted_param_drop_na(_drop_na):
+    with pytest.raises(ValueError):
+        ExpandingWindowFeatures(drop_na=_drop_na)
+
+
 def test_get_feature_names_out_multiple_variables_and_functions(df_time):
     # input features
     original_features = ["ambient_temp", "module_temp", "irradiation", "color"]

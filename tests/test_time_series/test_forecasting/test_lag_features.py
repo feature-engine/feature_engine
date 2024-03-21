@@ -24,6 +24,18 @@ def test_error_when_non_permitted_param_freq():
         LagFeatures(freq=["2h", "2h", "3h"])
 
 
+@pytest.mark.parametrize("_drop_or", [-1, [0], None, 7, "hola"])
+def test_error_when_non_permitted_param_drop_original(_drop_or):
+    with pytest.raises(ValueError):
+        LagFeatures(drop_original=_drop_or)
+
+
+@pytest.mark.parametrize("_drop_na", [-1, [0], None, 7, "hola"])
+def test_error_when_non_permitted_param_drop_na(_drop_na):
+    with pytest.raises(ValueError):
+        LagFeatures(drop_na=_drop_na)
+
+
 @pytest.mark.parametrize("_sort_index", [True, False])
 def test_permitted_param_sort_index(_sort_index):
     transformer = LagFeatures(sort_index=_sort_index)
