@@ -6,12 +6,12 @@
 
 from sklearn import pipeline
 from sklearn.base import _fit_context, clone
-from sklearn.pipeline import _final_estimator_has, _fit_transform_one, _transform_one
-from sklearn.utils import Bunch, _print_elapsed_time
+from sklearn.pipeline import _final_estimator_has, _fit_transform_one
+from sklearn.utils import _print_elapsed_time
 from sklearn.utils._metadata_requests import METHODS
 from sklearn.utils._param_validation import HasMethods, Hidden
 from sklearn.utils.metadata_routing import _routing_enabled, process_routing
-from sklearn.utils.metaestimators import _BaseComposition, available_if
+from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_memory
 
 METHODS.append("transform_x_y")
@@ -238,7 +238,6 @@ class Pipeline(pipeline.Pipeline):
                 self._final_estimator.fit(Xt, yt, **last_step_params["fit"])
         return self
 
-
     def _can_fit_transform(self):
         return (
             self._final_estimator == "passthrough"
@@ -310,7 +309,6 @@ class Pipeline(pipeline.Pipeline):
                     Xt, **last_step_params["transform"]
                 )
 
-
     @available_if(_final_estimator_has("fit_predict"))
     @_fit_context(
         # estimators in Pipeline.steps are not validated yet
@@ -376,13 +374,19 @@ class Pipeline(pipeline.Pipeline):
             )
         return y_pred
 
-
     def _can_transform_x_y(self):
-        can_transform_x_y = any([transformer for _, _, transformer in self._iter(
-            with_final=True, filter_passthrough=False
-        ) if hasattr(transformer, "transform_x_y")])
+        can_transform_x_y = any(
+            [
+                transformer
+                for _, _, transformer in self._iter(
+                    with_final=True, filter_passthrough=False
+                )
+                if hasattr(transformer, "transform_x_y")
+            ]
+        )
         last_step_is_transform = self._final_estimator == "passthrough" or hasattr(
-            self._final_estimator, "transform")
+            self._final_estimator, "transform"
+        )
         return can_transform_x_y and last_step_is_transform
 
     @available_if(_can_transform_x_y)
@@ -432,21 +436,20 @@ class Pipeline(pipeline.Pipeline):
         yt : ndarray of length (n_samples - n_rows)
             Transformed target.
         """
-        routed_params = super()._check_method_params(
-            method="transform", props=params
-        )
+        routed_params = super()._check_method_params(method="transform", props=params)
 
         Xt = X
         yt = y
         for _, name, transform in self._iter():
             if hasattr(transform, "transform_x_y"):
-                Xt, yt = transform.transform_x_y(Xt, yt, **routed_params[name].transform)
+                Xt, yt = transform.transform_x_y(
+                    Xt, yt, **routed_params[name].transform
+                )
             else:
                 Xt = transform.transform(Xt, **routed_params[name].transform)
         return Xt, yt
 
         Xt, yt = self._fit(X, y, routed_params)
-
 
     @available_if(pipeline._final_estimator_has("score"))
     def score(self, X, y=None, sample_weight=None, **params):
@@ -504,7 +507,9 @@ class Pipeline(pipeline.Pipeline):
         )
         for _, name, transform in self._iter(with_final=False):
             if hasattr(transform, "transform_x_y"):
-                Xt, yt = transform.transform_x_y(Xt, yt, **routed_params[name].transform)
+                Xt, yt = transform.transform_x_y(
+                    Xt, yt, **routed_params[name].transform
+                )
             else:
                 Xt = transform.transform(Xt, **routed_params[name].transform)
         return self.steps[-1][1].score(Xt, yt, **routed_params[self.steps[-1][0]].score)
