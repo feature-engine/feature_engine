@@ -141,6 +141,7 @@ Please share your story by answering 1 quick question
  
 ### Pipelines
 * Pipeline
+* make_pipeline
 
 ### Preprocessing
  * MatchCategories
