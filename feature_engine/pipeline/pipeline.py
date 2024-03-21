@@ -449,7 +449,7 @@ class Pipeline(pipeline.Pipeline):
 
 
     @available_if(pipeline._final_estimator_has("score"))
-    def score(self, X, y, sample_weight=None, **params):
+    def score(self, X, y=None, sample_weight=None, **params):
         """Transform the data, and apply `score` with the final estimator.
 
         Call `transform` of each transformer in the pipeline. The transformed
@@ -485,12 +485,23 @@ class Pipeline(pipeline.Pipeline):
         score : float
             Result of calling `score` on the final estimator.
         """
-        routed_params = super()._check_method_params(
-            method="transform", props=params
-        )
-
         Xt = X
         yt = y
+        if not _routing_enabled():
+            for _, name, transform in self._iter(with_final=False):
+                if hasattr(transform, "transform_x_y"):
+                    Xt, yt = transform.transform_x_y(Xt, yt)
+                else:
+                    Xt = transform.transform(Xt)
+            score_params = {}
+            if sample_weight is not None:
+                score_params["sample_weight"] = sample_weight
+            return self.steps[-1][1].score(Xt, yt, **score_params)
+
+        # metadata routing is enabled.
+        routed_params = process_routing(
+            self, "score", sample_weight=sample_weight, **params
+        )
         for _, name, transform in self._iter(with_final=False):
             if hasattr(transform, "transform_x_y"):
                 Xt, yt = transform.transform_x_y(Xt, yt, **routed_params[name].transform)
