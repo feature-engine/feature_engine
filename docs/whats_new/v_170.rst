@@ -14,15 +14,27 @@ Contributors
 - `Chris Samiullah <https://github.com/christophergs>`_
 - `Soledad Galli <https://github.com/solegalli>`_
 
+The biggest addition in this version is the introduction of a `Pipeline` that supports transformers that remove rows
+from the dataset during the data transformation.
+
+In addition, transformers that remove rows from the dataset, can now adjust the target value to the remaining rows
+through the new method `transform_x_y`.
+
+Other than that, we did a lot of work to catch up with the latest developments of Scikit-learn and pandas, to ensure
+that our transformers keep on being compatible.
 
 New functionality
 ~~~~~~~~~~~~~~~~~
+
+- We now have a `Pipeline()` and `make_pipeline` that support transformers that remove rows from the dataset (`Soledad Galli <https://github.com/solegalli>`_)
+- `DropMissingData`, `OutlierTrimmer`, `LagFeatures`, `ExpandingWindowFeatures` and `WindowFeatures` have the method `transform_x_y` to remove rows from the data and then adjust the target variable (`Soledad Galli <https://github.com/solegalli>`_)
 
 
 Enhancements
 ~~~~~~~~~~~~
 
 - `DropCorrelatedFeatures()` and `SmartCorrelationSelection` have a new attribute to indicate which feature will be retained from each correlated group (`Soledad Galli <https://github.com/solegalli>`_, `dlaprins <https://github.com/dlaprins>`_)
+- `LagFeatures` can now impute the introduced nan values (`Soledad Galli <https://github.com/solegalli>`_)
 
 
 Bug fixes
@@ -44,7 +56,10 @@ Documentation
 ~~~~~~~~~~~~~
 
 - Improves user guide for `DropCorrelatedFeatures()` and `SmartCorrelationSelection` (`Soledad Galli <https://github.com/solegalli>`_)
-
+- Improves user guide for `DropMissingData()`(`Soledad Galli <https://github.com/solegalli>`_)
+- Improves user guide for `OutlierTrimmer()`(`Soledad Galli <https://github.com/solegalli>`_)
+- Improves user guide for `LagFeatures`, `ExpandingWindowFeatures` and `WindowFeatures`(`Soledad Galli <https://github.com/solegalli>`_)
+- Adds user guide for `Pipeline` (`Soledad Galli <https://github.com/solegalli>`_)
 
 Deprecations
 ~~~~~~~~~~~~

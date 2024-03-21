@@ -98,6 +98,9 @@ class WindowFeatures(BaseForecastTransformer):
 
     {drop_original}
 
+    drop_na: bool, default=False.
+        Whether the NAN introduced in the lag features should be removed.
+
     Attributes
     ----------
     variables_:
@@ -113,6 +116,9 @@ class WindowFeatures(BaseForecastTransformer):
 
     transform:
         Add window features.
+
+    transform_x_y:
+        Remove rows with missing data from X and y.
 
     {fit_transform}
 
@@ -156,6 +162,7 @@ class WindowFeatures(BaseForecastTransformer):
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
+        drop_na: bool = False,
     ) -> None:
 
         if isinstance(window, list) and len(window) != len(set(window)):
@@ -176,7 +183,7 @@ class WindowFeatures(BaseForecastTransformer):
                 f"periods must be a positive integer. Got {periods} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original)
+        super().__init__(variables, missing_values, drop_original, drop_na)
 
         self.window = window
         self.min_periods = min_periods
@@ -228,6 +235,9 @@ class WindowFeatures(BaseForecastTransformer):
 
         if self.drop_original:
             X = X.drop(self.variables_, axis=1)
+
+        if self.drop_na:
+            X = X.dropna(subset=tmp.columns, axis=0)
 
         return X
 

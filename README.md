@@ -26,6 +26,8 @@ transforming parameters from the data and then transform it.
 
 * [Feature Engineering for Time Series Forecasting, Online Course](https://www.trainindata.com/p/feature-engineering-for-forecasting)
 
+* [Forecasting with Machine Learning, Online Course](https://www.trainindata.com/p/forecasting-with-machine-learning)
+
 * [Python Feature Engineering Cookbook](https://packt.link/0ewSo)
 
 * [Feature Selection in Machine Learning Book](https://leanpub.com/feature-selection-in-machine-learning)
@@ -70,11 +72,11 @@ Please share your story by answering 1 quick question
 
 ### Imputation Methods
 * MeanMedianImputer
+* ArbitraryNumberImputer
 * RandomSampleImputer
 * EndTailImputer
-* AddMissingIndicator
 * CategoricalImputer
-* ArbitraryNumberImputer
+* AddMissingIndicator
 * DropMissingData
 
 ### Encoding Methods
@@ -137,6 +139,10 @@ Please share your story by answering 1 quick question
  * WindowFeatures
  * ExpandingWindowFeatures
  
+### Pipelines
+* Pipeline
+* make_pipeline
+
 ### Preprocessing
  * MatchCategories
  * MatchVariables

@@ -3,6 +3,7 @@
 
 import pandas as pd
 
+from feature_engine._base_transformers.mixins import TransformXyMixin
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _left_tail_caps_docstring,
@@ -38,7 +39,7 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class OutlierTrimmer(WinsorizerBase):
+class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
     """The OutlierTrimmer() removes observations with outliers from the dataset.
 
     The OutlierTrimmer() first calculates the maximum and /or minimum values
@@ -88,6 +89,9 @@ class OutlierTrimmer(WinsorizerBase):
 
     transform:
         Remove outliers.
+
+    transform_x_y:
+        Remove rows with outliers from X set and y.
 
     Examples
     --------

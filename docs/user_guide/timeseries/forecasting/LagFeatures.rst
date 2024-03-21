@@ -5,20 +5,24 @@
 LagFeatures
 ===========
 
-Lag features are commonly used in time series forecasting with traditional machine
-learning models, like linear regression or random forests. A lag feature is a feature with
-information about a prior time step of the time series.
+Lag features are commonly used in data science to forecast time series with traditional
+
+machine learning models, like linear regression or random forests. A lag feature is a
+feature with information about a prior time step of the time series.
 
 When forecasting the future values of a variable, the past values of that same variable
 are likely to be predictive. Past values of other predictive features can also be useful
 for our forecast. Thus, in forecasting, it is common practice to create lag features from
-time series data and use them as input to machine learning algorithms.
+time series data and use them as input to machine learning algorithms or forecasting
+models.
 
 What is a lag feature?
 ----------------------
 
 A lag feature is the value of the time series **k** period(s) in the past, where **k** is
-the lag and is to be set by the user.  By varying k, we can create features with multiple lags.
+the lag and is to be set by the user.  For example, a lag of 1 is a feature that contains
+the previous time point value of the time series. A lag of 3 contains the value 3 time
+points before, and so on. By varying k, we can create features with multiple lags.
 
 In Python, we can create lag features by using the pandas method `shift`. For example, by
 executing `X[my_variable].shift(freq=”1H”, axis=0)`, we create a new feature consisting of
@@ -55,9 +59,9 @@ containing the time series timestamp, contains unique values and no NaN.
 Examples
 --------
 
-Let's create a toy dataset to demonstrate the functionality of :class:`LagFeatures`.
+Let's create a toy dataset to show how to add lag features with :class:`LagFeatures`.
 The dataframe contains 3 numerical variables, a categorical variable, and a datetime
-index.
+index. We also create an arbitrary target.
 
 .. code:: python
 
@@ -71,6 +75,8 @@ index.
 
     X = pd.DataFrame(X)
     X.index = pd.date_range("2020-05-15 12:00:00", periods=8, freq="15min")
+    y = pd.Series([1, 2, 3, 4, 5, 6, 7, 8])
+    y.index = X.index
 
     X.head()
 
@@ -85,10 +91,29 @@ Below we see the output of our toy dataframe:
     2020-05-15 12:45:00         32.39        50.63         0.76  green
     2020-05-15 13:00:00         32.62        49.61         0.42   blue
 
+
+And here we print and show the target variable:
+
+.. code:: python
+
+    y
+
+.. code:: python
+
+    2020-05-15 12:00:00    1
+    2020-05-15 12:15:00    2
+    2020-05-15 12:30:00    3
+    2020-05-15 12:45:00    4
+    2020-05-15 13:00:00    5
+    2020-05-15 13:15:00    6
+    2020-05-15 13:30:00    7
+    2020-05-15 13:45:00    8
+    Freq: 15min, dtype: int64
+
 Shift a row forward
 ~~~~~~~~~~~~~~~~~~~
 
-Now we will create new features by lagging all numerical variables 1 row forward. Note
+Now we will create lag features by lagging all numerical variables 1 row forward. Note
 that :class:`LagFeatures` automatically finds all numerical variables.
 
 .. code:: python
@@ -131,8 +156,8 @@ The variables to lag are stored in the `variables_` attribute of the
 
     ['ambient_temp', 'module_temp', 'irradiation']
 
-We can obtain the names of the variables in the returned dataframe using the
-get_feature_names_out() method:
+We can obtain the names of the original variables plus the lag features that are the
+returned in the transformed dataframe using the `get_feature_names_out()` method:
 
 .. code:: python
 
@@ -147,6 +172,78 @@ get_feature_names_out() method:
      'ambient_temp_lag_1',
      'module_temp_lag_1',
      'irradiation_lag_1']
+
+When we create lag features, we introduce nan values for the first rows of the training
+data set, because there are no past values for those data points. We can impute those
+nan values with an arbitrary value as follows:
+
+.. code:: python
+
+    lag_f = LagFeatures(periods=1, fill_value=0)
+
+    X_tr = lag_f.fit_transform(X)
+
+    print(X_tr.head())
+
+We see that the nan values were replaced by 0:
+
+.. code:: python
+
+                         ambient_temp  module_temp  irradiation  color  \
+    2020-05-15 12:00:00         31.31        49.18         0.51  green
+    2020-05-15 12:15:00         31.51        49.84         0.79  green
+    2020-05-15 12:30:00         32.15        52.35         0.65  green
+    2020-05-15 12:45:00         32.39        50.63         0.76  green
+    2020-05-15 13:00:00         32.62        49.61         0.42   blue
+
+                         ambient_temp_lag_1  module_temp_lag_1  irradiation_lag_1
+    2020-05-15 12:00:00                0.00               0.00               0.00
+    2020-05-15 12:15:00               31.31              49.18               0.51
+    2020-05-15 12:30:00               31.51              49.84               0.79
+    2020-05-15 12:45:00               32.15              52.35               0.65
+    2020-05-15 13:00:00               32.39              50.63               0.76
+
+Alternatively, we can drop the rows with missing values in the lag features, like this:
+
+.. code:: python
+
+    lag_f = LagFeatures(periods=1, drop_na=True)
+
+    X_tr = lag_f.fit_transform(X)
+
+    print(X_tr.head())
+
+.. code:: python
+
+                         ambient_temp  module_temp  irradiation  color  \
+    2020-05-15 12:15:00         31.51        49.84         0.79  green
+    2020-05-15 12:30:00         32.15        52.35         0.65  green
+    2020-05-15 12:45:00         32.39        50.63         0.76  green
+    2020-05-15 13:00:00         32.62        49.61         0.42   blue
+    2020-05-15 13:15:00         32.50        47.01         0.49   blue
+
+                         ambient_temp_lag_1  module_temp_lag_1  irradiation_lag_1
+    2020-05-15 12:15:00               31.31              49.18               0.51
+    2020-05-15 12:30:00               31.51              49.84               0.79
+    2020-05-15 12:45:00               32.15              52.35               0.65
+    2020-05-15 13:00:00               32.39              50.63               0.76
+    2020-05-15 13:15:00               32.62              49.61               0.42
+
+We can also drop the rows with nan in the lag features and then adjust the target
+variable like this:
+
+.. code:: python
+
+    X_tr, y_tr = lag_f.transform_x_y(X, y)
+
+    X_tr.shape, y_tr.shape, X.shape, y.shape
+
+We created a lag feature of 1, hence there is only 1 row with nan, which was removed from
+train set and target:
+
+.. code:: python
+
+    ((7, 7), (7,), (8, 4), (8,))
 
 Create multiple lag features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -163,7 +260,7 @@ a list.
     X_tr.head()
 
 Note how multiple lag features were created for each of the numerical variables and
-added at the back of the dataframe.
+added at the right side of the dataframe.
 
 .. code:: python
 
@@ -188,7 +285,7 @@ added at the back of the dataframe.
     2020-05-15 12:45:00               31.51              49.84               0.79
     2020-05-15 13:00:00               32.15              52.35               0.65
 
-We can get the names of all the lag features as follows:
+We can get the names of features in the resulting dataframe as follows:
 
 .. code:: python
 
@@ -196,9 +293,72 @@ We can get the names of all the lag features as follows:
 
 .. code:: python
 
-    ['ambient_temp_lag_1', 'module_temp_lag_1', 'irradiation_lag_1',
-     'ambient_temp_lag_2', 'module_temp_lag_2', 'irradiation_lag_2']
+    ['ambient_temp',
+     'module_temp',
+     'irradiation',
+     'color',
+     'ambient_temp_lag_1',
+     'module_temp_lag_1',
+     'irradiation_lag_1',
+     'ambient_temp_lag_2',
+     'module_temp_lag_2',
+     'irradiation_lag_2']
 
+We can replace the nan introduced in the lag features as well. In this opportunity,
+we'll use a string. Not that this is a suitable solution to train machine learning
+algorithms, but the idea here is to showcase :class:`LagFeatures`'s functionality.
+
+.. code:: python
+
+    lag_f = LagFeatures(periods=[1, 2], fill_value='None')
+
+    X_tr = lag_f.fit_transform(X)
+
+    print(X_tr.head())
+
+In this case, we replaced the nan in the lag features with the string None:
+
+.. code:: python
+
+                         ambient_temp  module_temp  irradiation  color  \
+    2020-05-15 12:00:00         31.31        49.18         0.51  green
+    2020-05-15 12:15:00         31.51        49.84         0.79  green
+    2020-05-15 12:30:00         32.15        52.35         0.65  green
+    2020-05-15 12:45:00         32.39        50.63         0.76  green
+    2020-05-15 13:00:00         32.62        49.61         0.42   blue
+
+                        ambient_temp_lag_1 module_temp_lag_1 irradiation_lag_1  \
+    2020-05-15 12:00:00               None              None              None
+    2020-05-15 12:15:00              31.31             49.18              0.51
+    2020-05-15 12:30:00              31.51             49.84              0.79
+    2020-05-15 12:45:00              32.15             52.35              0.65
+    2020-05-15 13:00:00              32.39             50.63              0.76
+
+                        ambient_temp_lag_2 module_temp_lag_2 irradiation_lag_2
+    2020-05-15 12:00:00               None              None              None
+    2020-05-15 12:15:00               None              None              None
+    2020-05-15 12:30:00              31.31             49.18              0.51
+    2020-05-15 12:45:00              31.51             49.84              0.79
+    2020-05-15 13:00:00              32.15             52.35              0.65
+
+Alternatively, we can drop rows containing nan in the lag features and then adjust the
+target variable:
+
+.. code:: python
+
+    lag_f = LagFeatures(periods=[1, 2], drop_na=True)
+
+    lag_f.fit(X)
+
+    X_tr, y_tr = lag_f.transform_x_y(X, y)
+
+    X_tr.shape, y_tr.shape, X.shape, y.shape
+
+We see that 2 rows were dropped from train set and target:
+
+.. code:: python
+
+    ((6, 10), (6,), (8, 4), (8,))
 
 Lag features based on datetime
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -234,6 +394,55 @@ Note that the features were moved forward 30 minutes.
     2020-05-15 12:30:00                  49.18                   0.51
     2020-05-15 12:45:00                  49.84                   0.79
     2020-05-15 13:00:00                  52.35                   0.65
+
+We can replace the nan in the lag features with a number like this:
+
+.. code:: python
+
+    lag_f = LagFeatures(
+        variables=["module_temp", "irradiation"], freq="30min", fill_value=100)
+
+    X_tr = lag_f.fit_transform(X)
+
+    print(X_tr.head())
+
+Here, we replaced nan by 100:
+
+.. code:: python
+
+                         ambient_temp  module_temp  irradiation  color  \
+    2020-05-15 12:00:00         31.31        49.18         0.51  green
+    2020-05-15 12:15:00         31.51        49.84         0.79  green
+    2020-05-15 12:30:00         32.15        52.35         0.65  green
+    2020-05-15 12:45:00         32.39        50.63         0.76  green
+    2020-05-15 13:00:00         32.62        49.61         0.42   blue
+
+                         module_temp_lag_30min  irradiation_lag_30min
+    2020-05-15 12:00:00                 100.00                 100.00
+    2020-05-15 12:15:00                 100.00                 100.00
+    2020-05-15 12:30:00                  49.18                   0.51
+    2020-05-15 12:45:00                  49.84                   0.79
+    2020-05-15 13:00:00                  52.35                   0.65
+
+
+Alternatively, we can remove the nan introduced in the lag features and adjust the target:
+
+.. code:: python
+
+    lag_f = LagFeatures(
+        variables=["module_temp", "irradiation"], freq="30min", drop_na=True)
+
+    lag_f.fit(X)
+
+    X_tr, y_tr = lag_f.transform_x_y(X, y)
+
+    X_tr.shape, y_tr.shape, X.shape, y.shape
+
+Two rows were removed from the training data set and the target:
+
+.. code:: python
+
+    ((6, 6), (6,), (8, 4), (8,))
 
 Drop variable after lagging features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -271,6 +480,10 @@ original variable is not present in the output dataframe.
     2020-05-15 12:45:00                   0.51
     2020-05-15 13:00:00                   0.79
 
+This is super useful in time series forecasting, because the original variable is usually
+the one that we are trying to forecast, that is, the target variable. The original variables
+also contain values that are **NOT** available at the time points that we are forecasting.
+
 Working with pandas series
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -295,7 +508,7 @@ The following is a pandas Series:
     2020-05-15 13:45:00    32.68
     Freq: 15T, Name: ambient_temp, dtype: float64
 
-We can use :class:`LagFeatures` to create, for example, 3 new features by lagging the
+We can use :class:`LagFeatures` to create, for example, 3 features by lagging the
 pandas Series if we convert it to a pandas Dataframe using the method `to_frame()`:
 
 .. code:: python
@@ -393,11 +606,10 @@ feature selection.
 Alternatively, we can determine the best lag through time series analysis by evaluating
 the autocorrelation or partial autocorrelation of the time series.
 
-You can find examples of autocorrelation, partial autocorrelation and cross-correlation
-plots in `Train in Data’s github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/07-Lag-Features>`_.
-
 For tutorials on how to create lag features for forecasting, check the course
 `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_.
+In the course, we also show how to detect and remove outliers from time series data, how
+to use features that capture seasonality and trend, and much more.
 
 Lags from the target vs lags from predictor variables
 -----------------------------------------------------
@@ -415,3 +627,45 @@ See also
 
 Check out the additional transformers to create window features through the use of
 rolling windows (:class:`WindowFeatures`) or expanding windows (:class:`ExpandingWindowFeatures`).
+
+If you want to use :class:`LagFeatures` as part of a feature engineering pipeline,
+check out Feature-engine's `Pipeline`.
+
+Tutorials and courses
+---------------------
+
+For tutorials about this and other feature engineering methods for time series forecasting
+check out our online courses:
+
+.. figure::  ../../../images/fetsf.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
+
+   Feature Engineering for Time Series Forecasting
+
+.. figure::  ../../../images/fwml.png
+   :width: 300
+   :figclass: align-center
+   :align: right
+   :target: https://www.courses.trainindata.com/p/forecasting-with-machine-learning
+
+   Forecasting with Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Our courses are suitable for beginners and more advanced data scientists looking to
+forecast time series using traditional machine learning models, like linear regression
+or gradient boosting machines.
+
+By purchasing them you are supporting Sole, the main developer of Feature-engine.
