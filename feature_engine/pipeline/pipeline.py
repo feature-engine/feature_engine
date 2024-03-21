@@ -506,6 +506,8 @@ def make_pipeline(*steps, memory=None, verbose=False):
     require, and does not permit, naming the estimators. Instead, their names
     will be set to the lowercase of their types automatically.
 
+    More details in the :ref:`User Guide <make_pipeline>`.
+
     Parameters
     ----------
     *steps : list of Estimator objects
