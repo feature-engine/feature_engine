@@ -499,7 +499,7 @@ To wrap up, let's add a machine learning algorithm to the pipeline. We'll use lo
         [
             ("outliers", ot),
             ("enc", OneHotEncoder()),
-            ("lasso", Lasso(random_state=10)),
+            ("logit", LogisticRegression(random_state=10)),
         ]
     )
 
