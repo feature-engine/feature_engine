@@ -25,6 +25,8 @@ from feature_engine.encoding.base_encoder import (
     CategoricalMethodsMixin,
 )
 from feature_engine.encoding.ordinal import OrdinalEncoder
+from feature_engine.encoding._helper_functions import check_parameter_unseen
+
 from feature_engine.tags import _return_tags
 
 
@@ -213,6 +215,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         unseen: str = "raise",
     ) -> None:
 
+        check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
         self.cv = cv
