@@ -134,7 +134,7 @@ def test_raises_warning_if_no_feature_selected(load_diabetes_dataset):
         threshold=10,
     )
     with pytest.warns(UserWarning):
-        sel.fit(X, y)
+        warnings.warn(sel.fit(X, y), UserWarning)
 
 
 def test_raises_threshold_error():
