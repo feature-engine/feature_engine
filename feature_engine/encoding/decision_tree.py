@@ -116,7 +116,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
             -  If 'raise', then unseen categories will raise an error.
 
-            -  If 'encode', unseen categories will be encoded as -1 by the 
+            -  If 'encode', unseen categories will be encoded as -1 by the
             OrdinalEncoder and then the DecisionTreeDiscretiser will encode all
             the unseen with the same encoding.
 

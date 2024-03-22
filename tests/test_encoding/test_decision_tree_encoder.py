@@ -173,7 +173,7 @@ def test_unseen_param(df_enc):
 
     # encode unseen
     encoder = DecisionTreeEncoder(
-        unseen="encode", 
+        unseen="encode",
         regression=False
         )
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
@@ -197,18 +197,19 @@ def test_fit_no_errors_if_new_cat_values_and_unseen_is_encode_param(df_enc):
 
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     X_unseen_values_1 = pd.DataFrame({
-        "var_A":['ZZZ','YYY'],
-        "var_B":['YYY','ZZZ'],
+        "var_A": ['ZZZ', 'YYY'],
+        "var_B": ['YYY', 'ZZZ'],
     })
     X_unseen_values_2 = pd.DataFrame({
-        "var_A":['XXX',-1],
-        "var_B":['WWW',-1],
+        "var_A": ['XXX', -1],
+        "var_B": ['WWW', -1],
     })
 
     transf_unseen_1 = encoder.transform(X_unseen_values_1)
     transf_unseen_2 = encoder.transform(X_unseen_values_2)
     # unseen categories must be encoded in the same way
     pd.testing.assert_frame_equal(transf_unseen_1, transf_unseen_2)
+
 
 def test_fit_errors_if_new_cat_values_and_unseen_is_raise_param(df_enc):
     encoder = DecisionTreeEncoder(
@@ -217,11 +218,9 @@ def test_fit_errors_if_new_cat_values_and_unseen_is_raise_param(df_enc):
     )
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     X_unseen_values = pd.DataFrame({
-        "var_A":['ZZZ','YYY'],
-        "var_B":['YYY','ZZZ'],
+        "var_A": ['ZZZ', 'YYY'],
+        "var_B": ['YYY', 'ZZZ'],
     })
     # new categories will raise an error
     with pytest.raises(ValueError):
-        transf_unseen = encoder.transform(X_unseen_values)
-
-
+        encoder.transform(X_unseen_values)
