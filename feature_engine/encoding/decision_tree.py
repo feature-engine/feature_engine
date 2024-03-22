@@ -116,10 +116,9 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
             -  If 'raise', then unseen categories will raise an error.
 
-            -  If 'ignore', then unseen categories will be encoded as NaN
-               and a warning will be raised instead.
-
-            -  If 'encode', unseen categories will be encoded as -1.
+            -  If 'encode', unseen categories will be encoded as -1 by the 
+            OrdinalEncoder and then the DecisionTreeDiscretiser will encode all
+            the unseen with the same encoding.
 
     {variables}
 
@@ -215,7 +214,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         unseen: str = "raise",
     ) -> None:
 
-        check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
+        check_parameter_unseen(unseen, ["raise", "encode"])
         super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
         self.cv = cv
