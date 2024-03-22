@@ -119,6 +119,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             -  If 'encode', unseen categories will be encoded as -1 by the
             OrdinalEncoder and then the DecisionTreeDiscretiser will encode all
             the unseen with the same encoding.
+            
 
     {variables}
 
