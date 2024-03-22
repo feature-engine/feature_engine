@@ -112,7 +112,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     unseen: str, default='raise'
         The unseen param of the OrdinalEncoder used before DecisionTreeDiscretiser
         in the fit method. It tells the encoder how to handle unseen categories.
-        Following OrdinalEncoder we have :
+        Acceptable values are :
 
             -  If 'raise', then unseen categories will raise an error.
 
