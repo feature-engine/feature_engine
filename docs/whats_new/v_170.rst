@@ -4,7 +4,7 @@ Version 1.7.X
 Version 1.7.0
 -------------
 
-Deployed: XX 2024
+Deployed: 24th March 2024
 
 Contributors
 ~~~~~~~~~~~~
@@ -15,14 +15,23 @@ Contributors
 - `Morgan Sell <https://github.com/Morgan-Sell>`_
 - `Soledad Galli <https://github.com/solegalli>`_
 
-The biggest addition in this version is the introduction of a `Pipeline` that supports transformers that remove rows
-from the dataset during the data transformation.
+There are a few big additions in this new release. First, we introduce a new `Pipeline` that supports transformers that remove rows
+from the dataset during the data transformation. From now on, you can use `DropMissingData`, `OutlierTrimmer`, `LagFeatures`
+and `WindowFeatures` as part of a feature engineering pipeline that will transform your variables, re-align the target to
+the remaining rows if necessary, and then fit a model. All in one go!
 
-In addition, transformers that remove rows from the dataset, can now adjust the target value to the remaining rows
-through the new method `transform_x_y`.
+In addition, transformers that remove rows from the dataset, like `DropMissingData`, `OutlierTrimmer`, `LagFeatures`
+and `WindowFeatures`, can now adjust the target value to the remaining rows through the new method `transform_x_y`.
+
+The third big improvement consists in a massive speed optimization of our correlation transformers, which now
+find and remove correlated features at doble the speed, and also, let you easily identify the feature against
+which the correlated ones were determined.
 
 Other than that, we did a lot of work to catch up with the latest developments of Scikit-learn and pandas, to ensure
-that our transformers keep on being compatible.
+that our transformers keep on being compatible. That being said, we are a small team and maintenance is hard for us,
+so we've deprecated support of earlier releases of these libraries.
+
+Read on to find out more what we've been up to!
 
 New functionality
 ~~~~~~~~~~~~~~~~~
@@ -35,6 +44,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 - `DropCorrelatedFeatures()` and `SmartCorrelationSelection` have a new attribute to indicate which feature will be retained from each correlated group (`Soledad Galli <https://github.com/solegalli>`_, `dlaprins <https://github.com/dlaprins>`_)
+- `DropCorrelatedFeatures()` and `SmartCorrelationSelection` are twice as fast and can sort variables based on variance, cardinality or alphabetically before the search (`Soledad Galli <https://github.com/solegalli>`_, `dlaprins <https://github.com/dlaprins>`_)
 - `LagFeatures` can now impute the introduced nan values (`Soledad Galli <https://github.com/solegalli>`_)
 
 
@@ -49,7 +59,6 @@ related bugs.
 Code improvements
 ~~~~~~~~~~~~~~~~~
 
-- `DropCorrelatedFeatures()` and `SmartCorrelationSelection` are faster (`Soledad Galli <https://github.com/solegalli>`_, `Gleb Levitski <https://github.com/GLevv>`_, `dlaprins <https://github.com/dlaprins>`_)
 - Improves logic to select the variables to examine in all feature selection transformers (`Soledad Galli <https://github.com/solegalli>`_)
 - Add circleCI tests for python 3.11 and 3.12 (`Soledad Galli <https://github.com/solegalli>`_, `Chris Samiullah <https://github.com/christophergs>`_)
 
@@ -67,3 +76,4 @@ Deprecations
 ~~~~~~~~~~~~
 
 - We remove support for Python 3.8 (`Soledad Galli <https://github.com/solegalli>`_)
+- We bump the dependencies on pandas and Scikit-learn to their latest versions (`Soledad Galli <https://github.com/solegalli>`_)
