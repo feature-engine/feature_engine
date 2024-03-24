@@ -285,13 +285,5 @@ def setup(app):
     kwargs = {"defer data-domain": "feature-engine.readthedocs.io"}
     app.add_js_file("https://plausible.io/js/plausible.js", **kwargs)
 
-    # actenis analytics
-    kwargs = {"data-host": "https://dataweb.atecnis.com",
-              "data-dtn": "false",
-              "id": "ZwSg9rf6GA",
-              "async": "defer",
-              }
-    app.add_js_file("https://dataweb.atecnis.com/js/script.js", **kwargs)
-
     # copy button for code
     app.add_js_file("js/copybutton.js")
