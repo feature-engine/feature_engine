@@ -25,6 +25,8 @@ from feature_engine.encoding.base_encoder import (
     CategoricalMethodsMixin,
 )
 from feature_engine.encoding.ordinal import OrdinalEncoder
+from feature_engine.encoding._helper_functions import check_parameter_unseen
+
 from feature_engine.tags import _return_tags
 
 
@@ -106,6 +108,18 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         of the parameters of the Scikit-learn's DecisionTreeRegressor() or
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
+
+    unseen: str, default='raise'
+        The unseen param of the OrdinalEncoder used before DecisionTreeDiscretiser
+        in the fit method. It tells the encoder how to handle unseen categories.
+        Acceptable values are :
+
+            -  If 'raise', then unseen categories will raise an error.
+
+            -  If 'encode', unseen categories will be encoded as -1 by the
+            OrdinalEncoder and then the DecisionTreeDiscretiser will encode all
+            the unseen with the same encoding.
+            
 
     {variables}
 
@@ -198,8 +212,10 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
+        unseen: str = "raise",
     ) -> None:
 
+        check_parameter_unseen(unseen, ["raise", "encode"])
         super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
         self.cv = cv
@@ -207,6 +223,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self.regression = regression
         self.param_grid = param_grid
         self.random_state = random_state
+        self.unseen = unseen
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -247,7 +264,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             variables=variables_,
             missing_values="raise",
             ignore_format=self.ignore_format,
-            unseen="raise",
+            unseen=self.unseen,
         )
 
         # initialize decision tree discretiser
