@@ -199,11 +199,13 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         X = self._check_transform_input_and_state(X)
 
         if self.group_by:
+            original_index = X.index
             tmp = X.groupby(self.group_by, as_index=False).apply(
                 self._agg_expanding_window_features,
                 include_groups=False,
             )
-            tmp = tmp.reset_index(drop = True)
+            tmp = tmp.set_index(original_index)
+            tmp = tmp.reindex(original_index)
         else:
             tmp = (
                 X[self.variables_]
