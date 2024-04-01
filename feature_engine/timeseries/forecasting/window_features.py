@@ -211,12 +211,14 @@ class WindowFeatures(BaseForecastTransformer):
             df_ls = []
             for win in self.window:
                 if self.group_by:
+                    original_index = X.index
                     tmp = X.groupby(self.group_by, as_index=False).apply(
                         self._agg_window_features,
                         win=win,
                         include_groups=False,
                     )
-                    tmp = tmp.reset_index(drop = True)
+                    tmp = tmp.set_index(original_index)
+                    tmp = tmp.reindex(original_index)
                 else:
                     tmp = (
                         X[self.variables_]
@@ -229,12 +231,14 @@ class WindowFeatures(BaseForecastTransformer):
 
         else:
             if self.group_by:
+                original_index = X.index
                 tmp = X.groupby(self.group_by, as_index=False).apply(
                     self._agg_window_features,
                     win=self.window,
                     include_groups=False,
                 )
-                tmp = tmp.reset_index(drop = True)
+                tmp = tmp.set_index(original_index)
+                tmp = tmp.reindex(original_index)
             else:
                 tmp = (
                     X[self.variables_]
