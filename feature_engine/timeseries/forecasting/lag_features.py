@@ -11,9 +11,9 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _drop_original_docstring,
+    _group_by_docstring,
     _missing_values_docstring,
     _variables_numerical_docstring,
-    _group_by_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
