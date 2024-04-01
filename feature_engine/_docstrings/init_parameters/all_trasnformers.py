@@ -22,3 +22,10 @@ _missing_values_docstring = """missing_values: string, default='raise'
         contain missing values. If `'ignore'`, missing data will be ignored when
         learning parameters or performing the transformation.
         """.rstrip()
+
+_group_by_docstring = """str, int, or list of strings or integers, default=None.
+        A group_by operation involves some combination of splitting the object, 
+        applying a function, and combining the results. 
+        This can be used to group large amounts of data and 
+        compute operations on these groups.
+        """.rstrip()
