@@ -10,6 +10,7 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _drop_original_docstring,
     _missing_values_docstring,
     _variables_numerical_docstring,
+    _group_by_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
@@ -29,6 +30,7 @@ from feature_engine.timeseries.forecasting.base_forecast_transformers import (
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
+    group_by=_group_by_docstring,
 )
 class WindowFeatures(BaseForecastTransformer):
     """
@@ -98,8 +100,7 @@ class WindowFeatures(BaseForecastTransformer):
 
     {drop_original}
 
-    group_by: str, str, int, or list of strings or integers, default=None
-            variable of list of variables to create lag features based on.
+    {group_by}
 
     Attributes
     ----------
@@ -210,10 +211,12 @@ class WindowFeatures(BaseForecastTransformer):
             df_ls = []
             for win in self.window:
                 if self.group_by:
-                    tmp = self._agg_window_features(
-                        grouped_df=X.groupby(self.group_by),
+                    tmp = X.groupby(self.group_by, as_index=False).apply(
+                        self._agg_window_features,
                         win=win,
+                        include_groups=False,
                     )
+                    tmp = tmp.reset_index(drop = True)
                 else:
                     tmp = (
                         X[self.variables_]
@@ -226,10 +229,12 @@ class WindowFeatures(BaseForecastTransformer):
 
         else:
             if self.group_by:
-                tmp = self._agg_window_features(
-                    grouped_df=X.groupby(self.group_by),
+                tmp = X.groupby(self.group_by, as_index=False).apply(
+                    self._agg_window_features,
                     win=self.window,
+                    include_groups=False,
                 )
+                tmp = tmp.reset_index(drop = True)
             else:
                 tmp = (
                     X[self.variables_]
@@ -290,14 +295,9 @@ class WindowFeatures(BaseForecastTransformer):
         Union[pd.Series, pd.DataFrame]
             returned window features
         """
-        tmp_data = []
-        for _, group in grouped_df:
-            tmp = (
-                group[self.variables_]
-                .rolling(window=win)
-                .agg(self.functions)
-                .shift(periods=self.periods, freq=self.freq)
-            )
-            tmp_data.append(tmp)
-        tmp = pd.concat(tmp_data).sort_index()
-        return tmp
+        return (
+            grouped_df[self.variables_]
+            .rolling(window=win)
+            .agg(self.functions)
+            .shift(periods=self.periods, freq=self.freq)
+        )
