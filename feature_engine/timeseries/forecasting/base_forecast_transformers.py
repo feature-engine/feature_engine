@@ -15,6 +15,7 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _drop_original_docstring,
     _missing_values_docstring,
+    _group_by_docstring,
 )
 from feature_engine._docstrings.methods import _fit_not_learn_docstring
 from feature_engine._docstrings.substitute import Substitution
@@ -37,6 +38,7 @@ from feature_engine.variable_handling import (
     feature_names_in_=_feature_names_in_docstring,
     fit=_fit_not_learn_docstring,
     n_features_in_=_n_features_in_docstring,
+    group_by=_group_by_docstring,
 )
 class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """
@@ -51,8 +53,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
 
     {drop_original}
 
-    group_by: str, str, int, or list of strings or integers, default=None
-            variable of list of variables to create lag features based on.
+    {group_by}
 
     Attributes
     ----------
@@ -85,7 +86,7 @@ class BaseForecastTransformer(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         self.variables = _check_variables_input_value(variables)
         self.missing_values = missing_values
         self.drop_original = drop_original
-        self.group_by = _check_variables_input_value(group_by)
+        self.group_by = group_by
 
     def _check_index(self, X: pd.DataFrame):
         """
