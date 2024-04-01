@@ -15,6 +15,7 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _drop_original_docstring,
     _missing_values_docstring,
     _variables_numerical_docstring,
+    _group_by_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
@@ -34,6 +35,7 @@ from feature_engine.timeseries.forecasting.base_forecast_transformers import (
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
+    group_by=_group_by_docstring,
 )
 class ExpandingWindowFeatures(BaseForecastTransformer):
     """
@@ -93,8 +95,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
 
     {drop_original}
 
-    group_by: str, str, int, or list of strings or integers, default=None
-            variable of list of variables to create lag features based on.
+    {group_by}
 
     Attributes
     ----------
@@ -142,36 +143,6 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
     2  2022-09-20   3   8                1.5                6.5
     3  2022-09-21   4   9                2.0                7.0
     4  2022-09-22   5  10                2.5                7.5
-    create expanding window features based on other variables.
-    >>> import pandas as pd
-    >>> from feature_engine.timeseries.forecasting import ExpandingWindowFeatures
-    >>> X = pd.DataFrame(dict(date = ["2022-09-18",
-    >>>                          "2022-09-19",
-    >>>                          "2022-09-20",
-    >>>                          "2022-09-21",
-    >>>                          "2022-09-22",
-    >>>                          "2022-09-18",
-    >>>                          "2022-09-19",
-    >>>                          "2022-09-20",
-    >>>                          "2022-09-21",
-    >>>                          "2022-09-22"],
-    >>>                  x1 = [1,2,3,4,5, 3,5,6,8,11],
-    >>>                  x2 = [6,7,8,9,10, 2,9,10,15,2],
-    >>>                  x3=['a','a','a','a','a', 'b','b','b','b','b']
-    >>>                ))
-    >>> ewf = ExpandingWindowFeatures(group_by='x3')
-    >>> ewf.fit_transform(X)
-             date  x1  x2 x3  x1_expanding_mean  x2_expanding_mean
-    0  2022-09-18   1   6  a                NaN                NaN
-    1  2022-09-19   2   7  a           1.000000                6.0
-    2  2022-09-20   3   8  a           1.500000                6.5
-    3  2022-09-21   4   9  a           2.000000                7.0
-    4  2022-09-22   5  10  a           2.500000                7.5
-    5  2022-09-18   3   2  b                NaN                NaN
-    6  2022-09-19   5   9  b           3.000000                2.0
-    7  2022-09-20   6  10  b           4.000000                5.5
-    8  2022-09-21   8  15  b           4.666667                7.0
-    9  2022-09-22  11   2  b           5.500000                9.0
     """
 
     def __init__(
@@ -228,9 +199,11 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         X = self._check_transform_input_and_state(X)
 
         if self.group_by:
-            tmp = self._agg_expanding_window_features(
-                grouped_df=X.groupby(self.group_by)
+            tmp = X.groupby(self.group_by, as_index=False).apply(
+                self._agg_expanding_window_features,
+                include_groups=False,
             )
+            tmp = tmp.reset_index(drop = True)
         else:
             tmp = (
                 X[self.variables_]
@@ -279,14 +252,9 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         Union[pd.Series, pd.DataFrame]
             returned expanding window features
         """
-        tmp_data = []
-        for _, group in grouped_df:
-            tmp = (
-                group[self.variables_]
-                .expanding(min_periods=self.min_periods)
-                .agg(self.functions)
-                .shift(periods=self.periods, freq=self.freq)
-            )
-            tmp_data.append(tmp)
-        tmp = pd.concat(tmp_data).sort_index()
-        return tmp
+        return (
+            grouped_df[self.variables_]
+            .expanding(min_periods=self.min_periods)
+            .agg(self.functions)
+            .shift(periods=self.periods, freq=self.freq)
+        )
