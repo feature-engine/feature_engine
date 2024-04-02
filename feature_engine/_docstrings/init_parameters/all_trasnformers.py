@@ -23,9 +23,9 @@ _missing_values_docstring = """missing_values: string, default='raise'
         learning parameters or performing the transformation.
         """.rstrip()
 
-_group_by_docstring = """str, int, or list of strings or integers, default=None.
-        A group_by operation involves some combination of splitting the object, 
-        applying a function, and combining the results. 
-        This can be used to group large amounts of data and 
+_group_by_docstring = """group_by: str, int, or list of strings or integers,default=None
+        A group_by operation involves some combination of splitting the object,
+        applying a function, and combining the results.
+        This can be used to group large amounts of data and
         compute operations on these groups.
         """.rstrip()
