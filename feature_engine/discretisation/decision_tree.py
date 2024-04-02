@@ -3,6 +3,7 @@
 
 from typing import Dict, List, Optional, Union
 
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
@@ -13,6 +14,7 @@ from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
 from feature_engine._docstrings.fit_attributes import (
+    _binner_dict_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
@@ -28,6 +30,7 @@ from feature_engine.tags import _return_tags
 @Substitution(
     variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
+    binner_dict_=_binner_dict_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
@@ -35,14 +38,14 @@ from feature_engine.tags import _return_tags
 class DecisionTreeDiscretiser(BaseNumericalTransformer):
     """
     The DecisionTreeDiscretiser() replaces numerical variables by discrete, i.e.,
-    finite variables, which values are the predictions of a decision tree.
+    finite variables, whose values are the predictions of a decision tree.
 
     The method is inspired by the following article from the winners of the KDD
     2009 competition:
     http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf
 
     The DecisionTreeDiscretiser() trains a decision tree per variable. Then, it
-    transforms the variables, with predictions of the decision tree.
+    replaces the variable values with the predictions of the decision tree.
 
     The DecisionTreeDiscretiser() works only with numerical variables. A list of
     variables to transform can be indicated. Alternatively, the discretiser will
@@ -53,6 +56,15 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     Parameters
     ----------
     {variables}
+
+    bin_output: str, default = "prediction"
+        Whether to return the prediction of the tree, the bin number of the interval
+        boundaries. Takes values "prediction", "bin_number" and "boundaries",
+        respectively.
+
+    precision: int, default=None
+        The precision at which to store and display the bins labels. In other words,
+        the number of decimals after the comma.
 
     cv: int, cross-validation generator or an iterable, default=3
         Determines the cross-validation splitting strategy. Possible inputs for cv are:
@@ -97,7 +109,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     Attributes
     ----------
     binner_dict_:
-        Dictionary containing the fitted tree per variable.
+         Dictionary with the interval limits per variable or the fitted tree per
+         variable, depending on how `bin_output` was set up.
 
     scores_dict_:
         Dictionary with the score of the best decision tree per variable.
@@ -159,6 +172,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        bin_output: str = "prediction",
+        precision: int = None,
         cv=3,
         scoring: str = "neg_mean_squared_error",
         param_grid: Optional[Dict[str, Union[str, int, float, List[int]]]] = None,
@@ -166,9 +181,24 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         random_state: Optional[int] = None,
     ) -> None:
 
-        if not isinstance(regression, bool):
-            raise ValueError("regression can only take True or False")
+        if bin_output not in ["prediction", "bin_number", "boundaries"]:
+            raise ValueError(
+                "bin_output takes values  'prediction', 'bin_number' or 'boundaries'. "
+                f"Got {bin_output} instead."
+            )
 
+        if precision is not None and (not isinstance(precision, int) or precision < 1):
+            raise ValueError(
+                "precision must be None or a positive integer. " 
+                f"Got {precision} instead."
+            )
+
+        if not isinstance(regression, bool):
+            raise ValueError("regression can only take True or False. "
+                             f"Got {regression} instead.")
+
+        self.bin_output = bin_output
+        self.precision = precision
         self.cv = cv
         self.scoring = scoring
         self.regression = regression
@@ -210,8 +240,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         else:
             param_grid = {"max_depth": [1, 2, 3, 4]}
 
-        self.binner_dict_ = {}
-        self.scores_dict_ = {}
+        binner_dict_ = {}
+        scores_dict_ = {}
 
         for var in self.variables_:
 
@@ -227,9 +257,21 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
             # fit the model to the variable
             tree_model.fit(X[var].to_frame(), y)
 
-            self.binner_dict_[var] = tree_model
-            self.scores_dict_[var] = tree_model.score(X[var].to_frame(), y)
+            binner_dict_[var] = tree_model
+            scores_dict_[var] = tree_model.score(X[var].to_frame(), y)
 
+        if self.bin_output != "prediction":
+            for var in self.variables_:
+                clf = binner_dict_[var].best_estimator_
+                threshold = clf.tree_.threshold
+                feature = clf.tree_.feature
+                feature_threshold = threshold[feature == 0]
+                thresholds = sorted(feature_threshold)
+                thresholds = [-np.inf] + thresholds + [np.inf]
+                binner_dict_[var] = thresholds
+
+        self.binner_dict_ = binner_dict_
+        self.scores_dict = scores_dict_
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -252,11 +294,39 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         X = self._check_transform_input_and_state(X)
 
         for feature in self.variables_:
-            if self.regression:
-                X[feature] = self.binner_dict_[feature].predict(X[feature].to_frame())
+            if self.bin_output == "prediction":
+                if self.regression:
+                    preds = self.binner_dict_[feature].predict(X[feature].to_frame())
+                    if self.precision is None:
+                        X[feature] = preds
+                    else:
+                        X[feature] = np.round(preds, self.precision)
+                else:
+                    tmp = self.binner_dict_[feature].predict_proba(X[feature].to_frame())
+                    preds = tmp[:, 1]
+                    if self.precision is None:
+                        X[feature] = preds
+                    else:
+                        X[feature] = np.round(preds, self.precision)
+
+            elif self.bin_output == "boundaries":
+                for feature in self.variables_:
+                    X[feature] = pd.cut(
+                        X[feature],
+                        self.binner_dict_[feature],
+                        precision=self.precision,
+                        include_lowest=True,
+                    )
+                X[self.variables_] = X[self.variables_].astype(str)
+
             else:
-                tmp = self.binner_dict_[feature].predict_proba(X[feature].to_frame())
-                X[feature] = tmp[:, 1]
+                for feature in self.variables_:
+                    X[feature] = pd.cut(
+                        X[feature],
+                        self.binner_dict_[feature],
+                        labels=False,
+                        include_lowest=True,
+                    )
 
         return X
 
