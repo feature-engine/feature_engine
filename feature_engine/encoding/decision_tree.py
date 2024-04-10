@@ -4,6 +4,7 @@
 from typing import List, Optional, Union
 
 import pandas as pd
+import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
@@ -25,6 +26,8 @@ from feature_engine.encoding.base_encoder import (
     CategoricalMethodsMixin,
 )
 from feature_engine.encoding.ordinal import OrdinalEncoder
+from feature_engine.encoding._helper_functions import check_parameter_unseen
+
 from feature_engine.tags import _return_tags
 
 
@@ -106,6 +109,24 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         of the parameters of the Scikit-learn's DecisionTreeRegressor() or
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
+
+    unseen: str, default='raise'
+        The unseen param of the OrdinalEncoder used before DecisionTreeDiscretiser
+        in the fit method. It tells the encoder how to handle unseen categories.
+        Acceptable values are:
+
+            - If 'ignore', then unseen categories will be encoded as nan
+                - That might make the OrdinalEncoder throw an error
+
+            - If 'raise', then unseen categories will raise an error.
+
+            - If 'encode', unseen categories will be encoded with fill_value param.
+
+        Any other value will throw an error.
+
+    fill_value: int, default=None
+        The value used to fill for unseen categories. It is only used in
+        case of unseen=encode
 
     {variables}
 
@@ -198,8 +219,13 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-    ) -> None:
+        unseen: str = "raise",
+        fill_value: Optional[int] = None,
 
+    ) -> None:
+        check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
+
+        check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
         self.cv = cv
@@ -207,6 +233,24 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self.regression = regression
         self.param_grid = param_grid
         self.random_state = random_state
+        self.unseen = unseen
+        self.fill_value = fill_value
+        self._fill_value_check()
+
+    def _fill_value_check(self,):
+        """
+        Check if unseen and fill_value inputs are acceptable.
+        """
+        if self.unseen == "encode":
+            if self.fill_value is None:
+                raise ValueError(
+                    "If unseen is encode fill_value must be an integer and not None"
+                )
+            if not isinstance(self.fill_value, int):
+                raise ValueError(
+                    f"fill_value must be an integer, "
+                    f"{self.fill_value} of type {type(self.fill_value)} found"
+                )
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -239,6 +283,15 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         variables_ = self._check_or_select_variables(X)
         _check_contains_na(X, variables_)
 
+        # dictionary of categories and seen values
+        if self.unseen in ["encode", "ignore"]:
+            self._categories = {}
+            for var in variables_:
+                unique_vars = X[var].drop_duplicates().to_list()
+                self._categories.update({
+                    var: unique_vars
+                })
+
         param_grid = self._assign_param_grid()
 
         # initialize categorical encoder
@@ -247,7 +300,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             variables=variables_,
             missing_values="raise",
             ignore_format=self.ignore_format,
-            unseen="raise",
+            unseen=self.unseen,
         )
 
         # initialize decision tree discretiser
@@ -291,6 +344,15 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
         X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
+        # replace unseen values if unseen==encode
+        if self.unseen == "encode":
+            for column, col_values in self._categories.items():
+                X[column] = np.where(X[column].isin(col_values) | X[column].isna(),
+                                     X[column], self.fill_value)
+        elif self.unseen == "ignore":
+            for column, col_values in self._categories.items():
+                X[column] = np.where(X[column].isin(col_values) | X[column].isna(),
+                                     X[column], np.nan)
         X = self.encoder_.transform(X)
         return X
 
