@@ -211,7 +211,7 @@ The `binner_dict_` stores the details of each decision tree.
                   scoring='neg_mean_squared_error')}
 
 
-With decision tree discretisation, each bin, that is, each prediction value in this case, does not
+With decision tree discretization, each bin, that is, each prediction value in this case, does not
 necessarily contain the same number of observations. Let's check that out with a visualization:
 
 .. code:: python
