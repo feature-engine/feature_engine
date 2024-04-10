@@ -44,7 +44,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf
 
     The DecisionTreeDiscretiser() trains a decision tree per variable. Then it finds
-    the limits of boundaries of each bin. Finally, it replaces the variable values with
+    the boundaries of each bin. Finally, it replaces the variable values with
     the predictions of the decision tree, the bin number, or the bin limits.
 
     The DecisionTreeDiscretiser() works only with numerical variables. You can pass a
@@ -146,8 +146,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     Examples
     --------
 
-    >>> import pandas as pd
     >>> import numpy as np
+    >>> import pandas as pd
     >>> from feature_engine.discretisation import DecisionTreeDiscretiser
     >>> np.random.seed(42)
     >>> X = pd.DataFrame(dict(x= np.random.randint(1,100, 100)))
@@ -174,7 +174,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         bin_output: str = "prediction",
-        precision: int = None,
+        precision: Union[int, None] = None,
         cv=3,
         scoring: str = "neg_mean_squared_error",
         param_grid: Optional[Dict[str, Union[str, int, float, List[int]]]] = None,
@@ -190,13 +190,19 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
         if precision is not None and (not isinstance(precision, int) or precision < 1):
             raise ValueError(
-                "precision must be None or a positive integer. " 
+                "precision must be None or a positive integer. "
                 f"Got {precision} instead."
             )
 
+        if bin_output == "boundaries" and precision is None:
+            raise ValueError(
+                "When `bin_output == 'boundaries', `precision` cannot be None. "
+                "Change precision's value to a positive integer."
+            )
         if not isinstance(regression, bool):
-            raise ValueError("regression can only take True or False. "
-                             f"Got {regression} instead.")
+            raise ValueError(
+                "regression can only take True or False. " f"Got {regression} instead."
+            )
 
         self.bin_output = bin_output
         self.precision = precision
@@ -272,7 +278,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
                 binner_dict_[var] = thresholds
 
         self.binner_dict_ = binner_dict_
-        self.scores_dict = scores_dict_
+        self.scores_dict_ = scores_dict_
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -303,7 +309,9 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
                     else:
                         X[feature] = np.round(preds, self.precision)
                 else:
-                    tmp = self.binner_dict_[feature].predict_proba(X[feature].to_frame())
+                    tmp = self.binner_dict_[feature].predict_proba(
+                        X[feature].to_frame()
+                    )
                     preds = tmp[:, 1]
                     if self.precision is None:
                         X[feature] = preds
