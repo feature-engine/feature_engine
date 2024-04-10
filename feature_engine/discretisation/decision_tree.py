@@ -301,7 +301,6 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
-
         if self.bin_output == "prediction":
             for feature in self.variables_:
                 if self.regression:
