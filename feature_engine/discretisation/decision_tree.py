@@ -14,7 +14,6 @@ from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
 from feature_engine._docstrings.fit_attributes import (
-    _binner_dict_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
@@ -30,7 +29,6 @@ from feature_engine.tags import _return_tags
 @Substitution(
     variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
-    binner_dict_=_binner_dict_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
@@ -38,17 +36,19 @@ from feature_engine.tags import _return_tags
 class DecisionTreeDiscretiser(BaseNumericalTransformer):
     """
     The DecisionTreeDiscretiser() replaces numerical variables by discrete, i.e.,
-    finite variables, whose values are the predictions of a decision tree.
+    finite variables, whose values are the predictions of a decision tree, the  bin
+    number, or the bin limits.
 
     The method is inspired by the following article from the winners of the KDD
     2009 competition:
     http://www.mtome.com/Publications/CiML/CiML-v3-book.pdf
 
-    The DecisionTreeDiscretiser() trains a decision tree per variable. Then, it
-    replaces the variable values with the predictions of the decision tree.
+    The DecisionTreeDiscretiser() trains a decision tree per variable. Then it finds
+    the limits of boundaries of each bin. Finally, it replaces the variable values with
+    the predictions of the decision tree, the bin number, or the bin limits.
 
-    The DecisionTreeDiscretiser() works only with numerical variables. A list of
-    variables to transform can be indicated. Alternatively, the discretiser will
+    The DecisionTreeDiscretiser() works only with numerical variables. You can pass a
+    list with the variables you wish to transform. Alternatively, the discretiser will
     automatically select all numerical variables.
 
     More details in the :ref:`User Guide <decisiontree_discretiser>`.
@@ -58,13 +58,14 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     {variables}
 
     bin_output: str, default = "prediction"
-        Whether to return the prediction of the tree, the bin number of the interval
+        Whether to return the predictions of the tree, the bin number, or the interval
         boundaries. Takes values "prediction", "bin_number" and "boundaries",
         respectively.
 
     precision: int, default=None
         The precision at which to store and display the bins labels. In other words,
-        the number of decimals after the comma.
+        the number of decimals after the comma. Only used when `bin_output` is
+        "prediction" or "boundaries".
 
     cv: int, cross-validation generator or an iterable, default=3
         Determines the cross-validation splitting strategy. Possible inputs for cv are:
@@ -124,12 +125,12 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     Methods
     -------
     fit:
-        Fit a decision tree per variable.
+        Fit a decision tree per variable and finds the interval limits.
 
     {fit_transform}
 
     transform:
-        Replace continuous variable values by the predictions of the decision tree.
+        Sort continuous variables into intervals or replaces them with the predictions.
 
     See Also
     --------
