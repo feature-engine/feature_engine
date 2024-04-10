@@ -224,8 +224,6 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     ) -> None:
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
-
-        check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
         self.cv = cv
