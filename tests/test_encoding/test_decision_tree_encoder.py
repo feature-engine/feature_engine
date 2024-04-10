@@ -221,6 +221,21 @@ def test_fit_errors_if_new_cat_values_and_unseen_is_raise_param(df_enc):
         encoder.transform(X_unseen_values)
 
 
+def test_fit_errors_if_new_cat_values_and_unseen_is_ignore_param(df_enc):
+    encoder = DecisionTreeEncoder(
+        unseen='ignore',
+        regression=False
+    )
+    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+    X_unseen_values = pd.DataFrame({
+        "var_A": ['ZZZ', 'YYY'],
+        "var_B": ['YYY', 'ZZZ'],
+    })
+    # new categories will raise an error
+    with pytest.raises(ValueError):
+        encoder.transform(X_unseen_values)
+
+
 def test_unseen_for_regression_and_numeric_categories(df_enc_numeric):
     random = np.random.RandomState(42)
     y = random.normal(0, 0.1, len(df_enc_numeric))
