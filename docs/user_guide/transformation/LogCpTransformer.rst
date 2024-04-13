@@ -24,7 +24,7 @@ into train and test sets.
     from sklearn.model_selection import train_test_split
     from sklearn.datasets import fetch_california_housing
 
-    from feature_engine import transformation as vt
+    from feature_engine.transformation import LogCpTransformer
 
     # Load dataset
     X, y = fetch_california_housing( return_X_y=True, as_frame=True)
@@ -41,7 +41,7 @@ quantity "C" that needs to be added to the variable:
 .. code:: python
 
     # set up the variable transformer
-    tf = vt.LogCpTransformer(variables = ["MedInc", "HouseAge"], C="auto")
+    tf = LogCpTransformer(variables = ["MedInc", "HouseAge"], C="auto")
 
     # fit the transformer
     tf.fit(X_train)
@@ -94,14 +94,58 @@ And the distribution of the transformed variable:
 
 .. image:: ../../images/logcptransform.png
 
-More details
-------------
+
+Tutorials, books and courses
+----------------------------
 
 You can find more details about the :class:`LogCpTransformer()` here:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/transformation/LogCpTransformer.ipynb>`_
 
-For more details about this and other feature engineering methods check out these resources:
+For tutorials about this and other data transformation methods, like the square root transformation, power transformations, the box cox transformation, check out our online course:
 
-- `Feature engineering for machine learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
-- `Python Feature Engineering Cookbook <https://www.amazon.com/Python-Feature-Engineering-Cookbook-transforming-dp-1804611301/dp/1804611301>`_, book.
+.. figure::  ../../images/feml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
+
+   Feature Engineering for Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Or read our book:
+
+.. figure::  ../../images/cookbook.png
+   :width: 200
+   :figclass: align-center
+   :align: left
+   :target: https://packt.link/0ewSo
+
+   Python Feature Engineering Cookbook
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Both our book and course are suitable for beginners and more advanced data scientists
+alike.
