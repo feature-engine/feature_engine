@@ -162,6 +162,8 @@ class LogTransformer(BaseNumericalTransformer):
                 "Some variables contain zero or negative values, can't apply log"
             )
 
+        X[self.variables_] = X[self.variables_].astype(float)
+
         # transform
         if self.base == "e":
             X.loc[:, self.variables_] = np.log(X.loc[:, self.variables_])
@@ -382,6 +384,8 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
                 "Some variables contain zero or negative values after adding"
                 + "constant C, can't apply log"
             )
+
+        X[self.variables_] = X[self.variables_].astype(float)
 
         # transform
         if self.base == "e":
