@@ -1,8 +1,22 @@
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.transformation import LogTransformer
+
+
+def test_transforming_int_vars():
+    df = pd.DataFrame(
+        {
+            "var1": [1, 2, 3],
+            "var2": [4, 5, 3],
+        }
+    )
+    dft = np.log(df)
+    transformer = LogTransformer(base="e", variables=None)
+    X = transformer.fit_transform(df)
+    pd.testing.assert_frame_equal(X, dft)
 
 
 def test_log_base_e_plus_automatically_find_variables(df_vartypes):
