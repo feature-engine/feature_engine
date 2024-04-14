@@ -1,4 +1,5 @@
 .. -*- mode: rst -*-
+.. _encoding_user_guide:
 
 .. currentmodule:: feature_engine.encoding
 
