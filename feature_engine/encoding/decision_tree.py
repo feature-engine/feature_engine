@@ -3,38 +3,55 @@
 
 from typing import List, Optional, Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from sklearn.pipeline import Pipeline
-from sklearn.utils.multiclass import check_classification_targets, type_of_target
+from sklearn.utils.multiclass import (check_classification_targets,
+                                      type_of_target)
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-    _variables_attribute_docstring,
+    _feature_names_in_docstring, _n_features_in_docstring,
+    _variables_attribute_docstring)
+from feature_engine._docstrings.init_parameters.all_trasnformers import \
+    _variables_categorical_docstring
+from feature_engine._docstrings.init_parameters.encoders import (
+    _ignore_format_docstring,
+    _unseen_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _variables_categorical_docstring,
-)
-from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X_y
 from feature_engine.discretisation import DecisionTreeDiscretiser
-from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixin,
-    CategoricalMethodsMixin,
-)
-from feature_engine.encoding.ordinal import OrdinalEncoder
 from feature_engine.encoding._helper_functions import check_parameter_unseen
-
+from feature_engine.encoding.base_encoder import (CategoricalInitMixin,
+                                                  CategoricalMethodsMixin)
+from feature_engine.encoding.ordinal import OrdinalEncoder
 from feature_engine.tags import _return_tags
 
+
+
+_unseen_docstring = (
+    _unseen_docstring
+    + """    unseen: str, default='raise'
+        The unseen param of the OrdinalEncoder used before DecisionTreeDiscretiser
+        in the fit method. It tells the encoder how to handle unseen categories.
+        Acceptable values are:
+
+            - If 'ignore', then unseen categories will be encoded as nan
+                - That might make the OrdinalEncoder throw an error
+
+            - If 'raise', then unseen categories will raise an error.
+
+            - If 'encode', unseen categories will be encoded with fill_value param.
+
+        Any other value will throw an error."""
+)
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
     variables_=_variables_attribute_docstring,
+    unseen=_unseen_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
@@ -110,27 +127,14 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
 
-    unseen: str, default='raise'
-        The unseen param of the OrdinalEncoder used before DecisionTreeDiscretiser
-        in the fit method. It tells the encoder how to handle unseen categories.
-        Acceptable values are:
-
-            - If 'ignore', then unseen categories will be encoded as nan
-                - That might make the OrdinalEncoder throw an error
-
-            - If 'raise', then unseen categories will raise an error.
-
-            - If 'encode', unseen categories will be encoded with fill_value param.
-
-        Any other value will throw an error.
-
-    fill_value: int, default=None
-        The value used to fill for unseen categories. It is only used in
-        case of unseen=encode
+    fill_value: float, default=None
+        The value used to replace unseen categories. Only used when `unseen=encode`.
 
     {variables}
 
     {ignore_format}
+
+    {unseen}
 
     Attributes
     ----------
@@ -220,7 +224,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
         unseen: str = "raise",
-        fill_value: Optional[int] = None,
+        fill_value: Optional[float] = None,
 
     ) -> None:
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
@@ -239,15 +243,15 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
         Check if unseen and fill_value inputs are acceptable.
         """
-        if self.unseen == "encode":
-            if self.fill_value is None:
+        if self.unseen == "encode" and self.fill_value is None:
                 raise ValueError(
-                    "If unseen is encode fill_value must be an integer and not None"
+                    "If unseen is encode fill_value must be a float"
+                    f"Got {self.fill_value} instead"
                 )
-            if not isinstance(self.fill_value, int):
+        elif not isinstance(self.fill_value, float):
                 raise ValueError(
-                    f"fill_value must be an integer, "
-                    f"{self.fill_value} of type {type(self.fill_value)} found"
+                    f"fill_value must be a float, "
+                    f"Got {self.fill_value} instead"
                 )
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
@@ -282,12 +286,12 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         _check_contains_na(X, variables_)
 
         # dictionary of categories and seen values
-        if self.unseen in ["encode", "ignore"]:
+        if self.unseen != "raise":
             self._categories = {}
             for var in variables_:
-                unique_vars = X[var].drop_duplicates().to_list()
+                categories = X[var].unique()
                 self._categories.update({
-                    var: unique_vars
+                    var: categories
                 })
 
         param_grid = self._assign_param_grid()
@@ -342,7 +346,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
         X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
-        # replace unseen values if unseen==encode
+        
         if self.unseen == "encode":
             for column, col_values in self._categories.items():
                 X[column] = np.where(X[column].isin(col_values) | X[column].isna(),
