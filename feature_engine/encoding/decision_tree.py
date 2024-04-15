@@ -32,19 +32,10 @@ from feature_engine.tags import _return_tags
 
 _unseen_docstring = (
     _unseen_docstring
-    + """    unseen: str, default='raise'
-        The unseen param of the OrdinalEncoder used before DecisionTreeDiscretiser
-        in the fit method. It tells the encoder how to handle unseen categories.
-        Acceptable values are:
-
-            - If 'ignore', then unseen categories will be encoded as nan
-                - That might make the OrdinalEncoder throw an error
-
-            - If 'raise', then unseen categories will raise an error.
-
-            - If 'encode', unseen categories will be encoded with fill_value param.
-
-        Any other value will throw an error."""
+    + """ `'ignore'` will then make the DecisionTreeDiscretiser throw an error.
+        If `'encode'` unseen categories will be encoded with fill_value param,
+        that must be a numeric value.Any other value will throw an error.
+        """
 )
 
 @Substitution(
@@ -223,10 +214,18 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        unseen: str = "raise",
+        unseen: str = "ignore",
         fill_value: Optional[float] = None,
 
     ) -> None:
+        
+        if unseen == "encode" and ( fill_value is None or 
+                                    not isinstance(fill_value, (int, float))):
+                raise ValueError(
+                    "If unseen is encode fill_value takes only numeric values"
+                    f"Got {fill_value} instead"
+                )
+
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
@@ -237,22 +236,6 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self.random_state = random_state
         self.unseen = unseen
         self.fill_value = fill_value
-        self._fill_value_check()
-
-    def _fill_value_check(self,):
-        """
-        Check if unseen and fill_value inputs are acceptable.
-        """
-        if self.unseen == "encode" and self.fill_value is None:
-                raise ValueError(
-                    "If unseen is encode fill_value must be a float"
-                    f"Got {self.fill_value} instead"
-                )
-        elif not isinstance(self.fill_value, float):
-                raise ValueError(
-                    f"fill_value must be a float, "
-                    f"Got {self.fill_value} instead"
-                )
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -346,7 +329,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
         X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
-        
+
         if self.unseen == "encode":
             for column, col_values in self._categories.items():
                 X[column] = np.where(X[column].isin(col_values) | X[column].isna(),
