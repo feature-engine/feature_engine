@@ -32,9 +32,8 @@ from feature_engine.tags import _return_tags
 
 _unseen_docstring = (
     _unseen_docstring
-    + """ `'ignore'` will then make the DecisionTreeDiscretiser throw an error.
-        If `'encode'` unseen categories will be encoded with fill_value param,
-        that must be a numeric value.Any other value will throw an error.
+    + """ If `'encode'` unseen categories will be encoded with fill_value param,
+        that must be a numeric value.
         """
 )
 
@@ -330,15 +329,19 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
 
-        if self.unseen == "encode":
-            for column, col_values in self._categories.items():
-                X[column] = np.where(X[column].isin(col_values) | X[column].isna(),
-                                     X[column], self.fill_value)
-        elif self.unseen == "ignore":
-            for column, col_values in self._categories.items():
-                X[column] = np.where(X[column].isin(col_values) | X[column].isna(),
-                                     X[column], np.nan)
+        if self.unseen != "raise":
+            # replace unseen with a seen value
+            mask_unseen = ~X.apply(lambda x: x.isin(self._categories[x.name]))
+            for col, values in self._categories.items():
+                X.loc[mask_unseen[col],[col]] = values[0]
+
         X = self.encoder_.transform(X)
+
+        if self.unseen == "encode":
+            X = np.where(mask_unseen, self.fill_value, X)
+        elif self.unseen == "ignore":
+            X = np.where(mask_unseen, None, X)
+
         return X
 
     def inverse_transform(self, X: pd.DataFrame):
