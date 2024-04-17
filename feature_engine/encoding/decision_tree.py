@@ -331,7 +331,15 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         if self.unseen != "raise":
             # replace unseen with a seen value - later it will be replaced
-            mask_unseen = ~X.apply(lambda x: x.isin(self._categories[x.name]))
+            mask_unseen = ~X.apply(
+                lambda x: x.isin(
+                    self._categories[x.name]
+                    )
+                if x.name in list(
+                        self._categories.keys()
+                        )
+                else True
+                )
             for col, values in self._categories.items():
                 X.loc[mask_unseen[col], [col]] = values[0]
 
