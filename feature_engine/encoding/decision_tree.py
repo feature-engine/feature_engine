@@ -29,13 +29,13 @@ from feature_engine.encoding.ordinal import OrdinalEncoder
 from feature_engine.tags import _return_tags
 
 
-
 _unseen_docstring = (
     _unseen_docstring
-    + """ If `'encode'` unseen categories will be encoded with fill_value param,
-        that must be a numeric value.
+    + """ If `'encode'` unseen categories will be encoded
+        with fill_value param, that must be a numeric value.
         """
 )
+
 
 @Substitution(
     ignore_format=_ignore_format_docstring,
@@ -117,14 +117,14 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
 
-    fill_value: float, default=None
-        The value used to replace unseen categories. Only used when `unseen=encode`.
-
     {variables}
 
     {ignore_format}
 
     {unseen}
+
+    fill_value: float, default=None
+        The value used to replace unseen categories. Only used when `unseen=encode`.
 
     Attributes
     ----------
@@ -217,13 +217,13 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         fill_value: Optional[float] = None,
 
     ) -> None:
-        
-        if unseen == "encode" and ( fill_value is None or 
-                                    not isinstance(fill_value, (int, float))):
-                raise ValueError(
-                    "If unseen is encode fill_value takes only numeric values"
-                    f"Got {fill_value} instead"
-                )
+
+        if unseen == "encode" and (fill_value is None or np.isnan(fill_value) or
+                                   not isinstance(fill_value, (int, float))):
+            raise ValueError(
+                "If unseen is encode fill_value takes only numeric values"
+                f"Got {fill_value} instead"
+            )
 
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         super().__init__(variables, ignore_format)
@@ -330,17 +330,16 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         _check_contains_na(X, self.variables_)
 
         if self.unseen != "raise":
-            # replace unseen with a seen value
+            # replace unseen with a seen value - later it will be replaced
             mask_unseen = ~X.apply(lambda x: x.isin(self._categories[x.name]))
             for col, values in self._categories.items():
-                X.loc[mask_unseen[col],[col]] = values[0]
+                X.loc[mask_unseen[col], [col]] = values[0]
 
         X = self.encoder_.transform(X)
-
         if self.unseen == "encode":
-            X = np.where(mask_unseen, self.fill_value, X)
+            X = X.mask(mask_unseen, other=self.fill_value)
         elif self.unseen == "ignore":
-            X = np.where(mask_unseen, None, X)
+            X = X.mask(mask_unseen, other=None)
 
         return X
 
