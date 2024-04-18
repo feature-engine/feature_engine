@@ -347,7 +347,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         if self.unseen == "encode":
             X = X.mask(mask_unseen, other=self.fill_value)
         if self.unseen == "ignore":
-            X = X.mask(mask_unseen, other=None)
+            X = X.mask(mask_unseen, other=np.nan)
 
         return X
 

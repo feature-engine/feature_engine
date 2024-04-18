@@ -237,7 +237,7 @@ def test_error_fill_value_param(df_enc):
 
 def test_fit_errors_if_new_cat_values_and_unseen_is_raise_param(df_enc):
     encoder = DecisionTreeEncoder(
-        unseen='raise',
+        unseen="raise",
         regression=False
     )
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
@@ -252,7 +252,7 @@ def test_fit_errors_if_new_cat_values_and_unseen_is_raise_param(df_enc):
 
 def test_if_new_cat_values_and_unseen_is_ignore_param(df_enc):
     encoder = DecisionTreeEncoder(
-        unseen='ignore',
+        unseen="ignore",
         regression=False
     )
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
@@ -262,7 +262,7 @@ def test_if_new_cat_values_and_unseen_is_ignore_param(df_enc):
     })
 
     unseen_transformed = encoder.transform(X_unseen_values)
-    none_unseen = pd.DataFrame(None, columns=X_unseen_values.columns,
+    none_unseen = pd.DataFrame(np.nan, columns=X_unseen_values.columns,
                                index=X_unseen_values.index)
     pd.testing.assert_frame_equal(unseen_transformed, none_unseen, check_dtype=False)
 
