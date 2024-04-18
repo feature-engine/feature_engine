@@ -195,7 +195,12 @@ def test_unseen_param(df_enc):
     encoder.fit(df_enc, df_enc["target"])
     assert encoder.encoder_[0].unseen == "ignore"
 
-    # ignore unseen
+    # ignore
+    encoder = DecisionTreeEncoder(unseen="ignore", regression=False)
+    encoder.fit(df_enc, df_enc["target"])
+    assert encoder.encoder_[0].unseen == "ignore"
+
+    # raise unseen
     encoder = DecisionTreeEncoder(unseen="raise", regression=False)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
     assert encoder.encoder_[0].unseen == "raise"
