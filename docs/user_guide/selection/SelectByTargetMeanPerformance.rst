@@ -271,8 +271,8 @@ data:
     ['pclass', 'sex', 'fare', 'cabin']
 
 
-More details
-~~~~~~~~~~~~
+Additional resources
+--------------------
 
 Check also:
 
@@ -281,6 +281,52 @@ Check also:
 All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
 
 For more details about this and other feature selection methods check out these resources:
+For more details about this and other feature selection methods check out these resources:
 
-- `Feature selection for machine learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.
-- `Feature selection in machine learning <https://leanpub.com/feature-selection-in-machine-learning>`_, book.
+
+.. figure::  ../../images/fsml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-selection-for-machine-learning
+
+   Feature Selection for Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Or read our book:
+
+.. figure::  ../../images/fsmlbook.png
+   :width: 200
+   :figclass: align-center
+   :align: left
+   :target: https://leanpub.com/feature-selection-in-machine-learning
+
+   Feature Selection in Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Both our book and course are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.

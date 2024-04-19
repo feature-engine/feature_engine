@@ -265,7 +265,7 @@ Below, we see the resulting dataframe:
 
 
 More details
-^^^^^^^^^^^^
+------------
 
 For more details into :class:`StringSimilarityEncoder()`'s functionality visit:
 
