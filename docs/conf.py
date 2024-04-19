@@ -189,10 +189,10 @@ numpydoc_show_class_members = False
 # intersphinx configuration
 intersphinx_mapping = {
     "python": ("https://docs.python.org/{.major}".format(sys.version_info), None),
-    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
+    # "numpy": ("https://numpy.org/doc/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
-    "matplotlib": ("https://matplotlib.org/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    # "matplotlib": ("https://matplotlib.org/", None),
     "sklearn": ("https://scikit-learn.org/stable/", None),
 }
 
