@@ -17,7 +17,7 @@ execution. This may affect the results of your work. Thus, it is advisable to se
 seed.
 
 Setting the seed
-~~~~~~~~~~~~~~~~
+----------------
 
 There are 2 ways in which the seed can be set in the :class:`RandomSampleImputer()`:
 
@@ -62,7 +62,7 @@ the imputer will return an error. In addition, the variables indicated as seed
 should not contain missing values themselves.
 
 Important for GDPR
-~~~~~~~~~~~~~~~~~~
+------------------
 
 This estimator stores a copy of the training set when the `fit()` method is
 called. Therefore, the object can become quite heavy. Also, it may not be GDPR
@@ -136,8 +136,8 @@ The beauty of the random sampler is that it preserves the original variable dist
 
 .. image:: ../../images/randomsampleimputation.png
 
-More details
-^^^^^^^^^^^^
+Additional resources
+--------------------
 
 In the following Jupyter notebook you will find more details on the functionality of the
 :class:`RandomSampleImputer()`, including how to set the different types of seeds.
@@ -146,11 +146,52 @@ In the following Jupyter notebook you will find more details on the functionalit
 
 All Feature-engine notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
 
-You will also find a lot of information on why the seed matters in this notebook:
-
-- `notebook <https://github.com/solegalli/feature-engineering-for-machine-learning/blob/master/Section-04-Missing-Data-Imputation/04.07-Random-Sample-Imputation.ipynb>`_
-
 And finally, there is also a lot of information about this and other imputation techniques
 in this online course:
 
-- `Feature Engineering for Machine Learning course <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_
+
+.. figure::  ../../images/feml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
+
+   Feature Engineering for Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Or read our book:
+
+.. figure::  ../../images/cookbook.png
+   :width: 200
+   :figclass: align-center
+   :align: left
+   :target: https://packt.link/0ewSo
+
+   Python Feature Engineering Cookbook
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Both our book and course are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.

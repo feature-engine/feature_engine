@@ -282,13 +282,34 @@ functions and cyclical encoding.
 Additional resources
 --------------------
 
-You can find an example of how to use :class:`CyclicalFeatures()` with a real dataset in
-the following `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/creation/CyclicalFeatures.ipynb>`_.
-
 For tutorials on how to create cyclical features, check out the following courses:
 
-- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_.
-- `Feature Engineering for Time Series Forecasting <https://www.courses.trainindata.com/p/feature-engineering-for-forecasting>`_.
+.. figure::  ../../images/feml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
+
+   Feature Engineering for Machine Learning
+
+.. figure::  ../../images/fetsf.png
+   :width: 300
+   :figclass: align-center
+   :align: right
+   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
+
+   Feature Engineering for Time Series Forecasting
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
 
 For a comparison between one-hot encoding, ordinal encoding, cyclical encoding and spline
 encoding of cyclical features check out the following
@@ -297,10 +318,3 @@ encoding of cyclical features check out the following
 Check also these Kaggle demo on the use of cyclical encoding with neural networks:
 
 - `Encoding Cyclical Features for Deep Learning <https://www.kaggle.com/code/avanwyk/encoding-cyclical-features-for-deep-learning>`_.
-
-Finally, you can find similar explanations of cyclical encoding in the following blogs:
-
-- `Cyclical features encoding, it’s about time! <https://towardsdatascience.com/cyclical-features-encoding-its-about-time-ce23581845ca>`_
-- `Encoding cyclical continuous features - 24-hour time <https://ianlondon.github.io/blog/encoding-cyclical-features-24hour-time/>`_
-- `Feature Engineering - Handling Cyclical Features <http://blog.davidkaleko.com/feature-engineering-cyclical-features.html>`_
-

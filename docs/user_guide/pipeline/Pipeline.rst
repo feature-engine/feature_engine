@@ -597,8 +597,8 @@ And the best accuracy obtained with these hyperparameters:
 
     0.7843822843822843
 
-More details
-^^^^^^^^^^^^
+Additional resources
+--------------------
 
 To learn more about feature engineering and data preprocessing, including missing data imputation, outlier removal or
 capping, variable transformation and encoding, check out our online course and book:
