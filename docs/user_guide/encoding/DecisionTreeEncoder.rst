@@ -187,7 +187,6 @@ For more details about this and other feature engineering methods check out thes
 
    Feature Engineering for Machine Learning
 
-
 |
 |
 |
@@ -199,7 +198,7 @@ For more details about this and other feature engineering methods check out thes
 |
 |
 
-Our book:
+Or read our book:
 
 .. figure::  ../../images/cookbook.png
    :width: 200
@@ -209,19 +208,5 @@ Our book:
 
    Python Feature Engineering Cookbook
 
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and courses are suitable for beginners and more advanced data scientists
+Both our book and course are suitable for beginners and more advanced data scientists
 alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.

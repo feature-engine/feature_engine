@@ -88,8 +88,8 @@ variable):
 
 .. image:: ../../images/medianimputation.png
 
-More details
-^^^^^^^^^^^^
+Additional resources
+--------------------
 
 In the following Jupyter notebook you will find more details on the functionality of the
 :class:`MeanMedianImputer()`, including how to select numerical variables automatically.
@@ -100,5 +100,49 @@ mean or median values of the variables.
 
 For more details about this and other feature engineering methods check out these resources:
 
-- `Feature engineering for machine learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
-- `Python Feature Engineering Cookbook <https://www.amazon.com/Python-Feature-Engineering-Cookbook-transforming-dp-1804611301/dp/1804611301>`_, book.
+
+.. figure::  ../../images/feml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
+
+   Feature Engineering for Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Or read our book:
+
+.. figure::  ../../images/cookbook.png
+   :width: 200
+   :figclass: align-center
+   :align: left
+   :target: https://packt.link/0ewSo
+
+   Python Feature Engineering Cookbook
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Both our book and course are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
