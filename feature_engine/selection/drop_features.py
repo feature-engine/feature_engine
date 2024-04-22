@@ -5,7 +5,7 @@ import pandas as pd
 from feature_engine.dataframe_checks import check_X
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling.variable_type_selection import find_all_variables
+from feature_engine.variable_handling import check_all_variables
 
 
 class DropFeatures(BaseSelector):
@@ -93,11 +93,7 @@ class DropFeatures(BaseSelector):
         # check input dataframe
         X = check_X(X)
 
-        # X[self.features_to_drops] calls to pandas to check if columns are
-        # present in the df.
-        X[self.features_to_drop]
-
-        self.features_to_drop_ = find_all_variables(X, variables=self.features_to_drop)
+        self.features_to_drop_ = check_all_variables(X, variables=self.features_to_drop)
 
         # check user is not removing all columns in the dataframe
         if len(self.features_to_drop_) == len(X.columns):

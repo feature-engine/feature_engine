@@ -352,7 +352,7 @@ def test_error_if_variables_is_none_and_no_numerical_in_df(df):
         "No numerical variables found in this dataframe. Please check "
         "variable format with pandas dtypes."
     )
-    with pytest.raises(ValueError) as record:
+    with pytest.raises(TypeError) as record:
         transformer.fit(df[["cat_1", "drift_cat_1"]])
 
     assert str(record.value) == msg
@@ -364,13 +364,9 @@ def test_error_if_confirm_variables_returns_empty_list(df):
     )
     data = df.copy()
     data = data.drop(["cat_1", "drift_cat_1"], axis=1)
-    msg = (
-        "After confirming variables, no variable remains. At least 1 "
-        "variable is required for the selection."
-    )
+    msg = "None of the variables in the list are present in the dataframe."
     with pytest.raises(ValueError) as record:
         transformer.fit(data)
-
     assert str(record.value) == msg
 
 

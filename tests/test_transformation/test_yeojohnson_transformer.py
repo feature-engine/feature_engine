@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
@@ -84,3 +85,67 @@ def test_non_fitted_error(df_vartypes):
     with pytest.raises(NotFittedError):
         transformer = YeoJohnsonTransformer()
         transformer.transform(df_vartypes)
+
+
+def test_inverse_transform_automatically_select_only_transformed_columns(df_vartypes):
+    X = df_vartypes.copy(deep=True)
+    transformer = YeoJohnsonTransformer(variables=None)
+    X_trans = transformer.fit_transform(X)
+
+    X_inverse = transformer.inverse_transform(X_trans)
+    X_inverse["Age"] = X_inverse["Age"].round(0).astype(int)
+
+    pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)
+
+
+def test_inverse_with_X_negative_and_positive():
+    X = pd.DataFrame(
+        {
+            "var1": np.arange(-20, 0),
+            "var2": np.arange(0, 20),
+            "var3": np.arange(-10, 10),
+        }
+    )
+
+    transformer = YeoJohnsonTransformer(variables=None)
+    X_trans = transformer.fit_transform(X)
+
+    X_inverse = transformer.inverse_transform(X_trans)
+    X_inverse = X_inverse.round(0).astype(int)
+
+    pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)
+
+
+def test_lambda_equals_lambda_equal_0():
+    X = pd.DataFrame(
+        {
+            "var1": np.arange(0, 20),
+            "var2": np.arange(20, 40),
+        }
+    )
+
+    transformer = YeoJohnsonTransformer(variables=None)
+    transformer = transformer.fit(X)
+
+    transformer.lambda_dict_ = {"var1": 0, "var2": 0}
+
+    X_trans = transformer.transform(X)
+    X_inverse = transformer.inverse_transform(X_trans)
+    X_inverse = X_inverse.round(0).astype(int)
+
+    pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)
+
+
+def test_lambda_equals_lambda_equal_2():
+    X = pd.DataFrame({"var1": np.arange(-21, -1), "var2": np.arange(-41, -21)})
+
+    transformer = YeoJohnsonTransformer(variables=None)
+    transformer = transformer.fit(X)
+
+    transformer.lambda_dict_ = {"var1": 2, "var2": 2}
+
+    X_trans = transformer.transform(X)
+    X_inverse = transformer.inverse_transform(X_trans)
+    X_inverse = X_inverse.round(0).astype(int)
+
+    pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)

@@ -93,6 +93,10 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
 
     {drop_original}
 
+    drop_na: bool, default=False.
+        Whether the NAN introduced in the created features should be removed.
+
+
     Attributes
     ----------
     variables_:
@@ -109,6 +113,9 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
 
     transform:
         Add expanding window features.
+
+    transform_x_y:
+        Remove rows with missing data from X and y.
 
     {fit_transform}
 
@@ -151,6 +158,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         sort_index: bool = True,
         missing_values: str = "raise",
         drop_original: bool = False,
+        drop_na: bool = False,
     ) -> None:
 
         if not isinstance(functions, (str, list)) or not all(
@@ -168,7 +176,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
                 f"periods must be a non-negative integer. Got {periods} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original)
+        super().__init__(variables, missing_values, drop_original, drop_na)
 
         self.min_periods = min_periods
         self.functions = functions
@@ -206,6 +214,9 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
 
         if self.drop_original:
             X = X.drop(self.variables_, axis=1)
+
+        if self.drop_na:
+            X = X.dropna(subset=tmp.columns, axis=0)
 
         return X
 

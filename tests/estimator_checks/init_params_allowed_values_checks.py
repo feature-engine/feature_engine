@@ -34,3 +34,21 @@ def check_error_param_missing_values(estimator):
         else:
             with pytest.raises(ValueError):
                 estimator.__class__(missing_values=value)
+
+
+def check_error_param_confirm_variables(estimator):
+    """
+    Only for transformers with a parameter `confirm_variables`in init.
+
+    Checks transformer raises error when user enters non-permitted value to the
+    parameter.
+    """
+    # param takes values True or False
+    estimator = clone(estimator)
+    for value in [2, "hola", [True]]:
+        msg = (
+            f"confirm_variables takes only values True and False. Got {value} instead."
+        )
+        with pytest.raises(ValueError) as record:
+            estimator.__class__(confirm_variables=value)
+        assert record.value.args[0] == msg

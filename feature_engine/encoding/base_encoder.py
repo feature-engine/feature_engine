@@ -6,6 +6,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _missing_values_docstring,
     _variables_categorical_docstring,
@@ -18,12 +21,11 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import (
+from feature_engine.variable_handling import (
+    check_all_variables,
+    check_categorical_variables,
     find_all_variables,
-    find_or_check_categorical_variables,
+    find_categorical_variables,
 )
 
 
@@ -54,7 +56,7 @@ class CategoricalInitMixin:
                 f"Got {ignore_format} instead."
             )
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.ignore_format = ignore_format
 
 
@@ -95,7 +97,7 @@ class CategoricalInitMixinNA:
                 f"Got {ignore_format} instead."
             )
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.ignore_format = ignore_format
         self.missing_values = missing_values
 
@@ -130,14 +132,17 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
             If there are no categorical variables in the df or the df is empty
             If the variable(s) contain null values
         """
-        if self.ignore_format is False:
-            # find categorical variables or check variables entered by user are object
-            variables_: List[Union[str, int]] = find_or_check_categorical_variables(
-                X, self.variables
-            )
+        # select variables to encode
+        if self.ignore_format is True:
+            if self.variables is None:
+                variables_ = find_all_variables(X)
+            else:
+                variables_ = check_all_variables(X, self.variables)
         else:
-            # select all variables or check variables entered by the user
-            variables_ = find_all_variables(X, self.variables)
+            if self.variables is None:
+                variables_ = find_categorical_variables(X)
+            else:
+                variables_ = check_categorical_variables(X, self.variables)
 
         return variables_
 

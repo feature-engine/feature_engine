@@ -15,8 +15,9 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+from feature_engine.variable_handling import (
+    check_numerical_variables,
+    find_numerical_variables,
 )
 
 
@@ -58,7 +59,10 @@ class BaseNumericalTransformer(
         X = check_X(X)
 
         # find or check for numerical variables
-        self.variables_ = find_or_check_numerical_variables(X, self.variables)
+        if self.variables is None:
+            self.variables_ = find_numerical_variables(X)
+        else:
+            self.variables_ = check_numerical_variables(X, self.variables)
 
         # check if dataset contains na or inf
         _check_contains_na(X, self.variables_)

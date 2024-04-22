@@ -5,6 +5,9 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _imputer_dict_docstring,
@@ -19,12 +22,11 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import (
+from feature_engine.variable_handling import (
+    check_all_variables,
+    check_categorical_variables,
     find_all_variables,
-    find_or_check_categorical_variables,
+    find_categorical_variables,
 )
 
 
@@ -144,7 +146,7 @@ class CategoricalImputer(BaseImputer):
 
         self.imputation_method = imputation_method
         self.fill_value = fill_value
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.return_object = return_object
         self.ignore_format = ignore_format
 
@@ -164,16 +166,17 @@ class CategoricalImputer(BaseImputer):
         # check input dataframe
         X = check_X(X)
 
-        # check or select the the right variables
-        if not self.ignore_format:
-            # find categorical variables or check variables entered by user are
-            # categorical
-            self.variables_: List[
-                Union[str, int]
-            ] = find_or_check_categorical_variables(X, self.variables)
+        # select variables to encode
+        if self.ignore_format is True:
+            if self.variables is None:
+                self.variables_ = find_all_variables(X)
+            else:
+                self.variables_ = check_all_variables(X, self.variables)
         else:
-            # select all variables or check variables entered by the user
-            self.variables_ = find_all_variables(X, self.variables)
+            if self.variables is None:
+                self.variables_ = find_categorical_variables(X)
+            else:
+                self.variables_ = check_categorical_variables(X, self.variables)
 
         if self.imputation_method == "missing":
             self.imputer_dict_ = {var: self.fill_value for var in self.variables_}

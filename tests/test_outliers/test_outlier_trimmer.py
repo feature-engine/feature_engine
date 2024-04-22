@@ -1,6 +1,7 @@
 # Authors: Soledad Galli <solegalli@gprotonmail.com>
 # License: BSD 3 clause
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -80,6 +81,18 @@ def test_transformer_ignores_na_in_df(df_na):
 
     pd.testing.assert_frame_equal(X, df_transf)
     assert len(X) == 5
+
+
+def test_transform_x_t(df_normal_dist):
+    y = pd.Series(np.zeros(len(df_normal_dist)))
+    transformer = OutlierTrimmer(capping_method="mad", tail="right", fold=1)
+    X = transformer.fit_transform(df_normal_dist)
+    assert len(X) != len(y)
+
+    Xt, yt = transformer.transform_x_y(df_normal_dist, y)
+    assert len(Xt) == len(yt)
+    assert len(Xt) != len(df_normal_dist)
+    assert (Xt.index == yt.index).all()
 
 
 def test_quantile_fold_default_value():

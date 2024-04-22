@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Dict, List, Union
 
 import numpy as np
 import pandas as pd
@@ -69,6 +69,10 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         contain missing values. If 'ignore', missing data will be ignored when learning
         parameters or performing the transformation.
 
+    match_dtypes: bool, default=False
+        Indicates whether the dtypes observed in the train set should be applied to
+        variables in the test set.
+
     verbose: bool, default=True
         If True, the transformer will print out the names of the variables that are
         added and / or removed from the dataset.
@@ -80,6 +84,10 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
 
     n_features_in_:
         The number of features in the train set used in fit.
+
+    dtype_dict_:
+        If `match_dtypes` is set to `True`, then this attribute will exist, and it will
+        contain a dictionary of variables and their corresponding dtypes.
 
     Methods
     -------
@@ -150,13 +158,19 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         self,
         fill_value: Union[str, int, float] = np.nan,
         missing_values: str = "raise",
+        match_dtypes: bool = False,
         verbose: bool = True,
     ):
-
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
                 "missing_values takes only values 'raise' or 'ignore'."
                 f"Got '{missing_values} instead."
+            )
+
+        if not isinstance(match_dtypes, bool):
+            raise ValueError(
+                "match_dtypes takes only booleans True and False. "
+                f"Got '{match_dtypes} instead."
             )
 
         if not isinstance(verbose, bool):
@@ -173,6 +187,7 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
 
         self.fill_value = fill_value
         self.missing_values = missing_values
+        self.match_dtypes = match_dtypes
         self.verbose = verbose
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
@@ -197,6 +212,9 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         self.feature_names_in_: List[Union[str, int]] = X.columns.tolist()
 
         self.n_features_in_ = X.shape[1]
+
+        if self.match_dtypes:
+            self.dtype_dict_: Dict = X.dtypes.to_dict()
 
         return self
 
@@ -242,6 +260,23 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         X = X.drop(_columns_to_drop, axis=1)
 
         X = X.reindex(columns=self.feature_names_in_, fill_value=self.fill_value)
+
+        if self.match_dtypes:
+            _current_dtypes = X.dtypes.to_dict()
+            _columns_to_update = {
+                column: new_dtype
+                for column, new_dtype in self.dtype_dict_.items()
+                if new_dtype != _current_dtypes[column]
+            }
+
+            if self.verbose:
+                for column, new_dtype in _columns_to_update.items():
+                    print(
+                        f"The {column} dtype is changing from ",
+                        f"{_current_dtypes[column]} to {new_dtype}",
+                    )
+
+            X = X.astype(_columns_to_update)
 
         return X
 

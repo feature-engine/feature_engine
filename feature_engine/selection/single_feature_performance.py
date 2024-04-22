@@ -2,8 +2,10 @@ import warnings
 from typing import List, Union
 
 import pandas as pd
-from sklearn.model_selection import cross_validate
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -12,8 +14,6 @@ from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X_y
 from feature_engine._docstrings.selection._docstring import (
     _cv_docstring,
     _estimator_docstring,
@@ -27,13 +27,14 @@ from feature_engine._docstrings.selection._docstring import (
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+
+from .base_selection_functions import (
+    _select_numerical_variables,
+    single_feature_performance,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -153,23 +154,25 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
         if threshold:
             if not isinstance(threshold, (int, float)):
-                raise ValueError("threshold can only be integer, float or None")
+                raise ValueError(
+                    "`threshold` can only be integer, float or None. "
+                    f"Got {threshold} instead."
+                )
 
             if scoring == "roc_auc" and (threshold < 0.5 or threshold > 1):
                 raise ValueError(
-                    "roc-auc score should vary between 0.5 and 1. Pick a "
-                    "threshold within this interval."
+                    "`threshold` for roc-auc score should be between 0.5 and 1. "
+                    f"Got {threshold} instead."
                 )
 
             if scoring == "r2" and (threshold < 0 or threshold > 1):
                 raise ValueError(
-                    "r2 takes values between -1 and 1. To select features the "
-                    "transformer considers the absolute value. Pick a threshold within "
-                    "0 and 1."
+                    "`threshold` for r2 score should be between 0 and 1. "
+                    f"Got {threshold} instead."
                 )
 
         super().__init__(confirm_variables)
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.estimator = estimator
         self.scoring = scoring
         self.threshold = threshold
@@ -177,7 +180,8 @@ class SelectBySingleFeaturePerformance(BaseSelector):
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
-        Select features.
+        Determines model performance based on single features. Selects features whose
+        performance is above the threshold.
 
         Parameters
         ----------
@@ -191,11 +195,9 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         # check input dataframe
         X, y = check_X_y(X, y)
 
-        # If required exclude variables that are not in the input dataframe
-        self._confirm_variables(X)
-
-        # find numerical variables or check variables entered by user
-        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
+        self.variables_ = _select_numerical_variables(
+            X, self.variables, self.confirm_variables
+        )
 
         if len(self.variables_) == 1 and self.threshold is None:
             raise ValueError(
@@ -206,20 +208,9 @@ class SelectBySingleFeaturePerformance(BaseSelector):
                 f"the transformer."
             )
 
-        self.feature_performance_ = {}
-
-        # train a model for every feature and store the performance
-        for feature in self.variables_:
-            model = cross_validate(
-                self.estimator,
-                X[feature].to_frame(),
-                y,
-                cv=self.cv,
-                return_estimator=False,
-                scoring=self.scoring,
-            )
-
-            self.feature_performance_[feature] = model["test_score"].mean()
+        self.feature_performance_ = single_feature_performance(
+            X, y, self.variables_, self.estimator, self.cv, self.scoring
+        )
 
         # select features
         if not self.threshold:

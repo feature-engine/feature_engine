@@ -367,10 +367,60 @@ If most variables are continuous, introduce features with normal and uniform dis
 If you have one hot encoded features or sparse matrices, binary features might be a better
 option.
 
-More details
-------------
+Additional resources
+--------------------
 
 More info about this method can be found in these resources:
 
 - `Kaggle Tips for Feature Engineering and Selection <https://www.youtube.com/watch?v=RtqtM1UJfZc&t=3150s>`_, by Gilberto Titericz.
 - `Feature Selection: Beyond feature importance? <https://www.kdnuggets.com/2019/10/feature-selection-beyond-feature-importance.html>`_, KDDNuggets.
+
+For more details about this and other feature selection methods check out these resources:
+
+
+.. figure::  ../../images/fsml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-selection-for-machine-learning
+
+   Feature Selection for Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Or read our book:
+
+.. figure::  ../../images/fsmlbook.png
+   :width: 200
+   :figclass: align-center
+   :align: left
+   :target: https://leanpub.com/feature-selection-in-machine-learning
+
+   Feature Selection in Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Both our book and course are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.

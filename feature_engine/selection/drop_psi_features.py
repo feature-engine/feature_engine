@@ -1,11 +1,14 @@
 import datetime
-from typing import List, Union
+from typing import Dict, List, Union
 
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
 from pandas.api.types import is_numeric_dtype
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -14,6 +17,10 @@ from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.selection._docstring import (
+    _get_support_docstring,
+    _variables_attribute_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
@@ -24,17 +31,12 @@ from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
 )
-from feature_engine._docstrings.selection._docstring import (
-    _get_support_docstring,
-    _variables_attribute_docstring,
-)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import (
+from feature_engine.variable_handling import (
     find_categorical_and_numerical_variables,
+    find_numerical_variables,
+    retain_variables_if_in_df,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -385,7 +387,7 @@ class DropHighPSIFeatures(BaseSelector):
         super().__init__(confirm_variables)
 
         # Check the variables before assignment.
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
 
         # Set all remaining arguments as attributes.
         self.split_col = split_col
@@ -473,7 +475,7 @@ class DropHighPSIFeatures(BaseSelector):
                 threshold_cat = self.threshold
 
         # Compute the PSI by looping over the features
-        self.psi_values_ = {}
+        self.psi_values_: Dict = {}
         self.features_to_drop_ = []
 
         # Compute PSI for numerical features
@@ -532,21 +534,16 @@ class DropHighPSIFeatures(BaseSelector):
         return self
 
     def _select_variables(self, X: pd.DataFrame):
-        """Based on the user input to the `variables` attribute in init, find or check
-        the variables for which the PSI should be calculated.
+        """Based on the user input to the `variables` attribute in init, find the
+        numerical and categorical variables for which the PSI should be calculated.
 
         If `None`, select all numerical variables.
         If `"all", select all numerical and categorical variables.
-        If string or list, check that the variables are numerical or categorical.
+        If string, int, or list, split into lists of numerical or categorical variables.
         """
 
         if self.variables is None:
-            num_variables = list(X.select_dtypes(include="number").columns)
-            if len(num_variables) == 0:
-                raise ValueError(
-                    "No numerical variables found in this dataframe. Please check "
-                    "variable format with pandas dtypes."
-                )
+            num_variables = find_numerical_variables(X)
             cat_variables: List[Union[str, int]] = []
 
         elif self.variables == "all":
@@ -556,19 +553,10 @@ class DropHighPSIFeatures(BaseSelector):
             ) = find_categorical_and_numerical_variables(X, None)
 
         else:
-            if not isinstance(self.variables, list):
-                variables = [self.variables]
+            if self.confirm_variables is True:
+                variables = retain_variables_if_in_df(X, self.variables)
             else:
                 variables = self.variables
-
-            if self.confirm_variables is True:
-                variables = [var for var in variables if var in X.columns]
-                # Raise an error if no column is left to work with.
-                if len(variables) == 0:
-                    raise ValueError(
-                        "After confirming variables, no variable remains. At least 1 "
-                        "variable is required for the selection."
-                    )
 
             (
                 cat_variables,
@@ -594,7 +582,7 @@ class DropHighPSIFeatures(BaseSelector):
                 raise ValueError(f"{self.split_col} is not in the dataframe.")
 
             # Remove the split_col from variables lists. Happens when variables are
-            # selected by transformer.
+            # selected automatically by the transformer.
             if self.variables is None or self.variables == "all":
                 if self.split_col in num_variables:
                     num_variables.remove(self.split_col)

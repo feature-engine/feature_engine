@@ -3,14 +3,17 @@ from typing import List, Union
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.dataframe_checks import check_X_y
-from feature_engine.selection.base_selector import BaseSelector, get_feature_importances
-from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
 )
-from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+from feature_engine.dataframe_checks import check_X_y
+from feature_engine.selection.base_selection_functions import get_feature_importances
+from feature_engine.selection.base_selector import BaseSelector
+from feature_engine.tags import _return_tags
+from feature_engine.variable_handling import (
+    check_numerical_variables,
+    find_numerical_variables,
+    retain_variables_if_in_df,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -110,7 +113,7 @@ class BaseRecursiveSelector(BaseSelector):
             raise ValueError("threshold can only be integer or float")
 
         super().__init__(confirm_variables)
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.estimator = estimator
         self.scoring = scoring
         self.threshold = threshold
@@ -132,11 +135,14 @@ class BaseRecursiveSelector(BaseSelector):
         # check input dataframe
         X, y = check_X_y(X, y)
 
-        # If required exclude variables that are not in the input dataframe
-        self._confirm_variables(X)
-
-        # find numerical variables or check variables entered by user
-        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
+        if self.variables is None:
+            self.variables_ = find_numerical_variables(X)
+        else:
+            if self.confirm_variables is True:
+                variables_ = retain_variables_if_in_df(X, self.variables)
+                self.variables_ = check_numerical_variables(X, variables_)
+            else:
+                self.variables_ = check_numerical_variables(X, self.variables)
 
         # check that there are more than 1 variable to select from
         self._check_variable_number()

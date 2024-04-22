@@ -4,7 +4,7 @@ orbs:
 
 defaults: &defaults
   docker:
-    - image: cimg/python:3.9.0
+    - image: cimg/python:3.10.0
   working_directory: ~/project
 
 prepare_tox: &prepare_tox
@@ -24,18 +24,6 @@ init_pypirc: &init_pypirc
       echo -e "username = $FE_PYPI_USER" >> ~/.pypirc
       echo -e "password = $FE_PYPI_API_KEY" >> ~/.pypirc
 jobs:
-  test_feature_engine_py38:
-    docker:
-      - image: cimg/python:3.8.0
-    working_directory: ~/project
-    steps:
-      - checkout:
-          path: ~/project
-      - *prepare_tox
-      - run:
-          name: Run tests with Python 3.8
-          command: |
-            tox -e py38
   test_feature_engine_py39:
     docker:
       - image: cimg/python:3.9.0
@@ -60,9 +48,33 @@ jobs:
           name: Run tests with Python 3.10
           command: |
             tox -e py310
+  test_feature_engine_py311:
+    docker:
+      - image: cimg/python:3.11.7
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run tests with Python 3.11
+          command: |
+            tox -e py311
+  test_feature_engine_py312:
+    docker:
+      - image: cimg/python:3.12.1
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run tests with Python 3.12
+          command: |
+            tox -e py312
   test_style:
     docker:
-      - image: cimg/python:3.9.0
+      - image: cimg/python:3.10.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -74,7 +86,7 @@ jobs:
             tox -e stylechecks
   test_docs:
     docker:
-      - image: cimg/python:3.9.0
+      - image: cimg/python:3.10.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -86,7 +98,7 @@ jobs:
             tox -e docs
   test_type:
     docker:
-      - image: cimg/python:3.9.0
+      - image: cimg/python:3.10.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -98,7 +110,7 @@ jobs:
             tox -e typechecks
   upload_codecov:
     docker:
-      - image: cimg/python:3.9.0
+      - image: cimg/python:3.10.0
     working_directory: ~/project
     steps:
       - checkout:
@@ -133,22 +145,28 @@ workflows:
   version: 2
   test-all:
     jobs:
-      - test_feature_engine_py38
       - test_feature_engine_py39
       - test_feature_engine_py310
+      - test_feature_engine_py311
+      - test_feature_engine_py312
       - test_style
       - test_docs
       - test_type
-      - upload_codecov
+      - upload_codecov:
+          filters:
+            branches:
+              ignore:
+                - 1.7.X
       - package_and_upload_to_pypi:
           requires:
-            - test_feature_engine_py38
             - test_feature_engine_py39
             - test_feature_engine_py310
+            - test_feature_engine_py311
+            - test_feature_engine_py312
             - test_style
             - test_docs
             - test_type
           filters:
             branches:
               only:
-                - 1.6.X
+                - 1.7.X

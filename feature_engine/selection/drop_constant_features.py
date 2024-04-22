@@ -2,6 +2,9 @@ from typing import List, Union
 
 import pandas as pd
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -10,19 +13,17 @@ from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine._docstrings.selection._docstring import (
     _get_support_docstring,
     _variables_all_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import find_all_variables
+
+from .base_selection_functions import _select_all_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -156,7 +157,7 @@ class DropConstantFeatures(BaseSelector):
         super().__init__(confirm_variables)
 
         self.tol = tol
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
@@ -174,11 +175,9 @@ class DropConstantFeatures(BaseSelector):
         # check input dataframe
         X = check_X(X)
 
-        # If required exclude variables that are not in the input dataframe
-        self._confirm_variables(X)
-
-        # find all variables or check those entered are present in the dataframe
-        self.variables_ = find_all_variables(X, self.variables_)
+        self.variables_ = _select_all_variables(
+            X, self.variables, self.confirm_variables
+        )
 
         if self.missing_values == "raise":
             # check if dataset contains na

@@ -72,7 +72,26 @@ The correlated feature groups are stored in the transformer's attributes:
     [{'var_0', 'var_8'}, {'var_4', 'var_6', 'var_7', 'var_9'}]
 
 
-As well as the features that will be removed from the dataset:
+We can identify from each group which feature will be retained and which ones removed
+by inspecting the dictionary:
+
+.. code:: python
+
+    tr.correlated_feature_dict_
+
+In the dictionary below we see that from the first correlated group, `var_0` is a key,
+hence it will be retained, whereas `var_8` is a value, which means that it is correlated
+to `var_0` and will therefore be removed.
+
+.. code:: python
+
+   {'var_0': {'var_8'}, 'var_4': {'var_6', 'var_7', 'var_9'}}
+
+Similarly, `var_4` is a key and will be retained, whereas the variables 6, 7 and 8 were
+found correlated to `var_4` and will therefore be removed.
+
+The features that will be removed from the dataset are stored in a different attribute
+as well:
 
 ..  code:: python
 
@@ -80,7 +99,7 @@ As well as the features that will be removed from the dataset:
 
 .. code:: python
 
-    {'var_6', 'var_7', 'var_8', 'var_9'}
+    ['var_8', 'var_6', 'var_7', 'var_9']
 
 If we now go ahead and print the transformed data, we see that the correlated features
 have been removed.
@@ -106,8 +125,8 @@ have been removed.
     4 -0.186530
 
 
-More details
-^^^^^^^^^^^^
+Additional resources
+--------------------
 
 In this notebook, we show how to use :class:`DropCorrelatedFeatures()` with a different
 relation metric:
@@ -115,3 +134,53 @@ relation metric:
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Drop-Correlated-Features.ipynb>`_
 
 All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
+
+For more details about this and other feature selection methods check out these resources:
+
+
+.. figure::  ../../images/fsml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-selection-for-machine-learning
+
+   Feature Selection for Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Or read our book:
+
+.. figure::  ../../images/fsmlbook.png
+   :width: 200
+   :figclass: align-center
+   :align: left
+   :target: https://leanpub.com/feature-selection-in-machine-learning
+
+   Feature Selection in Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Both our book and course are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.

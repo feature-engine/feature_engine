@@ -1,8 +1,10 @@
 from typing import List, Union
 
 import pandas as pd
-from sklearn.model_selection import cross_validate
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -11,12 +13,6 @@ from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import (
-    _check_contains_inf,
-    _check_contains_na,
-    check_X,
-)
 from feature_engine._docstrings.selection._docstring import (
     _cv_docstring,
     _estimator_docstring,
@@ -26,12 +22,18 @@ from feature_engine._docstrings.selection._docstring import (
     _variables_attribute_docstring,
     _variables_numerical_docstring,
 )
-from feature_engine.selection.base_selector import BaseSelector
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na,
+    check_X,
 )
-from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+from feature_engine.selection.base_selector import BaseSelector
+
+from .base_selection_functions import (
+    _select_numerical_variables,
+    find_correlated_features,
+    single_feature_performance,
 )
 
 Variables = Union[None, int, str, List[Union[str, int]]]
@@ -55,13 +57,13 @@ class SmartCorrelatedSelection(BaseSelector):
     SmartCorrelatedSelection() finds groups of correlated features and then selects,
     from each group, a feature following certain criteria:
 
-    - Feature with least missing values
-    - Feature with most unique values
-    - Feature with highest variance
-    - Feature with highest importance according to an estimator
+    - Feature with the least missing values.
+    - Feature with the highest cardinality (greatest number of unique values).
+    - Feature with the highest variance.
+    - Feature with the highest importance according to an estimator.
 
     SmartCorrelatedSelection() returns a dataframe containing from each group of
-    correlated features, the selected variable, plus all original features that were
+    correlated features, the selected variable, plus all the features that were
     not correlated to any other.
 
     Correlation is calculated with `pandas.corr()`.
@@ -97,8 +99,8 @@ class SmartCorrelatedSelection(BaseSelector):
         Takes the values "missing_values", "cardinality", "variance" and
         "model_performance".
 
-        **"missing_values"**: keeps the feature from the correlated group with least
-        missing observations
+        **"missing_values"**: keeps the feature from the correlated group with the least
+        missing observations.
 
         **"cardinality"**: keeps the feature from the correlated group with the highest
         cardinality.
@@ -106,8 +108,9 @@ class SmartCorrelatedSelection(BaseSelector):
         **"variance"**: keeps the feature from the correlated group with the highest
         variance.
 
-        **"model_performance"**: trains a machine learning model using the correlated
-        feature group and retains the feature with the highest importance.
+        **"model_performance"**: trains a machine learning model using each of the
+        features in a correlated group and retains the feature with the highest
+        importance.
 
     {estimator}
 
@@ -121,6 +124,14 @@ class SmartCorrelatedSelection(BaseSelector):
     ----------
     correlated_feature_sets_:
         Groups of correlated features. Each list is a group of correlated features.
+
+    correlated_feature_dict_: dict
+        Dictionary containing the correlated feature groups. The key is the feature
+        against which all other features were evaluated. The values are the features
+        correlated with the key. Key + values should be the same as the set found in
+        `correlated_feature_groups`. We introduced this attribute in version 1.17.0
+        because from the set, it is not easy to see which feature will be retained and
+        which ones will be removed. The key is retained, the values will be dropped.
 
     features_to_drop_:
         The correlated features to remove from the dataset.
@@ -169,8 +180,8 @@ class SmartCorrelatedSelection(BaseSelector):
     2   3   0
     3   1   0
 
-    It is also possible alternative selection methods, in this case seleting
-    features with higher variance:
+    It is also possible to use alternative selection methods. Here, we select those
+    features with the higher variance:
 
     >>> X = pd.DataFrame(dict(x1 = [2,4,3,1],
     >>>                 x2 = [1000,2000,1500,500],
@@ -197,10 +208,15 @@ class SmartCorrelatedSelection(BaseSelector):
         confirm_variables: bool = False,
     ):
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
-            raise ValueError("threshold must be a float between 0 and 1")
+            raise ValueError(
+                f"`threshold` must be a float between 0 and 1. Got {threshold} instead."
+            )
 
         if missing_values not in ["raise", "ignore"]:
-            raise ValueError("missing_values takes only values 'raise' or 'ignore'.")
+            raise ValueError(
+                "missing_values takes only values 'raise' or 'ignore'. "
+                f"Got {missing_values} instead."
+            )
 
         if selection_method not in [
             "missing_values",
@@ -210,26 +226,25 @@ class SmartCorrelatedSelection(BaseSelector):
         ]:
             raise ValueError(
                 "selection_method takes only values 'missing_values', 'cardinality', "
-                "'variance' or 'model_performance'."
+                f"'variance' or 'model_performance'. Got {selection_method} instead."
             )
 
         if selection_method == "model_performance" and estimator is None:
             raise ValueError(
                 "Please provide an estimator, e.g., "
                 "RandomForestClassifier or select another "
-                "selection_method"
+                "selection_method."
             )
 
         if selection_method == "missing_values" and missing_values == "raise":
             raise ValueError(
-                "To select the variables with least missing values, we "
-                "need to allow this transformer to contemplate variables "
-                "with NaN by setting missing_values to 'ignore."
+                "When `selection_method = 'missing_values'`, you need to set "
+                f"`missing_values` to `'ignore'`. Got {missing_values} instead."
             )
 
         super().__init__(confirm_variables)
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.method = method
         self.threshold = threshold
         self.missing_values = missing_values
@@ -255,11 +270,9 @@ class SmartCorrelatedSelection(BaseSelector):
         # check input dataframe
         X = check_X(X)
 
-        # If required exclude variables that are not in the input dataframe
-        self._confirm_variables(X)
-
-        # find all numerical variables or check those entered are in the dataframe
-        self.variables_ = find_or_check_numerical_variables(X, self.variables_)
+        self.variables_ = _select_numerical_variables(
+            X, self.variables, self.confirm_variables
+        )
 
         # check that there are more than 1 variable to select from
         self._check_variable_number()
@@ -270,110 +283,66 @@ class SmartCorrelatedSelection(BaseSelector):
             _check_contains_inf(X, self.variables_)
 
         if self.selection_method == "model_performance" and y is None:
-            raise ValueError("y is needed to fit the transformer")
+            raise ValueError(
+                "When `selection_method = 'model_performance'` y is needed to "
+                "fit the transformer."
+            )
 
-        # FIND CORRELATED FEATURES
-        # ========================
-        # create tuples of correlated feature groups
-        self.correlated_feature_sets_ = []
-
-        # the correlation matrix
-        _correlated_matrix = X[self.variables_].corr(method=self.method)
-
-        # create set of examined features, helps to determine feature combinations
-        # to evaluate below
-        _examined_features = set()
-
-        # for each feature in the dataset (columns of the correlation matrix)
-        for feature in _correlated_matrix.columns:
-
-            if feature not in _examined_features:
-
-                # append so we can exclude when we create the combinations
-                _examined_features.add(feature)
-
-                # here we collect potentially correlated features
-                # we need this for the correlated groups sets
-                _temp_set = set([feature])
-
-                # features that have not been examined, are not currently examined and
-                # were not found correlated
-                _features_to_compare = [
-                    f for f in _correlated_matrix.columns if f not in _examined_features
-                ]
-
-                # create combinations:
-                for f2 in _features_to_compare:
-
-                    # if the correlation is higher than the threshold
-                    # we are interested in absolute correlation coefficient value
-                    if abs(_correlated_matrix.loc[f2, feature]) > self.threshold:
-                        # add feature (f2) to our correlated set
-                        _temp_set.add(f2)
-                        _examined_features.add(f2)
-
-                # if there are correlated features
-                if len(_temp_set) > 1:
-                    self.correlated_feature_sets_.append(_temp_set)
-
-        # SELECT 1 FEATURE FROM EACH GROUP
-        # ================================
-
-        # list to collect selected features
-        # we start it with all features that were either not examined, i.e., categorical
-        # variables, or not found correlated
-        _selected_features = [
-            f for f in X.columns if f not in set().union(*self.correlated_feature_sets_)
-        ]
-
-        # select the feature with least missing values
         if self.selection_method == "missing_values":
-            for feature_group in self.correlated_feature_sets_:
-                feature_group = list(feature_group)  # type: ignore
-                f = X[feature_group].isnull().sum().sort_values(ascending=True).index[0]
-                _selected_features.append(f)
-
-        # select the feature with most unique values
-        elif self.selection_method == "cardinality":
-            for feature_group in self.correlated_feature_sets_:
-                feature_group = list(feature_group)  # type: ignore
-                f = X[feature_group].nunique().sort_values(ascending=False).index[0]
-                _selected_features.append(f)
-
-        # select the feature with biggest variance
+            features = (
+                X[self.variables_]
+                .isnull()
+                .sum()
+                .sort_values(ascending=True)
+                .index.to_list()
+            )
         elif self.selection_method == "variance":
-            for feature_group in self.correlated_feature_sets_:
-                feature_group = list(feature_group)  # type: ignore
-                f = X[feature_group].std().sort_values(ascending=False).index[0]
-                _selected_features.append(f)
+            features = (
+                X[self.variables_].std().sort_values(ascending=False).index.to_list()
+            )
+        elif self.selection_method == "cardinality":
+            features = (
+                X[self.variables_]
+                .nunique()
+                .sort_values(ascending=False)
+                .index.to_list()
+            )
+        else:
+            features = sorted(self.variables_)
+
+        correlated_groups, features_to_drop, correlated_dict = find_correlated_features(
+            X, features, self.method, self.threshold
+        )
 
         # select best performing feature according to estimator
-        else:
-            for feature_group in self.correlated_feature_sets_:
+        if self.selection_method == "model_performance":
+            correlated_dict = dict()
+            for feature_group in correlated_groups:
+                feature_performance = single_feature_performance(
+                    X,
+                    y,
+                    feature_group,
+                    self.estimator,
+                    self.cv,
+                    self.scoring,
+                )
+                # get most important feature
+                f_i = (
+                    pd.Series(feature_performance).sort_values(ascending=False).index[0]
+                )
+                correlated_dict[f_i] = feature_group.difference({f_i})
 
-                # feature_group = list(feature_group)
-                temp_perf = []
+            # convoluted way to pick up the variables from the sets in the
+            # order shown in the dictionary. Helps make transformer deterministic
+            features_to_drop = [
+                variable
+                for set_ in correlated_dict.values()
+                for variable in sorted(set_)
+            ]
 
-                # train a model for every feature
-                for feature in feature_group:
-                    model = cross_validate(
-                        self.estimator,
-                        X[feature].to_frame(),
-                        y,
-                        cv=self.cv,
-                        return_estimator=False,
-                        scoring=self.scoring,
-                    )
-
-                    temp_perf.append(model["test_score"].mean())
-
-                # select best performing feature from group
-                f = list(feature_group)[temp_perf.index(max(temp_perf))]
-                _selected_features.append(f)
-
-        self.features_to_drop_ = [
-            f for f in self.variables_ if f not in _selected_features
-        ]
+        self.features_to_drop_ = features_to_drop
+        self.correlated_feature_sets_ = correlated_groups
+        self.correlated_feature_dict_ = correlated_dict
 
         # save input features
         self._get_feature_names_in(X)

@@ -121,11 +121,59 @@ with integers:
     686        0  female  22.000000      0      0   7.7250      1         1
 
 
-More details
-^^^^^^^^^^^^
+Additional resources
+--------------------
+
 In the following notebook, you can find more details into the :class:`OrdinalEncoder()`'s
 functionality and example plots with the encoded variables:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/OrdinalEncoder.ipynb>`_
 
-All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
+For more details about this and other feature engineering methods check out these resources:
+
+
+.. figure::  ../../images/feml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
+
+   Feature Engineering for Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Or read our book:
+
+.. figure::  ../../images/cookbook.png
+   :width: 200
+   :figclass: align-center
+   :align: left
+   :target: https://packt.link/0ewSo
+
+   Python Feature Engineering Cookbook
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Both our book and course are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.

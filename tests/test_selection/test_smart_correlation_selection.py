@@ -1,9 +1,14 @@
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 
 from feature_engine.selection import SmartCorrelatedSelection
+from tests.estimator_checks.init_params_allowed_values_checks import (
+    check_error_param_confirm_variables,
+    check_error_param_missing_values,
+)
 
 
 @pytest.fixture(scope="module")
@@ -26,6 +31,117 @@ def df_single():
     return X, y
 
 
+@pytest.fixture(scope="module")
+def df_var_car():
+    # create dataframe with known variance and cardinality:
+
+    # at threshold 0.506
+
+    # a=> no correlated
+    # b => correlated with c and d
+    # c => correlated with b
+    # d => correlated with b
+    # e => correlated with f
+    # f => correlated with e
+
+    X = pd.DataFrame(
+        {
+            "var_a": [1, -1, 0, 0, 0, 0, 0, 0, 0],
+            "var_b": [0, 0, 1, -1, 2, -2, 0, 0, 1],
+            "var_c": [0, 0, 10, -10, 0, 0, 0, 0, 9],
+            "var_d": [0, 0, 0, 0, 1, -1, 0, 0, 1],
+            "var_e": [0, 0, 0, 0, 0, -1, 2, 3, 4],
+            "var_f": [0, 0, 0, 0, 0, -1, 20, 30, 30],
+        }
+    )
+
+    return X
+
+
+@pytest.fixture(scope="module")
+def df_nan():
+    X = pd.DataFrame(
+        {
+            "var_a": [1, -1, 0, 0, 0, 0, 0, 0],
+            "var_b": [np.nan, 0, 1, -1, 2, -2, 0, 0],
+            "var_c": [0, 0, 10, -10, 0, 0, 0, 0],
+            "var_d": [0, 0, 0, 0, 1, -1, 0, 0],
+            "var_e": [np.nan, 0, 0, 0, 0, -1, 2, 3],
+            "var_f": [0, 0, 0, 0, 0, -1, 20, 30],
+        }
+    )
+    return X
+
+
+_input_params = [
+    (None, "pearson", 0.8, "ignore", "missing_values", False),
+    ("var1", "kendall", 0.5, "raise", "cardinality", True),
+    (["var1", "var2"], "spearman", 0.4, "raise", "variance", False),
+]
+
+
+@pytest.mark.parametrize(
+    "_variables, _method, _threshold, _missing_values, _sel_method, _confirm_vars",
+    _input_params,
+)
+def test_input_params_assignment(
+    _variables, _method, _threshold, _missing_values, _sel_method, _confirm_vars
+):
+    sel = SmartCorrelatedSelection(
+        variables=_variables,
+        method=_method,
+        threshold=_threshold,
+        missing_values=_missing_values,
+        selection_method=_sel_method,
+        confirm_variables=_confirm_vars,
+    )
+
+    assert sel.variables == _variables
+    assert sel.method == _method
+    assert sel.threshold == _threshold
+    assert sel.missing_values == _missing_values
+    assert sel.selection_method == _sel_method
+    assert sel.confirm_variables == _confirm_vars
+
+
+@pytest.mark.parametrize("_threshold", [3, "0.1", -0, 2, 0, 3, 1])
+def test_raises_error_when_threshold_not_permitted(_threshold):
+    msg = f"`threshold` must be a float between 0 and 1. Got {_threshold} instead."
+    with pytest.raises(ValueError) as record:
+        SmartCorrelatedSelection(threshold=_threshold)
+    assert record.value.args[0] == msg
+
+
+@pytest.mark.parametrize("_method", [3, "hola", ["cardinality"]])
+def test_raises_error_when_selection_method_not_permitted(_method):
+    msg = (
+        "selection_method takes only values 'missing_values', 'cardinality', "
+        f"'variance' or 'model_performance'. Got {_method} instead."
+    )
+    with pytest.raises(ValueError) as record:
+        SmartCorrelatedSelection(selection_method=_method)
+    assert record.value.args[0] == msg
+
+
+def test_raises_error_when_selection_method_performance_and_estimator_none():
+    msg = (
+        "Please provide an estimator, e.g., "
+        "RandomForestClassifier or select another "
+        "selection_method."
+    )
+    with pytest.raises(ValueError) as record:
+        SmartCorrelatedSelection(selection_method="model_performance", estimator=None)
+    assert record.value.args[0] == msg
+
+
+def test_error_param_missing_values():
+    check_error_param_missing_values(SmartCorrelatedSelection())
+
+
+def test_error_param_confirm_variables():
+    check_error_param_confirm_variables(SmartCorrelatedSelection())
+
+
 def test_model_performance_single_corr_group(df_single):
     X, y = df_single
 
@@ -46,16 +162,13 @@ def test_model_performance_single_corr_group(df_single):
     df = X[["var_0", "var_2", "var_3", "var_4", "var_5"]].copy()
 
     # test init params
-    assert transformer.method == "pearson"
-    assert transformer.threshold == 0.8
-    assert transformer.missing_values == "raise"
-    assert transformer.selection_method == "model_performance"
     assert transformer.scoring == "roc_auc"
     assert transformer.cv == 3
 
     # test fit attrs
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
     assert transformer.features_to_drop_ == ["var_1"]
+    assert transformer.correlated_feature_dict_ == {"var_2": {"var_1"}}
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
 
@@ -87,11 +200,15 @@ def test_model_performance_2_correlated_groups(df_test):
         {"var_4", "var_6", "var_7", "var_9"},
     ]
     assert transformer.features_to_drop_ == [
+        "var_8",
         "var_4",
         "var_6",
-        "var_8",
         "var_9",
     ]
+    assert transformer.correlated_feature_dict_ == {
+        "var_0": {"var_8"},
+        "var_7": {"var_4", "var_6", "var_9"},
+    }
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
 
@@ -104,119 +221,147 @@ def test_error_if_select_model_performance_and_y_is_none(df_single):
         estimator=RandomForestClassifier(n_estimators=10, random_state=1),
         scoring="roc_auc",
     )
-
-    with pytest.raises(ValueError):
+    msg = (
+        "When `selection_method = 'model_performance'` y is needed to fit "
+        "the transformer."
+    )
+    with pytest.raises(ValueError) as record:
         transformer.fit(X)
+    assert record.value.args[0] == msg
 
 
-def test_variance_2_correlated_groups(df_test):
-    X, y = df_test
+def test_selection_method_variance(df_var_car):
+    X = df_var_car
+
+    # std of each variable:
+    # var_f  13.727507
+    # var_c  5.830952
+    # var_e  1.691482
+    # var_b  1.166667
+    # var_d  0.600925
+    # var_a  0.500000
 
     transformer = SmartCorrelatedSelection(
         variables=None,
         method="pearson",
-        threshold=0.8,
+        threshold=0.506,
         missing_values="raise",
         selection_method="variance",
         estimator=None,
     )
 
-    Xt = transformer.fit_transform(X, y)
+    Xt = transformer.fit_transform(X)
 
-    # expected result
-    df = X[
-        ["var_1", "var_2", "var_3", "var_5", "var_7", "var_8", "var_10", "var_11"]
-    ].copy()
-
-    assert transformer.features_to_drop_ == [
-        "var_0",
-        "var_4",
-        "var_6",
-        "var_9",
-    ]
+    assert transformer.features_to_drop_ == ["var_e", "var_b"]
+    assert transformer.correlated_feature_dict_ == {
+        "var_f": {"var_e"},
+        "var_c": {"var_b"},
+    }
     # test transform output
-    pd.testing.assert_frame_equal(Xt, df)
+    pd.testing.assert_frame_equal(Xt, X.drop(["var_e", "var_b"], axis=1))
 
 
-def test_cardinality_2_correlated_groups(df_test):
-    X, y = df_test
-    X[["var_0", "var_6", "var_7", "var_9"]] = X[
-        ["var_0", "var_6", "var_7", "var_9"]
-    ].astype(int)
+def test_selection_method_cardinality(df_var_car):
+    X = df_var_car
+
+    # cardinality of variables:
+    # var_b   5
+    # var_e   5
+    # var_c   4
+    # var_f   4
+    # var_a   3
+    # var_d   3
 
     transformer = SmartCorrelatedSelection(
         variables=None,
         method="pearson",
-        threshold=0.8,
+        threshold=0.506,
         missing_values="raise",
         selection_method="cardinality",
         estimator=None,
     )
 
-    Xt = transformer.fit_transform(X, y)
+    Xt = transformer.fit_transform(X)
 
-    # expected result
-    df = X[
-        ["var_1", "var_2", "var_3", "var_4", "var_5", "var_8", "var_10", "var_11"]
-    ].copy()
-
-    assert transformer.features_to_drop_ == [
-        "var_0",
-        "var_6",
-        "var_7",
-        "var_9",
-    ]
+    assert transformer.features_to_drop_ == ["var_c", "var_d", "var_f"]
+    assert transformer.correlated_feature_dict_ == {
+        "var_b": {"var_c", "var_d"},
+        "var_e": {"var_f"},
+    }
     # test transform output
-    pd.testing.assert_frame_equal(Xt, df)
+    pd.testing.assert_frame_equal(Xt, X.drop(["var_c", "var_d", "var_f"], axis=1))
 
 
-def test_automatic_variable_selection(df_test):
-    X, y = df_test
+def test_selection_method_missing_values(df_nan):
+    X = df_nan
 
-    X[["var_0", "var_6", "var_7", "var_9"]] = X[
-        ["var_0", "var_6", "var_7", "var_9"]
-    ].astype(int)
-
-    # add 2 additional categorical variables, these should not be evaluated by
-    # the selector
-    X["cat_1"] = "cat1"
-    X["cat_2"] = "cat2"
+    # expected order of the variables:
+    # var_a    0
+    # var_c    0
+    # var_d    0
+    # var_f    0
+    # var_b    1
+    # var_e    1
 
     transformer = SmartCorrelatedSelection(
         variables=None,
         method="pearson",
-        threshold=0.8,
-        missing_values="raise",
-        selection_method="cardinality",
+        threshold=0.4,
+        missing_values="ignore",
+        selection_method="missing_values",
         estimator=None,
     )
 
-    Xt = transformer.fit_transform(X, y)
+    Xt = transformer.fit_transform(X)
 
-    # expected result
-    df = X[
-        [
-            "var_1",
-            "var_2",
-            "var_3",
-            "var_4",
-            "var_5",
-            "var_8",
-            "var_10",
-            "var_11",
-            "cat_1",
-            "cat_2",
-        ]
-    ].copy()
-
-    assert transformer.features_to_drop_ == [
-        "var_0",
-        "var_6",
-        "var_7",
-        "var_9",
-    ]
+    assert transformer.features_to_drop_ == ["var_b", "var_e"]
+    assert transformer.correlated_feature_dict_ == {
+        "var_c": {"var_b"},
+        "var_f": {"var_e"},
+    }
     # test transform output
-    pd.testing.assert_frame_equal(Xt, df)
+    pd.testing.assert_frame_equal(Xt, X.drop(["var_b", "var_e"], axis=1))
+
+
+def test_error_when_selection_method_missing_values_and_missing_values_raise(df_na):
+    msg = (
+        "When `selection_method = 'missing_values'`, you need to set "
+        "`missing_values` to `'ignore'`. Got raise instead."
+    )
+    with pytest.raises(ValueError) as record:
+        SmartCorrelatedSelection(
+            missing_values="raise",
+            selection_method="missing_values",
+        )
+    assert record.value.args[0] == msg
+
+
+def test_raises_error_when_method_not_permitted(df_var_car):
+    X = df_var_car
+    transformer = SmartCorrelatedSelection(method="not_valid")
+
+    with pytest.raises(ValueError) as errmsg:
+        transformer.fit(X)
+
+    exceptionmsg = errmsg.value.args[0]
+
+    assert (
+        exceptionmsg
+        == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
+        + " 'not_valid' was supplied"
+    )
+
+
+def test_raises_missing_data_error(df_nan):
+    df = df_nan
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
+    sel = SmartCorrelatedSelection(selection_method="variance", missing_values="raise")
+    with pytest.raises(ValueError) as record:
+        sel.fit(df)
+    assert record.value.args[0] == msg
 
 
 def test_callable_method(df_test, random_uniform_method):
@@ -236,38 +381,3 @@ def test_callable_method(df_test, random_uniform_method):
     assert len(transformer.features_to_drop_) > 0
     assert len(transformer.variables_) > 0
     assert transformer.n_features_in_ == len(X.columns)
-
-
-def test_raises_param_errors():
-    with pytest.raises(ValueError):
-        SmartCorrelatedSelection(threshold=None)
-
-    with pytest.raises(ValueError):
-        SmartCorrelatedSelection(missing_values=None)
-
-    with pytest.raises(ValueError):
-        SmartCorrelatedSelection(selection_method="random")
-
-    with pytest.raises(ValueError):
-        SmartCorrelatedSelection(
-            selection_method="missing_values", missing_values="raise"
-        )
-
-
-def test_error_method_supplied(df_test):
-
-    X, _ = df_test
-    method = "hola"
-
-    transformer = SmartCorrelatedSelection(method=method)
-
-    with pytest.raises(ValueError) as errmsg:
-        _ = transformer.fit_transform(X)
-
-    exceptionmsg = errmsg.value.args[0]
-
-    assert (
-        exceptionmsg
-        == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
-        + f" '{method}' was supplied"
-    )

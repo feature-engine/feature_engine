@@ -13,9 +13,10 @@ _params_fill_value = [
 ]
 
 _params_allowed = [
-    ([0, 1], "ignore", True),
-    ("nan", "hola", True),
-    ("nan", "ignore", "hallo"),
+    ([0, 1], "ignore", True, True),
+    ("nan", "hola", True, True),
+    ("nan", "ignore", True, "hallo"),
+    ("nan", "ignore", "hallo", True),
 ]
 
 
@@ -59,6 +60,7 @@ def test_drop_and_add_columns(
         assert match_columns.fill_value == fill_value
     assert match_columns.verbose is True
     assert match_columns.missing_values == "ignore"
+    assert match_columns.match_dtypes is False
     # test fit attrs
     assert list(match_columns.feature_names_in_) == list(train.columns)
     assert match_columns.n_features_in_ == 6
@@ -72,7 +74,6 @@ def test_drop_and_add_columns(
 def test_columns_addition_when_more_columns_in_train_than_test(
     fill_value, expected_studies, expected_age, df_vartypes, df_na
 ):
-
     train = df_na.copy()
     test = df_vartypes.copy()
     test = test.drop("Age", axis=1)  # to add more than one column
@@ -103,6 +104,7 @@ def test_columns_addition_when_more_columns_in_train_than_test(
         assert match_columns.fill_value == fill_value
     assert match_columns.verbose is True
     assert match_columns.missing_values == "ignore"
+    assert match_columns.match_dtypes is False
     # test fit attrs
     assert list(match_columns.feature_names_in_) == list(train.columns)
     assert match_columns.n_features_in_ == 6
@@ -126,6 +128,7 @@ def test_drop_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
     assert match_columns.fill_value is np.nan
     assert match_columns.verbose is True
     assert match_columns.missing_values == "ignore"
+    assert match_columns.match_dtypes is False
     # test fit attrs
     assert list(match_columns.feature_names_in_) == list(train.columns)
     assert match_columns.n_features_in_ == 4
@@ -133,16 +136,150 @@ def test_drop_columns_when_more_columns_in_test_than_train(df_vartypes, df_na):
     pd.testing.assert_frame_equal(expected_result, transformed_df)
 
 
-@pytest.mark.parametrize("fill_value, missing_values, verbose", _params_allowed)
-def test_error_if_param_values_not_allowed(fill_value, missing_values, verbose):
+def test_match_dtypes_string_to_numbers(df_vartypes):
+    train = df_vartypes.copy().select_dtypes("number")
+    test = train.copy().astype("string")
+
+    match_columns = MatchVariables(match_dtypes=True)
+    match_columns.fit(train)
+
+    transformed_df = match_columns.transform(test)
+
+    # test init params
+    assert match_columns.match_dtypes is True
+    # test fit attrs
+    assert match_columns.dtype_dict_ == {
+        "Age": np.dtype("int64"),
+        "Marks": np.dtype("float64"),
+    }
+
+    # test transform output
+    pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
+    pd.testing.assert_frame_equal(transformed_df, train)
+
+
+def test_match_dtypes_numbers_to_string(df_vartypes):
+    train = df_vartypes.copy().select_dtypes("number").astype("string")
+    test = df_vartypes.copy().select_dtypes("number")
+
+    match_columns = MatchVariables(match_dtypes=True)
+    match_columns.fit(train)
+
+    transformed_df = match_columns.transform(test)
+
+    # test init params
+    assert match_columns.match_dtypes is True
+    # test fit attrs
+    assert isinstance(match_columns.dtype_dict_, dict)
+    # test transform output
+    pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
+    pd.testing.assert_frame_equal(transformed_df, train)
+
+
+def test_match_dtypes_string_to_datetime(df_vartypes):
+    train = df_vartypes.copy().loc[:, ["dob"]]
+    test = train.copy().astype("string")
+
+    match_columns = MatchVariables(match_dtypes=True, verbose=False)
+    match_columns.fit(train)
+
+    transformed_df = match_columns.transform(test)
+
+    # test init params
+    assert match_columns.match_dtypes is True
+    assert match_columns.verbose is False
+    # test fit attrs
+    assert match_columns.dtype_dict_ == {"dob": np.dtype("<M8[ns]")}
+    # test transform output
+    pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
+    pd.testing.assert_frame_equal(transformed_df, train)
+
+
+def test_match_dtypes_datetime_to_string(df_vartypes):
+    train = df_vartypes.copy().loc[:, ["dob"]].astype("string")
+    test = df_vartypes.copy().loc[:, ["dob"]]
+
+    match_columns = MatchVariables(match_dtypes=True, verbose=False)
+    match_columns.fit(train)
+
+    transformed_df = match_columns.transform(test)
+
+    # test init params
+    assert match_columns.match_dtypes is True
+    assert match_columns.verbose is False
+    # test fit attrs
+    assert isinstance(match_columns.dtype_dict_, dict)
+    # test transform output
+    pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
+    pd.testing.assert_frame_equal(transformed_df, train)
+
+
+def test_match_dtypes_missing_category(df_vartypes):
+    train = df_vartypes.copy().loc[:, ["Name", "City"]].astype("category")
+    test = df_vartypes.copy().loc[:, ["Name", "City"]].iloc[:-1].astype("category")
+
+    match_columns = MatchVariables(match_dtypes=True, verbose=True)
+    match_columns.fit(train)
+
+    transformed_df = match_columns.transform(test)
+
+    # test init params
+    assert match_columns.match_dtypes is True
+    assert match_columns.verbose is True
+    # test fit attrs
+    assert match_columns.dtype_dict_ == {
+        "Name": pd.CategoricalDtype(
+            categories=["jack", "krish", "nick", "tom"], ordered=False
+        ),
+        "City": pd.CategoricalDtype(
+            categories=["Bristol", "Liverpool", "London", "Manchester"], ordered=False
+        ),
+    }
+    # test transform output
+    pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
+    pd.testing.assert_frame_equal(transformed_df, train.iloc[:-1])
+
+
+def test_match_dtypes_extra_category(df_vartypes):
+    train = df_vartypes.copy().loc[:, ["Name", "City"]].iloc[:-1].astype("category")
+    test = df_vartypes.copy().loc[:, ["Name", "City"]].astype("category")
+
+    match_columns = MatchVariables(match_dtypes=True, verbose=True)
+    match_columns.fit(train)
+
+    transformed_df = match_columns.transform(test)
+
+    # test init params
+    assert match_columns.match_dtypes is True
+    assert match_columns.verbose is True
+    # test fit attrs
+    assert match_columns.dtype_dict_ == {
+        "Name": pd.CategoricalDtype(categories=["krish", "nick", "tom"], ordered=False),
+        "City": pd.CategoricalDtype(
+            categories=["Liverpool", "London", "Manchester"], ordered=False
+        ),
+    }
+
+    # test transform output
+    pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
+
+
+@pytest.mark.parametrize(
+    "fill_value, missing_values, match_dtypes, verbose", _params_allowed
+)
+def test_error_if_param_values_not_allowed(
+    fill_value, missing_values, match_dtypes, verbose
+):
     with pytest.raises(ValueError):
         MatchVariables(
-            fill_value=fill_value, missing_values=missing_values, verbose=verbose
+            fill_value=fill_value,
+            missing_values=missing_values,
+            match_dtypes=match_dtypes,
+            verbose=verbose,
         )
 
 
 def test_verbose_print_out(capfd, df_vartypes, df_na):
-
     match_columns = MatchVariables(missing_values="ignore", verbose=True)
 
     train = df_na.copy()

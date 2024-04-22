@@ -3,6 +3,9 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -13,6 +16,11 @@ from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.selection._docstring import (
+    _features_to_drop_docstring,
+    _get_support_docstring,
+    _threshold_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_inf, _check_contains_na
 from feature_engine.discretisation import (
@@ -20,20 +28,11 @@ from feature_engine.discretisation import (
     EqualWidthDiscretiser,
 )
 from feature_engine.encoding.woe import WoE
-from feature_engine._docstrings.selection._docstring import (
-    _features_to_drop_docstring,
-    _get_support_docstring,
-    _threshold_docstring,
-)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import (
-    find_all_variables,
-    find_categorical_and_numerical_variables,
-)
+from feature_engine.variable_handling import find_categorical_and_numerical_variables
+
+from .base_selection_functions import _select_all_variables
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -186,7 +185,7 @@ class SelectByInformationValue(BaseSelector, WoE):
                 "instead."
             )
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.bins = bins
         self.strategy = strategy
         self.threshold = threshold
@@ -207,12 +206,11 @@ class SelectByInformationValue(BaseSelector, WoE):
         # check input dataframe
         X, y = self._check_fit_input(X, y)
 
-        # If required exclude variables that are not in the input dataframe
-        self._confirm_variables(X)
-
         # find categorical and numerical variables
         # find all variables or check those entered are present in the dataframe
-        self.variables_ = find_all_variables(X, self.variables_, exclude_datetime=True)
+        self.variables_ = _select_all_variables(
+            X, self.variables, self.confirm_variables, exclude_datetime=True
+        )
 
         _, variables_numerical = find_categorical_and_numerical_variables(
             X, self.variables_

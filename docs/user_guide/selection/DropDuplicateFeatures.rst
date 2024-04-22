@@ -5,18 +5,34 @@
 DropDuplicateFeatures
 =====================
 
-The :class:`DropDuplicateFeatures()` finds and removes duplicated variables from a dataframe.
-Duplicated features are identical features, regardless of the variable or column name. If
-they show the same values for every observation, then they are considered duplicated.
+Duplicate features are columns in a dataset that are identical, or, in other words, that
+contain exactly the same values. Duplicate features can be introduced accidentally, either
+through poor data management processes or during data manipulation.
 
-The transformer will automatically evaluate all variables, or alternatively, you can pass a
-list with the variables you wish to have examined. And it works with numerical and categorical
-features.
+For example, duplicated new records can be created by one-hot encoding a categorical
+variable or by adding missing data indicators. We can also accidentally generate duplicate
+records when we merge different data sources that show some variable overlap.
+
+Checking for and removing duplicate features is a standard procedure in any data analysis
+workflow that helps us reduce the dimension of the dataset quickly and ensure data quality.
+In Python, we can find duplicate values in an attribute table very easily with Pandas.
+Dropping those duplicate features, however, requires a few more lines of code.
+
+Feature-engine aims to accelerate the process of data validation by finding and removing
+duplicate features with the :class:`DropDuplicateFeatures()` class, which is part of the
+selection API.
+
+:class:`DropDuplicateFeatures()` does exactly that; it finds and removes duplicated variables
+from a dataframe. DropDuplicateFeatures() will automatically evaluate all variables, or
+alternatively, you can pass a list with the variables you wish to have examined. And it
+works with numerical and categorical features alike.
+
+So let’s see how to set up :class:`DropDuplicateFeatures()`.
 
 **Example**
 
-Let's see how to use :class:`DropDuplicateFeatures()` in an example with the Titanic dataset.
-These dataset does not have duplicated features, so we will add a few manually:
+In this demo, we will use the Titanic dataset and introduce a few duplicated features
+manually:
 
 .. code:: python
 
@@ -35,6 +51,11 @@ These dataset does not have duplicated features, so we will add a few manually:
     data.columns = ['pclass', 'survived', 'sex', 'age',
                     'sibsp', 'parch', 'fare','cabin', 'embarked',
                     'sex_dup', 'age_dup', 'sibsp_dup']
+
+
+We then split the data into a training and a testing set:
+
+.. code:: python
 
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
@@ -64,7 +85,10 @@ Below we see the resulting data:
     1193    male  29.881135          0
     686   female  22.000000          0
 
-Now, we set up :class:`DropDuplicateFeatures()` to find the duplications:
+As expected, the variables `sex` and `sex_dup` have duplicate field values throughout all
+the rows. The same is true for the variables `age` and `age_dup`.
+
+Now, we set up :class:`DropDuplicateFeatures()` to find the duplicate features:
 
 .. code:: python
 
@@ -76,7 +100,8 @@ With `fit()` the transformer finds the duplicated features:
 
     transformer.fit(X_train)
 
-The features that are duplicated and will be removed are stored by the transformer:
+The features that are duplicated and will be removed are stored in the `features_to_drop_`
+attribute:
 
 ..  code:: python
 
@@ -93,8 +118,8 @@ With `transform()` we remove the duplicated variables:
     train_t = transformer.transform(X_train)
     test_t = transformer.transform(X_test)
 
-If we examine the variable names of the transformed dataset, we see that the duplicated
-features are not present:
+We can go ahead and check the variables in the transformed dataset, and we will see that
+the duplicated features are not there any more:
 
 .. code:: python
 
@@ -104,8 +129,8 @@ features are not present:
 
     Index(['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'cabin', 'embarked'], dtype='object')
 
-And the transformer also stores the groups of duplicated features, which could be useful
-if we have groups where more than 2 features are identical.
+The transformer also stores the groups of duplicated features, which is useful for data
+analysis and validation.
 
 .. code:: python
 
@@ -116,11 +141,60 @@ if we have groups where more than 2 features are identical.
     [{'sex', 'sex_dup'}, {'age', 'age_dup'}, {'sibsp', 'sibsp_dup'}]
 
 
-More details
-^^^^^^^^^^^^
+Additional resources
+--------------------
 
-In this Kaggle kernel we use :class:`DropDuplicateFeatures()` together with other feature selection algorithms:
+In this Kaggle kernel we use :class:`DropDuplicateFeatures()` in a pipeline with other
+feature selection algorithms:
 
 - `Kaggle kernel <https://www.kaggle.com/solegalli/feature-selection-with-feature-engine>`_
 
-All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
+For more details about this and other feature selection methods check out these resources:
+
+
+.. figure::  ../../images/fsml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-selection-for-machine-learning
+
+   Feature Selection for Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Or read our book:
+
+.. figure::  ../../images/fsmlbook.png
+   :width: 200
+   :figclass: align-center
+   :align: left
+   :target: https://leanpub.com/feature-selection-in-machine-learning
+
+   Feature Selection in Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Both our book and course are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.

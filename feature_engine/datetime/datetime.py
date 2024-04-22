@@ -9,6 +9,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -29,15 +32,11 @@ from feature_engine.datetime._datetime_constants import (
     FEATURES_SUFFIXES,
     FEATURES_SUPPORTED,
 )
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
 )
-from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_datetime_variables,
-)
+from feature_engine.variable_handling.check_variables import check_datetime_variables
+from feature_engine.variable_handling.find_variables import find_datetime_variables
 
 
 @Substitution(
@@ -219,7 +218,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
         if utc is not None and not isinstance(utc, bool):
             raise ValueError("utc takes only booleans or None. " f"Got {utc} instead.")
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.drop_original = drop_original
         self.missing_values = missing_values
         self.dayfirst = dayfirst
@@ -258,17 +257,19 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
             ):
                 raise TypeError("The dataframe index is not datetime.")
 
-            if self.missing_values == "raise":
-                self._check_index_contains_na(X.index)
+            self.variables_ = []
 
-            self.variables_ = None
+        elif self.variables is None:
+            self.variables_ = find_datetime_variables(X)
 
         else:
-            # find or check for datetime variables
-            self.variables_ = find_or_check_datetime_variables(X, self.variables)
+            self.variables_ = check_datetime_variables(X, self.variables)
 
-            # check if datetime variables contains na
-            if self.missing_values == "raise":
+        # check if datetime variables contains na
+        if self.missing_values == "raise":
+            if self.variables == "index":
+                self._check_index_contains_na(X.index)
+            else:
                 _check_contains_na(X, self.variables_)
 
         if self.features_to_extract is None:
@@ -314,7 +315,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
         X = X[self.feature_names_in_]
 
         # special case index
-        if self.variables_ is None:
+        if self.variables == "index":
             # check if dataset contains na
             if self.missing_values == "raise":
                 self._check_index_contains_na(X.index)
@@ -376,7 +377,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
         else:
             feature_names = [
                 str(var) + FEATURES_SUFFIXES[feat]
-                for var in self.variables_  # type: ignore
+                for var in self.variables_
                 for feat in self.features_to_extract_
             ]
 

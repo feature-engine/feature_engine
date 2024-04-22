@@ -4,17 +4,24 @@ Version 1.6.X
 Version 1.6.2
 -------------
 
-Deployed: xx September 2023
+Deployed: 18th September 2023
 
 Contributors
 ~~~~~~~~~~~~
 
+- `Giorgio Segalla <https://github.com/GiorgioSgl>`_
+- `David Cortes <https://github.com/david-cortes>`_
+- `Kyle Gilde <https://github.com/kylegilde>`_
+- `Darigov Research <https://github.com/darigovresearch>`_
 - `Soledad Galli <https://github.com/solegalli>`_
+
 
 New functionality
 ~~~~~~~~~~~~~~~~~
 
+- `MatchVariables()` can now also match the **dtypes** of the variables (`Kyle Gilde <https://github.com/kylegilde>`_)
 - `DatetimeFeatures()` and `DatetimeSubtraction()` can now specify the format of the datetime variables (`Soledad Galli <https://github.com/solegalli>`_)
+- Add `inverse_transform` method to `YeoJohnsonTransformer()` (`Giorgio Segalla <https://github.com/GiorgioSgl>`_)
 
 Bug fixes
 ~~~~~~~~~
@@ -37,6 +44,13 @@ Code improvements
 - Routine in `DatetimeFeatures()` does not enter into our check for `utc=True` when working with different timezones any more (`Soledad Galli <https://github.com/solegalli>`_)
 - Improve performance in `OneHotEncoder()` (`Soledad Galli <https://github.com/solegalli>`_)
 - Add check for dupicated variable names in dataframe  (`David Cortes <https://github.com/david-cortes>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+- Fix various typos in user guide (`Soledad Galli <https://github.com/solegalli>`_)
+- Update readthedocs.yml file (`Soledad Galli <https://github.com/solegalli>`_)
+- Add link to license in Readme (`Darigov Research <https://github.com/darigovresearch>`_)
 
 
 Version 1.6.1

@@ -1,24 +1,15 @@
 # Feature Engine
 
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/feature_engine?logo=Python)](https://pypi.org/project/feature-engine/)
-[![GitHub](https://img.shields.io/github/license/feature-engine/feature_engine)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md)
-[![PyPI](https://img.shields.io/pypi/v/feature_engine?logo=PyPI)](https://pypi.org/project/feature-engine)
-[![Conda](https://img.shields.io/conda/v/conda-forge/feature_engine?logo=Anaconda)](https://anaconda.org/conda-forge/feature_engine)
-[![CircleCI](https://img.shields.io/circleci/build/github/feature-engine/feature_engine/main?logo=CircleCI)](https://app.circleci.com/pipelines/github/feature-engine/feature_engine)
-[![Codecov](https://img.shields.io/codecov/c/github/feature-engine/feature_engine?logo=CodeCov&token=ZBKKSN6ERL)](https://codecov.io/github/feature-engine/feature_engine)
-[![Read the Docs](https://img.shields.io/readthedocs/feature_engine?logo=readthedocs)](https://feature-engine.readthedocs.io/en/latest/index.html)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![GitHub contributors](https://img.shields.io/github/contributors/feature-engine/feature_engine?logo=GitHub)](https://github.com/feature-engine/feature_engine/graphs/contributors)
-[![Gitter](https://img.shields.io/gitter/room/feature-engine/feaure_engine?logo=Gitter)](https://gitter.im/feature_engine/community)
-[![Monthly Downloads](https://img.shields.io/pypi/dm/feature-engine)](https://img.shields.io/pypi/dm/feature-engine)
-[![DOI](https://zenodo.org/badge/163630824.svg)](https://zenodo.org/badge/latestdoi/163630824)
-[![JOSS](https://joss.theoj.org/papers/10.21105/joss.03642/status.svg)](https://doi.org/10.21105/joss.03642)
-[![first-timers-only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat)](https://www.firsttimersonly.com/)
-[![Sponsorship](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/)
+[![feature-engine logo](https://raw.githubusercontent.com/feature-engine/feature_engine/main/docs/images/logo/FeatureEngine.png)](http://feature-engine.readthedocs.io)
 
+| | |
+| --- | --- |
+| Package | [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/feature_engine?logo=Python)](https://pypi.org/project/feature-engine/) [![PyPI](https://img.shields.io/pypi/v/feature_engine?logo=PyPI)](https://pypi.org/project/feature-engine) [![Conda](https://img.shields.io/conda/v/conda-forge/feature_engine?logo=Anaconda)](https://anaconda.org/conda-forge/feature_engine) [![Monthly Downloads](https://img.shields.io/pypi/dm/feature-engine)](https://img.shields.io/pypi/dm/feature-engine)  [![Downloads](https://static.pepy.tech/personalized-badge/feature-engine?period=total&units=international_system&left_color=grey&right_color=green&left_text=total-downloads%20(pypi))](https://pepy.tech/project/feature-engine)|
+| Meta | [![GitHub](https://img.shields.io/github/license/feature-engine/feature_engine)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md) [![GitHub contributors](https://img.shields.io/github/contributors/feature-engine/feature_engine?logo=GitHub)](https://github.com/feature-engine/feature_engine/graphs/contributors) [![Gitter](https://img.shields.io/gitter/room/feature-engine/feaure_engine?logo=Gitter)](https://gitter.im/feature_engine/community) [![first-timers-only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat)](https://www.firsttimersonly.com/) [![Sponsorship](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/) |
+| Documentation | [![Read the Docs](https://img.shields.io/readthedocs/feature_engine?logo=readthedocs)](https://feature-engine.readthedocs.io/en/latest/index.html) [![DOI](https://zenodo.org/badge/163630824.svg)](https://zenodo.org/badge/latestdoi/163630824) [![JOSS](https://joss.theoj.org/papers/10.21105/joss.03642/status.svg)](https://doi.org/10.21105/joss.03642) |
+| Testing | [![CircleCI](https://img.shields.io/circleci/build/github/feature-engine/feature_engine/main?logo=CircleCI)](https://app.circleci.com/pipelines/github/feature-engine/feature_engine) [![Codecov](https://img.shields.io/codecov/c/github/feature-engine/feature_engine?logo=CodeCov&token=ZBKKSN6ERL)](https://codecov.io/github/feature-engine/feature_engine) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) |
 <div align="center">
 
-[![feature-engine logo](https://raw.githubusercontent.com/feature-engine/feature_engine/main/docs/images/logo/FeatureEngine.png)](http://feature-engine.readthedocs.io)
 
 </div>
 
@@ -35,9 +26,11 @@ transforming parameters from the data and then transform it.
 
 * [Feature Engineering for Time Series Forecasting, Online Course](https://www.trainindata.com/p/feature-engineering-for-forecasting)
 
+* [Forecasting with Machine Learning, Online Course](https://www.trainindata.com/p/forecasting-with-machine-learning)
+
 * [Python Feature Engineering Cookbook](https://packt.link/0ewSo)
 
-* [Feature Selection in Machine Learning with Python Book](https://leanpub.com/feature-selection-in-machine-learning)
+* [Feature Selection in Machine Learning Book](https://leanpub.com/feature-selection-in-machine-learning)
 
 
 ## Blogs about Feature-engine
@@ -51,6 +44,17 @@ transforming parameters from the data and then transform it.
 
 * [Documentation](https://feature-engine.trainindata.com)
 
+
+## Pst! How did you find us?
+
+We want to share Feature-engine with more people. It'd help us loads if you tell us
+how you discovered us.
+
+Then we'd know what we are doing right and which channels to use to share the love.
+
+Please share your story by answering 1 quick question
+[at this link](https://docs.google.com/forms/d/e/1FAIpQLSfxvgnJvuvPf2XgosakhXo5VNQafqRrjNXkoW5qDWqnuxZNSQ/viewform?usp=sf_link)
+. 😃
 
 ## Current Feature-engine's transformers include functionality for:
 
@@ -68,11 +72,11 @@ transforming parameters from the data and then transform it.
 
 ### Imputation Methods
 * MeanMedianImputer
+* ArbitraryNumberImputer
 * RandomSampleImputer
 * EndTailImputer
-* AddMissingIndicator
 * CategoricalImputer
-* ArbitraryNumberImputer
+* AddMissingIndicator
 * DropMissingData
 
 ### Encoding Methods
@@ -135,6 +139,10 @@ transforming parameters from the data and then transform it.
  * WindowFeatures
  * ExpandingWindowFeatures
  
+### Pipelines
+* Pipeline
+* make_pipeline
+
 ### Preprocessing
  * MatchCategories
  * MatchVariables
@@ -206,12 +214,31 @@ Details about how to contribute can be found in the [Contribute Page](https://fe
 Briefly:
 
 - Fork the repo
-- Clone your fork into your local computer: ``git clone https://github.com/<YOURUSERNAME>/feature_engine.git``
-- navigate into the repo folder ``cd feature_engine``
-- Install Feature-engine as a developer: ``pip install -e .``
+- Clone your fork into your local computer:
+```
+git clone https://github.com/<YOURUSERNAME>/feature_engine.git
+```
+- navigate into the repo folder
+```
+cd feature_engine
+```
+- Install Feature-engine as a developer: 
+```
+pip install -e .
+```
 - Optional: Create and activate a virtual environment with any tool of choice
-- Install Feature-engine dependencies: ``pip install -r requirements.txt`` and ``pip install -r test_requirements.txt``
-- Create a feature branch with a meaningful name for your feature: ``git checkout -b myfeaturebranch``
+- Install Feature-engine dependencies: 
+```
+pip install -r requirements.txt
+``` 
+and 
+```
+pip install -r test_requirements.txt
+```
+- Create a feature branch with a meaningful name for your feature: 
+```
+git checkout -b myfeaturebranch
+```
 - Develop your feature, tests and documentation
 - Make sure the tests pass
 - Make a PR
@@ -223,14 +250,20 @@ Thank you!!
 
 Feature-engine documentation is built using [Sphinx](https://www.sphinx-doc.org) and is hosted on [Read the Docs](https://readthedocs.org/).
 
-To build the documentation make sure you have the dependencies installed: from the root directory: ``pip install -r docs/requirements.txt``.
+To build the documentation make sure you have the dependencies installed: from the root directory: 
+```
+pip install -r docs/requirements.txt
+```
 
-Now you can build the docs using: ``sphinx-build -b html docs build``
+Now you can build the docs using: 
+```
+sphinx-build -b html docs build
+```
 
 
 ## License
 
-BSD 3-Clause
+The content of this repository is licensed under a [BSD 3-Clause license](https://github.com/feature-engine/feature_engine/blob/main/LICENSE.md).
 
 ## Sponsor us
 

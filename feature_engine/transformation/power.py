@@ -7,6 +7,9 @@ import numpy as np
 import pandas as pd
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -21,9 +24,6 @@ from feature_engine._docstrings.methods import (
     _inverse_transform_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
 
 
 @Substitution(
@@ -104,7 +104,7 @@ class PowerTransformer(BaseNumericalTransformer):
             raise ValueError("exp must be a float or an int")
 
         self.exp = exp
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

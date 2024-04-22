@@ -91,8 +91,8 @@ been reduced:
     Index(['pclass', 'name', 'sex', 'age', 'cabin', 'embarked', 'boat'], dtype='object')
 
 
-More details
-^^^^^^^^^^^^
+Additional resources
+--------------------
 
 In this Kaggle kernel we feature 3 different end-to-end machine learning pipelines using
 :class:`DropFeatures()`:
@@ -100,3 +100,53 @@ In this Kaggle kernel we feature 3 different end-to-end machine learning pipelin
 - `Kaggle Kernel <https://www.kaggle.com/solegalli/feature-engineering-and-model-stacking>`_
 
 All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
+
+For more details about this and other feature selection methods check out these resources:
+
+
+.. figure::  ../../images/fsml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-selection-for-machine-learning
+
+   Feature Selection for Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Or read our book:
+
+.. figure::  ../../images/fsmlbook.png
+   :width: 200
+   :figclass: align-center
+   :align: left
+   :target: https://leanpub.com/feature-selection-in-machine-learning
+
+   Feature Selection in Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Both our book and course are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.

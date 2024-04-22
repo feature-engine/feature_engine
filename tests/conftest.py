@@ -10,23 +10,7 @@ def df_vartypes():
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
         "Age": [20, 21, 19, 18],
         "Marks": [0.9, 0.8, 0.7, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
-    }
-
-    df = pd.DataFrame(data)
-
-    return df
-
-
-@pytest.fixture(scope="module")
-def df_datetime():
-    data = {
-        "Name": ["tom", "nick", "krish", "jack"],
-        "Age": [20, 21, 19, 18],
-        "datetime_range": pd.date_range("2020-02-24", periods=4, freq="D"),
-        "date_obj1": ["01-Jan-2010", "24-Feb-1945", "14-Jun-2100", "17-May-1999"],
-        "date_obj2": ["10/11/12", "12/31/09", "06/30/95", "03/17/04"],
-        "time_obj": ["21:45:23", "09:15:33", "12:34:59", "03:27:02"],
+        "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
     }
 
     df = pd.DataFrame(data)

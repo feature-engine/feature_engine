@@ -1,6 +1,6 @@
 ﻿.. _find_cat_and_num_vars:
 
-.. currentmodule:: feature_engine.variable_handling.variable_type_selection
+.. currentmodule:: feature_engine.variable_handling
 
 find_categorical_and_numerical_variables
 ========================================

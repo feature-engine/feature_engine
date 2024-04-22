@@ -1,4 +1,5 @@
 .. -*- mode: rst -*-
+.. _encoding_user_guide:
 
 .. currentmodule:: feature_engine.encoding
 
@@ -9,10 +10,20 @@ Categorical Encoding
 Feature-engine's categorical encoders replace variable strings by estimated or
 arbitrary numbers. The following image summarizes the main encoder’s functionality.
 
-.. figure::  ../../images/summary/categoricalSummary.png
-   :align:   center
+**Summary of Feature-engine's encoders characteristics**
 
-   Summary of Feature-engine's encoders main characteristics
+================================= ============ ================= ============== ===============================================================
+    Transformer                    Regression	 Classification	   Multi-class    Description
+================================= ============ ================= ============== ===============================================================
+:class:`OneHotEncoder()`	           √	            √               √         Adds dummy variables to represent each category
+:class:`OrdinalEncoder()`	           √	            √    	        √         Replaces categories with an integer
+:class:`CountFreuencyEncoder()`	       √	            √               √         Replaces categories with their count or frequency
+:class:`MeanEncoder()`                 √	            √               x         Replaces categories with the targe mean value
+:class:`WoEEncoder()`	               x	            √	            x         Replaces categories with the weight of the evidence
+:class:`DecisionTreeEncoder()`	       √	            √     	        √         Replaces categories with the predictions of a decision tree
+:class:`RareLabelEncoder()`	           √	            √     	        √         Groups infrequent categories into a single one
+================================= ============ ================= ============== ===============================================================
+
 
 Feature-engine's categorical encoders work only with categorical variables by default.
 From version 1.1.0, you have the option to set the parameter ignore_format to False,
@@ -61,8 +72,3 @@ defeat the purpose of these encoding techniques.
    DecisionTreeEncoder
    RareLabelEncoder
    StringSimilarityEncoder
-
-
-Additional categorical encoding transformations ara available in the open-source package
-`Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_.
-   

@@ -353,7 +353,10 @@ def test_extract_features_from_different_timezones_when_string(
         {"time_obj": df_datetime["time_obj"].add(["+4", "-1", "+9", "-7"])}
     )
     transformer = DatetimeFeatures(
-        variables="time_obj", features_to_extract=["hour"], utc=True, format="mixed",
+        variables="time_obj",
+        features_to_extract=["hour"],
+        utc=True,
+        format="mixed",
     )
     X = transformer.fit_transform(tz_df)
 

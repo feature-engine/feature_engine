@@ -4,15 +4,17 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
+from feature_engine.variable_handling import (
+    check_numerical_variables,
+    find_numerical_variables,
 )
-from feature_engine.variable_handling.variable_type_selection import (
-    find_all_variables,
-    find_or_check_numerical_variables,
-)
+from feature_engine.variable_handling.check_variables import check_all_variables
+from feature_engine.variable_handling.find_variables import find_all_variables
 
 _SELECTORS = [
     "GenericUnivariateSelect",
@@ -223,17 +225,18 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
                 "parameter `encode` is `ordinal`. "
             )
 
-        if (
-            transformer.__class__.__name__ == "OneHotEncoder"
-            and transformer.sparse is True
-        ):
-            raise NotImplementedError(
+        if transformer.__class__.__name__ == "OneHotEncoder":
+            msg = (
                 "The SklearnTransformerWrapper can only wrap the OneHotEncoder if the "
                 "sparse is set to False."
             )
+            if getattr(transformer, "sparse", False) or getattr(
+                transformer, "sparse_output", False
+            ):
+                raise NotImplementedError(msg)
 
         self.transformer = transformer
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """
@@ -259,10 +262,16 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             "SimpleImputer",
             "FunctionTransformer",
         ]:
-            self.variables_ = find_all_variables(X, self.variables)
+            if self.variables is None:
+                self.variables_ = find_all_variables(X)
+            else:
+                self.variables_ = check_all_variables(X, self.variables)
 
         else:
-            self.variables_ = find_or_check_numerical_variables(X, self.variables)
+            if self.variables is None:
+                self.variables_ = find_numerical_variables(X)
+            else:
+                self.variables_ = check_numerical_variables(X, self.variables)
 
         self.transformer_.fit(X[self.variables_], y)
 

@@ -3,6 +3,9 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _binner_dict_docstring,
     _feature_names_in_docstring,
@@ -23,9 +26,6 @@ from feature_engine._docstrings.methods import (
     _transform_discretiser_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 
 
@@ -42,7 +42,7 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
     power="{1/n}",
-    subindex="{i+1}"
+    subindex="{i+1}",
 )
 class GeometricWidthDiscretiser(BaseDiscretiser):
     """
@@ -142,7 +142,7 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
         super().__init__(return_object, return_boundaries, precision)
 
         self.bins = bins
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

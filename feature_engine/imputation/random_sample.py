@@ -6,6 +6,9 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -19,10 +22,7 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import find_all_variables
+from feature_engine.variable_handling import check_all_variables, find_all_variables
 
 
 # for RandomSampleImputer
@@ -158,7 +158,7 @@ class RandomSampleImputer(BaseImputer):
                 "or more variables which will be used to seed the imputer"
             )
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.random_state = random_state
         self.seed = seed
         self.seeding_method = seeding_method
@@ -183,14 +183,17 @@ class RandomSampleImputer(BaseImputer):
         X = check_X(X)
 
         # find variables to impute
-        self.variables_ = find_all_variables(X, self.variables)
+        if self.variables is None:
+            self.variables_ = find_all_variables(X)
+        else:
+            self.variables_ = check_all_variables(X, self.variables)
 
         # take a copy of the selected variables
         self.X_ = X[self.variables_].copy()
 
         # check the variables assigned to the random state
         if self.seed == "observation":
-            self.random_state = _check_init_parameter_variables(self.random_state)
+            self.random_state = _check_variables_input_value(self.random_state)
             if isinstance(self.random_state, (int, str)):
                 self.random_state = [self.random_state]
             if self.random_state and any(

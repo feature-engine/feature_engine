@@ -1,11 +1,11 @@
-from typing import List, Optional, Union
+from typing import Optional
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
-from feature_engine._check_input_parameters.check_init_input_params import (
+from feature_engine._check_init_parameters.check_init_input_params import (
     _check_param_drop_original,
     _check_param_missing_values,
 )
@@ -16,8 +16,9 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
+from feature_engine.variable_handling import (
+    check_numerical_variables,
+    find_numerical_variables,
 )
 
 
@@ -53,12 +54,13 @@ class BaseCreation(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         X = check_X(X)
 
         # check variables are numerical
-        self.variables_: List[Union[str, int]] = find_or_check_numerical_variables(
-            X, self.variables
-        )
+        if self.variables is None:
+            self.variables_ = find_numerical_variables(X)
+        else:
+            self.variables_ = check_numerical_variables(X, self.variables)
 
         if hasattr(self, "reference"):
-            find_or_check_numerical_variables(X, self.reference)
+            check_numerical_variables(X, self.reference)
 
         # check if dataset contains na
         if self.missing_values == "raise":

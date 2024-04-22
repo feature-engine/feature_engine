@@ -1,6 +1,6 @@
 ﻿.. _find_all_vars:
 
-.. currentmodule:: feature_engine.variable_handling.variable_type_selection
+.. currentmodule:: feature_engine.variable_handling
 
 find_all_variables
 ==================
@@ -102,32 +102,3 @@ In the list below, we can see that variables of type datetime were ignored:
      'cat_var1',
      'cat_var2',
      'date3']
-
-
-We can also use :class:`find_all_variables()` with a list of variable names. It will
-corroborate that the variables indicated in the list are in the dataframe.
-
-.. code:: python
-
-    vars_all = find_all_variables(X, ["num_var_1", "cat_var1", "date1"])
-
-    vars_all
-
-The output is the list of variable names passed to the function:
-
-.. code:: python
-
-    ['num_var_1', 'cat_var1', 'date1']
-
-If we pass the name of a variable that is not in the dataframe, :class:`find_all_variables()`
-will return an error:
-
-.. code:: python
-
-    find_all_variables(X, ["hola", "cat_var1", "date1"])
-
-Below we see the error message:
-
-.. code:: python
-
-    KeyError: 'Some of the variables are not in the dataframe.'

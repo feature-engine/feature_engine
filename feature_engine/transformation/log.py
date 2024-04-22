@@ -8,6 +8,9 @@ import pandas as pd
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._base_transformers.mixins import FitFromDictMixin
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -23,9 +26,6 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
 
 
 @Substitution(
@@ -106,7 +106,7 @@ class LogTransformer(BaseNumericalTransformer):
         if base not in ["e", "10"]:
             raise ValueError("base can take only '10' or 'e' as values")
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.base = base
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -161,6 +161,8 @@ class LogTransformer(BaseNumericalTransformer):
             raise ValueError(
                 "Some variables contain zero or negative values, can't apply log"
             )
+
+        X[self.variables_] = X[self.variables_].astype(float)
 
         # transform
         if self.base == "e":
@@ -314,7 +316,7 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
         if not isinstance(C, (int, float, dict)) and not C == "auto":
             raise ValueError("C can take only 'auto', integers or floats")
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.base = base
         self.C = C
 
@@ -382,6 +384,8 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
                 "Some variables contain zero or negative values after adding"
                 + "constant C, can't apply log"
             )
+
+        X[self.variables_] = X[self.variables_].astype(float)
 
         # transform
         if self.base == "e":

@@ -28,7 +28,7 @@ def test_init_parameters_variables_and_reference_raise_error(_input_vars):
     with pytest.raises(ValueError):
         assert DatetimeSubtraction(variables=_input_vars, reference=["var1"])
     with pytest.raises(ValueError):
-        assert DatetimeSubtraction(reference=_input_vars, variables=["var1"])
+        assert DatetimeSubtraction(variables=["var1"], reference=_input_vars)
 
 
 @pytest.mark.parametrize("_input_vars", ["var1", ["var1"], ["var1", "var2"]])
@@ -38,12 +38,10 @@ def test_init_parameters_variables_and_reference_correct_assignment(_input_vars)
     assert transformer.reference == _input_vars
 
 
-@pytest.mark.parametrize("_input_vars", ["var1", ["var1"], ["var1", "var2"]])
-def test_init_parameters_variables_and_reference_are_mandatory(_input_vars):
-    with pytest.raises(TypeError):
-        DatetimeSubtraction(reference=["var1"])
-    with pytest.raises(TypeError):
-        DatetimeSubtraction(variables=["var1"])
+def test_init_parameters_variables_and_reference_take_none():
+    tr = DatetimeSubtraction()
+    assert tr.variables is None
+    assert tr.reference is None
 
 
 @pytest.mark.parametrize(
@@ -137,19 +135,34 @@ def test_missing_values_raises_error_when_not_valid(param):
 
 
 # ==== fit functionality
-def test_raises_error_when_variables_not_datetime(df_datetime):
+@pytest.mark.parametrize("input_vars", [["Age", "date_obj2"], "Age"])
+def test_raises_error_when_variables_not_datetime(df_datetime, input_vars):
+    tr = DatetimeSubtraction(variables=input_vars, reference="date_obj1")
     with pytest.raises(TypeError):
-        DatetimeSubtraction(variables="Age", reference="date_obj1").fit(df_datetime)
-    with pytest.raises(TypeError):
-        DatetimeSubtraction(variables=["date_obj1"], reference=["Age"]).fit(df_datetime)
+        tr.fit(df_datetime)
 
 
-def test_sets_variables_if_datetime(df_datetime):
-    tr = DatetimeSubtraction(variables="date_obj1", reference="date_obj1").fit(
-        df_datetime
-    )
-    assert tr.variables_ == ["date_obj1"]
-    assert tr.reference_ == ["date_obj1"]
+@pytest.mark.parametrize("input_vars", [["Age", "date_obj2"], "Age"])
+def test_raises_error_when_reference_not_datetime(df_datetime, input_vars):
+    tr = DatetimeSubtraction(variables=["date_obj1"], reference=input_vars)
+    with pytest.raises(TypeError):
+        tr.fit(df_datetime)
+
+
+@pytest.mark.parametrize("input_vars", [["time_obj", "date_obj2"], "date_obj2", None])
+def test_sets_variables_if_datetime(df_datetime, input_vars):
+    tr = DatetimeSubtraction(variables=input_vars, reference=input_vars)
+    tr.fit(df_datetime)
+    if input_vars is None:
+        dt_vars = ["datetime_range", "date_obj1", "date_obj2", "time_obj"]
+        assert tr.variables_ == dt_vars
+        assert tr.reference_ == dt_vars
+    elif input_vars == "date_obj2":
+        assert tr.variables_ == ["date_obj2"]
+        assert tr.reference_ == ["date_obj2"]
+    else:
+        assert tr.variables_ == ["time_obj", "date_obj2"]
+        assert tr.reference_ == ["time_obj", "date_obj2"]
 
 
 @pytest.mark.parametrize("new", [["new1", "new2"], ["new1", "new2", "new3"]])
@@ -161,55 +174,62 @@ def test_new_variables_raise_error_if_not_adequate_number(df_datetime, new):
         tr.fit(df_datetime)
 
 
-def test_raises_error_when_nan_in_fit():
+@pytest.fixture
+def df_nan():
     df = pd.DataFrame(
         {
             "dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan],
             "dates_full": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
         }
     )
+    return df
 
+
+@pytest.mark.parametrize("input_vars_1", ["dates_full", None])
+@pytest.mark.parametrize("input_vars_2", ["dates_na", ["dates_full", "dates_na"], None])
+def test_raises_error_when_nan_in_variables_in_fit(df_nan, input_vars_1, input_vars_2):
     tr = DatetimeSubtraction(
-        variables="dates_na", reference="dates_full", missing_values="raise"
+        variables=input_vars_2, reference=input_vars_1, missing_values="raise"
     )
     with pytest.raises(ValueError):
-        tr.fit(df)
+        tr.fit(df_nan)
 
+
+@pytest.mark.parametrize("input_vars_1", ["dates_full", None])
+@pytest.mark.parametrize("input_vars_2", ["dates_na", ["dates_full", "dates_na"], None])
+def test_raises_error_when_nan_in_reference_in_fit(df_nan, input_vars_1, input_vars_2):
     tr = DatetimeSubtraction(
-        variables="dates_full", reference="dates_na", missing_values="raise"
+        variables=input_vars_1, reference=input_vars_2, missing_values="raise"
     )
     with pytest.raises(ValueError):
-        tr.fit(df)
+        tr.fit(df_nan)
 
 
 # transform tests
-def test_raises_error_when_nan_in_transform():
-    df_fit = pd.DataFrame(
-        {
-            "dates_na": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
-            "dates_full": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
-        }
-    )
-    df_transform = pd.DataFrame(
-        {
-            "dates_na": ["Feb-2010", np.nan, "Jun-1922", np.nan],
-            "dates_full": ["Feb-2010", "Mar-2010", "Jun-1922", "Feb-2011"],
-        }
-    )
-
+@pytest.mark.parametrize("input_vars_1", ["dates_full", None])
+@pytest.mark.parametrize("input_vars_2", ["dates_na", ["dates_full", "dates_na"], None])
+def test_raises_error_when_nan_in_variables_in_transform(
+    df_nan, input_vars_1, input_vars_2
+):
     tr = DatetimeSubtraction(
-        variables="dates_na", reference="dates_full", missing_values="raise"
+        variables=input_vars_2, reference=input_vars_1, missing_values="raise"
     )
-    tr.fit(df_fit)
+    tr.fit(df_nan.fillna("Mar-2010"))
     with pytest.raises(ValueError):
-        tr.fit(df_transform)
+        tr.transform(df_nan)
 
+
+@pytest.mark.parametrize("input_vars_1", ["dates_full", None])
+@pytest.mark.parametrize("input_vars_2", ["dates_na", ["dates_full", "dates_na"], None])
+def test_raises_error_when_nan_in_reference_in_transform(
+    df_nan, input_vars_1, input_vars_2
+):
     tr = DatetimeSubtraction(
-        variables="dates_full", reference="dates_na", missing_values="raise"
+        variables=input_vars_1, reference=input_vars_2, missing_values="raise"
     )
-    tr.fit(df_fit)
+    tr.fit(df_nan.fillna("Mar-2010"))
     with pytest.raises(ValueError):
-        tr.fit(df_transform)
+        tr.transform(df_nan)
 
 
 @pytest.mark.parametrize(

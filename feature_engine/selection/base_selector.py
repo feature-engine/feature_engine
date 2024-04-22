@@ -6,29 +6,6 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling.variable_type_selection import (
-    _filter_out_variables_not_in_dataframe,
-)
-
-
-def get_feature_importances(estimator):
-    """Retrieve feature importance from a fitted estimator"""
-
-    importances = getattr(estimator, "feature_importances_", None)
-
-    coef_ = getattr(estimator, "coef_", None)
-
-    if coef_ is not None:
-
-        if estimator.coef_.ndim == 1:
-            importances = np.abs(coef_)
-
-        else:
-            importances = np.linalg.norm(coef_, axis=0, ord=len(estimator.coef_))
-
-        importances = list(importances)
-
-    return importances
 
 
 class BaseSelector(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
@@ -102,15 +79,6 @@ class BaseSelector(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         self.n_features_in_ = X.shape[1]
 
         return self
-
-    def _confirm_variables(self, X: pd.DataFrame) -> None:
-        # If required, exclude variables that are not in the input dataframe
-        if self.confirm_variables:
-            self.variables_ = _filter_out_variables_not_in_dataframe(X, self.variables)
-        else:
-            self.variables_ = self.variables
-
-        return None
 
     def _check_variable_number(self) -> None:
         """Check that there are multiple variables for the selectors to work with."""

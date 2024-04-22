@@ -167,7 +167,6 @@ html_show_copyright = True
 # Output file base name for HTML help builder.
 htmlhelp_basename = "feature_enginedoc"
 
-
 # -- Options for autodoc ------------------------------------------------------
 
 autodoc_default_options = {
@@ -185,16 +184,15 @@ autosummary_generate = True
 # see https://github.com/numpy/numpydoc/issues/69
 numpydoc_show_class_members = False
 
-
 # -- Options for intersphinx --------------------------------------------------
 
 # intersphinx configuration
 intersphinx_mapping = {
     "python": ("https://docs.python.org/{.major}".format(sys.version_info), None),
-    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
+    # "numpy": ("https://numpy.org/doc/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
-    "matplotlib": ("https://matplotlib.org/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    # "matplotlib": ("https://matplotlib.org/", None),
     "sklearn": ("https://scikit-learn.org/stable/", None),
 }
 
@@ -283,6 +281,9 @@ linkcode_resolve = make_linkcode_resolve(
 
 
 def setup(app):
-    kwargs = {"defer data-domain":"feature-engine.readthedocs.io"}
+    # plausible analytics
+    kwargs = {"defer data-domain": "feature-engine.readthedocs.io"}
     app.add_js_file("https://plausible.io/js/plausible.js", **kwargs)
+
+    # copy button for code
     app.add_js_file("js/copybutton.js")

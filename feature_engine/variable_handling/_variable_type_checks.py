@@ -32,7 +32,11 @@ def _is_convertible_to_dt(column: pd.Series) -> bool:
 
 
 def _is_convertible_to_num(column: pd.Series) -> bool:
-    return is_numeric(pd.to_numeric(column, errors="ignore"))
+    try:
+        ser = pd.to_numeric(column)
+    except (ValueError, TypeError):
+        ser = column
+    return is_numeric(ser)
 
 
 def _is_categorical_and_is_datetime(column: pd.Series) -> bool:

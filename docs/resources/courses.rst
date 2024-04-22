@@ -20,23 +20,34 @@ selection in general in the following online courses:
 
    Feature Selection for Machine Learning
 
+.. figure::  ../images/fwml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.courses.trainindata.com/p/forecasting-with-machine-learning
+
+   Forecasting with Machine Learning
+
 .. figure::  ../images/fetsf.png
    :width: 300
    :figclass: align-center
-   :align: center
+   :align: right
    :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
 
    Feature Engineering for Time Series Forecasting
 
+.. figure::  ../images/mli_logo.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.courses.trainindata.com/p/machine-learning-interpretability
 
-We also show how to put an end-to-end machine learning pipeline in production, using
-Feature-engine and Scikit-learn in this course:
-
+   Interpreting Machine Learning Models
 
 .. figure::  ../images/dmlm.png
    :width: 300
    :figclass: align-center
-   :align: left
+   :align: right
    :target: https://www.udemy.com/course/deployment-of-machine-learning-models/?referralCode=D4FE5EA129FFD203CFF4
 
    Deployment of Machine Learning Models

@@ -5,6 +5,9 @@ import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -24,10 +27,8 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.variable_handling import find_or_check_datetime_variables
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
+from feature_engine.variable_handling.check_variables import check_datetime_variables
+from feature_engine.variable_handling.find_variables import find_datetime_variables
 
 _example = """
     >>> import pandas as pd
@@ -151,8 +152,8 @@ class DatetimeSubtraction(BaseCreation):
 
     def __init__(
         self,
-        variables: Union[None, int, str, List[Union[str, int]]],
-        reference: Union[None, int, str, List[Union[str, int]]],
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        reference: Union[None, int, str, List[Union[str, int]]] = None,
         new_variables_names: Union[None, List[str], str] = None,
         output_unit: str = "D",
         missing_values: str = "ignore",
@@ -198,8 +199,8 @@ class DatetimeSubtraction(BaseCreation):
                 )
 
         super().__init__(missing_values, drop_original)
-        self.variables = _check_init_parameter_variables(variables)
-        self.reference = _check_init_parameter_variables(reference)
+        self.variables = _check_variables_input_value(variables)
+        self.reference = _check_variables_input_value(reference)
         self.new_variables_names = new_variables_names
         self.output_unit = output_unit
         self.dayfirst = dayfirst
@@ -224,8 +225,15 @@ class DatetimeSubtraction(BaseCreation):
         X = check_X(X)
 
         # check variables are datetime
-        self.reference_ = find_or_check_datetime_variables(X, self.reference)
-        self.variables_ = find_or_check_datetime_variables(X, self.variables)
+        if self.variables is None:
+            self.variables_ = find_datetime_variables(X)
+        else:
+            self.variables_ = check_datetime_variables(X, self.variables)
+
+        if self.reference is None:
+            self.reference_ = find_datetime_variables(X)
+        else:
+            self.reference_ = check_datetime_variables(X, self.reference)
 
         if self.new_variables_names is not None:
             if len(self.new_variables_names) != len(self.variables_) * len(
@@ -240,7 +248,8 @@ class DatetimeSubtraction(BaseCreation):
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_ + self.reference_)
+            vars = list(set(self.variables_ + self.reference_))
+            _check_contains_na(X, vars)
 
         # save input features
         self.feature_names_in_ = X.columns.tolist()
@@ -275,7 +284,8 @@ class DatetimeSubtraction(BaseCreation):
         _check_X_matches_training_df(X, self.n_features_in_)
 
         if self.missing_values == "raise":
-            _check_contains_na(X, self.variables_ + self.reference_)
+            vars = list(set(self.variables_ + self.reference_))
+            _check_contains_na(X, vars)
 
         # reorder variables to match train set
         X = X[self.feature_names_in_]

@@ -9,10 +9,40 @@ from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     check_X,
+    check_X_y,
 )
-from feature_engine.variable_handling.variable_type_selection import (
-    find_or_check_numerical_variables,
-)
+from feature_engine.variable_handling import check_numerical_variables
+
+
+class TransformXyMixin:
+    def transform_x_y(self, X: pd.DataFrame, y: pd.Series):
+        """
+        Transform, align and adjust both X and y based on the transformations applied
+        to X, ensuring that they correspond to the same set of rows if any were
+        removed from X.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The dataframe to transform.
+
+        y: pandas Series or Dataframe of length = n_samples
+            The target variable to transform. Can be multi-output.
+
+        Returns
+        -------
+        X_new: pandas dataframe
+            The transformed dataframe of shape [n_samples - n_rows, n_features]. It may
+            contain less rows than the original dataset.
+
+        y_new: pandas Series or DataFrame
+            The transformed target variable of length [n_samples - n_rows]. It contains
+            as many rows as those left in X_new.
+        """
+        X, y = check_X_y(X, y)
+        X = self.transform(X)
+        y = y.loc[X.index]
+        return X, y
 
 
 class FitFromDictMixin:
@@ -46,8 +76,8 @@ class FitFromDictMixin:
         X = check_X(X)
 
         # find or check for numerical variables
-        variables = [x for x in user_dict_.keys()]
-        self.variables_ = find_or_check_numerical_variables(X, variables)
+        variables = list(user_dict_.keys())
+        self.variables_ = check_numerical_variables(X, variables)
 
         # check if dataset contains na or inf
         _check_contains_na(X, self.variables_)

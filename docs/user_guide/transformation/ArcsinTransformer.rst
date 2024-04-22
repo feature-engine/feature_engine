@@ -113,3 +113,55 @@ Now, let's examine the distribution after the transformation:
 
 You can see in the previous image that many variables have after the transformation a
 more Gaussian looking shape.
+
+Additional resources
+--------------------
+
+For more details about this and other feature engineering methods check out these resources:
+
+
+.. figure::  ../../images/feml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
+
+   Feature Engineering for Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Or read our book:
+
+.. figure::  ../../images/cookbook.png
+   :width: 200
+   :figclass: align-center
+   :align: left
+   :target: https://packt.link/0ewSo
+
+   Python Feature Engineering Cookbook
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Both our book and course are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.

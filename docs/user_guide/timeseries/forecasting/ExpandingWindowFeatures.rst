@@ -18,8 +18,8 @@ An example of an expanding window feature is the mean value of all the data poin
 to the current row / value. The maximum value of all the rows prior to the current row is
 another expanding window feature.
 
-For an expanding window feature suitable for forecasting, the window spans from the start
-of the data up to, but not including, the first point of forecast.
+For an expanding window feature to be suitable for forecasting, the window can span
+from the start of the data up to, but not including, the first point of forecast.
 
 Expanding window features can be used for forecasting by using traditional machine learning
 models, like linear regression.
@@ -34,8 +34,9 @@ For example, by executing:
 
     X[["var_1", "var_2"].expanding(min_periods=3).agg(["max", "mean"])
 
-we create 2 window features for each variable, `var_1` and `var_2`, by taking the maximum and
-average value of all observations up to (and including) a certain row.
+With the previous command, we create 2 window features for each variable, `var_1` and
+`var_2`, by taking the maximum and average value of all observations up to (and including)
+a certain row.
 
 If we want to use those features for forecasting using traditional machine learning algorithms,
 we would also shift the window forward with pandas method `shift`:
@@ -102,6 +103,9 @@ index.
     X = pd.DataFrame(X)
     X.index = pd.date_range("2020-05-15 12:00:00", periods=8, freq="15min")
 
+    y = pd.Series([1,2,3,4,5,6,7,8])
+    y.index = X.index
+
     X.head()
 
 Below we see the output of our toy dataframe:
@@ -115,6 +119,25 @@ Below we see the output of our toy dataframe:
     2020-05-15 12:45:00         32.39        50.63         0.76  green
     2020-05-15 13:00:00         32.62        49.61         0.42   blue
 
+Let's now print out the target:
+
+.. code:: python
+
+    y
+
+Below we see the target variable:
+
+.. code:: python
+
+    2020-05-15 12:00:00    1
+    2020-05-15 12:15:00    2
+    2020-05-15 12:30:00    3
+    2020-05-15 12:45:00    4
+    2020-05-15 13:00:00    5
+    2020-05-15 13:15:00    6
+    2020-05-15 13:30:00    7
+    2020-05-15 13:45:00    8
+    Freq: 15min, dtype: int64
 
 
 Now we will create expanding window features from the numerical variables. In `functions`,
@@ -212,6 +235,91 @@ We can obtain the names of the variables in the returned dataframe using the
      'irradiation_expanding_mean',
      'irradiation_expanding_max',
      'irradiation_expanding_std']
+
+Dropping rows with nan
+~~~~~~~~~~~~~~~~~~~~~~
+
+When we create window features using expanding windows, we may introduce nan values for
+those data points where there isn't enough data in the past to create the windows. We
+can automatically drop the rows with nan values in the window features both in the train
+set and in the target variable as follows:
+
+.. code:: python
+
+    win_f = ExpandingWindowFeatures(
+        functions=["mean", "max", "std"],
+        drop_na=True,
+    )
+
+    win_f.fit(X)
+
+    X_tr, y_tr = win_f.transform_x_y(X, y)
+
+    X.shape, y.shape, X_tr.shape, y_tr.shape
+
+We see that the resulting dataframe contains less rows than the original dataframe:
+
+.. code:: python
+
+    (8, 4), (8,), (6, 13), (6,))
+
+
+Imputing rows with nan
+~~~~~~~~~~~~~~~~~~~~~~
+
+If instead of removing the row with nan in the expanding window features, we want to impute those
+values, we can do so with any of Feature-engine's imputers. Here, we will replace nan with
+the median value of the resulting window features, using the `MeanMedianImputer` within
+a pipeline:
+
+
+.. code:: python
+
+    from feature_engine.imputation import MeanMedianImputer
+    from feature_engine.pipeline import Pipeline
+
+    win_f = ExpandingWindowFeatures(functions=["mean", "std"])
+
+    pipe = Pipeline([
+        ("windows", win_f),
+        ("imputer", MeanMedianImputer(imputation_method="median"))
+    ])
+
+    X_tr = pipe.fit_transform(X, y)
+
+    print(X_tr.head())
+
+We see the resulting dataframe, where the nan values were replaced with the median:
+
+.. code:: python
+
+                         ambient_temp  module_temp  irradiation  color  \
+    2020-05-15 12:00:00         31.31        49.18         0.51  green
+    2020-05-15 12:15:00         31.51        49.84         0.79  green
+    2020-05-15 12:30:00         32.15        52.35         0.65  green
+    2020-05-15 12:45:00         32.39        50.63         0.76  green
+    2020-05-15 13:00:00         32.62        49.61         0.42   blue
+
+                         ambient_temp_expanding_mean  ambient_temp_expanding_std  \
+    2020-05-15 12:00:00                    31.840000                    0.518740
+    2020-05-15 12:15:00                    31.310000                    0.518740
+    2020-05-15 12:30:00                    31.410000                    0.141421
+    2020-05-15 12:45:00                    31.656667                    0.438786
+    2020-05-15 13:00:00                    31.840000                    0.512640
+
+                         module_temp_expanding_mean  module_temp_expanding_std  \
+    2020-05-15 12:00:00                   49.770000                   1.520467
+    2020-05-15 12:15:00                   49.180000                   1.520467
+    2020-05-15 12:30:00                   49.510000                   0.466690
+    2020-05-15 12:45:00                   50.456667                   1.672553
+    2020-05-15 13:00:00                   50.500000                   1.368381
+
+                         irradiation_expanding_mean  irradiation_expanding_std
+    2020-05-15 12:00:00                      0.6260                   0.146424
+    2020-05-15 12:15:00                      0.5100                   0.146424
+    2020-05-15 12:30:00                      0.6500                   0.197990
+    2020-05-15 12:45:00                      0.6500                   0.140000
+    2020-05-15 13:00:00                      0.6775                   0.126853
 
 
 Working with pandas series
@@ -317,12 +425,45 @@ We can easily obtain the name of the original and new variables with the method
 See also
 --------
 
-You can find examples of window features and its considerations in
-`Train in Data’s github repository <https://github.com/trainindata/feature-engineering-for-time-series-forecasting/tree/main/08-Window-Features>`_.
-
-For tutorials on how to create window features for forecasting, check the course
-`Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_.
-
 Check out the additional transformers to create rolling window features
 (:class:`WindowFeatures`) or lag features, by lagging past values of the time
 series data (:class:`LagFeatures`).
+
+Tutorials and courses
+---------------------
+
+For tutorials about this and other feature engineering methods for time series forecasting
+check out our online courses:
+
+.. figure::  ../../../images/fetsf.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
+
+   Feature Engineering for Time Series Forecasting
+
+.. figure::  ../../../images/fwml.png
+   :width: 300
+   :figclass: align-center
+   :align: right
+   :target: https://www.courses.trainindata.com/p/forecasting-with-machine-learning
+
+   Forecasting with Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Our courses are suitable for beginners and more advanced data scientists looking to
+forecast time series using traditional machine learning models, like linear regression
+or gradient boosting machines.
+
+By purchasing them you are supporting Sole, the main developer of Feature-engine.

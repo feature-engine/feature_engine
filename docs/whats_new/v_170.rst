@@ -1,0 +1,81 @@
+Version 1.7.X
+=============
+
+Version 1.7.0
+-------------
+
+Deployed: 24th March 2024
+
+Contributors
+~~~~~~~~~~~~
+
+- `dlaprins <https://github.com/dlaprins>`_
+- `Gleb Levitski <https://github.com/GLevv>`_
+- `Chris Samiullah <https://github.com/christophergs>`_
+- `Morgan Sell <https://github.com/Morgan-Sell>`_
+- `Darigov Research <https://github.com/darigovresearch>`_
+- `Soledad Galli <https://github.com/solegalli>`_
+
+There are a few big additions in this new release. First, we introduce a new `Pipeline` that supports transformers that remove rows
+from the dataset during the data transformation. From now on, you can use `DropMissingData`, `OutlierTrimmer`, `LagFeatures`
+and `WindowFeatures` as part of a feature engineering pipeline that will transform your variables, re-align the target to
+the remaining rows if necessary, and then fit a model. All in one go!
+
+In addition, transformers that remove rows from the dataset, like `DropMissingData`, `OutlierTrimmer`, `LagFeatures`
+and `WindowFeatures`, can now adjust the target value to the remaining rows through the new method `transform_x_y`.
+
+The third big improvement consists in a massive speed optimization of our correlation transformers, which now
+find and remove correlated features at doble the speed, and also, let you easily identify the feature against
+which the correlated ones were determined.
+
+Other than that, we did a lot of work to catch up with the latest developments of Scikit-learn and pandas, to ensure
+that our transformers keep on being compatible. That being said, we are a small team and maintenance is hard for us,
+so we've deprecated support of earlier releases of these libraries.
+
+Read on to find out more what we've been up to!
+
+New functionality
+~~~~~~~~~~~~~~~~~
+
+- We now have a `Pipeline()` and `make_pipeline` that support transformers that remove rows from the dataset (`Soledad Galli <https://github.com/solegalli>`_)
+- `DropMissingData`, `OutlierTrimmer`, `LagFeatures`, `ExpandingWindowFeatures` and `WindowFeatures` have the method `transform_x_y` to remove rows from the data and then adjust the target variable (`Soledad Galli <https://github.com/solegalli>`_)
+
+
+Enhancements
+~~~~~~~~~~~~
+
+- `DropCorrelatedFeatures()` and `SmartCorrelationSelection` have a new attribute to indicate which feature will be retained from each correlated group (`Soledad Galli <https://github.com/solegalli>`_, `dlaprins <https://github.com/dlaprins>`_)
+- `DropCorrelatedFeatures()` and `SmartCorrelationSelection` are twice as fast and can sort variables based on variance, cardinality or alphabetically before the search (`Soledad Galli <https://github.com/solegalli>`_, `dlaprins <https://github.com/dlaprins>`_)
+- `LagFeatures` can now impute the introduced nan values (`Soledad Galli <https://github.com/solegalli>`_)
+
+
+Bug fixes
+~~~~~~~~~
+
+- `DropCorrelatedFeatures()` and `SmartCorrelationSelection` are now deterministic (`Soledad Galli <https://github.com/solegalli>`_, `Gleb Levitski <https://github.com/GLevv>`_, `dlaprins <https://github.com/dlaprins>`_)
+
+In addition to these bug fixes, we fixed other pandas, and scikit-learn new version and deprecation
+related bugs.
+
+Code improvements
+~~~~~~~~~~~~~~~~~
+
+- Improves logic to select the variables to examine in all feature selection transformers (`Soledad Galli <https://github.com/solegalli>`_)
+- Add circleCI tests for python 3.11 and 3.12 (`Soledad Galli <https://github.com/solegalli>`_, `Chris Samiullah <https://github.com/christophergs>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+- Improve user guide for `DropCorrelatedFeatures()` and `SmartCorrelationSelection` (`Soledad Galli <https://github.com/solegalli>`_)
+- Improve user guide for `DropMissingData()`(`Soledad Galli <https://github.com/solegalli>`_)
+- Improve user guide for `OutlierTrimmer()`(`Soledad Galli <https://github.com/solegalli>`_)
+- Improve user guide for `LagFeatures`, `ExpandingWindowFeatures` and `WindowFeatures`(`Soledad Galli <https://github.com/solegalli>`_)
+- Add user guide for `Pipeline` (`Soledad Galli <https://github.com/solegalli>`_)
+- Improve feature creation user guide index (`Soledad Galli <https://github.com/solegalli>`_ and `Morgan Sell <https://github.com/Morgan-Sell>`_)
+- Make one click copyable code in Readme (`Darigov Research <https://github.com/darigovresearch>`_)
+
+Deprecations
+~~~~~~~~~~~~
+
+- We remove support for Python 3.8 (`Soledad Galli <https://github.com/solegalli>`_)
+- We bump the dependencies on pandas and Scikit-learn to their latest versions (`Soledad Galli <https://github.com/solegalli>`_)

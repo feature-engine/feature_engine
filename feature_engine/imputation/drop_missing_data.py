@@ -5,6 +5,10 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
+from feature_engine._base_transformers.mixins import TransformXyMixin
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -14,10 +18,7 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
-from feature_engine.variable_handling.variable_type_selection import find_all_variables
+from feature_engine.variable_handling import check_all_variables, find_all_variables
 
 
 @Substitution(
@@ -25,27 +26,28 @@ from feature_engine.variable_handling.variable_type_selection import find_all_va
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class DropMissingData(BaseImputer):
+class DropMissingData(BaseImputer, TransformXyMixin):
     """
-    DropMissingData() will delete rows containing missing values. It provides
-    similar functionality to pandas.drop_na().
+    DropMissingData() deletes rows containing missing values. It provides
+    similar functionality to `pandas.drop_na()`, but within the `fit` and `transform`
+    framework.
 
     It works for numerical and categorical variables. You can enter the list of
-    variables for which missing values should be evaluated. Alternatively, the imputer
-    will evaluate missing data in all variables in the dataframe.
+    variables for which missing values should be removed. Alternatively, the imputer
+    will find and remove missing data in all dataframe variables.
 
     More details in the :ref:`User Guide <drop_missing_data>`.
 
     Parameters
     ----------
     variables: list, default=None
-        The list of variables to consider for the imputation. If None, the imputer will
-        evaluate missing data in all variables in the dataframe. Alternatively, the
+        The list of variables to consider for the imputation. If `None`, the imputer
+        will check missing data in all variables in the dataframe. Alternatively, the
         imputer will evaluate missing data only in the variables in the list.
 
-        Note that if `missing_only=True` only variables with missing data in the train
-        set will be considered to drop a row, which might be a subset of the indicated
-        list.
+        Note that if `missing_only=True`, missing data will be removed from variables
+        that had missing data in the train set. These might be a subset of the
+        variables indicated in the list.
 
     missing_only: bool, default=True
         If `True`, rows will be dropped when they show missing data in variables that
@@ -85,6 +87,9 @@ class DropMissingData(BaseImputer):
     transform:
         Remove rows with missing data.
 
+    transform_x_y:
+        Remove rows with missing data from X and y.
+
     Examples
     --------
 
@@ -122,7 +127,7 @@ class DropMissingData(BaseImputer):
                     f"Got {threshold} instead."
                 )
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.missing_only = missing_only
         self.threshold = threshold
 
@@ -136,7 +141,7 @@ class DropMissingData(BaseImputer):
         X: pandas dataframe of shape = [n_samples, n_features]
             The training data set.
 
-        y: pandas Series, default=None
+        y: pandas Series or dataframe, default=None
             y is not needed in this imputation. You can pass None or y.
         """
 
@@ -144,7 +149,10 @@ class DropMissingData(BaseImputer):
         X = check_X(X)
 
         # find variables for which indicator should be added
-        self.variables_ = find_all_variables(X, self.variables)
+        if self.variables is None:
+            self.variables_ = find_all_variables(X)
+        else:
+            self.variables_ = check_all_variables(X, self.variables)
 
         # If user passes a threshold, then missing_only is ignored:
         if self.threshold is None and self.missing_only is True:

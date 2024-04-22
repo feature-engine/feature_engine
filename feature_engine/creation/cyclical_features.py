@@ -8,11 +8,14 @@ from feature_engine._base_transformers.mixins import (
     FitFromDictMixin,
     GetFeatureNamesOutMixin,
 )
-from feature_engine._check_input_parameters.check_init_input_params import (
+from feature_engine._check_init_parameters.check_init_input_params import (
     _check_param_drop_original,
 )
-from feature_engine._check_input_parameters.check_input_dictionary import (
+from feature_engine._check_init_parameters.check_input_dictionary import (
     _check_numerical_dict,
+)
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -28,9 +31,6 @@ from feature_engine._docstrings.methods import (
     _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.variable_handling._init_parameter_checks import (
-    _check_init_parameter_variables,
-)
 
 
 @Substitution(
@@ -129,7 +129,7 @@ class CyclicalFeatures(
         _check_numerical_dict(max_values)
         _check_param_drop_original(drop_original)
 
-        self.variables = _check_init_parameter_variables(variables)
+        self.variables = _check_variables_input_value(variables)
         self.max_values = max_values
         self.drop_original = drop_original
 

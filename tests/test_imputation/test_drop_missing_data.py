@@ -1,3 +1,5 @@
+import numpy as np
+import pandas as pd
 import pytest
 
 from feature_engine.imputation import DropMissingData
@@ -18,6 +20,21 @@ def test_detect_variables_with_na(df_na):
     assert X_transformed.shape == (5, 6)
     assert X_transformed["Name"].shape[0] == 5
     assert X_transformed.isna().sum().sum() == 0
+
+
+def test_transform_x_y(df_na):
+    y = pd.Series(np.zeros(len(df_na)))
+    imputer = DropMissingData(missing_only=True, variables=None)
+    X_transformed = imputer.fit_transform(df_na)
+    # transform outputs
+    assert X_transformed.shape == (5, 6)
+    assert X_transformed.isna().sum().sum() == 0
+    assert len(X_transformed) != len(y)
+
+    Xt, yt = imputer.transform_x_y(df_na, y)
+    assert len(Xt) == len(yt)
+    assert (Xt.index == yt.index).all()
+    assert len(df_na) != len(Xt)
 
 
 def test_selelct_all_variables_when_variables_is_none(df_na):
