@@ -14,6 +14,18 @@ of models. Therefore, handling missing data has become one of the most important
 Feature-engine supports several imputation techniques to handle missing data. Here, we provide an overview of each of
 the supported methods.
 
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   MeanMedianImputer
+   ArbitraryNumberImputer
+   EndTailImputer
+   CategoricalImputer
+   RandomSampleImputer
+   AddMissingIndicator
+   DropMissingData
+
 
 Missing data mechanisms
 -----------------------
