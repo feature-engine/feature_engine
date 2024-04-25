@@ -52,6 +52,9 @@ You can specify the variables to be discretized by passing their names in a list
 :class:`EqualWidthDiscretiser()` will automatically infer the data types to compute the interval limits for all numeric
 variables.
 
+**Optimal number of intervals:** With :class:`EqualWidthDiscretiser()`, the user defines the number of bins. Smaller intervals	
+may be required if the variable is highly skewed or not continuous.
+
 **Integration with scikit-learn:** :class:`EqualWidthDiscretiser()` and all other Feature-engine transformers seamlessly
 integrate with scikit-learn `pipelines <https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html>`_.
 
