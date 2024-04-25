@@ -5,77 +5,98 @@
 EqualWidthDiscretiser
 =====================
 
-The :class:`EqualWidthDiscretiser()` sorts the variable values into contiguous intervals
-of equal size. The size of the interval is calculated as:
+The :class:EqualWidthDiscretiser() divides continuous numerical variables into intervals of equal width, calculated using the formula:
 
 ( max(X) - min(X) ) / bins
 
-where bins, which is the number of intervals, should be determined by the user. The
-interval limits are determined using `pandas.cut()`.
+where bins is the number of intervals specified by the user. This discretisation is achieved through the pandas.cut() function.
 
-**A note on number of intervals**
+Discretization is a common data preprocessing technique used in data science. It's also known as data binning (or simply `binning`).
 
-Common values are 5 and 10. Note that if the variable is highly skewed or not continuous
-smaller intervals maybe required. Otherwise, the transformer will introduce np.nan.
+Advantages and Limitations
+--------------------------
 
-The :class:`EqualWidthDiscretiser()` works only with numerical variables. A list of
-variables to discretise can be indicated, or the discretiser will automatically select
-all numerical variables in the train set.
+Advantages
+~~~~~~~~~~
 
-**Example**
+Some advantagers of equal width binning:
 
-Let's look at an example using the House Prices Dataset (more details about the
-dataset :ref:`here <datasets>`).
+- **Algorithm Efficiency:** Enhances the performance of data mining and machine learning algorithms by providing a simplified representation of the dataset.
+- **Outlier Management:** Efficiently mitigates the effect of outliers by grouping them into the extreme bins, thus preserving the integrity of the main data distribution.
+- **Data Smoothing:** Helps smooth the data, reduces noise, and improves the model's ability to generalize.
 
-Let's load the house prices dataset and  separate it into train and test sets:
+Limitations
+~~~~~~~~~~~
+
+On the other hand, :class:`EqualWidthDiscretiser()` can lead to a loss of information by aggregating data into broader categories. This is particularly concerning if the data in the same bin has predictive information about the target.
+
+Let's consider a binary classifier task using a decision tree model. A bin with a high proportion of both categories would potentially impact the model's performance in this scenario.
+
+Notes
+-----
+
+`EqualWidthDiscretiser` expects a `pandas.DataFrame` and works only with numerical variables. The user can specify the variables to be discretized. Otherwise, `EqualWidthDiscretiser` will automatically infer the data types to compute the interval limits for all numeric variables.
+
+**Optimal number of intervals:** With `EqualWidthDiscretiser`, the user defines the number of bins. Smaller intervals may be required if the variable is highly skewed or not continuous. Otherwise, the transformer will introduce `numpy.nan`.
+
+**Integration with scikit-learn:** `EqualFrequencyDiscretiser` and all other feature-engine transformers seamlessly integrate with scikit-learn [pipelines](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) and [column transformers](https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html).
+
+Python code example
+-------------------
+
+Load dataset
+~~~~~~~~~~~~
+
+In this example, we'll use the House Prices' Dataset (for more details, please check [this link](https://www.openml.org/search?type=data&sort=version&status=any&order=asc&exact_name=house_prices)).
+
+First, let's load the dataset and split it into train and test sets:
 
 .. code:: python
 
-	import numpy as np
-	import pandas as pd
 	import matplotlib.pyplot as plt
+	from sklearn.datasets import fetch_openml
 	from sklearn.model_selection import train_test_split
 
-	from feature_engine.discretisation import EqualWidthDiscretiser
+	from feature_engine.discretisation import EqualFrequencyDiscretiser
 
 	# Load dataset
-	data = data = pd.read_csv('houseprice.csv')
+	X, y = fetch_openml(name='house_prices', version=1, return_X_y=True, as_frame=True)
+	X.set_index('Id', inplace=True)
 
 	# Separate into train and test sets
-	X_train, X_test, y_train, y_test =  train_test_split(
-		    data.drop(['Id', 'SalePrice'], axis=1),
-		    data['SalePrice'], test_size=0.3, random_state=0)
+	X_train, X_test, y_train, y_test =  train_test_split(X, y, test_size=0.3, random_state=42)
 
 
-Now we want to discretise the 2 variables indicated below into 10 intervals of equal
-width:
+Equal-width Discretisation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this example, let's discretize two variables (LotArea and GrLivArea) into 10 intervals of equal width:
 
 .. code:: python
 
-	# set up the discretisation transformer
-	disc = EqualWidthDiscretiser(bins=10, variables=['LotArea', 'GrLivArea'])
+	# List the target numeric variables for equal-width discretization
+	TARGET_NUMERIC_FEATURES= ['LotArea','GrLivArea']
 
-	# fit the transformer
+	# Set up the discretisation transformer
+	disc = EqualWidthDiscretiser(bins=10, variables=TARGET_NUMERIC_FEATURES)
+
+	# Fit the transformer
 	disc.fit(X_train)
 
-With `fit()` the transformer learns the boundaries of each interval. Then, we can go
-ahead and sort the values into the intervals:
+
+Note that if we do not specify the variables (default=`None`), `EqualWidthDiscretiser` will automatically infer the data types to compute the interval limits for all numeric variables.
+
+With the `.fit()` method, the discretiser learns the bin boundaries and saves them into a dictionary so we can use them to transform unseen data:
 
 .. code:: python
 
-	# transform the data
-	train_t= disc.transform(X_train)
-	test_t= disc.transform(X_test)
-
-The `binner_dict_` stores the interval limits identified for each variable.
-
-.. code:: python
-
+	# Learnt limits for each variable
 	disc.binner_dict_
 
+
 .. code:: python
 
-	'LotArea': [-inf,
+	{'LotArea': [-inf,
 	  22694.5,
 	  44089.0,
 	  65483.5,
@@ -87,41 +108,135 @@ The `binner_dict_` stores the interval limits identified for each variable.
 	  193850.5,
 	  inf],
 	 'GrLivArea': [-inf,
-	  768.2,
-	  1202.4,
-	  1636.6,
-	  2070.8,
-	  2505.0,
-	  2939.2,
-	  3373.4,
-	  3807.6,
-	  4241.799999999999,
+	  864.8,
+	  1395.6,
+	  1926.3999999999999,
+	  2457.2,
+	  2988.0,
+	  3518.7999999999997,
+	  4049.5999999999995,
+	  4580.4,
+	  5111.2,
 	  inf]}
 
-With equal width discretisation, each bin does not necessarily contain the same number of observations.
+
+Note that the lower and upper boundariers are set to -inf and inf, respectively. This behavior ensures the transformer works even for unseen limits (lower than the minimum or greater than the maximum trained value).
+
+Also, this transformer will not work in the presence of missing values. Therefore, we should either remove or impute missing values before fitting the transformer.
 
 .. code:: python
 
-	train_t.groupby('GrLivArea')['GrLivArea'].count().plot.bar()
-	plt.ylabel('Number of houses')
+	# Transform the data (data discretization)
+	train_t = disc.transform(X_train)
+	test_t = disc.transform(X_test)
 
-We can see below that the intervals contain different number of observations.
+Let's visualize the first rows of the raw data and the transformed data:
+
+.. code:: python
+
+	# Raw data
+	print(X_train[TARGET_NUMERIC_FEATURES].head())
+
+
+.. code:: python
+
+		  LotArea  GrLivArea
+	Id                      
+	136     10400       1682
+	1453     3675       1072
+	763      8640       1547
+	933     11670       1905
+	436     10667       1661
+
+
+.. code:: python
+
+	# Transformed data
+	print(train_t[TARGET_NUMERIC_FEATURES].head())
+
+
+.. code:: python
+
+		  LotArea  GrLivArea
+	Id                      
+	136         0          2
+	1453        0          1
+	763         0          2
+	933         0          2
+	436         0          2
+
+
+The transformed data now contains discrete values corresponding to the ordered computed buckets (0 being the first and bins-1 the last).
+
+Now, let's visualize its output:
+
+.. code:: python
+
+	train_t['GrLivArea'].value_counts().sort_index().plot.bar()
+	plt.ylabel('Number of houses')
+	plt.show()
+
 
 .. image:: ../../images/equalwidthdiscretisation.png
 
-|
+As we can see, the intervals contain different number of observations.  
+It's a similar output of an histogram, but it's designed to work transform unseen data, includig outliers.
 
-**Discretisation plus encoding**
+Finally, since the default value for the `return_object` parameter is `False`, the transformer outputs integer variables:
 
-If we return the interval values as integers, the discretiser has the option to return
-the transformed variable as integer or as object. Why would we want the transformed
-variables as object?
+.. code:: python
 
-Categorical encoders in Feature-engine are designed to work with variables of type
-object by default. Thus, if you wish to encode the returned bins further, say to try and
-obtain monotonic relationships between the variable and the target, you can do so
-seamlessly by setting `return_object` to True. You can find an example of how to use
-this functionality `here <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualWidthDiscretiser_plus_OrdinalEncoder.ipynb>`_.
+	train_t[TARGET_NUMERIC_FEATURES].dtypes
+
+
+.. code:: python
+
+	LotArea      int64
+	GrLivArea    int64
+	dtype: object
+
+
+Return object instead of integers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Categorical encoders in feature-engine are designed to work by default with variables of type object. Therefore, to further encode the discretiser output with feature-engine, we can set `return_object=True` instead. This will return the transformed variables as object.
+
+Let's say we want to obtain monotonic relationships between the variable and the target. We can do that seamlessly by setting `return_object` to True. A tutorial of how to use this functionality is available [here](https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualWidthDiscretiser_plus_OrdinalEncoder.ipynb).
+
+Additionally, if we want to output the intervals as object while specifying the boundaries, we can set `return_boundaries` to True:
+
+.. code:: python
+
+	# Set up the discretisation transformer
+	disc = EqualFrequencyDiscretiser(bins=10, variables=TARGET_NUMERIC_FEATURES, return_boundaries=True)
+
+	# Fit the transformer
+	disc.fit(X_train)
+
+	# Transform test set & visualize limit
+	test_t = disc.transform(X_test)
+
+	# Visualize output (boundaries)
+	print(test_t[TARGET_NUMERIC_FEATURES].head())
+
+
+.. code:: python
+
+		     LotArea         GrLivArea
+	Id                                     
+	893   (-inf, 22694.5]   (864.8, 1395.6]
+	1106  (-inf, 22694.5]  (2457.2, 2988.0]
+	414   (-inf, 22694.5]   (864.8, 1395.6]
+	523   (-inf, 22694.5]  (1395.6, 1926.4]
+	1037  (-inf, 22694.5]  (1395.6, 1926.4]
+
+
+See Also
+--------
+
+- Further feature-engine discretiser / binning methods[here](https://feature-engine.trainindata.com/en/latest/user_guide/discretisation/index.html)
+- Scikit-learn [`KBinsDiscretizer`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html#sklearn.preprocessing.KBinsDiscretizer) class
+- [Pandas cut](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.cut.html)
 
 Additional resources
 --------------------
