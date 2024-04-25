@@ -26,7 +26,7 @@ Equal binning discretization has some advantages and also shortcomings.
 Advantages
 ~~~~~~~~~~
 
-Some advantagers of equal width binning:
+Some advantages of equal width binning:
 
 - **Algorithm Efficiency:** Enhances the performance of data mining and machine learning algorithms by providing a simplified representation of the dataset.
 - **Outlier Management:** Efficiently mitigates the effect of outliers by grouping them into the extreme bins, thus preserving the integrity of the main data distribution.
@@ -60,6 +60,8 @@ integrate with scikit-learn `pipelines <https://scikit-learn.org/stable/modules/
 
 Python code example
 -------------------
+
+In this section, we'll show the main functionality of :class:`EqualWidthDiscretiser()`.
 
 Load dataset
 ~~~~~~~~~~~~
@@ -238,7 +240,7 @@ setting `return_object` to `True`. A tutorial of how to use this functionality i
 Return bin boundaries
 ~~~~~~~~~~~~~~~~~~~~~
 
-If we want to output the intervals limites instead of integers, we can set `return_boundaries` to `True`:
+If we want to output the intervals limits instead of integers, we can set `return_boundaries` to `True`:
 
 .. code:: python
 
