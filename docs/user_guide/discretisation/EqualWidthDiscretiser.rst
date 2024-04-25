@@ -52,9 +52,6 @@ You can specify the variables to be discretized by passing their names in a list
 :class:`EqualWidthDiscretiser()` will automatically infer the data types to compute the interval limits for all numeric
 variables.
 
-**Optimal number of intervals:** With :class:`EqualWidthDiscretiser()`, the user defines the number of bins. Smaller intervals
-may be required if the variable is highly skewed or not continuous. Otherwise, the transformer will introduce `numpy.nan`.
-
 **Integration with scikit-learn:** :class:`EqualWidthDiscretiser()` and all other Feature-engine transformers seamlessly
 integrate with scikit-learn `pipelines <https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html>`_.
 
@@ -292,7 +289,7 @@ Additional resources
 Check also for more details on how to use this transformer:
 
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualWidthDiscretiser.ipynb>`_
-- `Jupyter notebook - Discretiser plus Ordinal encoding <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualWidthDiscretiser_plus_OrdinalEncoder.ipynb>`_
+- `Jupyter notebook - Discretizer plus Ordinal encoding <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualWidthDiscretiser_plus_OrdinalEncoder.ipynb>`_
 
 For more details about this and other feature engineering methods check out these resources:
 
