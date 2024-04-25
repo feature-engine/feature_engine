@@ -71,6 +71,7 @@ Equal-frequency Discretisation
 In this example, let's discretize two variables (LotArea and GrLivArea) into 10 intervals of approximately equal number of observations.
 
 .. code:: python
+	
 	# List the target numeric variables to be transformed
 	TARGET_NUMERIC_FEATURES= ['LotArea','GrLivArea']
 
@@ -182,7 +183,8 @@ Now, let's visualize the plots for equal-width intervals (a common histogram) an
 	plt.tight_layout(w_pad=2)
 	plt.show()
 
-Figure goes here...
+
+.. image:: ../../images/equalfrequencydiscretisation_gaussian.png
 
 As we can see, the intervals contain approximately the same number of observations.
 
@@ -288,7 +290,7 @@ Binning skewed data
 	plt.show()
 
 
-.. image:: ../../images/EqualFrequencyDiscretiser_gaussian.png
+.. image:: ../../images/equalfrequencydiscretisation_gaussian.png
 
 .. code:: python
 
@@ -308,7 +310,7 @@ Binning skewed data
 	plt.show()
 
 
-.. image:: ../../images/EqualFrequencyDiscretiser_skewed.png
+.. image:: ../../images/equalfrequencydiscretisation_skewed.png
 
 See Also
 --------
