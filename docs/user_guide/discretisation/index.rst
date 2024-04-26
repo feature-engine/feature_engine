@@ -1,3 +1,5 @@
+.. _discretization_transformers:
+
 .. -*- mode: rst -*-
 
 Discretisation
