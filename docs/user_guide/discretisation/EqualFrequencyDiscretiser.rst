@@ -374,7 +374,7 @@ For alternative binning techniques, check out the following resources:
 
 Check out also:
 
-- `Pandas cut <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.cut.html>`_.
+- `Pandas qcut <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.qcut.html>`_.
 
 
 Additional resources
