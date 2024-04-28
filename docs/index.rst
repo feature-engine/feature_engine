@@ -251,9 +251,18 @@ For more details on how to contribute check the contributing page. Click on the
 Sponsor us
 ~~~~~~~~~~
 
-Support Feature-engine financially via
-`Github Sponsors <https://github.com/sponsors/feature-engine>`_ and help further our
-mission to democratize machine learning tools through open-source software.
+`Empower Sole <https://github.com/sponsors/solegalli>`_, the main developer of
+Feature-engine, to assemble a team of paid contributors to accelerate the development of
+Feature-engine. Currently, Sole and our contributors dedicate their free time voluntarily
+to advancing the project. You can help us reach a funding milestone, so that we can
+gather on a group of 2-3 contributors who will commit regular hours each week to enhance
+documentation and expand Feature-engine's functionality at a faster pace.
+`Your contribution <https://github.com/sponsors/solegalli>`_ will play a vital role in
+propelling Feature-engine to new heights, ensuring it remains a valuable resource for
+the data science community.
+
+If you don't have a Github account, you can also `donate here <https://buymeacoffee.com/solegalliy>`_.
+
 
 Open Source
 ~~~~~~~~~~~

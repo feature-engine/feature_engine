@@ -37,8 +37,14 @@ or a podcast channel, do get in touch.
 Sponsor us
 ----------
 
-If Feature-engine is helping you or your organization save money, time, effort, and frustrations,
-and be more productive, consider `sponsoring us <https://github.com/sponsors/feature-engine>`_.
-This is a great way to show your appreciation. Thank you!
+`Empower Sole <https://github.com/sponsors/solegalli>`_, the main developer of
+Feature-engine, to assemble a team of paid contributors to accelerate the development of
+Feature-engine. Currently, Sole and our contributors dedicate their free time voluntarily
+to advancing the project. You can help us reach a funding milestone, so that we can
+gather on a group of 2-3 contributors who will commit regular hours each week to enhance
+documentation and expand Feature-engine's functionality at a faster pace.
+`Your contribution <https://github.com/sponsors/solegalli>`_ will play a vital role in
+propelling Feature-engine to new heights, ensuring it remains a valuable resource for
+the data science community.
 
-For all of this, get in touch with the maintainer via `LinkedIn <https://www.linkedin.com/in/soledad-galli/>`_.
+If you don't have a Github account, you can also `donate here <https://buymeacoffee.com/solegalliy>`_.
