@@ -147,11 +147,11 @@ class WinsorizerBase(BaseOutlier):
 
     def __init__(
         self,
-        capping_method: Literal["gaussian", "iqr", "mad", "quantiles"] = "gaussian",
-        tail: Literal["left", "right", "both"] = "right",
+        capping_method: str = "gaussian",
+        tail: str = "right",
         fold: Union[int, float, Literal["auto"]] = "auto",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        missing_values: Literal["raise", "ignore"] = "raise",
+        missing_values: str = "raise",
     ) -> None:
 
         if capping_method not in ["gaussian", "iqr", "quantiles", "mad"]:
