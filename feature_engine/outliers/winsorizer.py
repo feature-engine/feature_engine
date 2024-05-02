@@ -110,6 +110,9 @@ class Winsorizer(WinsorizerBase):
        statistical outliers in R with easystats. Behavior Research Methods, 2024.
        https://doi.org/10.3758/s13428-024-02356-w
 
+    .. [4] Dixon. Simplified Estimation from Censored Normal Samples. The Annals of
+       Mathematical Statistics, 1960. http://www.jstor.org/stable/2237953
+
     Examples
     --------
 
