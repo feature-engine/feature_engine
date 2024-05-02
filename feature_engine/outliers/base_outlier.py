@@ -154,13 +154,13 @@ class WinsorizerBase(BaseOutlier):
         missing_values: str = "raise",
     ) -> None:
 
-        if capping_method not in ["gaussian", "iqr", "quantiles", "mad"]:
+        if capping_method not in ("gaussian", "iqr", "quantiles", "mad"):
             raise ValueError(
                 f"capping_method must be 'gaussian', 'iqr', 'mad', 'quantiles'."
                 f" Got {capping_method} instead."
             )
 
-        if tail not in ["right", "left", "both"]:
+        if tail not in ("right", "left", "both"):
             raise ValueError(
                 f"tail must be 'right', 'left' or 'both'. Got {tail} instead."
             )
@@ -182,7 +182,7 @@ class WinsorizerBase(BaseOutlier):
                 "0.20 only."
             )
 
-        if missing_values not in ["raise", "ignore"]:
+        if missing_values not in ("raise", "ignore"):
             raise ValueError(
                 f"missing_values must be 'raise' or 'ignore'."
                 f" Got {missing_values} instead."
@@ -250,7 +250,7 @@ class WinsorizerBase(BaseOutlier):
             )
 
         # estimate the end values
-        if self.tail in ["right", "both"]:
+        if self.tail in ("right", "both"):
             if self.capping_method in ("gaussian", "mad"):
                 self.right_tail_caps_ = (bias + self.fold_ * scale).to_dict()
 
@@ -260,7 +260,7 @@ class WinsorizerBase(BaseOutlier):
             elif self.capping_method == "quantiles":
                 self.right_tail_caps_ = bias.loc[1 - self.fold_].to_dict()
 
-        if self.tail in ["left", "both"]:
+        if self.tail in ("left", "both"):
             if self.capping_method in ("gaussian", "mad"):
                 self.left_tail_caps_ = (bias - self.fold_ * scale).to_dict()
 
