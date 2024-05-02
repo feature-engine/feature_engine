@@ -169,7 +169,7 @@ class WinsorizerBase(BaseOutlier):
             isinstance(fold, (int, float)) and (fold <= 0)
         ):
             raise ValueError(
-                f"fold must be a positive numbers or 'auto'. Got {fold} instead."
+                f"fold must be a positive number or 'auto'. Got {fold} instead."
             )
 
         if (
