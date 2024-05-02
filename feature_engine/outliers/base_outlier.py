@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -114,15 +114,15 @@ class WinsorizerBase(BaseOutlier):
 
     **IQR limits:**
 
-    - right tail: 75th quantile + 3* IQR
-    - left tail:  25th quantile - 3* IQR
+    - right tail: 75th quantile + 1.5* IQR
+    - left tail:  25th quantile - 1.5* IQR
 
     where IQR is the inter-quartile range: 75th quantile - 25th quantile.
 
     **MAD limits:**
 
-    - right tail: median + 3* MAD
-    - left tail:  median - 3* MAD
+    - right tail: median + 3.29* MAD
+    - left tail:  median - 3.29* MAD
 
     where MAD is the median absoulte deviation from the median.
 
@@ -149,23 +149,29 @@ class WinsorizerBase(BaseOutlier):
         self,
         capping_method: str = "gaussian",
         tail: str = "right",
-        fold: Union[int, float] = 3,
+        fold: Union[int, float, Literal["auto"]] = "auto",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
     ) -> None:
 
         if capping_method not in ["gaussian", "iqr", "quantiles", "mad"]:
             raise ValueError(
-                "capping_method takes only values 'gaussian', 'iqr', 'mad', 'quantiles'"
+                "capping_method takes only values 'gaussian', 'iqr', 'mad', 'quantiles'."
             )
 
         if tail not in ["right", "left", "both"]:
-            raise ValueError("tail takes only values 'right', 'left' or 'both'")
+            raise ValueError("tail takes only values 'right', 'left' or 'both'.")
 
-        if fold <= 0:
-            raise ValueError("fold takes only positive numbers")
+        if (isinstance(fold, str) and (fold != "auto")) or (
+            isinstance(fold, (int, float)) and (fold <= 0)
+        ):
+            raise ValueError("fold takes only positive numbers or 'auto'.")
 
-        if capping_method == "quantiles" and fold > 0.2 and fold != 3:
+        if (
+            capping_method == "quantiles"
+            and isinstance(fold, (int, float))
+            and fold > 0.2
+        ):
             raise ValueError(
                 "with capping_method ='quantiles', fold takes values between 0 and "
                 "0.20 only."
@@ -176,7 +182,7 @@ class WinsorizerBase(BaseOutlier):
 
         self.capping_method = capping_method
         self.tail = tail
-        self.fold = 0.05 if (capping_method == "quantiles") & (fold == 3) else fold
+        self.fold = fold
         self.variables = _check_variables_input_value(variables)
         self.missing_values = missing_values
 
@@ -210,6 +216,11 @@ class WinsorizerBase(BaseOutlier):
         self.right_tail_caps_ = {}
         self.left_tail_caps_ = {}
 
+        if self.fold == "auto":
+            self.fold_ = self._calculate_auto_fold()
+        else:
+            self.fold_ = self.fold
+
         if self.capping_method == "gaussian":
             bias = X[self.variables_].mean()
             scale = X[self.variables_].std(ddof=0)
@@ -217,8 +228,8 @@ class WinsorizerBase(BaseOutlier):
             bias = X[self.variables_].quantile((0.75, 0.25))
             scale = bias.loc[0.75] - bias.loc[0.25]
         elif self.capping_method == "quantiles":
-            bias = X[self.variables_].quantile((1 - self.fold, self.fold))
-            scale = bias.loc[1 - self.fold] - bias.loc[self.fold]
+            bias = X[self.variables_].quantile((1 - self.fold_, self.fold_))
+            scale = bias.loc[1 - self.fold_] - bias.loc[self.fold_]
         elif self.capping_method == "mad":
             bias = X[self.variables_].median()
             # scaling factor for normal distribution
@@ -233,28 +244,40 @@ class WinsorizerBase(BaseOutlier):
         # estimate the end values
         if self.tail in ["right", "both"]:
             if self.capping_method in ("gaussian", "mad"):
-                self.right_tail_caps_ = (bias + self.fold * scale).to_dict()
+                self.right_tail_caps_ = (bias + self.fold_ * scale).to_dict()
 
             elif self.capping_method == "iqr":
-                self.right_tail_caps_ = (bias.loc[0.75] + self.fold * scale).to_dict()
+                self.right_tail_caps_ = (bias.loc[0.75] + self.fold_ * scale).to_dict()
 
             elif self.capping_method == "quantiles":
-                self.right_tail_caps_ = bias.loc[1 - self.fold].to_dict()
+                self.right_tail_caps_ = bias.loc[1 - self.fold_].to_dict()
 
         if self.tail in ["left", "both"]:
             if self.capping_method in ("gaussian", "mad"):
-                self.left_tail_caps_ = (bias - self.fold * scale).to_dict()
+                self.left_tail_caps_ = (bias - self.fold_ * scale).to_dict()
 
             elif self.capping_method == "iqr":
-                self.left_tail_caps_ = (bias.loc[0.25] - self.fold * scale).to_dict()
+                self.left_tail_caps_ = (bias.loc[0.25] - self.fold_ * scale).to_dict()
 
             elif self.capping_method == "quantiles":
-                self.left_tail_caps_ = bias.loc[self.fold].to_dict()
+                self.left_tail_caps_ = bias.loc[self.fold_].to_dict()
 
         self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
 
         return self
+
+    def _calculate_auto_fold(self) -> float:
+        if self.capping_method == "quantiles":
+            return 0.05
+        elif self.capping_method == "iqr":
+            return 1.5
+        elif self.capping_method == "gaussian":
+            return 3.0
+        elif self.capping_method == "mad":
+            return 3.29
+        else:
+            return 3.0
 
     def _more_tags(self):
         tags_dict = _return_tags()

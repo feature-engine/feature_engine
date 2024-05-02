@@ -126,17 +126,14 @@ def test_quantile_capping_right_tail_with_fold_15_percent(df_normal_dist):
     assert math.isclose(df_transf["var"].max(), 0.11823196128033647)
 
 
-def test_quantile_fold_default_value():
-    # test case 1: Test quantiles, with fold default = 0.05
-    transformer = Winsorizer(capping_method="quantiles")
-    assert transformer.fold == 0.05
-
-
-@pytest.mark.parametrize("strings", ["gaussian", "iqr", "mad"])
-def test_other_fold_default_value(strings):
-    # test case 2: Test gaussian, iqr, mad, with fold default = 3
-    transformer = Winsorizer(capping_method=strings)
-    assert transformer.fold == 3
+@pytest.mark.parametrize(
+    "strings,expected",
+    [("gaussian", 3), ("iqr", 1.5), ("mad", 3.29), ("quantiles", 0.05)],
+)
+def test_auto_fold_default_value(strings, expected, df_normal_dist):
+    transformer = Winsorizer(capping_method=strings, fold="auto")
+    transformer.fit(df_normal_dist)
+    assert transformer.fold_ == expected
 
 
 def test_mad_capping_right_tail_with_fold_1(df_normal_dist):
@@ -189,21 +186,21 @@ def test_indicators_are_added(df_normal_dist):
     X = transformer.fit_transform(df_normal_dist)
     # test that the number of output variables is correct
     assert X.shape[1] == 3 * df_normal_dist.shape[1]
-    assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
+    assert np.all(X.iloc[:, df_normal_dist.shape[1] :].sum(axis=0) > 0)
 
     transformer = Winsorizer(
         tail="left", capping_method="quantiles", fold=0.1, add_indicators=True
     )
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 2 * df_normal_dist.shape[1]
-    assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
+    assert np.all(X.iloc[:, df_normal_dist.shape[1] :].sum(axis=0) > 0)
 
     transformer = Winsorizer(
         tail="right", capping_method="quantiles", fold=0.1, add_indicators=True
     )
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 2 * df_normal_dist.shape[1]
-    assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
+    assert np.all(X.iloc[:, df_normal_dist.shape[1] :].sum(axis=0) > 0)
 
 
 def test_indicators_filter_variables(df_vartypes):
