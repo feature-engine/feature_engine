@@ -147,25 +147,30 @@ class WinsorizerBase(BaseOutlier):
 
     def __init__(
         self,
-        capping_method: str = "gaussian",
-        tail: str = "right",
+        capping_method: Literal["gaussian", "iqr", "mad", "quantiles"] = "gaussian",
+        tail: Literal["left", "right", "both"] = "right",
         fold: Union[int, float, Literal["auto"]] = "auto",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        missing_values: str = "raise",
+        missing_values: Literal["raise", "ignore"] = "raise",
     ) -> None:
 
         if capping_method not in ["gaussian", "iqr", "quantiles", "mad"]:
             raise ValueError(
-                "capping_method takes only values 'gaussian', 'iqr', 'mad', 'quantiles'."
+                f"capping_method must be 'gaussian', 'iqr', 'mad', 'quantiles'."
+                f" Got {capping_method} instead."
             )
 
         if tail not in ["right", "left", "both"]:
-            raise ValueError("tail takes only values 'right', 'left' or 'both'.")
+            raise ValueError(
+                f"tail must be 'right', 'left' or 'both'. Got {tail} instead."
+            )
 
         if (isinstance(fold, str) and (fold != "auto")) or (
             isinstance(fold, (int, float)) and (fold <= 0)
         ):
-            raise ValueError("fold takes only positive numbers or 'auto'.")
+            raise ValueError(
+                f"fold must be a positive numbers or 'auto'. Got {fold} instead."
+            )
 
         if (
             capping_method == "quantiles"
@@ -178,7 +183,10 @@ class WinsorizerBase(BaseOutlier):
             )
 
         if missing_values not in ["raise", "ignore"]:
-            raise ValueError("missing_values takes only values 'raise' or 'ignore'")
+            raise ValueError(
+                f"missing_values must be 'raise' or 'ignore'."
+                f" Got {missing_values} instead."
+            )
 
         self.capping_method = capping_method
         self.tail = tail
