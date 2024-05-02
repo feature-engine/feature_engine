@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Union
+from typing import List, Literal, Union
 
 import numpy as np
 import pandas as pd
@@ -145,7 +145,7 @@ class Winsorizer(WinsorizerBase):
         self,
         capping_method: str = "gaussian",
         tail: str = "right",
-        fold: Union[int, float] = 3,
+        fold: Union[int, float, Literal["auto"]] = "auto",
         add_indicators: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
