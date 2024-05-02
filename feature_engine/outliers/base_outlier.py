@@ -280,8 +280,6 @@ class WinsorizerBase(BaseOutlier):
             return 0.05
         elif self.capping_method == "iqr":
             return 1.5
-        elif self.capping_method == "gaussian":
-            return 3.0
         elif self.capping_method == "mad":
             return 3.29
         else:

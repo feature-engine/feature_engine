@@ -103,3 +103,9 @@ def test_auto_fold_default_value(strings, expected, df_normal_dist):
     transformer = OutlierTrimmer(capping_method=strings, fold="auto")
     transformer.fit(df_normal_dist)
     assert transformer.fold_ == expected
+
+
+def test_low_variation(df_normal_dist):
+    transformer = OutlierTrimmer(capping_method="mad")
+    with pytest.raises(ValueError):
+        transformer.fit(df_normal_dist // 10)

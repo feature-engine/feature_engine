@@ -186,21 +186,21 @@ def test_indicators_are_added(df_normal_dist):
     X = transformer.fit_transform(df_normal_dist)
     # test that the number of output variables is correct
     assert X.shape[1] == 3 * df_normal_dist.shape[1]
-    assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
+    assert np.all(X.iloc[:, df_normal_dist.shape[1] :].sum(axis=0) > 0)
 
     transformer = Winsorizer(
         tail="left", capping_method="quantiles", fold=0.1, add_indicators=True
     )
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 2 * df_normal_dist.shape[1]
-    assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
+    assert np.all(X.iloc[:, df_normal_dist.shape[1] :].sum(axis=0) > 0)
 
     transformer = Winsorizer(
         tail="right", capping_method="quantiles", fold=0.1, add_indicators=True
     )
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 2 * df_normal_dist.shape[1]
-    assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
+    assert np.all(X.iloc[:, df_normal_dist.shape[1] :].sum(axis=0) > 0)
 
 
 def test_indicators_filter_variables(df_vartypes):
@@ -363,3 +363,9 @@ def test_get_feature_names_out(df_na):
     out = ["Age_left", "Age_right", "Marks_left", "Marks_right"]
     assert tr.get_feature_names_out() == original_features + out
     assert tr.get_feature_names_out(original_features) == original_features + out
+
+
+def test_low_variation(df_normal_dist):
+    transformer = Winsorizer(capping_method="mad")
+    with pytest.raises(ValueError):
+        transformer.fit(df_normal_dist // 10)
