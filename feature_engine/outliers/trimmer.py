@@ -81,7 +81,8 @@ class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
     {n_features_in_}
 
     fold_:
-        The multiplier calculated during fit stage and used in transformation stage.
+        Factor multiplying the std, mad, iqr or alternative the percentile. Only
+        different from `fold` when `fold="auto".
 
     Methods
     -------
