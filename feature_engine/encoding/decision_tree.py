@@ -35,9 +35,7 @@ from feature_engine.tags import _return_tags
 
 _unseen_docstring = (
     _unseen_docstring
-    + """ If `'encode'` unseen categories will be encoded
-        with fill_value param, that must be a numeric value.
-        """
+    + """ If `'encode'` unseen categories will be encoded as `fill_value`."""
 )
 
 
@@ -128,7 +126,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     {unseen}
 
     fill_value: float, default=None
-        The value used to replace unseen categories. Only used when `unseen=encode`.
+        The value used to encode unseen categories. Only used when `unseen='encode'`.
 
     Attributes
     ----------
