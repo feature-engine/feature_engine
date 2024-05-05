@@ -276,13 +276,6 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         variables_ = self._check_or_select_variables(X)
         _check_contains_na(X, variables_)
 
-        # dictionary of categories and seen values
-        if self.unseen != "raise":
-            self._categories = {}
-            for var in variables_:
-                categories = X[var].unique()
-                self._categories.update({var: categories})
-
         param_grid = self._assign_param_grid()
 
         # initialize categorical encoder
@@ -291,7 +284,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             variables=variables_,
             missing_values="raise",
             ignore_format=self.ignore_format,
-            unseen=self.unseen,
+            unseen="raise",
         )
 
         # initialize decision tree discretiser
