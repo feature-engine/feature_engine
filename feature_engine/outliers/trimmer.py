@@ -93,6 +93,22 @@ class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
     transform_x_y:
         Remove rows with outliers from X set and y.
 
+    References
+    ----------
+    .. [1] Rousseeuw, Croux. "Alternatives to the mean absolute deviation". Journal of
+       the American Statistical Association, 1993. http://www.jstor.org/stable/2291267 .
+
+    .. [2] Leys, et. al. "Do not use standard deviation around the mean, use absolute
+       deviation around the median". Journal of Experimental Social Psychology, 2013.
+       http://dx.doi.org/10.1016/j.jesp.2013.03.013.
+
+    .. [3] Thériault, et. al. Check your outliers! An introduction to identifying
+       statistical outliers in R with easystats. Behavior Research Methods, 2024.
+       https://doi.org/10.3758/s13428-024-02356-w
+
+    .. [4] Dixon. Simplified Estimation from Censored Normal Samples. The Annals of
+       Mathematical Statistics, 1960. http://www.jstor.org/stable/2237953
+
     Examples
     --------
 
