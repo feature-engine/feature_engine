@@ -57,21 +57,18 @@ def test_init_param_assignment(params):
     )
 
 
-def test_encoding_method_param(df_enc):
-    # defaults
+# fit attributes
+def test_encoding_dictionary(df_enc):
     encoder = DecisionTreeEncoder(regression=False)
-    encoder.fit(df_enc, df_enc["target"])
-    assert encoder.encoder_[0].encoding_method == "arbitrary"
-
-    # ordered encoding
-    encoder = DecisionTreeEncoder(encoding_method="ordered", regression=False)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    assert encoder.encoder_[0].encoding_method == "ordered"
 
-    # incorrect input
-    with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder(encoding_method="other", regression=False)
-        encoder.fit(df_enc, df_enc["target"])
+    # Tree: var_A <= 1.5 -> 0.25 else 0.5
+    # Tree: var_B <= 0.5 -> 0.2 else 0.4
+    expected_encodings = {
+        "var_A": {"A": 0.25, "B": 0.25, "C": 0.5},
+        "var_B": {"A": 0.2, "B": 0.4, "C": 0.4}
+    }
+    assert encoder.encoder_dict_ == expected_encodings
 
 
 def test_classification(df_enc):
@@ -217,149 +214,65 @@ def test_assigns_param_grid(grid):
         assert encoder._assign_param_grid() == grid
 
 
-def test_fit_no_errors_if_new_cat_values_and_unseen_is_encode_param(df_enc):
-
+def test_unseen_is_encode(df_enc):
     encoder = DecisionTreeEncoder(unseen="encode", regression=False, fill_value=-1)
-
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    X_unseen_values_1 = pd.DataFrame(
+
+    X_unseen_input = pd.DataFrame(
         {
-            "var_A": ["ZZZ", "YYY"],
-            "var_B": ["YYY", "ZZZ"],
-        }
-    )
-    X_unseen_values_2 = pd.DataFrame(
-        {
-            "var_A": ["XXX", -1],
-            "var_B": ["WWW", -1],
+            "var_A": ["A", "ZZZ", "YYY"],
+            "var_B": ["C", "YYY", "ZZZ"],
         }
     )
 
-    transf_unseen_1 = encoder.transform(X_unseen_values_1)
-    transf_unseen_2 = encoder.transform(X_unseen_values_2)
-    # unseen categories must be encoded in the same way
-    pd.testing.assert_frame_equal(transf_unseen_1, transf_unseen_2)
+    X_unseen_output = pd.DataFrame(
+        {
+            "var_A": [0.25, -1, -1],
+            "var_B": [0.4, -1, -1],
+        }
+    )
+
+    Xt = encoder.transform(X_unseen_input)
+    pd.testing.assert_frame_equal(Xt, X_unseen_output)
 
 
-def test_unseen_param(df_enc):
-    # defaults
-    encoder = DecisionTreeEncoder(regression=False)
-    encoder.fit(df_enc, df_enc["target"])
-    assert encoder.encoder_[0].unseen == "ignore"
-
-    # ignore
+def test_unseen_is_ignore(df_enc):
     encoder = DecisionTreeEncoder(unseen="ignore", regression=False)
-    encoder.fit(df_enc, df_enc["target"])
-    assert encoder.encoder_[0].unseen == "ignore"
-
-    # raise unseen
-    encoder = DecisionTreeEncoder(unseen="raise", regression=False)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    assert encoder.encoder_[0].unseen == "raise"
 
-    # encode unseen
-    encoder = DecisionTreeEncoder(unseen="encode", regression=False, fill_value=-1)
-    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    assert encoder.encoder_[0].unseen == "encode"
+    X_unseen_input = pd.DataFrame(
+        {
+            "var_A": ["A", "ZZZ", "YYY"],
+            "var_B": ["C", "YYY", "ZZZ"],
+        }
+    )
 
-    # incorrect input
-    with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder(regression=False, unseen="wrong_text")
-        encoder.fit(df_enc, df_enc["target"])
+    X_unseen_output = pd.DataFrame(
+        {
+            "var_A": [0.25, np.nan, np.nan],
+            "var_B": [0.4, np.nan, np.nan],
+        }
+    )
 
-
-def test_error_fill_value_param(df_enc):
-    # fill_value not defined
-    with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder(unseen="encode", regression=False)
-        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-
-    # np.nan
-    with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder(
-            unseen="encode", regression=False, fill_value=np.nan
-        )
-        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-
-    # None
-    with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder(
-            unseen="encode", regression=False, fill_value=None
-        )
-        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+    Xt = encoder.transform(X_unseen_input)
+    pd.testing.assert_frame_equal(Xt, X_unseen_output)
 
 
 def test_fit_errors_if_new_cat_values_and_unseen_is_raise_param(df_enc):
     encoder = DecisionTreeEncoder(unseen="raise", regression=False)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    X_unseen_values = pd.DataFrame(
+    X = pd.DataFrame(
         {
-            "var_A": ["ZZZ", "YYY"],
-            "var_B": ["YYY", "ZZZ"],
+            "var_A": ["A", "ZZZ", "YYY"],
+            "var_B": ["C", "YYY", "ZZZ"],
         }
     )
     # new categories will raise an error
-    with pytest.raises(ValueError):
-        encoder.transform(X_unseen_values)
-
-
-def test_if_new_cat_values_and_unseen_is_ignore_param(df_enc):
-    encoder = DecisionTreeEncoder(unseen="ignore", regression=False)
-    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    X_unseen_values = pd.DataFrame(
-        {
-            "var_A": ["ZZZ", "YYY"],
-            "var_B": ["YYY", "ZZZ"],
-        }
+    with pytest.raises(ValueError) as record:
+        encoder.transform(X)
+    var_ls = "var_A, var_B"
+    msg = (
+        "During the encoding, NaN values were introduced in the feature(s) "
+        f"{var_ls}."
     )
-
-    unseen_transformed = encoder.transform(X_unseen_values)
-    none_unseen = pd.DataFrame(
-        np.nan, columns=X_unseen_values.columns, index=X_unseen_values.index
-    )
-    pd.testing.assert_frame_equal(unseen_transformed, none_unseen, check_dtype=False)
-
-
-def test_unseen_for_regression_and_numeric_categories(df_enc_numeric):
-    random = np.random.RandomState(42)
-    y = random.normal(0, 0.1, len(df_enc_numeric))
-
-    # pick a value we have in the dataset
-    fill_value = df_enc_numeric["var_A"].tolist()[0]
-    # pick unseen value
-    unseen_value = -100
-
-    encoder = DecisionTreeEncoder(
-        regression=True,
-        random_state=random,
-        unseen="encode",
-        fill_value=fill_value,
-        ignore_format=True,
-        variables=["var_A", "var_B"],
-    )
-    encoder.fit(df_enc_numeric[["var_A", "var_B"]], y)
-
-    num_encode = pd.concat(
-        [
-            df_enc_numeric[["var_A", "var_B"]],
-            pd.DataFrame(
-                {
-                    "var_A": [
-                        unseen_value,
-                        unseen_value,
-                        df_enc_numeric["var_A"].tolist()[0],
-                    ],
-                    "var_B": [
-                        unseen_value,
-                        df_enc_numeric["var_B"].tolist()[0],
-                        unseen_value,
-                    ],
-                }
-            ),
-        ]
-    )
-
-    X = encoder.transform(num_encode)
-    mask_unseen = num_encode == unseen_value
-    X_fill_values = X.mask(mask_unseen, other=fill_value)
-    assert (X).equals(X_fill_values)
+    assert str(record.value) == msg

@@ -3,7 +3,6 @@
 
 from typing import List, Optional, Union
 
-import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
@@ -50,13 +49,13 @@ _unseen_docstring = (
 )
 class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
-    The DecisionTreeEncoder() encodes categorical variables with predictions
+    The DecisionTreeEncoder() encodes categorical variables with the predictions
     of a decision tree.
 
-    The encoder first fits a decision tree using a single feature and the target (fit),
-    and then replaces the values of the original feature by the predictions of the
-    tree (transform). The transformer will train a decision tree per every feature to
-    encode.
+    The encoder fits a single feature decision tree to predict the target, and
+    with that, it creates mappings from category to prediction value. Then, it uses
+    these mappings to replace the categories of the feature. The encopder trains a
+    decision tree per feature to encode.
 
     The DecisionTreeEncoder() will encode only categorical variables by default
     (type 'object' or 'categorical'). You can pass a list of variables to encode or the
@@ -130,8 +129,8 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     Attributes
     ----------
-    encoder_:
-        sklearn Pipeline containing the ordinal encoder and the decision tree.
+    encoder_dict_:
+        Dictionary with the prediction per category, per variable.
 
     {variables_}
 
@@ -153,12 +152,8 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     -----
     The authors designed this method originally to work with numerical variables. We
     can replace numerical variables by the predictions of a decision tree utilising the
-    DecisionTreeDiscretiser(). Here we extend this functionality to work also with
+    DecisionTreeDiscretiser(). Here, we extend this functionality to work also with
     categorical variables.
-
-    NAN are introduced when encoding categories that were not present in the training
-    dataset. If this happens, try grouping infrequent categories using the
-    RareLabelEncoder().
 
     See Also
     --------
@@ -278,22 +273,14 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         param_grid = self._assign_param_grid()
 
-        # initialize categorical encoder
-        if self.unseen == "raise":
-            unseen = "raise"
-        else:
-            unseen = "encode"
-
-        cat_encoder = OrdinalEncoder(
+        encoder = OrdinalEncoder(
             encoding_method=self.encoding_method,
             variables=variables_,
             missing_values="raise",
             ignore_format=self.ignore_format,
-            unseen=unseen,
         )
 
-        # initialize decision tree discretiser
-        tree_discretiser = DecisionTreeDiscretiser(
+        tree = DecisionTreeDiscretiser(
             cv=self.cv,
             scoring=self.scoring,
             variables=variables_,
@@ -303,16 +290,23 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         )
 
         # pipeline for the encoder
-        encoder_ = Pipeline(
+        pipe = Pipeline(
             [
-                ("categorical_encoder", cat_encoder),
-                ("tree_discretiser", tree_discretiser),
+                ("encoder", encoder),
+                ("tree", tree),
             ]
         )
 
-        encoder_.fit(X, y)
+        Xt = pipe.fit_transform(X, y)
 
-        self.encoder_ = encoder_
+        encoder_ = {}
+        for var in variables_:
+            encoder_[var] = dict(zip(X[var], Xt[var]))
+
+        if self.unseen == "encode":
+            self._unseen = self.fill_value
+
+        self.encoder_dict_ = encoder_
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
@@ -333,31 +327,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
         X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
-
-        Xt = self.encoder_.transform(X)
-
-        # TODO: improve this logic
-        # Actually, this needs to go in a separate hidden method so we can test it
-        # independently.
-        if self.unseen != "raise":
-            # make a mask for unseen categories
-            # replace unseen with a seen value - later it will be replaced
-            cat_dict = self.encoder_.named_steps["categorical_encode"].encoding_dict_
-            mask_unseen = ~X.apply(
-                lambda x: (
-                    x.isin(cat_dict[x.name])
-                    if x.name in list(cat_dict.keys())
-                    else True
-                )
-            )
-            for col, values in self._categories.items():
-                X.loc[mask_unseen[col], [col]] = values[0]
-        # up to here in hidden method
-
-            if self.unseen == "encode":
-                X = X.mask(mask_unseen, other=self.fill_value)
-            if self.unseen == "ignore":
-                X = X.mask(mask_unseen, other=np.nan)
+        X = self._encode(X)
 
         return X
 
