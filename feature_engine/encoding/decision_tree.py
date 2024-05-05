@@ -6,14 +6,16 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
-from sklearn.utils.multiclass import (check_classification_targets,
-                                      type_of_target)
+from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring, _n_features_in_docstring,
-    _variables_attribute_docstring)
-from feature_engine._docstrings.init_parameters.all_trasnformers import \
-    _variables_categorical_docstring
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
+)
+from feature_engine._docstrings.init_parameters.all_trasnformers import (
+    _variables_categorical_docstring,
+)
 from feature_engine._docstrings.init_parameters.encoders import (
     _ignore_format_docstring,
     _unseen_docstring,
@@ -23,8 +25,10 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X_y
 from feature_engine.discretisation import DecisionTreeDiscretiser
 from feature_engine.encoding._helper_functions import check_parameter_unseen
-from feature_engine.encoding.base_encoder import (CategoricalInitMixin,
-                                                  CategoricalMethodsMixin)
+from feature_engine.encoding.base_encoder import (
+    CategoricalInitMixin,
+    CategoricalMethodsMixin,
+)
 from feature_engine.encoding.ordinal import OrdinalEncoder
 from feature_engine.tags import _return_tags
 
@@ -215,11 +219,13 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         ignore_format: bool = False,
         unseen: str = "ignore",
         fill_value: Optional[float] = None,
-
     ) -> None:
 
-        if unseen == "encode" and (fill_value is None or np.isnan(fill_value) or
-                                   not isinstance(fill_value, (int, float))):
+        if unseen == "encode" and (
+            fill_value is None
+            or np.isnan(fill_value)
+            or not isinstance(fill_value, (int, float))
+        ):
             raise ValueError(
                 "If unseen is encode fill_value takes only numeric values"
                 f"Got {fill_value} instead"
@@ -272,9 +278,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             self._categories = {}
             for var in variables_:
                 categories = X[var].unique()
-                self._categories.update({
-                    var: categories
-                })
+                self._categories.update({var: categories})
 
         param_grid = self._assign_param_grid()
 
@@ -332,14 +336,12 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         if self.unseen != "raise":
             # replace unseen with a seen value - later it will be replaced
             mask_unseen = ~X.apply(
-                lambda x: x.isin(
-                    self._categories[x.name]
-                    )
-                if x.name in list(
-                        self._categories.keys()
-                        )
-                else True
+                lambda x: (
+                    x.isin(self._categories[x.name])
+                    if x.name in list(self._categories.keys())
+                    else True
                 )
+            )
             for col, values in self._categories.items():
                 X.loc[mask_unseen[col], [col]] = values[0]
 
