@@ -219,14 +219,19 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         fill_value: Optional[float] = None,
     ) -> None:
 
+        if encoding_method not in ["ordered", "arbitrary"]:
+            raise ValueError(
+                "`encoding_method` takes only values 'ordered' and 'arbitrary'."
+                f" Got {encoding_method} instead."
+            )
+
         if unseen == "encode" and (
             fill_value is None
-            or np.isnan(fill_value)
             or not isinstance(fill_value, (int, float))
         ):
             raise ValueError(
-                "If unseen is encode fill_value takes only numeric values"
-                f"Got {fill_value} instead"
+                "When `unseen='encode'` you need to pass a number to `fill_value`. "
+                f"Got {fill_value} instead."
             )
 
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
