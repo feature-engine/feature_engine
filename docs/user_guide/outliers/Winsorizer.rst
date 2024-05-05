@@ -114,18 +114,23 @@ coincide with the values observed in the attribute `right_tail_caps_`:
     age      67.739512
     dtype: float64
 
-Word on multipliers (param `fold`)
-----------------------------------
+Setting up the stringency (param `fold`)
+----------------------------------------
 
-By default, :class:`Winsorizer()` will use a heuristic to automatically choose the value of the multiplier based on
-the `capping_method` parameter. The values will be set as follows:
+By default, :class:`Winsorizer()` automatically determines the parameter `fold` based
+on the chosen `capping_method`. This parameter determines the multiplier for standard
+deviation, interquartile range (IQR), or Median Absolute Deviation (MAD), or
+sets the percentile at which to cap the variables.
 
-- 'gaussian': `fold` will be set to 3.0;
-- 'iqr': `fold` will be set to 1.5;
-- 'mad': `fold` will be set to 3.29;
-- 'percentiles': `fold` will be set to 0.05.
+The default values for fold are as follows:
 
-You can adjust the multiplier manually by setting the `fold` parameter to the value that will suit your task.
+- 'gaussian': `fold` is set to 3.0;
+- 'iqr': `fold` is set to 1.5;
+- 'mad': `fold` is set to 3.29;
+- 'percentiles': `fold` is set to 0.05.
+
+You can manually adjust the `fold` value to make the outlier detection process more or less
+conservative, thus customizing the extent of outlier capping.
 
 Additional resources
 --------------------
