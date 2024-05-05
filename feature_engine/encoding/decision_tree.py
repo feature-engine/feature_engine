@@ -334,23 +334,30 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
 
+        Xt = self.encoder_.transform(X)
+
+        # TODO: improve this logic
+        # Actually, this needs to go in a separate hidden method so we can test it
+        # independently.
         if self.unseen != "raise":
+            # make a mask for unseen categories
             # replace unseen with a seen value - later it will be replaced
+            cat_dict = self.encoder_.named_steps["categorical_encode"].encoding_dict_
             mask_unseen = ~X.apply(
                 lambda x: (
-                    x.isin(self._categories[x.name])
-                    if x.name in list(self._categories.keys())
+                    x.isin(cat_dict[x.name])
+                    if x.name in list(cat_dict.keys())
                     else True
                 )
             )
             for col, values in self._categories.items():
                 X.loc[mask_unseen[col], [col]] = values[0]
+        # up to here in hidden method
 
-        X = self.encoder_.transform(X)
-        if self.unseen == "encode":
-            X = X.mask(mask_unseen, other=self.fill_value)
-        if self.unseen == "ignore":
-            X = X.mask(mask_unseen, other=np.nan)
+            if self.unseen == "encode":
+                X = X.mask(mask_unseen, other=self.fill_value)
+            if self.unseen == "ignore":
+                X = X.mask(mask_unseen, other=np.nan)
 
         return X
 
