@@ -589,6 +589,7 @@ We see the resulting sizes here:
 
     ((393, 8), (317, 76))
 
+
 Setting up the stringency (param `fold`)
 ----------------------------------------
 
