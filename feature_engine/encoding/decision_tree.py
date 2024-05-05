@@ -279,12 +279,17 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         param_grid = self._assign_param_grid()
 
         # initialize categorical encoder
+        if self.unseen == "raise":
+            unseen = "raise"
+        else:
+            unseen = "encode"
+
         cat_encoder = OrdinalEncoder(
             encoding_method=self.encoding_method,
             variables=variables_,
             missing_values="raise",
             ignore_format=self.ignore_format,
-            unseen="raise",
+            unseen=unseen,
         )
 
         # initialize decision tree discretiser
