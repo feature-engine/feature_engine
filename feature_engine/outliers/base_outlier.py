@@ -225,7 +225,7 @@ class WinsorizerBase(BaseOutlier):
         self.left_tail_caps_ = {}
 
         if self.fold == "auto":
-            self.fold_ = self._calculate_auto_fold()
+            self.fold_ = self._calculate_fold()
         else:
             self.fold_ = self.fold
 
@@ -275,7 +275,7 @@ class WinsorizerBase(BaseOutlier):
 
         return self
 
-    def _calculate_auto_fold(self) -> float:
+    def _calculate_fold(self) -> float:
         if self.capping_method == "quantiles":
             return 0.05
         elif self.capping_method == "iqr":
