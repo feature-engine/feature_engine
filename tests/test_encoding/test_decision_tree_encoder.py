@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from sklearn.exceptions import NotFittedError
+
 from feature_engine.encoding import DecisionTreeEncoder
 
 
@@ -40,14 +42,9 @@ def test_error_if_unseen_is_encode_and_fill_value_is_none():
     str(record.value) == msg
 
 
-@pytest.mark.parametrize(
-    "precision", ["string", 0.1, -1, np.nan]
-)
+@pytest.mark.parametrize("precision", ["string", 0.1, -1, np.nan])
 def test_error_if_precision_gets_not_permitted_value(precision):
-    msg = (
-        "Parameter `precision` takes integers or None. "
-        f"Got {precision} instead."
-    )
+    msg = "Parameter `precision` takes integers or None. " f"Got {precision} instead."
     with pytest.raises(ValueError) as record:
         DecisionTreeEncoder(precision=precision)
     str(record.value) == msg
@@ -57,8 +54,8 @@ def test_error_if_precision_gets_not_permitted_value(precision):
     "params",
     [
         ("arbitrary", True, 1, "raise", None),
-        ("ordered", False, 2,"ignore", 1),
-        ("ordered", False, None,"encode", 0.1),
+        ("ordered", False, 2, "ignore", 1),
+        ("ordered", False, None, "encode", 0.1),
     ],
 )
 def test_init_param_assignment(params):
@@ -80,7 +77,7 @@ def test_encoding_dictionary(df_enc):
     # Tree: var_B <= 0.5 -> 0.2 else 0.4
     expected_encodings = {
         "var_A": {"A": 0.25, "B": 0.25, "C": 0.5},
-        "var_B": {"A": 0.2, "B": 0.4, "C": 0.4}
+        "var_B": {"A": 0.2, "B": 0.4, "C": 0.4},
     }
     assert encoder.encoder_dict_ == expected_encodings
 
@@ -93,7 +90,7 @@ def test_precision(df_enc):
     # Tree: var_B <= 0.5 -> 0.2 else 0.4
     expected_encodings = {
         "var_A": {"A": 0.2, "B": 0.2, "C": 0.5},
-        "var_B": {"A": 0.2, "B": 0.4, "C": 0.4}
+        "var_B": {"A": 0.2, "B": 0.4, "C": 0.4},
     }
     assert encoder.encoder_dict_ == expected_encodings
 
@@ -219,16 +216,6 @@ def test_error_when_regression_is_false_and_target_is_continuous(df_enc):
         encoder.fit(df_enc[["var_A", "var_B"]], y)
 
 
-def test_inverse_transform_raises_not_implemented_error(df_enc):
-    random = np.random.RandomState(42)
-    y = random.normal(0, 10, len(df_enc))
-    encoder = DecisionTreeEncoder(regression=True).fit(df_enc[["var_A", "var_B"]], y)
-    with pytest.raises(NotImplementedError) as record:
-        encoder.inverse_transform(df_enc[["var_A", "var_B"]])
-    msg = "inverse_transform is not implemented for this transformer."
-    assert str(record.value) == msg
-
-
 @pytest.mark.parametrize(
     "grid",
     [None, {"max_depth": [1, 2, 3]}, {"max_depth": [1, 2], "estimators": [10, 12]}],
@@ -303,3 +290,55 @@ def test_fit_errors_if_new_cat_values_and_unseen_is_raise_param(df_enc):
         f"{var_ls}."
     )
     assert str(record.value) == msg
+
+
+def test_inverse_transform_when_no_unseen():
+    X = pd.DataFrame({"words": ["dog", "dog", "dog", "cat", "cat", "cat", "bird"]})
+    y = pd.Series([0, 0, 1, 1, 1, 1, 0])
+    enc = DecisionTreeEncoder(regression=False)
+    enc.fit(X, y)
+    dft = enc.transform(X)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), X)
+
+
+def test_inverse_transform_when_ignore_unseen():
+    X = pd.DataFrame({"words": ["dog", "dog", "dog", "cat", "cat", "cat", "bird"]})
+    y = pd.Series([0, 0, 1, 1, 1, 1, 0])
+    enc = DecisionTreeEncoder(regression=False, unseen="ignore")
+    enc.fit(X, y)
+
+    df1 = pd.DataFrame({"words": ["dog", "dog", "dog", "cat", "cat", "cat", "frog"]})
+    df2 = pd.DataFrame({"words": ["dog", "dog", "dog", "cat", "cat", "cat", np.nan]})
+    dft = enc.transform(df1)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df2)
+
+
+def test_inverse_transform_when_encode_unseen():
+    X = pd.DataFrame({"words": ["dog", "dog", "dog", "cat", "cat", "cat", "bird"]})
+    y = pd.Series([0, 0, 1, 1, 1, 1, 0])
+    enc = DecisionTreeEncoder(regression=False, unseen="encode", fill_value=1000)
+    enc.fit(X, y)
+
+    df1 = pd.DataFrame({"words": ["dog", "dog", "dog", "cat", "cat", "cat", "frog"]})
+    df2 = pd.DataFrame({"words": ["dog", "dog", "dog", "cat", "cat", "cat", np.nan]})
+    dft = enc.transform(df1)
+    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df2)
+
+
+def test_inverse_transform_raises_non_fitted_error():
+    X = pd.DataFrame({"words": ["dog", "dog", "dog", "cat", "cat", "cat", "bird"]})
+    y = pd.Series([0, 0, 1, 1, 1, 1, 0])
+    enc = DecisionTreeEncoder()
+
+    # Test when fit is not called prior to transform.
+    with pytest.raises(NotFittedError):
+        enc.inverse_transform(X)
+
+    X.loc[len(X) - 1] = np.nan
+
+    with pytest.raises(ValueError):
+        enc.fit(X, y)
+
+    # Test when fit is not called prior to transform.
+    with pytest.raises(NotFittedError):
+        enc.inverse_transform(X)

@@ -20,7 +20,10 @@ from feature_engine._docstrings.init_parameters.encoders import (
     _ignore_format_docstring,
     _unseen_docstring,
 )
-from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+    _inverse_transform_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X_y
 from feature_engine.discretisation import DecisionTreeDiscretiser
@@ -47,6 +50,7 @@ _unseen_docstring = (
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
+    inverse_transform=_inverse_transform_docstring,
 )
 class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
@@ -150,6 +154,8 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     {fit_transform}
 
+    {inverse_transform}
+
     transform:
         Replace categorical variable by the predictions of the decision tree.
 
@@ -227,15 +233,14 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             )
 
         if unseen == "encode" and (
-            fill_value is None
-            or not isinstance(fill_value, (int, float))
+            fill_value is None or not isinstance(fill_value, (int, float))
         ):
             raise ValueError(
                 "When `unseen='encode'` you need to pass a number to `fill_value`. "
                 f"Got {fill_value} instead."
             )
 
-        if precision is not None and (not isinstance(precision, int) or precision<0):
+        if precision is not None and (not isinstance(precision, int) or precision < 0):
             raise ValueError(
                 "Parameter `precision` takes integers or None. "
                 f"Got {precision} instead."
@@ -320,7 +325,6 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
             for var in variables_:
                 encoder_[var] = dict(zip(X[var], np.round(Xt[var], self.precision)))
 
-
         if self.unseen == "encode":
             self._unseen = self.fill_value
 
@@ -348,12 +352,6 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         X = self._encode(X)
 
         return X
-
-    def inverse_transform(self, X: pd.DataFrame):
-        """inverse_transform is not implemented for this transformer."""
-        raise NotImplementedError(
-            "inverse_transform is not implemented for this transformer."
-        )
 
     def _assign_param_grid(self):
         if self.param_grid:
