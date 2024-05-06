@@ -5,21 +5,70 @@ import pytest
 from feature_engine.encoding import DecisionTreeEncoder
 
 
-def test_encoding_method_param(df_enc):
-    # defaults
+# init parameters
+@pytest.mark.parametrize("enc_method", ["count", False, 1])
+def test_error_if_encoding_method_not_permitted_value(enc_method):
+    msg = (
+        "`encoding_method` takes only values 'ordered' and 'arbitrary'."
+        f" Got {enc_method} instead."
+    )
+    with pytest.raises(ValueError) as record:
+        DecisionTreeEncoder(encoding_method=enc_method)
+    assert str(record.value) == msg
+
+
+@pytest.mark.parametrize(
+    "unseen", ["string", False, ("raise", "ignore"), ["ignore"], np.nan]
+)
+def test_error_if_unseen_gets_not_permitted_value(unseen):
+    msg = (
+        'Parameter `unseen` takes only values "ignore", "raise", "encode". '
+        f"Got {unseen} instead."
+    )
+    with pytest.raises(ValueError) as record:
+        DecisionTreeEncoder(unseen=unseen)
+    str(record.value) == msg
+
+
+def test_error_if_unseen_is_encode_and_fill_value_is_none():
+    msg = (
+        "When `unseen='encode'` you need to pass a number to `fill_value`. "
+        f"Got {None} instead."
+    )
+    with pytest.raises(ValueError) as record:
+        DecisionTreeEncoder(unseen="encode", fill_value=None)
+    str(record.value) == msg
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        ("arbitrary", True, "raise", None),
+        ("ordered", False, "ignore", 1),
+        ("ordered", False, "encode", 0.1),
+    ],
+)
+def test_init_param_assignment(params):
+    DecisionTreeEncoder(
+        encoding_method=params[0],
+        ignore_format=params[1],
+        unseen=params[2],
+        fill_value=params[3],
+    )
+
+
+# fit attributes
+def test_encoding_dictionary(df_enc):
     encoder = DecisionTreeEncoder(regression=False)
-    encoder.fit(df_enc, df_enc["target"])
-    assert encoder.encoder_[0].encoding_method == "arbitrary"
-
-    # ordered encoding
-    encoder = DecisionTreeEncoder(encoding_method="ordered", regression=False)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    assert encoder.encoder_[0].encoding_method == "ordered"
 
-    # incorrect input
-    with pytest.raises(ValueError):
-        encoder = DecisionTreeEncoder(encoding_method="other", regression=False)
-        encoder.fit(df_enc, df_enc["target"])
+    # Tree: var_A <= 1.5 -> 0.25 else 0.5
+    # Tree: var_B <= 0.5 -> 0.2 else 0.4
+    expected_encodings = {
+        "var_A": {"A": 0.25, "B": 0.25, "C": 0.5},
+        "var_B": {"A": 0.2, "B": 0.4, "C": 0.4}
+    }
+    assert encoder.encoder_dict_ == expected_encodings
 
 
 def test_classification(df_enc):
@@ -163,3 +212,67 @@ def test_assigns_param_grid(grid):
         assert encoder._assign_param_grid() == {"max_depth": [1, 2, 3, 4]}
     else:
         assert encoder._assign_param_grid() == grid
+
+
+def test_unseen_is_encode(df_enc):
+    encoder = DecisionTreeEncoder(unseen="encode", regression=False, fill_value=-1)
+    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+
+    X_unseen_input = pd.DataFrame(
+        {
+            "var_A": ["A", "ZZZ", "YYY"],
+            "var_B": ["C", "YYY", "ZZZ"],
+        }
+    )
+
+    X_unseen_output = pd.DataFrame(
+        {
+            "var_A": [0.25, -1, -1],
+            "var_B": [0.4, -1, -1],
+        }
+    )
+
+    Xt = encoder.transform(X_unseen_input)
+    pd.testing.assert_frame_equal(Xt, X_unseen_output)
+
+
+def test_unseen_is_ignore(df_enc):
+    encoder = DecisionTreeEncoder(unseen="ignore", regression=False)
+    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+
+    X_unseen_input = pd.DataFrame(
+        {
+            "var_A": ["A", "ZZZ", "YYY"],
+            "var_B": ["C", "YYY", "ZZZ"],
+        }
+    )
+
+    X_unseen_output = pd.DataFrame(
+        {
+            "var_A": [0.25, np.nan, np.nan],
+            "var_B": [0.4, np.nan, np.nan],
+        }
+    )
+
+    Xt = encoder.transform(X_unseen_input)
+    pd.testing.assert_frame_equal(Xt, X_unseen_output)
+
+
+def test_fit_errors_if_new_cat_values_and_unseen_is_raise_param(df_enc):
+    encoder = DecisionTreeEncoder(unseen="raise", regression=False)
+    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+    X = pd.DataFrame(
+        {
+            "var_A": ["A", "ZZZ", "YYY"],
+            "var_B": ["C", "YYY", "ZZZ"],
+        }
+    )
+    # new categories will raise an error
+    with pytest.raises(ValueError) as record:
+        encoder.transform(X)
+    var_ls = "var_A, var_B"
+    msg = (
+        "During the encoding, NaN values were introduced in the feature(s) "
+        f"{var_ls}."
+    )
+    assert str(record.value) == msg

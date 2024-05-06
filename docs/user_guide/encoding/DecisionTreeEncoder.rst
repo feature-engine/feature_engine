@@ -5,26 +5,60 @@
 DecisionTreeEncoder
 ===================
 
+Categorical encoding is the process of transforming the strings of categorical features
+into numbers. Common procedures replace categories with ordinal numbers, counts or
+frequencies, or with the target mean value.
+
+We can also replace the categories with the predictions made by a decision tree based
+on that category value.
+
+The process consists in fitting a decision tree using a single feature to predict the
+target. The decision tree will try to find a relationship between these variables, if
+it exists, and then, we'd use the predictions as mappings to replace the categories.
+
+The advantage of these procedure is that it captures some information about the relationship
+between the variables during the encoding. And if there is a relationship between the
+categorical feature and the target, the resulting encoded variable would have a monotonic
+relationship with the target, which can be useful for linear models.
+
+On the downside, it could cause overfitting and it adds computational complexity to the
+pipeline, because we are fitting a tree per feature. If you plan to encode your features
+with decision trees, make sure you have appropriate validation strategies, and train the
+decision trees with regularization.
+
+DecisionTreeEncoder
+-------------------
+
 The :class:`DecisionTreeEncoder()` replaces categories in the variable with
 the predictions of a decision tree.
 
-The transformer first encodes categorical variables into numerical variables using
-:class:`OrdinalEncoder()`. You have the option to have the integers assigned to the
-categories as they appear in the variable, or ordered by the mean value of the target
-per category. You can regulate this behaviour with the parameter `encoding_method`. As
-decision trees are able to pick non-linear relationships, replacing categories by
-arbitrary numbers should be enough in practice.
+The :class:`DecisionTreeEncoder()`  uses Scikit-learn's decision trees under the hood.
+As these models can't handle non-numerical data, The :class:`DecisionTreeEncoder()` first
+replaces the categories with ordinal numbers, and then fits the trees.
+
+You have the option to encode the categorical values into integers assigned arbitrarily,
+or ordered based of the mean target value per category (for more details check the
+:class:`OrdinalEncoder()`, which is used by :class:`DecisionTreeEncoder()`under the hood).
+You can regulate this behaviour with the parameter `encoding_method`. As decision trees
+are able to pick non-linear relationships, replacing categories by arbitrary numbers
+should be enough in practice.
 
 After this, the transformer fits with this numerical variable a decision tree to predict
 the target variable. Finally, the original categorical variable is replaced by the
 predictions of the decision tree.
 
-The motivation of the :class:`DecisionTreeEncoder()` is to try and create monotonic
+In the attribute `encoding_dict_` you'll find the mappings from category to numerical
+value. The category is the original value and the numerical value is the prediction
+of the decision tree for the category.
+
+The motivation for the :class:`DecisionTreeEncoder()` is to try and create monotonic
 relationships between the categorical variables and the target.
 
-Let's look at an example using the Titanic Dataset.
+Python example
+--------------
 
-First, let's load the data and separate it into train and test:
+Let's look at an example using the Titanic Dataset. First, let's load the data and
+separate it into train and test:
 
 .. code:: python
 
@@ -78,8 +112,37 @@ tree using the roc-auc metric.
 
     encoder.fit(X_train, y_train)
 
-With `fit()` the :class:`DecisionTreeEncoder()` fits 1 decision tree per variable. Now we can go ahead and
-transform the categorical variables into numbers, using the predictions of these trees:
+With `fit()` the :class:`DecisionTreeEncoder()` fits 1 decision tree per variable. The
+mappings are stored in the `encoding_dict_`:
+
+.. code:: python
+
+    encoder.encoder_dict_
+
+In the following output we see the values that will be used to replace each category
+in each variable:
+
+.. code:: python
+
+    {'cabin': {'M': 0.30484330484330485,
+      'E': 0.6116504854368932,
+      'C': 0.6116504854368932,
+      'D': 0.6981132075471698,
+      'B': 0.6981132075471698,
+      'A': 0.6981132075471698,
+      'F': 0.6981132075471698,
+      'T': 0.0,
+      'G': 0.5},
+     'pclass': {2: 0.43617021276595747,
+      3: 0.25903614457831325,
+      1: 0.6173913043478261},
+     'embarked': {'S': 0.3389570552147239,
+      'C': 0.553072625698324,
+      'Q': 0.37349397590361444,
+      'Missing': 1.0}}
+
+Now we can go ahead and transform the categorical variables into numbers, using the
+predictions of these trees:
 
 .. code:: python
 
@@ -115,7 +178,6 @@ functionality and example plots with the encoded variables:
 
 For more details about this and other feature engineering methods check out these resources:
 
-
 .. figure::  ../../images/feml.png
    :width: 300
    :figclass: align-center
@@ -144,20 +206,6 @@ Or read our book:
    :target: https://packt.link/0ewSo
 
    Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
 
 Both our book and course are suitable for beginners and more advanced data scientists
 alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.

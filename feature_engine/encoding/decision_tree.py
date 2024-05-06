@@ -15,11 +15,15 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _variables_categorical_docstring,
 )
-from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
+from feature_engine._docstrings.init_parameters.encoders import (
+    _ignore_format_docstring,
+    _unseen_docstring,
+)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X_y
 from feature_engine.discretisation import DecisionTreeDiscretiser
+from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
@@ -28,23 +32,30 @@ from feature_engine.encoding.ordinal import OrdinalEncoder
 from feature_engine.tags import _return_tags
 
 
+_unseen_docstring = (
+    _unseen_docstring
+    + """ If `'encode'` unseen categories will be encoded as `fill_value`."""
+)
+
+
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
     variables_=_variables_attribute_docstring,
+    unseen=_unseen_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
 class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     """
-    The DecisionTreeEncoder() encodes categorical variables with predictions
+    The DecisionTreeEncoder() encodes categorical variables with the predictions
     of a decision tree.
 
-    The encoder first fits a decision tree using a single feature and the target (fit),
-    and then replaces the values of the original feature by the predictions of the
-    tree (transform). The transformer will train a decision tree per every feature to
-    encode.
+    The encoder fits a single feature decision tree to predict the target, and
+    with that, it creates mappings from category to prediction value. Then, it uses
+    these mappings to replace the categories of the feature. The encopder trains a
+    decision tree per feature to encode.
 
     The DecisionTreeEncoder() will encode only categorical variables by default
     (type 'object' or 'categorical'). You can pass a list of variables to encode or the
@@ -111,10 +122,15 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     {ignore_format}
 
+    {unseen}
+
+    fill_value: float, default=None
+        The value used to encode unseen categories. Only used when `unseen='encode'`.
+
     Attributes
     ----------
-    encoder_:
-        sklearn Pipeline containing the ordinal encoder and the decision tree.
+    encoder_dict_:
+        Dictionary with the prediction per category, per variable.
 
     {variables_}
 
@@ -136,12 +152,8 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     -----
     The authors designed this method originally to work with numerical variables. We
     can replace numerical variables by the predictions of a decision tree utilising the
-    DecisionTreeDiscretiser(). Here we extend this functionality to work also with
+    DecisionTreeDiscretiser(). Here, we extend this functionality to work also with
     categorical variables.
-
-    NAN are introduced when encoding categories that were not present in the training
-    dataset. If this happens, try grouping infrequent categories using the
-    RareLabelEncoder().
 
     See Also
     --------
@@ -198,8 +210,26 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
+        unseen: str = "ignore",
+        fill_value: Optional[float] = None,
     ) -> None:
 
+        if encoding_method not in ["ordered", "arbitrary"]:
+            raise ValueError(
+                "`encoding_method` takes only values 'ordered' and 'arbitrary'."
+                f" Got {encoding_method} instead."
+            )
+
+        if unseen == "encode" and (
+            fill_value is None
+            or not isinstance(fill_value, (int, float))
+        ):
+            raise ValueError(
+                "When `unseen='encode'` you need to pass a number to `fill_value`. "
+                f"Got {fill_value} instead."
+            )
+
+        check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
         self.cv = cv
@@ -207,6 +237,8 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self.regression = regression
         self.param_grid = param_grid
         self.random_state = random_state
+        self.unseen = unseen
+        self.fill_value = fill_value
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -241,17 +273,14 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
         param_grid = self._assign_param_grid()
 
-        # initialize categorical encoder
-        cat_encoder = OrdinalEncoder(
+        encoder = OrdinalEncoder(
             encoding_method=self.encoding_method,
             variables=variables_,
             missing_values="raise",
             ignore_format=self.ignore_format,
-            unseen="raise",
         )
 
-        # initialize decision tree discretiser
-        tree_discretiser = DecisionTreeDiscretiser(
+        tree = DecisionTreeDiscretiser(
             cv=self.cv,
             scoring=self.scoring,
             variables=variables_,
@@ -261,16 +290,23 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         )
 
         # pipeline for the encoder
-        encoder_ = Pipeline(
+        pipe = Pipeline(
             [
-                ("categorical_encoder", cat_encoder),
-                ("tree_discretiser", tree_discretiser),
+                ("encoder", encoder),
+                ("tree", tree),
             ]
         )
 
-        encoder_.fit(X, y)
+        Xt = pipe.fit_transform(X, y)
 
-        self.encoder_ = encoder_
+        encoder_ = {}
+        for var in variables_:
+            encoder_[var] = dict(zip(X[var], Xt[var]))
+
+        if self.unseen == "encode":
+            self._unseen = self.fill_value
+
+        self.encoder_dict_ = encoder_
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
@@ -291,7 +327,8 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         """
         X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
-        X = self.encoder_.transform(X)
+        X = self._encode(X)
+
         return X
 
     def inverse_transform(self, X: pd.DataFrame):
