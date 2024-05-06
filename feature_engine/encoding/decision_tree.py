@@ -3,6 +3,7 @@
 
 from typing import List, Optional, Union
 
+import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
@@ -54,7 +55,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
 
     The encoder fits a single feature decision tree to predict the target, and
     with that, it creates mappings from category to prediction value. Then, it uses
-    these mappings to replace the categories of the feature. The encopder trains a
+    these mappings to replace the categories of the feature. The encoder trains a
     decision tree per feature to encode.
 
     The DecisionTreeEncoder() will encode only categorical variables by default
@@ -121,6 +122,10 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
     {variables}
 
     {ignore_format}
+
+    precision: int, default=None
+        The precision at which to store and display the category mappings. In other
+        words, the number of decimals after the comma for the tree predictions.
 
     {unseen}
 
@@ -210,7 +215,8 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
-        unseen: str = "ignore",
+        precision: Optional[int] = None,
+        unseen: str = "raise",
         fill_value: Optional[float] = None,
     ) -> None:
 
@@ -229,6 +235,12 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
                 f"Got {fill_value} instead."
             )
 
+        if precision is not None and (not isinstance(precision, int) or precision<0):
+            raise ValueError(
+                "Parameter `precision` takes integers or None. "
+                f"Got {precision} instead."
+            )
+
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         super().__init__(variables, ignore_format)
         self.encoding_method = encoding_method
@@ -237,6 +249,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         self.regression = regression
         self.param_grid = param_grid
         self.random_state = random_state
+        self.precision = precision
         self.unseen = unseen
         self.fill_value = fill_value
 
@@ -300,8 +313,13 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         Xt = pipe.fit_transform(X, y)
 
         encoder_ = {}
-        for var in variables_:
-            encoder_[var] = dict(zip(X[var], Xt[var]))
+        if self.precision is None:
+            for var in variables_:
+                encoder_[var] = dict(zip(X[var], Xt[var]))
+        else:
+            for var in variables_:
+                encoder_[var] = dict(zip(X[var], np.round(Xt[var], self.precision)))
+
 
         if self.unseen == "encode":
             self._unseen = self.fill_value

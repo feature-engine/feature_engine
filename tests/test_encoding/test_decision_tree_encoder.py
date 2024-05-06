@@ -41,19 +41,33 @@ def test_error_if_unseen_is_encode_and_fill_value_is_none():
 
 
 @pytest.mark.parametrize(
+    "precision", ["string", 0.1, -1, np.nan]
+)
+def test_error_if_precision_gets_not_permitted_value(precision):
+    msg = (
+        "Parameter `precision` takes integers or None. "
+        f"Got {precision} instead."
+    )
+    with pytest.raises(ValueError) as record:
+        DecisionTreeEncoder(precision=precision)
+    str(record.value) == msg
+
+
+@pytest.mark.parametrize(
     "params",
     [
-        ("arbitrary", True, "raise", None),
-        ("ordered", False, "ignore", 1),
-        ("ordered", False, "encode", 0.1),
+        ("arbitrary", True, 1, "raise", None),
+        ("ordered", False, 2,"ignore", 1),
+        ("ordered", False, None,"encode", 0.1),
     ],
 )
 def test_init_param_assignment(params):
     DecisionTreeEncoder(
         encoding_method=params[0],
         ignore_format=params[1],
-        unseen=params[2],
-        fill_value=params[3],
+        precision=params[2],
+        unseen=params[3],
+        fill_value=params[4],
     )
 
 
@@ -66,6 +80,19 @@ def test_encoding_dictionary(df_enc):
     # Tree: var_B <= 0.5 -> 0.2 else 0.4
     expected_encodings = {
         "var_A": {"A": 0.25, "B": 0.25, "C": 0.5},
+        "var_B": {"A": 0.2, "B": 0.4, "C": 0.4}
+    }
+    assert encoder.encoder_dict_ == expected_encodings
+
+
+def test_precision(df_enc):
+    encoder = DecisionTreeEncoder(regression=False, precision=1)
+    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+
+    # Tree: var_A <= 1.5 -> 0.25 else 0.5
+    # Tree: var_B <= 0.5 -> 0.2 else 0.4
+    expected_encodings = {
+        "var_A": {"A": 0.2, "B": 0.2, "C": 0.5},
         "var_B": {"A": 0.2, "B": 0.4, "C": 0.4}
     }
     assert encoder.encoder_dict_ == expected_encodings
