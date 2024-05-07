@@ -279,11 +279,13 @@ def test_fit_errors_if_new_cat_values_and_unseen_is_raise_param(df_enc):
     )
     var_ls = "var_A, var_B"
     msg = (
-        f"During the encoding, NaN values were introduced in the feature\(s\) {var_ls}."
+        f"During the encoding, NaN values were introduced in the feature(s) "
+        f"{var_ls}."
     )
     # new categories will raise an error
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(ValueError) as record:
         encoder.transform(X)
+    assert str(record.value) == msg
 
 
 def test_inverse_transform_when_no_unseen():
