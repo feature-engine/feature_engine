@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -22,13 +24,12 @@ def test_error_if_encoding_method_not_permitted_value(enc_method):
     "unseen", ["string", False, ("raise", "ignore"), ["ignore"], np.nan]
 )
 def test_error_if_unseen_gets_not_permitted_value(unseen):
-    msg = (
+    msg = re.escape(
         "Parameter `unseen` takes only values ignore, raise, encode. "
-        f"Got {unseen} instead."
+        rf"Got {unseen} instead."
     )
-    with pytest.raises(ValueError) as record:
+    with pytest.raises(ValueError, match=msg):
         DecisionTreeEncoder(unseen=unseen)
-    assert str(record.value) == msg
 
 
 def test_error_if_unseen_is_encode_and_fill_value_is_none():
@@ -279,13 +280,12 @@ def test_fit_errors_if_new_cat_values_and_unseen_is_raise_param(df_enc):
     )
     var_ls = "var_A, var_B"
     msg = (
-        f"During the encoding, NaN values were introduced in the feature(s) "
-        f"{var_ls}."
+        "During the encoding, NaN values were introduced in the "
+        rf"feature\(s\) {var_ls}."
     )
     # new categories will raise an error
-    with pytest.raises(ValueError) as record:
+    with pytest.raises(ValueError, match=msg):
         encoder.transform(X)
-    assert str(record.value) == msg
 
 
 def test_inverse_transform_when_no_unseen():
