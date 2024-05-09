@@ -104,7 +104,7 @@ class DistanceFeatures(
             coordinate_columns=coordinate_columns,
         )
 
-        self.drop_original = drop_original
+        self.drop_original = self._check_drop_original(parameter=drop_original)
 
         self.variables = None
 
