@@ -82,6 +82,52 @@ def test_compute_distance_with_dropping_lat_lon_columns(
 
     assert_frame_equal(output_df, expected_df)
 
+@pytest.mark.parametrize(
+    "input_data, expected_data, output_column_name, drop_original",
+    [
+        (
+            {
+                "a_latitude": [0.0, 0.0, 46.948579],
+                "a_longitude": [0.0, 0.0, 7.436925],
+                "b_latitude": [0.0, 12.34, 59.91054],
+                "b_longitude": [0.0, 123.45, 10.752695],
+                "c_latitude": [0.0, 0.0, 46.948579],
+                "c_longitude": [0.0, 0.0, 7.436925],
+                "d_latitude": [0.0, 12.34, 59.91054],
+                "d_longitude": [0.0, 123.45, 10.752695],
+            },
+            {
+                "distance_between_a_and_b": [0.0, 13630.28, 1457.49],
+                "distance_between_c_and_d": [0.0, 13630.28, 1457.49],
+            },
+            ["distance_between_a_and_b", "distance_between_c_and_d"],
+            False,
+        )
+    ],
+)
+def test_compute_distance_multiple_coordinates(
+    input_data,
+    expected_data,
+    output_column_name,
+    drop_original,
+):
+    input_df = pd.DataFrame(input_data)
+    expected_df = pd.DataFrame(input_data | expected_data)
+
+    distance_transformer = DistanceFeatures(
+        coordinate_columns=[
+            ["a_latitude", "a_longitude", "b_latitude", "b_longitude"],
+            ["c_latitude", "c_longitude", "d_latitude", "d_longitude"],
+        ],
+        output_column_names=output_column_name,
+        drop_original=drop_original,
+    )
+
+    distance_transformer.fit(input_df)
+    output_df = distance_transformer.transform(X=input_df)
+
+    assert_frame_equal(output_df, expected_df)
+
 
 @pytest.mark.parametrize(
     "input_data, output_column_name, drop_original",
