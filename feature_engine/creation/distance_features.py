@@ -8,9 +8,6 @@ from feature_engine._base_transformers.mixins import (
     FitFromDictMixin,
     GetFeatureNamesOutMixin,
 )
-from feature_engine._check_input_parameters.check_init_input_params import (
-    _check_param_drop_original,
-)
 
 
 class DistanceFeatures(
@@ -107,10 +104,16 @@ class DistanceFeatures(
             coordinate_columns=coordinate_columns,
         )
 
-        _check_param_drop_original(drop_original=drop_original)
         self.drop_original = drop_original
 
         self.variables = None
+
+    def _check_drop_original(self, parameter: bool) -> bool:
+        if isinstance(parameter, bool) is False:
+            raise ValueError(
+                "Expected boolean value for parameter `drop_original`, "
+                f"but got {parameter} with type {type(parameter)}"
+            )
 
     def _check_coordinate_columns(
         self, columns: List[List[Union[str, int]]]
