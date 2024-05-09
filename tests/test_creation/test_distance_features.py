@@ -82,6 +82,7 @@ def test_compute_distance_with_dropping_lat_lon_columns(
 
     assert_frame_equal(output_df, expected_df)
 
+
 @pytest.mark.parametrize(
     "input_data, expected_data, output_column_name, drop_original",
     [

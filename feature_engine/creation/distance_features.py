@@ -90,7 +90,7 @@ class DistanceFeatures(
     def __init__(
         self,
         coordinate_columns: List[List[Union[str, int]]],
-        output_column_names: List[Union[str, None]] = None,
+        output_column_names: Optional[List[Union[str, None]]] = None,
         drop_original: Optional[bool] = False,
     ) -> None:
 
@@ -114,6 +114,7 @@ class DistanceFeatures(
                 "Expected boolean value for parameter `drop_original`, "
                 f"but got {parameter} with type {type(parameter)}"
             )
+        return parameter
 
     def _check_coordinate_columns(
         self, columns: List[List[Union[str, int]]]
@@ -136,9 +137,9 @@ class DistanceFeatures(
 
     def _check_output_columns_names(
         self,
-        column_name: List[Union[str, int]],
+        column_name: Optional[List[Union[str, None]]],
         coordinate_columns: List[List[Union[str, int]]],
-    ) -> List[Union[str, int]]:
+    ) -> Optional[List[Union[str, None]]]:
         if column_name is None:
             return [f"distance_{c[0]}_{c[1]}_{c[2]}_{c[3]}" for c in coordinate_columns]
         if len(column_name) != len(coordinate_columns):
