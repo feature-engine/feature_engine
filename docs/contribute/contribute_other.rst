@@ -46,8 +46,8 @@ Feature-engine.
    :target: https://github.com/sponsors/solegalli
 
 Currently, Sole and our contributors dedicate their free time voluntarily
-to advancing the project. You can help us reach a funding milestone, so that we can
-gather on a group of 2-3 contributors who will commit regular hours each week to enhance
+to advancing the project. You can help us reach a funding milestone so that we can
+gather a group of 2-3 contributors who will commit regular hours each week to enhance
 documentation and expand Feature-engine's functionality at a faster pace.
 `Your contribution <https://github.com/sponsors/solegalli>`_ will play a vital role in
 propelling Feature-engine to new heights, ensuring it remains a valuable resource for

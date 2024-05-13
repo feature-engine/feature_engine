@@ -1,6 +1,6 @@
 BSD 3-Clause License
 
-Copyright (c) 2018-2023 The Feature-engine developers.
+Copyright (c) 2018-2024 The Feature-engine developers.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
