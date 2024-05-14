@@ -15,5 +15,8 @@ def test_raises_error_when_accepted_values_not_permitted(accepted):
 def test_raises_error_when_error_not_in_accepted_values(accepted):
     with pytest.raises(ValueError) as record:
         check_parameter_unseen("zero", accepted)
-    msg = f"errors takes only values {', '.join(accepted)}." f"Got zero instead."
+    msg = (
+        f"Parameter `unseen` takes only values {', '.join(accepted)}."
+        " Got zero instead."
+    )
     assert str(record.value) == msg
