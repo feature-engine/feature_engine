@@ -95,14 +95,17 @@ def test_transform_x_t(df_normal_dist):
     assert (Xt.index == yt.index).all()
 
 
-def test_quantile_fold_default_value():
-    # test case 1: Test quantiles, with fold default = 0.05
-    transformer = OutlierTrimmer(capping_method="quantiles")
-    assert transformer.fold == 0.05
+@pytest.mark.parametrize(
+    "strings,expected",
+    [("gaussian", 3), ("iqr", 1.5), ("mad", 3.29), ("quantiles", 0.05)],
+)
+def test_auto_fold_default_value(strings, expected, df_normal_dist):
+    transformer = OutlierTrimmer(capping_method=strings, fold="auto")
+    transformer.fit(df_normal_dist)
+    assert transformer.fold_ == expected
 
 
-@pytest.mark.parametrize("strings", ["gaussian", "iqr", "mad"])
-def test_other_fold_default_value(strings):
-    # test case 2: Test gaussian, iqr, mad, with fold default = 3
-    transformer = OutlierTrimmer(capping_method=strings)
-    assert transformer.fold == 3
+def test_low_variation(df_normal_dist):
+    transformer = OutlierTrimmer(capping_method="mad")
+    with pytest.raises(ValueError):
+        transformer.fit(df_normal_dist // 10)

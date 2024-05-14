@@ -80,6 +80,10 @@ class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
 
     {n_features_in_}
 
+    fold_:
+        Factor multiplying the std, mad, iqr or alternative the percentile. Only
+        different from `fold` when `fold="auto"`.
+
     Methods
     -------
     fit:

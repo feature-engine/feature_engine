@@ -14,14 +14,18 @@ _tail_docstring = """tail: str, default='right'
         distribution. Can take 'left', 'right' or 'both'.
     """.rstrip()
 
-_fold_docstring = """fold: int or float, default=0.05 if `quantile`, or 3 otherwise.
+_fold_docstring = """fold: int, float or 'auto', default='auto'.
         The factor used to multiply the std, MAD or IQR to calculate
         the maximum or minimum allowed values.
-        Recommended values are 2 or 3 for the gaussian approximation,
+        When 'auto', `fold` is set based on the `capping_method`: \n
+         - If `capping_method='quantile'` then `'fold'` = 0.05; \n
+         - If `capping_method='gaussian'` then `'fold'` = 3.0; \n
+         - If `capping_method='mad'` then `'fold'` = 3.29; \n
+         - If `capping_method='iqr'` then `'fold'` = 1.5. \n
+        Recommended values are 2, 2.5 or 3 for the gaussian approximation,
         1.5 or 3 for the IQR proximity rule and 3 or 3.5 for MAD rule. \n
         If `capping_method='quantile'`, then `'fold'` indicates the percentile. So if
         `fold=0.05`, the limits will be the 95th and 5th percentiles. \n
-        **Note**: Outliers will be removed up to a maximum of the 20th percentiles on
-        both sides. Thus, when `capping_method='quantile'`, then `'fold'` takes values
-        between 0 and 0.20.
+        **Note**: When `capping_method='quantile'`, the maximum `fold` allowed is 0.2,
+        which will find boundaries at the 20th and 80th percentile.
     """.rstrip()

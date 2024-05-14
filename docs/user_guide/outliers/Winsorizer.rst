@@ -15,15 +15,15 @@ Gaussian limits:
 
 IQR limits:
 
-- right tail: 75th quantile + 3* IQR
-- left tail:  25th quantile - 3* IQR
+- right tail: 75th quantile + 1.5* IQR
+- left tail:  25th quantile - 1.5* IQR
 
 where IQR is the inter-quartile range: 75th quantile - 25th quantile.
 
 MAD limits:
 
-    - right tail: median + 3* MAD
-    - left tail:  median - 3* MAD
+    - right tail: median + 3.29* MAD
+    - left tail:  median - 3.29* MAD
 
 where MAD is the median absolute deviation from the median.
 
@@ -113,6 +113,24 @@ coincide with the values observed in the attribute `right_tail_caps_`:
     fare    174.703953
     age      67.739512
     dtype: float64
+
+Setting up the stringency (param `fold`)
+----------------------------------------
+
+By default, :class:`Winsorizer()` automatically determines the parameter `fold` based
+on the chosen `capping_method`. This parameter determines the multiplier for standard
+deviation, interquartile range (IQR), or Median Absolute Deviation (MAD), or
+sets the percentile at which to cap the variables.
+
+The default values for fold are as follows:
+
+- 'gaussian': `fold` is set to 3.0;
+- 'iqr': `fold` is set to 1.5;
+- 'mad': `fold` is set to 3.29;
+- 'percentiles': `fold` is set to 0.05.
+
+You can manually adjust the `fold` value to make the outlier detection process more or less
+conservative, thus customizing the extent of outlier capping.
 
 Additional resources
 --------------------
