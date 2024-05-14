@@ -118,11 +118,12 @@ Now, let's visualize the distribution of the `LotArea` variable:
 	sns.histplot(X_train['LotArea'], kde=True, bins=50)
 
 
-In the following output, we can see that the original feature distribution
- is highly right-skewed:
+In the following output, we can see that the original feature distribution is highly
+right-skewed:
 
 .. image:: ../../images/lotarea_raw.png
 
+|
 
 Finding the right lambda for the power transformation is challenging, 
 and it often requires trial an error. So let's begin by trying the default 
@@ -144,8 +145,10 @@ And here's the transformed feature distribution:
 
 .. image:: ../../images/lotarea_pt.png
 
+|
+
 It looks better, huh!? It's still right-skewed, but the variation is lower
-(let's confirm it soon).  
+(let's confirm it soon).
 Now, let's try to pass an "optimal value" for the parameter λ (exp):
 
 .. code:: python
@@ -160,10 +163,12 @@ Now, let's try to pass an "optimal value" for the parameter λ (exp):
 	sns.histplot(X_train_transformed_custom['LotArea'], kde=True, bins=50)
 
 In the following output, we can see the data now has a more Gaussian-like distribution,
- and the variance seems lower. Therefore, we can see that by using a custom lambda 
- we can transform the variable's distribution:
+and the variance seems lower. Therefore, we can see that by using a custom lambda
+we can transform the variable's distribution:
 
 .. image:: ../../images/lotarea_pt_custom_exp.png
+
+|
 
 Power transformations are expected to reshape the data distribution, reducing the 
 impact of extreme outliers and, therefore, lowering the variance.
