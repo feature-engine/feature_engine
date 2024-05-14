@@ -1,0 +1,49 @@
+Version 1.8.X
+=============
+
+
+Version 1.8.0
+-------------
+
+Deployed: XXth XX 2024
+
+Contributors
+~~~~~~~~~~~~
+
+- `Cainã Max Couto da Silva <https://github.com/cmcouto-silva>`_
+- `Gurjinder Kaur <https://github.com/gurjinderbassi>`_
+- `Gleb Levitski <https://github.com/GLevv>`_
+- `Lorenzo Vitali <https://github.com/93lorenzo>`_
+- `Soledad Galli <https://github.com/solegalli>`_
+
+In this release, we make some breaking changes. The `DecisionTreeEncoder()` does not have the encoding pipeline any more.
+In its place, we now added an `encoding_dict_` parameter that stores the mappings from category to predictions of the
+decision tree. This allowed us to implement in addition a way to handle unseen categories and the method `inverse_transform`.
+
+We also expanded the functionality of the `DecisionTreeDiscretiser()`, which can now replace the continuous attributes
+with the decision tree predictions, interval limits, or bin number.
+
+The classes from the module `outliers` can now automatically select the limit for the boundaries for outliers.
+
+Finally, we have updated and expanded various pages of our documentation.
+
+Thank you very much to all contributors to this release and to `Vasco Schiavo <https://github.com/VascoSch92>`_ and
+`Gleb Levitski <https://github.com/GLevv>`_ for actively reviewing many of our PRs.
+
+If you value what we do, please consider `sponsoring us <https://github.com/sponsors/solegalli>`_, so that we can keep
+updating Feature-engine at a fast pace.
+
+Enhancements
+~~~~~~~~~~~~
+
+- `DecisionTreeEncoder` now supports encodings for unseen categories, `inverse_transform`, and provides an encoding dictionary instead of the pipeline (`Soledad Galli <https://github.com/solegalli>`_, `Gleb Levitski <https://github.com/GLevv>`_ and `Lorenzo Vitali <https://github.com/93lorenzo>`_ )
+- The `DecisionTreeDiscretiser()` can now replace the continuous attributes with the decision tree predictions, interval limits, or bin number (`Soledad Galli <https://github.com/solegalli>`_)
+- The `OutlierTrimmer()` and `Winsorizer()` can now adjust the strength of the outlier search automatically based of the statistical method (param `fold="auto"`) (`Gleb Levitski <https://github.com/GLevv>`_)
+
+
+Documentation
+~~~~~~~~~~~~~
+
+- Improve user guide for `PowerTransformer()` (`Cainã Max Couto da Silva <https://github.com/cmcouto-silva>`_)
+- Improve user guide for `EqualFrequencyDiscretiser()` and `EqualWidthDiscretiser` (`Cainã Max Couto da Silva <https://github.com/cmcouto-silva>`_)
+- Improve user guide for the categorical encoding module (`Gurjinder Kaur <https://github.com/gurjinderbassi>`_)
