@@ -27,12 +27,16 @@ def test_error_if_unseen_gets_not_permitted_value(errors):
     "params", [("count", "raise", True), ("frequency", "ignore", False)]
 )
 def test_init_param_assignment(params):
-    CountFrequencyEncoder(
+    enc = CountFrequencyEncoder(
         encoding_method=params[0],
         missing_values=params[1],
         ignore_format=params[2],
         unseen=params[1],
     )
+    assert enc.encoding_method == params[0]
+    assert enc.missing_values == params[1]
+    assert enc.ignore_format == params[2]
+    assert enc.unseen == params[1]
 
 
 # fit and transform
