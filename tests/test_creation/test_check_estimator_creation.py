@@ -3,7 +3,12 @@ import pytest
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
 
-from feature_engine.creation import CyclicalFeatures, MathFeatures, RelativeFeatures, DecisionTreeFeatures
+from feature_engine.creation import (
+    CyclicalFeatures,
+    DecisionTreeFeatures,
+    MathFeatures,
+    RelativeFeatures,
+)
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
 _estimators = [
