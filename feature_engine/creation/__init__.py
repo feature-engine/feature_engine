@@ -6,8 +6,10 @@ variables in the dataframe.
 from .cyclical_features import CyclicalFeatures
 from .math_features import MathFeatures
 from .relative_features import RelativeFeatures
+from .decision_tree_features import DecisionTreeFeatures
 
 __all__ = [
+    "DecisionTreeFeatures",
     "MathFeatures",
     "RelativeFeatures",
     "CyclicalFeatures",
