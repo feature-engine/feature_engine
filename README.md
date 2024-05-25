@@ -114,6 +114,7 @@ Please share your story by answering 1 quick question
  * MathFeatures
  * RelativeFeatures
  * CyclicalFeatures
+ * DecisionTreeFeatures()
 
 ### Feature Selection:
  * DropFeatures

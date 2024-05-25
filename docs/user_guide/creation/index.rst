@@ -63,6 +63,7 @@ Feature creation module
    CyclicalFeatures
    MathFeatures
    RelativeFeatures
+   DecisionTreeFeatures
 
 Feature-engine in Practice
 --------------------------

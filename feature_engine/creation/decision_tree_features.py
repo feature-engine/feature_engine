@@ -27,6 +27,7 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _missing_values_docstring,
     _variables_numerical_docstring,
 )
+from feature_engine._docstrings.init_parameters.creation import _features_to_combine
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_creation_docstring,
@@ -48,6 +49,7 @@ from feature_engine.variable_handling import (
 
 @Substitution(
     variables=_variables_numerical_docstring,
+    features_to_combine=_features_to_combine,
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
     variables_=_variables_attribute_docstring,
@@ -58,50 +60,27 @@ from feature_engine.variable_handling import (
 )
 class DecisionTreeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     """
-    DecisionTreeFeatures() creates new variables by transforming a variable, or
-    combining 2 or more variables with decision trees.
+    `DecisionTreeFeatures()` adds new variables to the data that result of the output of
+    decision trees trained with one or more features.
+
+    Features that result from the predictions of decision trees are likely monotonic
+    with the target and therefore could improve the performance of linear models.
+    Features that result from decision trees trained on various features can help
+    capture feature interactions that could otherwise be missed by simpler models.
+
+    `DecisionTreeFeatures()` works only with numerical variables. You can pass a list of
+    variables to use as inputs of the decision trees. Alternatively, the transformer
+    will automatically select and combine all numerical variables.
+
+    Missing data should be imputed before using this transformer.
+
+    More details in the :ref:`User Guide <dtree_features>`.
 
     Parameters
     ----------
     {variables}
 
-    features_to_combine: integer, list or tuple, default=None
-        Used to determine how the variables indicated in `variables` will be combined
-        to obtain the new features by using decision trees. If integer, then the value
-        corresponds to the largest size of combinations allowed between features. For
-        example, if you want to combine three variables, ["var_A", "var_B", "var_C"],
-        and:
-            - features_to_combine = 1, the transformer returns new features based on the
-                predictions of a decision tree trained on each individual variable,
-                generating 3 new features.
-            - features_to_combine = 2, the transformer returns the features from
-                `features_to_combine=1`, plus features based on the predictions of a
-                decision tree based on all possible combinations of 2 variables, i.e.,
-                ("var_A", "var_B"), ("var_A", "var_C"), and ("var_B", "var_C"),
-                resulting in a total of 6 new features.
-            - features_to_combine = 3, the transformer returns the features from
-                `features_to_combine=2`, plus one additional feature based on the
-                predictions of a decision trained on the 3 variables,
-                ["var_A", "var_B", "var_C"], resulting in a total of 7 new features.
-
-        If list, the list must contain integers indicating the number of features that
-        should be used as input of a decision tree. For example, if the data has 4
-        variables, ["var_A", "var_B", "var_C", "var_D"] and and
-        `features_to_combine = [2,3]`, then the following combinations will be used to
-        create new features using decision trees: ("var_A", "var_B"),
-        ("var_A", "var_C"), ("var_A", "var_D"), ("var_B", "var_C"), ("var_B", "var_D"),
-        ("var_C", "var_D"), ("var_A", "var_B", "var_C"), ("var_A", "var_B", "var_D"),
-        ("var_A", "var_C", "var_D"), and ("var_B", "var_C", "var_D").
-
-        If tuple, the tuple must contain strings and/or tuples that indicate how to
-        combine the variables to create the new features. For example, if
-        `features_to_combine=("var_C", ("var_A", "var_C"), "var_C", ("var_B", "var_D")`,
-        then, the transformer will train a decision tree based of each value within the
-        tuple, resulting in 4 new features.
-
-        If None, then the transformer will create all possible combinations of 1 or
-        more features, and use those as inputs to decision trees. This is equivalent to
-        passing an integer that is equal to the number of variables to combine.
+    {features_to_combine}
 
     precision: int, default=None
         The precision of the predictions. In other words, the number of decimals after
@@ -175,6 +154,13 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMi
 
     {transform}
 
+    See Also
+    --------
+    feature_engine.discretisation.DecisionTreeDiscretiser
+    feature_engine.encoding.DecisionTreeEncoder
+    sklearn.tree.DecisionTreeClassifier
+    sklearn.tree.DecisionTreeRegressor
+
     References
     ----------
     .. [1] Niculescu-Mizil, et al. "Winning the KDD Cup Orange Challenge with Ensemble
@@ -183,7 +169,42 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMi
 
     Examples
     --------
-    TBS
+
+    >>> import pandas as pd
+    >>> from feature_engine.creation import DecisionTreeFeatures
+    >>> X = dict()
+    >>> X["Name"] = ["tom", "nick", "krish", "megan", "peter",
+    >>>              "jordan", "fred", "sam", "alexa", "brittany"]
+    >>> X["Age"] = [20, 44, 19, 33, 51, 40, 41, 37, 30, 54]
+    >>> X["Height"] = [164, 150, 178, 158, 188, 190, 168, 174, 176, 171]
+    >>> X["Marks"] = [1.0, 0.8, 0.6, 0.1, 0.3, 0.4, 0.8, 0.6, 0.5, 0.2]
+    >>> X = pd.DataFrame(X)
+    >>> y = pd.Series([4.1, 5.8, 3.9, 6.2, 4.3, 4.5, 7.2, 4.4, 4.1, 6.7])
+    >>> dtf = DecisionTreeFeatures(features_to_combine=2)
+    >>> dtf.fit(X, y)
+    >>> dtf.transform(X)
+               Name  Age  Height  ...  tree(['Age', 'Height'])  tree(['Age', 'Marks'])
+    0       tom   20     164  ...                    4.100                     4.2
+    1      nick   44     150  ...                    6.475                     5.6
+    2     krish   19     178  ...                    4.000                     4.2
+    3     megan   33     158  ...                    6.475                     6.2
+    4     peter   51     188  ...                    4.400                     5.6
+    5    jordan   40     190  ...                    4.400                     4.2
+    6      fred   41     168  ...                    6.475                     7.2
+    7       sam   37     174  ...                    4.400                     4.2
+    8     alexa   30     176  ...                    4.000                     4.2
+    9  brittany   54     171  ...                    6.475                     5.6
+       tree(['Height', 'Marks'])
+    0             6.00
+    1             6.00
+    2             4.24
+    3             6.00
+    4             4.24
+    5             4.24
+    6             6.00
+    7             4.24
+    8             4.24
+    9             6.00
     """
 
     def __init__(
