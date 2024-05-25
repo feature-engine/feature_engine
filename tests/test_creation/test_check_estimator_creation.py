@@ -17,7 +17,7 @@ _estimators = [
         variables=["x0", "x1"], reference=["x0"], func=["add"], missing_values="ignore"
     ),
     CyclicalFeatures(),
-    DecisionTreeFeatures(),
+    DecisionTreeFeatures(regression=False),
 ]
 
 
