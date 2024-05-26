@@ -62,7 +62,7 @@ def test_error_if_regression_gets_not_permitted_value(regression):
 
 
 @pytest.mark.parametrize("drop", ["string", 0.1, -1, np.nan])
-def test_error_if_dro_original_gets_not_permitted_value(drop):
+def test_error_if_drop_original_gets_not_permitted_value(drop):
     msg = (
         "drop_original takes only boolean values True and False. "
         f"Got {drop} instead."
