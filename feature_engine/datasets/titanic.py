@@ -5,6 +5,7 @@ from sklearn.pipeline import Pipeline
 from feature_engine.imputation import CategoricalImputer, MeanMedianImputer
 
 
+# TODO: loading the dataset from the internet is not the best, we need to store it
 def load_titanic(
     return_X_y_frame=False, predictors_only=False, handle_missing=False, cabin=None
 ):

@@ -7,7 +7,10 @@
 from sklearn import pipeline
 from sklearn.base import _fit_context, clone
 from sklearn.pipeline import _final_estimator_has, _fit_transform_one
-from sklearn.utils import _print_elapsed_time
+try:
+    from sklearn.utils import _print_elapsed_time
+except ImportError:
+    from sklearn.utils._user_interface import _print_elapsed_time
 from sklearn.utils._metadata_requests import METHODS
 from sklearn.utils._param_validation import HasMethods, Hidden
 from sklearn.utils.metadata_routing import _routing_enabled, process_routing

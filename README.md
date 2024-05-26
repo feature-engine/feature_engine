@@ -1,4 +1,4 @@
-# Feature Engine
+# Feature-engine
 
 [![feature-engine logo](https://raw.githubusercontent.com/feature-engine/feature_engine/main/docs/images/logo/FeatureEngine.png)](http://feature-engine.readthedocs.io)
 
@@ -114,6 +114,7 @@ Please share your story by answering 1 quick question
  * MathFeatures
  * RelativeFeatures
  * CyclicalFeatures
+ * DecisionTreeFeatures()
 
 ### Feature Selection:
  * DropFeatures
