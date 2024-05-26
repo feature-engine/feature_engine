@@ -4,7 +4,7 @@ Version 1.8.X
 Version 1.8.0
 -------------
 
-Deployed: XXth XX 2024
+Deployed: 26th May 2024
 
 Contributors
 ~~~~~~~~~~~~
