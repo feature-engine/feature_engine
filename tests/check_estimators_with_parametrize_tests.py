@@ -2,6 +2,7 @@
 This file is only intended to help understand check_estimator tests on Feature-engine
 transformers. It is not run as part of the battery of acceptance tests.
 """
+
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.utils.estimator_checks import parametrize_with_checks
@@ -12,7 +13,6 @@ from feature_engine.encoding import (
     MeanEncoder,
     OneHotEncoder,
     OrdinalEncoder,
-    PRatioEncoder,
     RareLabelEncoder,
     WoEEncoder,
 )
@@ -48,6 +48,13 @@ from feature_engine.transformation import (
     YeoJohnsonTransformer,
 )
 from feature_engine.wrappers import SklearnTransformerWrapper
+from feature_engine.creation import DecisionTreeFeatures, CyclicalFeatures
+
+
+# creation
+@parametrize_with_checks([DecisionTreeFeatures(regression=False), CyclicalFeatures()])
+def test_sklearn_compatible_creator(estimator, check):
+    check(estimator)
 
 
 # imputation
@@ -81,7 +88,6 @@ def test_sklearn_compatible_imputer(estimator, check):
             ignore_format=True,
         ),
         WoEEncoder(ignore_format=True),
-        PRatioEncoder(ignore_format=True),
     ]
 )
 def test_sklearn_compatible_encoder(estimator, check):
