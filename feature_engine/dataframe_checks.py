@@ -138,10 +138,10 @@ def check_y(
         try:
             y = column_or_1d(y)
             y = _check_y(y, multi_output=False, y_numeric=y_numeric)
-            y = pd.Series(y)
+            y = pd.Series(y).copy()
         except ValueError:
             y = _check_y(y, multi_output=True, y_numeric=y_numeric)
-            y = pd.DataFrame(y)
+            y = pd.DataFrame(y).copy()
     return y
 
 
