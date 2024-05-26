@@ -519,3 +519,66 @@ def test_get_feature_names_out_raises_error_when_wrong_param(
 
     with pytest.raises(ValueError):
         tr.get_feature_names_out(input_features=_input_features)
+
+
+def test_error_when_regression_true_and_target_binary(
+    df_creation, classification_target
+):
+    X = df_creation.copy()
+    y = classification_target.copy()
+    tr = DecisionTreeFeatures(regression=True)
+
+    msg = (
+        "Trying to fit a regression to a binary target is not "
+        + "allowed by this transformer. Check the target values "
+        + "or set regression to False."
+    )
+    with pytest.raises(ValueError, match=msg):
+        tr.fit(X, y)
+
+
+def test_user_enter_param_grid(df_creation, classification_target):
+    X = df_creation.copy()
+    y = classification_target.copy()
+    scoring = "roc_auc"
+    rs = 0
+    grid = {"max_depth": [1, 2, 3, 4]}
+    tr = DecisionTreeFeatures(
+        scoring=scoring, random_state=rs, regression=False, param_grid=grid
+    )
+    Xt = tr.fit_transform(X, y)
+
+    # get expected
+    est = DecisionTreeClassifier(random_state=rs)
+    tree = GridSearchCV(
+        est,
+        cv=3,
+        scoring=scoring,
+        param_grid={"max_depth": [1, 2, 3, 4]},
+    )
+
+    combos = [
+        "Age",
+        "Height",
+        "Marks",
+        ["Age", "Height"],
+        ["Age", "Marks"],
+        ["Height", "Marks"],
+        ["Age", "Height", "Marks"],
+    ]
+    var_names = [f"tree({item})" for item in combos]
+
+    X_exp = df_creation.copy()
+    for i in range(len(combos)):
+        varn = var_names[i]
+        combon = combos[i]
+        if isinstance(combon, str):
+            tree.fit(X[combon].to_frame(), y)
+            preds = tree.predict_proba(X[combon].to_frame())
+            X_exp[varn] = preds[:, 1]
+        else:
+            tree.fit(X[combon], y)
+            preds = tree.predict_proba(X[combon])
+            X_exp[varn] = preds[:, 1]
+
+    pd.testing.assert_frame_equal(Xt, X_exp)
