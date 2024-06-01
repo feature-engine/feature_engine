@@ -91,7 +91,7 @@ class DistanceFeatures(
         self,
         coordinate_columns: List[List[Union[str, int]]],
         output_column_names: Optional[List[Union[str, None]]] = None,
-        drop_original: Optional[bool] = False,
+        drop_original: bool = False,
     ) -> None:
 
         # the coordinate_columns variable is rewritten in this way to speed up
