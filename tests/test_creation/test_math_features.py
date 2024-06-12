@@ -1,9 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.pipeline import Pipeline
-
 from feature_engine.creation import MathFeatures
+from sklearn.pipeline import Pipeline
 
 
 # test param variables_to_combine
@@ -71,6 +70,7 @@ def test_error_new_variable_names_not_permitted():
             func="sum",
             new_variables_names=["sum_of_two_vars", "mean_of_two_vars"],
         )
+
     with pytest.raises(ValueError):
         MathFeatures(
             variables=variables,
