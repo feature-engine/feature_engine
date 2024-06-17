@@ -17,7 +17,7 @@ _estimators = [
     DecisionTreeDiscretiser(regression=False),
     EqualFrequencyDiscretiser(),
     EqualWidthDiscretiser(),
-    ArbitraryDiscretiser(binning_dict={"x0": [-np.Inf, 0, np.Inf]}),
+    ArbitraryDiscretiser(binning_dict={"x0": [-np.inf, 0, np.inf]}),
     GeometricWidthDiscretiser(),
 ]
 
@@ -30,14 +30,14 @@ def test_check_estimator_from_sklearn(estimator):
 @pytest.mark.parametrize("estimator", _estimators)
 def test_check_estimator_from_feature_engine(estimator):
     if estimator.__class__.__name__ == "ArbitraryDiscretiser":
-        estimator.set_params(binning_dict={"var_1": [-np.Inf, 0, np.Inf]})
+        estimator.set_params(binning_dict={"var_1": [-np.inf, 0, np.inf]})
     return check_feature_engine_estimator(estimator)
 
 
 @pytest.mark.parametrize("transformer", _estimators)
 def test_transformers_within_pipeline(transformer):
     if transformer.__class__.__name__ == "ArbitraryDiscretiser":
-        transformer.set_params(binning_dict={"feature_1": [-np.Inf, 0, np.Inf]})
+        transformer.set_params(binning_dict={"feature_1": [-np.inf, 0, np.inf]})
 
     X = pd.DataFrame({"feature_1": [1, 2, 3, 4, 5], "feature_2": [6, 7, 8, 9, 10]})
     y = pd.Series([0, 1, 0, 1, 0])
