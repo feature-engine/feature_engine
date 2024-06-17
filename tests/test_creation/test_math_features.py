@@ -7,6 +7,7 @@ from feature_engine.creation import MathFeatures
 
 dob_datrange = pd.date_range("2020-02-24", periods=4, freq="min")
 
+
 # test param variables_to_combine
 def test_error_when_required_params_not_entered():
     with pytest.raises(TypeError):
