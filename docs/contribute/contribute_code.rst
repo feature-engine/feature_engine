@@ -449,6 +449,76 @@ you want to know why we prefer tox, this
 will tell you everything ;)
 
 
+Code Profiling
+--------------
+
+If you want to profile your code, you can use the **profiling** module in root directory. There you will find two files,
+`profiling.py` and `profiling.sh`. Both file does the same thing but in different ways. The profiling.py file is a python script
+containing a function that must be used as a decorator for the class/method we want to profile.
+The profiling.sh file is a bash/zsh script that you can run from the command line to profile whole .py script file.
+Let us see how to use them. First, start with profiling.py file.
+
+I doubt that `DropDuplicateFeatures` class should take more time than other classes as it iterates over the columns and
+checks if they are duplicated or not. So, I will profile the `DropDuplicateFeatures` class.
+
+First, I will find where this class resides and on top of the imports I will add the following line::
+
+    from profiling.profiling import profile_function
+
+Now, I will decorate the `DropDuplicateFeatures.fit` method with the `profile_function` function::
+    
+        @profile_function(output_file="profile.html")
+        def fit(self, X: pd.DataFrame, y: pd.Series = None):
+            ...
+
+The next step is to create a temporary .py file that will contain the code that we want to profile.
+
+For example, I will create a file named `temp.py` and copy the following code::
+
+    import pandas as pd
+    import numpy as np
+
+    from feature_engine.selection import DropDuplicateFeatures
+
+
+    if __name__ == "__main__":
+        rows = 10000
+        cols = 60000
+        col_names = [f"col_{i}" for i in range(cols)]
+        df = pd.DataFrame(np.random.randint(0, 100, size=(rows, cols)), columns=col_names)
+
+        transformer = DropDuplicateFeatures()
+        transformer.fit(df)
+
+        train_t = transformer.transform(df)
+
+
+Now, I will run the `temp.py` file from the command line::
+    
+        $ python temp.py
+
+This will create a file named `profile.html` in the root directory of the project. This file contains the profiling
+results. You can open it with your favorite browser and inspect the results.
+
+If you don't like adding additional imports and decorator, then you can use the `profiling.sh` file. This file is a bash/zsh
+script that you can run from the command line. Let us see how to use it.
+
+Again, I will profile the `DropDuplicateFeatures` class. I need to create a temporary .py file and put the same code as above.
+After that, open the terminal in root directory and run the following command::
+
+    $ ./profiling/profiling.sh temp.py
+
+
+This will create a directory, named `profiles`, in the root directory of the project. This directory contains tw files:
+the first is .html file and you can open it with any browser, the second file is .json file and you can use
+`speedscope <https://www.speedscope.app/>`_ to visualize results.
+
+
+.. note::
+    To profile the memory usage, you can use the `memray` package. You can find more information about it
+    `here <https://bloomberg.github.io/memray/index.html>`_.
+
+
 Review Process
 --------------
 
