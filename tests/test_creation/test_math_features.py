@@ -1,9 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.pipeline import Pipeline
-
 from feature_engine.creation import MathFeatures
+from sklearn.pipeline import Pipeline
 
 dob_datrange = pd.date_range("2020-02-24", periods=4, freq="min")
 
@@ -354,3 +353,73 @@ def test_get_feature_names_out_raises_error_when_wrong_param(
 
     with pytest.raises(ValueError):
         transformer.get_feature_names_out(input_features=_input_features)
+
+def test_customfunction_agg_with_not_nan_save(df_vartypes):
+
+    df_na = df_vartypes.copy()
+    df_na.loc[1, "Age"] = np.nan
+
+    def customfunction_agg(series):
+        # pandas.agg calls the custom-function twice
+        # first with a non series type
+        # second with a series type -> we need the series type
+        if not isinstance(series, pd.Series):
+            raise ValueError("Only Series allowed")
+        result = series["Age"] + series["Marks"]
+        return result
+
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func=[customfunction_agg],
+        missing_values="ignore",
+    )
+
+    X = transformer.fit_transform(df_na)
+
+    ref = pd.DataFrame.from_dict(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, np.nan, 19, 18],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+            "dob": dob_datrange,
+            "customfunction_agg_Age_Marks": [20.9, np.nan, 19.7, 18.6],
+        }
+    )
+    # transform params
+    pd.testing.assert_frame_equal(X, ref)
+
+
+def test_customfunction_agg(df_vartypes):
+
+    def customfunction_agg(series):
+        # pandas.agg calls the custom-function twice
+        # first with a non series type
+        # second with a series type -> we need the series type
+        if not isinstance(series, pd.Series):
+            raise ValueError("Only Series allowed")
+        result = series["Age"] + series["Marks"]
+        return result
+
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func=["mean", customfunction_agg, "sum"],
+        missing_values="ignore",
+    )
+
+    X = transformer.fit_transform(df_vartypes)
+
+    ref = pd.DataFrame.from_dict(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, 21, 19, 18],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+            "dob": dob_datrange,
+            "mean_Age_Marks": [10.45, 10.9, 9.85, 9.3],
+            "customfunction_agg_Age_Marks": [20.9, 21.8, 19.7, 18.6],
+            "sum_Age_Marks": [20.9, 21.8, 19.7, 18.6],
+        }
+    )
+    # transform params
+    pd.testing.assert_frame_equal(X, ref)
