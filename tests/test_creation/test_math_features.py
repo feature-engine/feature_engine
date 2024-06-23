@@ -82,7 +82,8 @@ def test_error_new_variable_names_not_permitted():
 
 def test_aggregations_with_strings(df_vartypes):
     transformer = MathFeatures(
-        variables=["Age", "Marks"], func=["sum", "prod", "mean", "std", "max", "min", "median"]
+        variables=["Age", "Marks"],
+        func=["sum", "prod", "mean", "std", "max", "min", "median", "var"],
     )
     X = transformer.fit_transform(df_vartypes)
 
@@ -104,6 +105,8 @@ def test_aggregations_with_strings(df_vartypes):
             ],
             "max_Age_Marks": [20.0, 21.0, 19.0, 18.0],
             "min_Age_Marks": [0.9, 0.8, 0.7, 0.6],
+            "median_Age_Marks": [10.45, 10.90, 9.85, 9.30],
+            "var_Age_Marks": [182.405, 204.020, 167.445, 151.380],
         }
     )
 
