@@ -354,6 +354,7 @@ def test_get_feature_names_out_raises_error_when_wrong_param(
     with pytest.raises(ValueError):
         transformer.get_feature_names_out(input_features=_input_features)
 
+
 def test_customfunction_agg_with_not_nan_save(df_vartypes):
 
     df_na = df_vartypes.copy()
