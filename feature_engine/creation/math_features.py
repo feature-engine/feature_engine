@@ -369,11 +369,10 @@ class MathFeatures(BaseCreation):
         else:
             varlist = [f"{var}" for var in self.variables_]
 
-            if isinstance(self.func, list):
-                functions = [
+            functions = [
                     fun if type(fun) is str else fun.__name__ for fun in self.func
                 ]
-                feature_names = [
+            feature_names = [
                     f"{function}_{'_'.join(varlist)}" for function in functions
                 ]
 

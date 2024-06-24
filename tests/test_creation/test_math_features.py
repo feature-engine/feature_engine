@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.pipeline import Pipeline
+
 from feature_engine.creation import MathFeatures
 from feature_engine.creation.custom_functions import CustomFunctions
-from sklearn.pipeline import Pipeline
 
 dob_datrange = pd.date_range("2020-02-24", periods=4, freq="min")
 
