@@ -554,14 +554,14 @@ def test_transform_x_y(df_time):
 
 def test_error_duplicate_functions(df_time):
     with pytest.raises(ValueError):
-        transformer = ExpandingWindowFeatures(
+        ExpandingWindowFeatures(
             variables=["ambient_temp"], functions=["sum", "sum"], periods=2, freq="15T"
         )
 
 
 def test_error_native_functions(df_time):
     with pytest.raises(ValueError):
-        transformer = ExpandingWindowFeatures(
+        ExpandingWindowFeatures(
             variables=["ambient_temp"],
             functions=[np.min, np.max],
             periods=2,
