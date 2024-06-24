@@ -438,7 +438,7 @@ def test_customfunction_numpy(df_vartypes):
 
     cufu = custom_function_1(scope_target="numpy")
 
-    #test only one customfunction
+    # test only one customfunction
     transformer = MathFeatures(
         variables=["Age", "Marks"],
         func=[cufu.domain_specific_custom_function_1],
@@ -459,6 +459,7 @@ def test_customfunction_numpy(df_vartypes):
     # transform params
     pd.testing.assert_frame_equal(X, ref)
 
+
 def test_customfunction_numpy_three_functions(df_vartypes):
     class custom_function_1(CustomFunctions):
         def domain_specific_custom_function_1(self, df, a):
@@ -471,10 +472,14 @@ def test_customfunction_numpy_three_functions(df_vartypes):
 
     cufu = custom_function_1(scope_target="numpy")
 
-    #test only one customfunction
+    # test only one customfunction
     transformer = MathFeatures(
         variables=["Age", "Marks"],
-        func=["sum", cufu.domain_specific_custom_function_1, cufu.domain_specific_custom_function_2],
+        func=[
+            "sum",
+            cufu.domain_specific_custom_function_1,
+            cufu.domain_specific_custom_function_2,
+        ],
     )
 
     X = transformer.fit_transform(df_vartypes)
@@ -489,9 +494,7 @@ def test_customfunction_numpy_three_functions(df_vartypes):
             "sum_Age_Marks": [20.9, 21.8, 19.7, 18.6],
             "domain_specific_custom_function_1_Age_Marks": [20.9, 21.8, 19.7, 18.6],
             "domain_specific_custom_function_2_Age_Marks": [20.9, 21.8, 19.7, 18.6],
-
         }
     )
     # transform params
     pd.testing.assert_frame_equal(X, ref)
-

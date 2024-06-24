@@ -131,8 +131,6 @@ class MathFeatures(BaseCreation):
     1   2   5         3.5
     2   3   6         4.5
 
-    Examples for Custom Functions
-    -----------------------------
     We do not recommend using a custum function in combination with
     the pandas.agg(). Due to performance issues it should be avoided.
     For the sake of completeness a short example:
@@ -172,16 +170,14 @@ class MathFeatures(BaseCreation):
     >>>       return result
     >>> cufu = custom_function_1(scope_target="numpy")
     >>> X = pd.DataFrame(dict(x1 = [1,2,3], x2 = [4,5,6]))
-    >>> mf = MathFeatures(variables = ["x1","x2"], func = [cufu.domain_specific_custom_function_1])
+    >>> mf = MathFeatures(variables = ["x1","x2"],
+    >>>                   func = [cufu.domain_specific_custom_function_1])
     >>> mf.fit(X)
     >>> X = mf.transform(X)
-
         x1  x2        domain_specific_custom_function_1_x1_x2
     0   1   4         5
     1   2   5         7
     2   3   6         9
-
-
     """
 
     def __init__(
@@ -266,8 +262,7 @@ class MathFeatures(BaseCreation):
         """
 
         def np_transform(np_df, new_variable_names, np_variables, np_functions):
-            #    calculations = ('mean','sum', 'min', 'max', 'prod', 'median', 'std', 'var')
-            np_result_df = df = pd.DataFrame()
+            np_result_df = pd.DataFrame()
             for np_function_idx, np_function in enumerate(np_functions):
                 if np_function in ("sum", "np.sum"):
                     result = np.nansum(
@@ -279,7 +274,7 @@ class MathFeatures(BaseCreation):
                     )
                     pass
 
-                elif np_function in  ("mean", "np.mean"):
+                elif np_function in ("mean", "np.mean"):
                     result = np.nanmean(
                         np_df[np_variables],
                         axis=1,
@@ -339,7 +334,7 @@ class MathFeatures(BaseCreation):
                 else:
                     try:
                         scope_target = np_function.__self__.scope_target
-                    except:
+                    except Exception:
                         scope_target = "pandas"
 
                     if scope_target == "numpy":
@@ -361,7 +356,6 @@ class MathFeatures(BaseCreation):
         X = self._check_transform_input_and_state(X)
 
         new_variable_names = self._get_new_features_name()
-
 
         X = pd.concat(
             [X, np_transform(X, new_variable_names, self.variables, self.func)],
