@@ -2,6 +2,7 @@ import numpy as np
 
 from feature_engine._prediction.target_mean_regressor import TargetMeanRegressor
 
+import pytest
 
 def test_regressor_categorical_variables(df_regression):
 
@@ -239,3 +240,10 @@ def test_classifier_all_variables(df_regression):
     )
 
     assert np.allclose(pred, exp_pred)
+
+def test_error_when_y_is_binary(df_regression):
+    X, y = df_regression
+    y = [1.0, 2.0]
+    tr = TargetMeanRegressor(bins=2)
+    with pytest.raises(ValueError):
+        tr.fit(X, y)
