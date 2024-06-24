@@ -343,8 +343,6 @@ class MathFeatures(BaseCreation):
                         result = np_df[np_variables].agg(np_function, axis=1)
                         np_result_df[new_variable_names[np_function_idx]] = result
 
-                    print(scope_target)
-
             return np_result_df
 
         X = self._check_transform_input_and_state(X)
