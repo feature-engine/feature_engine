@@ -550,3 +550,20 @@ def test_transform_x_y(df_time):
     assert len(Xt) == len(yt)
     assert len(y) != len(yt)
     assert (Xt.index == yt.index).all()
+
+
+def test_error_duplicate_functions(df_time):
+    with pytest.raises(ValueError):
+        transformer = ExpandingWindowFeatures(
+            variables=["ambient_temp"], functions=["sum", "sum"], periods=2, freq="15T"
+        )
+
+
+def test_error_native_functions(df_time):
+    with pytest.raises(ValueError):
+        transformer = ExpandingWindowFeatures(
+            variables=["ambient_temp"],
+            functions=[np.min, np.max],
+            periods=2,
+            freq="15T",
+        )
