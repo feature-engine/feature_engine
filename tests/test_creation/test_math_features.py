@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from feature_engine.creation import MathFeatures
+from feature_engine.creation.custom_functions import CustomFunctions
 from sklearn.pipeline import Pipeline
 
 dob_datrange = pd.date_range("2020-02-24", periods=4, freq="min")
@@ -427,3 +428,70 @@ def test_customfunction_agg(df_vartypes):
     )
     # transform params
     pd.testing.assert_frame_equal(X, ref)
+
+
+def test_customfunction_numpy(df_vartypes):
+    class custom_function_1(CustomFunctions):
+        def domain_specific_custom_function_1(self, df, a):
+            result = np.sum(df, axis=1)
+            return result
+
+    cufu = custom_function_1(scope_target="numpy")
+
+    #test only one customfunction
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func=[cufu.domain_specific_custom_function_1],
+    )
+
+    X = transformer.fit_transform(df_vartypes)
+
+    ref = pd.DataFrame.from_dict(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, 21, 19, 18],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+            "dob": dob_datrange,
+            "domain_specific_custom_function_1_Age_Marks": [20.9, 21.8, 19.7, 18.6],
+        }
+    )
+    # transform params
+    pd.testing.assert_frame_equal(X, ref)
+
+def test_customfunction_numpy_three_functions(df_vartypes):
+    class custom_function_1(CustomFunctions):
+        def domain_specific_custom_function_1(self, df, a):
+            result = np.sum(df, axis=1)
+            return result
+
+        def domain_specific_custom_function_2(self, df, a):
+            result = np.sum(df, axis=1)
+            return result
+
+    cufu = custom_function_1(scope_target="numpy")
+
+    #test only one customfunction
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func=["sum", cufu.domain_specific_custom_function_1, cufu.domain_specific_custom_function_2],
+    )
+
+    X = transformer.fit_transform(df_vartypes)
+
+    ref = pd.DataFrame.from_dict(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, 21, 19, 18],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+            "dob": dob_datrange,
+            "sum_Age_Marks": [20.9, 21.8, 19.7, 18.6],
+            "domain_specific_custom_function_1_Age_Marks": [20.9, 21.8, 19.7, 18.6],
+            "domain_specific_custom_function_2_Age_Marks": [20.9, 21.8, 19.7, 18.6],
+
+        }
+    )
+    # transform params
+    pd.testing.assert_frame_equal(X, ref)
+
