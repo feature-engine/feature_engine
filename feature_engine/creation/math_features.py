@@ -227,12 +227,11 @@ class MathFeatures(BaseCreation):
                 )
 
         if new_variables_names is not None:
-            if isinstance(func, list):
-                if len(new_variables_names) != len(func):
-                    raise ValueError(
-                        "The number of new feature names must coincide with the number "
-                        "of functions."
-                    )
+            if len(new_variables_names) != len(func):
+                raise ValueError(
+                    "The number of new feature names must coincide with the number "
+                    "of functions."
+                )
 
         super().__init__(missing_values, drop_original)
 
