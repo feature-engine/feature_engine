@@ -378,7 +378,5 @@ class MathFeatures(BaseCreation):
                 feature_names = [
                     f"{function}_{'_'.join(varlist)}" for function in functions
                 ]
-            else:
-                feature_names = [f"{self.func}_{'_'.join(varlist)}"]
 
         return feature_names
