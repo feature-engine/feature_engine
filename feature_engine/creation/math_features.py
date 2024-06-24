@@ -233,12 +233,6 @@ class MathFeatures(BaseCreation):
                         "The number of new feature names must coincide with the number "
                         "of functions."
                     )
-            else:
-                if len(new_variables_names) != 1:
-                    raise ValueError(
-                        "The number of new feature names must coincide with the number "
-                        "of functions."
-                    )
 
         super().__init__(missing_values, drop_original)
 
