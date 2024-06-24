@@ -122,3 +122,9 @@ def test_error_if_not_permitted_value_is_errors():
     age_dict = {"Age": [0, 10, 20, 30, np.inf]}
     with pytest.raises(ValueError):
         ArbitraryDiscretiser(binning_dict=age_dict, errors="medialuna")
+
+
+def test_error_if_not_binning_dict_dict_type():
+    age_dict = "HOLA"
+    with pytest.raises(ValueError):
+        ArbitraryDiscretiser(binning_dict=age_dict)
