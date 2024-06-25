@@ -49,7 +49,7 @@ def test_drop_and_add_columns(
             "Studies": expected_studies,
             "Age": expected_age,
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
         }
     )
 
@@ -93,7 +93,7 @@ def test_columns_addition_when_more_columns_in_train_than_test(
             "Studies": expected_studies,
             "Age": expected_age,
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
         }
     )
 

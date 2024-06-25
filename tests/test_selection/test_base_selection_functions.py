@@ -18,7 +18,7 @@ def df():
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "date_range": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "date_range": pd.date_range("2020-02-24", periods=4, freq="min"),
             "date_obj0": ["2020-02-24", "2020-02-25", "2020-02-26", "2020-02-27"],
         }
     )

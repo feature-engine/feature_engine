@@ -12,7 +12,7 @@ def df_constant_features():
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
         "Age": [20, 21, 19, 18],
         "Marks": [0.9, 0.8, 0.7, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
         "const_feat_num": [1, 1, 1, 1],
         "const_feat_cat": ["a", "a", "a", "a"],
         "quasi_feat_num": [1, 1, 1, 2],
@@ -35,7 +35,7 @@ def test_drop_constant_features(df_constant_features):
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
             "quasi_feat_num": [1, 1, 1, 2],
             "quasi_feat_cat": ["a", "a", "a", "b"],
         }
@@ -59,7 +59,7 @@ def test_drop_constant_and_quasiconstant_features(df_constant_features):
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
         }
     )
 
@@ -89,7 +89,7 @@ def test_drop_constant_features_with_list_of_variables(df_constant_features):
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
             "const_feat_cat": ["a", "a", "a", "a"],
             "quasi_feat_cat": ["a", "a", "a", "b"],
         }
@@ -149,7 +149,7 @@ def test_missing_values_param_functionality():
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
         "Age": [20, 21, 19, 18],
         "Marks": [0.9, 0.8, 0.7, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
         "const_feat_num": [1, 1, 1, np.nan],
         "const_feat_cat": ["a", "a", "a", "a"],
         "quasi_feat_num": [1, 1, 1, 2],

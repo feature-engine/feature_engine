@@ -46,7 +46,7 @@ def test_df(
         X["cat_var2"] = ["B"] * 1000
 
     if datetime is True:
-        X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="T")
-        X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="H")
+        X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="min")
+        X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="h")
 
     return X, y

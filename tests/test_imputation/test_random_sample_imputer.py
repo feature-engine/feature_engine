@@ -49,7 +49,7 @@ def test_general_seed_plus_automatically_select_variables(df_na):
         ],
         "Age": [20, 21, 19, 23, 23, 40, 41, 37],
         "Marks": [0.9, 0.8, 0.7, 0.3, 0.3, 0.6, 0.8, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=8, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=8, freq="min"),
     }
     ref = pd.DataFrame(ref)
 
@@ -105,7 +105,7 @@ def test_seed_per_observation_and_multiple_variables_in_random_state(df_na):
         ],
         "Age": [20, 21, 19, np.nan, 23, 40, 41, 37],
         "Marks": [0.9, 0.8, 0.7, np.nan, 0.3, np.nan, 0.8, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=8, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=8, freq="min"),
     }
     ref = pd.DataFrame(ref)
 
@@ -161,7 +161,7 @@ def test_seed_per_observation_plus_product_of_seeding_variables(df_na):
         ],
         "Age": [20, 21, 19, np.nan, 23, 40, 41, 37],
         "Marks": [0.9, 0.8, 0.7, np.nan, 0.3, np.nan, 0.8, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=8, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=8, freq="min"),
     }
     ref = pd.DataFrame(ref)
 
@@ -217,7 +217,7 @@ def test_seed_per_observation_with_only_1_variable_as_seed(df_na):
         ],
         "Age": [20, 21, 19, np.nan, 23, 40, 41, 37],
         "Marks": [0.9, 0.8, 0.7, np.nan, 0.3, np.nan, 0.8, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=8, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=8, freq="min"),
     }
     ref = pd.DataFrame(ref)
 
@@ -295,7 +295,7 @@ def test_variables_cast_as_category(df_na):
         ],
         "Age": [20, 21, 19, 23, 23, 40, 41, 37],
         "Marks": [0.9, 0.8, 0.7, 0.3, 0.3, 0.6, 0.8, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=8, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=8, freq="min"),
     }
     ref = pd.DataFrame(ref)
     ref["City"] = ref["City"].astype("category")

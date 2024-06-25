@@ -380,7 +380,7 @@ def test_column_names_are_numbers(df_numeric_columns):
         1: [0.25, 0.25, 0.25, 0.25],
         2: [0.25, 0.25, 0.25, 0.25],
         3: [0.25, 0.25, 0.25, 0.25],
-        4: pd.date_range("2020-02-24", periods=4, freq="T"),
+        4: pd.date_range("2020-02-24", periods=4, freq="min"),
     }
 
     transf_df = pd.DataFrame(transf_df)

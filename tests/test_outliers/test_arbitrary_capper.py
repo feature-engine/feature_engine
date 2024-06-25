@@ -160,3 +160,10 @@ def test_fit_and_transform_raise_error_if_df_contains_na(df_normal_dist):
         )
         transformer.fit(df_normal_dist)
         transformer.transform(df_na)
+
+
+def test_error_if_missing_values_wrong_type():
+    with pytest.raises(ValueError):
+        ArbitraryOutlierCapper(
+            min_capping_dict={"var": -0.17486039103044}, missing_values="HOLA"
+        )
