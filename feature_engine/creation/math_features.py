@@ -259,14 +259,12 @@ class MathFeatures(BaseCreation):
         def np_transform(np_df, new_variable_names, np_variables, np_functions):
             np_result_df = pd.DataFrame()
             for np_function_idx, np_function in enumerate(np_functions):
-                np_function_name = ""
                 if callable(np_function):
                     np_function_name = np_function.__name__
                 else:
                     np_function_name = np_function
 
                 if np_function_name in ("sum"):
-
                     result = np.nansum(
                         np_df[np_variables],
                         axis=1,
@@ -274,10 +272,9 @@ class MathFeatures(BaseCreation):
                     np_result_df[new_variable_names[np_function_idx]] = pd.Series(
                         result
                     )
-                    pass
+                    continue
 
                 elif np_function_name in ("mean"):
-
                     result = np.nanmean(
                         np_df[np_variables],
                         axis=1,
@@ -285,9 +282,9 @@ class MathFeatures(BaseCreation):
                     np_result_df[new_variable_names[np_function_idx]] = pd.Series(
                         result
                     )
+                    continue
 
                 elif np_function_name in ("min",):
-
                     result = np.nanmin(
                         np_df[np_variables],
                         axis=1,
@@ -295,6 +292,7 @@ class MathFeatures(BaseCreation):
                     np_result_df[new_variable_names[np_function_idx]] = pd.Series(
                         result
                     )
+                    continue
 
                 elif np_function_name in ("max",):
                     result = np.nanmax(
@@ -304,9 +302,9 @@ class MathFeatures(BaseCreation):
                     np_result_df[new_variable_names[np_function_idx]] = pd.Series(
                         result
                     )
+                    continue
 
                 elif np_function_name in ("prod"):
-
                     result = np.nanprod(
                         np_df[np_variables],
                         axis=1,
@@ -314,9 +312,9 @@ class MathFeatures(BaseCreation):
                     np_result_df[new_variable_names[np_function_idx]] = pd.Series(
                         result
                     )
+                    continue
 
                 elif np_function_name in ("median"):
-
                     result = np.nanmedian(
                         np_df[np_variables],
                         axis=1,
@@ -324,20 +322,21 @@ class MathFeatures(BaseCreation):
                     np_result_df[new_variable_names[np_function_idx]] = pd.Series(
                         result
                     )
+                    continue
 
                 elif np_function_name in ("std"):
-
                     result = np.nanstd(np_df[np_variables], axis=1, ddof=1)
                     np_result_df[new_variable_names[np_function_idx]] = pd.Series(
                         result
                     )
+                    continue
 
                 elif np_function_name in ("var"):
-
                     result = np.nanvar(np_df[np_variables], axis=1, ddof=1)
                     np_result_df[new_variable_names[np_function_idx]] = pd.Series(
                         result
                     )
+                    continue
 
                 else:
                     try:
