@@ -2,6 +2,7 @@ from typing import Any, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -227,11 +228,12 @@ class MathFeatures(BaseCreation):
                 )
 
         if new_variables_names is not None:
-            if len(new_variables_names) != len(func):
-                raise ValueError(
-                    "The number of new feature names must coincide with the number "
-                    "of functions."
-                )
+            if isinstance(func, list):
+                if len(new_variables_names) != len(func):
+                    raise ValueError(
+                        "The number of new feature names must coincide with the number "
+                        "of functions."
+                    )
 
         super().__init__(missing_values, drop_original)
 
@@ -257,7 +259,14 @@ class MathFeatures(BaseCreation):
         def np_transform(np_df, new_variable_names, np_variables, np_functions):
             np_result_df = pd.DataFrame()
             for np_function_idx, np_function in enumerate(np_functions):
-                if np_function in ("sum", "np.sum"):
+                np_function_name = ""
+                if callable(np_function):
+                    np_function_name = np_function.__name__
+                else:
+                    np_function_name = np_function
+
+                if np_function_name in ("sum"):
+
                     result = np.nansum(
                         np_df[np_variables],
                         axis=1,
@@ -267,7 +276,8 @@ class MathFeatures(BaseCreation):
                     )
                     pass
 
-                elif np_function in ("mean", "np.mean"):
+                elif np_function_name in ("mean"):
+
                     result = np.nanmean(
                         np_df[np_variables],
                         axis=1,
@@ -276,7 +286,8 @@ class MathFeatures(BaseCreation):
                         result
                     )
 
-                elif np_function in ("min", "np.min"):
+                elif np_function_name in ("min",):
+
                     result = np.nanmin(
                         np_df[np_variables],
                         axis=1,
@@ -285,7 +296,7 @@ class MathFeatures(BaseCreation):
                         result
                     )
 
-                elif np_function in ("max", "np.max"):
+                elif np_function_name in ("max",):
                     result = np.nanmax(
                         np_df[np_variables],
                         axis=1,
@@ -294,7 +305,8 @@ class MathFeatures(BaseCreation):
                         result
                     )
 
-                elif np_function in ("prod", "np.prod"):
+                elif np_function_name in ("prod"):
+
                     result = np.nanprod(
                         np_df[np_variables],
                         axis=1,
@@ -303,7 +315,8 @@ class MathFeatures(BaseCreation):
                         result
                     )
 
-                elif np_function in ("median", "np.median"):
+                elif np_function_name in ("median"):
+
                     result = np.nanmedian(
                         np_df[np_variables],
                         axis=1,
@@ -312,13 +325,15 @@ class MathFeatures(BaseCreation):
                         result
                     )
 
-                elif np_function in ("std", "np.std"):
+                elif np_function_name in ("std"):
+
                     result = np.nanstd(np_df[np_variables], axis=1, ddof=1)
                     np_result_df[new_variable_names[np_function_idx]] = pd.Series(
                         result
                     )
 
-                elif np_function in ("var", "np.var"):
+                elif np_function_name in ("var"):
+
                     result = np.nanvar(np_df[np_variables], axis=1, ddof=1)
                     np_result_df[new_variable_names[np_function_idx]] = pd.Series(
                         result
@@ -339,6 +354,7 @@ class MathFeatures(BaseCreation):
                             )
                         )
                     elif scope_target == "pandas":
+                        foo = np_function.__name__
                         result = np_df[np_variables].agg(np_function, axis=1)
                         np_result_df[new_variable_names[np_function_idx]] = result
 
@@ -368,11 +384,9 @@ class MathFeatures(BaseCreation):
         else:
             varlist = [f"{var}" for var in self.variables_]
 
-            functions = [
-                    fun if type(fun) is str else fun.__name__ for fun in self.func
-                ]
+            functions = [fun if type(fun) is str else fun.__name__ for fun in self.func]
             feature_names = [
-                    f"{function}_{'_'.join(varlist)}" for function in functions
-                ]
+                f"{function}_{'_'.join(varlist)}" for function in functions
+            ]
 
         return feature_names
