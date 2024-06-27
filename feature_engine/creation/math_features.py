@@ -69,6 +69,11 @@ class MathFeatures(BaseCreation):
         one name per function. If None, the transformer will assign arbitrary names,
         starting with the function and followed by the variables separated by _.
 
+    ddof: int, float, default = 1
+        Means Delta Degrees of Freedom. The divisor used in calculations is
+        N - ddof, where N represents the number of elements.
+        By default ddof is 1.
+
     {missing_values}
 
     {drop_original}
@@ -188,6 +193,8 @@ class MathFeatures(BaseCreation):
         new_variables_names: Optional[List[str]] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
+        ddof: Union[int, float] = 1,
+
     ) -> None:
 
         # casting input parameter func to a list
@@ -235,11 +242,17 @@ class MathFeatures(BaseCreation):
                         "of functions."
                     )
 
+        if not isinstance(ddof, int) and not isinstance(ddof, float):
+            raise ValueError(
+                "The type of ddof has to be Integer or Float"
+            )
+
         super().__init__(missing_values, drop_original)
 
         self.variables = variables
         self.func = func
         self.new_variables_names = new_variables_names
+        self.ddof = ddof
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -325,14 +338,14 @@ class MathFeatures(BaseCreation):
                     continue
 
                 elif np_function_name in ("std"):
-                    result = np.nanstd(np_df[np_variables], axis=1, ddof=1)
+                    result = np.nanstd(np_df[np_variables], axis=1, ddof=self.ddof)
                     np_result_df[new_variable_names[np_function_idx]] = pd.Series(
                         result
                     )
                     continue
 
                 elif np_function_name in ("var"):
-                    result = np.nanvar(np_df[np_variables], axis=1, ddof=1)
+                    result = np.nanvar(np_df[np_variables], axis=1, ddof=self.ddof)
                     np_result_df[new_variable_names[np_function_idx]] = pd.Series(
                         result
                     )
@@ -353,7 +366,6 @@ class MathFeatures(BaseCreation):
                             )
                         )
                     elif scope_target == "pandas":
-                        foo = np_function.__name__
                         result = np_df[np_variables].agg(np_function, axis=1)
                         np_result_df[new_variable_names[np_function_idx]] = result
 
