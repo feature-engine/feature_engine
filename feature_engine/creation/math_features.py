@@ -194,7 +194,6 @@ class MathFeatures(BaseCreation):
         missing_values: str = "raise",
         drop_original: bool = False,
         ddof: Union[int, float] = 1,
-
     ) -> None:
 
         # casting input parameter func to a list
@@ -242,10 +241,8 @@ class MathFeatures(BaseCreation):
                         "of functions."
                     )
 
-        if not isinstance(ddof, int) and not isinstance(ddof, float):
-            raise ValueError(
-                "The type of ddof has to be Integer or Float"
-            )
+        if not (isinstance(ddof, int) or isinstance(ddof, float)):
+            raise ValueError("The type of ddof has to be Integer or Float")
 
         super().__init__(missing_values, drop_original)
 
