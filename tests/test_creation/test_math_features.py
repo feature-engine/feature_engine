@@ -40,6 +40,11 @@ def test_error_if_func_is_dictionary():
         MathFeatures(variables=["Age", "Name"], func={"A": "sum", "B": "mean"})
 
 
+def test_error_if_ddof_is_not_int_or_float():
+    with pytest.raises(ValueError):
+        MathFeatures(variables=["Age", "Name"], func={"std", "var"}, ddof="A")
+
+
 @pytest.mark.parametrize("_variables", [[4], ("vara", "vara"), "vara"])
 def test_error_if_new_variable_names_not_permitted(_variables):
     with pytest.raises(ValueError):
@@ -497,5 +502,67 @@ def test_customfunction_numpy_three_functions(df_vartypes):
             "domain_specific_custom_function_2_Age_Marks": [20.9, 21.8, 19.7, 18.6],
         }
     )
+    # transform params
+    pd.testing.assert_frame_equal(X, ref)
+
+
+def test_ddof_equal_0(df_vartypes):
+    transformer = MathFeatures(variables=["Age", "Marks"], func=["std", "var"], ddof=0)
+    X = transformer.fit_transform(df_vartypes)
+
+    ref = pd.DataFrame.from_dict(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, 21, 19, 18],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+            "dob": dob_datrange,
+            "std_Age_Marks": [
+                9.55000,
+                10.10000,
+                9.15000,
+                8.70000,
+            ],
+            "var_Age_Marks": [
+                91.20250,
+                102.01000,
+                83.72250,
+                75.69000,
+            ],
+        }
+    )
+
+    # transform params
+    pd.testing.assert_frame_equal(X, ref)
+
+
+def test_ddof_equal_float(df_vartypes):
+    transformer = MathFeatures(
+        variables=["Age", "Marks"], func=["std", "var"], ddof=1.5
+    )
+    X = transformer.fit_transform(df_vartypes)
+
+    ref = pd.DataFrame.from_dict(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, 21, 19, 18],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+            "dob": dob_datrange,
+            "std_Age_Marks": [
+                19.10000,
+                20.20000,
+                18.30000,
+                17.40000,
+            ],
+            "var_Age_Marks": [
+                364.81000,
+                408.04000,
+                334.89000,
+                302.76000,
+            ],
+        }
+    )
+
     # transform params
     pd.testing.assert_frame_equal(X, ref)
