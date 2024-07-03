@@ -3,7 +3,6 @@ The module creation includes classes to create new variables by combination of e
 variables in the dataframe.
 """
 
-from .custom_functions import CustomFunctions
 from .cyclical_features import CyclicalFeatures
 from .decision_tree_features import DecisionTreeFeatures
 from .math_features import MathFeatures
