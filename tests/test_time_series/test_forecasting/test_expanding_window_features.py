@@ -1,9 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from pandas.testing import assert_frame_equal
-
 from feature_engine.timeseries.forecasting import ExpandingWindowFeatures
+from pandas.testing import assert_frame_equal
 
 
 def test_get_feature_names_out_raises_when_input_features_is_string(df_time):
@@ -553,10 +552,14 @@ def test_transform_x_y(df_time):
 
 
 def test_error_duplicate_functions(df_time):
-    with pytest.raises(ValueError):
+    msg = "There are duplicated functions in the list: ['sum', 'sum']"
+    with pytest.raises(ValueError) as record:
         ExpandingWindowFeatures(
             variables=["ambient_temp"], functions=["sum", "sum"], periods=2, freq="15T"
         )
+
+    # check that error message matches
+    assert str(record.value) == msg
 
 
 def test_error_native_functions(df_time):
