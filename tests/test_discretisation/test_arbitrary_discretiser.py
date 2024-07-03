@@ -1,11 +1,10 @@
 import numpy as np
 import pandas as pd
 import pytest
+from feature_engine.discretisation import ArbitraryDiscretiser
 from numpy.random import default_rng
 from scipy.stats import skewnorm
 from sklearn.datasets import fetch_california_housing
-
-from feature_engine.discretisation import ArbitraryDiscretiser
 
 
 def test_arbitrary_discretiser():
@@ -125,6 +124,41 @@ def test_error_if_not_permitted_value_is_errors():
 
 
 def test_error_if_not_binning_dict_dict_type():
+    # Test for string
+    msg = (
+        "binning_dict must be a dictionary with the interval limits per "
+        "variable. Got HOLA instead."
+    )
+
     age_dict = "HOLA"
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as record:
         ArbitraryDiscretiser(binning_dict=age_dict)
+
+    # check that error message matches
+    assert str(record.value) == msg
+
+    # Test for Integer
+    msg = (
+        "binning_dict must be a dictionary with the interval limits per "
+        "variable. Got 1 instead."
+    )
+
+    age_dict = 1
+    with pytest.raises(ValueError) as record:
+        ArbitraryDiscretiser(binning_dict=age_dict)
+
+    # check that error message matches
+    assert str(record.value) == msg
+
+    # Test for Boolean
+    msg = (
+        "binning_dict must be a dictionary with the interval limits per "
+        "variable. Got False instead."
+    )
+
+    age_dict = False
+    with pytest.raises(ValueError) as record:
+        ArbitraryDiscretiser(binning_dict=age_dict)
+
+    # check that error message matches
+    assert str(record.value) == msg
