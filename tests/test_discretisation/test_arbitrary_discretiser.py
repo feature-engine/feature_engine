@@ -124,12 +124,12 @@ def test_error_if_not_permitted_value_is_errors():
 
 
 def test_error_if_not_binning_dict_dict_type():
-    # Test for string
     msg = (
         "binning_dict must be a dictionary with the interval limits per "
         "variable. Got HOLA instead."
     )
 
+    # Test for string
     age_dict = "HOLA"
     with pytest.raises(ValueError) as record:
         ArbitraryDiscretiser(binning_dict=age_dict)
