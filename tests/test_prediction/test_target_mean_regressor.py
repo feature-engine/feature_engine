@@ -1,8 +1,7 @@
 import numpy as np
+import pytest
 
 from feature_engine._prediction.target_mean_regressor import TargetMeanRegressor
-
-import pytest
 
 
 def test_regressor_categorical_variables(df_regression):
