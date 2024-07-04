@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
 import pytest
-from feature_engine.discretisation import ArbitraryDiscretiser
 from numpy.random import default_rng
 from scipy.stats import skewnorm
 from sklearn.datasets import fetch_california_housing
+
+from feature_engine.discretisation import ArbitraryDiscretiser
 
 
 def test_arbitrary_discretiser():
@@ -123,7 +124,7 @@ def test_error_if_not_permitted_value_is_errors():
         ArbitraryDiscretiser(binning_dict=age_dict, errors="medialuna")
 
 
-def test_error_if_not_binning_dict_dict_type():
+def test_error_if_binning_dict_not_dict_type():
     msg = (
         "binning_dict must be a dictionary with the interval limits per "
         "variable. Got HOLA instead."
