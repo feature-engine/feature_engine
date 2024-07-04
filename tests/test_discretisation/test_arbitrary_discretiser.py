@@ -124,42 +124,14 @@ def test_error_if_not_permitted_value_is_errors():
         ArbitraryDiscretiser(binning_dict=age_dict, errors="medialuna")
 
 
-def test_error_if_binning_dict_not_dict_type():
+@pytest.mark.parametrize("binning_dict", ["HOLA", 1, False])
+def test_error_if_binning_dict_not_dict_type(binning_dict):
     msg = (
         "binning_dict must be a dictionary with the interval limits per "
-        "variable. Got HOLA instead."
+        f"variable. Got {binning_dict} instead."
     )
-
-    # Test for string
-    age_dict = "HOLA"
     with pytest.raises(ValueError) as record:
-        ArbitraryDiscretiser(binning_dict=age_dict)
-
-    # check that error message matches
-    assert str(record.value) == msg
-
-    # Test for Integer
-    msg = (
-        "binning_dict must be a dictionary with the interval limits per "
-        "variable. Got 1 instead."
-    )
-
-    age_dict = 1
-    with pytest.raises(ValueError) as record:
-        ArbitraryDiscretiser(binning_dict=age_dict)
-
-    # check that error message matches
-    assert str(record.value) == msg
-
-    # Test for Boolean
-    msg = (
-        "binning_dict must be a dictionary with the interval limits per "
-        "variable. Got False instead."
-    )
-
-    age_dict = False
-    with pytest.raises(ValueError) as record:
-        ArbitraryDiscretiser(binning_dict=age_dict)
+        ArbitraryDiscretiser(binning_dict=binning_dict)
 
     # check that error message matches
     assert str(record.value) == msg
