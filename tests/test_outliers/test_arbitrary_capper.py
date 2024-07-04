@@ -162,38 +162,15 @@ def test_fit_and_transform_raise_error_if_df_contains_na(df_normal_dist):
         transformer.transform(df_na)
 
 
-def test_error_if_missing_values_wrong_type():
+@pytest.mark.parametrize(
+    "missing_values",
+    ["HOLA", 1, True, {"key1": "value1", "key2": "value2", "key3": "value3"}],
+)
+def test_error_if_missing_values_wrong_type(missing_values):
     msg = "missing_values takes only values 'raise' or 'ignore'"
-
-    # Test for string
     with pytest.raises(ValueError) as record:
         ArbitraryOutlierCapper(
-            min_capping_dict={"var": -0.17486039103044}, missing_values="HOLA"
-        )
-    # check that error message matches
-    assert str(record.value) == msg
-
-    # Test for integer
-    with pytest.raises(ValueError) as record:
-        ArbitraryOutlierCapper(
-            min_capping_dict={"var": -0.17486039103044}, missing_values=42
-        )
-    # check that error message matches
-    assert str(record.value) == msg
-
-    # Test for boolean
-    with pytest.raises(ValueError) as record:
-        ArbitraryOutlierCapper(
-            min_capping_dict={"var": -0.17486039103044}, missing_values=True
-        )
-    # check that error message matches
-    assert str(record.value) == msg
-
-    # Test for dictionary
-    thisdict = {"key1": "value1", "key2": "value2", "key3": "value3"}
-    with pytest.raises(ValueError) as record:
-        ArbitraryOutlierCapper(
-            min_capping_dict={"var": -0.17486039103044}, missing_values=thisdict
+            min_capping_dict={"var": -0.17486039103044}, missing_values="missing_values"
         )
     # check that error message matches
     assert str(record.value) == msg
