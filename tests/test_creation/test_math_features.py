@@ -392,5 +392,3 @@ def test_customfunction_agg_with_not_nan_save(df_vartypes):
     )
     # transform params
     pd.testing.assert_frame_equal(X, ref)
-
-
