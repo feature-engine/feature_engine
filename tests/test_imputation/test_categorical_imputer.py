@@ -294,27 +294,14 @@ def test_variables_cast_as_category_frequent(df_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
-def test_error_when_ignore_format_is_not_boolean():
+@pytest.mark.parametrize(
+    "ignore_format",
+    [22.3, 1, "HOLA", {"key1": "value1", "key2": "value2", "key3": "value3"}],
+)
+def test_error_when_ignore_format_is_not_boolean(ignore_format):
     msg = "ignore_format takes only booleans True and False"
-
-    # Test for float
     with pytest.raises(ValueError) as record:
-        CategoricalImputer(imputation_method="missing", ignore_format=22.3)
-
-    # check that error message matches
-    assert str(record.value) == msg
-
-    # Test for string
-    with pytest.raises(ValueError) as record:
-        CategoricalImputer(imputation_method="missing", ignore_format="HOLA")
-
-    # check that error message matches
-    assert str(record.value) == msg
-
-    # Test for dictionary
-    thisdict = {"key1": "value1", "key2": "value2", "key3": "value3"}
-    with pytest.raises(ValueError) as record:
-        CategoricalImputer(imputation_method="missing", ignore_format=thisdict)
+        CategoricalImputer(imputation_method="missing", ignore_format=ignore_format)
 
     # check that error message matches
     assert str(record.value) == msg
