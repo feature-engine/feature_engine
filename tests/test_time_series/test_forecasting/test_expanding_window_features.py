@@ -563,11 +563,16 @@ def test_error_duplicate_functions(df_time):
     assert str(record.value) == msg
 
 
-def test_error_native_functions(df_time):
-    with pytest.raises(ValueError):
+@pytest.mark.parametrize("functions", [[np.min, np.max], np.min])
+def test_error_native_functions(df_time, functions):
+    msg = "functions must be a list of strings or a string." f"Got {functions} instead."
+    with pytest.raises(ValueError) as record:
         ExpandingWindowFeatures(
             variables=["ambient_temp"],
-            functions=[np.min, np.max],
+            functions=functions,
             periods=2,
             freq="15T",
         )
+
+    # check that error message matches
+    assert str(record.value) == msg
