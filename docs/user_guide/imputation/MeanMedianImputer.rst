@@ -166,7 +166,7 @@ After fitting :class:`MeanMedianImputer()`, we can check out the statistics
 	# Show mean values learned with the training data
 	mmi.imputer_dict_
 
-The `.imputer_dict_` attribute shows the learned statistics:
+The `imputer_dict_` attribute shows the learned statistics:
 
 .. code:: text
 
