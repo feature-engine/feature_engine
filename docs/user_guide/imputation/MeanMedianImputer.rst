@@ -197,7 +197,7 @@ Imputing missing values alongside missing indicators
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Mean or median imputation are commonly done alongside adding missing indicators.
-We can add missing indicators with :class:`AddMissingIndicator()` from feature-engine.
+We can add missing indicators with :class:`AddMissingIndicator()` from Feature-engine.
 
 We can chain :class:`AddMissingIndicator()` with :class:`MeanMedianImputer()` using a 
 `scikit-learn pipeline <https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.make_pipeline.html>`_.
