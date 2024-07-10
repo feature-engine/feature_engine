@@ -194,7 +194,7 @@ containing the imputed values:
 
 
 Imputing missing values alongside missing indicators
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Mean or median imputation are commonly done alongside adding missing indicators.
 We can add missing indicators with :class:`AddMissingIndicator()` from Feature-engine.
