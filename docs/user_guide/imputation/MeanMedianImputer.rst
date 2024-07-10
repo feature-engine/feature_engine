@@ -193,7 +193,7 @@ containing the imputed values:
 	1018      Gilbert       70.375    76.00000
 
 
-Imputing missing values alongside missing indicator
+Imputing missing values alongside missing indicators
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Mean or median imputation are commonly done alongside adding missing indicators.
