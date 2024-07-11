@@ -5,83 +5,127 @@
 Ordinal Encoding
 ================
 
-Ordinal encoding consists of converting categorical data into numeric data by assigning a unique integer to each category, and is a common data preprocessing step in most data science projects.
+Ordinal encoding consists of converting categorical data into numeric data by assigning a unique integer to each 
+category, and is a common data preprocessing step in most data science projects.
 
-Ordinal encoding is particularly useful when an inherent ordering or ranking is present within the categorical variable. For example, the variable **size** with values *small*, *medium*, and *large* exhibits a clear ranking, i.e., small < medium < large, thereby making ordinal encoding an appropriate encoding method. 
+Ordinal encoding is particularly useful when an inherent ordering or ranking is present within the categorical variable. 
+For example, the variable **size** with values *small*, *medium*, and *large* exhibits a clear ranking, i.e., 
+small < medium < large, thereby making ordinal encoding an appropriate encoding method. 
 
-In practice, we apply ordinal encoding regardless of the intrinsic ordering of the variable because some machine learning models, like, for example, decision tree-based models, are able to learn from these arbitrarily assigned values. 
+In practice, we apply ordinal encoding regardless of the intrinsic ordering of the variable because some machine learning 
+models, like, for example, decision tree-based models, are able to learn from these arbitrarily assigned values. 
 
-One of the advantages of ordinal encoding is that it keeps the feature space compact as opposed to one-hot encoding, which can significantly increase the dimensionality of the dataset.
+One of the advantages of ordinal encoding is that it keeps the feature space compact as opposed to one-hot encoding, which 
+can significantly increase the dimensionality of the dataset.
 
 Arbitrary vs ordered ordinal encoding
 -------------------------------------
 
-In ordinal encoding, the categorical variable can be encoded into numeric values either arbitrarily or based on some defined logic.
+In ordinal encoding, the categorical variable can be encoded into numeric values either arbitrarily or based on some 
+defined logic.
 
 Arbitrary ordinal encoding
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Arbitrary ordinal encoding** is the traditional way to perform ordinal encoding, where each category is replaced by a unique numeric value without any further consideration. This encoding method assigns numbers to the categories based on their order of appearance in the dataset, incrementing the value for each new category encountered.
+**Arbitrary ordinal encoding** is the traditional way to perform ordinal encoding, where each category is replaced by a 
+unique numeric value without any further consideration. This encoding method assigns numbers to the categories based on 
+their order of appearance in the dataset, incrementing the value for each new category encountered.
 
-Assigning ordinal numbers arbitrarily provides a simple way of obtaining numerical variables from categorical data and it tends to work well with decision tree based machine learning models.
+Assigning ordinal numbers arbitrarily provides a simple way of obtaining numerical variables from categorical data and it 
+tends to work well with decision tree based machine learning models.
 
 
 Ordered ordinal encoding
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Ordered ordinal encoding** is a more sophisticated way to implement ordinal encoding. It consists of first sorting the categories based on the mean value of the target variable associated with each category and then assigning the numeric values according to this order.
+**Ordered ordinal encoding** is a more sophisticated way to implement ordinal encoding. It consists of first sorting the 
+categories based on the mean value of the target variable associated with each category and then assigning the numeric 
+values according to this order.
 
 For example, for the variable `colour`, if the mean of the target
-for blue, red and grey is 0.5, 0.8 and 0.1 respectively, then we first sort the categories by their mean values: grey (0.1), blue (0.5), red (0.8). Then, we replace grey with 0, blue with 1, and red with 2.
+for blue, red and grey is 0.5, 0.8 and 0.1 respectively, then we first sort the categories by their mean values: grey 
+(0.1), blue (0.5), red (0.8). Then, we replace grey with 0, blue with 1, and red with 2.
 
-Ordered encoding attempts to define a monotonic relationship between the encoded variable and the target variable. This method helps machine learning algorithms, particularly linear models (like linear regression), better capture and learn the relationship between the encoded feature and the target.
+Ordered encoding attempts to define a monotonic relationship between the encoded variable and the target variable. This 
+method helps machine learning algorithms, particularly linear models (like linear regression), better capture and learn 
+the relationship between the encoded feature and the target.
 
-Keep in mind that ordered ordinal encoding will create a monotonic relationship between the encoded variable and the target variable **only** when *there is* an intrinsic relationship between the categories and the target variable.
+Keep in mind that ordered ordinal encoding will create a monotonic relationship between the encoded variable and the target 
+variable **only** when *there is* an intrinsic relationship between the categories and the target variable.
 
 Unseen categories
 -----------------
 
 Ordinal encoding can't inherently deal with unseen categories. 
 
-**Unseen categories** are categorical values that appear in test, validation, or live data but were not present in the training data. These categories are problematic because the encoding methods generate mappings only for categories present in the training data. This means that we would lack encodings for any new, unseen category values. Unseen categories cause errors during inference time (the phase when the machine learning model is used to make predictions on new data) because our feature engineering pipeline is unable to convert that value into a number.
+**Unseen categories** are categorical values that appear in test, validation, or live data but were not present in the 
+training data. These categories are problematic because the encoding methods generate mappings only for categories present 
+in the training data. This means that we would lack encodings for any new, unseen category values. Unseen categories cause 
+errors during inference time (the phase when the machine learning model is used to make predictions on new data) because our 
+feature engineering pipeline is unable to convert that value into a number.
 
-Ordinal encoding by itself does not deal with unseen categories. However, we could replace the unseen category with an arbitrary value, such as -1 (remember that ordinal encoding starts at 0). This procedure might work well for linear models because -1 will be the smallest value for the categorical variable, and since linear models establish linear relationships between variables and targets, it will return the lowest (or highest) response value for unseen categories.
+Ordinal encoding by itself does not deal with unseen categories. However, we could replace the unseen category with an 
+arbitrary value, such as -1 (remember that ordinal encoding starts at 0). This procedure might work well for linear models 
+because -1 will be the smallest value for the categorical variable, and since linear models establish linear relationships 
+between variables and targets, it will return the lowest (or highest) response value for unseen categories.
 
-However, for tree-based models, this method of replacing unseen categories might not be effective because trees create non-linear partitions, making it difficult to predict in advance how the tree will handle a value of -1, leading to unpredictable results.
+However, for tree-based models, this method of replacing unseen categories might not be effective because trees create 
+non-linear partitions, making it difficult to predict in advance how the tree will handle a value of -1, leading to 
+unpredictable results.
 
-If we expect our variables to have a large number of unseen categories, it is better to opt for another encoding technique that can handle unseen categories out of the box, such as target encoding, or conversely, group rare categories together.
+If we expect our variables to have a large number of unseen categories, it is better to opt for another encoding technique 
+that can handle unseen categories out of the box, such as target encoding, or conversely, group rare categories together.
 
 Pros and cons of ordinal encoding
 ----------------------------------
 
-Ordinal encoding is quick and easy to implement, and it does not increase the dimensionality of the dataset, as does one-hot encoding.
+Ordinal encoding is quick and easy to implement, and it does not increase the dimensionality of the dataset, as does one-hot 
+encoding.
 
-On the downside, it can impose misleading relationships between the categories; it does not have the ability to deal with unseen categories; and it is not suitable for a large number of categories, i.e., features with high cardinality.
+On the downside, it can impose misleading relationships between the categories; it does not have the ability to deal with 
+unseen categories; and it is not suitable for a large number of categories, i.e., features with high cardinality.
 
 Ordinal encoding vs label encoding
 ----------------------------------
 
-Ordinal encoding is sometimes also referred to as label encoding. They follow the same procedure. Scikit-learn provides 2 different transformers: the OrdinalEncoder and the LabelEncoder. Both replace values, that is, categories, with ordinal data. The OrdinalEncoder is designed to transform the predictor variables (those in the training set), while the LabelEncoder is designed to transform the target variable. The end result of both transformers is the same; the original values are replaced by ordinal numbers.
+Ordinal encoding is sometimes also referred to as label encoding. They follow the same procedure. Scikit-learn provides 2 
+different transformers: the OrdinalEncoder and the LabelEncoder. Both replace values, that is, categories, with ordinal data. 
+The OrdinalEncoder is designed to transform the predictor variables (those in the training set), while the LabelEncoder is 
+designed to transform the target variable. The end result of both transformers is the same; the original values are replaced 
+by ordinal numbers.
 
-In our view, this has raised some confusion as to whether label encoding and ordinal encoding consist of different ways of preprocessing categorical data. Some argue that label encoding consists of replacing categories with numbers assigned arbitrarily, whereas ordinal encoding consists of assigning numbers based on an inherent order of the variable (like that of the variable size). We make no such distinction and consider both techniques interchangeably. 
+In our view, this has raised some confusion as to whether label encoding and ordinal encoding consist of different ways of 
+preprocessing categorical data. Some argue that label encoding consists of replacing categories with numbers assigned 
+arbitrarily, whereas ordinal encoding consists of assigning numbers based on an inherent order of the variable (like that 
+of the variable size). We make no such distinction and consider both techniques interchangeably. 
 
 OrdinalEncoder
 --------------
 
-Feature-engine's :class:`OrdinalEncoder()` implements ordinal encoding. That is, it encodes categorical features by replacing each category with a unique number ranging from 0 to k-1, where 'k' is the distinct number of categories in the dataset. 
+Feature-engine's :class:`OrdinalEncoder()` implements ordinal encoding. That is, it encodes categorical features by replacing 
+each category with a unique number ranging from 0 to k-1, where 'k' is the distinct number of categories in the dataset. 
 
-:class:`OrdinalEncoder()` supports both **arbitrary** and **ordered** encoding methods. The desired approach can be specified using the `encoding_method` parameter that accepts either **"arbitrary"** or **"ordered"**. If not defined, `encoding_method` defaults to `"ordered"`.
+:class:`OrdinalEncoder()` supports both **arbitrary** and **ordered** encoding methods. The desired approach can be specified 
+using the `encoding_method` parameter that accepts either **"arbitrary"** or **"ordered"**. If not defined, `encoding_method` 
+defaults to `"ordered"`.
 
-If the `encoding_method` is defined as **"arbitrary"**, then :class:`OrdinalEncoder()` will assign numeric values to the categorical variable on a first-come first-served basis i.e., in the order the categories are encountered in the dataset.
+If the `encoding_method` is defined as **"arbitrary"**, then :class:`OrdinalEncoder()` will assign numeric values to the 
+categorical variable on a first-come first-served basis i.e., in the order the categories are encountered in the dataset.
 
-If the `encoding_method` is defined as **"ordered"**, then :class:`OrdinalEncoder()` will assign numeric values according to the mean of the target variable for each category. The categories with the highest target mean value will be replaced by an integer value k-1, while the category with the lowest target mean value will be replaced by 0. Here 'k' is the distinct number of categories.
+If the `encoding_method` is defined as **"ordered"**, then :class:`OrdinalEncoder()` will assign numeric values according to 
+the mean of the target variable for each category. The categories with the highest target mean value will be replaced by an 
+integer value k-1, while the category with the lowest target mean value will be replaced by 0. Here 'k' is the distinct number 
+of categories.
 
-When encountering unseen categories, :class:`OrdinalEncoder()` has the option to raise an error and fail, ignore the rare category, in which case it will be encoded as `np.nan`, or encode it into -1. You can define this behaviour through the `unseen` parameter.  
+When encountering unseen categories, :class:`OrdinalEncoder()` has the option to raise an error and fail, ignore the rare 
+category, in which case it will be encoded as `np.nan`, or encode it into -1. You can define this behaviour through the 
+`unseen` parameter.  
 
 Python Implementation
 ---------------------
 
-In the rest of the page, we'll show different ways how we can use ordinal encoding through Feature-engine's :class:`OrdinalEncoder()`.
+In the rest of the page, we'll show different ways how we can use ordinal encoding through Feature-engine's 
+:class:`OrdinalEncoder()`.
 
 
 Arbitrary ordinal encoding
@@ -123,7 +167,8 @@ We see the Titanic dataset below:
  686        3  female  22.000000      0      0   7.7250     M        Q
 
 
-Let's set up the :class:`OrdinalEncoder()` to encode the categorical variables `cabin', `embarked`, and `sex` with integers assigned arbitrarily:
+Let's set up the :class:`OrdinalEncoder()` to encode the categorical variables `cabin', `embarked`, and `sex` with 
+integers assigned arbitrarily:
 
 .. code:: python
 
@@ -131,7 +176,8 @@ Let's set up the :class:`OrdinalEncoder()` to encode the categorical variables `
           encoding_method='arbitrary',
           variables=['cabin', 'embarked', 'sex'])
 
-:class:`OrdinalEncoder()` will encode **all** categorical variables in the training set by default, unless we specify which variables to encode, as we did in the previous code block.
+:class:`OrdinalEncoder()` will encode **all** categorical variables in the training set by default, unless we specify which 
+variables to encode, as we did in the previous code block.
 
 Let's fit the encoder so that it learns the mappings for each category:
 
@@ -145,7 +191,8 @@ The encoding mappings are stored in its `encoder_dict_` parameter. Let's display
 
  encoder.encoder_dict_
 
-In the `encoder_dict_` we find the integers that will replace each one of the categories of each variable to encode. With this dictionary, we can map the original value of the variable to the new value.
+In the `encoder_dict_` we find the integers that will replace each one of the categories of each variable to encode. With 
+this dictionary, we can map the original value of the variable to the new value.
 
 .. code:: python
 
@@ -161,9 +208,11 @@ In the `encoder_dict_` we find the integers that will replace each one of the ca
  'embarked': {'S': 0, 'C': 1, 'Q': 2, 'Missing': 3},
  'sex': {'female': 0, 'male': 1}}
 
-According to the previous mappings, the category M in the variable cabin will be replaced by 0, the category E will be replaced by 1, and so on.
+According to the previous mappings, the category M in the variable cabin will be replaced by 0, the category E will be 
+replaced by 1, and so on.
 
-With the mappings ready, we can go ahead and transform data. The `transform()` method applies the learned mappings to the categorical features in the train and test sets, returning ordinal variables.
+With the mappings ready, we can go ahead and transform data. The `transform()` method applies the learned mappings to the 
+categorical features in the train and test sets, returning ordinal variables.
 
 .. code:: python
 
@@ -172,7 +221,8 @@ With the mappings ready, we can go ahead and transform data. The `transform()` m
 
     print(train_t.head())
 
-In the following output, we see the resulting dataframe, where the original variable values in cabin, embarked and sex, are now replaced with integers:
+In the following output, we see the resulting dataframe, where the original variable values in cabin, embarked and sex, 
+are now replaced with integers:
 
 .. code:: python
 
@@ -186,7 +236,9 @@ In the following output, we see the resulting dataframe, where the original vari
 Inverse transform
 ~~~~~~~~~~~~~~~~~
 
-We can use the `inverse_transform()` method to revert the encoded values back to the original categories. This can be useful for model interpretation, debugging, or when we need to present results to stakeholders in their original categorical form.
+We can use the `inverse_transform()` method to revert the encoded values back to the original categories. This can be 
+useful for model interpretation, debugging, or when we need to present results to stakeholders in their original categorical 
+form.
 
 
 .. code:: python
@@ -210,11 +262,16 @@ The previous command returns a dataframe with the original category values:
 Encoding numerical variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Numerical variables can also be categorical in nature. :class:`OrdinalEncoder()` will only encode variables of data type object or categorical by default. However, we can encode numerical variables as well by setting `ignore_format=True`.
+Numerical variables can also be categorical in nature. :class:`OrdinalEncoder()` will only encode variables of data type 
+object or categorical by default. However, we can encode numerical variables as well by setting `ignore_format=True`.
 
-In the Titanic dataset, the variable **pclass** represents the class in which the passenger was traveling (that is, first class, second class, and third class). This variable is probably good as it is and doesn't require further data preprocessing, but to show how to encode numerical variables with :class:`OrdinalEncoder()`, we will treat it as categorical and proceed with ordinal encoding.﻿
+In the Titanic dataset, the variable **pclass** represents the class in which the passenger was traveling (that is, first 
+class, second class, and third class). This variable is probably good as it is and doesn't require further data preprocessing, 
+but to show how to encode numerical variables with :class:`OrdinalEncoder()`, we will treat it as categorical and proceed 
+with ordinal encoding.﻿
 
-Let's set up :class:`OrdinalEncoder()` to encode the variable pclass with ordinal numbers, and then fit it to the training set, so that it learns the mappings:
+Let's set up :class:`OrdinalEncoder()` to encode the variable pclass with ordinal numbers, and then fit it to the training 
+set, so that it learns the mappings:
 
 .. code:: python
 
@@ -225,7 +282,8 @@ Let's set up :class:`OrdinalEncoder()` to encode the variable pclass with ordina
 
  train_t = encoder.fit_transform(X_train)
 
-The `fit_transform()` method fits the encoder to the training data, learning the mappings for each category, and then transforms the training data using these mappings. Let's look at the resulting encodings.
+The `fit_transform()` method fits the encoder to the training data, learning the mappings for each category, and then 
+transforms the training data using these mappings. Let's look at the resulting encodings.
 
 .. code:: python
 
@@ -246,7 +304,9 @@ Ordered ordinal encoding
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Ordered encoding consists of assigning the integers based on the mean target.
-We will use the **California Housing Dataset** to demonstrate ordered encoding. This dataset contains numeric features such as *MedInc*, *HouseAge* and *AveRooms*, among others. The target variable is *MedHouseVal* i.e., the median house value for California districts, expressed in hundreds of thousands of dollars ($100,000).
+We will use the **California Housing Dataset** to demonstrate ordered encoding. This dataset contains numeric features 
+such as *MedInc*, *HouseAge* and *AveRooms*, among others. The target variable is *MedHouseVal* i.e., the median house 
+value for California districts, expressed in hundreds of thousands of dollars ($100,000).
 
 Let's first set up the dataset.
 
@@ -281,7 +341,8 @@ Below, we see the dataset:
  3    -122.25        3.413  
  4    -122.25        3.422  
 
-To demonstrate the power of ordered encoding, we will convert the `HouseAge` variable, which is continuous, into a categorical variable with four classes: *new*, *newish*, *old*, and *very old*.
+To demonstrate the power of ordered encoding, we will convert the `HouseAge` variable, which is continuous, into a 
+categorical variable with four classes: *new*, *newish*, *old*, and *very old*.
 
 .. code:: python
 
@@ -298,7 +359,9 @@ To demonstrate the power of ordered encoding, we will convert the `HouseAge` var
  3      52.0   very_old
  4      52.0   very_old
 
-The categories of **HouseAgeCategorical** (*new*, *newish*, *old*, *very_old*) are discrete and represent ranges of house ages. They very likely have an ordinal relationship with the target, as older houses tend to be cheaper, making them a suitable candidate for ordered encoding.
+The categories of **HouseAgeCategorical** (*new*, *newish*, *old*, *very_old*) are discrete and represent ranges of 
+house ages. They very likely have an ordinal relationship with the target, as older houses tend to be cheaper, making 
+them a suitable candidate for ordered encoding.
 
 Now let's split the data into training and test sets.
 
@@ -325,11 +388,12 @@ The training set now includes the categorical feature we created for *HouseAge*.
       Longitude HouseAgeCategorical  
  1989    -119.79           very_old  
  256     -122.21           very_old  
- 7887    -118.04                 new  
- 4581    -118.28                 new  
+ 7887    -118.04                new  
+ 4581    -118.28                new  
  1993    -119.81           very_old  
 
-Let's define the :class:`OrdinalEncoder()` to encode the categorical variable **HouseAgeCategorical** using **ordered** encoding.
+Let's define the :class:`OrdinalEncoder()` to encode the categorical variable **HouseAgeCategorical** using **ordered** 
+encoding.
 
 .. code:: python
 
@@ -338,14 +402,16 @@ Let's define the :class:`OrdinalEncoder()` to encode the categorical variable **
     variables=['HouseAgeCategorical']
  )
 
-Let's fit the encoder so that it learns the mappings. Note that for ordered ordinal encoding, we need to pass the target variable to the `fit()` method:
+Let's fit the encoder so that it learns the mappings. Note that for ordered ordinal encoding, we need to pass the target 
+variable to the `fit()` method:
 
 .. code:: python
 
  X_train_t = ordered_encoder.fit_transform(X_train, y_train)
  X_test_t = ordered_encoder.transform(X_test)
 
-Note that we first fit the encoder on the training data and then transformed both the training and test data, using the mappings learned from the training set.
+Note that we first fit the encoder on the training data and then transformed both the training and test data, using the 
+mappings learned from the training set.
 
 Let's display the resulting dataframe:
 
@@ -364,12 +430,12 @@ We can see the resulting dataframe below, where the variable HouseAgeCategorical
  4581  1.7199      17.0  2.518000   1.196000      3051.0  3.051000     34.06   
  1993  2.2206      50.0  4.622754   1.161677       606.0  3.628743     36.73   
 
-      Longitude  HouseAgeCategorical  
- 1989    -119.79                    3  
- 256     -122.21                    3  
- 7887    -118.04                    0  
- 4581    -118.28                    0  
- 1993    -119.81                    3  
+      Longitude   HouseAgeCategorical  
+ 1989    -119.79                   3  
+ 256     -122.21                   3  
+ 7887    -118.04                   0  
+ 4581    -118.28                   0  
+ 1993    -119.81                   3  
 
 Let's check out the resulting mappings from category to integer:
 
@@ -407,7 +473,11 @@ This will result in the following output:
  2     2                   2.083013
  3     3                   2.237240
 
-The categories were first sorted based on their target mean values, and then the numbers were assigned according to this order. For example, houses in the *very_old* age category encoded as '3' have an average median house value of approximately $223,724, while those in the *new* age category encoded as '0' have an average median house value of approximately $192,593. This is in principle, contrary to what we assumed in the first place: that older houses would be cheaper. But this is what the data tells us.
+The categories were first sorted based on their target mean values, and then the numbers were assigned according to 
+this order. For example, houses in the *very_old* age category encoded as '3' have an average median house value of 
+approximately $223,724, while those in the *new* age category encoded as '0' have an average median house value of 
+approximately $192,593. This is in principle, contrary to what we assumed in the first place: that older houses would 
+be cheaper. But this is what the data tells us.
 
 We can now plot the target mean value for each category after encoding for the test set to show the monotonic relationship.
 
@@ -429,7 +499,9 @@ This will give us the following output:
    :align: center
 
 
-As we see in the above plot, ordered ordinal encoding was able to capture the monotonic relationship between the `HouseAgeCategorical` variable and the median house value, allowing the machine learning models to learn this trend that might otherwise go unnoticed.
+As we see in the above plot, ordered ordinal encoding was able to capture the monotonic relationship between the 
+`HouseAgeCategorical` variable and the median house value, allowing the machine learning models to learn this trend that 
+might otherwise go unnoticed.
 
 The power of ordinal ordered encoder resides in its intrinsic capacity of finding monotonic relationships.
 
