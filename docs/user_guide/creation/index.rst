@@ -54,6 +54,8 @@ Summary of Feature-engine’s feature-creation transformers:
 
 - **RelativeFeatures** - Utilizes basic mathematical functions between a group of variables and one or more reference features, appending the new features to the pandas dataframe.
 
+- **DecisionTreeFeatures** - Creates new features as the output of decision trees trained on 1 or more feature combinations.
+
 Feature creation module
 -----------------------
 
