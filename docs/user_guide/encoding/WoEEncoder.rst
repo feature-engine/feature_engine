@@ -408,7 +408,7 @@ References
 
 - `Weight of Evidence: A Review of Concept and Methods <https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1539-6924.2005.00699.x>`_
 - `Comparison and evaluation of landslide susceptibility maps obtained from weight of evidence, logistic regression, and artificial neural network models <https://link.springer.com/article/10.1007/s11069-018-3299-7>`_
-- `Can Weight of Evidence, Quantitative Bias, and Bounding Methods Evaluate Robustness of Real-World Evidence for Regulator and Health Technology Assessment Decisions on Medical Interventions<https://www.sciencedirect.com/science/article/pii/S0149291823003557>`_
+- `Can weight of evidence, quantitative bias, and bounding methods evaluate robustness of real-world evidence for regulator and health technology assessment decisions on medical interventions <https://www.sciencedirect.com/science/article/pii/s0149291823003557>`_
 
 
 Additional resources
