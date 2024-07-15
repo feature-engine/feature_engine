@@ -335,6 +335,7 @@ Finally, we can visualize the values of the WoE encoded variables respect to the
     plt.grid(axis='y')
     plt.show()
 
+In the following plot, we can see the WoE for different categories of the variable 'age':
 
 .. figure:: ../../images/woe_encoding.png
    :width: 600
@@ -343,7 +344,7 @@ Finally, we can visualize the values of the WoE encoded variables respect to the
 
    WoE for Age
 
-We can visualize WoE for different categories of the variable 'age'. The WoE values are in the y-axis, and the categories are in the x-axis. We see that the WoE values are monotonically increasing, which is the expected behavior of the WoE. If we check the category 4 (which is a label), we can see the WoE is around -0.45 which means that it has a small portion of positive cases compared to negative cases. This means that this category has a low probability of survival.
+The WoE values are in the y-axis, and the categories are in the x-axis. We see that the WoE values are monotonically increasing, which is the expected behavior of the WoE. If we check the category 4 (which is a label), we can see the WoE is around -0.45 which means that it has a small portion of positive cases compared to negative cases. This means that this category has a low probability of survival.
 
 
 Adding a model to the pipeline
@@ -377,7 +378,7 @@ The accuracy of the model presented below:
 
     Accuracy: 0.76
 
-The accuracy of the model is 0.76, which is a good result for a first model. We can improve the model by tuning the hyperparameters of the logistic regression model or by using other models. Please note that accuracy may not be the best metric for this problem, as the dataset is imbalanced. We recommend using other metrics such as the F1 score, precision, recall, or the ROC-AUC score. You can learn more about imbalance datasets in our `course <https://www.udemy.com/course/machine-learning-with-imbalanced-data/>`_
+The accuracy of the model is 0.76, which is a good result for a first model. We can improve the model by tuning the hyperparameters of the logistic regression model. Please note that accuracy may not be the best metric for this problem, as the dataset is imbalanced. We recommend using other metrics such as the F1 score, precision, recall, or the ROC-AUC score. You can learn more about imbalance datasets in our `course <https://www.trainindata.com/p/machine-learning-with-imbalanced-data>`_
 
 
 
