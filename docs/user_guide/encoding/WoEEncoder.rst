@@ -5,11 +5,17 @@
 Weight of Evidence (WoE)
 ========================
 
-The term Weight of Evidence (WoE) can be traced to the financial sector, especially to 1983, when it took on an important role in describing the key components of credit risk analysis and credit scoring. Since then, it has been used for medical research, GIS studies, and more (see references below for review).
+The term Weight of Evidence (WoE) can be traced to the financial sector, especially to
+1983, when it took on an important role in describing the key components of credit risk
+analysis and credit scoring. Since then, it has been used for medical research, GIS
+studies, and more (see references below for review).
 
-The WoE is a statistical data-driven method based on Bayes' theorem and the concepts of prior and posterior probability, so the concepts of log odds, events, and non-events are crucial to understanding how the weight of evidence works.
+The WoE is a statistical data-driven method based on Bayes' theorem and the concepts of
+prior and posterior probability, so the concepts of log odds, events, and non-events
+are crucial to understanding how the weight of evidence works.
 
-The WoE is only defined for binary classification problems. In other words, we can only encode variables using the WoE when the target variable is binary.
+The WoE is only defined for binary classification problems. In other words, we can only
+encode variables using the WoE when the target variable is binary.
 
 Formulation
 -----------
@@ -25,45 +31,54 @@ We discuss the formula in the next section.
 Calculation
 -----------
 
-We have a dataset with a binary dependent variable with two categories, 0 and 1, and
-a categorical predictor variable named variable A with three categories (A1, A2, and A3). The dataset has the following characteristics:
+How is the WoE calculated? Let's say we have a dataset with a binary dependent variable
+with two categories, 0 and 1, and a categorical predictor variable named variable A
+with three categories (A1, A2, and A3). The dataset has the following characteristics:
 
 - There are 20 positive (1) cases and 80 negative (0) cases in the target variable.
 - Category A1 has 10 positive cases and 15 negative cases.
 - Category A2 has 5 positive cases and 15 negative cases.
 - Category A3 has 5 positive cases and 50 negative cases.
 
-First, we group the data by each category of the predictor variable where the target is positive, and then we divide by the total number of positive cases. Then we do the same for the negative cases:
+First, we find out the number of instances with a positive target value (1) per category,
+and then we divide that by the total number of positive cases in the data. Then we determine
+the number of instances with target value of 0 per category and divide that by the total
+number of negative instances in the dataset:
 
 - For category A1, we have 10 positive cases and 15 negative cases, resulting in a positive ratio of 10/20 and a negative ratio of 15/80. This means that the positive ratio is 0.5 and the negative ratio is 0.1875.
 - For category A2, we have 5 positive cases out of 20 positive cases, giving us a  positive ratio of 5/20 and a negative ratio of 15/80. This results in a positive ratio of 0.25 and a negative ratio of 0.1875.
 - For category A3, we have 5 positive cases out of 20 positive cases, resulting in a positive ratio of 5/20, and a 50/80 negative ratio. So the positive ratio is 0.25, and the negative ratio is 0.625.
 
 
-Now we calculate the log of the ratio of the percentage of positive cases in each category.
+Now we calculate the log of the ratio of positive cases in each category:
 
 - For category A1, we have log (0.5/ 0.1875) = 0.98.
 - For category A2, we have log (0.25/ 0.1875) = 0.28.
 - For category A3, we have log (0.25/0.625) =-0.91.
 
-Finally, we replace the categories (A1, A2, and A3) of the independent variable Variable A with the WoE values (0.98, 0.28, -0.91).
+Finally, we replace the categories (A1, A2, and A3) of the independent variable A with
+the WoE values: 0.98, 0.28, -0.91.
 
 Characteristics of the WoE
 --------------------------
 
-The beauty of the WoE, is that we can directly understand the impact of the category on the probability of success (target variable being 1):
+The beauty of the WoE, is that we can directly understand the impact of the category on
+the probability of success (target variable being 1):
 
 - If WoE values are negative, there are more negative cases than positive cases for the category.
 - If WoE values are positive, there are more positive cases than negative cases for that category.
 - If WoE is 0, then there is an equal number of positive and negative cases for that category.
 
 
-In other words, for categories with positive WoE, the probability of success is high, for categories with negative WoE, the probability of success is low, and for those with WoE of zero, there are equal chances for both target outcomes.
+In other words, for categories with positive WoE, the probability of success is high,
+for categories with negative WoE, the probability of success is low, and for those with
+WoE of zero, there are equal chances for both target outcomes.
 
 Advantages of the WoE
 ---------------------
 
-In addition to the intuitive interpretation of the WoE valuess, the WoE shows the following advantages:
+In addition to the intuitive interpretation of the WoE values, the WoE shows the following
+advantages:
 
 - It creates monotonic relationships between the encoded variable and the target.
 - It returns numeric variables on a similar scale.
@@ -72,49 +87,76 @@ In addition to the intuitive interpretation of the WoE valuess, the WoE shows th
 Uses of the WoE
 ---------------
 
-In general, we use the WoE to encode both categorical and numerical variables. For continuous variables, we first need to do binning, that is, sort the variables into discrete intervals. You can do this by preprocessing the variable using any of Feature-engine's discretizers.
+In general, we use the WoE to encode both categorical and numerical variables. For
+continuous variables, we first need to do binning, that is, sort the variables into
+discrete intervals. You can do this by preprocessing the variable using any of
+Feature-engine's discretizers.
 
-Some authors have extended the Weight of Evidence approach to neural networks and other algorithms, and although they have shown good results, the predictive modeling performance of Weight of Evidence was superior when used with
-logistic regression models (see reference below).
+Some authors have extended the Weight of Evidence approach to neural networks and other
+algorithms, and although they have shown good results, the predictive modeling performance
+of Weight of Evidence was superior when used with logistic regression models (see
+reference below).
 
 
 Limitations of the WoE
 ----------------------
 
-As the methodology to calculate the WoE is based on ratios and logarithm, the value is not defined when `p(X=xj|Y = 1) = 0` or `p(X=xj|Y=0) = 0`. For the latter, the division by 0 is not defined, and for the former, the log of 0 is not defined.
+As the methodology to calculate the WoE is based on ratios and logarithm, the WoE value
+is not defined when `p(X=xj|Y = 1) = 0` or `p(X=xj|Y=0) = 0`. For the latter, the division
+by 0 is not defined, and for the former, the log of 0 is not defined.
 
-This occurs when a category shows only 1 of the possible values of the target (either it always takes 1 or 0). In practice, this happens mostly when a category has a low frequency in the dataset, that is, when only very few observations show that category.
+This occurs when a category shows only 1 of the possible values of the target (either it
+always takes 1 or 0). In practice, this happens mostly when a category has a low frequency
+in the dataset, that is, when only very few observations show that category.
 
-To overcome this limitation, consider using a variable transformation method to group those categories together, for example by using Feature-engine's :class:`RareLabelEncoder()`.
+To overcome this limitation, consider using a variable transformation method to group
+those categories together, for example by using Feature-engine's :class:`RareLabelEncoder()`.
 
-
-Taking into account the above considerations, conducting a detailed exploratory data analysis (EDA) is essential as
-part of the data science and model-building process. Integrating these considerations and practices not only
-enhances the feature engineering process but also improves the performance of your models.
+Taking into account the above considerations, conducting a detailed exploratory data
+analysis (EDA) is essential as part of the data science and model-building process.
+Integrating these considerations and practices not only enhances the feature engineering
+process but also improves the performance of your models.
 
 Unseen categories
 -----------------
 
-When using the WoE, we define the mappings, that is, the WoE values per category using the observations from the training set. If the test set shows new (unseen) categories, we'll lack a WoE value for them, and won't be able to encode them.
+When using the WoE, we define the mappings, that is, the WoE values per category using
+the observations from the training set. If the test set shows new (unseen) categories,
+we'll lack a WoE value for them, and won't be able to encode them.
 
-This is a known issue, without an elegant solution. If the new values appear in continuous variables, consider changing the size and number of the intervals. If the unseen categories are seen in categorical variables, consider grouping low frequency categories before doing the encoding.
+This is a known issue, without an elegant solution. If the new values appear in continuous
+variables, consider changing the size and number of the intervals. If the unseen categories
+appear in categorical variables, consider grouping low frequency categories before doing
+the encoding.
 
 
 WoEEncoder
 ----------
 
-The :class:`WoEEncoder()` allows you to automate the process of calculating weight of evidence for a given set of features. By default, :class:`WoEEncoder()` will encode all categorical variables. You can encode just a subset by passing the variables names in a list to the `variables` parameter.
+The :class:`WoEEncoder()` allows you to automate the process of calculating weight of
+evidence for a given set of features. By default, :class:`WoEEncoder()` will encode all
+categorical variables. You can encode just a subset by passing the variables names in a
+list to the `variables` parameter.
 
-By default, :class:`WoEEncoder()` will not encode numerical variables, instead, it will raise an error. If you want to encode numerical, for example discrete variables, set `ignore_format` to `True`.
+By default, :class:`WoEEncoder()` will not encode numerical variables, instead, it will
+raise an error. If you want to encode numerical, for example discrete variables, set
+`ignore_format` to `True`.
 
-:class:`WoEEncoder()` does not handle missing values automatically, so make sure to replace them with a suitable value before the encoding. You can impute missing values with Feature-engine's imputers.
+:class:`WoEEncoder()` does not handle missing values automatically, so make sure to
+replace them with a suitable value before the encoding. You can impute missing values
+with Feature-engine's imputers.
 
-:class:`WoEEncoder()` will ignore unseen categories by default, in which case, they will be replaced by np.nan after the encoding. You have the option to make the encoder raise an error instead, by setting `unseen='raise'`. You can also replace unseen categories by an arbitrary value you need to define in `fill_value`, although we do not recommend that option.
+:class:`WoEEncoder()` will ignore unseen categories by default, in which case, they will
+be replaced by np.nan after the encoding. You have the option to make the encoder raise
+an error instead, by setting `unseen='raise'`. You can also replace unseen categories
+by an arbitrary value you need to define in `fill_value`, although we do not recommend
+this option because it may lead to unpredictable results.
 
 Python example
 --------------
 
-In the rest of the document, we'll show :class:`WoEEncoder()`'s functionality. Let's look at an example using the Titanic Dataset.
+In the rest of the document, we'll show :class:`WoEEncoder()`'s functionality. Let's
+look at an example using the Titanic Dataset.
 
 First, let's load the data and separate the dataset into train and test:
 
@@ -149,7 +191,8 @@ We see the resulting dataframe below:
     686        3  female  22.000000      0      0   7.7250     M        Q
 
 Before we encode the variables, we group infrequent categories into one
-category, which we'll call 'Rare'. For this, we use the :class:`RareLabelEncoder()` as follows:
+category, which we'll call 'Rare'. For this, we use the :class:`RareLabelEncoder()` as
+follows:
 
 .. code:: python
 
@@ -181,14 +224,15 @@ evidence, only in the 3 indicated variables:
     # fit the encoder
     woe_encoder.fit(train_t, y_train)
 
-With `fit()` the encoder learns the weight of the evidence for each category, which are stored in its `encoder_dict_` parameter:
+With `fit()` the encoder learns the weight of the evidence for each category, which are
+stored in its `encoder_dict_` parameter:
 
 .. code:: python
 
 	woe_encoder.encoder_dict_
 
 In the `encoder_dict_` we find the WoE for each one of the categories of the
-variables to encode. This way, we can map the original values to the new value:
+variables to encode. This way, we can map the original values to the new values:
 
 .. code:: python
 
@@ -209,7 +253,8 @@ Now, we can go ahead and encode the variables:
 
     print(train_t.head())
 
-Below we see the resulting dataset with the weight of the evidence replacing the original variable values:
+Below we see the resulting dataset with the weight of the evidence replacing the original
+variable values:
 
 .. code:: python
 
@@ -226,10 +271,11 @@ WoE in categorical and numerical variables
 
 In the previous example, we encoded only the variables 'cabin', 'pclass', 'embarked',
 and left the rest of the variables untouched. In the following example, we will use
-Feature-engine's pipeline to transform variables in sequence. We'll group rare categories in categorical variables. Next, we'll discretize numerical variables. And finally, we'll encode them all with the WoE.
+Feature-engine's pipeline to transform variables in sequence. We'll group rare categories
+in categorical variables. Next, we'll discretize numerical variables. And finally, we'll
+encode them all with the WoE.
 
 First, let's load the data and separate it into train and test:
-
 
 .. code:: python
 
@@ -272,7 +318,9 @@ Let's define lists with the categorical and numerical variables:
     numerical_features = ['fare', 'age']
     all = categorical_features + numerical_features
 
-Now, we will set up the pipeline to first discretize the numerical variables, then group rare labels and low frequency intervals into a common group, and finally encode all variables with the WoE:
+Now, we will set up the pipeline to first discretize the numerical variables, then group
+rare labels and low frequency intervals into a common group, and finally encode all
+variables with the WoE:
 
 .. code::: python
 
@@ -289,7 +337,8 @@ We have created a variable transformation pipeline with the following steps:
 - Next, we use :class:`RareLabelEncoder()` to group infrequent categories and intervals into one group.
 - Finally, we use the :class:`WoEEncoder()` to replace values in all variables with the weight of the evidence.
 
-Now, we can go ahead and fit the pipeline to the train set so that the different transformers learn the parameters for the variable transformation.
+Now, we can go ahead and fit the pipeline to the train set so that the different
+transformers learn the parameters for the variable transformation.
 
 .. code:: python
 
@@ -316,7 +365,9 @@ We see the resulting dataframe below:
     1193  0.012075
     686   0.012075
 
-Finally, we can visualize the values of the WoE encoded variables respect to the original values to corroborate the sigmoid function shape, which is the expected behavior of the WoE:
+Finally, we can visualize the values of the WoE encoded variables respect to the original
+values to corroborate the sigmoid function shape, which is the expected behavior of the
+WoE:
 
 .. code:: python
 
@@ -335,22 +386,45 @@ Finally, we can visualize the values of the WoE encoded variables respect to the
     plt.grid(axis='y')
     plt.show()
 
-In the following plot, we can see the WoE for different categories of the variable 'age':
+In the following plot, we can see the WoE for different categories of the variable
+'age':
 
 .. figure:: ../../images/woe_encoding.png
    :width: 600
    :figclass: align-center
    :align: left
 
-   WoE for Age
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
 
-The WoE values are in the y-axis, and the categories are in the x-axis. We see that the WoE values are monotonically increasing, which is the expected behavior of the WoE. If we check the category 4 (which is a label), we can see the WoE is around -0.45 which means that it has a small portion of positive cases compared to negative cases. This means that this category has a low probability of survival.
+The WoE values are in the y-axis, and the categories are in the x-axis. We see that the
+WoE values are monotonically increasing, which is the expected behavior of the WoE. If
+we look at category 4, we can see the WoE is around -0.45 which means that in this age
+bracket there was a small portion of positive cases (people who survived) compared to
+negative cases (non-survivors). In other words, people within this age interval had
+a low probability of survival.
 
 
 Adding a model to the pipeline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To complete the demo, we can add a logistic regression model to the pipeline to obtain predictions of survival after the variable transformation.
+To complete the demo, we can add a logistic regression model to the pipeline to obtain
+predictions of survival after the variable transformation.
 
 .. code:: python
 
@@ -367,41 +441,50 @@ To complete the demo, we can add a logistic regression model to the pipeline to 
 
 
     pipe.fit(X_train, y_train)
-    pipe.fit(X_train, y_train)
     y_pred = pipe.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     print(f"Accuracy: {accuracy:.2f}")
 
-The accuracy of the model presented below:
+The accuracy of the model is shown below:
 
 .. code:: python
 
     Accuracy: 0.76
 
-The accuracy of the model is 0.76, which is a good result for a first model. We can improve the model by tuning the hyperparameters of the logistic regression model. Please note that accuracy may not be the best metric for this problem, as the dataset is imbalanced. We recommend using other metrics such as the F1 score, precision, recall, or the ROC-AUC score. You can learn more about imbalance datasets in our `course <https://www.trainindata.com/p/machine-learning-with-imbalanced-data>`_
+The accuracy of the model is 0.76, which is a good result for a first model. We can
+improve the model by tuning the hyperparameters of the logistic regression model. Please
+note that accuracy may not be the best metric for this problem, as the dataset is
+imbalanced. We recommend using other metrics such as the F1 score, precision, recall, or
+the ROC-AUC score. You can learn more about imbalance datasets in our
+`course <https://www.trainindata.com/p/machine-learning-with-imbalanced-data>`_.
 
 
 
 Weight of Evidence and Information Value
 ----------------------------------------
 
-A common extension of the WoE is the information value (IV), which is a measure of the predictive power of a variable. The IV is calculated as follows:
+A common extension of the WoE is the information value (IV), which is a measure of the
+predictive power of a variable. The IV is calculated as follows:
 
 .. math::
 
     IV = \sum_{i=1}^{n} (p_{i} - q_{i}) \cdot WoE_{i}
 
-Where, p_{i} is the percentage of positive cases in the i-th category, q_{i} is the percentage of negative cases in the i-th category, and WoE_{i} is the weight of evidence of the i-th category.
+Where, `pi` is the percentage of positive cases in the i-th category, `qi` is the
+percentage of negative cases in the i-th category, and WoE_{i} is the weight of evidence
+of the i-th category.
 
-The IV is a measure of the predictive power of a variable. The higher the IV value, the more predictive the variable is. So the combination of WoE with information value can be used for feature selection for binary classification problems.
+The IV is a measure of the predictive power of a variable. The higher the IV value, the
+more predictive the variable is. So the combination of WoE with information value can be
+used for feature selection for binary classification problems.
 
 
 Weight of Evidence and Information Value within Feature-engine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you're asking yourself whether feature_engine allows you to automate this process, the answer is: of course!. You
-can utilize the :class:`SelectByInformationValue()` class and it will handle all these steps for you. Again,
-remember the given considerations.
+If you're asking yourself whether Feature-engine allows you to automate this process,
+the answer is: of course! You can utilize the :class:`SelectByInformationValue()` class
+and it will handle all these steps for you. Again, remember the given considerations.
 
 References
 ----------
