@@ -311,12 +311,12 @@ def test_extract_features_from_different_timezones():
         [
             pd.Series(
                 pd.date_range(
-                    start="2014-08-01 09:00", freq="H", periods=3, tz="Europe/Berlin"
+                    start="2014-08-01 09:00", freq="h", periods=3, tz="Europe/Berlin"
                 )
             ),
             pd.Series(
                 pd.date_range(
-                    start="2014-08-01 09:00", freq="H", periods=3, tz="US/Central"
+                    start="2014-08-01 09:00", freq="h", periods=3, tz="US/Central"
                 )
             ),
         ],

@@ -292,3 +292,16 @@ def test_variables_cast_as_category_frequent(df_na):
     assert X_transformed[["City", "Studies"]].isnull().sum().sum() == 0
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() > 0
     pd.testing.assert_frame_equal(X_transformed, X_reference)
+
+
+@pytest.mark.parametrize(
+    "ignore_format",
+    [22.3, 1, "HOLA", {"key1": "value1", "key2": "value2", "key3": "value3"}],
+)
+def test_error_when_ignore_format_is_not_boolean(ignore_format):
+    msg = "ignore_format takes only booleans True and False"
+    with pytest.raises(ValueError) as record:
+        CategoricalImputer(imputation_method="missing", ignore_format=ignore_format)
+
+    # check that error message matches
+    assert str(record.value) == msg

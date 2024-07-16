@@ -122,3 +122,16 @@ def test_error_if_not_permitted_value_is_errors():
     age_dict = {"Age": [0, 10, 20, 30, np.inf]}
     with pytest.raises(ValueError):
         ArbitraryDiscretiser(binning_dict=age_dict, errors="medialuna")
+
+
+@pytest.mark.parametrize("binning_dict", ["HOLA", 1, False])
+def test_error_if_binning_dict_not_dict_type(binning_dict):
+    msg = (
+        "binning_dict must be a dictionary with the interval limits per "
+        f"variable. Got {binning_dict} instead."
+    )
+    with pytest.raises(ValueError) as record:
+        ArbitraryDiscretiser(binning_dict=binning_dict)
+
+    # check that error message matches
+    assert str(record.value) == msg

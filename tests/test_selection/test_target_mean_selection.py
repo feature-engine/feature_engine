@@ -172,6 +172,8 @@ def test_error_wrong_params():
         SelectByTargetMeanPerformance(bins="hola")
     with pytest.raises(ValueError):
         SelectByTargetMeanPerformance(strategy="hola")
+    with pytest.raises(ValueError):
+        SelectByTargetMeanPerformance(regression=True, scoring="hola")
 
 
 def test_raises_error_if_evaluating_single_variable_and_threshold_is_None(df_test):
