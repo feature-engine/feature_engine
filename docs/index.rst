@@ -183,7 +183,7 @@ discretization with decision trees:
 - :doc:`api_doc/discretisation/EqualWidthDiscretiser`: sorts variable into equal width intervals
 - :doc:`api_doc/discretisation/DecisionTreeDiscretiser`: uses decision trees to create finite variables
 - :doc:`api_doc/discretisation/GeometricWidthDiscretiser`: sorts variable into geometrical intervals
-- :doc:`api_doc/discretisation/Binariser`: two intervals determined by a threshold
+- :doc:`api_doc/discretisation/BinaryDiscretiser`: sorts variable into two intervals determined by a threshold
 
 Outlier Capping or Removal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
