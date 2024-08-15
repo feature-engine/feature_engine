@@ -42,17 +42,17 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class Binariser(BaseDiscretiser):
+class BinaryDiscretiser(BaseDiscretiser):
     """
-    The Binariser() divides continuous numerical variables into two intervals, where
+    The BinaryDiscretiser() divides continuous numerical variables into two intervals, where
     the value `threshold`, the point at which the interval is  divided, is determined
     by the user.
 
-    The Binariser() works only with numerical variables.
+    The BinaryDiscretiser() works only with numerical variables.
     A list of variables can be passed as argument. Alternatively, the discretiser
     will automatically select all numerical variables.
 
-    The Binariser() first finds the boundaries for the intervals for
+    The BinaryDiscretiser() first finds the boundaries for the intervals for
     each variable. Then, it transforms the variables, that is, sorts the values into
     the intervals.
 
@@ -110,7 +110,7 @@ class Binariser(BaseDiscretiser):
     >>> from feature_engine.discretisation import EqualWidthDiscretiser
     >>> np.random.seed(42)
     >>> X = pd.DataFrame(dict(x = np.random.randint(1,100, 100)))
-    >>> transformer = Binariser(threshold=50)
+    >>> transformer = BinaryDiscretiser(threshold=50)
     >>> transformer.fit(X)
     >>> transformer.transform(X)['x'].value_counts()
         x

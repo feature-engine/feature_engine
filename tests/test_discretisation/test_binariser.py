@@ -2,12 +2,12 @@ import numpy as np
 import pytest
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.discretisation.binariser import Binariser
+from feature_engine.discretisation import BinaryDiscretiser
 
 
 def test_automatically_find_variables_and_return_as_numeric(df_normal_dist):
     # test case 1: automatically select variables, return_object=False
-    transformer = Binariser(threshold=0, variables=None, return_object=False)
+    transformer = BinaryDiscretiser(threshold=0, variables=None, return_object=False)
     X = transformer.fit_transform(df_normal_dist)
 
     # transform input
@@ -27,49 +27,49 @@ def test_automatically_find_variables_and_return_as_numeric(df_normal_dist):
 
 
 def test_automatically_find_variables_and_return_as_object(df_normal_dist):
-    transformer = Binariser(threshold=0, variables=None, return_object=True)
+    transformer = BinaryDiscretiser(threshold=0, variables=None, return_object=True)
     X = transformer.fit_transform(df_normal_dist)
     assert X["var"].dtypes == "O"
 
 
 def test_error_when_threshold_not_int_or_float():
     with pytest.raises(TypeError):
-        Binariser(threshold="other")
+        BinaryDiscretiser(threshold="other")
 
 
 def test_error_when_threshold_not_supplied():
     with pytest.raises(TypeError):
-        Binariser()
+        BinaryDiscretiser()
 
 
 def test_error_if_return_object_not_bool():
     with pytest.raises(ValueError):
-        Binariser(threshold=0, return_object="other")
+        BinaryDiscretiser(threshold=0, return_object="other")
 
 
 def test_error_if_input_df_contains_na_in_fit(df_na):
     # test case 3: when dataset contains na, fit method
     with pytest.raises(ValueError):
-        transformer = Binariser(threshold=0)
+        transformer = BinaryDiscretiser(threshold=0)
         transformer.fit(df_na)
 
 
 def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
     # test case 4: when dataset contains na, transform method
     with pytest.raises(ValueError):
-        transformer = Binariser(threshold=0)
+        transformer = BinaryDiscretiser(threshold=0)
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
 
 def test_non_fitted_error(df_vartypes):
     with pytest.raises(NotFittedError):
-        transformer = Binariser(threshold=0)
+        transformer = BinaryDiscretiser(threshold=0)
         transformer.transform(df_vartypes)
 
 
 def test_stout_threshold_out_of_range(df_vartypes, capsys):
-    transformer = Binariser(threshold=20, variables=None, return_object=False)
+    transformer = BinaryDiscretiser(threshold=20, variables=None, return_object=False)
     _ = transformer.fit_transform(df_vartypes[["Age", "Marks"]])
     captured = capsys.readouterr()
     assert (
@@ -79,6 +79,6 @@ def test_stout_threshold_out_of_range(df_vartypes, capsys):
 
 
 def test_return_boundaries(df_normal_dist):
-    transformer = Binariser(threshold=0, return_boundaries=True)
+    transformer = BinaryDiscretiser(threshold=0, return_boundaries=True)
     Xt = transformer.fit_transform(df_normal_dist)
     assert all(x for x in df_normal_dist["var"].unique() if x not in Xt)
