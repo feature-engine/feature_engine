@@ -94,7 +94,7 @@ Please share your story by answering 1 quick question
 * EqualWidthDiscretiser
 * GeometricWidthDiscretiser
 * DecisionTreeDiscretiser
-* ArbitraryDiscreriser
+* ArbitraryDiscretiser
 
 ### Outlier Handling methods
 * Winsorizer
