@@ -95,7 +95,7 @@ Please share your story by answering 1 quick question
 * GeometricWidthDiscretiser
 * DecisionTreeDiscretiser
 * ArbitraryDiscretiser
-* Binariser
+* BinaryDiscretiser
 
 ### Outlier Handling methods
 * Winsorizer
