@@ -44,9 +44,9 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 )
 class BinaryDiscretiser(BaseDiscretiser):
     """
-    The BinaryDiscretiser() divides continuous numerical variables into two intervals, where
-    the value `threshold`, the point at which the interval is  divided, is determined
-    by the user.
+    The BinaryDiscretiser() divides continuous numerical variables into two intervals,
+    where the value `threshold`, the point at which the interval is  divided, is
+    determined by the user.
 
     The BinaryDiscretiser() works only with numerical variables.
     A list of variables can be passed as argument. Alternatively, the discretiser
@@ -55,8 +55,6 @@ class BinaryDiscretiser(BaseDiscretiser):
     The BinaryDiscretiser() first finds the boundaries for the intervals for
     each variable. Then, it transforms the variables, that is, sorts the values into
     the intervals.
-
-    More details in the :ref:`User Guide <equal_width_discretiser>`.
 
     Parameters
     ----------
