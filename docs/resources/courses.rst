@@ -44,13 +44,6 @@ selection in general in the following online courses:
 
    Interpreting Machine Learning Models
 
-.. figure::  ../images/dmlm.png
-   :width: 300
-   :figclass: align-center
-   :align: right
-   :target: https://www.udemy.com/course/deployment-of-machine-learning-models/?referralCode=D4FE5EA129FFD203CFF4
-
-   Deployment of Machine Learning Models
 
 |
 |
