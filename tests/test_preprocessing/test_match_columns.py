@@ -349,9 +349,18 @@ def test_check_for_na_in_transform_does_not_fail():
         }
     )
 
+    expected = pd.DataFrame(
+        {
+            "Name": ["tom", "sam", "nick"],
+            "City": [np.nan, np.nan, np.nan],
+            "Age": [20, 22, 23],
+            "Marks": [0.9, 0.7, 0.6],
+        }
+    )
+
     match_columns = MatchVariables()
-
     match_columns.fit(train)
-
     df_transformed = match_columns.transform(test)
+
     assert isinstance(df_transformed, pd.DataFrame)
+    pd.testing.assert_frame_equal(df_transformed, expected)
