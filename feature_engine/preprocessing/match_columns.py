@@ -63,9 +63,9 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
     fill_value: integer, float or string. Default=np.nan
         The values for the variables that will be added to the transformed dataset.
 
-    missing_values: string, default='ignore'
+    missing_values: string, default='raise'
         Indicates if missing values should be ignored or raised. If 'raise' the
-        transformer will return an error if the the datasets to `fit` or `transform`
+        transformer will return an error if the datasets to `fit` or `transform`
         contain missing values. If 'ignore', missing data will be ignored when learning
         parameters or performing the transformation.
 
@@ -239,8 +239,11 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         X = check_X(X)
 
         if self.missing_values == "raise":
-            # check if dataset contains na
-            _check_contains_na(X, self.feature_names_in_)
+            # Some variables from the train set may not be present in the test set
+            # and vice versa. We'll check for nan only in the variables seen during
+            # training.
+            vars = [var for var in self.feature_names_in_ if var in X.columns]
+            _check_contains_na(X, vars)
 
         _columns_to_drop = list(set(X.columns) - set(self.feature_names_in_))
         _columns_to_add = list(set(self.feature_names_in_) - set(X.columns))
