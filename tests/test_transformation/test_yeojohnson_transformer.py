@@ -116,6 +116,25 @@ def test_inverse_with_X_negative_and_positive():
     pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)
 
 
+def test_inverse_with_with_non_linear_index():
+    X = pd.DataFrame(
+        {
+            "var1": np.arange(-20, 0),
+            "var2": np.arange(0, 20),
+            "var3": np.arange(-10, 10),
+        },
+        index=[13, 15, 12, 11, 17, 9, 4, 0, 1, 14, 18, 2, 3, 6, 5, 7, 8, 2, 16, 10]
+    )
+
+    transformer = YeoJohnsonTransformer(variables=None)
+    X_trans = transformer.fit_transform(X)
+
+    X_inverse = transformer.inverse_transform(X_trans)
+    X_inverse = X_inverse.round(0).astype(int)
+
+    pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)
+
+
 def test_lambda_equals_lambda_equal_0():
     X = pd.DataFrame(
         {

@@ -185,7 +185,7 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         return X
 
     def _inverse_transform_series(self, X: pd.Series, lmbda: float) -> pd.Series:
-        x_inv = pd.Series(np.zeros_like(X))
+        x_inv = pd.Series(np.zeros_like(X), index=X.index)
         pos = X >= 0
 
         # when x >= 0
