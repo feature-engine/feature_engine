@@ -2,8 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
-from sklearn.datasets import fetch_openml
-from sklearn.model_selection import train_test_split
 
 from feature_engine.transformation import YeoJohnsonTransformer
 
