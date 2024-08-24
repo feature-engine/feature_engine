@@ -3,6 +3,7 @@ import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Lasso, LinearRegression, LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.model_selection import KFold
 
 from feature_engine.selection import RecursiveFeatureElimination
 
@@ -208,3 +209,20 @@ def test_stops_when_only_one_feature_remains():
     )
     output = transformer.fit_transform(df[["x", "z"]], df["y"])
     pd.testing.assert_frame_equal(output, df["x"].to_frame())
+
+def test_rfe_with_generator():
+    linear_model = LinearRegression()
+
+    df = pd.DataFrame(
+        {
+            "x": [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+            "z": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            "y": [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+        }
+    )
+    cv = KFold()
+
+    transformer = RecursiveFeatureElimination(
+        estimator=linear_model, scoring="r2", cv=cv.split(df)
+    )
+    transformer.fit(df[["x", "z"]], df["y"])
