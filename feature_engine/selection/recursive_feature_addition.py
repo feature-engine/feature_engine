@@ -178,6 +178,7 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
         # It is initialized with the performance drift of
         # the most important feature
         self.performance_drifts_ = {first_most_important_feature: 0}
+        self.performance_drifts_std_ = {first_most_important_feature: 0}
 
         # loop over the ordered list of features by feature importance starting
         # from the second element in the list.
@@ -201,6 +202,7 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
             # Save feature and performance drift
             self.performance_drifts_[feature] = performance_drift
+            self.performance_drifts_std_[feature] = model_tmp["test_score"].std()
 
             # If new performance model is
             if performance_drift > self.threshold:

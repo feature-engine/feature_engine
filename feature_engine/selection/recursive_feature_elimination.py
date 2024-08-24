@@ -164,6 +164,7 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
 
         # dict to collect features and their performance_drift after shuffling
         self.performance_drifts_ = {}
+        self.performance_drifts_std_ = {}
 
         # evaluate every feature, starting from the least important
         # remember that feature_importances_ is ordered already
@@ -193,6 +194,7 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
 
             # Save feature and performance drift
             self.performance_drifts_[feature] = performance_drift
+            self.performance_drifts_std_[feature] = model_tmp["test_score"].std()
 
             if performance_drift > self.threshold:
 

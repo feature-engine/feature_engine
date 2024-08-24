@@ -180,6 +180,7 @@ class BaseRecursiveSelector(BaseSelector):
 
         # Aggregate the feature importance returned in each fold
         self.feature_importances_ = feature_importances_cv.mean(axis=1)
+        self.feature_importances_std_ = feature_importances_cv.std(axis=1)
 
         return X, y
 
