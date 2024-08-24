@@ -60,7 +60,7 @@ def test_category_outputs_correct_results():
     )
     pd.testing.assert_frame_equal(df, res, check_dtype=False, check_categorical=False)
 
-    df = pd.DataFrame({"col1": ["a", "b", None], "col2": [1.0, 2.0, np.nan]})
+    df = pd.DataFrame({"col1": ["a", "b", "d"], "col2": [1.0, 2.0, np.nan]})
     res = MatchCategories(
         variables=["col1", "col2"], ignore_format=True, missing_values="ignore"
     ).fit_transform(df)

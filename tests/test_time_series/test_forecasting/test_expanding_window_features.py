@@ -383,7 +383,7 @@ def test_expanding_sum_single_var_freqs(df_time):
     ]
 
     transformer = ExpandingWindowFeatures(
-        variables=["ambient_temp"], functions="sum", freq="30T"
+        variables=["ambient_temp"], functions="sum", freq="30min"
     )
     df_tr = transformer.fit_transform(df_time)
     assert_frame_equal(df_tr, expected_df)
@@ -415,7 +415,7 @@ def test_expanding_sum_single_var_periods_and_freqs(df_time):
     ]
 
     transformer = ExpandingWindowFeatures(
-        variables=["ambient_temp"], functions="sum", periods=2, freq="15T"
+        variables=["ambient_temp"], functions="sum", periods=2, freq="15min"
     )
     df_tr = transformer.fit_transform(df_time)
     assert_frame_equal(df_tr, expected_df)

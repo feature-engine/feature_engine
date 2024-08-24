@@ -116,7 +116,7 @@ def test_imputation_of_numerical_vars_cast_as_object_and_returned_as_numerical(d
     X_transformed = imputer.fit_transform(df_na)
 
     X_reference = df_na.copy()
-    X_reference["Marks"] = X_reference["Marks"].fillna(0.8)
+    X_reference["Marks"] = X_reference["Marks"].astype(float).fillna(0.8)
     X_reference["City"] = X_reference["City"].fillna("London")
     X_reference["Studies"] = X_reference["Studies"].fillna("Bachelor")
     assert imputer.variables == ["City", "Studies", "Marks"]

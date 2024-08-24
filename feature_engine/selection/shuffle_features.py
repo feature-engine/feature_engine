@@ -229,7 +229,7 @@ class SelectByShuffling(BaseSelector):
             cv=self.cv,
             return_estimator=True,
             scoring=self.scoring,
-            fit_params={"sample_weight": sample_weight},
+            params={"sample_weight": sample_weight},
         )
 
         # store initial model performance

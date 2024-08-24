@@ -64,8 +64,8 @@ class WoE:
         inverse_y = y.ne(1).copy()
         total_neg = inverse_y.sum()
 
-        pos = y.groupby(X[variable]).sum() / total_pos
-        neg = inverse_y.groupby(X[variable]).sum() / total_neg
+        pos = y.groupby(X[variable], observed=False).sum() / total_pos
+        neg = inverse_y.groupby(X[variable], observed=False).sum() / total_neg
 
         if not (pos[:] == 0).sum() == 0 or not (neg[:] == 0).sum() == 0:
             if fill_value is None:
