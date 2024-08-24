@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 from feature_engine.variable_handling import (
@@ -58,6 +59,9 @@ def test_check_categorical_variables_returns_categorical_variables(df, df_int):
     assert check_categorical_variables(df_int, [2]) == [2]
     assert check_categorical_variables(df_int, 2) == [2]
 
+    df[["Age", "Marks"]] = df[["Age", "Marks"]].astype(pd.CategoricalDtype)
+    assert check_categorical_variables(df, ["Age", "Marks"]) == ["Age", "Marks"]
+
 
 def test_check_categorical_variables_raises_errors_when_not_categorical(df, df_int):
     msg = (
@@ -107,6 +111,14 @@ def test_check_datetime_variables_returns_datetime_variables(df_datetime):
         == vars_convertible_to_dt
     )
     assert check_datetime_variables(df_datetime, tz_time) == [tz_time]
+
+    df_datetime[vars_convertible_to_dt] = df_datetime[vars_convertible_to_dt].astype(
+        pd.CategoricalDtype
+    )
+    assert (
+        check_datetime_variables(df_datetime, vars_convertible_to_dt)
+        == vars_convertible_to_dt
+    )
 
 
 def test_check_datetime_variables_raises_errors_when_not_datetime(df_datetime):
