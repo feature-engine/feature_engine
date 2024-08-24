@@ -366,7 +366,7 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
                 var for var in self.variables_ if var not in c_dict.keys()
             ]
             c_dict.update(dict(X[non_positive_vars].min(axis=0).abs() + 1))
-            self.C_ = c_dict
+            self.C_ = c_dict  # type:ignore
 
         return self
 
