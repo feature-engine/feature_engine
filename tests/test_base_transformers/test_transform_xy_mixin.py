@@ -22,7 +22,11 @@ def test_transform_x_y_method(df_vartypes):
     assert (Xt.index == [1, 2]).all()
 
     # multioutput target
-    y = pd.DataFrame(columns=["vara", "varb"], index=df_vartypes.index).fillna(0)
+    y = (
+        pd.DataFrame(columns=["vara", "varb"], index=df_vartypes.index)
+        .astype(float)
+        .fillna(0)
+    )
     Xt, yt = transformer.transform_x_y(df_vartypes, y)
 
     assert len(Xt) == len(yt)

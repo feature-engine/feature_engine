@@ -225,9 +225,11 @@ class MeanEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
             else:
                 damping = self.smoothing
             counts = X[var].value_counts()
+            counts.index = counts.index.infer_objects()
             _lambda = counts / (counts + damping)
             self.encoder_dict_[var] = (
-                _lambda * y.groupby(X[var]).mean() + (1.0 - _lambda) * y_prior
+                _lambda * y.groupby(X[var], observed=False).mean()
+                + (1.0 - _lambda) * y_prior
             ).to_dict()
 
         # assign underscore parameters at the end in case code above fails

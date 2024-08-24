@@ -3,7 +3,6 @@
 
 from typing import List, Optional, Union
 
-import numpy as np
 import pandas as pd
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
@@ -150,10 +149,8 @@ class ReciprocalTransformer(BaseNumericalTransformer):
             )
 
         # transform
-        # for some reason reciprocal does not work with integers
-        X.loc[:, self.variables_] = np.reciprocal(
-            X.loc[:, self.variables_].astype("float")
-        )
+        X[self.variables_] = X[self.variables_].astype(float)
+        X.loc[:, self.variables_] = 1 / X.loc[:, self.variables_]
 
         return X
 

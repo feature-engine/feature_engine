@@ -205,7 +205,7 @@ class OrdinalEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
 
         for var in variables_:
             if self.encoding_method == "ordered":
-                t = y.groupby(X[var]).mean()  # type: ignore
+                t = y.groupby(X[var], observed=False).mean()  # type: ignore
                 t = t.sort_values(ascending=True).index
 
             elif self.encoding_method == "arbitrary":
