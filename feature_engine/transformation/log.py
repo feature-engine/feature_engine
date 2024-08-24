@@ -225,13 +225,18 @@ class LogTransformer(BaseNumericalTransformer):
 )
 class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
     """
-    The LogCpTransformer() applies the transformation log(x + C), where C is a positive
-    constant, to the input variable. It applies the natural logarithm or the base 10
-    logarithm, where the natural logarithm is logarithm in base e.
+    The LogCpTransformer() applies the transformation log(x + C), where x is the
+    variable to transform and C is a positive constant. It can applythe natural
+    logarithm or the base 10 logarithm, where the natural logarithm is logarithm in
+    base e.
 
-    The logarithm can only be applied to numerical non-negative values. If the
-    variable contains a zero or a negative value after adding a constant C, the
-    transformer will return an error.
+    As the logarithm can only be applied to numerical non-negative values,
+    LogCpTransformer() extends the functionality of LogTransformer, by adding a
+    constant to shift the distribution of the variables towards positive values.
+
+    Note that if the variable contains a zero or a negative value after adding a
+    constant C, the transformer will return an error. This can occur if the values of
+    the variables in the test set are smaller than those seen during `fit()`.
 
     A list of variables can be passed as an argument. Alternatively, the transformer
     will automatically select and transform all variables of type numeric.
@@ -265,7 +270,7 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
 
     C_:
         The constant C to add to each variable. If C = "auto" a dictionary with
-        C = abs(min(variable)) + 1.
+        C = abs(min(variable)) + 1. For strictly positive variables, C = 0.
 
     {feature_names_in_}
 
@@ -311,10 +316,14 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
     ) -> None:
 
         if base not in ["e", "10"]:
-            raise ValueError("base can take only '10' or 'e' as values")
+            raise ValueError(
+                f"base can take only '10' or 'e' as values. Got {base} instead."
+            )
 
         if not isinstance(C, (int, float, dict)) and not C == "auto":
-            raise ValueError("C can take only 'auto', integers or floats")
+            raise ValueError(
+                f"C can take only 'auto', integers or floats. Got {C} instead."
+            )
 
         self.variables = _check_variables_input_value(variables)
         self.base = base
@@ -349,14 +358,15 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
 
         # calculate C to add to each variable
         if self.C == "auto":
-            self.C_ = dict(X[self.variables_].min(axis=0).abs() + 1)
+            # we add 0 to positive variables
+            c_dict = {var: 0 for var in self.variables_ if X[var].min() > 0}
 
-        # check variables are positive after adding C
-        if (X[self.variables_] + self.C_ <= 0).any().any():
-            raise ValueError(
-                "Some variables contain zero or negative values after adding"
-                + "constant C, can't apply log"
-            )
+            # we add the minimum plus 1 to non-positive variables
+            non_positive_vars = [
+                var for var in self.variables_ if var not in c_dict.keys()
+            ]
+            c_dict.update(dict(X[non_positive_vars].min(axis=0).abs() + 1))
+            self.C_ = c_dict
 
         return self
 
@@ -379,18 +389,20 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
         X = self._check_transform_input_and_state(X)
 
         # check variable is positive after adding c
+        error_msg = (
+            "Some variables contain zero or negative values after adding"
+            + " constant C, can't apply log."
+        )
+
         if (X[self.variables_] + self.C_ <= 0).any().any():
-            raise ValueError(
-                "Some variables contain zero or negative values after adding"
-                + "constant C, can't apply log"
-            )
+            raise ValueError(error_msg)
 
         X[self.variables_] = X[self.variables_].astype(float)
 
         # transform
         if self.base == "e":
             X.loc[:, self.variables_] = np.log(X.loc[:, self.variables_] + self.C_)
-        elif self.base == "10":
+        else:
             X.loc[:, self.variables_] = np.log10(X.loc[:, self.variables_] + self.C_)
 
         return X
@@ -416,7 +428,7 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
         # inverse transform
         if self.base == "e":
             X.loc[:, self.variables_] = np.exp(X.loc[:, self.variables_]) - self.C_
-        elif self.base == "10":
+        else:
             X.loc[:, self.variables_] = 10 ** X.loc[:, self.variables_] - self.C_
 
         return X
