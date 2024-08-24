@@ -104,7 +104,7 @@ removes the features from the dataset.
     Xt = tr.fit_transform(X, y)
     print(Xt.head())
 
-Only 4 features were deemend importance by recursive feature addition with linear regression:
+Only 4 features were deemed important by recursive feature addition with linear regression:
 
 .. code:: python
 
