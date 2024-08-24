@@ -210,6 +210,7 @@ def test_stops_when_only_one_feature_remains():
     output = transformer.fit_transform(df[["x", "z"]], df["y"])
     pd.testing.assert_frame_equal(output, df["x"].to_frame())
 
+
 def test_rfe_with_generator():
     linear_model = LinearRegression()
 
