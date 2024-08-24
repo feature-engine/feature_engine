@@ -3,9 +3,11 @@ from sklearn.model_selection import cross_validate
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_importances_docstring,
+    _feature_importances_std_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
     _performance_drifts_docstring,
+    _performance_drifts_std_docstring,
 )
 from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
@@ -37,7 +39,9 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
     confirm_variables=_confirm_variables_docstring,
     initial_model_performance_=_initial_model_performance_docstring,
     feature_importances_=_feature_importances_docstring,
+    feature_importances_std_=_feature_importances_std_docstring,
     performance_drifts_=_performance_drifts_docstring,
+    performance_drifts_std_=_performance_drifts_std_docstring,
     features_to_drop_=_features_to_drop_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -91,7 +95,11 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
     {feature_importances_}
 
+    {feature_importances_std_}
+
     {performance_drifts_}
+
+    {performance_drifts_std_}
 
     {features_to_drop_}
 
