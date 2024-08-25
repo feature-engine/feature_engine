@@ -23,6 +23,7 @@ init_pypirc: &init_pypirc
       echo -e "repository = $FE_PYPI_URL" >> ~/.pypirc
       echo -e "username = $FE_PYPI_USER" >> ~/.pypirc
       echo -e "password = $FE_PYPI_API_KEY" >> ~/.pypirc
+
 jobs:
   test_feature_engine_py39:
     docker:
@@ -36,6 +37,7 @@ jobs:
           name: Run tests with Python 3.9
           command: |
             tox -e py39
+
   test_feature_engine_py310:
     docker:
       - image: cimg/python:3.10.0
@@ -48,7 +50,8 @@ jobs:
           name: Run tests with Python 3.10
           command: |
             tox -e py310
-  test_feature_engine_py311:
+
+  test_feature_engine_py311_sklearn100:
     docker:
       - image: cimg/python:3.11.7
     working_directory: ~/project
@@ -57,9 +60,23 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run tests with Python 3.11
+          name: Run tests with Python 3.11 and scikit-learn 1.0.0
           command: |
-            tox -e py311
+            tox -e py311-sklearn100
+
+  test_feature_engine_py311_sklearn140:
+    docker:
+      - image: cimg/python:3.11.7
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run tests with Python 3.11 and scikit-learn 1.4.0
+          command: |
+            tox -e py311-sklearn140
+
   test_feature_engine_py312:
     docker:
       - image: cimg/python:3.12.1
@@ -72,6 +89,7 @@ jobs:
           name: Run tests with Python 3.12
           command: |
             tox -e py312
+
   test_style:
     docker:
       - image: cimg/python:3.10.0
@@ -84,6 +102,7 @@ jobs:
           name: Run stylechecks
           command: |
             tox -e stylechecks
+
   test_docs:
     docker:
       - image: cimg/python:3.10.0
@@ -96,6 +115,7 @@ jobs:
           name: Run doc build
           command: |
             tox -e docs
+
   test_type:
     docker:
       - image: cimg/python:3.10.0
@@ -108,6 +128,7 @@ jobs:
           name: Run typechecks
           command: |
             tox -e typechecks
+
   upload_codecov:
     docker:
       - image: cimg/python:3.10.0
@@ -141,13 +162,15 @@ jobs:
             python setup.py sdist bdist_wheel --universal
             ls -l dist
             twine upload dist/*
+
 workflows:
   version: 2
   test-all:
     jobs:
       - test_feature_engine_py39
       - test_feature_engine_py310
-      - test_feature_engine_py311
+      - test_feature_engine_py311_sklearn100
+      - test_feature_engine_py311_sklearn140
       - test_feature_engine_py312
       - test_style
       - test_docs
@@ -161,7 +184,8 @@ workflows:
           requires:
             - test_feature_engine_py39
             - test_feature_engine_py310
-            - test_feature_engine_py311
+            - test_feature_engine_py311_sklearn100
+            - test_feature_engine_py311_sklearn140
             - test_feature_engine_py312
             - test_style
             - test_docs
