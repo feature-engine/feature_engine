@@ -5,35 +5,96 @@
 ProbeFeatureSelection
 =====================
 
-:class:`ProbeFeatureSelection()` generates one or more random variables based on the
-user-selected parameters. Next, the transformer derives the feature importance for each variable
-and probe feature. Finally, it eliminates the features that have a lower feature importance
-score than the probe feature(s).
+:class:`ProbeFeatureSelection()` adds one or more random variables to the dataframe. Next
+it derives the feature importance for each variable, including the probe features. Finally,
+it removes those features whose importance is lower than the probes.
 
-In the case of there being more than one probe feature, the average feature importance score
-of all the probe features is used.
+Deriving feature importance
+---------------------------
 
-In summary, this is how :class:`ProbeFeatureSelection()` selects features:
+:class:`ProbeFeatureSelection()` has 2 strategies to derive feature importance.
 
-1. Create 1 or more random features
-2. Train a machine learning model with all features including the random ones
-3. Derive feature importance for all features
-4. Take the average importance of the random features (only if more than 1 random feature were used)
+In the `collective` strategy, :class:`ProbeFeatureSelection()` trains one machine learning
+model using all the variables plus the probe features, and then derives the feature importance
+from the fitted model. This feature importance is given by the coefficients of
+linear models or the feature importance derived from tree-based algorithms.
+
+In the `individual feature` strategy, :class:`ProbeFeatureSelection()` trains one machine
+learning model per feature and per probe, and then, the feature importance is given by the
+performance of that single feature model. Here, the importance is given by any performance
+metric chosen by you.
+
+Both strategies have advantages and limitations. If the features are correlated, the
+feature importance value returned by the coefficients of a linear model, or derived from
+a decision tree, will appear to be smaller than if the feature was used to train a model
+individually. Hence, potentially important features might be lost to the probes due to these
+seemingly low importance values resulting from correlation.
+
+On the other hand, training models using individual features, does not allow to detect
+feature interactions and does not remove redundant variables.
+
+In addition, keep in mind that the importance derived tree-based models is biased towards
+features with high cardinality. Hence, continuous features will seem to be more important
+than discrete variables. If your features are discrete and your probes continuous,
+you could be removing important features accidentally.
+
+Selecting features
+------------------
+
+After assigning a value of feature importance to each feature, including the probes,
+:class:`ProbeFeatureSelection()` will select those variables whose importance is greater
+than the mean importance of all probes.
+
+Feature selection process
+-------------------------
+
+This is how :class:`ProbeFeatureSelection()` selects features using the `collective`
+strategy:
+
+1. Add 1 or more random features to the dataset
+2. Train a machine learning model using all features including the random ones
+3. Derive feature importance from the fitted model
+4. Take the average importance of the random features
 5. Select features whose importance is greater than the importance of the random variables (step 4)
+
+
+This is how :class:`ProbeFeatureSelection()` selects features using the `individual feature`
+strategy:
+
+1. Add 1 or more random features to the dataset
+2. Train a machine learning per feature and per probe
+3. Determine the feature importance as the performance of the single feature model
+4. Take the average importance of the random features
+5. Select features whose importance is greater than the importance of the random variables (step 4)
+
+Rationale of probe feature selection
+------------------------------------
 
 One of the primary goals of feature selection is to remove noise from the dataset. A
 randomly generated variable, i.e., probe feature, inherently possesses a high level of
-noise. Consequently, any variable that demonstrates less importance than a probe feature
-is assumed to be noise and can be discarded from the dataset.
+noise. Consequently, any variable with less importance than a probe feature is assumed
+to be noise and can be discarded from the dataset.
 
-When initiating the :class:`ProbeFeatureSelection()` class, the user has the option of selecting
-which distribution is to be assumed to create the probe feature(s) and the number of
-probe features to be created. The possible distributions are 'normal', 'binary', 'uniform',
-or 'all'. 'all' creates 1 or more probe features comprised of each distribution type,
-i.e., normal, binomial, and uniform.
+Distribution of the probe features
+----------------------------------
+
+When initiating the :class:`ProbeFeatureSelection()` class, you have the option to select
+which distribution is to be assumed to create the probe feature(s), as well as the number of
+probe features to create.
+
+The possible distributions are 'normal', 'binary', 'uniform', or 'all'. 'all' creates 1
+or more probe features comprised of each distribution type, i.e., normal, binomial, and
+uniform. So, if you selected 'all' and are creating 9 probe features, you will have 3 probes
+for each distribution.
+
+The distribution matters. Tree-based models tend to give more importance to highly cardinal
+features. Hence, probes created from a uniform or normal distribution will display a greater
+importance than probes extracted from a binomial distribution when using these models.
+
 
 Example
 -------
+
 Let's see how to use this transformer to select variables from UC Irvine's Breast Cancer
 Wisconsin (Diagnostic) dataset, which can be found `here`_. We will use Scikit-learn to load
 the dataset. This dataset concerns breast cancer diagnoses. The target variable is binary, i.e.,
