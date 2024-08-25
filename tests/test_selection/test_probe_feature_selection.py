@@ -308,3 +308,55 @@ def test_cv_generator(df_test):
     pd.testing.assert_frame_equal(
         X_tr, X.drop(columns=["var_2", "var_10"]), check_dtype=False
     )
+
+
+def test_feature_importance_std(df_test):
+    X, y = df_test
+
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(),
+        distribution="normal",
+        n_probes=2,
+        scoring="recall",
+        cv=3,
+        random_state=3,
+        confirm_variables=False,
+    ).fit(X, y)
+
+    # expected results
+    expected_std = pd.Series(
+        data=[
+            0.0088,
+            0.0002,
+            0.0005,
+            0.0007,
+            0.0343,
+            0.0013,
+            0.0089,
+            0.0551,
+            0.0049,
+            0.0123,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0006,
+        ],
+        index=[
+            "var_0",
+            "var_1",
+            "var_2",
+            "var_3",
+            "var_4",
+            "var_5",
+            "var_6",
+            "var_7",
+            "var_8",
+            "var_9",
+            "var_10",
+            "var_11",
+            "gaussian_probe_0",
+            "gaussian_probe_1",
+        ],
+    )
+
+    assert sel.feature_importances_std_.round(4).equals(expected_std)

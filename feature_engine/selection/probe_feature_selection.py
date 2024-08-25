@@ -30,7 +30,10 @@ from feature_engine.selection.base_selection_functions import get_feature_import
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
 
-from .base_selection_functions import _select_numerical_variables
+from .base_selection_functions import (
+    _select_numerical_variables,
+    single_feature_performance,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -52,13 +55,13 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 )
 class ProbeFeatureSelection(BaseSelector):
     """
-    ProbeFeatureSelection() generates one or more probe features based on the
-    user-selected distribution. The distribution options are 'normal', 'binomial',
-    'uniform', or 'all'. 'all' creates at least one distribution for each of the
+    ProbeFeatureSelection() generates one or more probe (i.e., random) features based
+    on a user-selected distribution. The distribution options are 'normal', 'binomial',
+    'uniform', or 'all'. 'all' creates at least one feature for each of the
     three aforementioned distributions.
 
-    Using cross validation, the class fits a Scikit-learn estimator to the
-    provided dataset's variables and the probe features.
+    Using cross validation, the ProbeFeatureSelection() fits a Scikit-learn estimator
+    to the provided dataset's variables and the probe features.
 
     The class derives the feature importance for each variable and probe feature.
     In the case of there being more than one probe feature, ProbeFeatureSelection()
@@ -75,11 +78,15 @@ class ProbeFeatureSelection(BaseSelector):
 
     {variables}
 
+    collective: bool, default=True
+         Whether the feature importance should be derived from an estimator trained on
+         the entire dataset, or using just 1 feature.
+
     {scoring}
 
     n_probes: int, default=1
-        Number of probe features to be created. If distribution is 'all',
-        n_probes must be a multiple of 3.
+        Number of probe features to be created. If distribution is 'all', n_probes must
+        be a multiple of 3.
 
     distribution: str, default='normal'
         The distribution used to create the probe features. The options are
@@ -98,6 +105,9 @@ class ProbeFeatureSelection(BaseSelector):
 
     feature_importances_:
         Pandas Series with the feature importance.
+
+    feature_importances_std_:
+        Pandas Series with the standard deviation of the feature importance.
 
     {features_to_drop_}
 
@@ -139,20 +149,27 @@ class ProbeFeatureSelection(BaseSelector):
     >>>     random_state=150,
     >>> )
     >>> X_tr = sel.fit_transform(X, y)
-    print(X.shape, X_tr.shape)
+    >>> print(X.shape, X_tr.shape)
+    (569, 30) (569, 9)
     """
 
     def __init__(
         self,
         estimator,
         variables: Variables = None,
+        collective: bool = True,
         scoring: str = "roc_auc",
         n_probes: int = 1,
         distribution: str = "normal",
-        cv = 5,
+        cv=5,
         random_state: int = 0,
         confirm_variables: bool = False,
     ):
+        if not isinstance(collective, bool):
+            raise ValueError(
+                f"collective takes values True or False. Got {collective} instead."
+            )
+
         if distribution not in ["normal", "binary", "uniform", "all"]:
             raise ValueError(
                 "distribution takes values 'normal', 'binary', 'uniform', or 'all'. "
@@ -171,6 +188,7 @@ class ProbeFeatureSelection(BaseSelector):
         super().__init__(confirm_variables)
         self.estimator = estimator
         self.variables = variables
+        self.collective = collective
         self.scoring = scoring
         self.distribution = distribution
         self.cv = cv
@@ -208,37 +226,47 @@ class ProbeFeatureSelection(BaseSelector):
 
         cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
 
-        # train model with all variables including the probe features
-        model = cross_validate(
-            self.estimator,
-            X_new,
-            y,
-            cv=cv,
-            scoring=self.scoring,
-            return_estimator=True,
-        )
+        if self.collective is True:
+            # train model with all variables including the probe features
+            model = cross_validate(
+                self.estimator,
+                X_new,
+                y,
+                cv=cv,
+                scoring=self.scoring,
+                return_estimator=True,
+            )
 
-        # Initialize a dataframe that will contain the list of the feature/coeff
-        # importance for each cross-validation fold
-        feature_importances_cv = pd.DataFrame()
+            # Initialize dataframe to store the feature importance for each cv fold
+            feature_importances_cv = pd.DataFrame()
 
-        # Populate the feature_importances_cv dataframe with columns containing
-        # the feature importance values for each model returned by the cross
-        # validation.
-        # There are as many columns as folds.
-        for i in range(len(model["estimator"])):
-            m = model["estimator"][i]
-            feature_importances_cv[i] = get_feature_importances(m)
+            # Populate dataframe with columns containing the feature importance values
+            # for each cv fold. There are as many columns as folds.
+            for i in range(len(model["estimator"])):
+                m = model["estimator"][i]
+                feature_importances_cv[i] = get_feature_importances(m)
 
-        # add the variables as the index to feature_importances_cv
-        feature_importances_cv.index = X_new.columns
+            # add the variables as the index to feature_importances_cv
+            feature_importances_cv.index = X_new.columns
 
-        # aggregate the feature importance returned in each fold
-        self.feature_importances_ = feature_importances_cv.mean(axis=1)
+            # aggregate the feature importance returned in each fold
+            self.feature_importances_ = feature_importances_cv.mean(axis=1)
+            self.feature_importances_std_ = feature_importances_cv.std(axis=1)
 
-        # get features that have an importance less than the probe features'
-        # avg importance attribute used in transform() which is inherited
-        # from parent class
+        else:
+            # trains a model per feature (single feature models)
+            f_importance_mean, f_importance_std = single_feature_performance(
+                X,
+                y,
+                self.variables_,
+                self.estimator,
+                self.cv,
+                self.scoring,
+            )
+            self.feature_importances_ = f_importance_mean
+            self.feature_importances_std_ = f_importance_std
+
+        # get features with lower importance than the probe features
         self.features_to_drop_ = self._get_features_to_drop()
 
         return self

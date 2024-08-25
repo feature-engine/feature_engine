@@ -1,4 +1,5 @@
 from typing import List, Union
+from types import GeneratorType
 
 import numpy as np
 import pandas as pd
@@ -193,10 +194,17 @@ def single_feature_performance(
     Returns
     -------
     feature_performance: dict
-        A dictionary with the feature as key and the performance of the model using
-        that feature as value.
+        A dictionary with the feature name as key and the performance of the model
+        trained with that feature as value.
+
+    feature_performance_std: dict
+        A dictionary with the feature name as key and the standard deviation of the
+        performance of a model trained with that feature as value.
     """
     feature_performance = {}
+    feature_performance_std = {}
+
+    cv = list(cv) if isinstance(cv, GeneratorType) else cv
 
     # train a model for every feature and store the performance
     for feature in variables:
@@ -210,4 +218,5 @@ def single_feature_performance(
         )
 
         feature_performance[feature] = model["test_score"].mean()
-    return feature_performance
+        feature_performance_std[feature] = model["test_score"].std()
+    return feature_performance, feature_performance_std
