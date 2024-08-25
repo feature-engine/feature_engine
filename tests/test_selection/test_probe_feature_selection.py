@@ -360,3 +360,56 @@ def test_feature_importance_std(df_test):
     )
 
     assert sel.feature_importances_std_.round(4).equals(expected_std)
+
+
+def test_single_feature_importance_generation(df_test):
+    X, y = df_test
+
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(n_estimators=3, random_state=3),
+        distribution="normal",
+        collective=False,
+        n_probes=2,
+        scoring="recall",
+        cv=3,
+        random_state=3,
+        confirm_variables=False,
+    ).fit(X, y)
+
+    # expected results
+    expected_ = pd.Series(
+        data=[
+            0.5867,
+            0.5342,
+            0.5042,
+            0.4941,
+            0.9456,
+            0.5081,
+            0.9294,
+            0.9859,
+            0.4799,
+            0.8972,
+            0.4476,
+            0.5544,
+            0.4799,
+            0.5323,
+        ],
+        index=[
+            "var_0",
+            "var_1",
+            "var_2",
+            "var_3",
+            "var_4",
+            "var_5",
+            "var_6",
+            "var_7",
+            "var_8",
+            "var_9",
+            "var_10",
+            "var_11",
+            "gaussian_probe_0",
+            "gaussian_probe_1",
+        ],
+    )
+
+    assert sel.feature_importances_.round(4).equals(expected_)
