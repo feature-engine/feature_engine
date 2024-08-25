@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
@@ -209,7 +208,7 @@ def test_regression_generator():
     pd.testing.assert_frame_equal(output, df["x"].to_frame())
 
     assert isinstance(transformer.cv, list), "List conversion failed"
-    assert all((x[0] == y[0]).all() for x, y in zip(list(cv.split(df)) , transformer.cv))
+    assert all((x[0] == y[0]).all() for x, y in zip(list(cv.split(df)), transformer.cv))
 
 
 def test_performance_drift_std(load_diabetes_dataset):
