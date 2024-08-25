@@ -92,15 +92,13 @@ features. Hence, probes created from a uniform or normal distribution will displ
 importance than probes extracted from a binomial distribution when using these models.
 
 
-Example
--------
+Python examples
+---------------
 
 Let's see how to use this transformer to select variables from UC Irvine's Breast Cancer
 Wisconsin (Diagnostic) dataset, which can be found `here`_. We will use Scikit-learn to load
 the dataset. This dataset concerns breast cancer diagnoses. The target variable is binary, i.e.,
-malignant or benign.
-
-The data is solely comprised of numerical data.
+malignant or benign. The data is solely comprised of numerical data.
 
 .. _here: https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)
 
@@ -157,7 +155,8 @@ training and test sets.
     ((455, 30), (114, 30))
 
 
-Now, we set up :class:`ProbeFeatureSelection()`.
+Now, we set up :class:`ProbeFeatureSelection()` to select features using the `collective`
+strategy.
 
 We will pass  `RandomForestClassifier()` as the :code:`estimator`. We will use `precision`
 as the :code:`scoring` parameter and `5` as :code:`cv` parameter, both parameters to be
@@ -189,6 +188,9 @@ With :code:`fit()`, the transformer:
 - if there are multiple probe features, the transformer calculates the average importance score
 - identifies features to drop because their importance scores are less than that of the probe feature(s)
 
+Analysing the probes
+~~~~~~~~~~~~~~~~~~~~
+
 In the attribute :code:`probe_features`, we find the pseudo-randomly generated variable(s):
 
 .. code:: python
@@ -215,13 +217,18 @@ As we can see, it shows a normal distribution:
 .. figure::  ../../images/probe_feature_normal.png
    :align:   center
 
+|
+
+Analysing the feature importance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The attribute :code:`feature_importances_` shows each variable's feature importance:
 
 .. code:: python
 
     sel.feature_importances_.head()
 
-These are the first 5 features:
+These are the importance for the first 5 features:
 
 .. code:: python
 
@@ -230,6 +237,7 @@ These are the first 5 features:
     mean perimeter     0.069516
     mean area          0.050947
     mean smoothness    0.004974
+    dtype: float64
 
 At the end of the series, we see the importance of the probe feature:
 
@@ -247,6 +255,52 @@ These are the importance of the last 5 features including the probe:
     worst fractal dimension    0.007456
     gaussian_probe_0           0.003783
     dtype: float64
+
+In the attribute :code:`feature_importances_std_` we find the standard deviation of the
+feature importance, which we can use for data analysis:
+
+.. code:: python
+
+    sel.feature_importances_std_.head()
+
+These are the standard deviations for the first 5 features:
+
+.. code:: python
+
+    mean radius        0.013648
+    mean texture       0.002571
+    mean perimeter     0.025189
+    mean area          0.010173
+    mean smoothness    0.001650
+    dtype: float64
+
+We can go ahead and plot bar plots with the feature importance and the standard deviation:
+
+.. code:: python
+
+    r = pd.concat([
+        sel.feature_importances_,
+        sel.feature_importances_std_
+    ], axis=1)
+
+    r.columns = ["mean", "std"]
+
+    r.sort_values("mean", ascending=False)["mean"].plot.bar(
+        yerr=[r['std'], r['std']], subplots=True, figsize=(15,6)
+    )
+    plt.title("Feature importance derived from the random forests")
+    plt.ylabel("Feature importance")
+    plt.show()
+
+In the following image, we see the importance of each feature, including the probe:
+
+.. figure::  ../../images/probe-importance-std.png
+   :align:   center
+
+|
+
+Selected features
+~~~~~~~~~~~~~~~~~
 
 In the attribute :code:`features_to_drop_`, we find the variables that were not selected:
 
@@ -284,8 +338,11 @@ The previous command returns the following output:
     fractal dimension error    0.003576
     gaussian_probe_0           0.003783
 
+Dropping features from the data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 With :code:`transform()`, we can go ahead and drop the six features with feature importance score
-less than `gaussian_probe_0` variable:
+smaller than `gaussian_probe_0` variable:
 
 .. code:: python
 
@@ -299,11 +356,20 @@ The final shape of the data after removing the features:
 
     (114, 24)
 
+
+Getting the name of the resulting features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 And, finally, we can also obtain the names of the features in the final transformed dataset:
 
 .. code:: python
 
     sel.get_feature_names_out()
+
+In the following output we see the name of the features that will be present in the
+transformed datasets:
+
+.. code:: python
 
     ['mean radius',
      'mean texture',
@@ -344,6 +410,7 @@ which returns the following output:
     [True, True, True, True, True, True, True, True, False, False, True, False, True,
      True, False, True, True, False, True, False, True, True, True, True, True, True,
      True, True, True, True]
+
 
 Using several probe features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -387,6 +454,7 @@ Let's go ahead and plot histograms:
 .. code:: python
 
     sel.probe_features_.hist(bins=30)
+    plt.show()
 
 In the histograms we recognise the 3 well defined distributions:
 
@@ -410,7 +478,8 @@ Let's display the importance of the random features
 
 
 We see that the binary feature has an extremely low importance, hence, when we take the
-average, the value is so small, that no feature will be dropped:
+average, the value is so small, that no feature will be dropped (remember random forests
+favouring highly cardinal features?):
 
 .. code:: python
 
@@ -427,6 +496,58 @@ It is important to select a suitable probe feature distribution when trying to r
 If most variables are continuous, introduce features with normal and uniform distributions.
 If you have one hot encoded features or sparse matrices, binary features might be a better
 option.
+
+Using the individual feature strategy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We will now repeat the process, but we will train a random forest per feature instead, and
+use the roc-auc as a measure of feature importance:
+
+.. code:: python
+
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(n_estimators=5, random_state=1),
+        variables=None,
+        collective=False,
+        scoring="roc_auc",
+        n_probes=3,
+        distribution="all",
+        cv=5,
+        random_state=150,
+        confirm_variables=False
+    )
+
+    sel.fit(X_train, y_train)
+
+
+We can now go ahead and plot the feature importance, including that of the probes:
+
+.. code:: python
+
+    r = pd.concat([
+        sel.feature_importances_,
+        sel.feature_importances_std_
+    ], axis=1)
+
+    r.columns = ["mean", "std"]
+
+    r.sort_values("mean", ascending=False)["mean"].plot.bar(
+        yerr=[r['std'], r['std']], subplots=True, figsize=(15,6)
+    )
+    plt.title("Feature importance derived from single feature models")
+    plt.ylabel("Feature importance - roc-auc")
+    plt.show()
+
+In the following image we see the feature importance, including the probes:
+
+.. figure::  ../../images/single_feature_probes_imp.png
+   :align:   center
+
+When assessed individually, each feature seems to have a greater importance. Note that
+many of the features return roc-auc that are not significantly different from the probes
+(error bars overlaps). So, even if the transformer would not drop those features, we
+could decide to discard them after analysis of this plot.
+
 
 Additional resources
 --------------------

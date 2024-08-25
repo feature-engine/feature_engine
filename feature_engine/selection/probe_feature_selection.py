@@ -269,15 +269,15 @@ class ProbeFeatureSelection(BaseSelector):
         else:
             # trains a model per feature (single feature models)
             f_importance_mean, f_importance_std = single_feature_performance(
-                X,
+                X_new,
                 y,
-                self.variables_,
+                X_new.columns,
                 self.estimator,
                 self.cv,
                 self.scoring,
             )
-            self.feature_importances_ = f_importance_mean
-            self.feature_importances_std_ = f_importance_std
+            self.feature_importances_ = pd.Series(f_importance_mean)
+            self.feature_importances_std_ = pd.Series(f_importance_std)
 
         # get features with lower importance than the probe features
         self.features_to_drop_ = self._get_features_to_drop()
