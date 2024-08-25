@@ -38,6 +38,25 @@ def test_input_params_assignment(
     assert sel.random_state == _random_state
 
 
+@pytest.mark.parametrize("collective", [True, False])
+def test_collective_param(collective):
+    tr = ProbeFeatureSelection(
+        estimator=DecisionTreeRegressor(),
+        collective=collective,
+    )
+    assert tr.collective is collective
+
+
+@pytest.mark.parametrize("collective", [10, "string", 0.1])
+def test_collective_raises_error(collective):
+    msg = f"collective takes values True or False. Got {collective} instead."
+    with pytest.raises(ValueError, match=msg):
+        ProbeFeatureSelection(
+            estimator=DecisionTreeRegressor(),
+            collective=collective,
+        )
+
+
 @pytest.mark.parametrize("_distribution", [3, "poisson", ["normal", "binary"], 2.22])
 def test_raises_error_when_not_permitted_distribution(_distribution):
     with pytest.raises(ValueError):
