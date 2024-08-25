@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import StratifiedKFold
 
 from feature_engine.selection.base_selection_functions import (
     _select_all_variables,
@@ -155,3 +156,28 @@ def test_single_feature_performance(df_test):
     }
     assert mean_ == expected_mean
     assert std_ == expected_std
+
+
+def test_single_feature_performance_cv_generator(df_test):
+    X, y = df_test
+    rf = RandomForestClassifier(n_estimators=5, random_state=1)
+    variables = X.columns.to_list()
+    cv = StratifiedKFold(n_splits=3)
+    for cv_ in [cv, cv.split(X, y)]:
+        mean_, _ = single_feature_performance(X, y, variables, rf, cv_, "roc_auc")
+
+        expected_mean = {
+            "var_0": 0.5813469607144305,
+            "var_1": 0.5325152703164752,
+            "var_2": 0.5023573007759755,
+            "var_3": 0.47596844810700234,
+            "var_4": 0.9696712897767115,
+            "var_5": 0.5078009005719849,
+            "var_6": 0.966096275433625,
+            "var_7": 0.9918595739378872,
+            "var_8": 0.521667767752105,
+            "var_9": 0.9476311088509884,
+            "var_10": 0.4871054926777818,
+            "var_11": 0.5180029642379039,
+        }
+        assert mean_ == expected_mean
