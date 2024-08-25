@@ -1,4 +1,5 @@
 from typing import List, Union
+from types import GeneratorType
 
 import numpy as np
 import pandas as pd
@@ -148,14 +149,14 @@ class ProbeFeatureSelection(BaseSelector):
         scoring: str = "roc_auc",
         n_probes: int = 1,
         distribution: str = "normal",
-        cv: int = 5,
+        cv = 5,
         random_state: int = 0,
         confirm_variables: bool = False,
     ):
         if distribution not in ["normal", "binary", "uniform", "all"]:
             raise ValueError(
-                "distribution takes on 'normal', 'binary', 'uniform', or 'all' as "
-                f"values. Got {distribution} instead."
+                "distribution takes values 'normal', 'binary', 'uniform', or 'all'. "
+                f"Got {distribution} instead."
             )
 
         if distribution == "all" and n_probes % 3 != 0:
@@ -205,12 +206,14 @@ class ProbeFeatureSelection(BaseSelector):
 
         X_new = pd.concat([X[self.variables_], self.probe_features_], axis=1)
 
+        cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
+
         # train model with all variables including the probe features
         model = cross_validate(
             self.estimator,
             X_new,
             y,
-            cv=self.cv,
+            cv=cv,
             scoring=self.scoring,
             return_estimator=True,
         )

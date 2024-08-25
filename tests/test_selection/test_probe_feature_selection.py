@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.model_selection import StratifiedKFold
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from feature_engine.selection import ProbeFeatureSelection
@@ -229,3 +230,81 @@ def test_get_features_to_drop():
     )
     sel.variables_ = ["var1", "var2", "var3", "var4"]
     assert sel._get_features_to_drop() == ["var4"]
+
+
+def test_cv_generator(df_test):
+    X, y = df_test
+    cv = StratifiedKFold(n_splits=3)
+
+    # expected results
+    expected_probe_features = {
+        "gaussian_probe_0": [5.366, 1.31, 0.289, -5.59, -0.832],
+        "gaussian_probe_1": [0.104, 3.396, -7.67, -0.807, -5.729],
+    }
+    expected_probe_features_df = pd.DataFrame(expected_probe_features)
+
+    expected_feature_importances = pd.Series(
+        data=[0.03, 0, 0, 0, 0.26, 0, 0.22, 0.33, 0.02, 0.12, 0, 0, 0, 0],
+        index=[
+            "var_0",
+            "var_1",
+            "var_2",
+            "var_3",
+            "var_4",
+            "var_5",
+            "var_6",
+            "var_7",
+            "var_8",
+            "var_9",
+            "var_10",
+            "var_11",
+            "gaussian_probe_0",
+            "gaussian_probe_1",
+        ],
+    )
+
+    # splitter passed as such
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(),
+        distribution="normal",
+        n_probes=2,
+        scoring="recall",
+        cv=cv,
+        random_state=3,
+        confirm_variables=False,
+    )
+    X_tr = sel.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(
+        sel.probe_features_.head().round(3),
+        expected_probe_features_df,
+        check_dtype=False,
+    )
+    assert sel.feature_importances_.round(2).equals(expected_feature_importances)
+    assert sel.features_to_drop_ == ["var_2", "var_10"]
+    pd.testing.assert_frame_equal(
+        X_tr, X.drop(columns=["var_2", "var_10"]), check_dtype=False
+    )
+
+    # splitter passed as splits
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(),
+        distribution="normal",
+        n_probes=2,
+        scoring="recall",
+        cv=cv.split(X, y),
+        random_state=3,
+        confirm_variables=False,
+    )
+    X_tr = sel.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(
+        sel.probe_features_.head().round(3),
+        expected_probe_features_df,
+        check_dtype=False,
+    )
+    assert sel.feature_importances_.round(2).equals(expected_feature_importances)
+    assert sel.features_to_drop_ == ["var_2", "var_10"]
+    pd.testing.assert_frame_equal(
+        X_tr, X.drop(columns=["var_2", "var_10"]), check_dtype=False
+    )
