@@ -225,8 +225,8 @@ class LogTransformer(BaseNumericalTransformer):
 )
 class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
     """
-    The LogCpTransformer() applies the transformation log(x + C), where x is the
-    variable to transform and C is a positive constant. It can applythe natural
+    LogCpTransformer() applies the transformation log(x + C), where x is the
+    variable to transform and C is a positive constant. It can apply the natural
     logarithm or the base 10 logarithm, where the natural logarithm is logarithm in
     base e.
 
@@ -291,21 +291,23 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
     Examples
     --------
 
-    >>> import numpy as np
     >>> import pandas as pd
     >>> from feature_engine.transformation import LogCpTransformer
-    >>> np.random.seed(42)
-    >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100)))
+    >>> X = pd.DataFrame(dict(
+    >>>    vara=[0, 1, 2, 3],
+    >>>    varb=[5, 5, 6, 7],
+    >>>    varc=[-2, -1, 0, 4],
+    >>>    vard=[-3, -2, -1, -5],
+    >>>    vare=["a", "b", "c", "d"]))
     >>> lct = LogCpTransformer()
     >>> lct.fit(X)
     >>> X = lct.transform(X)
-    >>> X.head()
-              x
-    0  0.944097
-    1  0.586701
-    2  1.043204
-    3  1.707159
-    4  0.541405
+    >>> X
+           vara      varb      varc      vard vare
+    0  0.000000  1.609438  0.000000  1.098612    a
+    1  0.693147  1.609438  0.693147  1.386294    b
+    2  1.098612  1.791759  1.098612  1.609438    c
+    3  1.386294  1.945910  1.945910  0.000000    d
     """
 
     def __init__(
