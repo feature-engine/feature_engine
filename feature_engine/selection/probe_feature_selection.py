@@ -60,27 +60,36 @@ class ProbeFeatureSelection(BaseSelector):
     'uniform', or 'all'. 'all' creates at least one feature for each of the
     three aforementioned distributions.
 
-    Using cross validation, the ProbeFeatureSelection() fits a Scikit-learn estimator
-    to the provided dataset's variables and the probe features.
+    Using cross validation, ProbeFeatureSelection() fits a Scikit-learn estimator
+    to the provided variables plus the probe features. Next, it derives the
+    feature importance for each variable and probe feature from the fitted model.
 
-    The class derives the feature importance for each variable and probe feature.
-    In the case of there being more than one probe feature, ProbeFeatureSelection()
-    calculates the average feature importance of all the probe features.
+    Alternatively, ProbeFeatureSelection() fits a Scikit-learn estimator per feature
+    and probe feature (single feature models), and then determines the performance
+    returned by that model.
 
-    The variables that have a feature importance less than the feature importance or
-    average feature importance of the probe feature(s) are dropped from the dataset.
+    Finally, ProbeFeatureSelection() selects the features whose importance is greater
+    than those of the probes. In the case of there being more than one probe feature,
+    ProbeFeatureSelection() takes the average feature importance of all the probe
+    features.
+
+    The variables that have smaller feature importance than the feature importance of
+    the probe feature(s) are dropped from the dataset.
 
     More details in the :ref:`User Guide <probe_features>`.
 
     Parameters
     ----------
-    {estimator}
+    estimator: object
+        A Scikit-learn estimator for regression or classification. If `collective=True`,
+        the estimator must have either a `feature_importances_` or a `coef_` attribute
+        after fitting.
 
     {variables}
 
     collective: bool, default=True
          Whether the feature importance should be derived from an estimator trained on
-         the entire dataset, or using just 1 feature.
+         the entire dataset, or trained using individual features.
 
     {scoring}
 
@@ -104,7 +113,11 @@ class ProbeFeatureSelection(BaseSelector):
         on the selected distribution.
 
     feature_importances_:
-        Pandas Series with the feature importance.
+        Pandas Series with the feature importance. If `collective=True`, the feature
+        importance is given by the coefficients of linear models, or the importance
+        derived from tree-based models. If `collective=False`, the feature importance
+        is given by a performance metric returned by a model trained using that
+        individual feature.
 
     feature_importances_std_:
         Pandas Series with the standard deviation of the feature importance.
