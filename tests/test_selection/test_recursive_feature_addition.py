@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.linear_model import Lasso, LogisticRegression, LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import KFold
 
@@ -208,3 +208,71 @@ def test_regression_generator():
     pd.testing.assert_frame_equal(output, df["x"].to_frame())
 
     assert isinstance(transformer.cv, list), "List conversion failed"
+
+
+def test_performance_drift_std(load_diabetes_dataset):
+    X, y = load_diabetes_dataset
+    linear_model = LinearRegression()
+    sel = RecursiveFeatureAddition(estimator=linear_model, scoring="r2", cv=3)
+    sel.fit(X, y)
+
+    drifts = {
+        4: 0,
+        8: 0.2837,
+        2: 0.1378,
+        5: 0.0023,
+        3: 0.0188,
+        1: 0.0028,
+        7: 0.0027,
+        6: 0.0027,
+        9: 0.0003,
+        0: -0.0074,
+    }
+
+    drfts_std = {
+        4: 0,
+        8: 0.0293,
+        2: 0.0175,
+        5: 0.0205,
+        3: 0.0173,
+        1: 0.0087,
+        7: 0.0242,
+        6: 0.0234,
+        9: 0.0169,
+        0: 0.0204,
+    }
+
+    rounded_perfs = {
+        key: round(sel.performance_drifts_[key], 4) for key in sel.performance_drifts_
+    }
+    assert rounded_perfs == drifts
+
+    rounded_perfs = {
+        key: round(sel.performance_drifts_std_[key], 4)
+        for key in sel.performance_drifts_std_
+    }
+    assert rounded_perfs == drfts_std
+
+
+def test_feature_importance(load_diabetes_dataset):
+    X, y = load_diabetes_dataset
+    linear_model = LinearRegression()
+    sel = RecursiveFeatureAddition(estimator=linear_model, scoring="r2", cv=3)
+    sel.fit(X, y)
+
+    imps = [
+        750.02,
+        741.47,
+        522.33,
+        436.67,
+        322.09,
+        238.62,
+        182.17,
+        113.97,
+        64.77,
+        41.42,
+    ]
+    imps_std = [18.22, 68.35, 86.03, 57.11, 329.38, 299.76, 72.81, 47.93, 117.83, 42.75]
+
+    assert round(sel.feature_importances_, 2).to_list() == imps
+    assert round(sel.feature_importances_std_, 2).to_list() == imps_std

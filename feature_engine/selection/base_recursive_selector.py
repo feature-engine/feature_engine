@@ -79,8 +79,8 @@ class BaseRecursiveSelector(BaseSelector):
     feature_importances_:
         Pandas Series with the feature importance (comes from step 2)
 
-    performance_drifts_:
-        Dictionary with the performance drift per examined feature (comes from step 5).
+    feature_importances_std_:
+        Pandas Series with the standard deviation of the feature importance.
 
     features_to_drop_:
         List with the features to remove from the dataset.
@@ -181,6 +181,7 @@ class BaseRecursiveSelector(BaseSelector):
 
         # Aggregate the feature importance returned in each fold
         self.feature_importances_ = feature_importances_cv.mean(axis=1)
+        self.feature_importances_std_ = feature_importances_cv.std(axis=1)
 
         return X, y
 
