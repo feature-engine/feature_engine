@@ -226,4 +226,7 @@ def test_rfe_with_generator():
     transformer = RecursiveFeatureElimination(
         estimator=linear_model, scoring="r2", cv=cv.split(df)
     )
-    transformer.fit(df[["x", "z"]], df["y"])
+    output = transformer.fit_transform(df[["x", "z"]], df["y"])
+    pd.testing.assert_frame_equal(output, df["x"].to_frame())
+
+    assert isinstance(transformer.cv, list), "List conversion failed"

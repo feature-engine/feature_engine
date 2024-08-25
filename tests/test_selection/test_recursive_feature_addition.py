@@ -3,6 +3,7 @@ import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.model_selection import KFold
 
 from feature_engine.selection import RecursiveFeatureAddition
 
@@ -186,3 +187,24 @@ def test_regression(
 
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_regression_generator():
+    linear_model = DecisionTreeRegressor()
+
+    df = pd.DataFrame(
+        {
+            "x": [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+            "z": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            "y": [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+        }
+    )
+    cv = KFold()
+
+    transformer = RecursiveFeatureAddition(
+        estimator=linear_model, scoring="r2", cv=cv.split(df)
+    )
+    output = transformer.fit_transform(df[["x", "z"]], df["y"])
+    pd.testing.assert_frame_equal(output, df["x"].to_frame())
+
+    assert isinstance(transformer.cv, list), "List conversion failed"
