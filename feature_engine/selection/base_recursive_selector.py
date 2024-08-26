@@ -1,5 +1,4 @@
 from typing import List, Union
-from types import GeneratorType
 
 import pandas as pd
 from sklearn.model_selection import cross_validate
@@ -118,7 +117,7 @@ class BaseRecursiveSelector(BaseSelector):
         self.estimator = estimator
         self.scoring = scoring
         self.threshold = threshold
-        self.cv = list(cv) if isinstance(cv, GeneratorType) else cv
+        self.cv = cv
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """

@@ -1,3 +1,4 @@
+from types import GeneratorType
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
@@ -155,6 +156,8 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
         """
+
+        self.cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
 
         X, y = super().fit(X, y)
 
