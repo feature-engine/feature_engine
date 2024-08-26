@@ -208,7 +208,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
                 f"the transformer."
             )
 
-        self.feature_performance_ = single_feature_performance(
+        self.feature_performance_, _ = single_feature_performance(
             X, y, self.variables_, self.estimator, self.cv, self.scoring
         )
 
