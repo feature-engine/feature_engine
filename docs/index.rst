@@ -6,8 +6,8 @@
 Feature-engine
 ==============
 
-A Python library for Feature Engineering and Selection
-------------------------------------------------------
+A user-friendly feature engineering alternative to Scikit-learn
+---------------------------------------------------------------
 
 .. figure::  images/logo/FeatureEngine.png
    :align:   center
@@ -15,9 +15,45 @@ A Python library for Feature Engineering and Selection
    **Feature-engine rocks!**
 
 Feature-engine is a Python library with multiple transformers to engineer and select
-features for machine learning models. Feature-engine adopts Scikit-learn
-functionality with methods `fit()` and `transform()` to learn parameters from and then
+features for machine learning models. Feature-engine, like Scikit-learn,
+uses the methods `fit()` and `transform()` to learn parameters from and then
 transform the data.
+
+Working with dataframes? 👉 Feature-engine is a no-brainer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Unlike Scikit-learn, Feature-engine is designed to work with dataframes. No
+column order or name changes. A dataframe comes in, same dataframe
+comes out, with the transformed variables.
+
+We normally apply different feature engineering processes to different feature subsets. With sklearn, we restrict the
+feature engineering techniques to a certain group of variables by using an auxiliary class: the `ColumnTransformer`.
+This class also results in a change in the name of the variables after the transformation.
+
+Feature-engine, instead, allows you to select the variables you want to transform **within** each
+transformer. This way, different engineering procedures can be easily applied to
+different feature subsets without the need for additional transformers or changes in the feature names.
+
+
+Sitting at the interface of pandas and scikit-learn
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Pandas is great for data analysis and transformation. We ❤️ it too. But it
+doesn't automatically learn and store parameters from the data. And that is
+key for machine learning. That's why we created Feature-engine.
+
+Feature-engine wraps pandas functionality in Scikit-learn like transformers,
+capturing much of the pandas logic needed to learn and store parameters,
+while making these transformations compatible with Scikit-learn estimators,
+selectors, cross-validation functions and hyperparameter search methods.
+
+If your work is primarily data analysis and transformation for machine
+learning, and pandas and scikit-learn are your main tools, then Feature-engine
+is your friend.
+
+Feature-engine transformers
+---------------------------
+
 
 Feature-engine includes transformers for:
 
@@ -32,37 +68,29 @@ Feature-engine includes transformers for:
 - Time series
 - Preprocessing
 
-We normally apply different feature engineering processes to different feature subsets. With sklearn, we restrict the
-feature engineering techniques to a certain group of variables by using an auxiliary class: the `ColumnTransformer`.
-This class also results in a change in the name of the variables after the transformation.
-
-Feature-engine, instead, allows you to select the variables you want to transform **within** each
-transformer. This way, different engineering procedures can be easily applied to
-different feature subsets without the need for additional transformers or changes in the feature names.
-
 Feature-engine transformers are fully compatible with scikit-learn. That means that you can assemble Feature-engine
 transformers within a Scikit-learn pipeline, or use them in a grid or random search for hyperparameters.
 Check :ref:`**Quick Start** <quick_start>` for an example.
 
-Pst! How did you find us?
--------------------------
+How did you find us? 👀
+-----------------------
 
 We want to share Feature-engine with more people. It'd help us loads if you tell us
 how you discovered us.
 
-We'd know what we are doing right and which channels we should use to share the love.
+Then we can know what we are doing right and which channels we should use to share the love.
 
 .. figure::  images/sponsors/how-did-you-discover.png
    :align:   center
    :target: https://docs.google.com/forms/d/e/1FAIpQLSfxvgnJvuvPf2XgosakhXo5VNQafqRrjNXkoW5qDWqnuxZNSQ/viewform?usp=sf_link
 
-Please share your story by answering 1 quick question
+🙏 Please share your story by answering 1 quick question
 `at this link <https://docs.google.com/forms/d/e/1FAIpQLSfxvgnJvuvPf2XgosakhXo5VNQafqRrjNXkoW5qDWqnuxZNSQ/viewform?usp=sf_link>`_ 😃
 
 What is feature engineering?
 ----------------------------
 
-Feature engineering is the process of using domain knowledge and statistical tools to create features fit for use with
+Feature engineering is the process of using domain knowledge and statistical tools to create features for
 machine learning algorithms. The raw data that we normally gather as part of our business activities is rarely fit to
 train machine learning models. Instead, data scientists spend a large part of their time on data analysis, preprocessing,
 and feature engineering.
@@ -82,7 +110,7 @@ What is unique about Feature-engine?
 The following characteristics make Feature-engine unique:
 
 - Feature-engine contains the most exhaustive collection of feature engineering transformations.
-- Feature-engine can transform a specific group of variables in the dataframe.
+- Feature-engine can transform a specific group of variables in the dataframe, right out-of-the-box.
 - Feature-engine returns dataframes, hence suitable for data analysis and model deployment.
 - Feature-engine is compatible with the Scikit-learn pipeline, Grid and Random search and cross validation.
 - Feature-engine automatically recognizes numerical, categorical and datetime variables.
