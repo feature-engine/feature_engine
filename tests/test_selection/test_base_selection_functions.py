@@ -7,6 +7,7 @@ from feature_engine.selection.base_selection_functions import (
     _select_all_variables,
     _select_numerical_variables,
     find_correlated_features,
+    find_feature_importance,
     single_feature_performance,
 )
 
@@ -181,3 +182,72 @@ def test_single_feature_performance_cv_generator(df_test):
             "var_11": 0.5180029642379039,
         }
         assert mean_ == expected_mean
+
+
+def test_find_feature_importance(df_test):
+    X, y = df_test
+    rf = RandomForestClassifier()
+    cv = StratifiedKFold(n_splits=3)
+    scoring = "recall"
+
+    expected_mean = pd.Series(
+        data=[0.03, 0, 0, 0, 0.26, 0, 0.22, 0.33, 0.02, 0.12, 0, 0, 0, 0],
+        index=[
+            "var_0",
+            "var_1",
+            "var_2",
+            "var_3",
+            "var_4",
+            "var_5",
+            "var_6",
+            "var_7",
+            "var_8",
+            "var_9",
+            "var_10",
+            "var_11",
+            "gaussian_probe_0",
+            "gaussian_probe_1",
+        ],
+    )
+    expected_std = pd.Series(
+        data=[
+            0.0088,
+            0.0002,
+            0.0005,
+            0.0007,
+            0.0343,
+            0.0013,
+            0.0089,
+            0.0551,
+            0.0049,
+            0.0123,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0006,
+        ],
+        index=[
+            "var_0",
+            "var_1",
+            "var_2",
+            "var_3",
+            "var_4",
+            "var_5",
+            "var_6",
+            "var_7",
+            "var_8",
+            "var_9",
+            "var_10",
+            "var_11",
+            "gaussian_probe_0",
+            "gaussian_probe_1",
+        ],
+    )
+
+    mean_, std_ = find_feature_importance(X, y, rf, cv, scoring)
+    assert mean_ == expected_mean
+    assert std_ == expected_std
+
+    mean_, std_ = find_feature_importance(X, y, rf, cv.split(X, y), scoring)
+    assert mean_ == expected_mean
+    assert std_ == expected_std
