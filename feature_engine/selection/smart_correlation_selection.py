@@ -318,7 +318,7 @@ class SmartCorrelatedSelection(BaseSelector):
         if self.selection_method == "model_performance":
             correlated_dict = dict()
             for feature_group in correlated_groups:
-                feature_performance = single_feature_performance(
+                feature_performance, _ = single_feature_performance(
                     X,
                     y,
                     feature_group,
