@@ -87,7 +87,7 @@ class ProbeFeatureSelection(BaseSelector):
 
     collective: bool, default=True
          Whether the feature importance should be derived from an estimator trained on
-         the entire dataset, or trained using individual features.
+         the entire dataset (True), or trained using individual features (False).
 
     {scoring}
 

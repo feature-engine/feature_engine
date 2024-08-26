@@ -230,8 +230,10 @@ def find_feature_importance(
     scoring,
 ):
     """
-    Trains an estimator and derives feature importance from it. The estimator needs to
-    have the attributes `coef_` or `feature_importance_` after fitting.
+    Trains an estimator using cross-validation and derives feature importance from it.
+    The estimator needs to have the attributes `coef_` or `feature_importances_` after
+    fitting. The importance is given by the coefficients of linear models or the purity
+    gain obtained from tree-based models.
 
     Parameters
     ----------
@@ -242,7 +244,7 @@ def find_feature_importance(
        Target variable. Required to train the estimator.
 
     estimator:
-        A Scikit-learn estimator with parameters `coef_` or `feature_importance_`
+        A Scikit-learn estimator with parameters `coef_` or `feature_importances_`
         after fitting.
 
     cv:
@@ -256,7 +258,7 @@ def find_feature_importance(
     feature_importance: pd.Series
         A pandas Series with the feature name as index and its importance as value. The
         importance is given by the coefficients of linear models or the impurity gain
-        from tree-based models
+        from tree-based models.
 
     feature_importance_std: pd.Series
         A pandas Series with the feature name as key and the standard deviation of the
