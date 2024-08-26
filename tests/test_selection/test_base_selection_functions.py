@@ -186,12 +186,12 @@ def test_single_feature_performance_cv_generator(df_test):
 
 def test_find_feature_importance(df_test):
     X, y = df_test
-    rf = RandomForestClassifier()
+    rf = RandomForestClassifier(n_estimators=3, random_state=3)
     cv = StratifiedKFold(n_splits=3)
     scoring = "recall"
 
     expected_mean = pd.Series(
-        data=[0.03, 0, 0, 0, 0.26, 0, 0.22, 0.33, 0.02, 0.12, 0, 0, 0, 0],
+        data=[0.01, 0.0, 0.0, 0.0, 0.1, 0.01, 0.07, 0.8, 0.01, 0.01, 0.0, 0.01],
         index=[
             "var_0",
             "var_1",
@@ -205,26 +205,22 @@ def test_find_feature_importance(df_test):
             "var_9",
             "var_10",
             "var_11",
-            "gaussian_probe_0",
-            "gaussian_probe_1",
         ],
     )
     expected_std = pd.Series(
         data=[
-            0.0088,
-            0.0002,
-            0.0005,
-            0.0007,
-            0.0343,
+            0.0045,
+            0.0044,
             0.0013,
-            0.0089,
-            0.0551,
-            0.0049,
-            0.0123,
-            0.0005,
-            0.0005,
-            0.0005,
-            0.0006,
+            0.0,
+            0.1583,
+            0.0059,
+            0.0666,
+            0.1234,
+            0.0037,
+            0.0016,
+            0.0011,
+            0.0055,
         ],
         index=[
             "var_0",
@@ -239,15 +235,13 @@ def test_find_feature_importance(df_test):
             "var_9",
             "var_10",
             "var_11",
-            "gaussian_probe_0",
-            "gaussian_probe_1",
         ],
     )
 
     mean_, std_ = find_feature_importance(X, y, rf, cv, scoring)
-    assert mean_ == expected_mean
-    assert std_ == expected_std
+    pd.testing.assert_series_equal(mean_.round(2), expected_mean)
+    pd.testing.assert_series_equal(std_.round(4), expected_std)
 
     mean_, std_ = find_feature_importance(X, y, rf, cv.split(X, y), scoring)
-    assert mean_ == expected_mean
-    assert std_ == expected_std
+    pd.testing.assert_series_equal(mean_.round(2), expected_mean)
+    pd.testing.assert_series_equal(std_.round(4), expected_std)
