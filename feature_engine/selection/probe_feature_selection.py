@@ -1,9 +1,7 @@
 from typing import List, Union
-from types import GeneratorType
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import cross_validate
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -26,12 +24,12 @@ from feature_engine._docstrings.selection._docstring import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
-from feature_engine.selection.base_selection_functions import get_feature_importances
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
 
 from .base_selection_functions import (
     _select_numerical_variables,
+    find_feature_importance,
     single_feature_performance,
 )
 
@@ -66,14 +64,14 @@ class ProbeFeatureSelection(BaseSelector):
 
     Alternatively, ProbeFeatureSelection() fits a Scikit-learn estimator per feature
     and probe feature (single feature models), and then determines the performance
-    returned by that model.
+    returned by that model,, using a metric of choice.
 
     Finally, ProbeFeatureSelection() selects the features whose importance is greater
     than those of the probes. In the case of there being more than one probe feature,
     ProbeFeatureSelection() takes the average feature importance of all the probe
     features.
 
-    The variables that have smaller feature importance than the feature importance of
+    The variables whose feature importance is smaller than the feature importance of
     the probe feature(s) are dropped from the dataset.
 
     More details in the :ref:`User Guide <probe_features>`.
@@ -114,7 +112,7 @@ class ProbeFeatureSelection(BaseSelector):
 
     feature_importances_:
         Pandas Series with the feature importance. If `collective=True`, the feature
-        importance is given by the coefficients of linear models, or the importance
+        importance is given by the coefficients of linear models or the importance
         derived from tree-based models. If `collective=False`, the feature importance
         is given by a performance metric returned by a model trained using that
         individual feature.
@@ -237,34 +235,13 @@ class ProbeFeatureSelection(BaseSelector):
 
         X_new = pd.concat([X[self.variables_], self.probe_features_], axis=1)
 
-        cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
-
         if self.collective is True:
-            # train model with all variables including the probe features
-            model = cross_validate(
-                self.estimator,
-                X_new,
-                y,
-                cv=cv,
-                scoring=self.scoring,
-                return_estimator=True,
+            # train model using entire dataset and derive feature importance
+            f_importance_mean, f_importance_std = find_feature_importance(
+                X_new, y, self.estimator, self.cv, self.scoring,
             )
-
-            # Initialize dataframe to store the feature importance for each cv fold
-            feature_importances_cv = pd.DataFrame()
-
-            # Populate dataframe with columns containing the feature importance values
-            # for each cv fold. There are as many columns as folds.
-            for i in range(len(model["estimator"])):
-                m = model["estimator"][i]
-                feature_importances_cv[i] = get_feature_importances(m)
-
-            # add the variables as the index to feature_importances_cv
-            feature_importances_cv.index = X_new.columns
-
-            # aggregate the feature importance returned in each fold
-            self.feature_importances_ = feature_importances_cv.mean(axis=1)
-            self.feature_importances_std_ = feature_importances_cv.std(axis=1)
+            self.feature_importances_ = f_importance_mean
+            self.feature_importances_std_ = f_importance_std
 
         else:
             # trains a model per feature (single feature models)

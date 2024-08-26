@@ -25,7 +25,7 @@ _estimator_docstring = """estimator: object
 
 _scoring_docstring = """scoring: str, default='roc_auc'
         Metric to evaluate the performance of the estimator. Comes from
-        sklearn.metrics. See the model evaluation documentation for more options:
+        `sklearn.metrics`. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
         """.rstrip()
 

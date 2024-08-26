@@ -220,3 +220,72 @@ def single_feature_performance(
         feature_performance[feature] = model["test_score"].mean()
         feature_performance_std[feature] = model["test_score"].std()
     return feature_performance, feature_performance_std
+
+
+def find_feature_importance(
+    X: pd.DataFrame,
+    y: pd.Series,
+    estimator,
+    cv,
+    scoring,
+):
+    """
+    Trains an estimator and derives feature importance from it. The estimator needs to
+    have the attributes `coef_` or `feature_importance_` after fitting.
+
+    Parameters
+    ----------
+    X: pandas dataframe of shape = [n_samples, n_features]
+       The input dataframe
+
+    y: array-like of shape (n_samples)
+       Target variable. Required to train the estimator.
+
+    estimator:
+        A Scikit-learn estimator with parameters `coef_` or `feature_importance_`
+        after fitting.
+
+    cv:
+        Cross-validation scheme. Any supported by the Scikit-learn estimator.
+
+    scoring:
+        The performance metric. Any supported by the Scikit-learn estimator.
+
+    Returns
+    -------
+    feature_importance: pd.Series
+        A pandas Series with the feature name as index and its importance as value. The
+        importance is given by the coefficients of linear models or the impurity gain
+        from tree-based models
+
+    feature_importance_std: pd.Series
+        A pandas Series with the feature name as key and the standard deviation of the
+        feature importance as value.
+    """
+    cv = list(cv) if isinstance(cv, GeneratorType) else cv
+
+    model = cross_validate(
+        estimator,
+        X,
+        y,
+        cv=cv,
+        scoring=scoring,
+        return_estimator=True,
+    )
+
+    # dataframe to store the feature importance for each cv fold
+    feature_importances_cv = pd.DataFrame()
+
+    # Populate dataframe with columns containing the feature importance values
+    # for each cv fold. There are as many columns as folds.
+    for i in range(len(model["estimator"])):
+        m = model["estimator"][i]
+        feature_importances_cv[i] = get_feature_importances(m)
+
+    # add the variables as the index to feature_importances_cv
+    feature_importances_cv.index = X.columns
+
+    # aggregate the feature importance returned in each fold
+    feature_importances_ = feature_importances_cv.mean(axis=1)
+    feature_importances_std_ = feature_importances_cv.std(axis=1)
+    return feature_importances_, feature_importances_std_
