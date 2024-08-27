@@ -1,5 +1,5 @@
-from typing import List, Union
 from types import GeneratorType
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -166,6 +166,7 @@ def single_feature_performance(
     variables: List[Union[str, int]],
     estimator,
     cv,
+    groups,
     scoring,
 ):
     """
@@ -187,6 +188,11 @@ def single_feature_performance(
 
     cv:
         Cross-validation scheme. Any supported by the Scikit-learn estimator.
+
+    groups: Array-like of shape (n_samples,), default=None
+        Group labels for the samples used while splitting
+        the dataset into train/test set. Only used in conjunction with a
+        “Group” cv instance (e.g., GroupKFold).
 
     scoring:
         The performance metric. Any supported by the Scikit-learn estimator.
@@ -213,6 +219,7 @@ def single_feature_performance(
             X[feature].to_frame(),
             y,
             cv=cv,
+            groups=groups,
             return_estimator=False,
             scoring=scoring,
         )
@@ -227,6 +234,7 @@ def find_feature_importance(
     y: pd.Series,
     estimator,
     cv,
+    groups,
     scoring,
 ):
     """
@@ -250,6 +258,11 @@ def find_feature_importance(
     cv:
         Cross-validation scheme. Any supported by the Scikit-learn estimator.
 
+    groups: Array-like of shape (n_samples,), default=None
+        Group labels for the samples used while splitting
+        the dataset into train/test set. Only used in conjunction with a
+        “Group” cv instance (e.g., GroupKFold).
+
     scoring:
         The performance metric. Any supported by the Scikit-learn estimator.
 
@@ -271,6 +284,7 @@ def find_feature_importance(
         X,
         y,
         cv=cv,
+        groups=groups,
         scoring=scoring,
         return_estimator=True,
     )
