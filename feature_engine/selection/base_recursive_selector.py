@@ -65,6 +65,11 @@ class BaseRecursiveSelector(BaseSelector):
         across calls. For more details check Scikit-learn's `cross_validate`'s
         documentation.
 
+    groups: Array-like of shape (n_samples,), default=None
+        Group labels for the samples used while splitting
+        the dataset into train/test set. Only used in conjunction with a
+        “Group” cv instance (e.g., GroupKFold).
+
     confirm_variables: bool, default=False
         If set to True, variables that are not present in the input dataframe will be
         removed from the list of variables. Only used when passing a variable list to
@@ -104,6 +109,7 @@ class BaseRecursiveSelector(BaseSelector):
         estimator,
         scoring: str = "roc_auc",
         cv=3,
+        groups=None,
         threshold: Union[int, float] = 0.01,
         variables: Variables = None,
         confirm_variables: bool = False,
@@ -118,6 +124,7 @@ class BaseRecursiveSelector(BaseSelector):
         self.scoring = scoring
         self.threshold = threshold
         self.cv = cv
+        self.groups = groups
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -152,10 +159,11 @@ class BaseRecursiveSelector(BaseSelector):
 
         # train model with all features and cross-validation
         model = cross_validate(
-            self.estimator,
-            X[self.variables_],
-            y,
+            estimator=self.estimator,
+            X=X[self.variables_],
+            y=y,
             cv=self.cv,
+            groups=self.groups,
             scoring=self.scoring,
             return_estimator=True,
         )

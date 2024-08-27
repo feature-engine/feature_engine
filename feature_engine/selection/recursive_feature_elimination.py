@@ -19,6 +19,7 @@ from feature_engine._docstrings.selection._docstring import (
     _features_to_drop_docstring,
     _fit_docstring,
     _get_support_docstring,
+    _groups_docstring,
     _initial_model_performance_docstring,
     _scoring_docstring,
     _threshold_docstring,
@@ -35,6 +36,7 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
     scoring=_scoring_docstring,
     threshold=_threshold_docstring,
     cv=_cv_docstring,
+    groups=_groups_docstring,
     variables=_variables_numerical_docstring,
     confirm_variables=_confirm_variables_docstring,
     initial_model_performance_=_initial_model_performance_docstring,
@@ -87,6 +89,8 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
     {threshold}
 
     {cv}
+
+    {groups}
 
     {confirm_variables}
 
@@ -186,10 +190,11 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
 
             # remove feature and train new model
             model_tmp = cross_validate(
-                self.estimator,
-                X_tmp.drop(columns=feature),
-                y,
+                estimator=self.estimator,
+                X=X_tmp.drop(columns=feature),
+                y=y,
                 cv=self.cv,
+                groups=self.groups,
                 scoring=self.scoring,
                 return_estimator=False,
             )
@@ -213,10 +218,11 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
                 X_tmp = X_tmp.drop(columns=feature)
 
                 baseline_model = cross_validate(
-                    self.estimator,
-                    X_tmp,
-                    y,
+                    estimator=self.estimator,
+                    X=X_tmp,
+                    y=y,
                     cv=self.cv,
+                    groups=self.groups,
                     return_estimator=False,
                     scoring=self.scoring,
                 )
