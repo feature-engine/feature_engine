@@ -1,3 +1,4 @@
+from types import GeneratorType
 from typing import List, Union
 
 import pandas as pd
@@ -151,6 +152,8 @@ class BaseRecursiveSelector(BaseSelector):
             else:
                 self.variables_ = check_numerical_variables(X, self.variables)
 
+        self._cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
+
         # check that there are more than 1 variable to select from
         self._check_variable_number()
 
@@ -162,7 +165,7 @@ class BaseRecursiveSelector(BaseSelector):
             estimator=self.estimator,
             X=X[self.variables_],
             y=y,
-            cv=self.cv,
+            cv=self._cv,
             groups=self.groups,
             scoring=self.scoring,
             return_estimator=True,

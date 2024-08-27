@@ -1,3 +1,4 @@
+from types import GeneratorType
 from typing import List, Union
 
 import pandas as pd
@@ -308,13 +309,14 @@ class SmartCorrelatedSelection(BaseSelector):
         # select best performing feature according to estimator
         if self.selection_method == "model_performance":
             correlated_dict = dict()
+            cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
             for feature_group in correlated_groups:
                 feature_performance, _ = single_feature_performance(
                     X=X,
                     y=y,
                     variables=feature_group,
                     estimator=self.estimator,
-                    cv=self.cv,
+                    cv=cv,
                     groups=self.groups,
                     scoring=self.scoring,
                 )

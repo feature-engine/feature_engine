@@ -1,3 +1,4 @@
+from types import GeneratorType
 from typing import List, Union
 
 import pandas as pd
@@ -305,6 +306,8 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
         self.feature_performance_ = {}
 
+        cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
+
         for variable in self.variables_:
             # clone estimator
             estimator = clone(est)
@@ -316,7 +319,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
                 estimator=estimator,
                 X=X,
                 y=y,
-                cv=self.cv,
+                cv=cv,
                 groups=self.groups,
                 scoring=self.scoring,
             )

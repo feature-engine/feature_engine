@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Lasso, LogisticRegression, LinearRegression
+from sklearn.model_selection import KFold
 from sklearn.tree import DecisionTreeRegressor
 
 from feature_engine.selection import RecursiveFeatureAddition
@@ -254,3 +255,23 @@ def test_feature_importance(load_diabetes_dataset):
 
     assert round(sel.feature_importances_, 2).to_list() == imps
     assert round(sel.feature_importances_std_, 2).to_list() == imps_std
+
+
+def test_cv_generator(load_diabetes_dataset):
+    X, y = load_diabetes_dataset
+    linear_model = LinearRegression()
+    cv = KFold(n_splits=3)
+    sel = RecursiveFeatureAddition(estimator=linear_model, scoring="r2", cv=3).fit(X, y)
+    expected = sel.transform(X)
+
+    sel = RecursiveFeatureAddition(estimator=linear_model, scoring="r2", cv=cv).fit(
+        X, y
+    )
+    test1 = sel.transform(X)
+    pd.testing.assert_frame_equal(expected, test1)
+
+    sel = RecursiveFeatureAddition(
+        estimator=linear_model, scoring="r2", cv=cv.split(X, y)
+    ).fit(X, y)
+    test2 = sel.transform(X)
+    pd.testing.assert_frame_equal(expected, test2)
