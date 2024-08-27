@@ -170,7 +170,7 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
             self.estimator,
             X[first_most_important_feature].to_frame(),
             y,
-            cv=self.cv,
+            cv=self._cv,
             scoring=self.scoring,
             return_estimator=True,
         )
@@ -197,7 +197,7 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
                 self.estimator,
                 X[_selected_features + [feature]],
                 y,
-                cv=self.cv,
+                cv=self._cv,
                 scoring=self.scoring,
                 return_estimator=True,
             )

@@ -189,7 +189,7 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
                 self.estimator,
                 X_tmp.drop(columns=feature),
                 y,
-                cv=self.cv,
+                cv=self._cv,
                 scoring=self.scoring,
                 return_estimator=False,
             )
@@ -216,7 +216,7 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
                     self.estimator,
                     X_tmp,
                     y,
-                    cv=self.cv,
+                    cv=self._cv,
                     return_estimator=False,
                     scoring=self.scoring,
                 )
