@@ -1,3 +1,4 @@
+from types import GeneratorType
 from typing import List, MutableSequence, Union
 
 import numpy as np
@@ -226,7 +227,7 @@ class SelectByShuffling(BaseSelector):
             self.estimator,
             X[self.variables_],
             y,
-            cv=self.cv,
+            cv=list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv,
             return_estimator=True,
             scoring=self.scoring,
             params={"sample_weight": sample_weight},
