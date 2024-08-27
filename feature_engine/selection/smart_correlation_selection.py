@@ -2,40 +2,25 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
+from feature_engine._check_init_parameters.check_variables import \
+    _check_variables_input_value
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
-from feature_engine._docstrings.init_parameters.selection import (
-    _confirm_variables_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring)
+from feature_engine._docstrings.init_parameters.selection import \
+    _confirm_variables_docstring
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.selection._docstring import (
-    _cv_docstring,
-    _estimator_docstring,
-    _get_support_docstring,
-    _groups_docstring,
-    _missing_values_docstring,
-    _scoring_docstring,
-    _variables_attribute_docstring,
-    _variables_numerical_docstring,
-)
+    _cv_docstring, _estimator_docstring, _get_support_docstring,
+    _groups_docstring, _missing_values_docstring, _scoring_docstring,
+    _variables_attribute_docstring, _variables_numerical_docstring)
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import (
-    _check_contains_inf,
-    _check_contains_na,
-    check_X,
-)
+from feature_engine.dataframe_checks import (_check_contains_inf,
+                                             _check_contains_na, check_X)
 from feature_engine.selection.base_selector import BaseSelector
 
-from .base_selection_functions import (
-    _select_numerical_variables,
-    find_correlated_features,
-    single_feature_performance,
-)
+from .base_selection_functions import (_select_numerical_variables,
+                                       find_correlated_features,
+                                       single_feature_performance)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 

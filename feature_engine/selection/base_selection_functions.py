@@ -5,13 +5,11 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.variable_handling import (
-    check_all_variables,
-    check_numerical_variables,
-    find_all_variables,
-    find_numerical_variables,
-    retain_variables_if_in_df,
-)
+from feature_engine.variable_handling import (check_all_variables,
+                                              check_numerical_variables,
+                                              find_all_variables,
+                                              find_numerical_variables,
+                                              retain_variables_if_in_df)
 
 Variables = Union[int, str, List[Union[str, int]], None]
 

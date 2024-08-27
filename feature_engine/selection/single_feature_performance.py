@@ -3,40 +3,26 @@ from typing import List, Union
 
 import pandas as pd
 
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
+from feature_engine._check_init_parameters.check_variables import \
+    _check_variables_input_value
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-)
-from feature_engine._docstrings.init_parameters.selection import (
-    _confirm_variables_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring)
+from feature_engine._docstrings.init_parameters.selection import \
+    _confirm_variables_docstring
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.selection._docstring import (
-    _cv_docstring,
-    _estimator_docstring,
-    _features_to_drop_docstring,
-    _fit_docstring,
-    _get_support_docstring,
-    _groups_docstring,
-    _initial_model_performance_docstring,
-    _scoring_docstring,
-    _threshold_docstring,
-    _transform_docstring,
-    _variables_attribute_docstring,
-    _variables_numerical_docstring,
-)
+    _cv_docstring, _estimator_docstring, _features_to_drop_docstring,
+    _fit_docstring, _get_support_docstring, _groups_docstring,
+    _initial_model_performance_docstring, _scoring_docstring,
+    _threshold_docstring, _transform_docstring, _variables_attribute_docstring,
+    _variables_numerical_docstring)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
 
-from .base_selection_functions import (
-    _select_numerical_variables,
-    single_feature_performance,
-)
+from .base_selection_functions import (_select_numerical_variables,
+                                       single_feature_performance)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
