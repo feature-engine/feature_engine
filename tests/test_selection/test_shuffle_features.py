@@ -101,7 +101,10 @@ def test_cv_generator(df_test):
 
     X, y = df_test
     sel = SelectByShuffling(
-        RandomForestClassifier(random_state=1), threshold=0.01, random_state=1, cv=3,
+        RandomForestClassifier(random_state=1),
+        threshold=0.01,
+        random_state=1,
+        cv=3,
     )
     sel.fit(X, y)
 
@@ -110,13 +113,19 @@ def test_cv_generator(df_test):
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
     sel = SelectByShuffling(
-        RandomForestClassifier(random_state=1), threshold=0.01, random_state=1, cv=cv,
+        RandomForestClassifier(random_state=1),
+        threshold=0.01,
+        random_state=1,
+        cv=cv,
     )
     sel.fit(X, y)
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
     sel = SelectByShuffling(
-        RandomForestClassifier(random_state=1), threshold=0.01, random_state=1, cv=cv.split(X,y),
+        RandomForestClassifier(random_state=1),
+        threshold=0.01,
+        random_state=1,
+        cv=cv.split(X, y),
     )
     sel.fit(X, y)
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)

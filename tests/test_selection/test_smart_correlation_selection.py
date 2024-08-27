@@ -226,7 +226,7 @@ def test_cv_generator(df_single):
         selection_method="model_performance",
         estimator=RandomForestClassifier(n_estimators=10, random_state=1),
         scoring="roc_auc",
-        cv=cv.split(X,y),
+        cv=cv.split(X, y),
     )
 
     Xt = transformer.fit_transform(X, y)

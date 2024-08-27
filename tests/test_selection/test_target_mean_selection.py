@@ -172,7 +172,7 @@ def test_cv_generator():
         threshold=None,
         bins=2,
         strategy="equal_width",
-        cv=cv.split(X,y),
+        cv=cv.split(X, y),
     )
     sel.fit(X, y)
     pd.testing.assert_frame_equal(sel.transform(X), X[["cat_var_A", "num_var_A"]])
