@@ -1,6 +1,8 @@
 import pandas as pd
 import pytest
 
+from sklearn.model_selection import StratifiedKFold
+
 from feature_engine.selection import SelectByTargetMeanPerformance
 
 
@@ -159,6 +161,21 @@ def test_regression():
     assert sel.features_to_drop_ == ["cat_var_B", "num_var_A", "num_var_B"]
     assert sel.feature_performance_ == performance_dict
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_cv_generator():
+    X, y = df_classification()
+    cv = StratifiedKFold(n_splits=2)
+    sel = SelectByTargetMeanPerformance(
+        variables=None,
+        scoring="accuracy",
+        threshold=None,
+        bins=2,
+        strategy="equal_width",
+        cv=cv.split(X, y),
+    )
+    sel.fit(X, y)
+    pd.testing.assert_frame_equal(sel.transform(X), X[["cat_var_A", "num_var_A"]])
 
 
 def test_error_wrong_params():

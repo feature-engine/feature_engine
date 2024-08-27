@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import StratifiedKFold
 from sklearn.tree import DecisionTreeRegressor
 
 from feature_engine.selection import SelectByShuffling
@@ -90,6 +92,42 @@ def test_regression_cv_2_and_mse(load_diabetes_dataset):
     assert np.round(sel.initial_model_performance_, 0) == -5836.0
     assert sel.features_to_drop_ == [0, 1, 3, 4, 5, 6, 9]
     # test transform output
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_cv_generator(df_test):
+    X, y = df_test
+    cv = StratifiedKFold(n_splits=3)
+
+    X, y = df_test
+    sel = SelectByShuffling(
+        RandomForestClassifier(random_state=1),
+        threshold=0.01,
+        random_state=1,
+        cv=3,
+    )
+    sel.fit(X, y)
+
+    # expected result
+    Xtransformed = pd.DataFrame(X["var_7"].copy())
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+    sel = SelectByShuffling(
+        RandomForestClassifier(random_state=1),
+        threshold=0.01,
+        random_state=1,
+        cv=cv,
+    )
+    sel.fit(X, y)
+    pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+    sel = SelectByShuffling(
+        RandomForestClassifier(random_state=1),
+        threshold=0.01,
+        random_state=1,
+        cv=cv.split(X, y),
+    )
+    sel.fit(X, y)
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
 
