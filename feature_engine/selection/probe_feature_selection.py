@@ -17,6 +17,7 @@ from feature_engine._docstrings.selection._docstring import (
     _features_to_drop_docstring,
     _fit_docstring,
     _get_support_docstring,
+    _groups_docstring,
     _scoring_docstring,
     _transform_docstring,
     _variables_attribute_docstring,
@@ -40,6 +41,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     estimator=_estimator_docstring,
     scoring=_scoring_docstring,
     cv=_cv_docstring,
+    groups=_groups_docstring,
     confirm_variables=_confirm_variables_docstring,
     variables=_variables_numerical_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -103,6 +105,8 @@ class ProbeFeatureSelection(BaseSelector):
         distribution.
 
     {cv}
+
+    {groups}
 
     Attributes
     ----------
@@ -173,6 +177,7 @@ class ProbeFeatureSelection(BaseSelector):
         n_probes: int = 1,
         distribution: str = "normal",
         cv=5,
+        groups=None,
         random_state: int = 0,
         confirm_variables: bool = False,
     ):
@@ -203,6 +208,7 @@ class ProbeFeatureSelection(BaseSelector):
         self.scoring = scoring
         self.distribution = distribution
         self.cv = cv
+        self.groups = groups
         self.n_probes = n_probes
         self.random_state = random_state
 
@@ -238,7 +244,12 @@ class ProbeFeatureSelection(BaseSelector):
         if self.collective is True:
             # train model using entire dataset and derive feature importance
             f_importance_mean, f_importance_std = find_feature_importance(
-                X_new, y, self.estimator, self.cv, self.scoring,
+                X=X_new,
+                y=y,
+                estimator=self.estimator,
+                cv=self.cv,
+                groups=self.groups,
+                scoring=self.scoring,
             )
             self.feature_importances_ = f_importance_mean
             self.feature_importances_std_ = f_importance_std
@@ -246,12 +257,13 @@ class ProbeFeatureSelection(BaseSelector):
         else:
             # trains a model per feature (single feature models)
             f_importance_mean, f_importance_std = single_feature_performance(
-                X_new,
-                y,
-                X_new.columns,
-                self.estimator,
-                self.cv,
-                self.scoring,
+                X=X_new,
+                y=y,
+                variables=X_new.columns,
+                estimator=self.estimator,
+                cv=self.cv,
+                groups=self.groups,
+                scoring=self.scoring,
             )
             self.feature_importances_ = pd.Series(f_importance_mean)
             self.feature_importances_std_ = pd.Series(f_importance_std)
