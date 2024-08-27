@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import KFold
 
 from feature_engine.selection import SmartCorrelatedSelection
 from tests.estimator_checks.init_params_allowed_values_checks import (
@@ -210,6 +211,27 @@ def test_model_performance_2_correlated_groups(df_test):
         "var_7": {"var_4", "var_6", "var_9"},
     }
     # test transform output
+    pd.testing.assert_frame_equal(Xt, df)
+
+
+def test_cv_generator(df_single):
+    X, y = df_single
+    cv = KFold(3)
+
+    transformer = SmartCorrelatedSelection(
+        variables=None,
+        method="pearson",
+        threshold=0.8,
+        missing_values="raise",
+        selection_method="model_performance",
+        estimator=RandomForestClassifier(n_estimators=10, random_state=1),
+        scoring="roc_auc",
+        cv=cv.split(X,y),
+    )
+
+    Xt = transformer.fit_transform(X, y)
+
+    df = X[["var_0", "var_2", "var_3", "var_4", "var_5"]].copy()
     pd.testing.assert_frame_equal(Xt, df)
 
 

@@ -313,7 +313,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
                 estimator,
                 X,
                 y,
-                cv=self.cv,
+                cv=cv,
                 scoring=self.scoring,
             )
 

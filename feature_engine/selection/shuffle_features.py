@@ -222,12 +222,14 @@ class SelectByShuffling(BaseSelector):
         # check that there are more than 1 variable to select from
         self._check_variable_number()
 
+        cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
+
         # train model with all features and cross-validation
         model = cross_validate(
             self.estimator,
             X[self.variables_],
             y,
-            cv=list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv,
+            cv=cv,
             return_estimator=True,
             scoring=self.scoring,
             params={"sample_weight": sample_weight},
