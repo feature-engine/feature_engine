@@ -20,6 +20,7 @@ from feature_engine._docstrings.selection._docstring import (
     _features_to_drop_docstring,
     _fit_docstring,
     _get_support_docstring,
+    _groups_docstring,
     _scoring_docstring,
     _threshold_docstring,
     _transform_docstring,
@@ -45,6 +46,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     scoring=_scoring_docstring,
     threshold=_threshold_docstring,
     cv=_cv_docstring,
+    groups=_groups_docstring,
     confirm_variables=_confirm_variables_docstring,
     features_to_drop_=_features_to_drop_docstring,
     variables_=_variables_attribute_docstring,
@@ -123,6 +125,8 @@ class SelectByTargetMeanPerformance(BaseSelector):
     {threshold}
 
     {cv}
+
+    {groups}
 
     regression: boolean, default=True
         Indicates whether the target is one for regression or a classification.
@@ -212,6 +216,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         strategy: str = "equal_width",
         scoring: str = "roc_auc",
         cv=3,
+        groups=None,
         threshold: Union[int, float, None] = None,
         regression: bool = False,
         confirm_variables: bool = False,
@@ -251,6 +256,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         self.strategy = strategy
         self.scoring = scoring
         self.cv = cv
+        self.groups = groups
         self.threshold = threshold
         self.regression = regression
 
@@ -307,10 +313,11 @@ class SelectByTargetMeanPerformance(BaseSelector):
             estimator.set_params(variables=variable)
 
             model = cross_validate(
-                estimator,
-                X,
-                y,
+                estimator=estimator,
+                X=X,
+                y=y,
                 cv=self.cv,
+                groups=self.groups,
                 scoring=self.scoring,
             )
 
