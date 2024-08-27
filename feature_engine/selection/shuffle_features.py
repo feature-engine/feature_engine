@@ -239,7 +239,7 @@ class SelectByShuffling(BaseSelector):
         self.initial_model_performance_ = model["test_score"].mean()
 
         # extract the validation folds
-        cv_ = check_cv(self.cv, y=y, classifier=is_classifier(self.estimator))
+        cv_ = check_cv(cv, y=y, classifier=is_classifier(self.estimator))
         validation_indices = [val_index for _, val_index in cv_.split(X, y)]
 
         # get performance metric
