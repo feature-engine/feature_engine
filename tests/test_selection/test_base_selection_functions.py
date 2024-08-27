@@ -128,7 +128,6 @@ def test_single_feature_performance(df_test):
         variables=variables,
         estimator=rf,
         cv=3,
-        groups=None,
         scoring="roc_auc",
     )
 
@@ -176,7 +175,6 @@ def test_single_feature_performance_cv_generator(df_test):
             variables=variables,
             estimator=rf,
             cv=cv_,
-            groups=None,
             scoring="roc_auc",
         )
 
@@ -256,7 +254,6 @@ def test_find_feature_importance(df_test):
         y=y,
         estimator=rf,
         cv=cv,
-        groups=None,
         scoring=scoring,
     )
     pd.testing.assert_series_equal(mean_.round(2), expected_mean)
@@ -267,7 +264,6 @@ def test_find_feature_importance(df_test):
         y=y,
         estimator=rf,
         cv=cv.split(X, y),
-        groups=None,
         scoring=scoring,
     )
     pd.testing.assert_series_equal(mean_.round(2), expected_mean)
