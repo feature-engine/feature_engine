@@ -1,15 +1,17 @@
-from types import GeneratorType
 from typing import List, Union
+from types import GeneratorType
 
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import cross_validate
 
-from feature_engine.variable_handling import (check_all_variables,
-                                              check_numerical_variables,
-                                              find_all_variables,
-                                              find_numerical_variables,
-                                              retain_variables_if_in_df)
+from feature_engine.variable_handling import (
+    check_all_variables,
+    check_numerical_variables,
+    find_all_variables,
+    find_numerical_variables,
+    retain_variables_if_in_df,
+)
 
 Variables = Union[int, str, List[Union[str, int]], None]
 
@@ -164,8 +166,8 @@ def single_feature_performance(
     variables: List[Union[str, int]],
     estimator,
     cv,
-    groups,
     scoring,
+    groups=None,
 ):
     """
     Trains one estimator per feature and determines the performance of that estimator.
@@ -187,13 +189,13 @@ def single_feature_performance(
     cv:
         Cross-validation scheme. Any supported by the Scikit-learn estimator.
 
+    scoring:
+        The performance metric. Any supported by the Scikit-learn estimator.
+
     groups: Array-like of shape (n_samples,), default=None
         Group labels for the samples used while splitting
         the dataset into train/test set. Only used in conjunction with a
         “Group” cv instance (e.g., GroupKFold).
-
-    scoring:
-        The performance metric. Any supported by the Scikit-learn estimator.
 
     Returns
     -------
@@ -232,8 +234,8 @@ def find_feature_importance(
     y: pd.Series,
     estimator,
     cv,
-    groups,
     scoring,
+    groups=None,
 ):
     """
     Trains an estimator using cross-validation and derives feature importance from it.
@@ -256,13 +258,13 @@ def find_feature_importance(
     cv:
         Cross-validation scheme. Any supported by the Scikit-learn estimator.
 
+    scoring:
+        The performance metric. Any supported by the Scikit-learn estimator.
+
     groups: Array-like of shape (n_samples,), default=None
         Group labels for the samples used while splitting
         the dataset into train/test set. Only used in conjunction with a
         “Group” cv instance (e.g., GroupKFold).
-
-    scoring:
-        The performance metric. Any supported by the Scikit-learn estimator.
 
     Returns
     -------

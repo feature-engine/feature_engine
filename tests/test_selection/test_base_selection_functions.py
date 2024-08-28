@@ -4,9 +4,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold
 
 from feature_engine.selection.base_selection_functions import (
-    _select_all_variables, _select_numerical_variables,
-    find_correlated_features, find_feature_importance,
-    single_feature_performance)
+    _select_all_variables,
+    _select_numerical_variables,
+    find_correlated_features,
+    find_feature_importance,
+    single_feature_performance,
+)
 
 
 @pytest.fixture

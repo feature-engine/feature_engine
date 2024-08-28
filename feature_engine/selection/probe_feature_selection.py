@@ -4,23 +4,35 @@ import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring, _n_features_in_docstring)
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+)
 from feature_engine._docstrings.init_parameters.selection import (
-    _confirm_variables_docstring, _estimator_docstring)
+    _confirm_variables_docstring,
+    _estimator_docstring,
+)
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.selection._docstring import (
-    _cv_docstring, _features_to_drop_docstring, _fit_docstring,
-    _get_support_docstring, _groups_docstring, _scoring_docstring,
-    _transform_docstring, _variables_attribute_docstring,
-    _variables_numerical_docstring)
+    _cv_docstring,
+    _groups_docstring,
+    _features_to_drop_docstring,
+    _fit_docstring,
+    _get_support_docstring,
+    _scoring_docstring,
+    _transform_docstring,
+    _variables_attribute_docstring,
+    _variables_numerical_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
 
-from .base_selection_functions import (_select_numerical_variables,
-                                       find_feature_importance,
-                                       single_feature_performance)
+from .base_selection_functions import (
+    _select_numerical_variables,
+    find_feature_importance,
+    single_feature_performance,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
