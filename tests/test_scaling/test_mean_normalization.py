@@ -9,9 +9,9 @@ def test_transforming_int_vars():
     # input test case
     df = pd.DataFrame(
         {
-            "var1": [1, 2, 3],
-            "var2": [4, 5, 3],
-            "var3": [7, 7, 7],
+            "var1": [1., 2., 3.],
+            "var2": [4., 5., 3.],
+            "var3": [7., 7., 7.],
         }
     )
     # expected output
@@ -27,6 +27,11 @@ def test_transforming_int_vars():
     X = transformer.fit_transform(df)
 
     pd.testing.assert_frame_equal(X, expected_df)
+
+    # test inverse_transform
+    Xit = transformer.inverse_transform(X)
+
+    pd.testing.assert_frame_equal(Xit, df)
 
 
 def test_mean_normalization_plus_automatically_find_variables(df_vartypes):
