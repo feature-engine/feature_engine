@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, GroupKFold
+
 
 from feature_engine.selection.base_selection_functions import (
     _select_all_variables,
@@ -198,6 +199,37 @@ def test_single_feature_performance_cv_generator(df_test):
         assert mean_ == expected_mean
 
 
+def test_single_feature_performance_with_groups(df_test_with_groups):
+    X, y, groups = df_test_with_groups
+    rf = RandomForestClassifier(n_estimators=5, random_state=1)
+    variables = X.columns.to_list()
+    scoring = "neg_mean_absolute_error"
+    cv = GroupKFold(n_splits=3)
+    cv_indices = cv.split(X=X, y=y, groups=groups)
+
+    expected_mean_, expected_std_ = single_feature_performance(
+        X=X,
+        y=y,
+        variables=variables,
+        estimator=rf,
+        cv=cv_indices,
+        scoring=scoring,
+    )
+
+    mean_, std_ = single_feature_performance(
+        X=X,
+        y=y,
+        variables=variables,
+        estimator=rf,
+        cv=cv,
+        scoring=scoring,
+        groups=groups,
+    )
+
+    assert mean_ == expected_mean_
+    assert std_ == expected_std_
+
+
 def test_find_feature_importance(df_test):
     X, y = df_test
     rf = RandomForestClassifier(n_estimators=3, random_state=3)
@@ -271,3 +303,31 @@ def test_find_feature_importance(df_test):
     )
     pd.testing.assert_series_equal(mean_.round(2), expected_mean)
     pd.testing.assert_series_equal(std_.round(4), expected_std)
+
+
+def test_find_feature_importancewith_groups(df_test_with_groups):
+    X, y, groups = df_test_with_groups
+    rf = RandomForestClassifier(n_estimators=3, random_state=1)
+    cv = GroupKFold(n_splits=3)
+    scoring = "neg_mean_absolute_error"
+    cv_indices = cv.split(X=X, y=y, groups=groups)
+
+    expected_mean_, expected_std_ = find_feature_importance(
+        X=X,
+        y=y,
+        estimator=rf,
+        cv=cv_indices,
+        scoring=scoring,
+    )
+
+    mean_, std_ = find_feature_importance(
+        X=X,
+        y=y,
+        estimator=rf,
+        cv=cv,
+        scoring=scoring,
+        groups=groups
+    )
+
+    pd.testing.assert_series_equal(mean_, expected_mean_)
+    pd.testing.assert_series_equal(std_, expected_std_)

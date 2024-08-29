@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import KFold
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.model_selection import KFold, GroupKFold
 
 from feature_engine.selection import SmartCorrelatedSelection
 from tests.estimator_checks.init_params_allowed_values_checks import (
@@ -403,3 +403,34 @@ def test_callable_method(df_test, random_uniform_method):
     assert len(transformer.features_to_drop_) > 0
     assert len(transformer.variables_) > 0
     assert transformer.n_features_in_ == len(X.columns)
+
+
+def test_smart_correlation_selection_with_groups(df_test_with_groups):
+    X, y, groups = df_test_with_groups
+    cv = GroupKFold(n_splits=3)
+    cv_indices = cv.split(X=X, y=y, groups=groups)
+
+    estimator = RandomForestRegressor(n_estimators=3, random_state=1)
+    scoring = "neg_mean_absolute_error"
+    selection_method = "variance"
+
+    transformer_expected = SmartCorrelatedSelection(
+        estimator=estimator,
+        scoring=scoring,
+        selection_method=selection_method,
+        cv=cv_indices,
+    )
+
+    X_tr_expected = transformer_expected.fit_transform(X, y)
+
+    transformer = SmartCorrelatedSelection(
+        estimator=estimator,
+        scoring=scoring,
+        selection_method=selection_method,
+        cv=cv,
+        groups=groups,
+    )
+
+    X_tr = transformer.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(X_tr_expected, X_tr)

@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Lasso, LogisticRegression, LinearRegression
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, GroupKFold
 from sklearn.tree import DecisionTreeRegressor
 
 from feature_engine.selection import RecursiveFeatureAddition
@@ -275,3 +275,36 @@ def test_cv_generator(load_diabetes_dataset):
     ).fit(X, y)
     test2 = sel.transform(X)
     pd.testing.assert_frame_equal(expected, test2)
+
+
+def test_recursive_feature_addition_with_groups(df_test_with_groups):
+    X, y, groups = df_test_with_groups
+    cv = GroupKFold(n_splits=3)
+    cv_indices = cv.split(X=X, y=y, groups=groups)
+    threshold = 0.5
+
+    estimator = LinearRegression()
+    scoring = "neg_mean_absolute_error"
+
+    sel_expected = RecursiveFeatureAddition(
+        estimator=estimator,
+        scoring=scoring,
+        cv=cv_indices,
+        threshold=threshold,
+    )
+
+    X_tr_expected = sel_expected.fit_transform(X, y)
+
+    sel = RecursiveFeatureAddition(
+        estimator=estimator,
+        scoring=scoring,
+        cv=cv,
+        groups=groups,
+        threshold=threshold,
+    )
+    X_tr = sel.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(
+        X_tr_expected,
+        X_tr,
+    )

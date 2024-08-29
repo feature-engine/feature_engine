@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import Lasso, LogisticRegression
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, GroupKFold
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from feature_engine.selection import ProbeFeatureSelection
@@ -432,3 +432,41 @@ def test_single_feature_importance_generation(df_test):
     )
 
     assert sel.feature_importances_.round(4).equals(expected_)
+
+
+def test_probe_feature_selector_with_groups(df_test_with_groups):
+    X, y, groups = df_test_with_groups
+    cv = GroupKFold(n_splits=3)
+    cv_indices = cv.split(X=X, y=y, groups=groups)
+
+    estimator = RandomForestRegressor(n_estimators=3, random_state=3)
+    distribution = "normal"
+    n_probes = 2
+    scoring = "neg_mean_absolute_error"
+    random_state = 3
+    confirm_variables = True
+
+    sel_expected = ProbeFeatureSelection(
+        estimator=estimator,
+        distribution=distribution,
+        n_probes=n_probes,
+        scoring=scoring,
+        cv=cv_indices,
+        random_state=random_state,
+        confirm_variables=confirm_variables,
+    )
+    X_tr_expected = sel_expected.fit_transform(X, y)
+
+    sel = ProbeFeatureSelection(
+        estimator=estimator,
+        distribution=distribution,
+        n_probes=n_probes,
+        scoring=scoring,
+        cv=cv,
+        groups=groups,
+        random_state=random_state,
+        confirm_variables=confirm_variables,
+    )
+    X_tr = sel.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(X_tr_expected, X_tr)
