@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
-
+import re
 from feature_engine.scaling import MeanNormalizationScaling
 
 
@@ -9,9 +9,9 @@ def test_transforming_int_vars():
     # input test case
     df = pd.DataFrame(
         {
-            "var1": [1., 2., 3.],
-            "var2": [4., 5., 3.],
-            "var3": [7., 7., 7.],
+            "var1": [1.0, 2.0, 3.0],
+            "var2": [4.0, 5.0, 3.0],
+            "var3": [40.0, 20.0, 30.0],
         }
     )
     # expected output
@@ -19,7 +19,7 @@ def test_transforming_int_vars():
         {
             "var1": [-0.5, 0.0, 0.5],
             "var2": [0, 0.5, -0.5],
-            "var3": [0.0, 0.0, 0.0],
+            "var3": [0.5, -0.5, 0.0],
         }
     )
 
@@ -92,20 +92,37 @@ def test_mean_normalization_plus_user_passes_var_list(df_vartypes):
 
 def test_fit_raises_error_if_na_in_df(df_na):
     # test case 3: when dataset contains na, fit method
+    transformer = MeanNormalizationScaling()
     with pytest.raises(ValueError):
-        transformer = MeanNormalizationScaling()
         transformer.fit(df_na)
 
 
 def test_transform_raises_error_if_na_in_df(df_vartypes, df_na):
     # test case 4: when dataset contains na, transform method
+    transformer = MeanNormalizationScaling()
+    transformer.fit(df_vartypes)
     with pytest.raises(ValueError):
-        transformer = MeanNormalizationScaling()
-        transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
 
 def test_non_fitted_error(df_vartypes):
+    transformer = MeanNormalizationScaling()
     with pytest.raises(NotFittedError):
-        transformer = MeanNormalizationScaling()
         transformer.transform(df_vartypes)
+
+
+def test_constant_columns_error():
+    # input test case
+    df = pd.DataFrame(
+        {
+            "var1": [1.0, 2.0, 3.0],
+            "var2": [4.0, 5.0, 3.0],
+            "var3": [7.0, 7.0, 7.0],
+        }
+    )
+
+    transformer = MeanNormalizationScaling()
+    with pytest.raises(
+        ValueError, match=re.escape("The following column/s are constant: ['var3']")
+    ):
+        transformer.fit(df)
