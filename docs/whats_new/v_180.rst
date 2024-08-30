@@ -16,6 +16,7 @@ Contributors
 - `Hector Patino <https://github.com/hectorpatino>`_
 - `Alessandro Benetti <https://github.com/Benetti-Hub>`_
 - `olikra <https://github.com/olikra>`_
+- `Kanan Mahammadli <https://github.com/KananMahammadli>`_
 - `Soledad Galli <https://github.com/solegalli>`_
 
 In this release, we fix several bugs and future deprecation warnings from pandas and numpy.
@@ -36,6 +37,8 @@ Enhancements
 - `ProbeFeatureSelection` can now also determine feature importance through single feature model performance (`Soledad Galli <https://github.com/solegalli>`_)
 - `ProbeFeatureSelection` can now return the standard deviation of the feature importance (`Soledad Galli <https://github.com/solegalli>`_)
 - `RecursiveFeatureElimination` and `RecursiveFeatureAddition` can now return the standard deviation of the feature importances (`Soledad Galli <https://github.com/solegalli>`_)
+- All feature selection classes can now implement Group cross-validation through the `groups` parameter (`Kanan Mahammadli <https://github.com/KananMahammadli>`_)
+
 
 Bug fixes
 ~~~~~~~~~
