@@ -16,6 +16,7 @@ from feature_engine._docstrings.init_parameters.selection import (
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.selection._docstring import (
     _cv_docstring,
+    _groups_docstring,
     _estimator_docstring,
     _get_support_docstring,
     _missing_values_docstring,
@@ -44,6 +45,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     estimator=_estimator_docstring,
     scoring=_scoring_docstring,
     cv=_cv_docstring,
+    groups=_groups_docstring,
     confirm_variables=_confirm_variables_docstring,
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
@@ -118,6 +120,8 @@ class SmartCorrelatedSelection(BaseSelector):
     {scoring}
 
     {cv}
+
+    {groups}
 
     {confirm_variables}
 
@@ -206,6 +210,7 @@ class SmartCorrelatedSelection(BaseSelector):
         estimator=None,
         scoring: str = "roc_auc",
         cv=3,
+        groups=None,
         confirm_variables: bool = False,
     ):
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
@@ -253,6 +258,7 @@ class SmartCorrelatedSelection(BaseSelector):
         self.estimator = estimator
         self.scoring = scoring
         self.cv = cv
+        self.groups = groups
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         """
@@ -321,12 +327,13 @@ class SmartCorrelatedSelection(BaseSelector):
             cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
             for feature_group in correlated_groups:
                 feature_performance, _ = single_feature_performance(
-                    X,
-                    y,
-                    feature_group,
-                    self.estimator,
-                    cv,
-                    self.scoring,
+                    X=X,
+                    y=y,
+                    variables=feature_group,
+                    estimator=self.estimator,
+                    cv=cv,
+                    groups=self.groups,
+                    scoring=self.scoring,
                 )
                 # get most important feature
                 f_i = (

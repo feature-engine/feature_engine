@@ -167,6 +167,7 @@ def single_feature_performance(
     estimator,
     cv,
     scoring,
+    groups=None,
 ):
     """
     Trains one estimator per feature and determines the performance of that estimator.
@@ -191,6 +192,11 @@ def single_feature_performance(
     scoring:
         The performance metric. Any supported by the Scikit-learn estimator.
 
+    groups: Array-like of shape (n_samples,), default=None
+        Group labels for the samples used while splitting
+        the dataset into train/test set. Only used in conjunction with a
+        “Group” cv instance (e.g., GroupKFold).
+
     Returns
     -------
     feature_performance: dict
@@ -213,6 +219,7 @@ def single_feature_performance(
             X[feature].to_frame(),
             y,
             cv=cv,
+            groups=groups,
             return_estimator=False,
             scoring=scoring,
         )
@@ -228,6 +235,7 @@ def find_feature_importance(
     estimator,
     cv,
     scoring,
+    groups=None,
 ):
     """
     Trains an estimator using cross-validation and derives feature importance from it.
@@ -253,6 +261,11 @@ def find_feature_importance(
     scoring:
         The performance metric. Any supported by the Scikit-learn estimator.
 
+    groups: Array-like of shape (n_samples,), default=None
+        Group labels for the samples used while splitting
+        the dataset into train/test set. Only used in conjunction with a
+        “Group” cv instance (e.g., GroupKFold).
+
     Returns
     -------
     feature_importance: pd.Series
@@ -271,6 +284,7 @@ def find_feature_importance(
         X,
         y,
         cv=cv,
+        groups=groups,
         scoring=scoring,
         return_estimator=True,
     )

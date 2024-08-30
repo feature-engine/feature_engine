@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, GroupKFold
+
 
 from feature_engine.selection.base_selection_functions import (
     _select_all_variables,
@@ -125,7 +126,14 @@ def test_single_feature_performance(df_test):
     rf = RandomForestClassifier(n_estimators=5, random_state=1)
     variables = X.columns.to_list()
 
-    mean_, std_ = single_feature_performance(X, y, variables, rf, 3, "roc_auc")
+    mean_, std_ = single_feature_performance(
+        X=X,
+        y=y,
+        variables=variables,
+        estimator=rf,
+        cv=3,
+        scoring="roc_auc",
+    )
 
     expected_mean = {
         "var_0": 0.5813469607144305,
@@ -165,7 +173,14 @@ def test_single_feature_performance_cv_generator(df_test):
     variables = X.columns.to_list()
     cv = StratifiedKFold(n_splits=3)
     for cv_ in [cv, cv.split(X, y)]:
-        mean_, _ = single_feature_performance(X, y, variables, rf, cv_, "roc_auc")
+        mean_, _ = single_feature_performance(
+            X=X,
+            y=y,
+            variables=variables,
+            estimator=rf,
+            cv=cv_,
+            scoring="roc_auc",
+        )
 
         expected_mean = {
             "var_0": 0.5813469607144305,
@@ -182,6 +197,37 @@ def test_single_feature_performance_cv_generator(df_test):
             "var_11": 0.5180029642379039,
         }
         assert mean_ == expected_mean
+
+
+def test_single_feature_performance_with_groups(df_test_with_groups):
+    X, y, groups = df_test_with_groups
+    rf = RandomForestClassifier(n_estimators=5, random_state=1)
+    variables = X.columns.to_list()
+    scoring = "neg_mean_absolute_error"
+    cv = GroupKFold(n_splits=3)
+    cv_indices = cv.split(X=X, y=y, groups=groups)
+
+    expected_mean_, expected_std_ = single_feature_performance(
+        X=X,
+        y=y,
+        variables=variables,
+        estimator=rf,
+        cv=cv_indices,
+        scoring=scoring,
+    )
+
+    mean_, std_ = single_feature_performance(
+        X=X,
+        y=y,
+        variables=variables,
+        estimator=rf,
+        cv=cv,
+        scoring=scoring,
+        groups=groups,
+    )
+
+    assert mean_ == expected_mean_
+    assert std_ == expected_std_
 
 
 def test_find_feature_importance(df_test):
@@ -238,10 +284,50 @@ def test_find_feature_importance(df_test):
         ],
     )
 
-    mean_, std_ = find_feature_importance(X, y, rf, cv, scoring)
+    mean_, std_ = find_feature_importance(
+        X=X,
+        y=y,
+        estimator=rf,
+        cv=cv,
+        scoring=scoring,
+    )
     pd.testing.assert_series_equal(mean_.round(2), expected_mean)
     pd.testing.assert_series_equal(std_.round(4), expected_std)
 
-    mean_, std_ = find_feature_importance(X, y, rf, cv.split(X, y), scoring)
+    mean_, std_ = find_feature_importance(
+        X=X,
+        y=y,
+        estimator=rf,
+        cv=cv.split(X, y),
+        scoring=scoring,
+    )
     pd.testing.assert_series_equal(mean_.round(2), expected_mean)
     pd.testing.assert_series_equal(std_.round(4), expected_std)
+
+
+def test_find_feature_importancewith_groups(df_test_with_groups):
+    X, y, groups = df_test_with_groups
+    rf = RandomForestClassifier(n_estimators=3, random_state=1)
+    cv = GroupKFold(n_splits=3)
+    scoring = "neg_mean_absolute_error"
+    cv_indices = cv.split(X=X, y=y, groups=groups)
+
+    expected_mean_, expected_std_ = find_feature_importance(
+        X=X,
+        y=y,
+        estimator=rf,
+        cv=cv_indices,
+        scoring=scoring,
+    )
+
+    mean_, std_ = find_feature_importance(
+        X=X,
+        y=y,
+        estimator=rf,
+        cv=cv,
+        scoring=scoring,
+        groups=groups
+    )
+
+    pd.testing.assert_series_equal(mean_, expected_mean_)
+    pd.testing.assert_series_equal(std_, expected_std_)

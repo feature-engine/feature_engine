@@ -19,6 +19,7 @@ from feature_engine._docstrings.selection._docstring import (
     _features_to_drop_docstring,
     _fit_docstring,
     _get_support_docstring,
+    _groups_docstring,
     _initial_model_performance_docstring,
     _scoring_docstring,
     _threshold_docstring,
@@ -35,6 +36,7 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
     scoring=_scoring_docstring,
     threshold=_threshold_docstring,
     cv=_cv_docstring,
+    groups=_groups_docstring,
     variables=_variables_numerical_docstring,
     confirm_variables=_confirm_variables_docstring,
     initial_model_performance_=_initial_model_performance_docstring,
@@ -86,6 +88,8 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
     {threshold}
 
     {cv}
+
+    {groups}
 
     {confirm_variables}
 
@@ -167,10 +171,11 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
         # Run baseline model using only the most important feature
         baseline_model = cross_validate(
-            self.estimator,
-            X[first_most_important_feature].to_frame(),
-            y,
+            estimator=self.estimator,
+            X=X[first_most_important_feature].to_frame(),
+            y=y,
             cv=self._cv,
+            groups=self.groups,
             scoring=self.scoring,
             return_estimator=True,
         )
@@ -194,10 +199,11 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
             # Add feature and train new model
             model_tmp = cross_validate(
-                self.estimator,
-                X[_selected_features + [feature]],
-                y,
+                estimator=self.estimator,
+                X=X[_selected_features + [feature]],
+                y=y,
                 cv=self._cv,
+                groups=self.groups,
                 scoring=self.scoring,
                 return_estimator=True,
             )

@@ -53,6 +53,11 @@ _cv_docstring = """cv: int, cross-validation generator or an iterable, default=3
         documentation.
         """.rstrip()
 
+_groups_docstring = """groups: array-like of shape (n_samples,), default=None
+        Group labels for the samples used while splitting the dataset into train/test set.
+        Only used in conjunction with a “Group” cv instance (e.g., GroupKFold).
+        """.rstrip()
+
 _initial_model_performance_docstring = """initial_model_performance_:
         The model's performance when trained with the original dataset.
         """.rstrip()

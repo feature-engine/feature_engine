@@ -26,6 +26,37 @@ def df_test():
 
 
 @pytest.fixture(scope="module")
+def df_test_with_groups():
+    # Parameters
+    n_samples = 100  # Total number of samples
+    n_groups = 10    # Total number of groups
+    n_features = 5   # Number of features
+
+    # Generate random features
+    np.random.seed(1)
+    features = np.random.randn(n_samples, n_features)
+
+    # Generate random target variable
+    target = np.random.randint(0, 100, size=n_samples)
+
+    # Generate groups
+    groups = np.repeat(np.arange(1, n_groups + 1), n_samples // n_groups)
+    np.random.shuffle(groups)
+
+    # Create DataFrame
+    df = pd.DataFrame(features, columns=[f'var_{i+1}' for i in range(n_features)])
+    df['target'] = target
+    df['group'] = groups
+
+    features = [col for col in df.columns if col.startswith('var')]
+    X = df[features]
+    y = df['target']
+    groups = df['group']
+
+    return X, y, groups
+
+
+@pytest.fixture(scope="module")
 def load_diabetes_dataset():
     # Load the diabetes dataset from sklearn
     diabetes_X, diabetes_y = load_diabetes(return_X_y=True)

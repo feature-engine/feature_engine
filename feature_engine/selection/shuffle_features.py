@@ -226,9 +226,9 @@ class SelectByShuffling(BaseSelector):
 
         # train model with all features and cross-validation
         model = cross_validate(
-            self.estimator,
-            X[self.variables_],
-            y,
+            estimator=self.estimator,
+            X=X[self.variables_],
+            y=y,
             cv=cv,
             return_estimator=True,
             scoring=self.scoring,

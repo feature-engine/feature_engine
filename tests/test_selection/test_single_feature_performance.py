@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.model_selection import GroupKFold
 
 from feature_engine.selection import SelectBySingleFeaturePerformance
 
@@ -247,3 +248,31 @@ def test_test_selector_with_one_variable(df_test):
     }
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_single_feature_importance_with_groups(df_test_with_groups):
+    X, y, groups = df_test_with_groups
+    cv = GroupKFold(n_splits=3)
+    cv_indices = cv.split(X=X, y=y, groups=groups)
+
+    estimator = RandomForestRegressor(n_estimators=3, random_state=3)
+    scoring = "neg_mean_absolute_error"
+
+    sel_expected = SelectBySingleFeaturePerformance(
+        estimator=estimator,
+        scoring=scoring,
+        cv=cv_indices,
+    )
+
+    X_tr_expected = sel_expected.fit_transform(X, y)
+
+    sel = SelectBySingleFeaturePerformance(
+        estimator=estimator,
+        scoring=scoring,
+        cv=cv,
+        groups=groups,
+    )
+
+    X_tr = sel.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(X_tr_expected, X_tr)
