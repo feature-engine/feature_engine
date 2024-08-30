@@ -1,6 +1,69 @@
 Version 1.8.X
 =============
 
+Version 1.8.1
+-------------
+
+Deployed: 1st Sep 2024
+
+Contributors
+~~~~~~~~~~~~
+
+- `Cainã Max Couto da Silva <https://github.com/cmcouto-silva>`_
+- `Gurjinder Kaur <https://github.com/gurjinderbassi>`_
+- `Sergio Benito Martin <https://github.com/sergiobemar>`_
+- `Ranja Sarkar <https://github.com/ranja-sarkar>`_
+- `Hector Patino <https://github.com/hectorpatino>`_
+- `Alessandro Benetti <https://github.com/Benetti-Hub>`_
+- `olikra <https://github.com/olikra>`_
+- `Soledad Galli <https://github.com/solegalli>`_
+
+In this release, we fix several bugs and future deprecation warnings from pandas and numpy.
+In addition, we expand the functionality of some feaure selection classes to return the standard
+deviation of the derived feature importance.
+
+We have also updated and expanded various pages of our documentation.
+
+Thank you very much to all contributors to this release and to `Vasco Schiavo <https://github.com/VascoSch92>`_ and
+`Gleb Levitski <https://github.com/GLevv>`_ for actively discussing many of our PRs and issues.
+
+If you value what we do, consider `sponsoring us <https://github.com/sponsors/solegalli>`_, so that we can keep
+updating Feature-engine at a fast pace.
+
+Enhancements
+~~~~~~~~~~~~
+
+- `ProbeFeatureSelection` can now also determine feature importance through single feature model performance (`Soledad Galli <https://github.com/solegalli>`_)
+- `ProbeFeatureSelection` can now return the standard deviation of the feature importance (`Soledad Galli <https://github.com/solegalli>`_)
+- `RecursiveFeatureElimination` and `RecursiveFeatureAddition` can now return the standard deviation of the feature importances (`Soledad Galli <https://github.com/solegalli>`_)
+
+Bug fixes
+~~~~~~~~~
+
+- The cv parameter of the recursive feature selectors can now take cv generators of the type `KFold.split(X, y)` (`Alessandro Benetti <https://github.com/Benetti-Hub>`_)
+- The cv parameter of the remaining feature selection classes can now take cv generators of the type `KFold.split(X, y)` (`Soledad Galli <https://github.com/solegalli>`_)
+- `LogCpTransformer()` adds a constant only to those variables that are strictly non-positive during fit (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix bug in `MatchVariables` that was preventing the transformer to work when missing values were raised (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix bug in `inverse_transform()` from `YeoJohnsonTransformer()` (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix pandas future warnings (`Soledad Galli <https://github.com/solegalli>`_)
+- Fix numpy future warnings (`olikra <https://github.com/olikra>`_)
+
+Code improvements
+~~~~~~~~~~~~~~~~~
+
+- Expand coverage of various tests (`olikra <https://github.com/olikra>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+- Expand user guide for `ReciprocalTransformer()` (`Sergio Benito Martin <https://github.com/sergiobemar>`_)
+- Expand user guide for `YeoJohnsonTransformer()` (`Ranja Sarkar <https://github.com/ranja-sarkar>`_)
+- Expand user guide for `WoEEncoder()` (`Hector Patino <https://github.com/hectorpatino>`_)
+- Expand user guide for `OrdinalEncoder()` (`Gurjinder Kaur <https://github.com/gurjinderbassi>`_)
+- Expand user guide for `MeanMedianImputer()` (`Cainã Max Couto da Silva <https://github.com/cmcouto-silva>`_)
+- Expand `CyclicalFeatures` documentation to explain how `max_values` are calculated and discrepancies with Scikit-learn's documentation (`Soledad Galli <https://github.com/solegalli>`_)
+- Add contribute.MD file to repository (`Soledad Galli <https://github.com/solegalli>`_)
+
 Version 1.8.0
 -------------
 
@@ -48,6 +111,10 @@ Enhancements
 - The `DecisionTreeDiscretiser()` can now replace the continuous attributes with the decision tree predictions, interval limits, or bin number (`Soledad Galli <https://github.com/solegalli>`_)
 - The `OutlierTrimmer()` and `Winsorizer()` can now adjust the strength of the outlier search automatically based of the statistical method (param `fold="auto"`) (`Gleb Levitski <https://github.com/GLevv>`_)
 
+Code improvements
+~~~~~~~~~~~~~~~~~
+
+- Expand coverage of several tests (`olikra <https://github.com/olikra>`_)
 
 Documentation
 ~~~~~~~~~~~~~
