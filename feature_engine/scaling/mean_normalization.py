@@ -1,7 +1,7 @@
 # Authors: Vasco Schiavo <vasco.schiavo@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 
@@ -55,7 +55,7 @@ class MeanNormalizationScaling(BaseNumericalTransformer):
 
     Attributes
     ----------
-    params:
+    params_:
         a dictionary containing the mean, max and min of every given variable
 
     {variables_}
@@ -101,8 +101,6 @@ class MeanNormalizationScaling(BaseNumericalTransformer):
     ) -> None:
 
         self.variables = _check_variables_input_value(variables)
-        # the following variable will be populated in the during the fit
-        self.params: Dict = {}
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -120,13 +118,20 @@ class MeanNormalizationScaling(BaseNumericalTransformer):
 
         # check input dataframe
         X = super().fit(X)
+        self.params_ = pd.DataFrame(
+            {
+                "mean": X[self.variables_].mean(),
+                "max": X[self.variables_].max(),
+                "min": X[self.variables_].min(),
+            },
+        ).transpose()
 
-        for variable in self.variables_:
-            self.params[variable] = {
-                "mean": X[variable].mean(),
-                "max": X[variable].max(),
-                "min": X[variable].min(),
-            }
+        # check for constant columns
+        constant_columns = self.params_.columns[
+            self.params_.loc["min"] == self.params_.loc["max"]
+        ].to_list()
+        if constant_columns:
+            raise ValueError(f"The following column/s are constant: {constant_columns}")
 
         return self
 
@@ -149,16 +154,9 @@ class MeanNormalizationScaling(BaseNumericalTransformer):
         X = self._check_transform_input_and_state(X)
 
         # transformation
-        for variable in self.variables_:
-            numerator = X[variable] - self.params[variable]["mean"]
-            denominator = self.params[variable]["max"] - self.params[variable]["min"]
-
-            # If max and min are equal, then the column's variable is constant.
-            # We set denominator to 1, and the column will be normalized to 0
-            if denominator == 0:
-                denominator = 1
-
-            X[variable] = numerator / denominator
+        numerator = X[self.variables_] - self.params_.loc["mean"]
+        denominator = self.params_.loc["max"] - self.params_.loc["min"]
+        X[self.variables_] = numerator / denominator
 
         return X
 
@@ -180,15 +178,8 @@ class MeanNormalizationScaling(BaseNumericalTransformer):
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
-        # inverse_transform
-        for variable in self.variables_:
-
-            if self.params[variable]["min"] == self.params[variable]["max"]:
-                denominator = 1
-            else:
-                denominator = (
-                    self.params[variable]["max"] - self.params[variable]["min"]
-                )
-            X[variable] = X[variable] * denominator + self.params[variable]["mean"]
+        # inverse transform
+        denominator = self.params_.loc["max"] - self.params_.loc["min"]
+        X[self.variables_] = X[self.variables_] * denominator + self.params_.loc["mean"]
 
         return X
