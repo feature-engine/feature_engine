@@ -111,10 +111,6 @@ Enhancements
 - The `DecisionTreeDiscretiser()` can now replace the continuous attributes with the decision tree predictions, interval limits, or bin number (`Soledad Galli <https://github.com/solegalli>`_)
 - The `OutlierTrimmer()` and `Winsorizer()` can now adjust the strength of the outlier search automatically based of the statistical method (param `fold="auto"`) (`Gleb Levitski <https://github.com/GLevv>`_)
 
-Code improvements
-~~~~~~~~~~~~~~~~~
-
-- Expand coverage of several tests (`olikra <https://github.com/olikra>`_)
 
 Documentation
 ~~~~~~~~~~~~~
