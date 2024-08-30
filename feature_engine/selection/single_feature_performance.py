@@ -33,8 +33,10 @@ from feature_engine.dataframe_checks import check_X_y
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
 
-from .base_selection_functions import (_select_numerical_variables,
-                                       single_feature_performance)
+from .base_selection_functions import (
+    _select_numerical_variables,
+    single_feature_performance,
+)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
