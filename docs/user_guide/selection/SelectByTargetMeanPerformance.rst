@@ -2,35 +2,42 @@
 
 .. currentmodule:: feature_engine.selection
 
-
 SelectByTargetMeanPerformance
 =============================
 
-:class:`SelectByTargetMeanPerformance()` selects features based on performance metrics
-like the ROC-AUC or accuracy for classification, or mean squared error and R-squared
+:class:`SelectByTargetMeanPerformance()` selects features based on a performance metric,
+like ROC-AUC or accuracy for classification, or mean squared error and R-squared
 for regression.
 
-To obtain performance metrics, we compare an estimate of the target, returned by a
-machine learning model, with the real target. The closer the values of the estimate to
-the real target, the better the performance of the model.
+Performance metrics are obtained by comparing a prediction with the real value of the
+target. The closer the values of the prediction to the real target, the better the value
+of the performance metric. Typically, these predictions are obtained from machine learning
+models.
 
-:class:`SelectByTargetMeanPerformance()`, like :class:`SelectBySingleFeaturePerformance()`
-train models based on single features. Or in other words, they train and test one model
-per feature. With :class:`SelectBySingleFeaturePerformance()`, we can use any machine
-learning classifier or regressor available in Scikit-learn to evaluate each feature's
-performance. The downside is that Scikit-learn models only work with numerical variables,
-thus, if our data has categorical variables, we need to encode them into numbers first.
+:class:`SelectByTargetMeanPerformance()` uses a very simple method to obtain "predictions".
+It returns the mean target value per category or per interval if the variable is continuous.
+With this "prediction", it determines the value of a performance metric of choice for each
+feature, by comparing the values of the "predictions" with that of the target.
 
-:class:`SelectByTargetMeanPerformance()`, on the other hand, can select both numerical
-and categorical variables. :class:`SelectByTargetMeanPerformance()` uses a very simple
-"machine learning model" to estimate the target. It estimates the target by returning
-the mean target value per category or per interval. And with this prediction, it
-determines a performance metric for each feature.
+Procedure
+---------
 
-These feature selection idea is very simple; it involves taking the mean of the
-responses (target) for each level (category or interval), and so amounts to a least
+This feature selection idea is very simple; it involves taking the mean of the
+responses (target) for each level (category or interval) of the variable, and so amounts to a least
 squares fit on a single categorical variable against a response variable, with the
 categories in the continuous variables defined by intervals.
+
+Despite its simplicity, the method has a number of advantages:
+
+- Speed: Computing means and intervals is fast, straightforward and efficient.
+- Stability with respect to feature magnitude: Extreme values for continuous variables do not skew predictions as they would in many models.
+- Comparability between continuous and categorical variables.
+- Does not assume linear relationships and hence can identify non-linearities.
+- Does not require encoding categorical variables into numbers.
+
+The method has also some limitations. First, the selection of the number of intervals
+as well as the threshold is arbitrary. And also, rare categories and very skewed
+variables will raise errors when NAN are accidentally introduced during the evaluation.
 
 :class:`SelectByTargetMeanPerformance()` works with cross-validation. It uses the k-1
 folds to define the numerical intervals and learn the mean target value per category or
@@ -39,17 +46,6 @@ feature: that is, in the last fold it sorts numerical variables into the bins, r
 bins and categories by the learned target estimates, and calculates the performance of
 each feature.
 
-Despite its simplicity, the method has a number of advantages:
-
-- Speed: Computing means and intervals is fast, straightforward and efficient.
-- Stability with respect to feature magnitude: Extreme values for continuous variables do not skew predictions as they would in many models.
-- Comparability between continuous and categorical variables.
-- Accommodation of non-linearities.
-- Does not require encoding categorical variables into numbers.
-
-The method has also some limitations. First, the selection of the number of intervals
-as well as the threshold is arbitrary. And also, rare categories and very skewed
-variables will raise errors when NAN are accidentally introduced during the evaluation.
 
 Important
 ---------
@@ -111,6 +107,7 @@ Let's import the required libraries and classes, and prepare the titanic dataset
 .. code:: python
 
     import numpy as np
+    import matplotlib.pyplot as plt
     import pandas as pd
     from sklearn.model_selection import train_test_split
 
@@ -213,12 +210,19 @@ In the attribute `features_to_drop_` we find the variables that were not selecte
 
     ['age', 'sibsp', 'parch', 'embarked']
 
+
+Evaluating feature importance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 In the attribute `feature_performance_` we find the ROC-AUC for each feature. Remember
 that this is the average ROC-AUC in each cross-validation fold:
 
 .. code:: python
 
     sel.feature_performance_
+
+In the following output we see the ROC-AUC returned by the target mean encoding of
+each variable:
 
 .. code:: python
 
@@ -239,8 +243,54 @@ The mean ROC-AUC of all features is 0.62, we can calculate it as follows:
 
     0.6229357428894605
 
-So we can see that the transformer correclty selected the features with ROC-AUC above
-that value.
+In the attribute `feature_performance_std_` we find the standard deviation of the
+ROC-AUC for each feature:
+
+.. code:: python
+
+    sel.feature_performance_std_
+
+Below we see the standard deviation of the ROC-AUC:
+
+.. code:: python
+
+    {'pclass': 0.0062490415569808975,
+     'sex': 0.006574623168243345,
+     'age': 0.023454310730681827,
+     'sibsp': 0.007263903286722272,
+     'parch': 0.017865107795851633,
+     'fare': 0.01669212962579665,
+     'cabin': 0.006868970787685758,
+     'embarked': 0.008925910686325774}
+
+We can plot the performance together with the standard deviation to get a better
+idea of the feature's importance:
+
+..  code:: python
+
+    r = pd.concat([
+        pd.Series(sel.feature_performance_),
+        pd.Series(sel.feature_performance_std_)
+    ], axis=1
+    )
+    r.columns = ['mean', 'std']
+
+    r['mean'].plot.bar(yerr=[r['std'], r['std']], subplots=True)
+
+    plt.title("Feature importance")
+    plt.ylabel('ROC-AUC')
+    plt.xlabel('Features')
+    plt.show()
+
+In the following image we see the feature importance:
+
+.. figure::  ../../images/target-mean-sel-std.png
+
+With this, we can get a better idea of the relationship between the features and the
+target variable, based on a linear regression model.
+
+Checking out the resulting dataframe
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 With `transform()` we can go ahead and drop the features:
 

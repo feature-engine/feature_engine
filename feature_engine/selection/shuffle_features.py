@@ -107,6 +107,10 @@ class SelectByShuffling(BaseSelector):
     performance_drifts_:
         Dictionary with the performance drift per shuffled feature.
 
+    performance_drifts_std_:
+        Dictionary with the standard deviation of performance drift per shuffled
+        feature.
+
     {features_to_drop_}
 
     {variables_}
@@ -250,6 +254,7 @@ class SelectByShuffling(BaseSelector):
 
         # dict to collect features and their performance_drift after shuffling
         self.performance_drifts_ = {}
+        self.performance_drifts_std_ = {}
 
         # shuffle features and save feature performance drift into a dict
         for feature in self.variables_:
@@ -264,12 +269,13 @@ class SelectByShuffling(BaseSelector):
             )
 
             # determine the performance with the shuffled feature
-            performance = np.mean(
-                [
-                    scorer(m, X_shuffled.iloc[idx], y.iloc[idx])
-                    for m, idx in zip(model["estimator"], validation_indices)
-                ]
-            )
+            performance = [
+                scorer(m, X_shuffled.iloc[idx], y.iloc[idx])
+                for m, idx in zip(model["estimator"], validation_indices)
+            ]
+
+            performance_std = np.std(performance)
+            performance = np.mean(performance)
 
             # determine drift in performance
             # Note, sklearn negates the log and error scores, so no need to manually
@@ -281,6 +287,7 @@ class SelectByShuffling(BaseSelector):
 
             # Save feature and performance drift
             self.performance_drifts_[feature] = performance_drift
+            self.performance_drifts_std_[feature] = performance_std
 
         # select features
         if not self.threshold:

@@ -141,6 +141,9 @@ class SelectByTargetMeanPerformance(BaseSelector):
     feature_performance_:
         Dictionary with the performance of each feature.
 
+    feature_performance_std_:
+        Dictionary with the standard deviation of each feature's performance.
+
     {features_to_drop_}
 
     {feature_names_in_}
@@ -305,6 +308,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
             )
 
         self.feature_performance_ = {}
+        self.feature_performance_std_ = {}
 
         cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
 
@@ -325,6 +329,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
             )
 
             self.feature_performance_[variable] = model["test_score"].mean()
+            self.feature_performance_std_[variable] = model["test_score"].std()
 
         # select features
         if not self.threshold:
