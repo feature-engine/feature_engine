@@ -1,18 +1,39 @@
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
 
-from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
-from feature_engine._base_transformers.mixins import (
-    FitFromDictMixin,
-    GetFeatureNamesOutMixin,
+from feature_engine._docstrings.fit_attributes import (
+    _feature_names_in_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters.all_trasnformers import (
+    _drop_original_docstring,
+    _missing_values_docstring,
+    _variables_numerical_docstring,
+)
+from feature_engine._docstrings.methods import (
+    _fit_not_learn_docstring,
+    _fit_transform_docstring,
+    _transform_creation_docstring,
+)
+from feature_engine._docstrings.substitute import Substitution
+from feature_engine.creation.base_creation import BaseCreation
 
 
-class DistanceFeatures(
-    BaseNumericalTransformer, FitFromDictMixin, GetFeatureNamesOutMixin
-):
+@Substitution(
+    variables=_variables_numerical_docstring,
+    missing_values=_missing_values_docstring,
+    drop_original=_drop_original_docstring,
+    variables_=_variables_attribute_docstring,
+    feature_names_in_=_feature_names_in_docstring,
+    n_features_in_=_n_features_in_docstring,
+    fit=_fit_not_learn_docstring,
+    transform=_transform_creation_docstring,
+    fit_transform=_fit_transform_docstring,
+)
+class DistanceFeatures(BaseCreation):
     """
     DistanceFeatures() computes the distance between pairs of columns containing
     coordinates. The distance between two pairs of coordinates is computed using the
@@ -94,46 +115,77 @@ class DistanceFeatures(
         drop_original: bool = False,
     ) -> None:
 
+        if (
+            not isinstance(coordinate_columns, list)
+            or not all(
+                isinstance(sublist, list)
+                or not all(isinstance(item, (int, str)) for item in sublist)
+                for sublist in coordinate_columns
+            )
+            or len(set(coordinate_columns)) != len(coordinate_columns)
+        ):
+            raise ValueError(
+                "coordinate_columns must be a list of lists of strings or integers. "
+                f"Got {coordinate_columns} instead."
+            )
+        if not all(
+            len(coordinate_column) == 4 for coordinate_column in coordinate_columns
+        ):
+            invalid_coordinate_columns = [
+                coordinate_column
+                for coordinate_column in coordinate_columns
+                if len(coordinate_column) != 4
+            ]
+            raise ValueError(
+                f"coordinate_columns must be a list of lists of 4 elements."
+                f"Got {invalid_coordinate_columns}."
+            )
+
+        # TODO: check for the output_column_names
+        # TODO: what about missing values
+
+        super().__init__(drop_original=drop_original)
         # the coordinate_columns variable is rewritten in this way to speed up
         # computation later, i.e., to use vectorization
-        (self.a_latitudes, self.a_longitudes, self.b_latitudes, self.b_longitudes) = (
-            self._check_coordinate_columns(columns=coordinate_columns)
-        )
         self.output_column_name = self._check_output_columns_names(
             column_name=output_column_names,
             coordinate_columns=coordinate_columns,
         )
 
-        self.drop_original = self._check_drop_original(parameter=drop_original)
+        self.variables = coordinate_columns
 
-        self.variables = None
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+        X = super().fit(X)
 
-    def _check_drop_original(self, parameter: bool) -> bool:
-        if isinstance(parameter, bool) is False:
-            raise ValueError(
-                "Expected boolean value for parameter `drop_original`, "
-                f"but got {parameter} with type {type(parameter)}"
-            )
-        return parameter
+        self._check_correctness_of_coordinates(X)
 
-    def _check_coordinate_columns(
-        self, columns: List[List[Union[str, int]]]
-    ) -> Tuple[List[Union[str, int]], ...]:
-        if not columns:
-            raise ValueError("Empty list for `coordinate_columns` not allowed!")
-        for idx, coordinate_column in enumerate(columns):
-            if len(coordinate_column) != 4:
-                raise ValueError(
-                    f"Needed 4 values to compute a distance, "
-                    f"but got {len(coordinate_column)} columns \n"
-                    f"at the index {idx} of the list coordinate columns."
-                )
-        return (
-            [coordinate[0] for coordinate in columns],
-            [coordinate[1] for coordinate in columns],
-            [coordinate[2] for coordinate in columns],
-            [coordinate[3] for coordinate in columns],
+        (self.a_latitudes, self.a_longitudes, self.b_latitudes, self.b_longitudes) = [
+            coordinate[0] for coordinate in self.variables_
+        ]
+
+    def _check_correctness_of_coordinates(self, X: pd.DataFrame):
+        # recall that the latitude is a number between -90 and +90,
+        # while longitudes is between -180 and +180.
+        irregular_latitudes = (
+            (X[[*self.a_latitudes, *self.b_latitudes]].abs() > 90).sum().sum()
         )
+        irregular_longitudes = (
+            (X[[*self.a_longitudes, *self.b_longitudes]].abs() > 180).sum().sum()
+        )
+
+        error_message = ""
+        if irregular_latitudes > 0:
+            error_message += (
+                "The dataframe contains irregular latitudes. "
+                "Recall that a latitude is a number between -90 and 90. \n"
+            )
+        if irregular_longitudes > 0:
+            error_message += (
+                "The dataframe contains irregular longitudes"
+                "Recall that a longitude is a number between -180 and 180."
+            )
+        if error_message:
+            raise ValueError(error_message)
 
     def _check_output_columns_names(
         self,
@@ -150,11 +202,6 @@ class DistanceFeatures(
             )
         return column_name
 
-    def fit(self, X: pd.DataFrame):
-        # there is no fit for this transformer
-        super().fit(X)
-        return self
-
     def transform(self, X: pd.DataFrame):
         """
         Compute the distance on heart using the Haversine formula.
@@ -170,7 +217,6 @@ class DistanceFeatures(
             The original dataframe plus the distances between the given coordinates.
         """
         X = self._check_transform_input_and_state(X)
-        X = self._check_lat_lon_columns_are_in_df(X)
         X = self._check_correctness_of_coordinates(X)
 
         self._compute_distance(X)
@@ -187,37 +233,6 @@ class DistanceFeatures(
             )
 
         return X
-
-    def _check_lat_lon_columns_are_in_df(self, X) -> pd.DataFrame:
-        coordinate_columns = [
-            *self.a_latitudes,
-            *self.a_longitudes,
-            *self.b_latitudes,
-            *self.b_longitudes,
-        ]
-        if set(coordinate_columns).issubset(set(X.columns)) is False:
-            raise ValueError(
-                f"The columns {set(coordinate_columns).issubset(set(X.columns))} "
-                f"were not found in the dataframe."
-            )
-        return X
-
-    def _check_correctness_of_coordinates(self, X: pd.DataFrame) -> pd.DataFrame:
-        # recall that the latitude is a number between -90 and +90,
-        # while longitudes is between -180 and +180.
-        irregular_latitudes = (
-            (X[[*self.a_latitudes, *self.b_latitudes]].abs() > 90).sum().sum()
-        )
-        irregular_longitudes = (
-            (X[[*self.a_longitudes, *self.b_longitudes]].abs() > 180).sum().sum()
-        )
-
-        if irregular_latitudes > 0:
-            raise ValueError("The dataframe contains irregular latitudes")
-        elif irregular_longitudes > 0:
-            raise ValueError("The dataframe contains irregular longitudes")
-        else:
-            return X
 
     def _compute_distance(self, X: pd.DataFrame):
 
