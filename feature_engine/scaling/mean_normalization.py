@@ -34,9 +34,9 @@ from feature_engine._docstrings.substitute import Substitution
     fit_transform=_fit_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class MeanNormalizationScaling(BaseNumericalTransformer):
+class MeanNormalizationScaler(BaseNumericalTransformer):
     """
-    The MeanNormalizationScaling() applies the mean normalization scaling techinques
+    The MeanNormalizationScaler() applies the mean normalization scaling techinques
     to one or multuple columns of a dataframe.
 
     Mean normalization is a way to implement feature scaling. Mean normalization
@@ -80,10 +80,10 @@ class MeanNormalizationScaling(BaseNumericalTransformer):
 
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from feature_engine.scaling import MeanNormalizationScaling
+    >>> from feature_engine.scaling import MeanNormalizationScaler
     >>> np.random.seed(42)
     >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100)))
-    >>> mns = LogTransformer()
+    >>> mns = MeanNormalizationScaler()
     >>> mns.fit(X)
     >>> X = mns.transform(X)
     >>> X.head()
@@ -104,7 +104,7 @@ class MeanNormalizationScaling(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        The method populate the variable `params`.
+        The method populate the variable `params_`.
 
         Parameters
         ----------
@@ -118,20 +118,19 @@ class MeanNormalizationScaling(BaseNumericalTransformer):
 
         # check input dataframe
         X = super().fit(X)
-        self.params_ = pd.DataFrame(
-            {
-                "mean": X[self.variables_].mean(),
-                "max": X[self.variables_].max(),
-                "min": X[self.variables_].min(),
-            },
-        ).transpose()
+        self.params_ = {
+            "mean": X[self.variables_].mean(),
+            "range": X[self.variables_].max() - X[self.variables_].min(),
+        }
 
         # check for constant columns
-        constant_columns = self.params_.columns[
-            self.params_.loc["min"] == self.params_.loc["max"]
-        ].to_list()
+        range_columns = self.params_["range"]
+        constant_columns = range_columns[range_columns == 0].index.tolist()
         if constant_columns:
-            raise ValueError(f"The following column/s are constant: {constant_columns}")
+            raise ValueError(
+                "Division by zero in the scaling. This is because \n"
+                f"the following column/s are constant: {constant_columns}"
+            )
 
         return self
 
@@ -154,9 +153,9 @@ class MeanNormalizationScaling(BaseNumericalTransformer):
         X = self._check_transform_input_and_state(X)
 
         # transformation
-        numerator = X[self.variables_] - self.params_.loc["mean"]
-        denominator = self.params_.loc["max"] - self.params_.loc["min"]
-        X[self.variables_] = numerator / denominator
+        X[self.variables_] = (
+            X[self.variables_] - self.params_["mean"][self.variables_]
+        ) / self.params_["range"]
 
         return X
 
@@ -179,7 +178,9 @@ class MeanNormalizationScaling(BaseNumericalTransformer):
         X = self._check_transform_input_and_state(X)
 
         # inverse transform
-        denominator = self.params_.loc["max"] - self.params_.loc["min"]
-        X[self.variables_] = X[self.variables_] * denominator + self.params_.loc["mean"]
+        X[self.variables_] = (
+            X[self.variables_] * self.params_["range"]
+            + self.params_["mean"][self.variables_]
+        )
 
         return X
