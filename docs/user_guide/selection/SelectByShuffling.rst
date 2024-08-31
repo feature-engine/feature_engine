@@ -18,7 +18,7 @@ The algorithm operates as follows:
 
 1. Train a machine learning model using all available features.
 2. Establish a baseline performance metric for the model.
-2. Shuffle the values of a single feature while keeping all other features unchanged.
+3. Shuffle the values of a single feature while keeping all other features unchanged.
 4. Use the model from step 1 to generate predictions with the shuffled feature.
 5. Measure the model's performance based on these new predictions.
 6. If the performance drops beyond a predefined threshold, retain the feature.
@@ -142,16 +142,16 @@ shuffling:
 
 .. code:: python
 
-{'age': 0.012788500580799392,
- 'sex': 0.040792331972680645,
- 'bmi': 0.042212436355346106,
- 'bp': 0.05397012536801143,
- 's1': 0.35198797776358015,
- 's2': 0.167636042355086,
- 's3': 0.03455158514716544,
- 's4': 0.007755675852874145,
- 's5': 0.1449579162698361,
- 's6': 0.011193022434166025}
+    {'age': 0.012788500580799392,
+     'sex': 0.040792331972680645,
+     'bmi': 0.042212436355346106,
+     'bp': 0.05397012536801143,
+     's1': 0.35198797776358015,
+     's2': 0.167636042355086,
+     's3': 0.03455158514716544,
+     's4': 0.007755675852874145,
+     's5': 0.1449579162698361,
+     's6': 0.011193022434166025}
 
 We can plot the performance change together with the standard deviation to get a better
 idea of how shuffling features affect the model performance:
