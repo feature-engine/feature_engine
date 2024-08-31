@@ -96,6 +96,9 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     feature_performance_:
         Dictionary with the single feature model performance per feature.
 
+    feature_performance_std_:
+        Dictionary with the standard deviation of the single feature model performance.
+
     {variables_}
 
     {feature_names_in_}
@@ -214,14 +217,16 @@ class SelectBySingleFeaturePerformance(BaseSelector):
                 f"the transformer."
             )
 
-        self.feature_performance_, _ = single_feature_performance(
-            X=X,
-            y=y,
-            variables=self.variables_,
-            estimator=self.estimator,
-            cv=self.cv,
-            groups=self.groups,
-            scoring=self.scoring,
+        self.feature_performance_, self.feature_performance_std_ = (
+            single_feature_performance(
+                X=X,
+                y=y,
+                variables=self.variables_,
+                estimator=self.estimator,
+                cv=self.cv,
+                groups=self.groups,
+                scoring=self.scoring,
+            )
         )
 
         # select features
