@@ -37,6 +37,7 @@ Enhancements
 - `ProbeFeatureSelection` can now also determine feature importance through single feature model performance (`Soledad Galli <https://github.com/solegalli>`_)
 - `ProbeFeatureSelection` can now return the standard deviation of the feature importance (`Soledad Galli <https://github.com/solegalli>`_)
 - `RecursiveFeatureElimination` and `RecursiveFeatureAddition` can now return the standard deviation of the feature importances (`Soledad Galli <https://github.com/solegalli>`_)
+- `SelectByShuffling`, `SelectBySingleFeaturePerformance` and `SelectByTargetMeanPerformance` can now return the standard deviation of the feature importances (`Soledad Galli <https://github.com/solegalli>`_)
 - All feature selection classes can now implement Group cross-validation through the `groups` parameter (`Kanan Mahammadli <https://github.com/KananMahammadli>`_)
 
 
