@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from feature_engine._prediction.target_mean_classifier import TargetMeanClassifier
 
@@ -299,3 +300,11 @@ def test_classifier_all_variables(df_classification):
     assert np.array_equal(pred, exp_pred)
     assert np.allclose(prob, exp_prob)
     assert np.allclose(prob_log, exp_prob_log)
+
+
+def test_error_when_target_not_binary(df_classification):
+    X, y = df_classification
+    tr = TargetMeanClassifier(variables="cat_var_A")
+    y = pd.Series([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0])
+    with pytest.raises(NotImplementedError):
+        tr.fit(X, y)

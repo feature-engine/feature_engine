@@ -160,3 +160,17 @@ def test_fit_and_transform_raise_error_if_df_contains_na(df_normal_dist):
         )
         transformer.fit(df_normal_dist)
         transformer.transform(df_na)
+
+
+@pytest.mark.parametrize(
+    "missing_values",
+    ["HOLA", 1, True, {"key1": "value1", "key2": "value2", "key3": "value3"}],
+)
+def test_error_if_missing_values_wrong_type(missing_values):
+    msg = "missing_values takes only values 'raise' or 'ignore'"
+    with pytest.raises(ValueError) as record:
+        ArbitraryOutlierCapper(
+            min_capping_dict={"var": -0.17486039103044}, missing_values="missing_values"
+        )
+    # check that error message matches
+    assert str(record.value) == msg

@@ -27,8 +27,17 @@ Feature selection
 - `Feature Selection for Machine Learning: A comprehensive Overview <https://www.blog.trainindata.com/feature-selection-for-machine-learning/>`_.
 
 
+YouTube
+-------
+
+Playlists
+~~~~~~~~~
+
+- `One minute to Feature-engine <https://www.youtube.com/watch?v=nisuJQTyDSA&list=PL_7uaHXkQmKVXh06fCWRxdQRZsl3wva5k>`_
+- `Feature-engine <https://www.youtube.com/watch?v=maRloknVxVg&list=PL_7uaHXkQmKVlqlvgQJuaWEKjagHbERtp>`_
+
 Videos
-------
+~~~~~~
 
 - `Streamlining Feature Engineering Pipes with Feature-engine <https://www.youtube.com/watch?v=0V3_uXX30Ko>`_, Data Science Festival, 2020.
 - `Optimising Feature Engineering Pipelines with Feature-engine <https://www.youtube.com/watch?v=qT-3KUaFYmk/>`_, Pydata Cambridge 2020, from minute 51:43.
@@ -43,9 +52,7 @@ Podcasts
 En Español
 ----------
 
-Empezamos una nueva website con blogs en español. Chequeala:
-
-- `Entrena en Datos <https://www.es.trainindata.com/>`_.
+- `Curso gratis de ingenieria de variables <https://www.youtube.com/watch?v=fmAUVceuQu4&list=PL_7uaHXkQmKU6JyThyqyUUZdCYqJJ9SeO>`_.
 
 Ademas, te pueden interesar:
 

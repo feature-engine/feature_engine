@@ -43,7 +43,7 @@ class MockClassFit(BaseDiscretiser):
             california_dataset.data, columns=california_dataset.feature_names
         )
         self.variables_ = ["HouseAge"]
-        self.binner_dict_ = {"HouseAge": [0, 20, 40, 60, np.Inf]}
+        self.binner_dict_ = {"HouseAge": [0, 20, 40, 60, np.inf]}
         self.n_features_in_ = data.shape[1]
         self.feature_names_in_ = california_dataset.feature_names
         return self
@@ -60,12 +60,12 @@ def test_transform():
 
     # HouseAge is the median house age in the block group.
     data_t1["HouseAge"] = pd.cut(
-        data["HouseAge"], bins=[0, 20, 40, 60, np.Inf], include_lowest=True
+        data["HouseAge"], bins=[0, 20, 40, 60, np.inf], include_lowest=True
     )
     data_t1["HouseAge"] = data_t1["HouseAge"].astype(str)
     data_t2["HouseAge"] = pd.cut(
         data["HouseAge"],
-        bins=[0, 20, 40, 60, np.Inf],
+        bins=[0, 20, 40, 60, np.inf],
         labels=False,
         include_lowest=True,
     )

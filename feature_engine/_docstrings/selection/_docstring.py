@@ -25,7 +25,7 @@ _estimator_docstring = """estimator: object
 
 _scoring_docstring = """scoring: str, default='roc_auc'
         Metric to evaluate the performance of the estimator. Comes from
-        sklearn.metrics. See the model evaluation documentation for more options:
+        `sklearn.metrics`. See the model evaluation documentation for more options:
         https://scikit-learn.org/stable/modules/model_evaluation.html
         """.rstrip()
 
@@ -51,6 +51,11 @@ _cv_docstring = """cv: int, cross-validation generator or an iterable, default=3
         splitters are instantiated with `shuffle=False` so the splits will be the same
         across calls. For more details check Scikit-learn's `cross_validate`'s
         documentation.
+        """.rstrip()
+
+_groups_docstring = """groups: array-like of shape (n_samples,), default=None
+        Group labels for the samples used while splitting the dataset into train/test set.
+        Only used in conjunction with a “Group” cv instance (e.g., GroupKFold).
         """.rstrip()
 
 _initial_model_performance_docstring = """initial_model_performance_:

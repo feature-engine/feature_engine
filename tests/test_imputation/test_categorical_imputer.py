@@ -116,7 +116,7 @@ def test_imputation_of_numerical_vars_cast_as_object_and_returned_as_numerical(d
     X_transformed = imputer.fit_transform(df_na)
 
     X_reference = df_na.copy()
-    X_reference["Marks"] = X_reference["Marks"].fillna(0.8)
+    X_reference["Marks"] = X_reference["Marks"].astype(float).fillna(0.8)
     X_reference["City"] = X_reference["City"].fillna("London")
     X_reference["Studies"] = X_reference["Studies"].fillna("Bachelor")
     assert imputer.variables == ["City", "Studies", "Marks"]
@@ -292,3 +292,16 @@ def test_variables_cast_as_category_frequent(df_na):
     assert X_transformed[["City", "Studies"]].isnull().sum().sum() == 0
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() > 0
     pd.testing.assert_frame_equal(X_transformed, X_reference)
+
+
+@pytest.mark.parametrize(
+    "ignore_format",
+    [22.3, 1, "HOLA", {"key1": "value1", "key2": "value2", "key3": "value3"}],
+)
+def test_error_when_ignore_format_is_not_boolean(ignore_format):
+    msg = "ignore_format takes only booleans True and False"
+    with pytest.raises(ValueError) as record:
+        CategoricalImputer(imputation_method="missing", ignore_format=ignore_format)
+
+    # check that error message matches
+    assert str(record.value) == msg

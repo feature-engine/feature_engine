@@ -250,11 +250,20 @@ class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
             with_nan = [np.nan]
 
         for feature in self.variables_:
+            # Setting an item of incompatible dtype is deprecated
+            # and will raise an error in a future version of pandas
+            if self.ignore_format is True and isinstance(self.replace_with, str):
+                num_vars = list(
+                    X[self.variables_].select_dtypes(include="number").columns
+                )
+                X[num_vars] = X[num_vars].astype("O")
+
             if X[feature].dtype == "category":
                 X[feature] = X[feature].cat.add_categories(self.replace_with)
-            X.loc[
-                ~X[feature].isin(self.encoder_dict_[feature] + with_nan), feature
-            ] = self.replace_with
+
+            X.loc[~X[feature].isin(self.encoder_dict_[feature] + with_nan), feature] = (
+                self.replace_with
+            )
 
         return X
 

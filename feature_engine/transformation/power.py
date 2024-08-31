@@ -144,6 +144,7 @@ class PowerTransformer(BaseNumericalTransformer):
         X = self._check_transform_input_and_state(X)
 
         # transform
+        X[self.variables_] = X[self.variables_].astype(float)
         X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], self.exp)
 
         return X

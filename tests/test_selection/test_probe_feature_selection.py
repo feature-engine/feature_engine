@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.model_selection import StratifiedKFold, GroupKFold
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from feature_engine.selection import ProbeFeatureSelection
@@ -35,6 +36,25 @@ def test_input_params_assignment(
     assert sel.cv == _cv
     assert sel.n_probes == _n_probes
     assert sel.random_state == _random_state
+
+
+@pytest.mark.parametrize("collective", [True, False])
+def test_collective_param(collective):
+    tr = ProbeFeatureSelection(
+        estimator=DecisionTreeRegressor(),
+        collective=collective,
+    )
+    assert tr.collective is collective
+
+
+@pytest.mark.parametrize("collective", [10, "string", 0.1])
+def test_collective_raises_error(collective):
+    msg = f"collective takes values True or False. Got {collective} instead."
+    with pytest.raises(ValueError, match=msg):
+        ProbeFeatureSelection(
+            estimator=DecisionTreeRegressor(),
+            collective=collective,
+        )
 
 
 @pytest.mark.parametrize("_distribution", [3, "poisson", ["normal", "binary"], 2.22])
@@ -229,3 +249,224 @@ def test_get_features_to_drop():
     )
     sel.variables_ = ["var1", "var2", "var3", "var4"]
     assert sel._get_features_to_drop() == ["var4"]
+
+
+def test_cv_generator(df_test):
+    X, y = df_test
+    cv = StratifiedKFold(n_splits=3)
+
+    # expected results
+    expected_probe_features = {
+        "gaussian_probe_0": [5.366, 1.31, 0.289, -5.59, -0.832],
+        "gaussian_probe_1": [0.104, 3.396, -7.67, -0.807, -5.729],
+    }
+    expected_probe_features_df = pd.DataFrame(expected_probe_features)
+
+    expected_feature_importances = pd.Series(
+        data=[0.03, 0, 0, 0, 0.26, 0, 0.22, 0.33, 0.02, 0.12, 0, 0, 0, 0],
+        index=[
+            "var_0",
+            "var_1",
+            "var_2",
+            "var_3",
+            "var_4",
+            "var_5",
+            "var_6",
+            "var_7",
+            "var_8",
+            "var_9",
+            "var_10",
+            "var_11",
+            "gaussian_probe_0",
+            "gaussian_probe_1",
+        ],
+    )
+
+    # splitter passed as such
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(),
+        distribution="normal",
+        n_probes=2,
+        scoring="recall",
+        cv=cv,
+        random_state=3,
+        confirm_variables=False,
+    )
+    X_tr = sel.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(
+        sel.probe_features_.head().round(3),
+        expected_probe_features_df,
+        check_dtype=False,
+    )
+    assert sel.feature_importances_.round(2).equals(expected_feature_importances)
+    assert sel.features_to_drop_ == ["var_2", "var_10"]
+    pd.testing.assert_frame_equal(
+        X_tr, X.drop(columns=["var_2", "var_10"]), check_dtype=False
+    )
+
+    # splitter passed as splits
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(),
+        distribution="normal",
+        n_probes=2,
+        scoring="recall",
+        cv=cv.split(X, y),
+        random_state=3,
+        confirm_variables=False,
+    )
+    X_tr = sel.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(
+        sel.probe_features_.head().round(3),
+        expected_probe_features_df,
+        check_dtype=False,
+    )
+    assert sel.feature_importances_.round(2).equals(expected_feature_importances)
+    assert sel.features_to_drop_ == ["var_2", "var_10"]
+    pd.testing.assert_frame_equal(
+        X_tr, X.drop(columns=["var_2", "var_10"]), check_dtype=False
+    )
+
+
+def test_feature_importance_std(df_test):
+    X, y = df_test
+
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(),
+        distribution="normal",
+        n_probes=2,
+        scoring="recall",
+        cv=3,
+        random_state=3,
+        confirm_variables=False,
+    ).fit(X, y)
+
+    # expected results
+    expected_std = pd.Series(
+        data=[
+            0.0088,
+            0.0002,
+            0.0005,
+            0.0007,
+            0.0343,
+            0.0013,
+            0.0089,
+            0.0551,
+            0.0049,
+            0.0123,
+            0.0005,
+            0.0005,
+            0.0005,
+            0.0006,
+        ],
+        index=[
+            "var_0",
+            "var_1",
+            "var_2",
+            "var_3",
+            "var_4",
+            "var_5",
+            "var_6",
+            "var_7",
+            "var_8",
+            "var_9",
+            "var_10",
+            "var_11",
+            "gaussian_probe_0",
+            "gaussian_probe_1",
+        ],
+    )
+
+    assert sel.feature_importances_std_.round(4).equals(expected_std)
+
+
+def test_single_feature_importance_generation(df_test):
+    X, y = df_test
+
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(n_estimators=3, random_state=3),
+        distribution="normal",
+        collective=False,
+        n_probes=2,
+        scoring="recall",
+        cv=3,
+        random_state=3,
+        confirm_variables=False,
+    ).fit(X, y)
+
+    # expected results
+    expected_ = pd.Series(
+        data=[
+            0.5867,
+            0.5342,
+            0.5042,
+            0.4941,
+            0.9456,
+            0.5081,
+            0.9294,
+            0.9859,
+            0.4799,
+            0.8972,
+            0.4476,
+            0.5544,
+            0.4799,
+            0.5323,
+        ],
+        index=[
+            "var_0",
+            "var_1",
+            "var_2",
+            "var_3",
+            "var_4",
+            "var_5",
+            "var_6",
+            "var_7",
+            "var_8",
+            "var_9",
+            "var_10",
+            "var_11",
+            "gaussian_probe_0",
+            "gaussian_probe_1",
+        ],
+    )
+
+    assert sel.feature_importances_.round(4).equals(expected_)
+
+
+def test_probe_feature_selector_with_groups(df_test_with_groups):
+    X, y, groups = df_test_with_groups
+    cv = GroupKFold(n_splits=3)
+    cv_indices = cv.split(X=X, y=y, groups=groups)
+
+    estimator = RandomForestRegressor(n_estimators=3, random_state=3)
+    distribution = "normal"
+    n_probes = 2
+    scoring = "neg_mean_absolute_error"
+    random_state = 3
+    confirm_variables = True
+
+    sel_expected = ProbeFeatureSelection(
+        estimator=estimator,
+        distribution=distribution,
+        n_probes=n_probes,
+        scoring=scoring,
+        cv=cv_indices,
+        random_state=random_state,
+        confirm_variables=confirm_variables,
+    )
+    X_tr_expected = sel_expected.fit_transform(X, y)
+
+    sel = ProbeFeatureSelection(
+        estimator=estimator,
+        distribution=distribution,
+        n_probes=n_probes,
+        scoring=scoring,
+        cv=cv,
+        groups=groups,
+        random_state=random_state,
+        confirm_variables=confirm_variables,
+    )
+    X_tr = sel.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(X_tr_expected, X_tr)

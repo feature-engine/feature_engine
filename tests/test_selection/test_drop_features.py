@@ -14,7 +14,7 @@ def test_drop_1_variable(df_vartypes):
             "Name": ["tom", "nick", "krish", "jack"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
         }
     )
 
@@ -40,7 +40,7 @@ def test_drop_1_variables_str_input(df_vartypes):
             "Name": ["tom", "nick", "krish", "jack"],
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
         }
     )
 
@@ -105,7 +105,7 @@ def test_drop_2_variables_integer_colnames(df_numeric_columns):
         {
             2: [20, 21, 19, 18],
             3: [0.9, 0.8, 0.7, 0.6],
-            4: pd.date_range("2020-02-24", periods=4, freq="T"),
+            4: pd.date_range("2020-02-24", periods=4, freq="min"),
         }
     )
 

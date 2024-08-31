@@ -1,3 +1,4 @@
+from types import GeneratorType
 from typing import List, MutableSequence, Union
 
 import numpy as np
@@ -221,22 +222,24 @@ class SelectByShuffling(BaseSelector):
         # check that there are more than 1 variable to select from
         self._check_variable_number()
 
+        cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
+
         # train model with all features and cross-validation
         model = cross_validate(
-            self.estimator,
-            X[self.variables_],
-            y,
-            cv=self.cv,
+            estimator=self.estimator,
+            X=X[self.variables_],
+            y=y,
+            cv=cv,
             return_estimator=True,
             scoring=self.scoring,
-            fit_params={"sample_weight": sample_weight},
+            params={"sample_weight": sample_weight},
         )
 
         # store initial model performance
         self.initial_model_performance_ = model["test_score"].mean()
 
         # extract the validation folds
-        cv_ = check_cv(self.cv, y=y, classifier=is_classifier(self.estimator))
+        cv_ = check_cv(cv, y=y, classifier=is_classifier(self.estimator))
         validation_indices = [val_index for _, val_index in cv_.split(X, y)]
 
         # get performance metric

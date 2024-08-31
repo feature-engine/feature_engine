@@ -1,4 +1,4 @@
-# Feature Engine
+# Feature-engine
 
 [![feature-engine logo](https://raw.githubusercontent.com/feature-engine/feature_engine/main/docs/images/logo/FeatureEngine.png)](http://feature-engine.readthedocs.io)
 
@@ -28,7 +28,7 @@ transforming parameters from the data and then transform it.
 
 * [Forecasting with Machine Learning, Online Course](https://www.trainindata.com/p/forecasting-with-machine-learning)
 
-* [Python Feature Engineering Cookbook](https://packt.link/0ewSo)
+* [Python Feature Engineering Cookbook](https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587)
 
 * [Feature Selection in Machine Learning Book](https://leanpub.com/feature-selection-in-machine-learning)
 
@@ -114,6 +114,7 @@ Please share your story by answering 1 quick question
  * MathFeatures
  * RelativeFeatures
  * CyclicalFeatures
+ * DecisionTreeFeatures()
 
 ### Feature Selection:
  * DropFeatures

@@ -3,9 +3,11 @@ from sklearn.model_selection import cross_validate
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_importances_docstring,
+    _feature_importances_std_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
     _performance_drifts_docstring,
+    _performance_drifts_std_docstring,
 )
 from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
@@ -17,6 +19,7 @@ from feature_engine._docstrings.selection._docstring import (
     _features_to_drop_docstring,
     _fit_docstring,
     _get_support_docstring,
+    _groups_docstring,
     _initial_model_performance_docstring,
     _scoring_docstring,
     _threshold_docstring,
@@ -33,11 +36,14 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
     scoring=_scoring_docstring,
     threshold=_threshold_docstring,
     cv=_cv_docstring,
+    groups=_groups_docstring,
     variables=_variables_numerical_docstring,
     confirm_variables=_confirm_variables_docstring,
     initial_model_performance_=_initial_model_performance_docstring,
     feature_importances_=_feature_importances_docstring,
+    feature_importances_std_=_feature_importances_std_docstring,
     performance_drifts_=_performance_drifts_docstring,
+    performance_drifts_std_=_performance_drifts_std_docstring,
     features_to_drop_=_features_to_drop_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -83,6 +89,8 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
     {cv}
 
+    {groups}
+
     {confirm_variables}
 
     Attributes
@@ -91,7 +99,11 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
     {feature_importances_}
 
+    {feature_importances_std_}
+
     {performance_drifts_}
+
+    {performance_drifts_std_}
 
     {features_to_drop_}
 
@@ -159,10 +171,11 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
         # Run baseline model using only the most important feature
         baseline_model = cross_validate(
-            self.estimator,
-            X[first_most_important_feature].to_frame(),
-            y,
-            cv=self.cv,
+            estimator=self.estimator,
+            X=X[first_most_important_feature].to_frame(),
+            y=y,
+            cv=self._cv,
+            groups=self.groups,
             scoring=self.scoring,
             return_estimator=True,
         )
@@ -178,6 +191,7 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
         # It is initialized with the performance drift of
         # the most important feature
         self.performance_drifts_ = {first_most_important_feature: 0}
+        self.performance_drifts_std_ = {first_most_important_feature: 0}
 
         # loop over the ordered list of features by feature importance starting
         # from the second element in the list.
@@ -185,10 +199,11 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
             # Add feature and train new model
             model_tmp = cross_validate(
-                self.estimator,
-                X[_selected_features + [feature]],
-                y,
-                cv=self.cv,
+                estimator=self.estimator,
+                X=X[_selected_features + [feature]],
+                y=y,
+                cv=self._cv,
+                groups=self.groups,
                 scoring=self.scoring,
                 return_estimator=True,
             )
@@ -201,6 +216,7 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
 
             # Save feature and performance drift
             self.performance_drifts_[feature] = performance_drift
+            self.performance_drifts_std_[feature] = model_tmp["test_score"].std()
 
             # If new performance model is
             if performance_drift > self.threshold:

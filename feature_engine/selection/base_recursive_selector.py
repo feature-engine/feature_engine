@@ -1,3 +1,4 @@
+from types import GeneratorType
 from typing import List, Union
 
 import pandas as pd
@@ -65,6 +66,11 @@ class BaseRecursiveSelector(BaseSelector):
         across calls. For more details check Scikit-learn's `cross_validate`'s
         documentation.
 
+    groups: Array-like of shape (n_samples,), default=None
+        Group labels for the samples used while splitting
+        the dataset into train/test set. Only used in conjunction with a
+        “Group” cv instance (e.g., GroupKFold).
+
     confirm_variables: bool, default=False
         If set to True, variables that are not present in the input dataframe will be
         removed from the list of variables. Only used when passing a variable list to
@@ -78,8 +84,8 @@ class BaseRecursiveSelector(BaseSelector):
     feature_importances_:
         Pandas Series with the feature importance (comes from step 2)
 
-    performance_drifts_:
-        Dictionary with the performance drift per examined feature (comes from step 5).
+    feature_importances_std_:
+        Pandas Series with the standard deviation of the feature importance.
 
     features_to_drop_:
         List with the features to remove from the dataset.
@@ -104,6 +110,7 @@ class BaseRecursiveSelector(BaseSelector):
         estimator,
         scoring: str = "roc_auc",
         cv=3,
+        groups=None,
         threshold: Union[int, float] = 0.01,
         variables: Variables = None,
         confirm_variables: bool = False,
@@ -118,6 +125,7 @@ class BaseRecursiveSelector(BaseSelector):
         self.scoring = scoring
         self.threshold = threshold
         self.cv = cv
+        self.groups = groups
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -144,6 +152,8 @@ class BaseRecursiveSelector(BaseSelector):
             else:
                 self.variables_ = check_numerical_variables(X, self.variables)
 
+        self._cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
+
         # check that there are more than 1 variable to select from
         self._check_variable_number()
 
@@ -152,10 +162,11 @@ class BaseRecursiveSelector(BaseSelector):
 
         # train model with all features and cross-validation
         model = cross_validate(
-            self.estimator,
-            X[self.variables_],
-            y,
-            cv=self.cv,
+            estimator=self.estimator,
+            X=X[self.variables_],
+            y=y,
+            cv=self._cv,
+            groups=self.groups,
             scoring=self.scoring,
             return_estimator=True,
         )
@@ -180,6 +191,7 @@ class BaseRecursiveSelector(BaseSelector):
 
         # Aggregate the feature importance returned in each fold
         self.feature_importances_ = feature_importances_cv.mean(axis=1)
+        self.feature_importances_std_ = feature_importances_cv.std(axis=1)
 
         return X, y
 

@@ -5,6 +5,8 @@ from sklearn.pipeline import Pipeline
 
 from feature_engine.creation import MathFeatures
 
+dob_datrange = pd.date_range("2020-02-24", periods=4, freq="min")
+
 
 # test param variables_to_combine
 def test_error_when_required_params_not_entered():
@@ -91,7 +93,7 @@ def test_aggregations_with_strings(df_vartypes):
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": dob_datrange,
             "sum_Age_Marks": [20.9, 21.8, 19.7, 18.6],
             "prod_Age_Marks": [18.0, 16.8, 13.299999999999999, 10.799999999999999],
             "mean_Age_Marks": [10.45, 10.9, 9.85, 9.3],
@@ -122,7 +124,7 @@ def test_aggregations_with_functions(df_vartypes):
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": dob_datrange,
             "sum_Age_Marks": [20.9, 21.8, 19.7, 18.6],
             "mean_Age_Marks": [10.45, 10.9, 9.85, 9.3],
             "std_Age_Marks": [
@@ -149,7 +151,7 @@ def test_user_enters_two_operations(df_vartypes):
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": dob_datrange,
             "sum_Age_Marks": [20.9, 21.8, 19.7, 18.6],
             "mean_Age_Marks": [10.45, 10.9, 9.85, 9.3],
         }
@@ -173,7 +175,7 @@ def test_new_variable_names(df_vartypes):
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": dob_datrange,
             "sum_of_two_vars": [20.9, 21.8, 19.7, 18.6],
             "mean_of_two_vars": [10.45, 10.9, 9.85, 9.3],
         }
@@ -192,7 +194,7 @@ def test_one_mathematical_operation(df_vartypes):
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": dob_datrange,
             "sum_Age_Marks": [20.9, 21.8, 19.7, 18.6],
         }
     )
@@ -216,7 +218,7 @@ def test_variable_names_when_df_cols_are_integers(df_numeric_columns):
             1: ["London", "Manchester", "Liverpool", "Bristol"],
             2: [20, 21, 19, 18],
             3: [0.9, 0.8, 0.7, 0.6],
-            4: pd.date_range("2020-02-24", periods=4, freq="T"),
+            4: dob_datrange,
             "sum_2_3": [20.9, 21.8, 19.7, 18.6],
             "prod_2_3": [18.0, 16.8, 13.299999999999999, 10.799999999999999],
             "mean_2_3": [10.45, 10.9, 9.85, 9.3],
@@ -272,7 +274,7 @@ def test_no_error_when_null_values_in_variable(df_vartypes):
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, np.nan, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": dob_datrange,
             "sum_Age_Marks": [20.9, 0.8, 19.7, 18.6],
             "mean_Age_Marks": [10.45, 0.8, 9.85, 9.3],
         }
@@ -294,7 +296,7 @@ def test_drop_original_variables(df_vartypes):
         {
             "Name": ["tom", "nick", "krish", "jack"],
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": dob_datrange,
             "sum_Age_Marks": [20.9, 21.8, 19.7, 18.6],
             "mean_Age_Marks": [10.45, 10.9, 9.85, 9.3],
         }

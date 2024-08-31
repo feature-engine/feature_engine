@@ -126,17 +126,14 @@ def test_quantile_capping_right_tail_with_fold_15_percent(df_normal_dist):
     assert math.isclose(df_transf["var"].max(), 0.11823196128033647)
 
 
-def test_quantile_fold_default_value():
-    # test case 1: Test quantiles, with fold default = 0.05
-    transformer = Winsorizer(capping_method="quantiles")
-    assert transformer.fold == 0.05
-
-
-@pytest.mark.parametrize("strings", ["gaussian", "iqr", "mad"])
-def test_other_fold_default_value(strings):
-    # test case 2: Test gaussian, iqr, mad, with fold default = 3
-    transformer = Winsorizer(capping_method=strings)
-    assert transformer.fold == 3
+@pytest.mark.parametrize(
+    "strings,expected",
+    [("gaussian", 3), ("iqr", 1.5), ("mad", 3.29), ("quantiles", 0.05)],
+)
+def test_auto_fold_default_value(strings, expected, df_normal_dist):
+    transformer = Winsorizer(capping_method=strings, fold="auto")
+    transformer.fit(df_normal_dist)
+    assert transformer.fold_ == expected
 
 
 def test_mad_capping_right_tail_with_fold_1(df_normal_dist):
@@ -366,3 +363,9 @@ def test_get_feature_names_out(df_na):
     out = ["Age_left", "Age_right", "Marks_left", "Marks_right"]
     assert tr.get_feature_names_out() == original_features + out
     assert tr.get_feature_names_out(original_features) == original_features + out
+
+
+def test_low_variation(df_normal_dist):
+    transformer = Winsorizer(capping_method="mad")
+    with pytest.raises(ValueError):
+        transformer.fit(df_normal_dist // 10)

@@ -383,7 +383,7 @@ def test_expanding_sum_single_var_freqs(df_time):
     ]
 
     transformer = ExpandingWindowFeatures(
-        variables=["ambient_temp"], functions="sum", freq="30T"
+        variables=["ambient_temp"], functions="sum", freq="30min"
     )
     df_tr = transformer.fit_transform(df_time)
     assert_frame_equal(df_tr, expected_df)
@@ -415,7 +415,7 @@ def test_expanding_sum_single_var_periods_and_freqs(df_time):
     ]
 
     transformer = ExpandingWindowFeatures(
-        variables=["ambient_temp"], functions="sum", periods=2, freq="15T"
+        variables=["ambient_temp"], functions="sum", periods=2, freq="15min"
     )
     df_tr = transformer.fit_transform(df_time)
     assert_frame_equal(df_tr, expected_df)
@@ -550,3 +550,29 @@ def test_transform_x_y(df_time):
     assert len(Xt) == len(yt)
     assert len(y) != len(yt)
     assert (Xt.index == yt.index).all()
+
+
+def test_error_duplicate_functions(df_time):
+    msg = "There are duplicated functions in the list: ['sum', 'sum']"
+    with pytest.raises(ValueError) as record:
+        ExpandingWindowFeatures(
+            variables=["ambient_temp"], functions=["sum", "sum"], periods=2, freq="15T"
+        )
+
+    # check that error message matches
+    assert str(record.value) == msg
+
+
+@pytest.mark.parametrize("functions", [[np.min, np.max], np.min])
+def test_error_native_functions(df_time, functions):
+    msg = "functions must be a list of strings or a string." f"Got {functions} instead."
+    with pytest.raises(ValueError) as record:
+        ExpandingWindowFeatures(
+            variables=["ambient_temp"],
+            functions=functions,
+            periods=2,
+            freq="15T",
+        )
+
+    # check that error message matches
+    assert str(record.value) == msg

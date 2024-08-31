@@ -156,7 +156,7 @@ workflows:
           filters:
             branches:
               ignore:
-                - 1.7.X
+                - 1.8.X
       - package_and_upload_to_pypi:
           requires:
             - test_feature_engine_py39
@@ -169,4 +169,4 @@ workflows:
           filters:
             branches:
               only:
-                - 1.7.X
+                - 1.8.X

@@ -47,7 +47,7 @@ intervals as integers in the resulting transformation, so we set `return_boundar
 
 .. code:: python
 
-    user_dict = {'MedInc': [0, 2, 4, 6, np.Inf]}
+    user_dict = {'MedInc': [0, 2, 4, 6, np.inf]}
 
     transformer = ArbitraryDiscretiser(
         binning_dict=user_dict, return_object=False, return_boundaries=False)
@@ -77,7 +77,7 @@ setting `return_boundaries` to `True`.
 
     X, y = fetch_california_housing( return_X_y=True, as_frame=True)
 
-    user_dict = {'MedInc': [0, 2, 4, 6, np.Inf]}
+    user_dict = {'MedInc': [0, 2, 4, 6, np.inf]}
 
     transformer = ArbitraryDiscretiser(
         binning_dict=user_dict, return_object=False, return_boundaries=True)
@@ -141,7 +141,7 @@ Or read our book:
    :width: 200
    :figclass: align-center
    :align: left
-   :target: https://packt.link/0ewSo
+   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
 
    Python Feature Engineering Cookbook
 

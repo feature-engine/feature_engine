@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Union
+from typing import List, Literal, Union
 
 import numpy as np
 import pandas as pd
@@ -87,6 +87,10 @@ class Winsorizer(WinsorizerBase):
 
     {n_features_in_}
 
+    fold_:
+        Factor multiplying the std, mad, iqr or alternative the percentile. Only
+        different from `fold` when `fold="auto"`.
+
     Methods
     -------
     fit:
@@ -96,6 +100,22 @@ class Winsorizer(WinsorizerBase):
 
     transform:
         Cap the variables.
+
+    References
+    ----------
+    .. [1] Rousseeuw, Croux. "Alternatives to the mean absolute deviation". Journal of
+       the American Statistical Association, 1993. http://www.jstor.org/stable/2291267 .
+
+    .. [2] Leys, et. al. "Do not use standard deviation around the mean, use absolute
+       deviation around the median". Journal of Experimental Social Psychology, 2013.
+       http://dx.doi.org/10.1016/j.jesp.2013.03.013.
+
+    .. [3] Thériault, et. al. Check your outliers! An introduction to identifying
+       statistical outliers in R with easystats. Behavior Research Methods, 2024.
+       https://doi.org/10.3758/s13428-024-02356-w
+
+    .. [4] Dixon. Simplified Estimation from Censored Normal Samples. The Annals of
+       Mathematical Statistics, 1960. http://www.jstor.org/stable/2237953
 
     Examples
     --------
@@ -145,7 +165,7 @@ class Winsorizer(WinsorizerBase):
         self,
         capping_method: str = "gaussian",
         tail: str = "right",
-        fold: Union[int, float] = 3,
+        fold: Union[int, float, Literal["auto"]] = "auto",
         add_indicators: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",

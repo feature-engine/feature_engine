@@ -13,19 +13,19 @@ def test_arbitrary_discretiser():
     data = pd.DataFrame(
         california_dataset.data, columns=california_dataset.feature_names
     )
-    user_dict = {"HouseAge": [0, 20, 40, 60, np.Inf]}
+    user_dict = {"HouseAge": [0, 20, 40, 60, np.inf]}
 
     data_t1 = data.copy()
     data_t2 = data.copy()
 
     # HouseAge is the median house age in the block group.
     data_t1["HouseAge"] = pd.cut(
-        data["HouseAge"], bins=[0, 20, 40, 60, np.Inf], include_lowest=True
+        data["HouseAge"], bins=[0, 20, 40, 60, np.inf], include_lowest=True
     )
     data_t1["HouseAge"] = data_t1["HouseAge"].astype(str)
     data_t2["HouseAge"] = pd.cut(
         data["HouseAge"],
-        bins=[0, 20, 40, 60, np.Inf],
+        bins=[0, 20, 40, 60, np.inf],
         labels=False,
         include_lowest=True,
     )
@@ -53,7 +53,7 @@ def test_arbitrary_discretiser():
 
 def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
     # test case 1: when dataset contains na, transform method
-    age_dict = {"Age": [0, 10, 20, 30, np.Inf]}
+    age_dict = {"Age": [0, 10, 20, 30, np.inf]}
 
     with pytest.raises(ValueError):
         transformer = ArbitraryDiscretiser(binning_dict=age_dict)
@@ -119,6 +119,19 @@ def test_error_when_nan_introduced_during_transform():
 
 
 def test_error_if_not_permitted_value_is_errors():
-    age_dict = {"Age": [0, 10, 20, 30, np.Inf]}
+    age_dict = {"Age": [0, 10, 20, 30, np.inf]}
     with pytest.raises(ValueError):
         ArbitraryDiscretiser(binning_dict=age_dict, errors="medialuna")
+
+
+@pytest.mark.parametrize("binning_dict", ["HOLA", 1, False])
+def test_error_if_binning_dict_not_dict_type(binning_dict):
+    msg = (
+        "binning_dict must be a dictionary with the interval limits per "
+        f"variable. Got {binning_dict} instead."
+    )
+    with pytest.raises(ValueError) as record:
+        ArbitraryDiscretiser(binning_dict=binning_dict)
+
+    # check that error message matches
+    assert str(record.value) == msg

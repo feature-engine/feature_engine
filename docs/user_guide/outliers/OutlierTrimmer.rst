@@ -50,8 +50,8 @@ we want to be more stringent. With the IQR method, the limits are calculated as 
 
 IQR limits:
 
-- right tail (upper_limit): 75th quantile + 3* IQR
-- left tail (lower_limit):  25th quantile - 3* IQR
+- right tail (upper_limit): 75th quantile + 1.5* IQR
+- left tail (lower_limit):  25th quantile - 1.5* IQR
 
 where IQR is the inter-quartile range:
 
@@ -70,13 +70,13 @@ When we use MAD, we determine the limits of the distribution as follows:
 
 MAD limits:
 
-- right tail (upper_limit): median + 3* MAD
-- left tail (lower_limit):  median - 3* MAD
+- right tail (upper_limit): median + 3.29* MAD
+- left tail (lower_limit):  median - 3.29* MAD
 
 MAD is the median absolute deviation from the median. In other words, MAD is the median value of the absolute difference
 between each observation and its median.
 
-- MAD = median(abs(X-median(X))
+- MAD = median(abs(X-median(X)))
 
 Percentiles
 ~~~~~~~~~~~
@@ -388,7 +388,7 @@ We'll cap age at the bottom 5 and top 95 percentile:
 
     ot = OutlierTrimmer(capping_method='mad',
                         tail='right',
-                        fold=3,
+                        fold=0.05,
                         variables=['fare'],
                         )
 
@@ -590,6 +590,24 @@ We see the resulting sizes here:
     ((393, 8), (317, 76))
 
 
+Setting up the stringency (param `fold`)
+----------------------------------------
+
+By default, :class:`OutlierTrimmer()` automatically determines the parameter fold based
+on the chosen `capping_method`. This parameter determines the multiplier for standard
+deviation, interquartile range (IQR), or Median Absolute Deviation (MAD), or
+sets the percentile at which to cap the variables.
+
+The default values for fold are as follows:
+
+- 'gaussian': `fold` is set to 3.0;
+- 'iqr': `fold` is set to 1.5;
+- 'mad': `fold` is set to 3.29;
+- 'percentiles': `fold` is set to 0.05.
+
+You can manually adjust the fold value to make the outlier detection process more or less
+conservative, thus customizing the extent of outlier trimming.
+
 Tutorials, books and courses
 ----------------------------
 
@@ -625,7 +643,7 @@ Or read our book:
    :width: 200
    :figclass: align-center
    :align: left
-   :target: https://packt.link/0ewSo
+   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
 
    Python Feature Engineering Cookbook
 

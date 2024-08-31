@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.model_selection import KFold, GroupKFold
 
 from feature_engine.selection import SmartCorrelatedSelection
 from tests.estimator_checks.init_params_allowed_values_checks import (
@@ -213,6 +214,27 @@ def test_model_performance_2_correlated_groups(df_test):
     pd.testing.assert_frame_equal(Xt, df)
 
 
+def test_cv_generator(df_single):
+    X, y = df_single
+    cv = KFold(3)
+
+    transformer = SmartCorrelatedSelection(
+        variables=None,
+        method="pearson",
+        threshold=0.8,
+        missing_values="raise",
+        selection_method="model_performance",
+        estimator=RandomForestClassifier(n_estimators=10, random_state=1),
+        scoring="roc_auc",
+        cv=cv.split(X, y),
+    )
+
+    Xt = transformer.fit_transform(X, y)
+
+    df = X[["var_0", "var_2", "var_3", "var_4", "var_5"]].copy()
+    pd.testing.assert_frame_equal(Xt, df)
+
+
 def test_error_if_select_model_performance_and_y_is_none(df_single):
     X, y = df_single
 
@@ -381,3 +403,34 @@ def test_callable_method(df_test, random_uniform_method):
     assert len(transformer.features_to_drop_) > 0
     assert len(transformer.variables_) > 0
     assert transformer.n_features_in_ == len(X.columns)
+
+
+def test_smart_correlation_selection_with_groups(df_test_with_groups):
+    X, y, groups = df_test_with_groups
+    cv = GroupKFold(n_splits=3)
+    cv_indices = cv.split(X=X, y=y, groups=groups)
+
+    estimator = RandomForestRegressor(n_estimators=3, random_state=1)
+    scoring = "neg_mean_absolute_error"
+    selection_method = "variance"
+
+    transformer_expected = SmartCorrelatedSelection(
+        estimator=estimator,
+        scoring=scoring,
+        selection_method=selection_method,
+        cv=cv_indices,
+    )
+
+    X_tr_expected = transformer_expected.fit_transform(X, y)
+
+    transformer = SmartCorrelatedSelection(
+        estimator=estimator,
+        scoring=scoring,
+        selection_method=selection_method,
+        cv=cv,
+        groups=groups,
+    )
+
+    X_tr = transformer.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(X_tr_expected, X_tr)

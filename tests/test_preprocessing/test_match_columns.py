@@ -49,7 +49,7 @@ def test_drop_and_add_columns(
             "Studies": expected_studies,
             "Age": expected_age,
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
         }
     )
 
@@ -93,7 +93,7 @@ def test_columns_addition_when_more_columns_in_train_than_test(
             "Studies": expected_studies,
             "Age": expected_age,
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
         }
     )
 
@@ -325,3 +325,42 @@ def test_non_fitted_error(df_vartypes):
     with pytest.raises(NotFittedError):
         transformer = MatchVariables()
         transformer.transform(df_vartypes)
+
+
+def test_check_for_na_in_transform_does_not_fail():
+    # some variables seen during train may not be present in the test set, so we
+    # need to skip these ones during the check for na.
+    # Bug reported in https://github.com/feature-engine/feature_engine/issues/789
+    train = pd.DataFrame(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, 21, 19, 18],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+        }
+    )
+
+    test = pd.DataFrame(
+        {
+            "Name": ["tom", "sam", "nick"],
+            "Age": [20, 22, 23],
+            "Marks": [0.9, 0.7, 0.6],
+            "Hobbies": ["tennis", "rugby", "football"],
+        }
+    )
+
+    expected = pd.DataFrame(
+        {
+            "Name": ["tom", "sam", "nick"],
+            "City": [np.nan, np.nan, np.nan],
+            "Age": [20, 22, 23],
+            "Marks": [0.9, 0.7, 0.6],
+        }
+    )
+
+    match_columns = MatchVariables()
+    match_columns.fit(train)
+    df_transformed = match_columns.transform(test)
+
+    assert isinstance(df_transformed, pd.DataFrame)
+    pd.testing.assert_frame_equal(df_transformed, expected)

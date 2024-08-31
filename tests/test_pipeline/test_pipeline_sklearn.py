@@ -226,7 +226,7 @@ def test_pipeline_methods_anova():
     X = iris.data
     y = iris.target
     # Test with Anova + LogisticRegression
-    clf = LogisticRegression(solver="lbfgs", multi_class="auto")
+    clf = LogisticRegression(solver="lbfgs")
     filter1 = SelectKBest(f_classif, k=2)
     pipe = Pipeline([("anova", filter1), ("logistic", clf)])
     pipe.fit(X, y)
@@ -597,7 +597,7 @@ def test_classes_property():
 
     clf = make_pipeline(
         SelectKBest(k=1),
-        LogisticRegression(solver="lbfgs", multi_class="auto", random_state=0),
+        LogisticRegression(solver="lbfgs", random_state=0),
     )
     with raises(AttributeError):
         getattr(clf, "classes_")

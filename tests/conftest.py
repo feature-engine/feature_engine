@@ -25,7 +25,7 @@ def df_numeric_columns():
         1: ["London", "Manchester", "Liverpool", "Bristol"],
         2: [20, 21, 19, 18],
         3: [0.9, 0.8, 0.7, 0.6],
-        4: pd.date_range("2020-02-24", periods=4, freq="T"),
+        4: pd.date_range("2020-02-24", periods=4, freq="min"),
     }
 
     df = pd.DataFrame(data)
@@ -59,7 +59,7 @@ def df_na():
         ],
         "Age": [20, 21, 19, np.nan, 23, 40, 41, 37],
         "Marks": [0.9, 0.8, 0.7, np.nan, 0.3, np.nan, 0.8, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=8, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=8, freq="min"),
     }
 
     df = pd.DataFrame(data)

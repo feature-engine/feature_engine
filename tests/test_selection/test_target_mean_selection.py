@@ -1,6 +1,8 @@
 import pandas as pd
 import pytest
 
+from sklearn.model_selection import StratifiedKFold, GroupKFold
+
 from feature_engine.selection import SelectByTargetMeanPerformance
 
 
@@ -161,6 +163,21 @@ def test_regression():
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
 
+def test_cv_generator():
+    X, y = df_classification()
+    cv = StratifiedKFold(n_splits=2)
+    sel = SelectByTargetMeanPerformance(
+        variables=None,
+        scoring="accuracy",
+        threshold=None,
+        bins=2,
+        strategy="equal_width",
+        cv=cv.split(X, y),
+    )
+    sel.fit(X, y)
+    pd.testing.assert_frame_equal(sel.transform(X), X[["cat_var_A", "num_var_A"]])
+
+
 def test_error_wrong_params():
     with pytest.raises(ValueError):
         SelectByTargetMeanPerformance(scoring="mean_squared")
@@ -172,6 +189,8 @@ def test_error_wrong_params():
         SelectByTargetMeanPerformance(bins="hola")
     with pytest.raises(ValueError):
         SelectByTargetMeanPerformance(strategy="hola")
+    with pytest.raises(ValueError):
+        SelectByTargetMeanPerformance(regression=True, scoring="hola")
 
 
 def test_raises_error_if_evaluating_single_variable_and_threshold_is_None(df_test):
@@ -227,3 +246,31 @@ def test_test_selector_with_one_variable():
     assert sel.features_to_drop_ == ["cat_var_B"]
     assert sel.feature_performance_ == performance_dict
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
+
+
+def test_target_mean_selection_with_groups(df_test_with_groups):
+    X, y, groups = df_test_with_groups
+    cv = GroupKFold(n_splits=3)
+    cv_indices = cv.split(X=X, y=y, groups=groups)
+
+    scoring = "neg_mean_absolute_error"
+    regression = True
+
+    sel_expected = SelectByTargetMeanPerformance(
+        scoring=scoring,
+        cv=cv_indices,
+        regression=regression,
+    )
+
+    X_tr_expected = sel_expected.fit_transform(X, y)
+
+    sel = SelectByTargetMeanPerformance(
+        scoring=scoring,
+        cv=cv,
+        groups=groups,
+        regression=regression,
+    )
+
+    X_tr = sel.fit_transform(X, y)
+
+    pd.testing.assert_frame_equal(X_tr, X_tr_expected)

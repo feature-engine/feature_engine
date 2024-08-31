@@ -38,6 +38,15 @@ _feature_importances_docstring = """feature_importances_:
         Pandas Series with the feature importance (comes from step 2)
     """.rstrip()
 
+_feature_importances_std_docstring = """feature_importances_std_:
+        Pandas Series with the standard deviation of the feature importance.
+    """.rstrip()
+
 _performance_drifts_docstring = """performance_drifts_:
         Dictionary with the performance drift per examined feature (comes from step 5).
+    """.rstrip()
+
+_performance_drifts_std_docstring = """performance_drifts_std_:
+        Dictionary with the performance drift's standard deviation of the
+        examined feature (comes from step 5).
     """.rstrip()

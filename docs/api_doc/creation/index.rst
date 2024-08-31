@@ -12,6 +12,7 @@ by either combining or transforming existing features.
    MathFeatures
    RelativeFeatures
    CyclicalFeatures
+   DecisionTreeFeatures
 
 
 Transformers in other Libraries
