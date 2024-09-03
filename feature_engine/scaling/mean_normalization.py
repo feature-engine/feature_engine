@@ -127,14 +127,11 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
         # check input dataframe
         X = super().fit(X)
-        self.params_ = {
-            "mean": X[self.variables_].mean(),
-            "range": X[self.variables_].max() - X[self.variables_].min(),
-        }
+        self.mean_ = X[self.variables_].mean()
+        self.range_ = X[self.variables_].max() - X[self.variables_].min()
 
         # check for constant columns
-        range_columns = self.params_["range"]
-        constant_columns = range_columns[range_columns == 0].index.tolist()
+        constant_columns = self.range_[self.range_ == 0].index.tolist()
         if constant_columns:
             raise ValueError(
                 "Division by zero in the scaling. This is because \n"
@@ -163,8 +160,8 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
         # transformation
         X[self.variables_] = (
-            X[self.variables_] - self.params_["mean"][self.variables_]
-        ) / self.params_["range"]
+            X[self.variables_] - self.mean_[self.variables_]
+        ) / self.range_[self.variables_]
 
         return X
 
@@ -188,8 +185,8 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
         # inverse transform
         X[self.variables_] = (
-            X[self.variables_] * self.params_["range"]
-            + self.params_["mean"][self.variables_]
+            X[self.variables_] * self.range_[self.variables_]
+            + self.mean_[self.variables_]
         )
 
         return X
