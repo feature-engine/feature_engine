@@ -296,6 +296,15 @@ types and variable names match.
 - :doc:`api_doc/preprocessing/MatchCategories`: ensures categorical variables are of type 'category'
 - :doc:`api_doc/preprocessing/MatchVariables`: ensures that columns in test set match those in train set
 
+Scaling:
+~~~~~~~~
+
+Scaling the data can help to balance the impact of all variables on the model, and can improve the
+its performance.
+
+- :doc:`api_doc/scaling/MeanNormalizationScaler`: scale a given set of columns using mean normalization
+
+
 Scikit-learn Wrapper:
 ~~~~~~~~~~~~~~~~~~~~~
 
