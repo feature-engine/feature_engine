@@ -35,13 +35,19 @@ from feature_engine._docstrings.substitute import Substitution
     inverse_transform=_inverse_transform_docstring,
 )
 class MeanNormalizationScaler(BaseNumericalTransformer):
-    """
+    r"""
     The MeanNormalizationScaler() applies the mean normalization scaling techinques
     to one or multuple columns of a dataframe.
 
     Mean normalization is a way to implement feature scaling. Mean normalization
     calculates and subtracts the mean of for every feature and divide this value
     by the range (max - min).
+
+    The mean normalization of a columns is achivied using the following formula
+
+    ..math:: \frac{X_col - X_{mean}}{X_{max} - X_{min}}
+
+    where X is a column of our dataframe.
 
     A list of variables can be passed as an argument. Alternatively, the transformer
     will automatically select and transform all variables of type numeric.
@@ -55,8 +61,11 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
     Attributes
     ----------
-    params_:
+    mean_:
         a dictionary containing the mean, max and min of every given variable
+
+    range_:
+        a pd.Series containing the range of the selected columns, i.e., the difference between the max and the min
 
     {variables_}
 
@@ -104,7 +113,7 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        The method populate the variable `params_`.
+        Finds the mean and value range of each variable.
 
         Parameters
         ----------
