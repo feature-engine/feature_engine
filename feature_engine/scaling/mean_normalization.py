@@ -59,7 +59,7 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
         Dictionary containing the mean of the variables.
 
     range_:
-        a pd.Series containing the range of the selected columns, i.e., the difference
+        Dictionary containing the value range of of the variables.
 
     {variables_}
 
