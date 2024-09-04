@@ -59,7 +59,8 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
         a dictionary containing the mean, max and min of every given variable
 
     range_:
-        a pd.Series containing the range of the selected columns, i.e., the difference between the max and the min
+        a pd.Series containing the range of the selected columns, i.e., the difference
+        between the max and the min
 
     {variables_}
 
