@@ -60,7 +60,6 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
     range_:
         a pd.Series containing the range of the selected columns, i.e., the difference
-        between the max and the min
 
     {variables_}
 
