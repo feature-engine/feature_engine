@@ -302,7 +302,7 @@ Scaling:
 Scaling the data can help to balance the impact of all variables on the model, and can improve 
 its performance.
 
-- :doc:`api_doc/scaling/MeanNormalizationScaler`: scale a given set of columns using mean normalization
+- :doc:`api_doc/scaling/MeanNormalizationScaler`: scale variables using mean normalization
 
 
 Scikit-learn Wrapper:
