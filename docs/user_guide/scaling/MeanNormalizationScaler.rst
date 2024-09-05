@@ -1,4 +1,4 @@
-.. _arcsin:
+.. _mean_normalization_scaler:
 
 .. currentmodule:: feature_engine.scaling
 
