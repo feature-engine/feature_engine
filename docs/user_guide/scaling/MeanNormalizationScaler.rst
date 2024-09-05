@@ -3,7 +3,7 @@
 .. currentmodule:: feature_engine.scaling
 
 MeanNormalizationScaler
-======================
+=======================
 
 The :class:`MeanNormalizationScaler()` scales one or more columns using
 the mean normalization scaling technique.
