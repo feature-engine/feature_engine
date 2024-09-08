@@ -12,6 +12,9 @@ def df():
             "Marks": [0.9, 0.8, 0.7, 0.6],
             "date_range": pd.date_range("2020-02-24", periods=4, freq="min"),
             "date_obj0": ["2020-02-24", "2020-02-25", "2020-02-26", "2020-02-27"],
+            "date_range_tz": pd.date_range(
+                "2020-02-24", periods=4, freq="min"
+            ).tz_localize("UTC"),
         }
     )
     df["Name"] = df["Name"].astype("category")
@@ -21,7 +24,7 @@ def df():
 @pytest.fixture
 def df_int(df):
     df = df.copy()
-    df.columns = [1, 2, 3, 4, 5, 6]
+    df.columns = range(1, len(df.columns) + 1)
     return df
 
 

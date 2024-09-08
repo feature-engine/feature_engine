@@ -99,6 +99,7 @@ def test_check_datetime_variables_returns_datetime_variables(df_datetime):
     vars_convertible_to_dt = ["date_range", "date_obj1", "date_obj2", "time_obj"]
     var_convertible_to_dt = "date_obj1"
     tz_time = "time_objTZ"
+    tz_time_obj = "date_range_tz"
 
     # when variables are specified
     assert check_datetime_variables(df_datetime, var_dt_str) == [var_dt_str]
@@ -111,6 +112,7 @@ def test_check_datetime_variables_returns_datetime_variables(df_datetime):
         == vars_convertible_to_dt
     )
     assert check_datetime_variables(df_datetime, tz_time) == [tz_time]
+    assert check_datetime_variables(df_datetime, tz_time_obj) == [tz_time_obj]
 
     df_datetime[vars_convertible_to_dt] = df_datetime[vars_convertible_to_dt].astype(
         pd.CategoricalDtype

@@ -51,6 +51,7 @@ def test_datetime_variables_finds_datetime_variables(df_datetime):
     vars_dt = [
         "date_range",
         "date_obj0",
+        "date_range_tz",
         "date_obj1",
         "date_obj2",
         "time_obj",
@@ -65,7 +66,6 @@ def test_datetime_variables_finds_datetime_variables(df_datetime):
 
 
 def test_datetime_variables_raises_error_when_no_datetime_variables(df_datetime):
-
     msg = "No datetime variables found in this dataframe."
 
     vars_nondt = ["Marks", "Age", "Name"]
@@ -76,7 +76,15 @@ def test_datetime_variables_raises_error_when_no_datetime_variables(df_datetime)
 
 
 def test_find_all_variables(df):
-    all_vars = ["Name", "City", "Age", "Marks", "date_range", "date_obj0"]
+    all_vars = [
+        "Name",
+        "City",
+        "Age",
+        "Marks",
+        "date_range",
+        "date_obj0",
+        "date_range_tz",
+    ]
     all_vars_no_dt = ["Name", "City", "Age", "Marks"]
 
     assert find_all_variables(df, exclude_datetime=False) == all_vars
@@ -84,7 +92,6 @@ def test_find_all_variables(df):
 
 
 def test_find_categorical_and_numerical_variables(df_vartypes):
-
     # Case 1: user passes 1 variable that is categorical
     assert find_categorical_and_numerical_variables(df_vartypes, ["Name"]) == (
         ["Name"],
