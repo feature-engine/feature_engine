@@ -11,6 +11,7 @@ from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
     _is_categorical_and_is_not_datetime,
 )
+from feature_engine.variable_handling.dtypes import DATETIME_TYPES
 
 
 def find_numerical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
@@ -147,7 +148,7 @@ def find_all_variables(
 ) -> List[Union[str, int]]:
     """
     Returns a list with the names of all the variables in the dataframe. It has the
-    option to exlcude variables that can be parsed as datetime.
+    option to exlcude variables that can be parsed as datetime or datetimetz.
 
     More details in the :ref:`User Guide <find_all_vars>`.
 
@@ -178,7 +179,7 @@ def find_all_variables(
     ['var_num', 'var_cat', 'var_date']
     """
     if exclude_datetime is True:
-        variables = X.select_dtypes(exclude="datetime").columns.to_list()
+        variables = X.select_dtypes(exclude=DATETIME_TYPES).columns.to_list()
         variables = [
             var
             for var in variables
@@ -236,7 +237,6 @@ def find_categorical_and_numerical_variables(
 
     # If the user passes just 1 variable outside a list.
     if isinstance(variables, (str, int)):
-
         if X[variables].dtype.name == "category" or is_object(X[variables]):
             variables_cat = [variables]
             variables_num = []
