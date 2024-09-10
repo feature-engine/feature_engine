@@ -113,7 +113,7 @@ def check_datetime_variables(
 ) -> List[Union[str, int]]:
     """
     Checks that the variables in the list are or can be parsed as datetime and or
-        datetimetz.
+    datetimetz.
 
     More details in the :ref:`User Guide <check_datetime_vars>`.
 
