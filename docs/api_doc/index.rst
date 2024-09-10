@@ -48,6 +48,7 @@ Other
    :maxdepth: 1
 
    preprocessing/index
+   scaling/index
    wrappers/index
 
 Pipeline
