@@ -61,7 +61,7 @@ class BaseImputer(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
 
         # Replace missing data with learned parameters
         with pd.option_context("future.no_silent_downcasting", True):
-            X = X.fillna(value=self.imputer_dict_).infer_objects(copy=False)
+            X = X.fillna(value=self.imputer_dict_)
         return X
 
     def _get_feature_names_in(self, X):
