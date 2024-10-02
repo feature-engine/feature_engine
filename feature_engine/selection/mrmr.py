@@ -330,7 +330,7 @@ class MRMR(BaseSelector):
         if self.threshold is None:
             threshold = np.mean(self.mrmr_)
         else:
-            threshold = self.threshold # type: ignore
+            threshold = self.threshold  # type: ignore
 
         self.features_to_drop_ = [
             f for f in self.variables_ if self.mrmr_[f] < threshold
