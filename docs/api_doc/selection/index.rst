@@ -28,6 +28,7 @@ Selection based on feature characteristics
 :class:`DropDuplicateFeatures()`                √	                      √             Drops features that are duplicated
 :class:`DropCorrelatedFeatures()`               ×	                      √	            Drops features that are correlated
 :class:`SmartCorrelatedSelection()`	            ×	                      √	            From a correlated feature group drops the less useful features
+:class:`MRMR()`                  	            √	                      ×	            Selects features based on the MRMR framework
 ============================================ ======================= ============= ====================================================================================
 
 Selection based on a machine learning model
@@ -80,6 +81,7 @@ Alternative feature selection methods
    SelectByShuffling
    SelectByTargetMeanPerformance
    ProbeFeatureSelection
+   MRMR
 
 Other Feature Selection Libraries
 ---------------------------------
