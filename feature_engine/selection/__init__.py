@@ -14,6 +14,7 @@ from .shuffle_features import SelectByShuffling
 from .single_feature_performance import SelectBySingleFeaturePerformance
 from .smart_correlation_selection import SmartCorrelatedSelection
 from .target_mean_selection import SelectByTargetMeanPerformance
+from .mrmr import MRMR
 
 __all__ = [
     "DropFeatures",
@@ -29,4 +30,5 @@ __all__ = [
     "SelectByTargetMeanPerformance",
     "SelectByInformationValue",
     "ProbeFeatureSelection",
+    "MRMR",
 ]
