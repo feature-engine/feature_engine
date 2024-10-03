@@ -29,7 +29,6 @@ from feature_engine._docstrings.selection._docstring import (
     _fit_docstring,
     _get_support_docstring,
     _scoring_docstring,
-    _threshold_docstring,
     _transform_docstring,
     _variables_attribute_docstring,
 )
@@ -49,12 +48,14 @@ from feature_engine.variable_handling import (
 
 _cv_docstring = _cv_docstring + """ Only used when `method = 'RFCQ'`."""
 
+_scoring_docstring = _scoring_docstring + """. Only used when `method = 'RFCQ'`."""
+
+
 Variables = Union[None, int, str, List[Union[str, int]]]
 
 
 @Substitution(
     scoring=_scoring_docstring,
-    threshold=_threshold_docstring,
     cv=_cv_docstring,
     confirm_variables=_confirm_variables_docstring,
     features_to_drop_=_features_to_drop_docstring,
@@ -105,9 +106,9 @@ class MRMR(BaseSelector):
     other methods are better suited. If using the mutual information, consider flagging
     the discrete and categorical variables with a boolean array in `discrete_features`.
 
-    After calculating the MRMR score, MRMR() selects the features which importance is
-    bigger than the indicated threshold. If the threshold is left to None, it selects
-    features with performance bigger than the mean performance of all features.
+    After calculating the MRMR score, MRMR() selects the features whose importance is
+    greater than the indicated threshold. If the threshold is left to None, it selects
+    features with performance greater than the mean importance of all features.
 
     More details in the :ref:`User Guide <mrmr>`.
 
@@ -122,11 +123,11 @@ class MRMR(BaseSelector):
 
     discrete_features: bool, str, array, default='auto'
         If bool, then determines whether to consider all features discrete or
-        continuous. If array, then it should be either a boolean mask with shape
-        (n_features,) or array with indices of discrete features. In any case, make
-        sure that the array matches the discrete features passed in `variables` if not
-        None, or in X.columns otherwise. If ‘auto’, it is assigned to False for dense X
-        and to True for sparse X. Only used when `method` is `'MIQ'` or `'MID'`.
+        continuous. If array, then it should be a boolean mask with shape
+        (n_features,). Ensure that the array matches the discrete features passed in
+        `variables` if not None, or in X.columns otherwise. If ‘auto’, it is assigned
+        to False for dense X and to True for sparse X. Only used when `method` is
+        `'MIQ'` or `'MID'`.
 
     n_neighbors: int, default=3
         Number of neighbors to use for MI estimation for continuous variables. Higher
@@ -135,15 +136,17 @@ class MRMR(BaseSelector):
 
     {scoring}
 
-    {threshold}
+    threshold: int, float, default=None
+        The minimum importance the variable should have to be retained. If None, the
+        threshold becomes the mean of all features importances.
 
     {cv}
 
     param_grid: dictionary, default=None
-        The hyperparameters for the random_forest to test with a grid search.
+        The hyperparameters to optimize for the random forest through a grid search.
         `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
         RandomForestRegressor() or RandomForestClassifier(). If None, then param_grid
-        will optimise the 'max_depth' over `[1, 2, 3, 4]`.
+        will optimize the 'max_depth' over `[1, 2, 3, 4]`.
 
     regression: boolean, default=True
         Indicates whether the target is one for regression or a classification.
@@ -171,8 +174,8 @@ class MRMR(BaseSelector):
         importance for each feature respect to the target.
 
     redundance_:
-        Array with the mean of the mutual information or correlation of each feature
-        respect to all other predictors.
+        Array with the mean of the mutual information or correlation (F-statistic) of
+        each feature respect to all other predictors.
 
     mrmr_:
         Series with the difference or ratio between the relevance and redundance
@@ -406,20 +409,88 @@ class MRMR(BaseSelector):
                 red = np.mean(f[0])
                 redundance.append(red)
             redundance = np.array(redundance)
-        else:
 
-            for feature in X.columns:
-                red = np.mean(
-                    mutual_info_regression(
-                        X=X.drop(feature, axis=1),
-                        y=X[feature],
-                        discrete_features=self.discrete_features,
-                        n_neighbors=self.n_neighbors,
-                        random_state=self.random_state,
-                        n_jobs=self.n_jobs,
+        else:
+            # when discrete features is True or False or the string auto
+            if isinstance(self.discrete_features, str) or isinstance(
+                self.discrete_features, bool
+            ):
+                for feature in X.columns:
+                    red = np.mean(
+                        mutual_info_regression(
+                            X=X.drop(feature, axis=1),
+                            y=X[feature],
+                            discrete_features=self.discrete_features,
+                            n_neighbors=self.n_neighbors,
+                            random_state=self.random_state,
+                            n_jobs=self.n_jobs,
+                        )
                     )
-                )
-                redundance.append(red)
+                    redundance.append(red)
+
+            # when discrete features is a list of Trues and Falses
+            elif isinstance(self.discrete_features, list):
+                for index, feature in enumerate(X.columns):
+                    discrete_features = self.discrete_features.copy()
+                    discrete_feature_names = [
+                        f for i, f in enumerate(X.columns) if discrete_features[i]
+                    ]
+                    discrete_features.pop(index)
+                    if feature in discrete_feature_names:
+                        red = np.mean(
+                            mutual_info_classif(
+                                X=X.drop(feature, axis=1),
+                                y=X[feature],
+                                discrete_features=discrete_features,
+                                n_neighbors=self.n_neighbors,
+                                random_state=self.random_state,
+                                n_jobs=self.n_jobs,
+                            )
+                        )
+                    else:
+                        red = np.mean(
+                            mutual_info_regression(
+                                X=X.drop(feature, axis=1),
+                                y=X[feature],
+                                discrete_features=discrete_features,
+                                n_neighbors=self.n_neighbors,
+                                random_state=self.random_state,
+                                n_jobs=self.n_jobs,
+                            )
+                        )
+                    redundance.append(red)
+
+            # when discrete features is an array of Trues and Falses
+            else:
+                for index, feature in enumerate(X.columns):
+                    discrete_feature_names = [
+                        f for i, f in enumerate(X.columns) if self.discrete_features[i]
+                    ]
+                    discrete_features = np.delete(self.discrete_features, index)
+                    if feature in discrete_feature_names:
+                        red = np.mean(
+                            mutual_info_classif(
+                                X=X.drop(feature, axis=1),
+                                y=X[feature],
+                                discrete_features=discrete_features,
+                                n_neighbors=self.n_neighbors,
+                                random_state=self.random_state,
+                                n_jobs=self.n_jobs,
+                            )
+                        )
+                    else:
+                        red = np.mean(
+                            mutual_info_regression(
+                                X=X.drop(feature, axis=1),
+                                y=X[feature],
+                                discrete_features=discrete_features,
+                                n_neighbors=self.n_neighbors,
+                                random_state=self.random_state,
+                                n_jobs=self.n_jobs,
+                            )
+                        )
+                    redundance.append(red)
+
         return redundance
 
     def _calculate_mrmr(self, X):

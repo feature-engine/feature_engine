@@ -11,6 +11,7 @@ from sklearn.feature_selection import (
 )
 from sklearn.model_selection import GridSearchCV
 
+from feature_engine.encoding import OrdinalEncoder
 from feature_engine.selection import MRMR
 
 
@@ -350,3 +351,71 @@ def test_mrmr_random_forest(df_test, df_test_regression):
     assert np.allclose(np.array(relevance), sel.relevance_)
     assert np.allclose(np.array(redundance), sel.redundance_)
     assert np.allclose(np.array(sel.mrmr_), mrmr_q)
+
+
+def test_can_work_on_variable_groups(df_test):
+    X, y = df_test
+    varlist = ["var_" + str(i) for i in range(5)]
+
+    relevance = f_classif(X[varlist], y)[0]
+
+    redundance = []
+    for feature in varlist:
+        f = f_regression(X[varlist].drop(feature, axis=1), X[feature])
+        red = np.mean(f[0])
+        redundance.append(red)
+
+    mrmr_d = relevance - np.array(redundance)
+
+    sel = MRMR(variables=varlist, method="FCD", regression=False, random_state=42)
+    sel.fit(X, y)
+
+    assert (sel.relevance_ == relevance).all()
+    assert np.allclose(np.array(redundance), sel.redundance_)
+    assert np.allclose(np.array(sel.mrmr_), mrmr_d)
+
+
+@pytest.mark.parametrize(
+    "discrete", [[True, True, False, False], np.array([True, True, False, False])]
+)
+def test_discrete_features_among_predictors(df_test_num_cat, discrete):
+    # the first 2 features are discrete/categorical
+    X, y = df_test_num_cat
+    X = OrdinalEncoder(encoding_method="arbitrary").fit_transform(X)
+
+    sel = MRMR(
+        method="MID", discrete_features=discrete, regression=False, random_state=42
+    )
+    redundance = sel._calculate_redundance(X)
+
+    mi = mutual_info_classif(
+        X=X.drop(["var_A"], axis=1),
+        y=X["var_A"],
+        discrete_features=[True, False, False],
+        random_state=42,
+    )
+    assert np.mean(mi) == redundance[0]
+
+    mi = mutual_info_classif(
+        X=X.drop(["var_B"], axis=1),
+        y=X["var_B"],
+        discrete_features=[True, False, False],
+        random_state=42,
+    )
+    assert np.mean(mi) == redundance[1]
+
+    mi = mutual_info_regression(
+        X=X.drop(["var_C"], axis=1),
+        y=X["var_C"],
+        discrete_features=[True, True, False],
+        random_state=42,
+    )
+    assert np.mean(mi) == redundance[2]
+
+    mi = mutual_info_regression(
+        X=X.drop(["var_D"], axis=1),
+        y=X["var_D"],
+        discrete_features=[True, True, False],
+        random_state=42,
+    )
+    assert np.mean(mi) == redundance[3]
