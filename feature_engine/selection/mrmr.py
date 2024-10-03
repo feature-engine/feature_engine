@@ -506,6 +506,8 @@ class MRMR(BaseSelector):
         tags_dict["variables"] = "numerical"
         tags_dict["requires_y"] = True
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
+
         msg = "transformers need more than 1 feature to work"
         tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+
         return tags_dict
