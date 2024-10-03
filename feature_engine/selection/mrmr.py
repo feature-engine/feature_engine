@@ -408,7 +408,6 @@ class MRMR(BaseSelector):
                 f = f_regression(X.drop(feature, axis=1), X[feature])
                 red = np.mean(f[0])
                 redundance.append(red)
-            redundance = np.array(redundance)
 
         else:
             # when discrete features is True or False or the string auto
@@ -447,6 +446,7 @@ class MRMR(BaseSelector):
                                 n_jobs=self.n_jobs,
                             )
                         )
+
                     else:
                         red = np.mean(
                             mutual_info_regression(
@@ -491,7 +491,7 @@ class MRMR(BaseSelector):
                         )
                     redundance.append(red)
 
-        return redundance
+        return np.array(redundance)
 
     def _calculate_mrmr(self, X):
         if self.method in ["MID", "FCD"]:

@@ -275,7 +275,7 @@ class SelectByShuffling(BaseSelector):
             ]
 
             performance_std = np.std(performance)
-            performance = np.mean(performance) # type: ignore
+            performance = np.mean(performance)  # type: ignore
 
             # determine drift in performance
             # Note, sklearn negates the log and error scores, so no need to manually

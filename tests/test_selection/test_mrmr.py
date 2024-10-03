@@ -124,14 +124,14 @@ def test_mrmr_mid_and_miq_classif(df_test):
     sel.fit(X, y)
 
     assert (sel.relevance_ == relevance).all()
-    assert sel.redundance_ == redundance
+    assert np.allclose(np.array(redundance), sel.redundance_)
     assert (sel.mrmr_ == mrmr_d).all()
 
     sel = MRMR(method="MIQ", regression=False, random_state=42)
     sel.fit(X, y)
 
     assert (sel.relevance_ == relevance).all()
-    assert sel.redundance_ == redundance
+    assert np.allclose(np.array(redundance), sel.redundance_)
     assert (sel.mrmr_ == mrmr_q).all()
     assert sel.features_to_drop_ == [
         "var_0",
@@ -202,7 +202,7 @@ def df_test_regression():
         random_state=1,
     )
 
-    # trasform arrays into pandas df and series
+    # transform arrays into pandas df and series
     colnames = ["var_" + str(i) for i in range(12)]
     X = pd.DataFrame(X, columns=colnames)
     y = pd.Series(0.5 * X["var_1"] - 0.3 * X["var_3"] + X["var_8"])
@@ -228,14 +228,14 @@ def test_mrmr_mid_and_miq_regression(df_test_regression):
     sel.fit(X, y)
 
     assert (sel.relevance_ == relevance).all()
-    assert sel.redundance_ == redundance
+    assert np.allclose(np.array(redundance), sel.redundance_)
     assert (sel.mrmr_ == mrmr_d).all()
 
     sel = MRMR(method="MIQ", regression=True, random_state=42, threshold=2)
     sel.fit(X, y)
 
     assert (sel.relevance_ == relevance).all()
-    assert sel.redundance_ == redundance
+    assert np.allclose(np.array(redundance), sel.redundance_)
     assert (sel.mrmr_ == mrmr_q).all()
     assert sel.features_to_drop_ == [
         "var_0",
