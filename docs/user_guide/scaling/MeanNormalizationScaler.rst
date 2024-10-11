@@ -5,25 +5,22 @@
 MeanNormalizationScaler
 =======================
 
-The :class:`MeanNormalizationScaler()` scales one or more columns using
-the mean normalization scaling technique.
-
-Mean normalization scales each feature in the dataset by subtracting the mean of that feature
-and then dividing by the range (i.e., the difference between the maximum and minimum values) of
-that feature. The resulting feature values are centered around zero, but they are not standardized
-to have a unit variance, nor are they normalized to a fixed range.
+:class:`MeanNormalizationScaler()` scales variables using mean normalization. With mean normalization,
+we center the distribution around 0, and rescale the distribution to the variable's value range,
+so that its values vary between -1 and 1. This is accomplished by subtracting the mean of the feature
+and then dividing by its range (i.e., the difference between the maximum and minimum values).
 
 The :class:`MeanNormalizationScaler()` only works with non-constant numerical variables.
 If the variable is constant, the scaler will raise an error.
 
-Example
-~~~~~~~
+Python example
+--------------
 
-Let's dive into the mean normalization scaler. First, we create a toy dataset:
+We'll show how to use :class:`MeanNormalizationScaler()` through a toy dataset. Let's create
+a toy dataset:
 
 .. code:: python
 
-    import numpy as np
     import pandas as pd
     from feature_engine.scaling import MeanNormalizationScaler
 
@@ -34,12 +31,12 @@ Let's dive into the mean normalization scaler. First, we create a toy dataset:
             "Age": [20, 21, 19, 18],
             "Height": [1.80, 1.77, 1.90, 2.00],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
         })
 
     print(df)
 
-The dataset looks like this
+The dataset looks like this:
 
 .. code:: python
 
@@ -56,42 +53,37 @@ First, let's make a list with the variable names:
 
 .. code:: python
 
-    vars_ = [
+    vars = [
       'Age',
       'Marks',
       'Height',
     ]
 
-Now, let's set up the mean normalization scaler :
+Now, let's set up :class:`MeanNormalizationScaler()`:
 
 .. code:: python
 
     # set up the scaler
-    scaler = MeanNormalizationScaler(variables = vars_)
+    scaler = MeanNormalizationScaler(variables = vars)
 
     # fit the scaler
     scaler.fit(df)
     
-The scaler learns the mean of every column in *vars_* and the respective range.
+The scaler learns the mean of every column in *vars* and their respective range.
 Note that we can access these values in the following way:
 
 .. code:: python
 
     # access the parameters learned by the scaler
-    means = scaler.mean_
-    ranges = scaler.range_
+    print(f'Means: {scaler.mean_}')
+    print(f'Ranges: {scaler.range_}')
 
-    print(f'Means: {means}')
-    print(f'Ranges: {ranges}')
-
-This is the result:
+We see the features' mean and value ranges in the following output:
 
 .. code:: python
 
     Means: {'Age': 19.5, 'Marks': 0.7500000000000001, 'Height': 1.8675000000000002}
     Ranges: {'Age': 3.0, 'Marks': 0.30000000000000004, 'Height': 0.22999999999999998}
-
-Note that we can access to these parameters only once the scaler has benn fit.
 
 We can now go ahead and scale the variables:
 
@@ -101,8 +93,7 @@ We can now go ahead and scale the variables:
     df = scaler.transform(df)
     print(df)
 
-And that's it, now the selected variables have been scaled using mean normalization,
-as we can see:
+In the following output, we can see the scaled variables:
 
 .. code:: python
 
@@ -112,7 +103,7 @@ as we can see:
     2  krish   Liverpool -0.166667  0.141304 -0.166667 2020-02-24 00:02:00
     3   jack     Bristol -0.500000  0.576087 -0.500000 2020-02-24 00:03:00
 
-We can at everytime returning to the original values using the inverse transformation.
+We can restore the data to itsoriginal values using the inverse transformation:
 
 .. code:: python
 
@@ -120,7 +111,7 @@ We can at everytime returning to the original values using the inverse transform
     df = scaler.inverse_transform(df)
     print(df)
 
-As promised
+In the following data, we see the scaled variables returned to their oridinal representation:
 
 .. code:: python
 
@@ -130,3 +121,56 @@ As promised
     2  krish   Liverpool   19    1.90    0.7 2020-02-24 00:02:00
     3   jack     Bristol   18    2.00    0.6 2020-02-24 00:03:00
 
+
+Additional resources
+--------------------
+
+For more details about this and other feature engineering methods check out
+these resources:
+
+
+.. figure::  ../../images/feml.png
+   :width: 300
+   :figclass: align-center
+   :align: left
+   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
+
+   Feature Engineering for Machine Learning
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Or read our book:
+
+.. figure::  ../../images/cookbook.png
+   :width: 200
+   :figclass: align-center
+   :align: left
+   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
+
+   Python Feature Engineering Cookbook
+
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Both our book and course are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.

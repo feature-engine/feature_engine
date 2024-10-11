@@ -1,7 +1,9 @@
+import re
+
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
-import re
+
 from feature_engine.scaling import MeanNormalizationScaler
 
 
@@ -122,5 +124,5 @@ def test_constant_columns_error():
     )
 
     transformer = MeanNormalizationScaler()
-    with pytest.raises(ValueError, match=re.escape("Division by zero in the scaling")):
+    with pytest.raises(ValueError, match=re.escape("Division by zero is not allowed")):
         transformer.fit(df)

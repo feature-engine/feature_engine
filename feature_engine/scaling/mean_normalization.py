@@ -18,7 +18,6 @@ from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.methods import (
-    _fit_not_learn_docstring,
     _fit_transform_docstring,
     _inverse_transform_docstring,
 )
@@ -30,23 +29,23 @@ from feature_engine._docstrings.substitute import Substitution
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
-    fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
 class MeanNormalizationScaler(BaseNumericalTransformer):
     """
-    The MeanNormalizationScaler() applies the mean normalization scaling techinques
-    to one or multuple columns of a dataframe.
-
-    Mean normalization is a way to implement feature scaling. Mean normalization
-    calculates and subtracts the mean of for every feature and divide this value
-    by the range (max - min).
+    MeanNormalizationScaler() applies mean normalization, which consists of subtracting
+    the mean of each feature and then dividing the result by the value range, that is,
+    the difference between its maximum and minimum value. The method aims to center the
+    variables at 0, and rescale the distribution between -1 and 1.
 
     A list of variables can be passed as an argument. Alternatively, the transformer
-    will automatically select and transform all variables of type numeric.
+    will automatmypy featureically select and transform all variables of type numeric.
 
-    If a column is constant, then it will be transformed to the zero constant column.
+    Constant variables will raise an error due to division by zero.
+
+    More details in the :ref:`User Guide <mean_normalization_scaler>`.
+
 
     Parameters
     ----------
@@ -69,7 +68,8 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
     Methods
     -------
-    {fit}
+    fit:
+        Find variables' mean and value range.
 
     {fit_transform}
 
@@ -128,8 +128,8 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
         constant_columns = [col for col, value in self.range_.items() if value == 0]
         if constant_columns:
             raise ValueError(
-                "Division by zero in the scaling. This is because \n"
-                f"the following column/s are constant: {constant_columns}"
+                f"The following variable(s) are constant: {constant_columns}. "
+                "Division by zero is not allowed. Please remove constant columns."
             )
 
         return self

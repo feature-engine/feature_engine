@@ -67,6 +67,7 @@ Feature-engine includes transformers for:
 - Datetime features
 - Time series
 - Preprocessing
+- Scaling
 
 Feature-engine transformers are fully compatible with scikit-learn. That means that you can assemble Feature-engine
 transformers within a Scikit-learn pipeline, or use them in a grid or random search for hyperparameters.
