@@ -67,6 +67,7 @@ Feature-engine includes transformers for:
 - Datetime features
 - Time series
 - Preprocessing
+- Scaling
 
 Feature-engine transformers are fully compatible with scikit-learn. That means that you can assemble Feature-engine
 transformers within a Scikit-learn pipeline, or use them in a grid or random search for hyperparameters.
@@ -295,6 +296,15 @@ types and variable names match.
 
 - :doc:`api_doc/preprocessing/MatchCategories`: ensures categorical variables are of type 'category'
 - :doc:`api_doc/preprocessing/MatchVariables`: ensures that columns in test set match those in train set
+
+Scaling:
+~~~~~~~~
+
+Scaling the data can help to balance the impact of all variables on the model, and can improve 
+its performance.
+
+- :doc:`api_doc/scaling/MeanNormalizationScaler`: scale variables using mean normalization
+
 
 Scikit-learn Wrapper:
 ~~~~~~~~~~~~~~~~~~~~~

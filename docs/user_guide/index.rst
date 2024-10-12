@@ -18,6 +18,7 @@ Transformation
    discretisation/index
    outliers/index
    transformation/index
+   scaling/index
 
 Creation
 --------

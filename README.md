@@ -68,6 +68,7 @@ Please share your story by answering 1 quick question
 * Datetime Features
 * Time Series
 * Preprocessing
+* Scaling
 * Scikit-learn Wrappers
 
 ### Imputation Methods
@@ -109,6 +110,9 @@ Please share your story by answering 1 quick question
 * PowerTransformer
 * BoxCoxTransformer
 * YeoJohnsonTransformer
+
+### Variable Scaling methods
+* MeanNormalizationScaler
 
 ### Variable Creation:
  * MathFeatures
