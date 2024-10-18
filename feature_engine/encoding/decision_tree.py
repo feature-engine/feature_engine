@@ -222,7 +222,7 @@ class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
         precision: Optional[int] = None,
-        unseen: str = "raise",
+        unseen: str = "ignore",
         fill_value: Optional[float] = None,
     ) -> None:
 
