@@ -15,7 +15,6 @@ from sklearn.feature_selection import (
     mutual_info_regression,
 )
 from sklearn.model_selection import GridSearchCV
-from statsmodels.sandbox.regression.try_treewalker import paramsidx
 
 from feature_engine.selection import MRMR
 
