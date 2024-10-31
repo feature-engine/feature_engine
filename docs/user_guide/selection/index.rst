@@ -66,6 +66,7 @@ Selection based on feature characteristics
 :class:`DropDuplicateFeatures()`                √	                      √             Drops features that are duplicated
 :class:`DropCorrelatedFeatures()`               ×	                      √	            Drops features that are correlated
 :class:`SmartCorrelatedSelection()`	            ×	                      √	            From a correlated feature group drops the less useful features
+:class:`MRMR()`                  	            √	                      ×	            Selects features based on the MRMR framework
 ============================================ ======================= ============= ====================================================================================
 
 Methods that determine duplication or the number of unique values, can work with both
@@ -147,6 +148,7 @@ Click below to find more details on how to use each one of the transformers.
    DropHighPSIFeatures
    SelectByInformationValue
    ProbeFeatureSelection
+   MRMR
 
 
 Additional Resources

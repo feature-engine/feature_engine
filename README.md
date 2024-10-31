@@ -134,6 +134,7 @@ Please share your story by answering 1 quick question
  * DropHighPSIFeatures
  * SelectByInformationValue
  * ProbeFeatureSelection
+ * MRMR
 
 ### Datetime
  * DatetimeFeatures

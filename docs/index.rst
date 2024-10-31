@@ -276,6 +276,7 @@ existing in other libraries like sklearn and MLXtend, with additional methods:
 - :doc:`api_doc/selection/RecursiveFeatureElimination`: selects features recursively, by evaluating model performance
 - :doc:`api_doc/selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
 - :doc:`api_doc/selection/ProbeFeatureSelection`: selects features whose importance is greater than those of random variables
+- :doc:`api_doc/selection/MRMR`: selects features based on the Maximum Relevance Minimum Redundancy framework
 
 Forecasting:
 ~~~~~~~~~~~~
