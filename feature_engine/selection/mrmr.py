@@ -111,16 +111,14 @@ class MRMR(BaseSelector):
         'FCQ', F-Statistic, Correlation, Ratio,
         'RFCQ', Random Forests, Correlation, Ratio,
 
-
     |
-
 
     More details in the :ref:`User Guide <mrmr>`.
 
     Parameters
     ----------
     variables: list, default=None
-        The list of variables to evaluate. If `None, the transformer will evaluate all
+        The list of variables to evaluate. If `None`, the transformer will evaluate all
         numerical variables in the dataset.
 
     method: str, default = 'MIQ'
@@ -256,13 +254,17 @@ class MRMR(BaseSelector):
                 f"select. Got {max_features} instead."
             )
 
-        if variables is not None and max_features is not None:
+        if (
+            variables is not None
+            and max_features is not None
+            and not isinstance(variables, int)
+        ):
             if max_features >= len(variables):
                 raise ValueError(
                     f"The number of variables to examine is {len(variables)}, which is "
                     "less than or equal to the number of features to select indicated "
                     f"in `max_features`, which is {max_features}. Please check the "
-                    "values entered in the parameters `variables`and `max_features`."
+                    "values entered in the parameters `variables` and `max_features`."
                 )
 
         if (

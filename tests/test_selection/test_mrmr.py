@@ -84,7 +84,7 @@ def test_max_features_raises_error_when_more_than_vars(vars, max_feat):
         f"The number of variables to examine is {len(vars)}, which is "
         "less than or equal to the number of features to select indicated "
         f"in `max_features`, which is {max_feat}. Please check the "
-        "values entered in the parameters `variables`and `max_features`."
+        "values entered in the parameters `variables` and `max_features`."
     )
     with pytest.raises(ValueError) as record:
         MRMR(variables=vars, max_features=max_feat)
