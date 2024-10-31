@@ -472,7 +472,7 @@ position of the categorical variables  'AveRooms', 'AveBedrms' and 'AveOccup':
 
     sel.fit(X,y)
 
-To select features we use `transform():
+To select features we use `transform()`:
 
 .. code:: python
 
