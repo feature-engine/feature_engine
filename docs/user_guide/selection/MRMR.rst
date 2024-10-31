@@ -13,7 +13,7 @@ The MRMR algorithm obtains a measure of relevance and a measure of redundancy, a
 an importance score to each feature based on the difference or ratio between relevance and
 redundancy. After that, it selects the features with the highest scores.
 
-MRMR was first described as a method to select features for microarray gene expression data,
+MRMR was first described in bioinformatics as a method to select features for microarray gene expression data,
 and then expanded and popularized by Uber in the context of marketing models.
 
 MRMR - Mechanism
@@ -88,6 +88,9 @@ will be diluted.
 
 Redundancy
 ----------
+
+Redundant features are those that are highly correlated, or show high dependency with other features in
+the dataset.
 
 :class:`MRMR()` has 2 strategies to determine the relationship of the variables to other variables in
 the dataset: Pearson's correlation coefficient or mutual information.
@@ -456,8 +459,9 @@ In the following output, we see the first 5 rows of the dataset:
 
 
 Now, we'll set up :class:`MRMR()` to use mutual information to determine both redundancy and relevance,
-and the importance score as the ratio between the two. Note the boolean vector with `True` in the
-position of the categorical variables  'AveRooms', 'AveBedrms' and 'AveOccup':
+and the importance score as the ratio (or quotient, hence the Q in MIQ) between the two.
+
+Note the boolean vector with `True` in the position of the categorical variables  'AveRooms', 'AveBedrms' and 'AveOccup':
 
 .. code:: python
 
