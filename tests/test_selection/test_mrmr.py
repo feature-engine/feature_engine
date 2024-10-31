@@ -15,6 +15,7 @@ from sklearn.feature_selection import (
     mutual_info_regression,
 )
 from sklearn.model_selection import GridSearchCV
+from statsmodels.sandbox.regression.try_treewalker import paramsidx
 
 from feature_engine.selection import MRMR
 
@@ -209,7 +210,14 @@ def test_calculate_relevance_RF(df_test, df_test_regression):
     model.fit(X, y)
     expected_relevance = model.best_estimator_.feature_importances_
 
-    sel = MRMR(method="RFCQ", regression=True, random_state=42, cv=3, scoring="r2")
+    sel = MRMR(
+        method="RFCQ",
+        regression=True,
+        random_state=42,
+        cv=3,
+        scoring="r2",
+        param_grid=param_grid,
+    )
     relevance = sel._calculate_relevance(X, y)
 
     assert np.array_equal(expected_relevance, relevance)
