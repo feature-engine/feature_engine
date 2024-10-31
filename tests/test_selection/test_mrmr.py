@@ -1,7 +1,12 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.datasets import make_classification
+
+from sklearn.datasets import (
+    make_classification,
+    load_breast_cancer,
+    fetch_california_housing,
+)
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.feature_selection import (
     f_classif,
@@ -11,8 +16,26 @@ from sklearn.feature_selection import (
 )
 from sklearn.model_selection import GridSearchCV
 
-from feature_engine.encoding import OrdinalEncoder
 from feature_engine.selection import MRMR
+
+
+@pytest.fixture(scope="module")
+def df_test_regression():
+    X, y = make_classification(
+        n_samples=1000,
+        n_features=12,
+        n_redundant=4,
+        n_clusters_per_class=1,
+        weights=[0.50],
+        class_sep=2,
+        random_state=1,
+    )
+
+    # transform arrays into pandas df and series
+    colnames = ["var_" + str(i) for i in range(12)]
+    X = pd.DataFrame(X, columns=colnames)
+    y = pd.Series(0.5 * X["var_1"] - 0.3 * X["var_3"] + X["var_8"])
+    return X, y
 
 
 @pytest.mark.parametrize("method", ["MIQ", "MID", "FCQ", "FCD", "RFCQ"])
@@ -32,20 +55,39 @@ def test_method_raises_error(method):
     assert str(record.value) == msg
 
 
-@pytest.mark.parametrize("threshold", [0, 0.5, 10, -1, None])
-def test_threshold_param(threshold):
-    tr = MRMR(threshold=threshold)
-    if threshold is not None:
-        assert tr.threshold == threshold
+@pytest.mark.parametrize("max_features", [1, 10, 20, None])
+def test_max_features_param(max_features):
+    tr = MRMR(max_features=max_features)
+    if max_features is not None:
+        assert tr.max_features == max_features
     else:
-        assert tr.threshold is None
+        assert tr.max_features is None
 
 
-@pytest.mark.parametrize("threshold", ["string", {"string"}, [0, 1]])
-def test_threshold_raises_error(threshold):
-    msg = "threshold can only take integer or float. " f"Got {threshold} instead."
+@pytest.mark.parametrize("max_features", ["string", -1, [0, 1]])
+def test_max_features_raises_error(max_features):
+    msg = (
+        "max_features must be an integer with the number of features to "
+        f"select. Got {max_features} instead."
+    )
     with pytest.raises(ValueError) as record:
-        MRMR(threshold=threshold)
+        MRMR(max_features=max_features)
+    assert str(record.value) == msg
+
+
+@pytest.mark.parametrize(
+    ("vars", "max_feat"),
+    [(["var1", "var2"], 2), (["var1", "var2"], 3), (["var1", "var2", "var3"], 4)],
+)
+def test_max_features_raises_error_when_more_than_vars(vars, max_feat):
+    msg = (
+        f"The number of variables to examine is {len(vars)}, which is "
+        "less than or equal to the number of features to select indicated "
+        f"in `max_features`, which is {max_feat}. Please check the "
+        "values entered in the parameters `variables`and `max_features`."
+    )
+    with pytest.raises(ValueError) as record:
+        MRMR(variables=vars, max_features=max_feat)
     assert str(record.value) == msg
 
 
@@ -72,6 +114,7 @@ def test_raises_error_when_metric_not_suitable_for_regression(scoring):
 )
 @pytest.mark.parametrize("scoring", ["roc_auc", "accuracy", "precision"])
 def test_metric_does_not_raise_error_when_not_RF_regression(method, scoring):
+    # scoring is only used when method='RFCQ'. Otherwise it should be ignored.
     tr = MRMR(method=method, regression=True, scoring=scoring)
     assert tr.method == method
     assert tr.scoring == scoring
@@ -100,322 +143,173 @@ def test_raises_error_when_metric_not_suitable_for_classif(scoring):
 )
 @pytest.mark.parametrize("scoring", ["mse", "mae", "r2"])
 def test_metric_does_not_raise_error_when_not_RF_classif(method, scoring):
+    # scoring is only used when method='RFCQ'. Otherwise it should be ignored.
     tr = MRMR(method=method, regression=False, scoring=scoring)
     assert tr.method == method
     assert tr.scoring == scoring
 
 
-def test_mrmr_mid_and_miq_classif(df_test):
+@pytest.mark.parametrize("method", ["MID", "MIQ"])
+def test_calculate_relevance_mi(df_test, df_test_regression, method):
     X, y = df_test
-    relevance = mutual_info_classif(X, y, random_state=42)
+    expected_relevance = mutual_info_classif(X, y, random_state=42)
 
-    redundance = []
+    sel = MRMR(method=method, regression=False, random_state=42)
+    relevance = sel._calculate_relevance(X, y)
 
-    for feature in X.columns:
-        red = np.mean(
-            mutual_info_regression(X.drop(feature, axis=1), X[feature], random_state=42)
-        )
-        redundance.append(red)
+    assert np.array_equal(expected_relevance, relevance)
 
-    mrmr_d = relevance - redundance
-    mrmr_q = relevance / redundance
-
-    sel = MRMR(method="MID", regression=False, random_state=42)
-    sel.fit(X, y)
-
-    assert (sel.relevance_ == relevance).all()
-    assert np.allclose(np.array(redundance), sel.redundance_)
-    assert (sel.mrmr_ == mrmr_d).all()
-
-    sel = MRMR(method="MIQ", regression=False, random_state=42)
-    sel.fit(X, y)
-
-    assert (sel.relevance_ == relevance).all()
-    assert np.allclose(np.array(redundance), sel.redundance_)
-    assert (sel.mrmr_ == mrmr_q).all()
-    assert sel.features_to_drop_ == [
-        "var_0",
-        "var_2",
-        "var_3",
-        "var_8",
-        "var_10",
-        "var_11",
-    ]
-
-    Xtr = sel.transform(X)
-    pd.testing.assert_frame_equal(
-        X[["var_1", "var_4", "var_5", "var_6", "var_7", "var_9"]], Xtr
-    )
-
-
-def test_mrmr_fcd_and_fcq_classif(df_test):
-    X, y = df_test
-    relevance = f_classif(X, y)[0]
-
-    redundance = []
-    for feature in X.columns:
-        f = f_regression(X.drop(feature, axis=1), X[feature])
-        red = np.mean(f[0])
-        redundance.append(red)
-
-    mrmr_d = relevance - np.array(redundance)
-    mrmr_q = relevance / np.array(redundance)
-
-    sel = MRMR(method="FCD", regression=False, random_state=42)
-    sel.fit(X, y)
-
-    assert (sel.relevance_ == relevance).all()
-    assert np.allclose(np.array(redundance), sel.redundance_)
-    assert np.allclose(np.array(sel.mrmr_), mrmr_d)
-
-    sel = MRMR(method="FCQ", regression=False, random_state=42)
-    sel.fit(X, y)
-
-    assert (sel.relevance_ == relevance).all()
-    assert np.allclose(np.array(redundance), sel.redundance_)
-    assert np.allclose(np.array(sel.mrmr_), mrmr_q)
-    assert sel.features_to_drop_ == [
-        "var_0",
-        "var_3",
-        "var_4",
-        "var_6",
-        "var_8",
-        "var_9",
-        "var_10",
-    ]
-
-    Xtr = sel.transform(X)
-    pd.testing.assert_frame_equal(
-        X[["var_1", "var_2", "var_5", "var_7", "var_11"]], Xtr
-    )
-
-
-@pytest.fixture(scope="module")
-def df_test_regression():
-    X, y = make_classification(
-        n_samples=1000,
-        n_features=12,
-        n_redundant=4,
-        n_clusters_per_class=1,
-        weights=[0.50],
-        class_sep=2,
-        random_state=1,
-    )
-
-    # transform arrays into pandas df and series
-    colnames = ["var_" + str(i) for i in range(12)]
-    X = pd.DataFrame(X, columns=colnames)
-    y = pd.Series(0.5 * X["var_1"] - 0.3 * X["var_3"] + X["var_8"])
-    return X, y
-
-
-def test_mrmr_mid_and_miq_regression(df_test_regression):
     X, y = df_test_regression
-    relevance = mutual_info_regression(X, y, random_state=42)
+    expected_relevance = mutual_info_regression(X, y, random_state=42)
 
-    redundance = []
+    sel = MRMR(method=method, regression=True, random_state=42)
+    relevance = sel._calculate_relevance(X, y)
 
-    for feature in X.columns:
-        red = np.mean(
-            mutual_info_regression(X.drop(feature, axis=1), X[feature], random_state=42)
-        )
-        redundance.append(red)
-
-    mrmr_d = relevance - redundance
-    mrmr_q = relevance / redundance
-
-    sel = MRMR(method="MID", regression=True, random_state=42)
-    sel.fit(X, y)
-
-    assert (sel.relevance_ == relevance).all()
-    assert np.allclose(np.array(redundance), sel.redundance_)
-    assert (sel.mrmr_ == mrmr_d).all()
-
-    sel = MRMR(method="MIQ", regression=True, random_state=42, threshold=2)
-    sel.fit(X, y)
-
-    assert (sel.relevance_ == relevance).all()
-    assert np.allclose(np.array(redundance), sel.redundance_)
-    assert (sel.mrmr_ == mrmr_q).all()
-    assert sel.features_to_drop_ == [
-        "var_0",
-        "var_2",
-        "var_4",
-        "var_6",
-        "var_7",
-        "var_8",
-        "var_9",
-        "var_10",
-        "var_11",
-    ]
-
-    Xtr = sel.transform(X)
-    pd.testing.assert_frame_equal(X[["var_1", "var_3", "var_5"]], Xtr)
+    assert np.array_equal(expected_relevance, relevance)
 
 
-def test_mrmr_fcd_and_fcq_regression(df_test_regression):
-    X, y = df_test_regression
-    relevance = f_regression(X, y)[0]
-
-    redundance = []
-    for feature in X.columns:
-        f = f_regression(X.drop(feature, axis=1), X[feature])
-        red = np.mean(f[0])
-        redundance.append(red)
-
-    mrmr_d = relevance - np.array(redundance)
-    mrmr_q = relevance / np.array(redundance)
-
-    sel = MRMR(method="FCD", regression=True, random_state=42, threshold=2)
-    sel.fit(X, y)
-
-    assert np.allclose(np.array(relevance), sel.relevance_)
-    assert np.allclose(np.array(redundance), sel.redundance_)
-    assert np.allclose(np.array(sel.mrmr_), mrmr_d)
-
-    sel = MRMR(method="FCQ", regression=True, random_state=42, threshold=20)
-    sel.fit(X, y)
-
-    assert np.allclose(np.array(relevance), sel.relevance_)
-    assert np.allclose(np.array(redundance), sel.redundance_)
-    assert np.allclose(np.array(sel.mrmr_), mrmr_q)
-    assert sel.features_to_drop_ == [
-        "var_0",
-        "var_2",
-        "var_4",
-        "var_5",
-        "var_6",
-        "var_7",
-        "var_8",
-        "var_9",
-        "var_10",
-        "var_11",
-    ]
-
-    Xtr = sel.transform(X)
-    pd.testing.assert_frame_equal(X[["var_1", "var_3"]], Xtr)
-
-
-def test_mrmr_random_forest(df_test, df_test_regression):
-    # classification
+@pytest.mark.parametrize("method", ["FCD", "FCQ"])
+def test_calculate_relevance_f(df_test, df_test_regression, method):
     X, y = df_test
+    expected_relevance = f_classif(X, y)[0]
 
+    sel = MRMR(method=method, regression=False, random_state=42)
+    relevance = sel._calculate_relevance(X, y)
+
+    assert np.array_equal(expected_relevance, relevance)
+
+    X, y = df_test_regression
+    expected_relevance = f_regression(X, y)[0]
+
+    sel = MRMR(method=method, regression=True, random_state=42)
+    relevance = sel._calculate_relevance(X, y)
+
+    assert np.array_equal(expected_relevance, relevance)
+
+
+def test_calculate_relevance_RF(df_test, df_test_regression):
     param_grid = {"max_depth": [1, 2, 3, 4]}
-    model = GridSearchCV(
-        RandomForestClassifier(random_state=42),
-        cv=3,
-        scoring="roc_auc",
-        param_grid=param_grid,
-    )
-    model.fit(X, y)
-    relevance = model.best_estimator_.feature_importances_
 
-    redundance = []
-    for feature in X.columns:
-        f = f_regression(X.drop(feature, axis=1), X[feature])
-        red = np.mean(f[0])
-        redundance.append(red)
-
-    mrmr_q = relevance / np.array(redundance)
-
-    sel = MRMR(method="RFCQ", regression=False, random_state=42)
-    sel.fit(X, y)
-
-    assert np.allclose(np.array(relevance), sel.relevance_)
-    assert np.allclose(np.array(redundance), sel.redundance_)
-    assert np.allclose(np.array(sel.mrmr_), mrmr_q)
-
-    # regression
-    X, y = df_test_regression
-
-    model = GridSearchCV(
-        RandomForestRegressor(random_state=42),
-        cv=3,
-        scoring="r2",
-        param_grid=param_grid,
-    )
-    model.fit(X, y)
-    relevance = model.best_estimator_.feature_importances_
-
-    redundance = []
-    for feature in X.columns:
-        f = f_regression(X.drop(feature, axis=1), X[feature])
-        red = np.mean(f[0])
-        redundance.append(red)
-
-    mrmr_q = relevance / np.array(redundance)
-
-    sel = MRMR(method="RFCQ", regression=True, scoring="r2", random_state=42)
-    sel.fit(X, y)
-
-    assert np.allclose(np.array(relevance), sel.relevance_)
-    assert np.allclose(np.array(redundance), sel.redundance_)
-    assert np.allclose(np.array(sel.mrmr_), mrmr_q)
-
-
-def test_can_work_on_variable_groups(df_test):
     X, y = df_test
-    varlist = ["var_" + str(i) for i in range(5)]
+    model = RandomForestClassifier(random_state=42)
+    model = GridSearchCV(model, cv=3, scoring="roc_auc", param_grid=param_grid)
+    model.fit(X, y)
+    expected_relevance = model.best_estimator_.feature_importances_
 
-    relevance = f_classif(X[varlist], y)[0]
+    sel = MRMR(
+        method="RFCQ", regression=False, random_state=42, cv=3, scoring="roc_auc"
+    )
+    relevance = sel._calculate_relevance(X, y)
 
-    redundance = []
-    for feature in varlist:
-        f = f_regression(X[varlist].drop(feature, axis=1), X[feature])
-        red = np.mean(f[0])
-        redundance.append(red)
+    assert np.array_equal(expected_relevance, relevance)
 
-    mrmr_d = relevance - np.array(redundance)
+    X, y = df_test_regression
+    model = RandomForestRegressor(random_state=42)
+    model = GridSearchCV(model, cv=3, scoring="r2", param_grid=param_grid)
+    model.fit(X, y)
+    expected_relevance = model.best_estimator_.feature_importances_
 
-    sel = MRMR(variables=varlist, method="FCD", regression=False, random_state=42)
-    sel.fit(X, y)
+    sel = MRMR(method="RFCQ", regression=True, random_state=42, cv=3, scoring="r2")
+    relevance = sel._calculate_relevance(X, y)
 
-    assert (sel.relevance_ == relevance).all()
-    assert np.allclose(np.array(redundance), sel.redundance_)
-    assert np.allclose(np.array(sel.mrmr_), mrmr_d)
+    assert np.array_equal(expected_relevance, relevance)
 
 
 @pytest.mark.parametrize(
-    "discrete", [[True, True, False, False], np.array([True, True, False, False])]
+    ("method1", "method2"), [("MID", "FCD"), ("MIQ", "FCQ"), ("MIQ", "RFCQ")]
 )
-def test_discrete_features_among_predictors(df_test_num_cat, discrete):
-    # the first 2 features are discrete/categorical
-    X, y = df_test_num_cat
-    X = OrdinalEncoder(encoding_method="arbitrary").fit_transform(X)
+def test_calculate_redundance(df_test_regression, method1, method2):
+    X, y = df_test_regression
 
-    sel = MRMR(
-        method="MID", discrete_features=discrete, regression=False, random_state=42
-    )
-    redundance = sel._calculate_redundance(X)
+    expected_redundance = mutual_info_regression(X, y, random_state=42)
+    sel = MRMR(method=method1, random_state=42)
+    redundance = sel._calculate_redundance(X, y)
+    assert np.array_equal(expected_redundance, redundance)
 
-    mi = mutual_info_classif(
-        X=X.drop(["var_A"], axis=1),
-        y=X["var_A"],
-        discrete_features=[True, False, False],
-        random_state=42,
-    )
-    assert np.mean(mi) == redundance[0]
+    expected_redundance = np.absolute(X.corrwith(y).values)
+    sel = MRMR(method=method2)
+    redundance = sel._calculate_redundance(X, y)
+    assert np.array_equal(expected_redundance, redundance)
 
-    mi = mutual_info_classif(
-        X=X.drop(["var_B"], axis=1),
-        y=X["var_B"],
-        discrete_features=[True, False, False],
-        random_state=42,
-    )
-    assert np.mean(mi) == redundance[1]
 
-    mi = mutual_info_regression(
-        X=X.drop(["var_C"], axis=1),
-        y=X["var_C"],
-        discrete_features=[True, True, False],
-        random_state=42,
-    )
-    assert np.mean(mi) == redundance[2]
+@pytest.mark.parametrize("method", ["MID", "MIQ", "FCD", "FCQ", "RFCQ"])
+def test_calculate_mrmr(method):
+    relevance = np.array([1, 2, 3, 4, 5])
+    redundance = np.array([1, 2, 3, 4, 5])
 
-    mi = mutual_info_regression(
-        X=X.drop(["var_D"], axis=1),
-        y=X["var_D"],
-        discrete_features=[True, True, False],
-        random_state=42,
-    )
-    assert np.mean(mi) == redundance[3]
+    sel = MRMR(method=method)
+    mrmr = sel._calculate_mrmr(relevance, redundance)
+
+    if method in ["MID", "FCD"]:
+        expected_mrmr = relevance - redundance
+    else:
+        expected_mrmr = relevance / redundance
+    assert np.array_equal(expected_mrmr, mrmr)
+
+
+def test_mrmr_mid_and_miq_classif():
+    X, y = load_breast_cancer(return_X_y=True, as_frame=True)
+
+    selected = [
+        "worst perimeter",
+        "fractal dimension error",
+        "worst texture",
+        "worst smoothness",
+        "mean concave points",
+        "perimeter error",
+        "worst symmetry",
+        "worst concave points",
+        "area error",
+        "mean perimeter",
+    ]
+    to_drop = [f for f in X.columns if f not in selected]
+
+    sel = MRMR(method="MIQ", max_features=10, regression=False, random_state=42)
+    sel.fit(X, y)
+    Xtr = sel.transform(X)
+
+    assert sel.features_to_drop_ == to_drop
+    pd.testing.assert_frame_equal(X.drop(to_drop, axis=1), Xtr)
+
+    selected = [
+        "worst perimeter",
+        "worst smoothness",
+        "worst texture",
+        "mean concave points",
+        "perimeter error",
+        "worst concavity",
+        "worst symmetry",
+        "area error",
+        "symmetry error",
+        "worst concave points",
+    ]
+    to_drop = [f for f in X.columns if f not in selected]
+
+    sel = MRMR(method="MID", max_features=10, regression=False, random_state=42)
+    sel.fit(X, y)
+    Xtr = sel.transform(X)
+
+    assert sel.features_to_drop_ == to_drop
+    pd.testing.assert_frame_equal(X.drop(to_drop, axis=1), Xtr)
+
+
+def test_mrmr_fcd_and_fcq_regression():
+    X, y = fetch_california_housing(return_X_y=True, as_frame=True)
+
+    selected = ["MedInc", "Latitude", "HouseAge", "AveRooms", "AveOccup"]
+    to_drop = [f for f in X.columns if f not in selected]
+
+    sel = MRMR(method="FCQ", max_features=5, regression=True)
+    Xtr = sel.fit_transform(X, y)
+
+    assert sel.features_to_drop_ == to_drop
+    pd.testing.assert_frame_equal(X.drop(to_drop, axis=1), Xtr)
+
+    selected = ["MedInc", "AveRooms", "Latitude", "HouseAge"]
+    to_drop = [f for f in X.columns if f not in selected]
+
+    sel = MRMR(method="FCD", max_features=4, regression=True)
+    Xtr = sel.fit_transform(X, y)
+
+    assert sel.features_to_drop_ == to_drop
+    pd.testing.assert_frame_equal(X.drop(to_drop, axis=1), Xtr)

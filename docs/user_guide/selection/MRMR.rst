@@ -7,7 +7,7 @@ MRMR - Minimum Redundancy Maximum Relevance
 
 :class:`MRMR()` selects features based on the Maximum Relevance Minimum Redundancy framework. In
 this framework, features with a strong relationship with the target (high relevance), but weak
-relationship to other features in the dataset (low redundancy) are favored and hence selected.
+relationship with other predictor features (low redundancy) are favored and hence selected.
 
 The MRMR algorithm obtains a measure of relevance and a measure of redundancy, and then it assigns
 an importance score to each feature based on the difference or ratio between relevance and
@@ -16,21 +16,43 @@ redundancy. After that, it selects the features with the highest scores.
 MRMR was first described as a method to select features for microarray gene expression data,
 and then expanded and popularized by Uber in the context of marketing models.
 
+MRMR - Mechanism
+----------------
+
+The MRMR feature selection algorithm works as follows:
+
+1. Determine the relevance of all predictor variables and select the feature with highest relevance.
+2. Determine the redundancy between the remaining features and the selected in step 1.
+3. Calculate the importance score as the ratio or difference between relevance and redundancy and select the feature with the maximum value: add it to the selected features.
+4. Determine the mean redundancy between the remaining features and the features selected so far.
+5. Calculate the importance score and select the feature with the maximum value: add it to the selected features.
+6. Repeat 4 and 5 until the desired number of selected features is reached.
+
+MRMR is an iterative algorithm. At each iteration, it determines the mean redundancy between the
+remaining features and the features that were selected in previous rounds. With the redundancy,
+it obtains a new measure of importance, and then it selects the feature with highest importance.
+
+Note that you need to define the number of features to select.
 
 Relevance
 ----------
 
 :class:`MRMR()` has 3 strategies to determine feature relevance. To determine the relationship
-of each feature with the target variable, :class:`MRMR()` determines i) the F-statistic, which is
-derived from ANOVA if the target is discrete or correlation if the target is categorical, ii) t
-he mutual information, or iii) the importance derived from random forests.
+of each feature with the target variable, :class:`MRMR()` obtains:
+
+1. The F-statistic, which is derived from ANOVA if the target is discrete or correlation if the target is categorical.
+2. The mutual information.
+3. The importance derived from random forests.
+
+The relevance is used to select the first feature and then to calculate the MRMR values at
+each of the subsequent iterations.
 
 F-statistic
 ~~~~~~~~~~~
 
 The F-statistic determines the degree of linear association between the features and the target.
 If the target is categorical, the F-statistic is calculated using Scikit-learn's `f_classif`
-function. If the target is numerical, the F-statistic is determined using `f_regression`.
+function. If the target is continuous, the F-statistic is determined using `f_regression`.
 
 Note that in both cases, these statistic is useful when the features are continuous. For discrete
 features, other tests should be used, like chi-square, which at the moment is not implemented.
@@ -50,65 +72,56 @@ features and a discrete target, or `mutual_info_regression`, to calculate the as
 features and a continuous target.
 
 The mutual information is calculated differently for continuous and discrete variables, so it is
-important to flag those variables that are categorical or discrete through the `discrete_features`
-parameter.
+important to flag categorical and discrete through the `discrete_features` parameter.
 
 
 Random Forests
 ~~~~~~~~~~~~~~
 
 Random forests can automatically assign a measure of relevance, by computing the degree of impurity
-returned by each feature at each node of the tree across the forest. Hence, the importance derived
+reduction returned by each feature at each node of the tree, and then across the forest. Hence, the importance derived
 from random forests offers a good approximation of the relationship between features and target.
 
 Note however that if the features are highly correlated, the importance derived from random forests
-will be diluted, and the feature score will be diluted further when :class:`MRMR()` combines the measure
-of relevance with that of redundancy.
+will be diluted.
 
 
 Redundancy
 ----------
 
 :class:`MRMR()` has 2 strategies to determine the relationship of the variables to other variables in
-the dataset. It uses correlation, more specifically the F-statistic obtained for Pearson's correlation
-coefficient, or mutual information.
+the dataset: Pearson's correlation coefficient or mutual information.
 
 
 Correlation
 ~~~~~~~~~~~
 
-To determine each features's redundancy, :class:`MRMR()` will determine the correlation of each feature to
-all other variables and then take the average. More precisely, it will determine the F-statistic derived
-from Pearson's correlation coefficient through Scikit-learn's `f_regression` function and take the average
-of those values.
+To determine each features's redundancy, :class:`MRMR()` obtains Pearson's correlation
+coefficient between each feature and the features selected in previous rounds. Next, it
+takes the average of the absolute value of the coefficients.
 
-Note that f_regression assumes that all features are continuous, so this metric may returned biased
+Note that correlation assumes that all features are continuous, so this metric may returned biased
 results for categorical and discrete variables.
 
 Mutual information
 ~~~~~~~~~~~~~~~~~~
 
-To determine each features's redundancy, :class:`MRMR()` will determine the mutual information
-between each feature to all other features in the dataset, and then take the average.
+To determine each features's redundancy, :class:`MRMR()` caclulates the mutual information
+between each feature and the features selected in former iterations, and then takes the average.
 
 
-Feature importance
-------------------
+MRMR
+----
 
 The MRMR method obtains a measure of feature importance by comparing its relevance to the target
-and its redundancy with other features.
+and its redundancy with other, previously selected features.
 
 High feature importance is obtained when the relevance is high and the redundancy is low.
 
-Note that features with high relevance but that are also highly correlated (or highly related
-more broadly speaking) to other features in the dataset, will be de-prioritized and may lose
-relevance against features with weaker relationships with the target, but that are also not
-related strongly to other variables in the dataset.
+A value of MRMR can be obtained through the difference or the ratio between relevance and
+redundancy.
 
-The feature importance can be obtained by either obtaining the difference between relevance and
-redundancy, or the ratio between the two.
-
-The following schemes are supported by :class:`MRMR()`
+The following schemes are supported by :class:`MRMR()`:
 
 .. csv-table::
     :header: Method, Relevance, Redundance, Scheme
@@ -117,22 +130,32 @@ The following schemes are supported by :class:`MRMR()`
     'MIQ', Mutual information, Mutual information, Ratio,
     'FCD', F-Statistic, Correlation, Difference,
     'FCQ', F-Statistic, Correlation, Ratio,
-    'FCQ', Mutual information, Correlation, Ratio,
+    'RFCQ', Random Forests, Correlation, Ratio,
 
 
 Feature selection
 -----------------
 
-:class:`MRMR()` selects features with high feature importance. There is an option to enter a
-threshold and features with importance higher than this threshold will be selected. Alternatively,
-:class:`MRMR()` takes the mean of all feature importances as threshold.
+:class:`MRMR()` selects as many features as indicated in the parameter `'max_features'`.
+If left to `None`, :class:`MRMR()` will select 20% of the features seen in the training
+dataset used during fit.
+
+Note that the number of features to select is arbitrary.
+
+MRMR is fast to compute if using the F-statistic and correlation. However, these statistical
+values are suitable to establish linear relationships.
+
+To detect non-linear relationships, using the variant that determines relevance through
+random forests derived feature importance might be better. Mutual information inherently
+detects linear and non-linear associations, but for continuous features it takes longer to
+compute, impacting the speed of selection of MRMR.
 
 
 Python examples
 ---------------
 
 Let's see how to implement :class:`MRMR()`. We'll start by using Scikit-learn's breast cancer
-diagnoses dataset. The target variable is binary, representing malignant or benign tumors. All
+dataset. The target variable is binary, representing malignant or benign tumors. All
 predictor variables are continuous.
 
 Let's import the required libraries and classes:
@@ -153,7 +176,7 @@ Let's now load the cancer diagnostic data and display its top rows:
     y = y.map({0:1, 1:0})
     print(X.head())
 
-In the following output we see the top 5 rows of the dataset:
+In the following output, we see the top 5 rows of the dataset:
 
 .. code:: python
 
@@ -205,26 +228,27 @@ Let's now split the data into train and test sets:
 The F-Statistic framework: linear associations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We set up :class:`MRMR()` to select features by determining their relevance and redundancy
-based on the F-statistic obtained from ANOVA when tested against the target, or correlation
-when tested among features:
+In this example, we want :class:`MRMR()` to determine feature relevance by using the F-statistic
+obtained with ANOVA, and the redundancy by examining the Pearson's correlation coefficient
+among features. The importance is obtained as the ratio between relevance and redundancy.
+
+Let's set up :class:`MRMR()`:
 
 .. code:: python
 
     sel = MRMR(method="FCQ", regression=False)
     sel.fit(X, y)
 
-With `fit()`, :class:`MRMR()` computed the relevance, redundance, MRMR or feature importance
-and determined which features should be retained.
+With `fit()`, :class:`MRMR()` computed the relevance, redundancy, MRMR or feature importance
+and determined which features should be selected. Note that this is an iterative process.
 
-Let's take a look at some of those values. We can print out the relevance as follows:
+We can print out the relevance as follows:
 
 .. code:: python
 
     sel.relevance_
 
-In the following output, we see an array with the F-statistic obtained by examining each
-feature against the target:
+In the following output, we see an array with the F-statistic obtained from ANOVA:
 
 .. code:: python
 
@@ -237,12 +261,11 @@ feature against the target:
            1.22472880e+02, 3.04341063e+02, 4.36691939e+02, 9.64385393e+02,
            1.18860232e+02, 6.64439606e+01])
 
-We can instead create a bar plot with the relevance to get a sense of the association between
-features and target:
+We can instead create a bar plot with the relevance:
 
 .. code:: python
 
-    d.Series(sel.relevance_, index=sel.variables_).sort_values(
+    pd.Series(sel.relevance_, index=sel.variables_).sort_values(
         ascending=False).plot.bar(figsize=(15, 4))
     plt.title("Relevance")
     plt.show()
@@ -250,101 +273,6 @@ features and target:
 In the following image, we see the F-statistic per feature:
 
 .. figure::  ../../images/f_statistic.png
-   :align:   center
-
-We can print out the redundancy values as follows:
-
-.. code:: python
-
-    sel.redundance_
-
-In the following output, we see an array with the values of relevance, which in this case is the
-mean F-statistic per feature, obtained by assessing correlation to all other features in the
-dataset:
-
-.. code:: python
-
-    array([6196.15821542,  133.05876824, 6227.29215401, 2355.2733152 ,
-            135.03538401,  442.82301531,  575.26152148,  666.93637339,
-            108.18283331,  123.71509918,  731.00127784,   25.00542472,
-            691.57943195,  565.40539072,   35.21629573,  228.46363233,
-            175.7670852 ,  190.49932237,   37.35475678,  134.98503485,
-           3194.31985518,  135.53962024, 2999.97186014, 1746.11614782,
-            121.24488967,  359.44991008,  418.47932409,  533.70655754,
-             93.65630926,  178.89484368])
-
-We can go ahead and display a bar plot with the redundancy:
-
-.. code:: python
-
-    pd.Series(sel.redundance_, index=sel.variables_).sort_values(
-        ascending=False).plot.bar(figsize=(15, 4))
-    plt.title("Redundance")
-    plt.show()
-
-In the following image we see the redundancy of each feature:
-
-.. figure::  ../../images/fstatistic_redundancy.png
-   :align:   center
-
-Features with larger values are highly correlated to other features in the dataset.
-
-The feature importance score, which in this case is the ratio between relevance and redundancy
-can be found as follows:
-
-.. code:: python
-
-    sel.mrmr_
-
-In the following output we see a pandas series with the feature names in the index and the
-feature importance as values:
-
-.. code:: python
-
-    mean radius                0.104416
-    mean texture               0.887548
-    mean perimeter             0.111964
-    mean area                  0.243310
-    mean smoothness            0.619476
-    mean compactness           0.707355
-    mean concavity             0.927914
-    mean concave points        1.291991
-    mean symmetry              0.642685
-    mean fractal dimension     0.000755
-    radius error               0.367770
-    texture error              0.001563
-    perimeter error            0.367127
-    area error                 0.430933
-    smoothness error           0.072636
-    compactness error          0.233067
-    concavity error            0.221967
-    concave points error       0.594557
-    symmetry error             0.000646
-    fractal dimension error    0.025694
-    worst radius               0.269473
-    worst texture              1.103713
-    worst perimeter            0.299318
-    worst area                 0.378898
-    worst smoothness           1.010128
-    worst compactness          0.846686
-    worst concavity            1.043521
-    worst concave points       1.806958
-    worst symmetry             1.269111
-    worst fractal dimension    0.371414
-    dtype: float64
-
-We can go ahead and create a bar plot:
-
-.. code:: python
-
-    sel.mrmr_.sort_values(
-        ascending=False).plot.bar(figsize=(15, 4))
-    plt.title("Feature importance - MRMR")
-    plt.show()
-
-In the following image we see the feature importance or MRMR score:
-
-.. figure::  ../../images/fstatistic_mrmr.png
    :align:   center
 
 We can see the subset of features that will be removed as follows:
@@ -358,8 +286,12 @@ In the following output we see the features that were not selected:
 .. code:: python
 
     ['mean radius',
-     'mean perimeter',
+     'mean texture',
      'mean area',
+     'mean smoothness',
+     'mean compactness',
+     'mean concavity',
+     'mean symmetry',
      'mean fractal dimension',
      'radius error',
      'texture error',
@@ -368,11 +300,14 @@ In the following output we see the features that were not selected:
      'smoothness error',
      'compactness error',
      'concavity error',
+     'concave points error',
      'symmetry error',
      'fractal dimension error',
-     'worst radius',
-     'worst perimeter',
-     'worst area',
+     'worst texture',
+     'worst smoothness',
+     'worst compactness',
+     'worst concavity',
+     'worst symmetry',
      'worst fractal dimension']
 
 Finally, we can go ahead and retain the selected features like this:
@@ -386,35 +321,26 @@ In the following output we see the test set with a reduced number of features:
 
 .. code:: python
 
-         mean texture  mean smoothness  mean compactness  mean concavity  \
-    512         20.52          0.11060           0.14690         0.14450
-    457         25.25          0.08791           0.05205         0.02772
-    439         15.66          0.07966           0.05581         0.02087
-    298         18.17          0.06576           0.05220         0.02475
-    37          18.42          0.08983           0.03766         0.02562
+         mean perimeter  mean concave points  worst radius  worst perimeter  \
+    512           88.64              0.08172         16.41           113.30
+    457           84.10              0.02068         14.35            91.29
+    439           89.59              0.02652         14.91            96.53
+    298           91.22              0.01374         16.22           105.80
+    37            82.61              0.02923         13.30            84.46
 
-         mean concave points  mean symmetry  concave points error  worst texture  \
-    512              0.08172         0.2116              0.013340          29.66
-    457              0.02068         0.1619              0.006451          34.23
-    439              0.02652         0.1589              0.010760          19.31
-    298              0.01374         0.1635              0.005243          25.26
-    37               0.02923         0.1467              0.011640          22.81
+         worst area  worst concave points
+    512       844.4               0.20510
+    457       632.9               0.06005
+    439       688.9               0.08216
+    298       819.7               0.07530
+    37        545.9               0.05013
 
-         worst smoothness  worst compactness  worst concavity  \
-    512           0.15740            0.38560          0.51060
-    457           0.12890            0.10630          0.13900
-    439           0.10340            0.10170          0.06260
-    298           0.09445            0.21670          0.15650
-    37            0.09701            0.04619          0.04833
+In the final dataset we only have the "relevant features". And by relevant, we mean those
+with high association with the target, and low association with other features.
 
-         worst concave points  worst symmetry
-    512               0.20510          0.3585
-    457               0.06005          0.2444
-    439               0.08216          0.2136
-    298               0.07530          0.2636
-    37                0.05013          0.1987
-
-In the final dataset we only have the relevant features!
+Since we left the parameter `'max_features'` as `None, :class:`MRMR()` selected 20% of the
+features in the training set. The training set contained 30 features, so 6 features remain
+after applying MRMR.
 
 Using random forests
 ~~~~~~~~~~~~~~~~~~~~
@@ -423,11 +349,11 @@ When we have categorical or discrete variables, or want to examine non-linear as
 can determine the relevance using the random forests derived feature importance.
 
 :class:`MRMR()` will train a random forest using grid search over a hyperparameter grid that
-can be specified by the user. The redundancy is determined using the F-statistic from Pearson's
+can be specified by the user. The redundancy is determined using Pearson's
 correlation coefficient.
 
 In a similar way, the MRMR feature selection algorithm will compute the feature importance as the
-ratio between the random forest importance and the F-Statistic.
+ratio between the random forest importance and Pearson's correlation coefficient.
 
 Lets, set up :class:`MRMR()` to use a random forests classifier for the relevance. Note that we
 need to specify a cross-validation scheme, a performance metric, and we have the option to pass
@@ -461,28 +387,39 @@ random forests:
 .. figure::  ../../images/rfimportancemrmr.png
    :align:   center
 
-The redundancy is identical to that obtained in the previous section. So, we'll move on to
-the feature importance score:
+We can now go ahead and select relevant features using the `transform()` method.
 
 .. code:: python
 
-    sel.mrmr_.sort_values(
-        ascending=False).plot.bar(figsize=(15, 4))
-    plt.title("Feature importance - MRMR")
-    plt.show()
+    Xtr = sel.transform(X_test)
+    print(Xtr.head())
 
-In the following image we see the importance score for each feature:
+In the following output we see the test set with a reduced number of features:
 
-.. figure::  ../../images/rfmrmr.png
-   :align:   center
+.. code:: python
 
-We can now go ahead and select relevant features using the `transform()` method.
+         mean concave points  fractal dimension error  worst radius  \
+    512              0.08172                 0.004005         16.41
+    457              0.02068                 0.001828         14.35
+    439              0.02652                 0.002104         14.91
+    298              0.01374                 0.001957         16.22
+    37               0.02923                 0.001777         13.30
+
+         worst perimeter  worst area  worst concave points
+    512           113.30       844.4               0.20510
+    457            91.29       632.9               0.06005
+    439            96.53       688.9               0.08216
+    298           105.80       819.7               0.07530
+    37             84.46       545.9               0.05013
+
+In the final dataset we only have the relevant features. Again, we selected 20% of the
+features in the training set.
 
 Mutual information
 ~~~~~~~~~~~~~~~~~~
 
 If we have non-linear associations and / or categorical or discrete variables, a better
-option is to obtain the relevance and redundance utilizing mutual information.
+option is to obtain the relevance and redundancy utilizing mutual information.
 
 The mutual information is calculated differently for numerical and categorical variables,
 so it is best to flag discrete features with a boolean array.
@@ -499,7 +436,7 @@ treat 3 variables as discrete. Let's load the data:
 
     print(X.head())
 
-In the following output we see the first 5 rows of the dataset:
+In the following output, we see the first 5 rows of the dataset:
 
 .. code:: python
 
@@ -518,8 +455,8 @@ In the following output we see the first 5 rows of the dataset:
     4    -122.25
 
 
-Now, we'll set up :class:`MRMR()` to use mutual information to determine redundace and relevance,
-and the importance score as the ratio of the two. Note the boolean vector with `True` in the
+Now, we'll set up :class:`MRMR()` to use mutual information to determine both redundancy and relevance,
+and the importance score as the ratio between the two. Note the boolean vector with `True` in the
 position of the categorical variables  'AveRooms', 'AveBedrms' and 'AveOccup':
 
 .. code:: python
@@ -527,6 +464,7 @@ position of the categorical variables  'AveRooms', 'AveBedrms' and 'AveOccup':
     sel = MRMR(
         variables = ['MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population', 'AveOccup'],
         method="MIQ",
+        max_features=4,
         discrete_features=[False, False, True, True, False, True],
         regression=True,
         random_state=42,
@@ -534,21 +472,7 @@ position of the categorical variables  'AveRooms', 'AveBedrms' and 'AveOccup':
 
     sel.fit(X,y)
 
-    sel.mrmr_
-
-In the following output we see the feature importance:
-
-.. code:: python
-
-    MedInc        4.752725
-    HouseAge      0.894946
-    AveRooms      1.136606
-    AveBedrms     0.337142
-    Population    0.667695
-    AveOccup      1.986972
-    dtype: float64
-
-To select features we use transform():
+To select features we use `transform():
 
 .. code:: python
 
@@ -560,14 +484,14 @@ examined by MRMR are retained in the transformed dataset:
 
 .. code:: python
 
-       MedInc  AveOccup  Latitude  Longitude
-    0  8.3252         2     37.88    -122.23
-    1  8.3014         2     37.86    -122.22
-    2  7.2574         2     37.85    -122.24
-    3  5.6431         2     37.85    -122.25
-    4  3.8462         2     37.85    -122.25
+       MedInc  HouseAge  AveBedrms  AveOccup  Latitude  Longitude
+    0  8.3252      41.0          1         2     37.88    -122.23
+    1  8.3014      21.0          0         2     37.86    -122.22
+    2  7.2574      52.0          1         2     37.85    -122.24
+    3  5.6431      52.0          1         2     37.85    -122.25
+    4  3.8462      52.0          1         2     37.85    -122.25
 
-For compatibility with Scikit-learn selection transformers, :class:`MRMR()` also supports the
+For compatibility with Scikit-learn, :class:`MRMR()` also supports the
 method `get_support()`:
 
 .. code:: python
@@ -578,20 +502,15 @@ which returns the following output:
 
 .. code:: python
 
-    [True, False, False, False, False, True, True, True]
+    [True, True, False, True, False, True, True, True]
 
 
 Considerations
 --------------
 
 The maximum relevance minimum redundancy feature selection method is fast, and therefore allows
-scrutinizing fairly big datasets. Computing the F-statistic or the mutual information is, in
-general, fast. That's one of the reasons that made it gain popularity.
-
-However, features with high relevance and also high redundancy may receive lower importance
-scores than features with lower relevance and even lower redundancy. Hence, whenever possible,
-don't just look at the importance score, take a look at both relevance and redundancy as well,
-not to overlook any important variable.
+scrutinizing fairly big datasets. Computing the F-statistic is fast. That's one of the reasons
+that made it gain popularity.
 
 
 Additional resources

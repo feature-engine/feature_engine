@@ -18,6 +18,7 @@ from feature_engine.selection import (
     SelectBySingleFeaturePerformance,
     SelectByTargetMeanPerformance,
     SmartCorrelatedSelection,
+    MRMR,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 from tests.estimator_checks.init_params_triggered_functionality_checks import (
@@ -41,6 +42,7 @@ _estimators = [
     RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy", threshold=-100),
     SelectByInformationValue(bins=2),
     ProbeFeatureSelection(estimator=_logreg, scoring="accuracy"),
+    MRMR(regression=False),
 ]
 
 _multivariate_estimators = [
@@ -50,6 +52,7 @@ _multivariate_estimators = [
     SelectByShuffling(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy", threshold=-100),
+    MRMR(regression=False),
 ]
 
 _univariate_estimators = [

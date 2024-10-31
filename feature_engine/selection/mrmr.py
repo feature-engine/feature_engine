@@ -1,3 +1,5 @@
+import copy
+
 from types import GeneratorType
 from typing import List, Optional, Union
 
@@ -71,20 +73,32 @@ class MRMR(BaseSelector):
     """
     |
 
-    MRMR() selects features using the Minimum Redundancy and Maximum Relevance (MRMR)
-    framework. With MRMR, features that have a strong relationship with the target
-    variable (relevance), but weak relationship with other predictor variables
-    (redundance) get high importance scores.
+    `MRMR()` selects features using the Minimum Redundancy and Maximum Relevance (MRMR)
+    framework. With MRMR, we select features that have a strong relationship with the
+    target variable (relevance), but weak relationship with other predictor variables
+    (redundance).
 
-    Relevance is determined by calculating the mutual information or the correlation
-    between predictors and target, or alternatively as the random forest derived
-    feature importance.
+    Relevance is determined by calculating the mutual information or the F-statistic
+    (from ANOVA or correlation) between each predictor and target. The relevance can
+    also be determined as the random forest derived feature importance.
 
-    Redundancy is calculated as the mean correlation or mean mutual information to the
-    remaining predictor variables.
+    Redundancy is calculated as the mean correlation or mean mutual information of each
+    feature to other predictor variables.
 
-    The importance score, called MRMR, is given by the difference or the ratio between
+    An importance score is then calculated as the difference or the ratio between
     relevance and redundance.
+
+    MRMR is an iterative algorithm. It first determines the relevance of all features
+    and selects the one whose value is the highest.
+
+    In the second round, it determines the redundance of all features respect to the
+    selected one, calculates the importance score, and selects the one with the highest
+    value.
+
+    After that, it repeats the procedure from the second step, this time taking the
+    average redundance of the remaining features to those already selected.
+
+    Relevance and Redundance values can be combined as follows:
 
     |
 
@@ -95,31 +109,27 @@ class MRMR(BaseSelector):
         'MIQ', Mutual information, Mutual information, Ratio,
         'FCD', F-Statistic, Correlation, Difference,
         'FCQ', F-Statistic, Correlation, Ratio,
-        'FCQ', Mutual information, Correlation, Ratio,
+        'RFCQ', Random Forests, Correlation, Ratio,
 
 
     |
 
-    The F-statistic is the t value derived from Pearson's correlation coefficient,
-    which follows a known t-student's distribution. Hence, it is suitable for
-    continuous predictors. For datasets with discrete or categorical variables, the
-    other methods are better suited. If using the mutual information, consider flagging
-    the discrete and categorical variables with a boolean array in `discrete_features`.
-
-    After calculating the MRMR score, MRMR() selects the features whose importance is
-    greater than the indicated threshold. If the threshold is left to None, it selects
-    features with performance greater than the mean importance of all features.
 
     More details in the :ref:`User Guide <mrmr>`.
 
     Parameters
     ----------
     variables: list, default=None
-        The list of variables to evaluate. If None, the transformer will evaluate all
+        The list of variables to evaluate. If `None, the transformer will evaluate all
         numerical variables in the dataset.
 
     method: str, default = 'MIQ'
-        How to estimate the MRMR value. Check table above for more details.
+        How to estimate the relevance, redundance and relation between the two. Check
+        table above for more details.
+
+    max_features: int, default = None
+        The number of features to select. If `None`, it defaults to 20% of the features
+        seen during `fit()`.
 
     discrete_features: bool, str, array, default='auto'
         If bool, then determines whether to consider all features discrete or
@@ -136,17 +146,14 @@ class MRMR(BaseSelector):
 
     {scoring}
 
-    threshold: int, float, default=None
-        The minimum importance the variable should have to be retained. If None, the
-        threshold becomes the mean of all features importances.
-
     {cv}
 
     param_grid: dictionary, default=None
         The hyperparameters to optimize for the random forest through a grid search.
         `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
         RandomForestRegressor() or RandomForestClassifier(). If None, then param_grid
-        will optimize the 'max_depth' over `[1, 2, 3, 4]`.
+        will optimize the 'max_depth' over `[1, 2, 3, 4]`. Only used when `method` is
+        `'RFCQ'`.
 
     regression: boolean, default=True
         Indicates whether the target is one for regression or a classification.
@@ -172,14 +179,6 @@ class MRMR(BaseSelector):
     relevance_:
         Array with the mutual information, f-statistic or random forest derived
         importance for each feature respect to the target.
-
-    redundance_:
-        Array with the mean of the mutual information or correlation (F-statistic) of
-        each feature respect to all other predictors.
-
-    mrmr_:
-        Series with the difference or ratio between the relevance and redundance
-        for each feature.
 
     {features_to_drop_}
 
@@ -225,12 +224,12 @@ class MRMR(BaseSelector):
         self,
         variables: Variables = None,
         method: str = "MIQ",
+        max_features: Optional[int] = None,
         discrete_features="auto",
         n_neighbors=3,
         scoring: str = "roc_auc",
         cv=3,
         param_grid: Optional[dict] = None,
-        threshold: Union[int, float, None] = None,
         regression: bool = False,
         confirm_variables: bool = False,
         random_state: Optional[int] = None,
@@ -249,10 +248,22 @@ class MRMR(BaseSelector):
                 f"Got {method} instead."
             )
 
-        if threshold is not None and not isinstance(threshold, (int, float)):
+        if max_features is not None and not (
+            isinstance(max_features, int) and max_features > 0
+        ):
             raise ValueError(
-                "threshold can only take integer or float. " f"Got {threshold} instead."
+                "max_features must be an integer with the number of features to "
+                f"select. Got {max_features} instead."
             )
+
+        if variables is not None and max_features is not None:
+            if max_features >= len(variables):
+                raise ValueError(
+                    f"The number of variables to examine is {len(variables)}, which is "
+                    "less than or equal to the number of features to select indicated "
+                    f"in `max_features`, which is {max_features}. Please check the "
+                    "values entered in the parameters `variables`and `max_features`."
+                )
 
         if (
             regression is True
@@ -279,12 +290,12 @@ class MRMR(BaseSelector):
         super().__init__(confirm_variables)
         self.variables = _check_variables_input_value(variables)
         self.method = method
+        self.max_features = max_features
         self.discrete_features = discrete_features
         self.n_neighbors = n_neighbors
         self.scoring = scoring
         self.cv = cv
         self.param_grid = param_grid
-        self.threshold = threshold
         self.regression = regression
         self.random_state = random_state
         self.n_jobs = n_jobs
@@ -313,31 +324,61 @@ class MRMR(BaseSelector):
             else:
                 self.variables_ = check_numerical_variables(X, self.variables)
 
-        if len(self.variables_) == 1 and self.threshold is None:
-            raise ValueError(
-                "When evaluating a single feature you need to manually set a value "
-                "for the threshold. "
-                f"The transformer is evaluating the performance of {self.variables_} "
-                f"and the threshold was left to {self.threshold} when initializing "
-                f"the transformer."
-            )
+        # check that there are more than 1 variable to select from
+        self._check_variable_number()
 
         # save input features
         self._get_feature_names_in(X)
 
+        # start the search
         self.relevance_ = self._calculate_relevance(X[self.variables_], y)
-        self.redundance_ = self._calculate_redundance(X[self.variables_])
-        self.mrmr_ = self._calculate_mrmr(X[self.variables_])
 
-        # select features
-        if self.threshold is None:
-            threshold = np.mean(self.mrmr_)
+        # select most relevant feature
+        relevance = self.relevance_
+        n = relevance.argmax()  # most relevant feature
+        relevance = np.delete(relevance, n)
+
+        remaining = copy.deepcopy(self.variables_)  # all variables to examine
+        feature = remaining[n]  # most important feature so far
+        selected = [feature]  # selected feature so far
+        remaining.remove(feature)  # remaining features to examine
+
+        # calculate redundance
+        redundance = self._calculate_redundance(X[remaining], X[feature])
+
+        # find feature with highest mrmr
+        mrmr = self._calculate_mrmr(relevance, redundance)
+
+        if self.max_features is None:
+            iter = int(0.2 * len(self.variables_)) - 2
         else:
-            threshold = self.threshold
+            iter = self.max_features - 2
 
-        self.features_to_drop_ = [
-            f for f in self.variables_ if self.mrmr_[f] < threshold
-        ]
+        for i in range(iter):
+            # find feature with maximum relevance and minimum redundancy
+            n = mrmr.argmax()
+
+            # adjust feature lists
+            feature = remaining[n]
+            selected.append(feature)
+            remaining.remove(feature)
+
+            relevance = np.delete(relevance, n)
+            if i == 0:
+                redundance = np.delete(redundance, n)
+            else:
+                redundance = np.delete(redundance, n, axis=1)
+
+            new_redundance = self._calculate_redundance(X[remaining], X[feature])
+            redundance = np.vstack([redundance, new_redundance])
+            mean_redundance = redundance.mean(axis=0)
+
+            mrmr = self._calculate_mrmr(relevance, mean_redundance)
+
+        n = mrmr.argmax()
+        selected.append(remaining[n])
+
+        self.features_to_drop_ = [f for f in self.variables_ if f not in selected]
 
         return self
 
@@ -398,108 +439,29 @@ class MRMR(BaseSelector):
 
         return relevance
 
-    def _calculate_redundance(self, X):
-
-        redundance = []
+    def _calculate_redundance(self, X, y):
 
         if self.method in ["FCD", "FCQ", "RFCQ"]:
-
-            for feature in X.columns:
-                f = f_regression(X.drop(feature, axis=1), X[feature])
-                red = np.mean(f[0])
-                redundance.append(red)
+            redundance = X.corrwith(y).values
+            redundance = np.absolute(redundance)
 
         else:
-            # when discrete features is True or False or the string auto
-            if isinstance(self.discrete_features, str) or isinstance(
-                self.discrete_features, bool
-            ):
-                for feature in X.columns:
-                    red = np.mean(
-                        mutual_info_regression(
-                            X=X.drop(feature, axis=1),
-                            y=X[feature],
-                            discrete_features=self.discrete_features,
-                            n_neighbors=self.n_neighbors,
-                            random_state=self.random_state,
-                            n_jobs=self.n_jobs,
-                        )
-                    )
-                    redundance.append(red)
+            redundance = mutual_info_regression(
+                X=X,
+                y=y,
+                n_neighbors=self.n_neighbors,
+                random_state=self.random_state,
+                n_jobs=self.n_jobs,
+            )
 
-            # when discrete features is a list of Trues and Falses
-            elif isinstance(self.discrete_features, list):
-                for index, feature in enumerate(X.columns):
-                    discrete_features = self.discrete_features.copy()
-                    discrete_feature_names = [
-                        f for i, f in enumerate(X.columns) if discrete_features[i]
-                    ]
-                    discrete_features.pop(index)
-                    if feature in discrete_feature_names:
-                        red = np.mean(
-                            mutual_info_classif(
-                                X=X.drop(feature, axis=1),
-                                y=X[feature],
-                                discrete_features=discrete_features,
-                                n_neighbors=self.n_neighbors,
-                                random_state=self.random_state,
-                                n_jobs=self.n_jobs,
-                            )
-                        )
+        return redundance
 
-                    else:
-                        red = np.mean(
-                            mutual_info_regression(
-                                X=X.drop(feature, axis=1),
-                                y=X[feature],
-                                discrete_features=discrete_features,
-                                n_neighbors=self.n_neighbors,
-                                random_state=self.random_state,
-                                n_jobs=self.n_jobs,
-                            )
-                        )
-                    redundance.append(red)
-
-            # when discrete features is an array of Trues and Falses
-            else:
-                for index, feature in enumerate(X.columns):
-                    discrete_feature_names = [
-                        f for i, f in enumerate(X.columns) if self.discrete_features[i]
-                    ]
-                    discrete_features = np.delete(self.discrete_features, index)
-                    if feature in discrete_feature_names:
-                        red = np.mean(
-                            mutual_info_classif(
-                                X=X.drop(feature, axis=1),
-                                y=X[feature],
-                                discrete_features=discrete_features,
-                                n_neighbors=self.n_neighbors,
-                                random_state=self.random_state,
-                                n_jobs=self.n_jobs,
-                            )
-                        )
-                    else:
-                        red = np.mean(
-                            mutual_info_regression(
-                                X=X.drop(feature, axis=1),
-                                y=X[feature],
-                                discrete_features=discrete_features,
-                                n_neighbors=self.n_neighbors,
-                                random_state=self.random_state,
-                                n_jobs=self.n_jobs,
-                            )
-                        )
-                    redundance.append(red)
-
-        return np.array(redundance)
-
-    def _calculate_mrmr(self, X):
+    def _calculate_mrmr(self, relevance, redundance):
         if self.method in ["MID", "FCD"]:
-            mrmr = self.relevance_ - self.redundance_
+            mrmr = relevance - redundance
         else:
-            mrmr = self.relevance_ / self.redundance_
-
-        return pd.Series(mrmr, index=X.columns)
+            mrmr = relevance / redundance
+        return mrmr
 
     def _more_tags(self):
         tags_dict = _return_tags()
@@ -509,5 +471,6 @@ class MRMR(BaseSelector):
 
         msg = "transformers need more than 1 feature to work"
         tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
+        tags_dict["_xfail_checks"]["check_fit2d_1sample"] = msg
 
         return tags_dict
