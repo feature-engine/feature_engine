@@ -446,7 +446,7 @@ check out our online courses:
 .. figure::  ../../../images/fwml.png
    :width: 300
    :figclass: align-center
-   :align: right
+   :align: left
    :target: https://www.courses.trainindata.com/p/forecasting-with-machine-learning
 
    Forecasting with Machine Learning
@@ -461,6 +461,17 @@ check out our online courses:
 |
 |
 |
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
 
 Our courses are suitable for beginners and more advanced data scientists looking to
 forecast time series using traditional machine learning models, like linear regression
