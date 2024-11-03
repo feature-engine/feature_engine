@@ -1,6 +1,55 @@
 Version 1.8.X
 =============
 
+Version 1.8.2
+-------------
+
+Deployed: 2nd Nov 2024
+
+Contributors
+~~~~~~~~~~~~
+
+- `Vasco Schiavo <https://github.com/VascoSch92>`_
+- `Gurjinder Kaur <https://github.com/gurjinderbassi>`_
+- `Michael Russell <https://github.com/michaelrussell4>`_
+- `JCCalvoJackson <https://github.com/jccalvojackson>`_
+- `Soledad Galli <https://github.com/solegalli>`_
+
+In this release, we add 2 new transformers: A transformer to select features based on the
+MRMR (Maximum Relevance Minimum Redundancy) framework, and a transformer to implement
+mean normalization.
+
+Mean normalization is a scaling procedure not supported by Scikit-learn, so we thought we'd
+give it a go ourselves. MRMR is a feature selection method made quite popular by Uber,
+probably because it is quite fast to compute.
+
+In addition, we added some new functionality and expanded the documentation of the Forecasting features
+transformers.
+
+Thank you very much to all contributors to this release!
+
+If you value what we do, consider `sponsoring us <https://github.com/sponsors/solegalli>`_, so that we can keep
+updating Feature-engine at a fast pace.
+
+New transformers
+~~~~~~~~~~~~~~~~
+
+- `MRMR()` selects features based on the Maximum Relevance Minimum Redundancy framework (`Soledad Galli <https://github.com/solegalli>`_)
+- `MeanNormalizationScaler()` scales features using mean normalization which consists of subtracting the mean and dividing by the value range (`Vasco Schiavo <https://github.com/VascoSch92>`_)
+
+
+Code improvements
+~~~~~~~~~~~~~~~~~
+
+- Add tz aware columns to variable handling functions, useful for datetime module transformers (`JCCalvoJackson <https://github.com/jccalvojackson>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+- Expand user guide for the forecasting features transformer (`Gurjinder Kaur <https://github.com/gurjinderbassi>`_)
+- Fix parameter default value of `DecisionTreeEncoder()` (Michael Russell <https://github.com/michaelrussell4>`_)
+
+
 Version 1.8.1
 -------------
 
@@ -20,7 +69,7 @@ Contributors
 - `Soledad Galli <https://github.com/solegalli>`_
 
 In this release, we fix several bugs and future deprecation warnings from pandas and numpy.
-In addition, we expand the functionality of some feaure selection classes to return the standard
+In addition, we expand the functionality of some feature selection classes to return the standard
 deviation of the derived feature importance.
 
 We have also updated and expanded various pages of our documentation.
