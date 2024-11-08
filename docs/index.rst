@@ -157,7 +157,7 @@ Feature-engine features in the following tutorials
 - `Feature Selection for Machine Learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, Online Course.
 - `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, Online Course.
 - `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
-- `Feature Selection in Machine Learning with Python <https://leanpub.com/feature-selection-in-machine-learning>`_, book.
+- `Feature Selection in Machine Learning with Python <https://www.trainindata.com/p/feature-selection-in-machine-learning-book>`_, book.
 
 More learning resources in :ref:`**Learning Resources** <learning_resources>`.
 

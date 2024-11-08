@@ -361,7 +361,7 @@ Or read our book:
    :width: 200
    :figclass: align-center
    :align: left
-   :target: https://leanpub.com/feature-selection-in-machine-learning
+   :target: https://www.trainindata.com/p/feature-selection-in-machine-learning-book
 
    Feature Selection in Machine Learning
 

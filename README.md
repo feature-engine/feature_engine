@@ -30,7 +30,7 @@ transforming parameters from the data and then transform it.
 
 * [Python Feature Engineering Cookbook](https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587)
 
-* [Feature Selection in Machine Learning Book](https://leanpub.com/feature-selection-in-machine-learning)
+* [Feature Selection in Machine Learning Book](https://www.trainindata.com/p/feature-selection-in-machine-learning-book)
 
 
 ## Blogs about Feature-engine
