@@ -300,18 +300,21 @@ class SmartCorrelatedSelection(BaseSelector):
                 X[self.variables_]
                 .isnull()
                 .sum()
-                .sort_values(ascending=True)
+                .sort_values(ascending=True, kind="mergesort")
                 .index.to_list()
             )
         elif self.selection_method == "variance":
             features = (
-                X[self.variables_].std().sort_values(ascending=False).index.to_list()
+                X[self.variables_]
+                .std()
+                .sort_values(ascending=False, kind="mergesort")
+                .index.to_list()
             )
         elif self.selection_method == "cardinality":
             features = (
                 X[self.variables_]
                 .nunique()
-                .sort_values(ascending=False)
+                .sort_values(ascending=False, kind="mergesort")
                 .index.to_list()
             )
         else:
@@ -337,9 +340,11 @@ class SmartCorrelatedSelection(BaseSelector):
                 )
                 # get most important feature
                 f_i = (
-                    pd.Series(feature_performance).sort_values(ascending=False).index[0]
+                    pd.Series(feature_performance)
+                    .sort_values(ascending=False, kind="mergesort")
+                    .index[0]
                 )
-                correlated_dict[f_i] = feature_group.difference({f_i})
+                correlated_dict[f_i] = {feat for feat in feature_group if feat != f_i}
 
             # convoluted way to pick up the variables from the sets in the
             # order shown in the dictionary. Helps make transformer deterministic
