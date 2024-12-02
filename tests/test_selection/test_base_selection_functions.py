@@ -110,7 +110,7 @@ def test_find_correlated_features():
 
     assert groups == [["b", "c", "d"]]
     assert drop == ["c", "d"]
-    assert dict_ == {"b": ["c", "d"]}
+    assert dict_ == {"b": {"c", "d"}}
 
     groups, drop, dict_ = find_correlated_features(
         X, variables=["a", "c", "b", "d"], method="pearson", threshold=0.7
@@ -118,7 +118,7 @@ def test_find_correlated_features():
 
     assert groups == [["c", "b"]]
     assert drop == ["b"]
-    assert dict_ == {"c": ["b"]}
+    assert dict_ == {"c": {"b"}}
 
 
 def test_single_feature_performance(df_test):
