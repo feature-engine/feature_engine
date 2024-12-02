@@ -91,7 +91,9 @@ def find_correlated_features(
     method: str,
     threshold: float,
 ) -> tuple[
-    list[list[Union[str, int]]], list[Union[str, int]], dict[Union[str, int], list[Union[str, int]]]
+    list[list[Union[str, int]]],
+    list[Union[str, int]],
+    dict[Union[str, int], set[Union[str, int]]],
 ]:
     """
     Find groups of correlated variables.

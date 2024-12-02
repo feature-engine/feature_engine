@@ -215,11 +215,12 @@ def test_model_performance_2_correlated_groups(df_test):
 
 
 def test_model_performance_single_corr_group_duplicated_features(df_single):
-    """Test selector consistency in case of very similar columns (in this case duplicated).
+    """Test selector consistency in case of very similar columns (e.g. duplicated).
 
-    This test checks that in case of columns with the same values for the selection method (for
-    example same model performance), the transformer consistently drops the feature that is
-    is alphabetically bigger instead of selecting one of the two columns randomly.
+    This test checks that in case of columns with the same values for the selection
+    method (for example same model performance), the transformer consistently drops the
+    feature that is is alphabetically bigger instead of selecting one of the two columns
+    randomly.
     """
 
     X, y = df_single
