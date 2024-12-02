@@ -158,7 +158,7 @@ def find_correlated_features(
                             temp_set.append(f_j)
             if len(temp_set) > 1:
                 correlated_groups.append(temp_set)
-                correlated_dict[f_i] = [feat for feat in temp_set if feat != f_i]
+                correlated_dict[f_i] = set(temp_set).difference({f_i})
 
     return correlated_groups, features_to_drop, correlated_dict
 

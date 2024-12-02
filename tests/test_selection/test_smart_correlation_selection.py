@@ -167,9 +167,9 @@ def test_model_performance_single_corr_group(df_single):
     assert transformer.cv == 3
 
     # test fit attrs
-    assert transformer.correlated_feature_sets_ == [["var_1", "var_2"]]
+    assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
     assert transformer.features_to_drop_ == ["var_1"]
-    assert transformer.correlated_feature_dict_ == {'var_2': {'var_1'}}
+    assert transformer.correlated_feature_dict_ == {"var_2": {"var_1"}}
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
 
@@ -197,8 +197,8 @@ def test_model_performance_2_correlated_groups(df_test):
 
     # test fit attrs
     assert transformer.correlated_feature_sets_ == [
-        ["var_0", "var_8"],
-        ["var_4", "var_6", "var_7", "var_9"],
+        {"var_0", "var_8"},
+        {"var_4", "var_6", "var_7", "var_9"},
     ]
     assert transformer.features_to_drop_ == [
         "var_8",
@@ -276,8 +276,8 @@ def test_selection_method_variance(df_var_car):
 
     assert transformer.features_to_drop_ == ["var_e", "var_b"]
     assert transformer.correlated_feature_dict_ == {
-        "var_f": ["var_e"],
-        "var_c": ["var_b"],
+        "var_f": {"var_e"},
+        "var_c": {"var_b"},
     }
     # test transform output
     pd.testing.assert_frame_equal(Xt, X.drop(["var_e", "var_b"], axis=1))
@@ -307,8 +307,8 @@ def test_selection_method_cardinality(df_var_car):
 
     assert transformer.features_to_drop_ == ["var_c", "var_d", "var_f"]
     assert transformer.correlated_feature_dict_ == {
-        "var_b": ["var_c", "var_d"],
-        "var_e": ["var_f"],
+        "var_b": {"var_c", "var_d"},
+        "var_e": {"var_f"},
     }
     # test transform output
     pd.testing.assert_frame_equal(Xt, X.drop(["var_c", "var_d", "var_f"], axis=1))
@@ -338,8 +338,8 @@ def test_selection_method_missing_values(df_nan):
 
     assert transformer.features_to_drop_ == ["var_b", "var_e"]
     assert transformer.correlated_feature_dict_ == {
-        "var_c": ["var_b"],
-        "var_f": ["var_e"],
+        "var_c": {"var_b"},
+        "var_f": {"var_e"},
     }
     # test transform output
     pd.testing.assert_frame_equal(Xt, X.drop(["var_b", "var_e"], axis=1))
