@@ -251,6 +251,7 @@ def test_error_if_select_model_performance_and_y_is_none(df_single):
         transformer.fit(X)
     assert record.value.args[0] == msg
 
+
 def test_error_if_select_corr_with_target_and_y_is_none(df_single):
     X, _ = df_single
 
@@ -450,7 +451,7 @@ def test_smart_correlation_selection_with_groups(df_test_with_groups):
     pd.testing.assert_frame_equal(X_tr_expected, X_tr)
 
 
-def test_model_performance_single_corr_group(df_single):
+def test_corr_with_target_single_corr_group(df_single):
     X, y = df_single
 
     transformer = SmartCorrelatedSelection(
