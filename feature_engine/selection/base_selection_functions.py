@@ -156,8 +156,7 @@ def find_correlated_features(
                     if correlated_mask[i, j] == 1:
                         examined.add(f_j)
                         features_to_drop.append(f_j)
-                        if f_j not in temp_set:
-                            temp_set.append(f_j)
+                        temp_set.append(f_j)
             if len(temp_set) > 1:
                 correlated_groups.append(temp_set)
                 correlated_dict[f_i] = set(temp_set).difference({f_i})
