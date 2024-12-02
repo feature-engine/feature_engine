@@ -10,6 +10,7 @@ from .ordinal import OrdinalEncoder
 from .rare_label import RareLabelEncoder
 from .similarity_encoder import StringSimilarityEncoder
 from .woe import WoEEncoder
+from .pandas_categorical import PandasCategoricalEncoder
 
 __all__ = [
     "CountFrequencyEncoder",
@@ -20,4 +21,5 @@ __all__ = [
     "RareLabelEncoder",
     "StringSimilarityEncoder",
     "WoEEncoder",
+    "PandasCategoricalEncoder",
 ]
