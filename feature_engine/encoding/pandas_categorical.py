@@ -28,7 +28,8 @@ from feature_engine.encoding.base_encoder import (
     CategoricalMethodsMixin,
 )
 from feature_engine.dataframe_checks import (
-    _check_optional_contains_na,)
+    _check_optional_contains_na,
+)
 
 
 @Substitution(
@@ -156,9 +157,12 @@ class PandasCategoricalEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
 
         self.encoder_dict_ = {}
         for feature in variables_:
-            self.encoder_dict_[feature] = sorted(
-                [val for val in X[feature].unique() if pd.notnull(val)]
-            )
+            self.encoder_dict_[feature] = {
+                category: index
+                for index, category in enumerate(
+                    sorted([val for val in X[feature].unique() if pd.notnull(val)])
+                )
+            }
 
         if self.unseen == "encode":
             self._unseen = -1
@@ -184,12 +188,39 @@ class PandasCategoricalEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
         if self.missing_values == "raise":
             _check_optional_contains_na(X, self.variables_)
 
-        for feature in self.encoder_dict_.keys():
+        for feature in self.variables:
             X[feature] = pd.Categorical(
-                X[feature], categories=self.encoder_dict_[feature]
+                X[feature],
+                # categories are sorted to ensure consistency between train and test set
+                categories=sorted(
+                    self.encoder_dict_[feature], key=self.encoder_dict_[feature].get
+                ),
             )
 
         if self.unseen == "raise":
             self._check_nan_values_after_transformation(X)
+
+        return X
+
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Convert the encoded variable back to the original values.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features].
+            The transformed dataframe.
+
+        Returns
+        -------
+        X_tr: pandas dataframe of shape = [n_samples, n_features].
+            The un-transformed dataframe, with the categorical variables containing the
+            original values.
+        """
+        X = self._check_transform_input_and_state(X)
+
+        # replace encoded categories by the original values
+        for feature in self.encoder_dict_.keys():
+            inv_map = {v: k for k, v in self.encoder_dict_[feature].items()}
+            X[feature] = X[feature].cat.codes.map(inv_map)
 
         return X
