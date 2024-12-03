@@ -188,7 +188,7 @@ class PandasCategoricalEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
         if self.missing_values == "raise":
             _check_optional_contains_na(X, self.variables_)
 
-        for feature in self.variables:
+        for feature in self.variables_:
             X[feature] = pd.Categorical(
                 X[feature],
                 # categories are sorted to ensure consistency between train and test set
@@ -197,8 +197,7 @@ class PandasCategoricalEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
                 ),
             )
 
-        if self.unseen == "raise":
-            self._check_nan_values_after_transformation(X)
+        self._check_nan_values_after_transformation(X)
 
         return X
 
