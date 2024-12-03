@@ -156,12 +156,14 @@ class PandasCategoricalEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
         self._check_na(X, variables_)
 
         self.encoder_dict_ = {}
+        self.ordered_categories_ = {}
         for feature in variables_:
+            self.ordered_categories_[feature] = sorted(
+                [val for val in X[feature].unique() if pd.notnull(val)]
+            )
             self.encoder_dict_[feature] = {
                 category: index
-                for index, category in enumerate(
-                    sorted([val for val in X[feature].unique() if pd.notnull(val)])
-                )
+                for index, category in enumerate(self.ordered_categories_[feature])
             }
 
         if self.unseen == "encode":
@@ -180,8 +182,8 @@ class PandasCategoricalEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
             X (pd.DataFrame): The input DataFrame.
 
         Returns:
-            pd.DataFrame: The transformed DataFrame with specified columns converted to categorical
-                dtype.
+            pd.DataFrame: The transformed DataFrame with specified columns converted to
+            categorical dtype.
         """
         X = self._check_transform_input_and_state(X)
         # check if dataset contains na
@@ -192,9 +194,7 @@ class PandasCategoricalEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
             X[feature] = pd.Categorical(
                 X[feature],
                 # categories are sorted to ensure consistency between train and test set
-                categories=sorted(
-                    self.encoder_dict_[feature], key=self.encoder_dict_[feature].get
-                ),
+                categories=self.ordered_categories_[feature],
             )
 
         self._check_nan_values_after_transformation(X)
