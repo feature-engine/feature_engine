@@ -22,7 +22,7 @@ from feature_engine.variable_handling import (
 )
 
 
-class BaseCreation(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
+class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """Shared set-up, checks and methods across creation transformers."""
 
     def __init__(
@@ -128,3 +128,7 @@ class BaseCreation(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         ] = "this transformer works with datasets that contain at least 2 variables. \
         Otherwise, there is nothing to combine"
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

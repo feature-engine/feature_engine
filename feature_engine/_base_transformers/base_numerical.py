@@ -22,7 +22,7 @@ from feature_engine.variable_handling import (
 
 
 class BaseNumericalTransformer(
-    BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin
+    TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin
 ):
     """Shared set-up procedures across numerical transformers, i.e.,
     variable transformers, discretisers, math combination.
@@ -122,3 +122,7 @@ class BaseNumericalTransformer(
         tags_dict = _return_tags()
         tags_dict["variables"] = "numerical"
         return tags_dict
+
+def __sklearn_tags__(self):
+    tags = super().__sklearn_tags__()
+    return tags

@@ -58,7 +58,7 @@ from feature_engine.variable_handling import (
     transform=_transform_creation_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class DecisionTreeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
+class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """
     `DecisionTreeFeatures()` adds new variables to the data that result of the output of
     decision trees trained with one or more features.
