@@ -31,7 +31,7 @@ from feature_engine.encoding.base_encoder import (
     n_features_in_=_n_features_in_docstring,
 )
 class MatchCategories(
-    CategoricalInitMixinNA, CategoricalMethodsMixin, GetFeatureNamesOutMixin
+    CategoricalMethodsMixin, CategoricalInitMixinNA, GetFeatureNamesOutMixin
 ):
     """
     MatchCategories() ensures that categorical variables are encoded as pandas

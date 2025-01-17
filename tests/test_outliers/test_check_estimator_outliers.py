@@ -8,7 +8,6 @@ from sklearn.utils.fixes import parse_version
 from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsorizer
 from feature_engine.tags import _return_tags
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
-from tests.parametrize_with_checks_discretization_v16 import EXPECTED_FAILED_CHECKS
 
 _estimators = [
     ArbitraryOutlierCapper(max_capping_dict={"x0": 10}),
