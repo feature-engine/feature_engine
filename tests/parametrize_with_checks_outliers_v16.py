@@ -1,6 +1,6 @@
 """
 File intended to help understand check_estimator tests for Feature-engine's
-encoding module. It is not run as part of the battery of acceptance tests.
+outliers module. It is not run as part of the battery of acceptance tests.
 Works from sklearn > 1.6.
 """
 

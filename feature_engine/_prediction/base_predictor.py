@@ -298,3 +298,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
     def _more_tags(self):
         return _return_tags()
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags
