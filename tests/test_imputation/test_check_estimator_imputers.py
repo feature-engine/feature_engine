@@ -1,7 +1,9 @@
 import pandas as pd
 import pytest
+import sklearn
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.fixes import parse_version
 
 from feature_engine.imputation import (
     AddMissingIndicator,
@@ -24,10 +26,37 @@ _estimators = [
     DropMissingData(),
 ]
 
+sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
-@pytest.mark.parametrize("estimator", _estimators)
-def test_check_estimator_from_sklearn(estimator):
-    return check_estimator(estimator)
+if sklearn_version < parse_version("1.6"):
+
+    @pytest.mark.parametrize("estimator", _estimators)
+    def test_check_estimator_from_sklearn(estimator):
+        return check_estimator(estimator)
+
+else:
+    mi = MeanMedianImputer()
+    ai = ArbitraryNumberImputer()
+    ci = CategoricalImputer(fill_value=0, ignore_format=True)
+    eti = EndTailImputer()
+    ami = AddMissingIndicator()
+    rsi = RandomSampleImputer()
+    dmd = DropMissingData()
+
+    @pytest.mark.parametrize(
+        "estimator, failed_tests",
+        [
+            (mi, mi._more_tags()["_xfail_checks"]),
+            (ai, ai._more_tags()["_xfail_checks"]),
+            (ci, ci._more_tags()["_xfail_checks"]),
+            (eti, eti._more_tags()["_xfail_checks"]),
+            (ami, ami._more_tags()["_xfail_checks"]),
+            (rsi, rsi._more_tags()["_xfail_checks"]),
+            (dmd, dmd._more_tags()["_xfail_checks"]),
+        ],
+    )
+    def test_check_estimator_from_sklearn(estimator, failed_tests):
+        return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
 
 
 @pytest.mark.parametrize("estimator", _estimators)
