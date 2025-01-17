@@ -208,3 +208,7 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags
