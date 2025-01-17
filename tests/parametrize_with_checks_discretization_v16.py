@@ -30,7 +30,7 @@ EXPECTED_FAILED_CHECKS = {
 }
 
 
-# creation
+# discretization
 @parametrize_with_checks(
     estimators=[dtd, efd, ewd, ad, gd],
     expected_failed_checks=lambda est: EXPECTED_FAILED_CHECKS.get(

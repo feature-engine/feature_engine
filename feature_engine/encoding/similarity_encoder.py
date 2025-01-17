@@ -38,7 +38,7 @@ _gpm_fast_vec = np.vectorize(_gpm_fast)
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class StringSimilarityEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
+class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
     """
     The StringSimilarityEncoder() replaces categorical variables with a set of float
     variables that capture the similarity between the category names. The new variables

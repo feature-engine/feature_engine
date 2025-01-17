@@ -94,7 +94,7 @@ class WoE:
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class WoEEncoder(CategoricalInitMixin, CategoricalMethodsMixin, WoE):
+class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
     """
     The WoEEncoder() replaces categories by the weight of evidence
     (WoE). The WoE was used primarily in the financial sector to create credit risk

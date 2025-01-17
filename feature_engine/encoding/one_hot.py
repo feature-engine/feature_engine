@@ -32,7 +32,7 @@ from feature_engine.encoding.base_encoder import (
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class OneHotEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
+class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
     """
     The OneHotEncoder() replaces categorical variables by a set of binary variables
     representing each one of the unique categories in the variable.

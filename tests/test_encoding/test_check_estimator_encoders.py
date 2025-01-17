@@ -1,10 +1,12 @@
 import pandas as pd
 import pytest
+import sklearn
 from numpy import nan
 from sklearn import clone
 from sklearn.exceptions import NotFittedError
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.fixes import parse_version
 
 from feature_engine.encoding import (
     CountFrequencyEncoder,
@@ -16,10 +18,13 @@ from feature_engine.encoding import (
     StringSimilarityEncoder,
     WoEEncoder,
 )
+from feature_engine.tags import _return_tags
 from tests.estimator_checks.estimator_checks import (
     check_feature_engine_estimator,
     test_df,
 )
+
+sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
 _estimators = [
     CountFrequencyEncoder(ignore_format=True),
@@ -39,9 +44,41 @@ _estimators = [
 ]
 
 
-@pytest.mark.parametrize("estimator", _estimators)
-def test_check_estimator_from_sklearn(estimator):
-    return check_estimator(estimator)
+if sklearn_version < parse_version("1.6"):
+
+    @pytest.mark.parametrize("estimator", _estimators)
+    def test_check_estimator_from_sklearn(estimator):
+        return check_estimator(estimator)
+
+else:
+    ce = CountFrequencyEncoder(ignore_format=True)
+    me = MeanEncoder(ignore_format=True)
+    ohe = OneHotEncoder(ignore_format=True)
+    oe = OrdinalEncoder(ignore_format=True)
+    re = RareLabelEncoder(
+        tol=0.00000000001,
+        n_categories=100000000000,
+        replace_with=10,
+        ignore_format=True,
+    )
+    woe = WoEEncoder(ignore_format=True)
+    sse = StringSimilarityEncoder(ignore_format=True)
+
+    expected_fails = _return_tags()["_xfail_checks"]
+    expected_fails.update({"check_estimators_nan_inf": "transformer allows NA"})
+
+    @pytest.mark.parametrize(
+        "estimator, failed_tests",
+        [
+            (ce, expected_fails),
+            (me, expected_fails),
+            (ohe, expected_fails),
+            (oe, expected_fails),
+            (re, expected_fails),
+        ],
+    )
+    def test_check_estimator_from_sklearn(estimator, failed_tests):
+        return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
 
 
 _estimators = [
