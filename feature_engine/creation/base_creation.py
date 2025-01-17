@@ -21,6 +21,10 @@ from feature_engine.variable_handling import (
     find_numerical_variables,
 )
 
+try:
+    from sklearn.utils import Tags as _sklearn_Tags
+except ImportError:
+    _sklearn_Tags = object
 
 class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """Shared set-up, checks and methods across creation transformers."""
@@ -131,4 +135,5 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = True
         return tags

@@ -1,7 +1,12 @@
 import pandas as pd
+import sklearn
 import pytest
+
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.fixes import parse_version
+
+sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
 from feature_engine.creation import (
     CyclicalFeatures,
@@ -11,20 +16,27 @@ from feature_engine.creation import (
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
-_estimators = [
-    MathFeatures(variables=["x0", "x1"], func="mean", missing_values="ignore"),
-    RelativeFeatures(
-        variables=["x0", "x1"], reference=["x0"], func=["add"], missing_values="ignore"
-    ),
-    CyclicalFeatures(),
-    DecisionTreeFeatures(regression=False),
-]
+mf = MathFeatures(variables=["x0", "x1"], func="mean", missing_values="ignore")
+rf = RelativeFeatures(
+    variables=["x0", "x1"], reference=["x0"], func=["add"], missing_values="ignore"
+)
+cf = CyclicalFeatures()
+dtf = DecisionTreeFeatures(regression=False)
 
+if sklearn_version > parse_version("1.6"):
+    @pytest.mark.parametrize("estimator, failed_tests", [
+        (mf, mf._more_tags()['_xfail_checks']),
+        (rf, rf._more_tags()['_xfail_checks']),
+        (dtf, dtf._more_tags()['_xfail_checks']),
+        (cf, cf._more_tags()['_xfail_checks']),
+    ])
+    def test_check_estimator_from_sklearn(estimator, failed_tests):
+        return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
 
-# @pytest.mark.parametrize("estimator", _estimators)
-# def test_check_estimator_from_sklearn(estimator):
-#     return check_estimator(estimator, expected_failed_checks=estimator._more_tags()['_xfail_checks'])
-
+else:
+    @pytest.mark.parametrize("estimator", [mf, rf, cf, dtf])
+    def test_check_estimator_from_sklearn(estimator):
+        return check_estimator(estimator)
 
 _estimators = [
     MathFeatures(variables=["var_1", "var_2", "var_3"], func="mean"),
