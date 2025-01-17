@@ -1,6 +1,7 @@
 """
 This file is only intended to help understand check_estimator tests on Feature-engine
-transformers. It is not run as part of the battery of acceptance tests.
+transformers. It is not run as part of the battery of acceptance tests. Works up to
+sklearn < 1.6.
 """
 
 from sklearn.impute import SimpleImputer

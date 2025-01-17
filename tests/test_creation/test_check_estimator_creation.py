@@ -1,7 +1,6 @@
 import pandas as pd
-import sklearn
 import pytest
-
+import sklearn
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.fixes import parse_version
@@ -24,19 +23,25 @@ cf = CyclicalFeatures()
 dtf = DecisionTreeFeatures(regression=False)
 
 if sklearn_version > parse_version("1.6"):
-    @pytest.mark.parametrize("estimator, failed_tests", [
-        (mf, mf._more_tags()['_xfail_checks']),
-        (rf, rf._more_tags()['_xfail_checks']),
-        (dtf, dtf._more_tags()['_xfail_checks']),
-        (cf, cf._more_tags()['_xfail_checks']),
-    ])
+
+    @pytest.mark.parametrize(
+        "estimator, failed_tests",
+        [
+            (mf, mf._more_tags()["_xfail_checks"]),
+            (rf, rf._more_tags()["_xfail_checks"]),
+            (dtf, dtf._more_tags()["_xfail_checks"]),
+            (cf, cf._more_tags()["_xfail_checks"]),
+        ],
+    )
     def test_check_estimator_from_sklearn(estimator, failed_tests):
         return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
 
 else:
+
     @pytest.mark.parametrize("estimator", [mf, rf, cf, dtf])
     def test_check_estimator_from_sklearn(estimator):
         return check_estimator(estimator)
+
 
 _estimators = [
     MathFeatures(variables=["var_1", "var_2", "var_3"], func="mean"),
