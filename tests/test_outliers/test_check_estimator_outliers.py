@@ -1,10 +1,14 @@
 import pandas as pd
 import pytest
+import sklearn
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.fixes import parse_version
 
 from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsorizer
+from feature_engine.tags import _return_tags
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
+from tests.parametrize_with_checks_discretization_v16 import EXPECTED_FAILED_CHECKS
 
 _estimators = [
     ArbitraryOutlierCapper(max_capping_dict={"x0": 10}),
@@ -12,10 +16,46 @@ _estimators = [
     Winsorizer(),
 ]
 
+sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
-@pytest.mark.parametrize("estimator", _estimators)
-def test_check_estimator_from_sklearn(estimator):
-    return check_estimator(estimator)
+if sklearn_version < parse_version("1.6"):
+
+    @pytest.mark.parametrize("estimator", _estimators)
+    def test_check_estimator_from_sklearn(estimator):
+        return check_estimator(estimator)
+
+else:
+    aoc = ArbitraryOutlierCapper(max_capping_dict={"x0": 10})
+    ot = OutlierTrimmer()
+    wz = Winsorizer()
+
+    FAILED_CHECKS = _return_tags()["_xfail_checks"]
+    FAILED_CHECKS_AOC = _return_tags()["_xfail_checks"]
+
+    msg1 = (
+        "transformers raise errors when data variation is low, " "thus this check fails"
+    )
+
+    msg2 = "transformer has 1 mandatory parameter"
+
+    FAILED_CHECKS.update({"check_fit2d_1sample": msg1})
+    FAILED_CHECKS_AOC.update(
+        {
+            "check_fit2d_1sample": msg1,
+            "check_parameters_default_constructible": msg2,
+        }
+    )
+
+    @pytest.mark.parametrize(
+        "estimator, failed_tests",
+        [
+            (aoc, FAILED_CHECKS_AOC),
+            (ot, FAILED_CHECKS),
+            (wz, FAILED_CHECKS),
+        ],
+    )
+    def test_check_estimator_from_sklearn(estimator, failed_tests):
+        return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
 
 
 @pytest.mark.parametrize("estimator", _estimators)
