@@ -34,7 +34,8 @@ else:
     wf = WindowFeatures(missing_values="ignore")
     ewf = ExpandingWindowFeatures(missing_values="ignore")
     failing_checks = {
-        "check_estimators_nan_inf": "Forest estimators do not handle NaNs or infinity."
+        "check_estimators_nan_inf": "Time Series transformers do not handle NaNs "
+        "or infinity."
     }
 
     @pytest.mark.parametrize(
