@@ -1,9 +1,9 @@
 import pytest
+import sklearn
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OrdinalEncoder, StandardScaler
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.fixes import parse_version
-import sklearn
 
 from feature_engine.wrappers import SklearnTransformerWrapper
 from tests.estimator_checks.estimator_checks import (
@@ -15,7 +15,6 @@ from tests.estimator_checks.variable_selection_checks import (
     check_all_types_variables_assignment,
     check_numerical_variables_assignment,
 )
-
 
 sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
