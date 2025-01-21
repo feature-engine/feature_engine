@@ -21,6 +21,7 @@ from feature_engine.variable_handling import (
     find_numerical_variables,
 )
 
+
 class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """Shared set-up, checks and methods across creation transformers."""
 

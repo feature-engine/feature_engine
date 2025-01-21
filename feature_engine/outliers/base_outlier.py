@@ -101,7 +101,6 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         return tags
 
 
-
 class WinsorizerBase(BaseOutlier):
 
     _intro_docstring = """The extreme values beyond which an observation is considered
