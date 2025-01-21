@@ -26,6 +26,7 @@ _predictors = [TargetMeanRegressor(), TargetMeanClassifier()]
 if sklearn_version < parse_version("1.6"):
     # In sklearn version 1.6, changes into the developer api were introduced
     # that break the tests. Need to dig further into it.
+    # TODO: add tests for sklearn version > 1.6
     @pytest.mark.parametrize("estimator", [BaseTargetMeanEstimator()])
     def test_check_estimator_from_sklearn(estimator):
         return check_estimator(estimator)
