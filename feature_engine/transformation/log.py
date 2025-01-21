@@ -213,7 +213,6 @@ class LogTransformer(BaseNumericalTransformer):
         tags_dict["_xfail_checks"]["check_estimators_pickle"] = msg
         tags_dict["_xfail_checks"]["check_transformer_general"] = msg
 
-        tags_dict["input_tags"] = {"positive_only": True}
         return tags_dict
 
     def __sklearn_tags__(self):

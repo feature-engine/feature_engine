@@ -217,8 +217,6 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         tags_dict["_xfail_checks"]["check_methods_subset_invariance"] = msg
         tags_dict["_xfail_checks"]["check_fit2d_1sample"] = msg
 
-        tags_dict["input_tags"] = {"positive_only": True}
-
         return tags_dict
 
     def __sklearn_tags__(self):
