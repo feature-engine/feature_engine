@@ -293,4 +293,3 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
         return tags
-
