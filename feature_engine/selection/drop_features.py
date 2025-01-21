@@ -118,3 +118,8 @@ class DropFeatures(BaseSelector):
             "check_fit2d_1feature"
         ] = "the transformer raises an error when removing the only column, ok to fail"
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = True
+        return tags

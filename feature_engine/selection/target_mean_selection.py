@@ -129,7 +129,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
     {groups}
 
-    regression: boolean, default=True
+    regression: boolean, default=False
         Indicates whether the target is one for regression or a classification.
 
     {confirm_variables}
@@ -352,3 +352,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         msg = "transformers need more than 1 feature to work"
         tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags
