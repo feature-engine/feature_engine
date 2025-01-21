@@ -33,24 +33,9 @@ if sklearn_version < parse_version("1.6"):
         return check_estimator(estimator)
 
 else:
-    dtd = DecisionTreeDiscretiser(regression=False)
-    efd = EqualFrequencyDiscretiser()
-    ewd = EqualWidthDiscretiser()
-    ad = ArbitraryDiscretiser(binning_dict={"x0": [-np.inf, 0, np.inf]})
-    gd = GeometricWidthDiscretiser()
-
-    @pytest.mark.parametrize(
-        "estimator, failed_tests",
-        [
-            (dtd, dtd._more_tags()["_xfail_checks"]),
-            (efd, efd._more_tags()["_xfail_checks"]),
-            (ewd, ewd._more_tags()["_xfail_checks"]),
-            (ad, ad._more_tags()["_xfail_checks"]),
-            (gd, gd._more_tags()["_xfail_checks"]),
-        ],
-    )
-    def test_check_estimator_from_sklearn(estimator, failed_tests):
-        return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
+    @pytest.mark.parametrize("estimator", _estimators)
+    def test_check_estimator_from_sklearn(estimator):
+        return check_estimator(estimator=estimator, expected_failed_checks=estimator._more_tags()["_xfail_checks"])
 
 
 @pytest.mark.parametrize("estimator", _estimators)
