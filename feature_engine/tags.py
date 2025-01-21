@@ -38,8 +38,8 @@ def _return_tags():
         all_fail = {
             "check_do_not_raise_errors_in_init_or_set_params": msg1,
             "check_transformer_preserve_dtypes": msg2,
-            #TODO: investigate this test further.
-            "check_n_features_in_after_fitting": "not sure why it fails, we do check."
+            # TODO: investigate this test further.
+            "check_n_features_in_after_fitting": "not sure why it fails, we do check.",
         }
-        tags['_xfail_checks'].update(all_fail)  # type: ignore
+        tags["_xfail_checks"].update(all_fail)  # type: ignore
     return tags
