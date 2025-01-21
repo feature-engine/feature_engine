@@ -217,7 +217,6 @@ class LogTransformer(BaseNumericalTransformer):
 
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
-        tags.input_tags.positive_only = True
         return tags
 
 
