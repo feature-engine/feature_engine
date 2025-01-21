@@ -90,28 +90,14 @@ if sklearn_version < parse_version("1.6"):
 else:
     # In sklearn 1.6. the API changes break the tests for the target mean selector.
     # We need to investigate further.
-    est = [
-        DropFeatures(features_to_drop=["x0"]),
-        DropConstantFeatures(missing_values="ignore"),
-        DropDuplicateFeatures(),
-        DropCorrelatedFeatures(),
-        DropHighPSIFeatures(bins=5),
-        SmartCorrelatedSelection(),
-        SelectByShuffling(estimator=_logreg, scoring="accuracy"),
-        SelectBySingleFeaturePerformance(estimator=_logreg, scoring="accuracy"),
-        RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy"),
-        RecursiveFeatureElimination(
-            estimator=_logreg, scoring="accuracy", threshold=-100
-        ),
-        SelectByInformationValue(bins=2),
-        ProbeFeatureSelection(estimator=_logreg, scoring="accuracy"),
-        MRMR(regression=False),
-    ]
-
-    @pytest.mark.parametrize("estimator", est)
+    # TODO: investigate checks for target mean selector.
+    @pytest.mark.parametrize("estimator", _estimators)
     def test_check_estimator_from_sklearn(estimator):
-        failed_tests = estimator._more_tags()["_xfail_checks"]
-        return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
+        if estimator.__class__.__name__ != "SelectByTargetMeanPerformance":
+            failed_tests = estimator._more_tags()["_xfail_checks"]
+            return check_estimator(
+                estimator=estimator, expected_failed_checks=failed_tests
+            )
 
 
 @pytest.mark.parametrize("estimator", _univariate_estimators)
