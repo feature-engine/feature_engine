@@ -70,7 +70,7 @@ _INVERSE_TRANSFORM = [
 ]
 
 
-class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
+class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
     """
     Wrapper to apply Scikit-learn transformers to a selected group of variables. It
     supports the following transformers:
@@ -448,3 +448,6 @@ class SklearnTransformerWrapper(BaseEstimator, TransformerMixin):
             "check_parameters_default_constructible"
         ] = "transformer has 1 mandatory parameter"
         return tags_dict
+
+    def __sklearn_tags__(self):
+        return super().__sklearn_tags__()
