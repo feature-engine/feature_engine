@@ -206,3 +206,6 @@ class ArcsinTransformer(BaseNumericalTransformer):
         tags_dict["_xfail_checks"]["check_n_features_in"] = msg
 
         return tags_dict
+
+    def __sklearn_tags__(self):
+        return super().__sklearn_tags__()

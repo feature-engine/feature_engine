@@ -188,3 +188,6 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         tags_dict["_xfail_checks"]["check_transformer_general"] = msg
 
         return tags_dict
+
+    def __sklearn_tags__(self):
+        return super().__sklearn_tags__()
