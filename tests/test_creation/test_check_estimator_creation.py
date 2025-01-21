@@ -24,17 +24,9 @@ dtf = DecisionTreeFeatures(regression=False)
 
 if sklearn_version > parse_version("1.6"):
 
-    @pytest.mark.parametrize(
-        "estimator, failed_tests",
-        [
-            (mf, mf._more_tags()["_xfail_checks"]),
-            (rf, rf._more_tags()["_xfail_checks"]),
-            (dtf, dtf._more_tags()["_xfail_checks"]),
-            (cf, cf._more_tags()["_xfail_checks"]),
-        ],
-    )
+    @pytest.mark.parametrize("estimator", [mf, rf, cf, dtf])
     def test_check_estimator_from_sklearn(estimator, failed_tests):
-        return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
+        return check_estimator(estimator=estimator, expected_failed_checks=estimator._more_tags()["_xfail_checks"])
 
 else:
 
