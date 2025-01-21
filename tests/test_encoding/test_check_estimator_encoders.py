@@ -51,34 +51,12 @@ if sklearn_version < parse_version("1.6"):
         return check_estimator(estimator)
 
 else:
-    ce = CountFrequencyEncoder(ignore_format=True)
-    me = MeanEncoder(ignore_format=True)
-    ohe = OneHotEncoder(ignore_format=True)
-    oe = OrdinalEncoder(ignore_format=True)
-    re = RareLabelEncoder(
-        tol=0.00000000001,
-        n_categories=100000000000,
-        replace_with=10,
-        ignore_format=True,
-    )
-    woe = WoEEncoder(ignore_format=True)
-    sse = StringSimilarityEncoder(ignore_format=True)
-
     expected_fails = _return_tags()["_xfail_checks"]
     expected_fails.update({"check_estimators_nan_inf": "transformer allows NA"})
 
-    @pytest.mark.parametrize(
-        "estimator, failed_tests",
-        [
-            (ce, expected_fails),
-            (me, expected_fails),
-            (ohe, expected_fails),
-            (oe, expected_fails),
-            (re, expected_fails),
-        ],
-    )
-    def test_check_estimator_from_sklearn(estimator, failed_tests):
-        return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
+    @pytest.mark.parametrize("estimator", _estimators)
+    def test_check_estimator_from_sklearn(estimator):
+        return check_estimator(estimator=estimator, expected_failed_checks=expected_fails)
 
 
 _estimators = [
