@@ -40,5 +40,5 @@ def _return_tags():
             "check_transformer_preserve_dtypes": msg2,
             "check_n_features_in_after_fitting": "not sure why it fails, we do check"
         }
-        tags['_xfail_checks'].update(all_fail)
+        tags['_xfail_checks'].update(all_fail)  # type: ignore
     return tags
