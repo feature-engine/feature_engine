@@ -30,24 +30,19 @@ if sklearn_version < parse_version("1.6"):
         return check_estimator(estimator)
 
 else:
-    lf = LagFeatures(missing_values="ignore")
-    wf = WindowFeatures(missing_values="ignore")
-    ewf = ExpandingWindowFeatures(missing_values="ignore")
-    failing_checks = {
-        "check_estimators_nan_inf": "Time Series transformers do not handle NaNs "
-        "or infinity."
-    }
-
-    @pytest.mark.parametrize(
-        "estimator, failed_tests",
-        [
-            (lf, {**failing_checks, **lf._more_tags()["_xfail_checks"]}),
-            (wf, {**failing_checks, **wf._more_tags()["_xfail_checks"]}),
-            (ewf, {**failing_checks, **ewf._more_tags()["_xfail_checks"]}),
-        ],
-    )
-    def test_check_estimator_from_sklearn(estimator, failed_tests):
-        return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
+    @pytest.mark.parametrize("estimator", _estimators)
+    def test_check_estimator_from_sklearn(estimator):
+        extra_failing_checks = {
+            "check_estimators_nan_inf": "Time Series transformers do not handle NaNs "
+            "or infinity."
+        }
+        return check_estimator(
+            estimator=estimator,
+            expected_failed_checks={
+                **extra_failing_checks,
+                **estimator._more_tags()["_xfail_checks"],
+            },
+        )
 
 
 @pytest.mark.parametrize("estimator", _estimators)
