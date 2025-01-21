@@ -284,7 +284,7 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         # in the current format, the tests are performed using continuous np.arrays
         # this means that when we encode some of the values, the denominator is 0
         # and this the transformer raises an error, and the test fails.
-        # For this reason, most sklearn transformers will fail. And it has nothing to
+        # For this reason, most sklearn tests will fail. And it has nothing to
         # do with the class not being compatible, it is just that the inputs passed
         # are not suitable
         tags_dict["_skip_test"] = True
