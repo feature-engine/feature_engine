@@ -72,18 +72,6 @@ jobs:
           name: Run tests with Python 3.12
           command: |
             tox -e py312
-  test_feature_engine_sklearn15:
-    docker:
-      - image: cimg/python:3.12.1
-    working_directory: ~/project
-    steps:
-      - checkout:
-          path: ~/project
-      - *prepare_tox
-      - run:
-          name: Run tests with Sklearn 1.5
-          command: |
-            tox -e sklearn15
   test_style:
     docker:
       - image: cimg/python:3.10.0
