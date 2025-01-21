@@ -213,7 +213,13 @@ class LogTransformer(BaseNumericalTransformer):
         tags_dict["_xfail_checks"]["check_estimators_pickle"] = msg
         tags_dict["_xfail_checks"]["check_transformer_general"] = msg
 
+        tags_dict["input_tags"] = {"positive_only": True}
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.positive_only = True
+        return tags
 
 
 @Substitution(
@@ -434,3 +440,6 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
             X.loc[:, self.variables_] = 10 ** X.loc[:, self.variables_] - self.C_
 
         return X
+
+    def __sklearn_tags__(self):
+        return super().__sklearn_tags__()
