@@ -35,28 +35,9 @@ if sklearn_version < parse_version("1.6"):
         return check_estimator(estimator)
 
 else:
-    mi = MeanMedianImputer()
-    ai = ArbitraryNumberImputer()
-    ci = CategoricalImputer(fill_value=0, ignore_format=True)
-    eti = EndTailImputer()
-    ami = AddMissingIndicator()
-    rsi = RandomSampleImputer()
-    dmd = DropMissingData()
-
-    @pytest.mark.parametrize(
-        "estimator, failed_tests",
-        [
-            (mi, mi._more_tags()["_xfail_checks"]),
-            (ai, ai._more_tags()["_xfail_checks"]),
-            (ci, ci._more_tags()["_xfail_checks"]),
-            (eti, eti._more_tags()["_xfail_checks"]),
-            (ami, ami._more_tags()["_xfail_checks"]),
-            (rsi, rsi._more_tags()["_xfail_checks"]),
-            (dmd, dmd._more_tags()["_xfail_checks"]),
-        ],
-    )
-    def test_check_estimator_from_sklearn(estimator, failed_tests):
-        return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
+    @pytest.mark.parametrize("estimator", _estimators)
+    def test_check_estimator_from_sklearn(estimator):
+        return check_estimator(estimator=estimator, expected_failed_checks=estimator._more_tags()["_xfail_checks"])
 
 
 @pytest.mark.parametrize("estimator", _estimators)
