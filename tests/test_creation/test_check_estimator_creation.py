@@ -15,17 +15,19 @@ from tests.estimator_checks.estimator_checks import check_feature_engine_estimat
 
 sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
-mf = MathFeatures(variables=["x0", "x1"], func="mean", missing_values="ignore")
-rf = RelativeFeatures(
-    variables=["x0", "x1"], reference=["x0"], func=["add"], missing_values="ignore"
-)
-cf = CyclicalFeatures()
-dtf = DecisionTreeFeatures(regression=False)
+_estimators = [
+    MathFeatures(variables=["x0", "x1"], func="mean", missing_values="ignore"),
+    RelativeFeatures(
+        variables=["x0", "x1"], reference=["x0"], func=["add"], missing_values="ignore"
+    ),
+    CyclicalFeatures(),
+    DecisionTreeFeatures(regression=False),
+]
 
 if sklearn_version > parse_version("1.6"):
 
-    @pytest.mark.parametrize("estimator", [mf, rf, cf, dtf])
-    def test_check_estimator_from_sklearn(estimator, failed_tests):
+    @pytest.mark.parametrize("estimator", _estimators)
+    def test_check_estimator_from_sklearn(estimator):
         return check_estimator(
             estimator=estimator,
             expected_failed_checks=estimator._more_tags()["_xfail_checks"],
@@ -33,7 +35,7 @@ if sklearn_version > parse_version("1.6"):
 
 else:
 
-    @pytest.mark.parametrize("estimator", [mf, rf, cf, dtf])
+    @pytest.mark.parametrize("estimator", _estimators)
     def test_check_estimator_from_sklearn(estimator):
         return check_estimator(estimator)
 
