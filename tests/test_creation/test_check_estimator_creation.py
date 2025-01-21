@@ -5,8 +5,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.fixes import parse_version
 
-sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
-
 from feature_engine.creation import (
     CyclicalFeatures,
     DecisionTreeFeatures,
@@ -14,6 +12,8 @@ from feature_engine.creation import (
     RelativeFeatures,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
+
+sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
 mf = MathFeatures(variables=["x0", "x1"], func="mean", missing_values="ignore")
 rf = RelativeFeatures(
