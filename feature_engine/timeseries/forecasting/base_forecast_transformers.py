@@ -42,7 +42,7 @@ from feature_engine.variable_handling import (
     n_features_in_=_n_features_in_docstring,
 )
 class BaseForecastTransformer(
-    TransformerMixin, GetFeatureNamesOutMixin, TransformXyMixin, BaseEstimator
+    TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin, TransformXyMixin
 ):
     """
     Shared methods across time-series forecasting transformers.

@@ -438,6 +438,3 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
             X.loc[:, self.variables_] = 10 ** X.loc[:, self.variables_] - self.C_
 
         return X
-
-    def __sklearn_tags__(self):
-        return super().__sklearn_tags__()
