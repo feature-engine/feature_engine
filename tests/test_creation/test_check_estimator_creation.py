@@ -26,7 +26,10 @@ if sklearn_version > parse_version("1.6"):
 
     @pytest.mark.parametrize("estimator", [mf, rf, cf, dtf])
     def test_check_estimator_from_sklearn(estimator, failed_tests):
-        return check_estimator(estimator=estimator, expected_failed_checks=estimator._more_tags()["_xfail_checks"])
+        return check_estimator(
+            estimator=estimator,
+            expected_failed_checks=estimator._more_tags()["_xfail_checks"],
+        )
 
 else:
 

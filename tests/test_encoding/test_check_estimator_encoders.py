@@ -56,7 +56,9 @@ else:
 
     @pytest.mark.parametrize("estimator", _estimators)
     def test_check_estimator_from_sklearn(estimator):
-        return check_estimator(estimator=estimator, expected_failed_checks=expected_fails)
+        return check_estimator(
+            estimator=estimator, expected_failed_checks=expected_fails
+        )
 
 
 _estimators = [
