@@ -51,7 +51,7 @@ jobs:
           command: |
             tox -e py310
 
-  test_feature_engine_py311_sklearn100:
+  test_feature_engine_py311_sklearn150:
     docker:
       - image: cimg/python:3.11.7
     working_directory: ~/project
@@ -62,9 +62,9 @@ jobs:
       - run:
           name: Run tests with Python 3.11 and scikit-learn 1.0.0
           command: |
-            tox -e py311-sklearn100
+            tox -e py311-sklearn150
 
-  test_feature_engine_py311_sklearn140:
+  test_feature_engine_py311_sklearn160:
     docker:
       - image: cimg/python:3.11.7
     working_directory: ~/project
@@ -75,7 +75,7 @@ jobs:
       - run:
           name: Run tests with Python 3.11 and scikit-learn 1.4.0
           command: |
-            tox -e py311-sklearn140
+            tox -e py311-sklearn160
 
   test_feature_engine_py312:
     docker:
@@ -169,8 +169,8 @@ workflows:
     jobs:
       - test_feature_engine_py39
       - test_feature_engine_py310
-      - test_feature_engine_py311_sklearn100
-      - test_feature_engine_py311_sklearn140
+      - test_feature_engine_py311_sklearn150
+      - test_feature_engine_py311_sklearn160
       - test_feature_engine_py312
       - test_style
       - test_docs
@@ -184,8 +184,8 @@ workflows:
           requires:
             - test_feature_engine_py39
             - test_feature_engine_py310
-            - test_feature_engine_py311_sklearn100
-            - test_feature_engine_py311_sklearn140
+            - test_feature_engine_py311_sklearn150
+            - test_feature_engine_py311_sklearn160
             - test_feature_engine_py312
             - test_style
             - test_docs
