@@ -24,10 +24,6 @@ if sklearn_version < parse_version("1.6"):
         return check_estimator(estimator)
 
 else:
-    aoc = ArbitraryOutlierCapper(max_capping_dict={"x0": 10})
-    ot = OutlierTrimmer()
-    wz = Winsorizer()
-
     FAILED_CHECKS = _return_tags()["_xfail_checks"]
     FAILED_CHECKS_AOC = _return_tags()["_xfail_checks"]
 
@@ -48,9 +44,9 @@ else:
     @pytest.mark.parametrize(
         "estimator, failed_tests",
         [
-            (aoc, FAILED_CHECKS_AOC),
-            (ot, FAILED_CHECKS),
-            (wz, FAILED_CHECKS),
+            (_estimators[0], FAILED_CHECKS_AOC),
+            (_estimators[1], FAILED_CHECKS),
+            (_estimators[2], FAILED_CHECKS),
         ],
     )
     def test_check_estimator_from_sklearn(estimator, failed_tests):
