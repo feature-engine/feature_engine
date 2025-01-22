@@ -216,3 +216,6 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         tags_dict["_xfail_checks"]["check_fit2d_1sample"] = msg
 
         return tags_dict
+
+    def __sklearn_tags__(self):
+        return super().__sklearn_tags__()

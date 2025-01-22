@@ -35,7 +35,7 @@ from feature_engine.encoding.base_encoder import (
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class RareLabelEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
+class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     """
     The RareLabelEncoder() groups rare or infrequent categories in
     a new category called "Rare", or any other name entered by the user.

@@ -1,7 +1,9 @@
 import pytest
+import sklearn
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OrdinalEncoder, StandardScaler
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.fixes import parse_version
 
 from feature_engine.wrappers import SklearnTransformerWrapper
 from tests.estimator_checks.estimator_checks import (
@@ -14,9 +16,22 @@ from tests.estimator_checks.variable_selection_checks import (
     check_numerical_variables_assignment,
 )
 
+sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
-def test_sklearn_transformer_wrapper():
-    check_estimator(SklearnTransformerWrapper(transformer=SimpleImputer()))
+if sklearn_version < parse_version("1.6"):
+
+    def test_sklearn_transformer_wrapper():
+        check_estimator(SklearnTransformerWrapper(transformer=SimpleImputer()))
+
+else:
+
+    def test_sklearn_transformer_wrapper():
+        check_estimator(
+            estimator=SklearnTransformerWrapper(transformer=SimpleImputer()),
+            expected_failed_checks=SklearnTransformerWrapper(
+                transformer=SimpleImputer()
+            )._more_tags()["_xfail_checks"],
+        )
 
 
 @pytest.mark.parametrize(

@@ -6,7 +6,7 @@ from sklearn.utils.multiclass import check_classification_targets, unique_labels
 from feature_engine._prediction.base_predictor import BaseTargetMeanEstimator
 
 
-class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
+class TargetMeanClassifier(ClassifierMixin, BaseTargetMeanEstimator):
     """
     The TargetMeanClassifier() estimates target values based on the average of the mean
     target value per category or bin of a group of categorical and numerical variables.
@@ -185,3 +185,8 @@ class TargetMeanClassifier(BaseTargetMeanEstimator, ClassifierMixin):
         """
         y_pred = np.where(self._predict(X) > 0.5, self.classes_[1], self.classes_[0])
         return y_pred
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.classifier_tags.multi_class = False
+        return tags

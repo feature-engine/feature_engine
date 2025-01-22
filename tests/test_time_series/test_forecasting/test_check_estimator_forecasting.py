@@ -1,9 +1,11 @@
 import numpy as np
 import pandas as pd
 import pytest
+import sklearn
 from sklearn.base import clone
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.fixes import parse_version
 
 from feature_engine.timeseries.forecasting import (
     ExpandingWindowFeatures,
@@ -19,9 +21,28 @@ _estimators = [
 ]
 
 
-@pytest.mark.parametrize("estimator", _estimators)
-def test_check_estimator_from_sklearn(estimator):
-    return check_estimator(estimator)
+sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
+
+if sklearn_version < parse_version("1.6"):
+
+    @pytest.mark.parametrize("estimator", _estimators)
+    def test_check_estimator_from_sklearn(estimator):
+        return check_estimator(estimator)
+
+else:
+    @pytest.mark.parametrize("estimator", _estimators)
+    def test_check_estimator_from_sklearn(estimator):
+        extra_failing_checks = {
+            "check_estimators_nan_inf": "Time Series transformers do not handle NaNs "
+            "or infinity."
+        }
+        return check_estimator(
+            estimator=estimator,
+            expected_failed_checks={
+                **extra_failing_checks,
+                **estimator._more_tags()["_xfail_checks"],
+            },
+        )
 
 
 @pytest.mark.parametrize("estimator", _estimators)

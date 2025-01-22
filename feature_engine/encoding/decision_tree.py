@@ -52,7 +52,7 @@ _unseen_docstring = (
     fit_transform=_fit_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class DecisionTreeEncoder(CategoricalInitMixin, CategoricalMethodsMixin):
+class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
     """
     The DecisionTreeEncoder() encodes categorical variables with the predictions
     of a decision tree.

@@ -42,7 +42,7 @@ from feature_engine.variable_handling import (
     n_features_in_=_n_features_in_docstring,
 )
 class BaseForecastTransformer(
-    BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin, TransformXyMixin
+    TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin, TransformXyMixin
 ):
     """
     Shared methods across time-series forecasting transformers.
@@ -234,3 +234,7 @@ class BaseForecastTransformer(
             "check_methods_subset_invariance"
         ] = "LagFeatures is not invariant when applied to a subset. Not sure why yet"
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

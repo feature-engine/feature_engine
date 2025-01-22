@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
 import pytest
+import sklearn
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.fixes import parse_version
 
 from feature_engine.discretisation import (
     ArbitraryDiscretiser,
@@ -13,6 +15,9 @@ from feature_engine.discretisation import (
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
+sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
+
+
 _estimators = [
     DecisionTreeDiscretiser(regression=False),
     EqualFrequencyDiscretiser(),
@@ -21,10 +26,20 @@ _estimators = [
     GeometricWidthDiscretiser(),
 ]
 
+if sklearn_version < parse_version("1.6"):
 
-@pytest.mark.parametrize("estimator", _estimators)
-def test_check_estimator_from_sklearn(estimator):
-    return check_estimator(estimator)
+    @pytest.mark.parametrize("estimator", _estimators)
+    def test_check_estimator_from_sklearn(estimator):
+        return check_estimator(estimator)
+
+else:
+
+    @pytest.mark.parametrize("estimator", _estimators)
+    def test_check_estimator_from_sklearn(estimator):
+        return check_estimator(
+            estimator=estimator,
+            expected_failed_checks=estimator._more_tags()["_xfail_checks"],
+        )
 
 
 @pytest.mark.parametrize("estimator", _estimators)

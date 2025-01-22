@@ -775,3 +775,7 @@ class DropHighPSIFeatures(BaseSelector):
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
 
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

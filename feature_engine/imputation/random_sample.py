@@ -275,3 +275,8 @@ class RandomSampleImputer(BaseImputer):
         tags_dict["allow_nan"] = True
         tags_dict["variables"] = "all"
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = True
+        return tags
