@@ -1,6 +1,27 @@
 Version 1.8.X
 =============
 
+Version 1.8.3
+-------------
+
+Deployed: 22nd Jan 2025
+
+Contributors
+~~~~~~~~~~~~
+
+- `Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_
+- `Chris Samiullah <https://github.com/christophergs>`_
+- `Soledad Galli <https://github.com/solegalli>`_
+
+This release makes Feature-engine compatible with the latest version of scikit-learn
+1.6.0.
+
+Code maintenance
+~~~~~~~~~~~~~~~~
+
+- Make all transformers compatible with scickit-learn's new developer's API (`Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_ and `Soledad Galli <https://github.com/solegalli>`_)
+- Add circleci tests for multiple versions of scikit-learn (`Chris Samiullah <https://github.com/christophergs>`_)
+
 Version 1.8.2
 -------------
 
