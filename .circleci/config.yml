@@ -60,7 +60,7 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run tests with Python 3.11 and scikit-learn 1.0.0
+          name: Run tests with Python 3.11 and scikit-learn 1.5.0
           command: |
             tox -e py311-sklearn150
 
@@ -73,7 +73,7 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run tests with Python 3.11 and scikit-learn 1.4.0
+          name: Run tests with Python 3.11 and scikit-learn 1.6.0
           command: |
             tox -e py311-sklearn160
 
