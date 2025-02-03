@@ -14,7 +14,6 @@ _input_params = [
     (DecisionTreeRegressor(), "r2", "uniform", 4, 10, 84),
 ]
 
-
 @pytest.mark.parametrize(
     "_estimator, _scoring, _distribution, _cv, _n_probes, _random_state", _input_params
 )
@@ -37,7 +36,6 @@ def test_input_params_assignment(
     assert sel.n_probes == _n_probes
     assert sel.random_state == _random_state
 
-
 @pytest.mark.parametrize("collective", [True, False])
 def test_collective_param(collective):
     tr = ProbeFeatureSelection(
@@ -45,7 +43,6 @@ def test_collective_param(collective):
         collective=collective,
     )
     assert tr.collective is collective
-
 
 @pytest.mark.parametrize("collective", [10, "string", 0.1])
 def test_collective_raises_error(collective):
@@ -56,7 +53,6 @@ def test_collective_raises_error(collective):
             collective=collective,
         )
 
-
 @pytest.mark.parametrize("_distribution", [3, "poisson", ["normal", "binary"], 2.22])
 def test_raises_error_when_not_permitted_distribution(_distribution):
     with pytest.raises(ValueError):
@@ -64,7 +60,6 @@ def test_raises_error_when_not_permitted_distribution(_distribution):
             estimator=DecisionTreeRegressor(),
             distribution=_distribution,
         )
-
 
 @pytest.mark.parametrize("_n_probes", [5, 7, 11])
 def test_raises_error_when_not_permitted_n_probes_with_all_distribution(_n_probes):
@@ -75,7 +70,6 @@ def test_raises_error_when_not_permitted_n_probes_with_all_distribution(_n_probe
             n_probes=_n_probes,
         )
 
-
 @pytest.mark.parametrize("_n_probes", ["tree", [False, 2], 101.1])
 def test_raises_error_when_not_permitted_n_probes(_n_probes):
     with pytest.raises(ValueError):
@@ -83,7 +77,6 @@ def test_raises_error_when_not_permitted_n_probes(_n_probes):
             estimator=DecisionTreeRegressor(),
             n_probes=_n_probes,
         )
-
 
 def test_fit_transform_functionality(df_test):
     X, y = df_test
@@ -136,7 +129,6 @@ def test_fit_transform_functionality(df_test):
         X_tr, X.drop(columns=["var_2", "var_10"]), check_dtype=False
     )
 
-
 def test_generate_probe_features_all():
     sel = ProbeFeatureSelection(
         estimator=DecisionTreeClassifier(),
@@ -163,7 +155,6 @@ def test_generate_probe_features_all():
         probe_features, expected_results_df, check_dtype=False
     )
 
-
 def test_generate_probe_features_normal():
     sel = ProbeFeatureSelection(
         estimator=DecisionTreeClassifier(),
@@ -184,7 +175,6 @@ def test_generate_probe_features_normal():
     pd.testing.assert_frame_equal(
         probe_features, expected_results_df, check_dtype=False
     )
-
 
 def test_generate_probe_features_binary():
     sel = ProbeFeatureSelection(
@@ -209,6 +199,24 @@ def test_generate_probe_features_binary():
     )
 
 
+
+def test_generate_probe_features_discrete_uniform():
+    sel = ProbeFeatureSelection(
+        estimator=DecisionTreeClassifier(),
+        n_probes=1,
+        distribution="discrete_uniform",
+        random_state=1,
+    )
+
+    n_obs = 5
+    probe_features = sel._generate_probe_features(n_obs)
+
+    # expected results
+    expected_results = {"discrete_uniform_probe_0": [4, 3, 1, 2, 4]}
+    expected_results_df = pd.DataFrame(expected_results)
+    pd.testing.assert_frame_equal(
+        probe_features, expected_results_df, check_dtype=False
+    )
 def test_generate_probe_features_uniform():
     sel = ProbeFeatureSelection(
         estimator=DecisionTreeClassifier(),
@@ -226,7 +234,6 @@ def test_generate_probe_features_uniform():
     pd.testing.assert_frame_equal(
         probe_features, expected_results_df, check_dtype=False
     )
-
 
 def test_get_features_to_drop():
     # 1 probe
@@ -249,7 +256,6 @@ def test_get_features_to_drop():
     )
     sel.variables_ = ["var1", "var2", "var3", "var4"]
     assert sel._get_features_to_drop() == ["var4"]
-
 
 def test_cv_generator(df_test):
     X, y = df_test
@@ -328,7 +334,6 @@ def test_cv_generator(df_test):
         X_tr, X.drop(columns=["var_2", "var_10"]), check_dtype=False
     )
 
-
 def test_feature_importance_std(df_test):
     X, y = df_test
 
@@ -356,8 +361,6 @@ def test_feature_importance_std(df_test):
             0.0049,
             0.0123,
             0.0005,
-            0.0005,
-            0.0005,
             0.0006,
         ],
         index=[
@@ -379,7 +382,6 @@ def test_feature_importance_std(df_test):
     )
 
     assert sel.feature_importances_std_.round(4).equals(expected_std)
-
 
 def test_single_feature_importance_generation(df_test):
     X, y = df_test
@@ -432,7 +434,6 @@ def test_single_feature_importance_generation(df_test):
     )
 
     assert sel.feature_importances_.round(4).equals(expected_)
-
 
 def test_probe_feature_selector_with_groups(df_test_with_groups):
     X, y, groups = df_test_with_groups
