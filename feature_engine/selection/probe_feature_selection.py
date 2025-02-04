@@ -36,7 +36,6 @@ from .base_selection_functions import (
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
-
 @Substitution(
     estimator=_estimator_docstring,
     scoring=_scoring_docstring,
@@ -98,6 +97,11 @@ class ProbeFeatureSelection(BaseSelector):
         be a multiple of 3.
 
     distribution: str, default='normal'
+        The distribution used to create the probe features. The options are
+        'normal', 'binomial', 'uniform', 'discrete_uniform', and 'all'. 'all' creates at least 1 or more
+        probe features comprised of each distribution type, i.e., normal, binomial,
+        uniform, and discrete_uniform. The remaining options create `n_probes` features of the selected
+        distribution.
         The distribution used to create the probe features. The options are
         'normal', 'binomial', 'uniform', and 'all'. 'all' creates at least 1 or more
         probe features comprised of each distribution type, i.e., normal, binomial,
@@ -186,13 +190,21 @@ class ProbeFeatureSelection(BaseSelector):
                 f"collective takes values True or False. Got {collective} instead."
             )
 
-        if distribution not in ["normal", "binary", "uniform", "all"]:
+        if distribution not in ["normal", "binary", "uniform", "discrete_uniform", "all"]:
+            raise ValueError(
+                "distribution takes values 'normal', 'binary', 'uniform', 'discrete_uniform', or 'all'. "
+                f"Got {distribution} instead."
+            )
             raise ValueError(
                 "distribution takes values 'normal', 'binary', 'uniform', or 'all'. "
                 f"Got {distribution} instead."
             )
 
-        if distribution == "all" and n_probes % 3 != 0:
+        if distribution == "all" and n_probes % 4 != 0:
+            raise ValueError(
+                "If distribution is 'all' the n_probes must be a multiple of 4. "
+                f"Got {n_probes} instead."
+            )
             raise ValueError(
                 "If distribution is 'all' the n_probes must be a multiple of 3. "
                 f"Got {n_probes} instead."
@@ -284,6 +296,12 @@ class ProbeFeatureSelection(BaseSelector):
         # set random state
         np.random.seed(self.random_state)
         if self.distribution == "all":
+            generation_cnt = self.n_probes // 4
+            for i in range(generation_cnt):
+                df[f"gaussian_probe_{i}"] = np.random.normal(0, 3, n_obs)
+                df[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
+                df[f"uniform_probe_{i}"] = np.random.uniform(0, 1, n_obs)
+                df[f"discrete_uniform_probe_{i}"] = np.random.randint(0, 5, n_obs)
             generation_cnt = self.n_probes // 3
             for i in range(generation_cnt):
                 df[f"gaussian_probe_{i}"] = np.random.normal(0, 3, n_obs)
@@ -299,7 +317,11 @@ class ProbeFeatureSelection(BaseSelector):
                 elif self.distribution == "binary":
                     df[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
 
+                elif self.distribution == "discrete_uniform":
+                    df[f"discrete_uniform_probe_{i}"] = np.random.randint(0, 5, n_obs)
+
                 else:
+                    df[f"uniform_probe_{i}"] = np.random.uniform(0, 1, n_obs)
                     df[f"uniform_probe_{i}"] = np.random.uniform(0, 1, n_obs)
 
         return df
