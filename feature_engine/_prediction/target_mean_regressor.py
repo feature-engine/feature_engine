@@ -6,7 +6,7 @@ from sklearn.utils.multiclass import type_of_target
 from feature_engine._prediction.base_predictor import BaseTargetMeanEstimator
 
 
-class TargetMeanRegressor(BaseTargetMeanEstimator, RegressorMixin):
+class TargetMeanRegressor(RegressorMixin, BaseTargetMeanEstimator):
     """
     The TargetMeanRegressor() outputs a target estimation based on the mean target
     value per category or bin, across a group of categorical or numerical variables.

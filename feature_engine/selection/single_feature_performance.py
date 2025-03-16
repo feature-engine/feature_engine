@@ -264,3 +264,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
 
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

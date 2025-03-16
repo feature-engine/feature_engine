@@ -49,7 +49,7 @@ _unseen_docstring = (
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class CountFrequencyEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
+class CountFrequencyEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     """
     The CountFrequencyEncoder() replaces categories by either the count or the
     percentage of observations per category.

@@ -10,7 +10,7 @@ from feature_engine.dataframe_checks import _check_contains_na, check_X
 from feature_engine.tags import _return_tags
 
 
-class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
+class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """
     MatchVariables() ensures that the same variables observed in the train set
     are present in the test set. If the dataset to transform contains variables that
@@ -297,3 +297,7 @@ class MatchVariables(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = msg
 
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

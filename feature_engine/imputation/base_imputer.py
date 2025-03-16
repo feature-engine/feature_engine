@@ -7,7 +7,7 @@ from feature_engine.dataframe_checks import _check_X_matches_training_df, check_
 from feature_engine.tags import _return_tags
 
 
-class BaseImputer(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
+class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """shared set-up checks and methods across imputers"""
 
     def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -78,3 +78,8 @@ class BaseImputer(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         tags_dict["allow_nan"] = True
         tags_dict["variables"] = "numerical"
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = True
+        return tags

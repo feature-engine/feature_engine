@@ -102,7 +102,7 @@ class CategoricalInitMixinNA:
         self.missing_values = missing_values
 
 
-class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
+class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """Shared methods across categorical transformers.
 
     - BaseEstimator brings methods get_params() and set_params().
@@ -299,3 +299,7 @@ class CategoricalMethodsMixin(BaseEstimator, TransformerMixin, GetFeatureNamesOu
         # so we need to leave without this test
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

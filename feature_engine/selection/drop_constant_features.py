@@ -228,3 +228,8 @@ class DropConstantFeatures(BaseSelector):
             "check_fit2d_1sample"
         ] = "the transformer raises an error when dropping all columns, ok to fail"
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = True
+        return tags

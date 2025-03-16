@@ -215,6 +215,10 @@ class LogTransformer(BaseNumericalTransformer):
 
         return tags_dict
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags
+
 
 @Substitution(
     variables_=_variables_attribute_docstring,
