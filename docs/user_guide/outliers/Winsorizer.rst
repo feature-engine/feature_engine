@@ -127,7 +127,7 @@ The default values for fold are as follows:
 - 'gaussian': `fold` is set to 3.0;
 - 'iqr': `fold` is set to 1.5;
 - 'mad': `fold` is set to 3.29;
-- 'percentiles': `fold` is set to 0.05.
+- 'quantiles': `fold` is set to 0.05.
 
 You can manually adjust the `fold` value to make the outlier detection process more or less
 conservative, thus customizing the extent of outlier capping.
