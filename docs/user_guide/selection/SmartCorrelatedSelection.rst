@@ -379,6 +379,7 @@ Let's create another toy dataframe with 4 features and a target variable:
         # transform arrays into pandas df and series
         colnames = ['var_'+str(i) for i in range(12)]
         X = pd.DataFrame(X, columns=colnames)
+        y = pd.Series(y)
         return X, y
 
     X, y = make_data()
@@ -434,7 +435,43 @@ The variables `var_7` and `var_0` will be retained, and the remaining ones will 
 
     {'var_7': {'var_4', 'var_6', 'var_9'}, 'var_0': {'var_8'}}
 
-We find the variables that will be dropped in the following attribute:
+We can check the correlation of the features with the target variable as follows:
+
+.. code:: python
+
+    print(X.corrwith(y).abs())
+
+.. code:: python
+
+    var_0     0.270913
+    var_1     0.088358
+    var_2     0.038257
+    var_3     0.027320
+    var_4     0.838361
+    var_5     0.028020
+    var_6     0.834925
+    var_7     0.916045
+    var_8     0.007724
+    var_9     0.797149
+    var_10    0.006742
+    var_11    0.023710
+    dtype: float64
+
+
+We notice that indeed the the `var_0` has a much higher correlation with the target than
+the `var_8`, which is why `var_0` was retained:
+
+.. code:: python
+
+    print(X.corrwith(y).abs().loc[['var_0', 'var_8']])
+
+.. code:: python
+
+    var_0    0.270913
+    var_8    0.007724
+    dtype: float64
+
+The variables that will be dropped are available in the following attribute:
 
 .. code:: python
 
