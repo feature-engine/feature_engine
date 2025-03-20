@@ -383,7 +383,7 @@ Let's create another toy dataframe with 4 features and a target variable:
 
     X, y = make_data()
 
-Now, we set up :class:`SmartCorrelatedSelection` to find features groups with absolute
+Now, we set up :class:`SmartCorrelatedSelection` to find feature groups with absolute
 correlation coefficient >0.8 and retain the feature with the strongest correlation with
 the target variable:
 
