@@ -118,9 +118,9 @@ class SmartCorrelatedSelection(BaseSelector):
         importance.
 
         **"corr_with_target"**: keeps the feature from the correlated group that has the
-        highest (absolute) correlation with the target variable. The same correlation method
-        defined in the `method` parameter is used to calculate the correlation between
-        the features and the target.
+        highest (absolute) correlation with the target variable. The same correlation
+        method defined in the `method` parameter is used to calculate the correlation
+        between the features and the target.
 
     {estimator}
 
