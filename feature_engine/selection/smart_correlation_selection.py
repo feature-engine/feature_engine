@@ -29,6 +29,7 @@ from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     check_X,
+    check_y,
 )
 from feature_engine.selection.base_selector import BaseSelector
 
@@ -64,6 +65,7 @@ class SmartCorrelatedSelection(BaseSelector):
     - Feature with the highest cardinality (greatest number of unique values).
     - Feature with the highest variance.
     - Feature with the highest importance according to an estimator.
+    - Feature with the highest correlation with the target variable.
 
     SmartCorrelatedSelection() returns a dataframe containing from each group of
     correlated features, the selected variable, plus all the features that were
@@ -99,8 +101,8 @@ class SmartCorrelatedSelection(BaseSelector):
     {missing_values}
 
     selection_method: str, default= "missing_values"
-        Takes the values "missing_values", "cardinality", "variance" and
-        "model_performance".
+        Takes the values "missing_values", "cardinality", "variance",
+        "model_performance", and "corr_with_target".
 
         **"missing_values"**: keeps the feature from the correlated group with the least
         missing observations.
@@ -114,6 +116,11 @@ class SmartCorrelatedSelection(BaseSelector):
         **"model_performance"**: trains a machine learning model using each of the
         features in a correlated group and retains the feature with the highest
         importance.
+
+        **"corr_with_target"**: keeps the feature from the correlated group that has the
+        highest (absolute) correlation with the target variable. The same correlation
+        method defined in the `method` parameter is used to calculate the correlation
+        between the features and the target.
 
     {estimator}
 
@@ -229,10 +236,12 @@ class SmartCorrelatedSelection(BaseSelector):
             "cardinality",
             "variance",
             "model_performance",
+            "corr_with_target",
         ]:
             raise ValueError(
                 "selection_method takes only values 'missing_values', 'cardinality', "
-                f"'variance' or 'model_performance'. Got {selection_method} instead."
+                "'variance', 'model_performance' or 'corr_with_target'. "
+                f"Got {selection_method} instead."
             )
 
         if selection_method == "model_performance" and estimator is None:
@@ -271,7 +280,8 @@ class SmartCorrelatedSelection(BaseSelector):
             The training dataset.
 
         y: pandas series. Default = None
-            y is needed if selection_method == 'model_performance'.
+            y is needed if selection_method == 'model_performance' or
+                'corr_with_target'.
         """
 
         # check input dataframe
@@ -289,9 +299,11 @@ class SmartCorrelatedSelection(BaseSelector):
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
 
-        if self.selection_method == "model_performance" and y is None:
+        if (
+            self.selection_method in ["model_performance", "corr_with_target"]
+        ) and y is None:
             raise ValueError(
-                "When `selection_method = 'model_performance'` y is needed to "
+                f"When `selection_method = '{self.selection_method}'` y is needed to "
                 "fit the transformer."
             )
 
@@ -311,6 +323,15 @@ class SmartCorrelatedSelection(BaseSelector):
             features = (
                 X[self.variables_]
                 .nunique()
+                .sort_values(ascending=False)
+                .index.to_list()
+            )
+        elif self.selection_method == "corr_with_target":
+            y = check_y(y)
+            features = (
+                X[self.variables_]
+                .corrwith(y, method=self.method)
+                .abs()
                 .sort_values(ascending=False)
                 .index.to_list()
             )
