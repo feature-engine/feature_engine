@@ -384,7 +384,7 @@ Let's create another toy dataframe with 4 features and a target variable:
 
     X, y = make_data()
 
-Now, we set up :class:`SmartCorrelatedSelection` to find features groups with absolute
+Now, we set up :class:`SmartCorrelatedSelection` to find feature groups with absolute
 correlation coefficient >0.8 and retain the feature with the strongest correlation with
 the target variable:
 
@@ -415,15 +415,16 @@ Let's explore the correlated feature groups:
     tr.correlated_feature_sets_
 
 Similarly to the previous examples, we see that the groups of correlated features are
-slightly different, because in this cases, the features were assessed in alphabetical
-order, whereas when we used the variance the features we sorted based on their standard
-deviation for the assessment.
+slightly different. Here, what happened is that the features were ordered first based 
+on their absolute correlation with the target, before carrying on the search of correlation
+with the other features in the dataset. Like this, the first feature of the group is retained, 
+which is the one with highest correlation with the target.
 
 .. code:: python
 
     [{'var_4', 'var_6', 'var_7', 'var_9'}, {'var_0', 'var_8'}]
 
-We can find the feature that will be retained as the key in the following attribute:
+We can find the features that will be retained as keys in the following dictionary:
 
 .. code:: python
 
