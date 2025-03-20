@@ -422,7 +422,7 @@ deviation for the assessment.
 
     [{'var_4', 'var_6', 'var_7', 'var_9'}, {'var_0', 'var_8'}]
 
-We can find the feature that will be retained as the key in the following attribute:
+We can find the features that will be retained as keys in the following dictionary:
 
 .. code:: python
 
