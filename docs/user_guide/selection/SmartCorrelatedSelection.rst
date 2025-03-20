@@ -414,9 +414,10 @@ Let's explore the correlated feature groups:
     tr.correlated_feature_sets_
 
 Similarly to the previous examples, we see that the groups of correlated features are
-slightly different, because in this cases, the features were assessed in alphabetical
-order, whereas when we used the variance the features we sorted based on their standard
-deviation for the assessment.
+slightly different. Here, what happened is that the features were ordered first based 
+on their absolute correlation with the target, before carrying on the search of correlation
+with the other features in the dataset. Like this, the first feature of the group is retained, 
+which is the one with highest correlation with the target.
 
 .. code:: python
 
