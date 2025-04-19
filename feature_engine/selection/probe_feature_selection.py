@@ -57,8 +57,8 @@ class ProbeFeatureSelection(BaseSelector):
     """
     ProbeFeatureSelection() generates one or more probe (i.e., random) features based
     on a user-selected distribution. The distribution options are 'normal', 'binomial',
-    'uniform', or 'all'. 'all' creates at least one feature for each of the
-    three aforementioned distributions.
+    'uniform', 'discrete_uniform', 'poisson', or 'all'. 'all' creates `n_probes` of
+    each of the five aforementioned distributions.
 
     Using cross validation, ProbeFeatureSelection() fits a Scikit-learn estimator
     to the provided variables plus the probe features. Next, it derives the
@@ -66,7 +66,7 @@ class ProbeFeatureSelection(BaseSelector):
 
     Alternatively, ProbeFeatureSelection() fits a Scikit-learn estimator per feature
     and probe feature (single feature models), and then determines the performance
-    returned by that model,, using a metric of choice.
+    returned by that model using a metric of choice.
 
     Finally, ProbeFeatureSelection() selects the features whose importance is greater
     than those of the probes. In the case of there being more than one probe feature,
@@ -94,15 +94,19 @@ class ProbeFeatureSelection(BaseSelector):
     {scoring}
 
     n_probes: int, default=1
-        Number of probe features to be created. If distribution is 'all', n_probes must
-        be a multiple of 3.
+        Number of probe features to create per distribution.
 
-    distribution: str, default='normal'
-        The distribution used to create the probe features. The options are
-        'normal', 'binomial', 'uniform', and 'all'. 'all' creates at least 1 or more
-        probe features comprised of each distribution type, i.e., normal, binomial,
-        and uniform. The remaining options create `n_probes` features of the selected
-        distribution.
+    distribution: str, list, default='normal'
+        The distribution used to create the probe features. The options are 'normal',
+        'binomial', 'uniform', 'discrete_uniform', 'poisson' and 'all'. 'all' creates
+        `n_probes` features for each distribution type, i.e., normal, binomial,
+        uniform, discrete_uniform and poisson. The remaining options create
+        `n_probes` features for the selected distributions.
+
+    n_categories: int, default=10
+        If `distribution` is 'discrete_uniform' or 'poisson', samples are taken from
+        0 to `n_categories`. In other words, `n_categories` is the number of distinct
+        values for these distributions.
 
     {cv}
 
@@ -150,7 +154,7 @@ class ProbeFeatureSelection(BaseSelector):
 
     Examples
     --------
-
+    # TODO: check example after changes
     >>> from sklearn.datasets import load_breast_cancer
     >>> from sklearn.linear_model import LogisticRegression
     >>> from feature_engine.selection import ProbeFeatureSelection
@@ -175,7 +179,8 @@ class ProbeFeatureSelection(BaseSelector):
         collective: bool = True,
         scoring: str = "roc_auc",
         n_probes: int = 1,
-        distribution: str = "normal",
+        distribution: Union[str, list] = "normal",
+        n_categories: int = 10,
         cv=5,
         groups=None,
         random_state: int = 0,
@@ -186,20 +191,37 @@ class ProbeFeatureSelection(BaseSelector):
                 f"collective takes values True or False. Got {collective} instead."
             )
 
-        if distribution not in ["normal", "binary", "uniform", "all"]:
-            raise ValueError(
-                "distribution takes values 'normal', 'binary', 'uniform', or 'all'. "
-                f"Got {distribution} instead."
-            )
+        error_msg = (
+            "distribution takes values 'normal', 'binary', 'uniform', "
+            "'discrete_uniform', 'poisson', or 'all'. "
+            f"Got {distribution} instead."
+        )
 
-        if distribution == "all" and n_probes % 3 != 0:
-            raise ValueError(
-                "If distribution is 'all' the n_probes must be a multiple of 3. "
-                f"Got {n_probes} instead."
-            )
+        allowed_distributions = [
+            "normal",
+            "binary",
+            "uniform",
+            "discrete_uniform",
+            "poisson",
+            "all",
+        ]
+
+        if not isinstance(distribution, (str, list)):
+            raise ValueError(error_msg)
+        if isinstance(distribution, str) and distribution not in allowed_distributions:
+            raise ValueError(error_msg)
+        if isinstance(distribution, list) and not all(
+            dist in allowed_distributions for dist in distribution
+        ):
+            raise ValueError(error_msg)
 
         if not isinstance(n_probes, int):
             raise ValueError(f"n_probes must be an integer. Got {n_probes} instead.")
+
+        if not isinstance(n_categories, int):
+            raise ValueError(
+                f"n_categories must be an integer. Got {n_categories} instead."
+            )
 
         super().__init__(confirm_variables)
         self.estimator = estimator
@@ -207,6 +229,7 @@ class ProbeFeatureSelection(BaseSelector):
         self.collective = collective
         self.scoring = scoring
         self.distribution = distribution
+        self.n_categories = n_categories
         self.cv = cv
         self.groups = groups
         self.n_probes = n_probes
@@ -275,7 +298,7 @@ class ProbeFeatureSelection(BaseSelector):
 
     def _generate_probe_features(self, n_obs: int) -> pd.DataFrame:
         """
-        Returns a dataframe comprised of the probe feature using the
+        Returns a dataframe comprised of the probe features using the
         selected distribution.
         """
         # create dataframe
@@ -283,24 +306,33 @@ class ProbeFeatureSelection(BaseSelector):
 
         # set random state
         np.random.seed(self.random_state)
-        if self.distribution == "all":
-            generation_cnt = self.n_probes // 3
-            for i in range(generation_cnt):
+
+        if isinstance(self.distribution, str):
+            distribution = set([self.distribution])
+        else:
+            distribution = set(self.distribution)
+
+        if {"normal", "all"} & distribution:
+            for i in range(self.n_probes):
                 df[f"gaussian_probe_{i}"] = np.random.normal(0, 3, n_obs)
+
+        if {"binary", "all"} & distribution:
+            for i in range(self.n_probes):
                 df[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
+
+        if {"uniform", "all"} & distribution:
+            for i in range(self.n_probes):
                 df[f"uniform_probe_{i}"] = np.random.uniform(0, 1, n_obs)
 
-        # when distribution is normal, binary, or uniform
-        else:
+        if {"discrete_uniform", "all"} & distribution:
             for i in range(self.n_probes):
-                if self.distribution == "normal":
-                    df[f"gaussian_probe_{i}"] = np.random.normal(0, 3, n_obs)
+                df[f"discrete_uniform_probe_{i}"] = np.random.randint(
+                    0, self.n_categories, n_obs
+                )
 
-                elif self.distribution == "binary":
-                    df[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
-
-                else:
-                    df[f"uniform_probe_{i}"] = np.random.uniform(0, 1, n_obs)
+        if {"poisson", "all"} & distribution:
+            for i in range(self.n_probes):
+                df[f"poisson_probe_{i}"] = np.random.poisson(self.n_categories, n_obs)
 
         return df
 
