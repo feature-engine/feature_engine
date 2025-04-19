@@ -99,14 +99,14 @@ class ProbeFeatureSelection(BaseSelector):
     distribution: str, list, default='normal'
         The distribution used to create the probe features. The options are 'normal',
         'binomial', 'uniform', 'discrete_uniform', 'poisson' and 'all'. 'all' creates
-        `n_probes` features for each distribution type, i.e., normal, binomial,
+        `n_probes` features per distribution type, i.e., normal, binomial,
         uniform, discrete_uniform and poisson. The remaining options create
-        `n_probes` features for the selected distributions.
+        `n_probes` features per selected distributions.
 
     n_categories: int, default=10
-        If `distribution` is 'discrete_uniform' or 'poisson', samples are taken from
-        0 to `n_categories`. In other words, `n_categories` is the number of distinct
-        values for these distributions.
+        If `distribution` is 'discrete_uniform' then integers are sampled from 0
+        to `n_categories`. If `distribution` is 'poisson', then samples are taken from
+        `np.random.poisson(n_categories, n_obs)`.
 
     {cv}
 
@@ -154,13 +154,12 @@ class ProbeFeatureSelection(BaseSelector):
 
     Examples
     --------
-    # TODO: check example after changes
     >>> from sklearn.datasets import load_breast_cancer
     >>> from sklearn.linear_model import LogisticRegression
     >>> from feature_engine.selection import ProbeFeatureSelection
     >>> X, y = load_breast_cancer(return_X_y=True, as_frame=True)
     >>> sel = ProbeFeatureSelection(
-    >>>     estimator=LogisticRegression(),
+    >>>     estimator=LogisticRegression(max_iter=1000000),
     >>>     scoring="roc_auc",
     >>>     n_probes=3,
     >>>     distribution="normal",
@@ -169,7 +168,7 @@ class ProbeFeatureSelection(BaseSelector):
     >>> )
     >>> X_tr = sel.fit_transform(X, y)
     >>> print(X.shape, X_tr.shape)
-    (569, 30) (569, 9)
+    (569, 30) (569, 19)
     """
 
     def __init__(
