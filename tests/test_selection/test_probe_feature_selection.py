@@ -83,6 +83,16 @@ def test_raises_error_when_not_permitted_n_probes(_n_probes):
         )
 
 
+@pytest.mark.parametrize("n_cat", [0.1, "string", 0, -1])
+def test_n_categories_raises_error(n_cat):
+    msg = f"n_categories must be a positive integer. Got {n_cat} instead."
+    with pytest.raises(ValueError, match=msg):
+        ProbeFeatureSelection(
+            estimator=DecisionTreeRegressor(),
+            n_categories=n_cat,
+        )
+
+
 def test_fit_transform_functionality(df_test):
     X, y = df_test
 

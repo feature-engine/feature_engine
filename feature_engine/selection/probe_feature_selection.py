@@ -217,9 +217,9 @@ class ProbeFeatureSelection(BaseSelector):
         if not isinstance(n_probes, int):
             raise ValueError(f"n_probes must be an integer. Got {n_probes} instead.")
 
-        if not isinstance(n_categories, int):
+        if not isinstance(n_categories, int) or n_categories < 1:
             raise ValueError(
-                f"n_categories must be an integer. Got {n_categories} instead."
+                f"n_categories must be a positive integer. Got {n_categories} instead."
             )
 
         super().__init__(confirm_variables)
