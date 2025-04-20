@@ -342,7 +342,7 @@ class ProbeFeatureSelection(BaseSelector):
         """
 
         # if more than 1 probe feature, calculate average feature importance
-        if  self.probe_features_.shape[1] > 1:
+        if self.probe_features_.shape[1] > 1:
             probe_features_avg_importance = self.feature_importances_[
                 self.probe_features_.columns
             ].values.mean()
