@@ -93,6 +93,17 @@ def test_n_categories_raises_error(n_cat):
         )
 
 
+@pytest.mark.parametrize("n_cat", [[10], [10, 1], {10}, {10, 1}])
+def test_n_categories_raises_error_with_collections(n_cat):
+    # I had problems with collections and string matching so
+    # I splitted the test
+    with pytest.raises(ValueError):
+        ProbeFeatureSelection(
+            estimator=DecisionTreeRegressor(),
+            n_categories=n_cat,
+        )
+
+
 def test_fit_transform_functionality(df_test):
     X, y = df_test
 
