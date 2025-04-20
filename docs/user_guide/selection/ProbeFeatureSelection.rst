@@ -82,14 +82,15 @@ When initiating the :class:`ProbeFeatureSelection()` class, you have the option 
 which distribution is to be assumed to create the probe feature(s), as well as the number of
 probe features to create.
 
-The possible distributions are 'normal', 'binary', 'uniform', or 'all'. 'all' creates 1
-or more probe features comprised of each distribution type, i.e., normal, binomial, and
-uniform. So, if you selected 'all' and are creating 9 probe features, you will have 3 probes
-for each distribution.
+The possible distributions are 'normal', 'binary', 'uniform', 'discrete_uniform',
+'poisson', or 'all'. 'all' creates `n_probe` features per each of the aforementioned
+distributions. So, if you selected 'all' and are creating 2 probe features, you will have
+2 probes for each distribution.
 
 The distribution matters. Tree-based models tend to give more importance to highly cardinal
 features. Hence, probes created from a uniform or normal distribution will display a greater
-importance than probes extracted from a binomial distribution when using these models.
+importance than probes extracted from a binomial, poisson or discrete uniform distributions
+when using these models.
 
 
 Python examples
@@ -106,6 +107,7 @@ Let's import the required libraries and classes:
 
 .. code:: python
 
+    import matplotlib.pyplot as plt
     import pandas as pd
     from sklearn.datasets import load_breast_cancer
     from sklearn.ensemble import RandomForestClassifier
@@ -423,7 +425,7 @@ Let's now repeat the selection process, but using more than 1 probe feature.
         estimator=RandomForestClassifier(),
         variables=None,
         scoring="precision",
-        n_probes=3,
+        n_probes=1,
         distribution="all",
         cv=5,
         random_state=150,
@@ -442,21 +444,28 @@ Here we find some example values of the probe features:
 
 .. code:: python
 
-       gaussian_probe_0  binary_probe_0  uniform_probe_0
+       gaussian_probe_0  binary_probe_0  uniform_probe_0  \
     0         -0.694150               1         0.983610
     1          1.171840               1         0.765628
     2          1.074892               1         0.991439
     3          1.698733               0         0.668574
     4          0.498702               0         0.192840
 
+       discrete_uniform_probe_0  poisson_probe_0
+    0                         2                8
+    1                         3                3
+    2                         0                7
+    3                         8                2
+    4                         3               13
+
 Let's go ahead and plot histograms:
 
 .. code:: python
 
-    sel.probe_features_.hist(bins=30)
+    sel.probe_features_.hist(bins=30, figsize=(10,10))
     plt.show()
 
-In the histograms we recognise the 3 well defined distributions:
+In the histograms we recognise the 5 well defined distributions:
 
 .. figure::  ../../images/probe_features.png
    :align:   center
@@ -469,11 +478,11 @@ Let's display the importance of the random features
 
 .. code:: python
 
-    worst symmetry             0.009176
-    worst fractal dimension    0.007825
-    gaussian_probe_0           0.003765
-    binary_probe_0             0.000354
-    uniform_probe_0            0.002377
+    gaussian_probe_0            0.004600
+    binary_probe_0              0.000366
+    uniform_probe_0             0.002541
+    discrete_uniform_probe_0    0.001124
+    poisson_probe_0             0.001759
     dtype: float64
 
 
@@ -510,7 +519,7 @@ use the roc-auc as a measure of feature importance:
         variables=None,
         collective=False,
         scoring="roc_auc",
-        n_probes=3,
+        n_probes=1,
         distribution="all",
         cv=5,
         random_state=150,
