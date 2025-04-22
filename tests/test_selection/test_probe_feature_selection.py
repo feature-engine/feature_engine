@@ -8,23 +8,28 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from feature_engine.selection import ProbeFeatureSelection
 
 _input_params = [
-    (RandomForestClassifier(), "precision", "all", 3, 6, 4),
-    (Lasso(), "neg_mean_squared_error", "binary", 7, 4, 100),
-    (LogisticRegression(), "roc_auc", "normal", 5, 2, 73),
-    (DecisionTreeRegressor(), "r2", "uniform", 4, 10, 84),
+    (RandomForestClassifier(), "precision", "all", 3, 3, 6, 4),
+    (Lasso(), "neg_mean_squared_error", "binary", 7, 7, 4, 100),
+    (LogisticRegression(), "roc_auc", "normal", 5, 5, 2, 73),
+    (DecisionTreeRegressor(), "r2", "uniform", 4, 4, 10, 84),
+    (DecisionTreeRegressor(), "r2", "discrete_uniform", 4, 4, 10, 84),
+    (DecisionTreeRegressor(), "r2", "poisson", 4, 4, 10, 84),
+    (RandomForestClassifier(), "precision", ["binary", "uniform"], 3, 3, 6, 4),
 ]
 
 
 @pytest.mark.parametrize(
-    "_estimator, _scoring, _distribution, _cv, _n_probes, _random_state", _input_params
+    "_estimator, _scoring, _distribution, _n_cat, _cv, _n_probes, _random_state",
+    _input_params,
 )
 def test_input_params_assignment(
-    _estimator, _scoring, _distribution, _cv, _n_probes, _random_state
+    _estimator, _scoring, _distribution, _n_cat, _cv, _n_probes, _random_state
 ):
     sel = ProbeFeatureSelection(
         estimator=_estimator,
         scoring=_scoring,
         distribution=_distribution,
+        n_categories=_n_cat,
         cv=_cv,
         n_probes=_n_probes,
         random_state=_random_state,
@@ -33,6 +38,7 @@ def test_input_params_assignment(
     assert sel.estimator == _estimator
     assert sel.scoring == _scoring
     assert sel.distribution == _distribution
+    assert sel.n_categories == _n_cat
     assert sel.cv == _cv
     assert sel.n_probes == _n_probes
     assert sel.random_state == _random_state
@@ -57,22 +63,14 @@ def test_collective_raises_error(collective):
         )
 
 
-@pytest.mark.parametrize("_distribution", [3, "poisson", ["normal", "binary"], 2.22])
+@pytest.mark.parametrize(
+    "_distribution", [3, "distribution", ["salud", "binary"], 2.22]
+)
 def test_raises_error_when_not_permitted_distribution(_distribution):
     with pytest.raises(ValueError):
         ProbeFeatureSelection(
             estimator=DecisionTreeRegressor(),
             distribution=_distribution,
-        )
-
-
-@pytest.mark.parametrize("_n_probes", [5, 7, 11])
-def test_raises_error_when_not_permitted_n_probes_with_all_distribution(_n_probes):
-    with pytest.raises(ValueError):
-        ProbeFeatureSelection(
-            estimator=RandomForestClassifier(),
-            distribution="all",
-            n_probes=_n_probes,
         )
 
 
@@ -82,6 +80,27 @@ def test_raises_error_when_not_permitted_n_probes(_n_probes):
         ProbeFeatureSelection(
             estimator=DecisionTreeRegressor(),
             n_probes=_n_probes,
+        )
+
+
+@pytest.mark.parametrize("n_cat", [0.1, "string", 0, -1])
+def test_n_categories_raises_error(n_cat):
+    msg = f"n_categories must be a positive integer. Got {n_cat} instead."
+    with pytest.raises(ValueError, match=msg):
+        ProbeFeatureSelection(
+            estimator=DecisionTreeRegressor(),
+            n_categories=n_cat,
+        )
+
+
+@pytest.mark.parametrize("n_cat", [[10], [10, 1], {10}, {10, 1}])
+def test_n_categories_raises_error_with_collections(n_cat):
+    # I had problems with collections and string matching so
+    # I splitted the test
+    with pytest.raises(ValueError):
+        ProbeFeatureSelection(
+            estimator=DecisionTreeRegressor(),
+            n_categories=n_cat,
         )
 
 
@@ -137,25 +156,49 @@ def test_fit_transform_functionality(df_test):
     )
 
 
-def test_generate_probe_features_all():
+def test_generate_some_probe_features():
     sel = ProbeFeatureSelection(
         estimator=DecisionTreeClassifier(),
-        n_probes=6,
+        n_probes=2,
+        distribution=["normal", "binary", "uniform"],
+        random_state=1,
+    )
+
+    probe_features = sel._generate_probe_features(5).round(3)
+
+    # expected results
+    expected_results = {
+        "gaussian_probe_0": [4.873, -1.835, -1.585, -3.219, 2.596],
+        "gaussian_probe_1": [-6.905, 5.234, -2.284, 0.957, -0.748],
+        "binary_probe_0": [1, 0, 0, 0, 1],
+        "binary_probe_1": [1, 1, 1, 1, 0],
+        "uniform_probe_0": [0.198, 0.801, 0.968, 0.313, 0.692],
+        "uniform_probe_1": [0.876, 0.895, 0.085, 0.039, 0.170],
+    }
+    expected_results_df = pd.DataFrame(expected_results)
+
+    pd.testing.assert_frame_equal(
+        probe_features, expected_results_df, check_dtype=False
+    )
+
+
+def test_generate_all_probe_features():
+    sel = ProbeFeatureSelection(
+        estimator=DecisionTreeClassifier(),
+        n_probes=1,
         distribution="all",
         random_state=1,
     )
 
-    n_obs = 5
-    probe_features = sel._generate_probe_features(n_obs).round(3)
+    probe_features = sel._generate_probe_features(5).round(3)
 
     # expected results
     expected_results = {
         "gaussian_probe_0": [4.873, -1.835, -1.585, -3.219, 2.596],
         "binary_probe_0": [0, 1, 0, 0, 1],
-        "uniform_probe_0": [0.443, 0.23, 0.534, 0.914, 0.457],
-        "gaussian_probe_1": [-6.905, 2.032, -0.321, 2.176, 2.805],
-        "binary_probe_1": [1, 1, 1, 0, 1],
-        "uniform_probe_1": [0.876, 0.895, 0.085, 0.039, 0.17],
+        "uniform_probe_0": [0.443, 0.230, 0.534, 0.914, 0.457],
+        "discrete_uniform_probe_0": [1, 7, 0, 6, 9],
+        "poisson_probe_0": [19, 15, 2, 14, 10],
     }
     expected_results_df = pd.DataFrame(expected_results)
 
@@ -226,6 +269,52 @@ def test_generate_probe_features_uniform():
     pd.testing.assert_frame_equal(
         probe_features, expected_results_df, check_dtype=False
     )
+
+
+def test_generate_probe_features_discrete():
+    sel = ProbeFeatureSelection(
+        estimator=DecisionTreeClassifier(),
+        n_probes=2,
+        distribution=["discrete_uniform", "poisson"],
+        random_state=1,
+    )
+
+    n_obs = 3
+    probe_features = sel._generate_probe_features(n_obs).round(3)
+
+    # expected results
+    expected_results = {
+        "discrete_uniform_probe_0": [5, 8, 9],
+        "discrete_uniform_probe_1": [5, 0, 0],
+        "poisson_probe_0": [9, 14, 10],
+        "poisson_probe_1": [7, 15, 13],
+    }
+    expected_results_df = pd.DataFrame(expected_results)
+    pd.testing.assert_frame_equal(
+        probe_features, expected_results_df, check_dtype=False
+    )
+
+
+_params = [
+    (5, 4, 12),
+    (10, 9, 19),
+    (3, 2, 8),
+]
+
+
+@pytest.mark.parametrize("n_cats, max_discrete, max_poisson", _params)
+def test_generate_features_n_categories(n_cats, max_discrete, max_poisson):
+    sel = ProbeFeatureSelection(
+        estimator=DecisionTreeClassifier(),
+        n_probes=1,
+        distribution=["discrete_uniform", "poisson"],
+        n_categories=n_cats,
+        random_state=1,
+    )
+
+    probe_features = sel._generate_probe_features(100)
+    assert probe_features["discrete_uniform_probe_0"].max() == max_discrete
+    assert probe_features["poisson_probe_0"].max() == max_poisson
 
 
 def test_get_features_to_drop():
