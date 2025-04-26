@@ -150,7 +150,7 @@ class ProbeFeatureSelection(BaseSelector):
     ----------
     .. [1] Stoppiglia, et al. "Ranking a Random Feature for Variable and Feature
         Selection". JMLR: 1399-1414, 2003
-        https://jmlr.org/papers/volume3/stoppiglia03a/stoppiglia03a.pdf
+        https://dl.acm.org/doi/pdf/10.5555/944919.944980
 
     Examples
     --------
