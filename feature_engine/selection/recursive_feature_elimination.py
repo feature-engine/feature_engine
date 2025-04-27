@@ -11,7 +11,6 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters.selection import (
     _confirm_variables_docstring,
-    _estimator_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.selection._docstring import (
@@ -32,7 +31,6 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
 
 
 @Substitution(
-    estimator=_estimator_docstring,
     scoring=_scoring_docstring,
     threshold=_threshold_docstring,
     cv=_cv_docstring,
@@ -80,7 +78,8 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
 
     Parameters
     ----------
-    {estimator}
+    estimator: object
+        A Scikit-learn estimator for regression or classification.
 
     {variables}
 
