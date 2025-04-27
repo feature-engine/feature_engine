@@ -14,7 +14,6 @@ from feature_engine.selection import (
     RecursiveFeatureAddition,
     RecursiveFeatureElimination,
 )
-from tests.test_datetime.test_datetime_subtraction import estimator
 
 _selectors = [
     RecursiveFeatureElimination,
