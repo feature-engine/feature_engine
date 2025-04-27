@@ -96,11 +96,33 @@ def test_n_categories_raises_error(n_cat):
 @pytest.mark.parametrize("n_cat", [[10], [10, 1], {10}, {10, 1}])
 def test_n_categories_raises_error_with_collections(n_cat):
     # I had problems with collections and string matching so
-    # I splitted the test
+    # I split the test
     with pytest.raises(ValueError):
         ProbeFeatureSelection(
             estimator=DecisionTreeRegressor(),
             n_categories=n_cat,
+        )
+
+
+@pytest.mark.parametrize("thresh", ["mean", "max", "mean_plus_std"])
+def test_threshold_init_param(thresh):
+    sel = ProbeFeatureSelection(
+        estimator=DecisionTreeRegressor(),
+        threshold=thresh,
+    )
+    assert sel.threshold == thresh
+
+
+@pytest.mark.parametrize("thresh", [1, "string"])
+def test_threshold_raises_error(thresh):
+    msg = (
+        "threshold takes values 'mean', 'max' or 'mean_plus_std'. "
+        f"Got {thresh} instead."
+    )
+    with pytest.raises(ValueError, match=msg):
+        ProbeFeatureSelection(
+            estimator=DecisionTreeRegressor(),
+            threshold=thresh,
         )
 
 
@@ -317,9 +339,11 @@ def test_generate_features_n_categories(n_cats, max_discrete, max_poisson):
     assert probe_features["poisson_probe_0"].max() == max_poisson
 
 
-def test_get_features_to_drop():
-    # 1 probe
-    sel = ProbeFeatureSelection(estimator=LogisticRegression(), n_probes=1)
+@pytest.mark.parametrize("thresh", ["mean", "max", "mean_plus_std"])
+def test_get_features_to_drop_with_one_probe(thresh):
+    sel = ProbeFeatureSelection(
+        estimator=LogisticRegression(), n_probes=1, threshold=thresh
+    )
     sel.feature_importances_ = pd.Series(
         [11, 12, 9, 10], index=["var1", "var2", "var3", "probe"]
     )
@@ -327,17 +351,30 @@ def test_get_features_to_drop():
     sel.variables_ = ["var1", "var2", "var3"]
     assert sel._get_features_to_drop() == ["var3"]
 
-    # 2 probes
-    sel = ProbeFeatureSelection(estimator=LogisticRegression(), n_probes=2)
+
+_thresholds = [
+    ("mean", ["var4"]),
+    ("max", ["var3", "var4"]),
+    ("mean_plus_std", ["var1", "var3", "var4"]),
+]
+
+
+@pytest.mark.parametrize("thresh, vars_to_drop", _thresholds)
+def test_get_features_to_drop_with_many_probes(thresh, vars_to_drop):
+    sel = ProbeFeatureSelection(
+        estimator=LogisticRegression(),
+        n_probes=2,
+        threshold=thresh,
+    )
     sel.feature_importances_ = pd.Series(
-        [11, 12, 10, 8.7, 10, 8],
+        [11, 20, 9.9, 8.7, 10, 8],
         index=["var1", "var2", "var3", "var4", "probe1", "probe2"],
     )
     sel.probe_features_ = pd.DataFrame(
         {"probe1": [1, 1, 1, 1, 1], "probe2": [1, 1, 1, 1, 1]}
     )
     sel.variables_ = ["var1", "var2", "var3", "var4"]
-    assert sel._get_features_to_drop() == ["var4"]
+    assert sel._get_features_to_drop() == vars_to_drop
 
 
 def test_cv_generator(df_test):
