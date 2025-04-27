@@ -70,8 +70,8 @@ class ProbeFeatureSelection(BaseSelector):
 
     Finally, ProbeFeatureSelection() selects the features whose importance is greater
     than those of the probes. In the case of there being more than one probe feature,
-    ProbeFeatureSelection() takes the average feature importance of all the probe
-    features.
+    ProbeFeatureSelection() can take the average, maximum, or mean plus 3 std feature
+    importance of all the probe features as threshold for the feature selection.
 
     The variables whose feature importance is smaller than the feature importance of
     the probe feature(s) are dropped from the dataset.
