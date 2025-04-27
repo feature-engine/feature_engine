@@ -29,8 +29,6 @@ class BaseRecursiveSelector(BaseSelector):
     ----------
     estimator: object
         A Scikit-learn estimator for regression or classification.
-        The estimator must have either a `feature_importances` or `coef_` attribute
-        after fitting.
 
     variables: str or list, default=None
         The list of variable to be evaluated. If None, the transformer will evaluate
