@@ -220,6 +220,37 @@ def test_raises_error_if_df_contains_na(df_enc_big, df_enc_big_na):
     assert str(record.value) == msg
 
 
+def test_raises_error_using_top_and_custom_categories(df_enc):
+    with pytest.raises(ValueError):
+        OneHotEncoder(
+            top_categories=1,
+            custom_categories={"var_A": ["C"]},
+        )
+
+
+@pytest.mark.parametrize("_custom_cat", [3, "hamberguesa", True, [3, 5, 7]])
+def test_raises_error_not_permitted_custom_categories(_custom_cat):
+    with pytest.raises(ValueError):
+        OneHotEncoder(
+            custom_categories=_custom_cat,
+        )
+
+
+@pytest.mark.parametrize(
+    "_custom_cat",
+    [
+        {"var_A": ["ZZ", "YY"], "var_B": 3},
+        {"var_M": "test", "var_S": ["T", "U"]},
+    ],
+)
+def test_raises_error_non_permitted_custom_category_pair_values(_custom_cat):
+    with pytest.raises(ValueError):
+        OneHotEncoder(
+            custom_categories=_custom_cat,
+            variables=list(_custom_cat.keys()),
+        )
+
+
 def test_encode_numerical_variables(df_enc_numeric):
     encoder = OneHotEncoder(
         top_categories=None,
@@ -534,3 +565,62 @@ def test_inverse_transform_raises_not_implemented_error(df_enc_binary):
     enc = OneHotEncoder().fit(df_enc_binary)
     with pytest.raises(NotImplementedError):
         enc.inverse_transform(df_enc_binary)
+
+
+def test_error_when_custom_categories_values_do_not_exist(df_enc):
+    encoder = OneHotEncoder(
+        top_categories=None,
+        custom_categories={"var_A": ["A", "C"], "var_B": ["B", "X"]},
+        variables=["var_A", "var_B"],
+    )
+    with pytest.raises(ValueError):
+        encoder._check_custom_categories_in_dataset(df_enc)
+
+
+def test_error_when_custom_categories_does_not_match_variables():
+    with pytest.raises(ValueError):
+        OneHotEncoder(
+            custom_categories={"var_Q": ["A"], "var_Y": ["G", "H"]},
+            variables=["var_Y", "var_B"],
+        )
+
+
+def test_encode_custom_categories(df_enc_big):
+    encoder = OneHotEncoder(
+        custom_categories={
+            "var_A": ["A", "F", "G"],
+            "var_C": ["B", "F", "E"],
+        },
+        variables=["var_A", "var_C"],
+    )
+    X = encoder.fit_transform(df_enc_big).reset_index()
+    X = X.drop("index", axis=1)
+
+    expected_results_head = {
+        "var_B": ["A", "A", "A", "A", "A", "A", "A", "A", "A", "A"],
+        "var_A_A": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+        "var_A_F": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_A_G": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_C_B": [0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+        "var_C_F": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_C_E": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    }
+    expected_results_head_df = pd.DataFrame(expected_results_head)
+
+    expected_results_tail = {
+        "var_B": ["E", "E", "F", "F", "G", "G", "G", "G", "G", "G"],
+        "var_A_A": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_A_F": [0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+        "var_A_G": [0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+        "var_C_B": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_C_F": [0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+        "var_C_E": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    }
+    expected_results_tail_df = pd.DataFrame(
+        data=expected_results_tail,
+        index=range(30, 40),
+    )
+
+    # test transform outputs
+    pd.testing.assert_frame_equal(X.head(10), expected_results_head_df)
+    pd.testing.assert_frame_equal(X.tail(10), expected_results_tail_df)
