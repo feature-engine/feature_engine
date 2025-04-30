@@ -208,7 +208,6 @@ default_dict = {
     "split_frac": 0.5,
     "split_distinct": False,
     "cut_off": None,
-    "switch": False,
     "threshold": 0.25,
     "bins": 10,
     "strategy": "equal_frequency",
@@ -223,7 +222,6 @@ args_dict = {
     "split_frac": 0.6,
     "split_distinct": True,
     "cut_off": ["value_1", "value_2"],
-    "switch": True,
     "threshold": 0.10,
     "bins": 5,
     "strategy": "equal_width",
@@ -272,9 +270,6 @@ def test_init_value_error_is_raised():
 
     with pytest.raises(ValueError):
         DropHighPSIFeatures(threshold=-1)
-
-    with pytest.raises(ValueError):
-        DropHighPSIFeatures(switch=1)
 
     with pytest.raises(ValueError):
         DropHighPSIFeatures(strategy="unknown")
@@ -704,43 +699,6 @@ def test_split_shuffled_df_cut_off(df):
 # ===== end of tests for _split_dataframe() =======
 
 # ==== more tests for fit functionality ============
-
-
-def test_switch():
-    """Test the functionality to switch the basis."""
-
-    df_a = pd.DataFrame(
-        {
-            "a": [1.0, 2, 3, 1],
-            "b": [1.0, 2, 3, 4],
-            "c": [1, 2, 3, 4],
-            "d": [1.7, 4.7, 6.6, 7.8],
-        }
-    )
-
-    df_b = pd.DataFrame(
-        {
-            "a": [4.0, 3, 5, 1],
-            "b": [11.0, 1, 2, 4],
-            "c": [4, 2, 2, 4],
-            "d": [4.7, 4.7, 7.6, 7.8],
-        }
-    )
-
-    df_order = pd.concat([df_a, df_b]).reset_index(drop=True)
-    df_reverse = pd.concat([df_b, df_a]).reset_index(drop=True)
-
-    case = DropHighPSIFeatures(
-        split_frac=0.5, bins=3, switch=False, min_pct_empty_bins=0.001
-    )
-    case.fit(df_order)
-
-    switch_case = DropHighPSIFeatures(
-        split_frac=0.5, bins=3, switch=True, min_pct_empty_bins=0.001
-    )
-    switch_case.fit(df_reverse)
-
-    assert case.psi_values_ == switch_case.psi_values_
 
 
 def test_observation_frequency_per_bin():
