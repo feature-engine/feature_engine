@@ -1,9 +1,0 @@
--r requirements.txt
-pytest>=5.4.1
-
-# repo maintenance tooling
-black>=21.5b1
-coverage>=6.4.4
-flake8>=3.9.2
-isort>=5.8.0
-mypy>=0.740
