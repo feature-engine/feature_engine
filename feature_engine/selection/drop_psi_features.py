@@ -303,7 +303,6 @@ class DropHighPSIFeatures(BaseSelector):
         split_frac: float = 0.5,
         split_distinct: bool = False,
         cut_off: Union[None, int, float, datetime.date, List] = None,
-        switch: bool = False,
         threshold: Union[float, int, str] = 0.25,
         bins: int = 10,
         strategy: str = "equal_frequency",
@@ -340,9 +339,6 @@ class DropHighPSIFeatures(BaseSelector):
             raise ValueError(
                 f"split_distinct must be a boolean. Got {split_distinct} instead."
             )
-
-        if not isinstance(switch, bool):
-            raise ValueError(f"switch must be a boolean. Got {switch} instead.")
 
         if (isinstance(threshold, str) and (threshold != "auto")) or (
             isinstance(threshold, (float, int)) and threshold < 0
@@ -395,7 +391,6 @@ class DropHighPSIFeatures(BaseSelector):
         self.split_frac = split_frac
         self.split_distinct = split_distinct
         self.cut_off = cut_off
-        self.switch = switch
         self.threshold = threshold
         self.bins = bins
         self.strategy = strategy
@@ -446,10 +441,6 @@ class DropHighPSIFeatures(BaseSelector):
                 f"and {test_df.shape[0]} samples in the test set. "
                 "Please adjust the value of the cut_off or split_frac."
             )
-
-        # Switch basis and test dataframes if required.
-        if self.switch:
-            test_df, basis_df = basis_df, test_df
 
         # Set up parameters for numerical features
         if len(num_variables_) > 0:
