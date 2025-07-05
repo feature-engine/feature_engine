@@ -382,7 +382,6 @@ class ProbeFeatureSelection(BaseSelector):
                         self.probe_features_.columns
                     ].values.std()
                 )
-            print(threshold)
 
         else:
             threshold = self.feature_importances_[self.probe_features_.columns].values
