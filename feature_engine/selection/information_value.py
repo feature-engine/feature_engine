@@ -277,3 +277,7 @@ class SelectByInformationValue(BaseSelector, WoE):
         # are not suitable
         tags_dict["_skip_test"] = True
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

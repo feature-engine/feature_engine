@@ -93,7 +93,10 @@ else:
     # TODO: investigate checks for target mean selector.
     @pytest.mark.parametrize("estimator", _estimators)
     def test_check_estimator_from_sklearn(estimator):
-        if estimator.__class__.__name__ != "SelectByTargetMeanPerformance":
+        if estimator.__class__.__name__ not in [
+            "SelectByTargetMeanPerformance",
+            "SelectByInformationValue",
+        ]:
             failed_tests = estimator._more_tags()["_xfail_checks"]
             return check_estimator(
                 estimator=estimator, expected_failed_checks=failed_tests
