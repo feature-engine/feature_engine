@@ -237,14 +237,10 @@ cd feature_engine
 pip install -e .
 ```
 - Optional: Create and activate a virtual environment with any tool of choice
-- Install Feature-engine dependencies: 
+- Install Feature-engine developer dependencies: 
 ```
-pip install -r requirements.txt
+pip install -e ".[tests]"
 ``` 
-and 
-```
-pip install -r test_requirements.txt
-```
 - Create a feature branch with a meaningful name for your feature: 
 ```
 git checkout -b myfeaturebranch
