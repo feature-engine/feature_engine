@@ -81,9 +81,9 @@ Set up the Development Environment
 After creating a local copy of the repo, you need to set up the development environment.
 Setting up a development environment will ensure that you have all the libraries
 you need for the development, no more and no less. These libraries include
-`Feature-engine dependencies <https://github.com/feature-engine/feature_engine/blob/main/requirements.txt>`_,
+`Feature-engine dependencies <https://github.com/feature-engine/feature_engine/blob/main/pyproject.toml>`_,
 like Pandas, NumPy and Scikit-learn and also
-`software development libraries <https://github.com/feature-engine/feature_engine/blob/main/test_requirements.txt>`_
+`software development libraries <https://github.com/feature-engine/feature_engine/blob/main/pyproject.toml>`_
 like pytest, mypy, flake8, isort and black.
 
 It is optional but highly advisable that you create a virtual environment. A virtual environment
@@ -143,16 +143,13 @@ Feature-engine. First, navigate to your clone of Feature-engine::
 
 Now, install Feature_engine in developer mode::
 
-        $ pip install -e .
+        $ pip install -e ".[docs,tests]"
 
-Don't forget the `.` after the `-e`. This will add Feature-engine to your PYTHONPATH so your code edits
+Don't forget the `.[docs,tests]` after the `-e`.
+This will add Feature-engine to your PYTHONPATH so your code edits
 are automatically picked up, and there is no need to re-install the package after each
-code change. This will also install Feature'engine's dependencies.
-    
-Finally, install the additional dependencies for tests and documentation::
-
-        $ pip install -r test_requirements.txt
-        $ pip install -r docs/requirements.txt
+code change. This will also install Feature'engine's core dependencies,
+as well as the dependencies needed for documentation and testing. 
 
 Make sure that your local main branch is up to date with the remote main branch::
 
