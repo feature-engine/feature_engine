@@ -70,8 +70,8 @@ class ProbeFeatureSelection(BaseSelector):
 
     Finally, ProbeFeatureSelection() selects the features whose importance is greater
     than those of the probes. In the case of there being more than one probe feature,
-    ProbeFeatureSelection() takes the average feature importance of all the probe
-    features.
+    ProbeFeatureSelection() can take the average, maximum, or mean plus 3 std feature
+    importance of all the probe features as threshold for the feature selection.
 
     The variables whose feature importance is smaller than the feature importance of
     the probe feature(s) are dropped from the dataset.
@@ -107,6 +107,14 @@ class ProbeFeatureSelection(BaseSelector):
         If `distribution` is 'discrete_uniform' then integers are sampled from 0
         to `n_categories`. If `distribution` is 'poisson', then samples are taken from
         `np.random.poisson(n_categories, n_obs)`.
+
+    threshold: str, default='mean'
+        Indicates how to combine the importance of the probe features as threshold for
+        the feature selection. If 'mean', then features are selected if their
+        importance is greater than the mean of the probes. If 'max', then features are
+        selected if their importance is greater than the maximun importance of all
+        probes. If 'mean_plus_std', then features are selected if their importance is
+        greater than the mean plus three times the standard deviation of the probes.
 
     {cv}
 
@@ -180,6 +188,7 @@ class ProbeFeatureSelection(BaseSelector):
         n_probes: int = 1,
         distribution: Union[str, list] = "normal",
         n_categories: int = 10,
+        threshold: str = "mean",
         cv=5,
         groups=None,
         random_state: int = 0,
@@ -222,6 +231,16 @@ class ProbeFeatureSelection(BaseSelector):
                 f"n_categories must be a positive integer. Got {n_categories} instead."
             )
 
+        if not isinstance(threshold, str) or threshold not in [
+            "mean",
+            "max",
+            "mean_plus_std",
+        ]:
+            raise ValueError(
+                "threshold takes values 'mean', 'max' or 'mean_plus_std'. "
+                f"Got {threshold} instead."
+            )
+
         super().__init__(confirm_variables)
         self.estimator = estimator
         self.variables = variables
@@ -232,6 +251,7 @@ class ProbeFeatureSelection(BaseSelector):
         self.cv = cv
         self.groups = groups
         self.n_probes = n_probes
+        self.threshold = threshold
         self.random_state = random_state
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
@@ -341,21 +361,35 @@ class ProbeFeatureSelection(BaseSelector):
         feature importance of all the probe features.
         """
 
-        # if more than 1 probe feature, calculate average feature importance
+        # if more than 1 probe feature, calculate threshold based on
+        # probe feature importance.
         if self.probe_features_.shape[1] > 1:
-            probe_features_avg_importance = self.feature_importances_[
-                self.probe_features_.columns
-            ].values.mean()
+            if self.threshold == "mean":
+                threshold = self.feature_importances_[
+                    self.probe_features_.columns
+                ].values.mean()
+            elif self.threshold == "max":
+                threshold = self.feature_importances_[
+                    self.probe_features_.columns
+                ].values.max()
+            else:
+                threshold = (
+                    self.feature_importances_[
+                        self.probe_features_.columns
+                    ].values.mean()
+                    + 3
+                    * self.feature_importances_[
+                        self.probe_features_.columns
+                    ].values.std()
+                )
 
         else:
-            probe_features_avg_importance = self.feature_importances_[
-                self.probe_features_.columns
-            ].values
+            threshold = self.feature_importances_[self.probe_features_.columns].values
 
         features_to_drop = []
 
         for var in self.variables_:
-            if self.feature_importances_[var] < probe_features_avg_importance:
+            if self.feature_importances_[var] < threshold:
                 features_to_drop.append(var)
 
         return features_to_drop

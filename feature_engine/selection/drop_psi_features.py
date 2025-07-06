@@ -169,6 +169,12 @@ class DropHighPSIFeatures(BaseSelector):
         not None, this parameter will be used to split the data and `split_frac` will be
         ignored.
 
+    switch: boolean, default=False.
+        If True, the order of the 2 dataframes used to determine the PSI (basis and
+        test) will be switched. This is important because the interval limits used to
+        calculate the PSI are inferred from the basis dataframe. Hence, changing the
+        order of the dataframes may lead to different PSI values.
+
     threshold: float, str, default = 0.25.
         The threshold to drop a feature. If the PSI for a feature is >= threshold, the
         feature will be dropped. The most common threshold values are 0.25 (large shift)

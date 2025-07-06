@@ -43,7 +43,14 @@ Selecting features
 
 After assigning a value of feature importance to each feature, including the probes,
 :class:`ProbeFeatureSelection()` will select those variables whose importance is greater
-than the mean importance of all probes.
+than:
+
+- the mean importance of all probes
+- the maximum importance of all probes
+- the mean plus 3 times the standard deviation of the importance of the probes
+
+The threshold for feature selection can be controlled through the parameter `threshold`
+when setting up the transformer.
 
 Feature selection process
 -------------------------
@@ -54,7 +61,7 @@ strategy:
 1. Add 1 or more random features to the dataset
 2. Train a machine learning model using all features including the random ones
 3. Derive feature importance from the fitted model
-4. Take the average importance of the random features
+4. Take the average (or maximum or mean+std) importance of the random features
 5. Select features whose importance is greater than the importance of the random variables (step 4)
 
 
@@ -64,7 +71,7 @@ strategy:
 1. Add 1 or more random features to the dataset
 2. Train a machine learning per feature and per probe
 3. Determine the feature importance as the performance of the single feature model
-4. Take the average importance of the random features
+4. Take the average (or maximum or mean+std) importance of the random features
 5. Select features whose importance is greater than the importance of the random variables (step 4)
 
 Rationale of probe feature selection
@@ -506,11 +513,57 @@ If most variables are continuous, introduce features with normal and uniform dis
 If you have one hot encoded features or sparse matrices, binary features might be a better
 option.
 
+Changing the probe importance threshold
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We can make the selection process more aggressive by using the maximum of the probe features
+or the mean plus 3 times the standard deviation as threshold to select features.
+
+In the following example, we'll use the same random forest and the same probe features,
+but this time, we'll select features whose importance is greater than the mean plus 3 times
+the standard deviation of the probes:
+
+.. code:: python
+
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(),
+        variables=None,
+        scoring="precision",
+        n_probes=1,
+        distribution="all",
+        threshold = "mean_plus_std",
+        cv=5,
+        random_state=150,
+        confirm_variables=False
+    )
+
+    sel.fit(X_train, y_train)
+
+We now inspect the variables that will be removed:
+
+.. code:: python
+
+    sel.features_to_drop_
+
+We see that now, several variables will be removed from the dataset:
+
+.. code:: python
+
+    ['mean smoothness',
+     'mean symmetry',
+     'mean fractal dimension',
+     'texture error',
+     'smoothness error',
+     'compactness error',
+     'concave points error',
+     'symmetry error',
+     'fractal dimension error']
+
 Using the individual feature strategy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We will now repeat the process, but we will train a random forest per feature instead, and
-use the roc-auc as a measure of feature importance:
+We will now select features by training a random forest per feature and using the roc-auc
+obtained from that model as a measure of feature importance:
 
 .. code:: python
 
@@ -556,6 +609,26 @@ When assessed individually, each feature seems to have a greater importance. Not
 many of the features return roc-auc that are not significantly different from the probes
 (error bars overlaps). So, even if the transformer would not drop those features, we
 could decide to discard them after analysis of this plot.
+
+Alternatively, we can set the threshold to be more aggressive and drop features whose
+importance is smaller than the mean plus three times the standard deviation of the
+importance of the probes, as follows:
+
+
+.. code:: python
+
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(n_estimators=5, random_state=1),
+        variables=None,
+        collective=False,
+        scoring="roc_auc",
+        n_probes=1,
+        distribution="all",
+        threshold = "mean_plus_std",
+        cv=5,
+        random_state=150,
+        confirm_variables=False
+    ).fit(X_train, y_train)
 
 
 Additional resources
