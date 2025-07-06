@@ -54,10 +54,15 @@ Important
 
 When working with the PSI it is worth highlighting the following:
 
-- The PSI is not symmetric; switching the order of the basis and test dataframes in the PSI calculation will lead to different values.
 - The number of bins used to define the distributions has an impact on the PSI values.
 - The PSI is a suitable metric for numerical features (i.e., either continuous or with high cardinality).
 - For categorical or discrete features, the change in distributions is better assessed with Chi-squared.
+
+he PSI is symmetric. That means that switching the order of the basis and test dataframes
+in the PSI calculation will lead to identical values. However, in this implementation, the interval
+limits used to calculate the PSI are inferred from the basis dataframe. Hence, switching the
+order of the dataframes will lead to different interval limits, which in turn may result in
+different PSI values.
 
 Threshold
 ~~~~~~~~~
