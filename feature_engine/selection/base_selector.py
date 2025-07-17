@@ -8,7 +8,7 @@ from feature_engine.dataframe_checks import _check_X_matches_training_df, check_
 from feature_engine.tags import _return_tags
 
 
-class BaseSelector(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
+class BaseSelector(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """
     Shared set-up checks and methods across selectors.
 
@@ -124,3 +124,7 @@ class BaseSelector(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
 
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

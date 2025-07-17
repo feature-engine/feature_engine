@@ -45,7 +45,7 @@ from feature_engine.variable_handling.find_variables import find_datetime_variab
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
+class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """
     DatetimeFeatures extracts date and time features from datetime variables, adding
     new columns to the dataset. DatetimeFeatures can extract datetime information from
@@ -394,3 +394,7 @@ class DatetimeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin)
     def _more_tags(self):
         tags_dict = {"variables": "datetime"}
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

@@ -21,7 +21,7 @@ from feature_engine.variable_handling import (
 )
 
 
-class BaseOutlier(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
+class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """shared set-up checks and methods across outlier transformers"""
 
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -95,6 +95,10 @@ class BaseOutlier(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
         tags_dict = _return_tags()
         tags_dict["variables"] = "numerical"
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags
 
 
 class WinsorizerBase(BaseOutlier):
@@ -289,7 +293,7 @@ class WinsorizerBase(BaseOutlier):
         tags_dict = _return_tags()
         tags_dict["variables"] = "numerical"
         # =======  this tests fail because the transformers throw an error
-        # when variance of the any input feature is 0.
+        # when variance of any input feature is 0.
         # Nothing to do with the test itself but
         # mostly with the data created and used in the test
         msg = (
@@ -298,3 +302,7 @@ class WinsorizerBase(BaseOutlier):
         )
         tags_dict["_xfail_checks"]["check_fit2d_1sample"] = msg
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

@@ -48,7 +48,7 @@ _unseen_docstring = (
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class OrdinalEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
+class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     """
     The OrdinalEncoder() replaces categories by ordinal numbers
     (0, 1, 2, 3, etc). The numbers can be ordered based on the mean of the target

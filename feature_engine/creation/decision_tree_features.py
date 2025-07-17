@@ -58,7 +58,7 @@ from feature_engine.variable_handling import (
     transform=_transform_creation_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class DecisionTreeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMixin):
+class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """
     `DecisionTreeFeatures()` adds new variables to the data that result of the output of
     decision trees trained with one or more features.
@@ -354,12 +354,12 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMi
                     preds = estimator.predict(X[features].to_frame())
                     if self.precision is not None:
                         preds = np.round(preds, self.precision)
-                    X[f"tree({features})"] = preds
+                    X.loc[:, f"tree({features})"] = preds
                 else:
                     preds = estimator.predict(X[features])
                     if self.precision is not None:
                         preds = np.round(preds, self.precision)
-                    X[f"tree({features})"] = preds
+                    X.loc[:, f"tree({features})"] = preds
 
         # if binary classification, we return the probability
         elif self._is_binary == "binary":
@@ -368,22 +368,22 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMi
                     preds = estimator.predict_proba(X[features].to_frame())
                     if self.precision is not None:
                         preds = np.round(preds, self.precision)
-                    X[f"tree({features})"] = preds[:, 1]
+                    X.loc[:, f"tree({features})"] = preds[:, 1]
                 else:
                     preds = estimator.predict_proba(X[features])
                     if self.precision is not None:
                         preds = np.round(preds, self.precision)
-                    X[f"tree({features})"] = preds[:, 1]
+                    X.loc[:, f"tree({features})"] = preds[:, 1]
 
         # if multiclass, we return the output of predict()
         else:
             for features, estimator in zip(self.input_features_, self.estimators_):
                 if isinstance(features, str):
                     preds = estimator.predict(X[features].to_frame())
-                    X[f"tree({features})"] = preds
+                    X.loc[:, f"tree({features})"] = preds
                 else:
                     preds = estimator.predict(X[features])
-                    X[f"tree({features})"] = preds
+                    X.loc[:, f"tree({features})"] = preds
 
         if self.drop_original:
             X.drop(columns=self.variables_, inplace=True)
@@ -471,3 +471,7 @@ class DecisionTreeFeatures(BaseEstimator, TransformerMixin, GetFeatureNamesOutMi
         tags_dict["requires_y"] = True
         tags_dict["variables"] = "numerical"
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

@@ -19,6 +19,8 @@ such us:
 
 3. **Missing Data**: Features with less missing data are generally more reliable and informative.
 
+4. **Correlation with Target**: Features that show a stronger correlation with the target variable are often more predictive and should be prioritized.
+
 We can apply this selection strategies out of the box with the :class:`SmartCorrelatedSelection`.
 
 From a group of correlated variables, the :class:`SmartCorrelatedSelection` will retain
@@ -28,6 +30,7 @@ the variable with:
 - the highest cardinality
 - the least missing data
 - the best performing model (based on a single feature)
+- the strongest correlation with the target variable
 
 The remaining features within each correlated group will be dropped.
 
@@ -61,6 +64,10 @@ larger scales will dominate the selection procedure**, unless you have a scaled 
 
 If the criteria is based on missing data, :class:`SmartCorrelatedSelection` will determine the
 number of NA in each feature from the correlated group and keep the one with less NA.
+
+If the criteria is based on correlation with the target, :class:`SmartCorrelatedSelection`
+will calculate the correlation coefficient between each feature and the target, and retain
+the one with the highest absolute correlation.
 
 Variance
 ~~~~~~~~
@@ -343,6 +350,181 @@ the dataframe:
 .. code:: python
 
     [True, True, True, True, False, True, False, True, False, False, True, True]
+
+
+Correlation with Target
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Finally, let's select the feature that shows the strongest correlation with the target
+variable from each group.
+
+Let's create another toy dataframe with 4 features and a target variable:
+
+.. code:: python
+
+    import pandas as pd
+    from sklearn.datasets import make_classification
+    from feature_engine.selection import SmartCorrelatedSelection
+
+    # make dataframe with some correlated variables
+    def make_data():
+        X, y = make_classification(n_samples=1000,
+                                   n_features=12,
+                                   n_redundant=4,
+                                   n_clusters_per_class=1,
+                                   weights=[0.50],
+                                   class_sep=2,
+                                   random_state=1)
+
+        # transform arrays into pandas df and series
+        colnames = ['var_'+str(i) for i in range(12)]
+        X = pd.DataFrame(X, columns=colnames)
+        y = pd.Series(y)
+        return X, y
+
+    X, y = make_data()
+
+Now, we set up :class:`SmartCorrelatedSelection` to find feature groups with absolute
+correlation coefficient >0.8 and retain the feature with the strongest correlation with
+the target variable:
+
+.. code:: python
+
+    # set up the selector
+    tr = SmartCorrelatedSelection(
+        variables=None,
+        method="pearson",
+        threshold=0.8,
+        missing_values="raise",
+        selection_method="corr_with_target",
+        estimator=None,
+    )
+
+With `fit()`, the transformer finds the correlated variables and selects the ones to
+keep. With `transform()`, it drops the remaining features in the correlated group from
+the dataset:
+
+.. code:: python
+
+    Xt = tr.fit_transform(X, y)
+
+Let's explore the correlated feature groups:
+
+.. code:: python
+
+    tr.correlated_feature_sets_
+
+Similarly to the previous examples, we see that the groups of correlated features are
+slightly different. Here, what happened is that the features were ordered first based 
+on their absolute correlation with the target, before carrying on the search of correlation
+with the other features in the dataset. Like this, the first feature of the group is retained, 
+which is the one with highest correlation with the target.
+
+.. code:: python
+
+    [{'var_4', 'var_6', 'var_7', 'var_9'}, {'var_0', 'var_8'}]
+
+We can find the features that will be retained as keys in the following dictionary:
+
+.. code:: python
+
+    tr.correlated_feature_dict_
+
+The variables `var_7` and `var_0` will be retained, and the remaining ones will be dropped.
+
+.. code:: python
+
+    {'var_7': {'var_4', 'var_6', 'var_9'}, 'var_0': {'var_8'}}
+
+We can check the correlation of the features with the target variable as follows:
+
+.. code:: python
+
+    print(X.corrwith(y).abs())
+
+.. code:: python
+
+    var_0     0.270913
+    var_1     0.088358
+    var_2     0.038257
+    var_3     0.027320
+    var_4     0.838361
+    var_5     0.028020
+    var_6     0.834925
+    var_7     0.916045
+    var_8     0.007724
+    var_9     0.797149
+    var_10    0.006742
+    var_11    0.023710
+    dtype: float64
+
+
+We notice that indeed the the `var_0` has a much higher correlation with the target than
+the `var_8`, which is why `var_0` was retained:
+
+.. code:: python
+
+    print(X.corrwith(y).abs().loc[['var_0', 'var_8']])
+
+.. code:: python
+
+    var_0    0.270913
+    var_8    0.007724
+    dtype: float64
+
+The variables that will be dropped are available in the following attribute:
+
+.. code:: python
+
+    tr.features_to_drop_
+
+.. code:: python
+
+    ['var_4', 'var_6', 'var_9', 'var_8']
+
+And now we can print the resulting dataframe after the transformation:
+
+.. code:: python
+
+    print(Xt.head())
+
+.. code:: python
+
+        var_0     var_1     var_2     var_3     var_5     var_7    var_10  \
+    0  1.471061 -2.376400 -0.247208  1.210290  0.091527 -2.230170  2.070526
+    1  1.819196  1.969326 -0.126894  0.034598 -0.186802 -1.447490  1.184820
+    2  1.625024  1.499174  0.334123 -2.233844 -0.313881 -2.240741 -0.066448
+    3  1.939212  0.075341  1.627132  0.943132 -0.468041 -3.534861  0.713558
+    4  1.579307  0.372213  0.338141  0.951526  0.729005 -2.053965  0.398790
+
+        var_11
+    0 -1.989335
+    1 -1.309524
+    2 -0.852703
+    3  0.484649
+    4 -0.186530
+
+We can also obtain the names of the features in the resulting dataframe as follows:
+
+.. code:: python
+
+    tr.get_feature_names_out()
+
+.. code:: python
+
+    ['var_0', 'var_1', 'var_2', 'var_3', 'var_5', 'var_7', 'var_10', 'var_11']
+
+We also find the `get_support` method that flags the features that will be retained from
+the dataframe:
+
+.. code:: python
+
+    tr.get_support()
+
+.. code:: python
+
+    [True, True, True, True, False, True, False, True, False, False, True, True]
+
 
 And that's it!
 

@@ -2,6 +2,7 @@ from types import GeneratorType
 from typing import List, Union
 
 import pandas as pd
+from sklearn.inspection import permutation_importance
 from sklearn.model_selection import cross_validate
 
 from feature_engine._check_init_parameters.check_variables import (
@@ -28,8 +29,6 @@ class BaseRecursiveSelector(BaseSelector):
     ----------
     estimator: object
         A Scikit-learn estimator for regression or classification.
-        The estimator must have either a `feature_importances` or `coef_` attribute
-        after fitting.
 
     variables: str or list, default=None
         The list of variable to be evaluated. If None, the transformer will evaluate
@@ -184,7 +183,18 @@ class BaseRecursiveSelector(BaseSelector):
         # There are as many columns as folds.
         for i in range(len(model["estimator"])):
             m = model["estimator"][i]
-            feature_importances_cv[i] = get_feature_importances(m)
+
+            if hasattr(m, "feature_importances_") or hasattr(m, "coef_"):
+                feature_importances_cv[i] = get_feature_importances(m)
+            else:
+                r = permutation_importance(
+                    m,
+                    X[self.variables_],
+                    y,
+                    n_repeats=1,
+                    random_state=10,
+                )
+                feature_importances_cv[i] = r.importances_mean
 
         # Add the variables as index to feature_importances_cv
         feature_importances_cv.index = self.variables_
@@ -209,3 +219,7 @@ class BaseRecursiveSelector(BaseSelector):
         tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
 
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

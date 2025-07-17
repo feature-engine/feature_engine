@@ -117,7 +117,7 @@ def test_raises_error_when_threshold_not_permitted(_threshold):
 def test_raises_error_when_selection_method_not_permitted(_method):
     msg = (
         "selection_method takes only values 'missing_values', 'cardinality', "
-        f"'variance' or 'model_performance'. Got {_method} instead."
+        f"'variance', 'model_performance' or 'corr_with_target'. Got {_method} instead."
     )
     with pytest.raises(ValueError) as record:
         SmartCorrelatedSelection(selection_method=_method)
@@ -317,6 +317,21 @@ def test_error_if_select_model_performance_and_y_is_none(df_single):
     assert record.value.args[0] == msg
 
 
+def test_error_if_select_corr_with_target_and_y_is_none(df_single):
+    X, _ = df_single
+
+    transformer = SmartCorrelatedSelection(
+        selection_method="corr_with_target",
+    )
+    msg = (
+        "When `selection_method = 'corr_with_target'` y is needed to fit "
+        "the transformer."
+    )
+    with pytest.raises(ValueError) as record:
+        transformer.fit(X)
+    assert record.value.args[0] == msg
+
+
 def test_selection_method_variance(df_var_car):
     X = df_var_car
 
@@ -499,3 +514,27 @@ def test_smart_correlation_selection_with_groups(df_test_with_groups):
     X_tr = transformer.fit_transform(X, y)
 
     pd.testing.assert_frame_equal(X_tr_expected, X_tr)
+
+
+def test_corr_with_target_single_corr_group(df_single):
+    X, y = df_single
+
+    transformer = SmartCorrelatedSelection(
+        variables=None,
+        method="pearson",
+        threshold=0.8,
+        missing_values="raise",
+        selection_method="corr_with_target",
+    )
+
+    Xt = transformer.fit_transform(X, y)
+
+    # expected result
+    df = X[["var_0", "var_2", "var_3", "var_5"]].copy()
+
+    # test fit attrs
+    assert transformer.correlated_feature_sets_ == [{"var_1", "var_2", "var_4"}]
+    assert transformer.features_to_drop_ == ['var_4', 'var_1']
+    assert transformer.correlated_feature_dict_ == {"var_2": {"var_1", "var_4"}}
+    # test transform output
+    pd.testing.assert_frame_equal(Xt, df)

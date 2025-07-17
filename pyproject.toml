@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "feature_engine"
+description = "Feature engineering and selection package with Scikit-learn's fit transform functionality"
+readme = "README.md"
+license = {text = "BSD 3 clause"}
+authors = [
+    { name = "Soledad Galli", email = "solegalli@protonmail.com" }
+]
+requires-python = ">=3.9.0"
+dependencies = [
+    "numpy>=1.18.2",
+    "pandas>=2.2.0",
+    "scikit-learn>=1.4.0",
+    "scipy>=1.4.1",
+    "statsmodels>=0.11.1",
+]
+
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dynamic = ["version"]
+
+[project.optional-dependencies]
+
+docs = [
+    # Documentation Dependencies
+    "docutils==0.16",
+    "Sphinx>=4.3.2",
+    "pydata_sphinx_theme>=0.7.2",
+    "sphinx_autodoc_typehints>=1.11.1,<=1.21.3",
+    "numpydoc>=0.9.2",
+]
+
+tests = [
+    "pytest>=5.4.1",
+
+    # repo maintenance tooling
+    "black>=21.5b1",
+    "coverage>=6.4.4",
+    "flake8>=3.9.2",
+    "isort>=5.8.0",
+    "mypy>=0.740",
+]
+
+[project.urls]
+Homepage = "http://github.com/feature-engine/feature_engine"
+
+[tool.setuptools]
+packages = ["feature_engine"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+feature_engine = ["VERSION", "py.typed"]
+
+[tool.setuptools.dynamic]
+version = {file = "feature_engine/VERSION"}
+
+[tool.mypy]
+warn_unused_ignores = true
+follow_imports = "skip"
+show_error_context = true
+warn_incomplete_stub = true
+ignore_missing_imports = true
+check_untyped_defs = true
+cache_dir = "/dev/null"
+warn_redundant_casts = true
+warn_unused_configs = true
+strict_optional = true
+exclude = '''(?x)(
+    mixins\.py$  # or files ending with "two.pyi"
+)'''
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::sklearn.exceptions.SkipTestWarning",
+    "ignore::UserWarning",
+]

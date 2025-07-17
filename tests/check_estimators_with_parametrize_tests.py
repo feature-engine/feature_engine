@@ -1,12 +1,19 @@
 """
 This file is only intended to help understand check_estimator tests on Feature-engine
-transformers. It is not run as part of the battery of acceptance tests.
+transformers. It is not run as part of the battery of acceptance tests. Works up to
+sklearn < 1.6.
 """
 
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
+from feature_engine.creation import (
+    CyclicalFeatures,
+    DecisionTreeFeatures,
+    MathFeatures,
+    RelativeFeatures,
+)
 from feature_engine.encoding import (
     CountFrequencyEncoder,
     DecisionTreeEncoder,
@@ -14,6 +21,7 @@ from feature_engine.encoding import (
     OneHotEncoder,
     OrdinalEncoder,
     RareLabelEncoder,
+    StringSimilarityEncoder,
     WoEEncoder,
 )
 from feature_engine.imputation import (
@@ -27,20 +35,28 @@ from feature_engine.imputation import (
 )
 from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsorizer
 from feature_engine.selection import (
+    MRMR,
     DropConstantFeatures,
     DropCorrelatedFeatures,
     DropDuplicateFeatures,
     DropFeatures,
     DropHighPSIFeatures,
+    ProbeFeatureSelection,
     RecursiveFeatureAddition,
     RecursiveFeatureElimination,
+    SelectByInformationValue,
     SelectByShuffling,
     SelectBySingleFeaturePerformance,
     SelectByTargetMeanPerformance,
     SmartCorrelatedSelection,
 )
-from feature_engine.timeseries.forecasting import LagFeatures
+from feature_engine.timeseries.forecasting import (
+    ExpandingWindowFeatures,
+    LagFeatures,
+    WindowFeatures,
+)
 from feature_engine.transformation import (
+    ArcsinTransformer,
     BoxCoxTransformer,
     LogTransformer,
     PowerTransformer,
@@ -48,11 +64,22 @@ from feature_engine.transformation import (
     YeoJohnsonTransformer,
 )
 from feature_engine.wrappers import SklearnTransformerWrapper
-from feature_engine.creation import DecisionTreeFeatures, CyclicalFeatures
 
 
 # creation
-@parametrize_with_checks([DecisionTreeFeatures(regression=False), CyclicalFeatures()])
+@parametrize_with_checks(
+    [
+        DecisionTreeFeatures(regression=False),
+        CyclicalFeatures(),
+        MathFeatures(variables=["x0", "x1"], func="mean", missing_values="ignore"),
+        RelativeFeatures(
+            variables=["x0", "x1"],
+            reference=["x0"],
+            func=["add"],
+            missing_values="ignore",
+        ),
+    ]
+)
 def test_sklearn_compatible_creator(estimator, check):
     check(estimator)
 
@@ -88,6 +115,7 @@ def test_sklearn_compatible_imputer(estimator, check):
             ignore_format=True,
         ),
         WoEEncoder(ignore_format=True),
+        StringSimilarityEncoder(ignore_format=True),
     ]
 )
 def test_sklearn_compatible_encoder(estimator, check):
@@ -97,7 +125,7 @@ def test_sklearn_compatible_encoder(estimator, check):
 # outliers
 @parametrize_with_checks(
     [
-        ArbitraryOutlierCapper(max_capping_dict={"0": 10}),
+        ArbitraryOutlierCapper(max_capping_dict={"x0": 10}),
         OutlierTrimmer(),
         Winsorizer(),
     ]
@@ -109,6 +137,7 @@ def test_sklearn_compatible_outliers(estimator, check):
 # transformers
 @parametrize_with_checks(
     [
+        ArcsinTransformer(),
         BoxCoxTransformer(),
         LogTransformer(),
         PowerTransformer(),
@@ -123,7 +152,7 @@ def test_sklearn_compatible_transformer(estimator, check):
 # selectors
 @parametrize_with_checks(
     [
-        DropFeatures(features_to_drop=["0"]),
+        DropFeatures(features_to_drop=["x0"]),
         DropConstantFeatures(missing_values="ignore"),
         DropDuplicateFeatures(),
         DropCorrelatedFeatures(),
@@ -144,6 +173,9 @@ def test_sklearn_compatible_transformer(estimator, check):
             threshold=-100,
         ),
         SelectByTargetMeanPerformance(scoring="roc_auc", bins=3, regression=False),
+        SelectByInformationValue(),
+        MRMR(),
+        ProbeFeatureSelection(estimator=LogisticRegression()),
     ]
 )
 def test_sklearn_compatible_selectors(estimator, check):
@@ -157,6 +189,12 @@ def test_sklearn_compatible_wrapper(estimator, check):
 
 
 # test_forecasting
-@parametrize_with_checks([LagFeatures(missing_values="ignore")])
+@parametrize_with_checks(
+    [
+        LagFeatures(missing_values="ignore"),
+        WindowFeatures(missing_values="ignore"),
+        ExpandingWindowFeatures(missing_values="ignore"),
+    ]
+)
 def test_sklearn_compatible_forecasters(estimator, check):
     check(estimator)

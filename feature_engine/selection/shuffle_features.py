@@ -139,6 +139,11 @@ class SelectByShuffling(BaseSelector):
     --------
     sklearn.inspection.permutation_importance
 
+    References
+    ----------
+
+    .. [1] Breiman, Random Forests, Machine Learning 45:5–32, 2001.
+
     Examples
     --------
 
@@ -320,3 +325,7 @@ class SelectByShuffling(BaseSelector):
         tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg
 
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags

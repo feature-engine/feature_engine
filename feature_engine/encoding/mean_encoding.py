@@ -48,7 +48,7 @@ _unseen_docstring = (
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class MeanEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
+class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     """
     The MeanEncoder() replaces categories by the mean value of the target for each
     category.
@@ -266,3 +266,7 @@ class MeanEncoder(CategoricalInitMixinNA, CategoricalMethodsMixin):
         tags_dict = super()._more_tags()
         tags_dict["requires_y"] = True
         return tags_dict
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags
