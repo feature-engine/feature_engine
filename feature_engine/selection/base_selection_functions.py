@@ -90,11 +90,7 @@ def find_correlated_features(
     variables: list[Union[str, int]],
     method: str,
     threshold: float,
-) -> tuple[
-    list[list[Union[str, int]]],
-    list[Union[str, int]],
-    dict[Union[str, int], set[Union[str, int]]],
-]:
+):
     """
     Find groups of correlated variables.
 
@@ -124,7 +120,7 @@ def find_correlated_features(
     Returns
     -------
 
-    correlated_feature_groups: List[List[str]]
+    correlated_feature_groups: set
         Sets of correlated feature groups.
 
     features_to_drop: list
@@ -150,16 +146,16 @@ def find_correlated_features(
     for i, f_i in enumerate(variables):
         if f_i not in examined:
             examined.add(f_i)
-            temp_set = [f_i]
+            temp_set = set([f_i])
             for j, f_j in enumerate(variables):
                 if f_j not in examined:
                     if correlated_mask[i, j] == 1:
                         examined.add(f_j)
                         features_to_drop.append(f_j)
-                        temp_set.append(f_j)
+                        temp_set.add(f_j)
             if len(temp_set) > 1:
                 correlated_groups.append(temp_set)
-                correlated_dict[f_i] = set(temp_set).difference({f_i})
+                correlated_dict[f_i] = temp_set.difference({f_i})
 
     return correlated_groups, features_to_drop, correlated_dict
 

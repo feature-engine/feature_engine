@@ -335,7 +335,7 @@ class SmartCorrelatedSelection(BaseSelector):
                 X[self.variables_]
                 .corrwith(y, method=self.method)
                 .abs()
-                .sort_values(ascending=False)
+                .sort_values(ascending=False, kind="mergesort")
                 .index.to_list()
             )
         else:
@@ -365,7 +365,7 @@ class SmartCorrelatedSelection(BaseSelector):
                     .sort_values(ascending=False, kind="mergesort")
                     .index[0]
                 )
-                correlated_dict[f_i] = set(feature_group).difference({f_i})
+                correlated_dict[f_i] = feature_group.difference({f_i})
 
             # convoluted way to pick up the variables from the sets in the
             # order shown in the dictionary. Helps make transformer deterministic
@@ -375,9 +375,8 @@ class SmartCorrelatedSelection(BaseSelector):
                 for variable in sorted(set_)
             ]
 
-        correlated_feature_sets = [set(group) for group in correlated_groups]
         self.features_to_drop_ = features_to_drop
-        self.correlated_feature_sets_ = correlated_feature_sets
+        self.correlated_feature_sets_ = correlated_groups
         self.correlated_feature_dict_ = correlated_dict
 
         # save input features
